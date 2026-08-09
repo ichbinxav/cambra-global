@@ -1,0 +1,74 @@
+{
+  "name": "KnowledgeGap",
+  "type": "object",
+  "description": "P12 strategic intelligence gap queue. Prioritizes high strategic value \u00d7 uncertainty \u00d7 expected reuse without farming data.",
+  "properties": {
+    "gap_key": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "cohort_key": {
+      "type": "string"
+    },
+    "strategic_value": {
+      "type": "number"
+    },
+    "intelligence_depth": {
+      "type": "number"
+    },
+    "uncertainty": {
+      "type": "number"
+    },
+    "expected_reuse": {
+      "type": "number"
+    },
+    "information_value": {
+      "type": "number"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "investigating",
+        "resolved",
+        "deferred"
+      ],
+      "default": "open"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "gap_key",
+    "information_value",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

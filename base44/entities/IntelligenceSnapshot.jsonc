@@ -1,0 +1,77 @@
+{
+  "name": "IntelligenceSnapshot",
+  "type": "object",
+  "description": "Immutable P12 decision-time provenance snapshot. Historical decisions reference the exact intelligence/policy/calculation context used at that moment.",
+  "properties": {
+    "snapshot_key": {
+      "type": "string"
+    },
+    "snapshot_type": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pricing_version_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "benchmark_refs_json": {
+      "type": "object"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "model_policy_version": {
+      "type": "string"
+    },
+    "calculation_version": {
+      "type": "string"
+    },
+    "snapshot_json": {
+      "type": "object"
+    },
+    "snapshot_hash": {
+      "type": "string"
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "snapshot_key",
+    "snapshot_type",
+    "snapshot_hash",
+    "captured_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

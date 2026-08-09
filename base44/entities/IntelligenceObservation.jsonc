@@ -1,0 +1,104 @@
+{
+  "name": "IntelligenceObservation",
+  "type": "object",
+  "description": "P12 normalized observation derived from immutable evidence. Observations are interpretations, not canonical truth.",
+  "properties": {
+    "observation_key": {
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "tenant_scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "tenant"
+      ]
+    },
+    "observation_type": {
+      "type": "string"
+    },
+    "semantic_key": {
+      "type": "string"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "truth_level": {
+      "type": "string",
+      "enum": [
+        "verified_official",
+        "observed",
+        "inferred"
+      ]
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "normalized_json": {
+      "type": "object"
+    },
+    "parser_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "observed",
+        "corroborated",
+        "verified",
+        "active",
+        "stale",
+        "superseded",
+        "archived",
+        "quarantined"
+      ],
+      "default": "candidate"
+    },
+    "supersedes_observation_id": {
+      "type": "string"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "observation_key",
+    "evidence_id",
+    "observation_type",
+    "semantic_key",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "name": "IntelligenceOutcome",
+  "type": "object",
+  "description": "P12 outcome/learning ledger. Financial truth remains sourced from deterministic systems such as MonthlySavingsReport; this row links expectation to verified result.",
+  "properties": {
+    "outcome_key": {
+      "type": "string"
+    },
+    "operation_type": {
+      "type": "string"
+    },
+    "related_entity_type": {
+      "type": "string"
+    },
+    "related_entity_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "intelligence_snapshot_id": {
+      "type": "string"
+    },
+    "expected_savings": {
+      "type": "number"
+    },
+    "realized_savings": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "variance": {
+      "type": "number"
+    },
+    "variance_reason": {
+      "type": "string"
+    },
+    "confidence_before": {
+      "type": "number"
+    },
+    "confidence_after": {
+      "type": "number"
+    },
+    "time_to_realization_days": {
+      "type": "number"
+    },
+    "migration_friction": {
+      "type": "number"
+    },
+    "provider_reliability_signal": {
+      "type": "number"
+    },
+    "success": {
+      "type": "boolean"
+    },
+    "failure_reason": {
+      "type": "string"
+    },
+    "verification_source_type": {
+      "type": "string"
+    },
+    "verification_source_id": {
+      "type": "string"
+    },
+    "negative_knowledge": {
+      "type": "boolean",
+      "default": false
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "outcome_key",
+    "operation_type",
+    "captured_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "MoatMetric",
+  "type": "object",
+  "description": "P12 internal moat depth aggregate. Scores always carry sample, freshness, confidence, coverage and concentration penalty.",
+  "properties": {
+    "metric_key": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "cohort_key": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "number"
+    },
+    "verified_observations": {
+      "type": "number"
+    },
+    "negotiation_outcomes": {
+      "type": "number"
+    },
+    "migration_outcomes": {
+      "type": "number"
+    },
+    "verified_savings_outcomes": {
+      "type": "number"
+    },
+    "coverage": {
+      "type": "number"
+    },
+    "freshness": {
+      "type": "number"
+    },
+    "source_quality": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "contradiction_rate": {
+      "type": "number"
+    },
+    "concentration_penalty": {
+      "type": "number"
+    },
+    "moat_score": {
+      "type": "number"
+    },
+    "methodology_version": {
+      "type": "string"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "metric_key",
+    "moat_score",
+    "methodology_version",
+    "calculated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

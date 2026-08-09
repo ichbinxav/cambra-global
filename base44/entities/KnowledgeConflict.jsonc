@@ -1,0 +1,96 @@
+{
+  "name": "KnowledgeConflict",
+  "type": "object",
+  "description": "P12 explicit conflict ledger. Strong facts are never silently overwritten by contradictory evidence.",
+  "properties": {
+    "conflict_key": {
+      "type": "string"
+    },
+    "semantic_key": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "investigating",
+        "resolved",
+        "expected_variation",
+        "data_error"
+      ],
+      "default": "open"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "warning"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "resolution_json": {
+      "type": "object"
+    },
+    "affects_active_operation": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "conflict_key",
+    "semantic_key",
+    "status",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

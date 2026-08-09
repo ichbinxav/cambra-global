@@ -1,0 +1,121 @@
+{
+  "name": "IntelligenceEvidence",
+  "type": "object",
+  "description": "P12 immutable intelligence evidence ledger. Raw evidence is never updated through canonical intelligence APIs; corrections create superseding evidence/interpretations.",
+  "properties": {
+    "evidence_key": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "evidence_hash": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "official_pricing",
+        "official_docs",
+        "rate_card",
+        "provider_email",
+        "contract",
+        "merchant_statement",
+        "transaction_export",
+        "settlement_report",
+        "migration_verification",
+        "billing_measurement",
+        "market_source",
+        "legacy_derived"
+      ]
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "tenant_scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "tenant"
+      ]
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "truth_level": {
+      "type": "string",
+      "enum": [
+        "verified_official",
+        "observed",
+        "inferred"
+      ]
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "parser_version": {
+      "type": "string"
+    },
+    "payload_json": {
+      "type": "object"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    },
+    "supersedes_evidence_id": {
+      "type": "string"
+    },
+    "quarantined": {
+      "type": "boolean",
+      "default": false
+    },
+    "quarantine_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "evidence_key",
+    "evidence_hash",
+    "source_type",
+    "truth_level",
+    "observed_at",
+    "recorded_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
