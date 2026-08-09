@@ -71,6 +71,11 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,negotiation:rd});
     }
 
+    if(thread.engine==='provider_negotiation'&&classification==='contract'){
+      const c=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch(()=>null);
+      if(c) await svc.entities.NegotiationCase.update(c.id,{status:'contract_received',contract_match_status:'pending_review',next_action:'ingest_and_compare_contract'}).catch(()=>null);
+    }
+
     const l4=L4_CLASSIFICATIONS.has(classification)||result.material_commitment===true||String(result.action)==='escalate'||classification==='manager_approval';
     if(l4){
       const approval=await svc.entities.Approval.create({ brand_id:thread.related_entity_type==='Brand'?thread.related_entity_id:'_platform', agent_task_id:task.id, action_type:thread.engine==='provider_negotiation'?'provider_negotiation_review':'commercial_reply_exception', related_entity_type:'CommunicationThread', related_entity_id:thread.id, risk_level:4, draft_content:`Classification: ${classification}\n\n${sanitizeExternalText(result.reply_body||'',5000)}`, draft_payload_json:{thread_id:thread.id,message_id:message.id,classification,proposed_action:result.action,proposed_reply:result.reply_body||'',reason:result.escalation_reason||'',material_commitment:!!result.material_commitment}, status:'pending', expires_at:new Date(Date.now()+7*86400000).toISOString() });
