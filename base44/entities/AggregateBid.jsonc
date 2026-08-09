@@ -1,0 +1,105 @@
+{
+  "name": "AggregateBid",
+  "type": "object",
+  "description": "P14 normalized provider bid linked to the canonical NegotiationCase/NegotiationOffer ledger.",
+  "properties": {
+    "bid_key": {
+      "type": "string"
+    },
+    "rfp_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "negotiation_case_id": {
+      "type": "string"
+    },
+    "negotiation_offer_id": {
+      "type": "string"
+    },
+    "round": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "received",
+        "countered",
+        "best_current",
+        "final",
+        "approved",
+        "rejected",
+        "expired"
+      ]
+    },
+    "currency": {
+      "type": "string"
+    },
+    "normalized_annual_cost_minor": {
+      "type": "number"
+    },
+    "estimated_effective_bps": {
+      "type": "number"
+    },
+    "pricing_json": {
+      "type": "object"
+    },
+    "tier_schedule_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "legal_terms_json": {
+      "type": "object"
+    },
+    "merchant_outcome_score": {
+      "type": "number"
+    },
+    "total_economic_value_score": {
+      "type": "number"
+    },
+    "material_commitment": {
+      "type": "boolean"
+    },
+    "extraction_confidence": {
+      "type": "number"
+    },
+    "source_message_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "bid_key",
+    "rfp_id",
+    "pool_id",
+    "provider_id",
+    "negotiation_case_id",
+    "negotiation_offer_id",
+    "status",
+    "currency"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
