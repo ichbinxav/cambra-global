@@ -5,7 +5,8 @@ import React from "react";
  * Very light grey background, small uppercase type, wide tracking,
  * rounded pill. Never colourful — restrained, engineered (Art Direction).
  */
-export default function SectionLabel({ children, className = "", as: Tag = "span", style }) {
+/** @param {{ children?: React.ReactNode, className?: string, as?: React.ElementType, style?: React.CSSProperties }} props */
+export default function SectionLabel({ children, className = "", as: Tag = "span", style = undefined }) {
   return (
     <Tag
       className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${className}`}
