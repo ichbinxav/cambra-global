@@ -31,12 +31,15 @@ export const CLUSTERS = [
   },
   {
     key: "outreach",
-    label: "Outreach",
-    description: "Cold outreach con gate de dos puertas (L3 — requiere Approval).",
+    label: "Commercial Autonomy",
+    description: "External communication is policy-gated: routine L3 actions can run inside an active founder-approved policy; L4 commitments always stop for human approval.",
     agents: [
-      { name: "Outreach",          fn: "outreachAgent",          level: 3, tool: "Instantly", secret: "INSTANTLY_API_KEY", desc: "Draft + send. Apply solo con Approval aprobado." },
-      { name: "Follow Up",         fn: "followUpAgent",          level: 3, tool: "Instantly", secret: "INSTANTLY_API_KEY", desc: "Secuencia de seguimiento (Approval requerido)." },
-      { name: "Meeting",           fn: "meetingAgent",           level: 3, tool: "Cal.com",   secret: "CALCOM_API_KEY",     desc: "Propone slots de reunión (Approval requerido)." },
+      { name: "Acquisition Loop",   fn: "autonomousCommercialWorker", level: 3, tool: "Claude + Resend", secret: "ANTHROPIC_API_KEY", desc: "Hourly policy-gated lead outreach; suppression, business-hours and daily caps are deterministic." },
+      { name: "Reply Operator",     fn: "commercialReplyAgent",       level: 3, tool: "Claude + Resend", secret: "ANTHROPIC_API_KEY", desc: "Classifies inbound replies and continues routine threads; opt-out stops immediately and L4 escalates." },
+      { name: "Provider Negotiation", fn: "providerNegotiationAgent", level: 3, tool: "Claude + Resend", secret: "ANTHROPIC_API_KEY", desc: "Persistent multi-round pricing negotiation inside a Recover mandate; never auto-accepts a final/material deal." },
+      { name: "Outreach Legacy",    fn: "outreachAgent",          level: 3, tool: "Resend",   secret: "RESEND_API_KEY", desc: "Legacy per-email approval path retained for controlled/manual outreach." },
+      { name: "Follow Up Legacy",   fn: "followUpAgent",          level: 3, tool: "Instantly", secret: "INSTANTLY_API_KEY", desc: "Legacy approval-gated follow-up path; autonomous threads use Commercial Autonomy instead." },
+      { name: "Meeting",            fn: "meetingAgent",           level: 3, tool: "Cal.com",   secret: "CAL_API_KEY", desc: "Uses real Cal.com availability only; missing calendar data is a blocker, never fabricated slots." },
     ],
   },
   {
@@ -100,7 +103,7 @@ export const CLUSTERS = [
 export const ORCHESTRATORS = [
   { name: "Brain Chain",     fn: "brainOrchestrator",     desc: "Discovery → Spend → Recommendation. Mete una URL, corre el loop entero.", requiresInput: "url" },
   { name: "Lead Chain",      fn: "leadOrchestrator",      desc: "Discovery → Enrichment → Scoring → CRM." },
-  { name: "Outreach Chain",  fn: "outreachOrchestrator",  desc: "Outreach.draft → [Approval] → Outreach.execute → FollowUp.draft → [Approval]." },
+  { name: "Outreach Chain (legacy)",  fn: "outreachOrchestrator",  desc: "Legacy per-message approval chain retained for controlled/manual use; policy-gated autonomous acquisition uses autonomousCommercialWorker." },
   { name: "Marketing Chain", fn: "marketingOrchestrator", desc: "Ejecuta una selección de agentes de marketing sobre un mismo topic." },
   { name: "Research Chain",  fn: "researchOrchestrator",  desc: "Competitor → Provider Research → Provider Monitor." },
 ];
