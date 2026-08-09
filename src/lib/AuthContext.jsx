@@ -4,7 +4,7 @@ import { appParams } from '@/lib/app-params';
 import { isBot } from '@/lib/utils';
 
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 // ── Anonymous-session rescue helpers ───────────────────────────────────────
 // The rescue exists for ONE purpose: carry the anonymous Analyzer session id
@@ -226,7 +226,7 @@ export const AuthProvider = ({ children }) => {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => null);
-          const err = new Error('Failed to load app public settings');
+          const err = /** @type {Error & { status?: number, data?: any }} */ (new Error('Failed to load app public settings'));
           err.status = res.status;
           err.data = data;
           throw err;
@@ -266,10 +266,11 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (appError) {
         console.error('App state check failed:', appError);
+        const appErr = /** @type {Error & { status?: number, data?: any }} */ (appError);
         
         // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
+        if (appErr.status === 403 && appErr.data?.extra_data?.reason) {
+          const reason = appErr.data.extra_data.reason;
           if (reason === 'auth_required') {
             setAuthError({
               type: 'auth_required',
@@ -283,13 +284,13 @@ export const AuthProvider = ({ children }) => {
           } else {
             setAuthError({
               type: reason,
-              message: appError.message
+              message: appErr.message
             });
           }
         } else {
           setAuthError({
             type: 'unknown',
-            message: appError.message || 'Failed to load app'
+            message: appErr.message || 'Failed to load app'
           });
         }
         setIsLoadingPublicSettings(false);
@@ -323,11 +324,12 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('User auth check failed:', error);
+      const authErr = /** @type {Error & { status?: number }} */ (error);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
       // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+      if (authErr.status === 401 || authErr.status === 403) {
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'
