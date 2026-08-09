@@ -11,14 +11,17 @@
 
 let scriptPromise = null;
 
+/** @typedef {Window & typeof globalThis & { Stripe?: (publishableKey: string) => any }} StripeWindow */
+
 function loadScript() {
   if (scriptPromise) return scriptPromise;
   scriptPromise = new Promise((resolve, reject) => {
-    if (window.Stripe) return resolve(window.Stripe);
+    const stripeWindow = /** @type {StripeWindow} */ (window);
+    if (stripeWindow.Stripe) return resolve(stripeWindow.Stripe);
     const el = document.createElement("script");
     el.src = "https://js.stripe.com/v3/";
     el.async = true;
-    el.onload = () => (window.Stripe ? resolve(window.Stripe) : reject(new Error("stripe_js_unavailable")));
+    el.onload = () => (stripeWindow.Stripe ? resolve(stripeWindow.Stripe) : reject(new Error("stripe_js_unavailable")));
     el.onerror = () => reject(new Error("stripe_js_load_failed"));
     document.head.appendChild(el);
   });
