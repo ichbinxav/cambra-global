@@ -73,6 +73,7 @@ const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
 const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
 const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 const AdminCommercialAutonomy = lazy(() => import('@/pages/admin/AdminCommercialAutonomy'));
+const AdminIntelligence = lazy(() => import('@/pages/admin/AdminIntelligence'));
 const ReviewQueue = lazy(() => import('@/pages/admin/ReviewQueue'));
 const EclOperations = lazy(() => import('@/pages/admin/EclOperations')); 
 import AuthRedirect from '@/pages/AuthRedirect';
@@ -321,6 +322,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
           <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
           <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
+          <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligence />)} />
           <Route path="/admin/evidence-review" element={withBoundary(<ReviewQueue />)} />
           <Route path="/admin/ecl-operations" element={withBoundary(<EclOperations />)} />
           <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />

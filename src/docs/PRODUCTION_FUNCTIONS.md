@@ -185,3 +185,16 @@ _tenantGuard · createSelfTestBrand · phase2CleanupLegacyFields (migración one
 | negotiationMemoryWorker | B/internal · scheduled daily | NegotiationCase, NegotiationOffer, NegotiationMemoryCohort | Builds advisory provider negotiation memory; never changes authority or accepts terms. |
 | onboardingConciergeWorker | B/internal · scheduled | Brand, CommercialPolicy, CommunicationThread, ContactSuppression | Merchant onboarding concierge; chases incomplete payments onboarding inside founder-approved merchant-operations policy. |
 | recoverAutopilotWorker | B/internal · scheduled daily | DealActivation, MonthlySavingsReport, Invoice, AgentTask | Generates due measurements, issues only already-approved eligible invoices, then runs read-only Stripe reconciliation. Never auto-approves reports. |
+
+### P12 — Intelligence & Proprietary Moat Layer (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| intelligenceAccess | B/internal + admin gate | IntelligenceEvidence, IntelligenceObservation, KnowledgeClaim, ProviderPricingVersion, IntelligenceSnapshot, IntelligenceOutcome, KnowledgeConflict | Canonical P12 write/read boundary. Immutable evidence path, idempotency hashes, evidence-gated knowledge promotion, bitemporal pricing lookup and immutable decision snapshots. No billing or L4 authority. |
+| intelligenceMaintenanceWorker | C/internal · daily | PaymentsRateTable → ProviderPricingVersion, KnowledgeConflict | Versions the existing payments pricing source into the temporal ledger. Does not scrape external sites or silently replace prior verified history. |
+| knowledgeIntegrityWorker | C/internal · 6h | IntelligenceEvidence, ProviderPricingVersion | Quarantines temporal/value anomalies. Does not rewrite raw evidence content. |
+| outcomeLearningWorker | C/internal · daily | MonthlySavingsReport → IntelligenceOutcome | Copies deterministic Verified Savings truth into outcome learning. Never approves reports, recalculates financial truth or invoices. |
+| moatCuratorWorker | C/internal · daily | ProviderPricingVersion, IntelligenceOutcome, KnowledgeConflict → MoatMetric, KnowledgeGap | Transparent moat-depth/gap calculation with uncertainty and concentration penalty. No merchant/provider outreach for data farming. |
+| getIntelligenceCommandCenter | B/admin | P12 intelligence aggregates | Admin-only command-center projection; no raw foreign-tenant evidence export. |
+| intelligenceAdmin | B/admin | KnowledgeClaim, KnowledgeConflict, IntelligenceEvidence, OperationalLog | Explicit reason-required override actions with before/after audit. Inferred claims cannot be promoted to verified by override alone. |
+| intelligenceBackfill | B/internal + admin gate | Existing representable pricing/outcome provenance | Idempotent orchestrated backfill. Does not fabricate historical source type or effective date. |

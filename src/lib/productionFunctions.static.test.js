@@ -62,7 +62,7 @@ const MANIFEST = [
   "getPaymentsAnalysisVerified", "getPaymentsGapTeaser", "getUploadCapability",
   "getWaitlistAggregate", "getWaitlistLeads", "gmailConnectionCheck",
   "guardDealActivationStatus", "inferVendorsFromBankData", "initiateConnection",
-  "integrationRegistry", "integritySummary", "investorUpdateAgent",
+  "integrationRegistry", "integritySummary", "intelligenceAccess", "intelligenceAdmin", "intelligenceBackfill", "intelligenceMaintenanceWorker", "knowledgeIntegrityWorker", "moatCuratorWorker", "outcomeLearningWorker", "getIntelligenceCommandCenter", "investorUpdateAgent",
   "inviteAdminUser", "joinCollective", "leadDiscoveryAgent", "leadEnrichmentAgent",
   "leadOrchestrator", "leadScoringAgent", "legalReviewAgent", "linkDocument",
   "linkedinAgent", "listDocuments", "marketingOrchestrator", "mcpServer",
