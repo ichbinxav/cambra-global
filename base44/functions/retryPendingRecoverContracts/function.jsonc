@@ -1,0 +1,18 @@
+{
+  "name": "retryPendingRecoverContracts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Recover contract delivery reconciler",
+      "description": "Retries only pending Recover contract generation/delivery every 15 minutes. Idempotent and bounded; it does not approve Recover, alter evidence, or create invoices.",
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "repeat_unit": "minutes",
+      "repeat_interval": 15,
+      "starts_at": "2026-08-09T00:00:00.000Z",
+      "ends_type": "never",
+      "function_name": "retryPendingRecoverContracts",
+      "function_args": {}
+    }
+  ]
+}
