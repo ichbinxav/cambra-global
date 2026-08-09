@@ -1,0 +1,82 @@
+{
+  "name": "AggregateCommitment",
+  "type": "object",
+  "description": "P14 explicit aggregate commitment ledger. This is the ONLY P14 source allowed to increase committed volume. Never inferred from observed/addressable demand.",
+  "properties": {
+    "commitment_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "committed_annual_volume_minor": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "explicitly_authorized",
+        "active",
+        "expired",
+        "revoked"
+      ]
+    },
+    "authority_source_type": {
+      "type": "string"
+    },
+    "authority_source_id": {
+      "type": "string"
+    },
+    "authority_snapshot_hash": {
+      "type": "string"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "commitment_key",
+    "brand_id",
+    "pool_id",
+    "vertical",
+    "currency",
+    "committed_annual_volume_minor",
+    "status",
+    "authority_source_type",
+    "authority_source_id"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
