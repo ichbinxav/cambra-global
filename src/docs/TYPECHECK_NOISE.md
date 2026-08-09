@@ -1,59 +1,41 @@
-# Typecheck — Known Noise, Not Actionable
+# Typecheck — Full repository gate
 
-## TL;DR
+## Current status
 
-`npm run typecheck:noise` emits **487 errors across 79 files**. **None are logic bugs.** They are all cosmetic-type noise from running `tsc` over JSX-without-annotations.
+As of **CAMBRA v0.65.1 (2026-08-09)**, the full JavaScript/JSX TypeScript check is clean:
 
-The Vite build **ignores this** and compiles fine. Runtime is unaffected.
+```bash
+npx tsc -p ./jsconfig.json --pretty false
+```
 
-Do NOT act on the output without reading this document first.
+Expected result: **0 errors**.
 
----
+The historical baseline debt of 516 errors has been eliminated without disabling `checkJs`, excluding files, adding blanket `@ts-nocheck`, or weakening the critical typecheck. The critical economic/ECL perimeter remains a separate zero-error gate in `tsconfig.critical.json`.
 
-## What actually happens when you run it
+## What was fixed
 
-- `tsc -p ./jsconfig.json` runs the TypeScript compiler in `allowJs`/`checkJs` mode over `.jsx` files that have zero type annotations.
-- It compares JSX prop shapes against types exported by shadcn/ui components — which are `forwardRef` wrappers exporting `RefAttributes<any>` without proper generics for children.
-- Result: 487 errors, dominated by 4 error codes:
+The old error volume was not one class of defect. The closure work fixed the underlying sources instead of increasing the baseline:
 
-| Code | Count | Meaning |
-|---|---|---|
-| TS2322 | 257 | Prop type mismatch against shadcn `RefAttributes<any>` wrappers |
-| TS2339 | 179 | Property access on `unknown` / untyped SDK responses |
-| TS2559 | 37 | Children type mismatch against shadcn wrappers |
-| TS2353 | 32 | Unknown property on JSX element (same root cause) |
+- React/shadcn/Radix wrappers now expose their real prop/ref types rather than being inferred as empty or overly narrow objects.
+- The language context declares the real two-argument translation contract.
+- Payments onboarding and payments-result helpers have explicit discriminated data/result shapes.
+- Browser-only surfaces (`import.meta.env`, Stripe JS, DOM script nodes, local storage) have explicit environment types/adapters.
+- Local component props that are genuinely optional now declare defaults/optional types.
+- State previously initialized as `{}` is initialized/typed with the fields the component actually reads.
+- A few real correctness issues surfaced by the compiler were fixed, including boolean sort arithmetic, ConnectorTile's previously-void refresh result, and terminal-rental insight availability when the authoritative current rate is missing.
 
-Sample verified by inspection (not exhaustive):
+## Release rule
 
-- `src/pages/Vault.jsx` (26 errors) → all TS2322 on children passed to `<PageHero>`, `<Select>`, `<SelectTrigger>`, `<Input>`. Not a bug.
-- `src/pages/admin/AdminActivationDetail.jsx` (5) → same pattern.
-- `src/components/onboarding/PaymentsModule.jsx` (70), `ShippingModule.jsx` (49), `SaasModule.jsx` (30) → same pattern.
-- `src/pages/Analyzer.jsx` (25), `src/components/onboarding/CompanyBlock.jsx` (20), `src/pages/Snapshot.jsx` (15) → same pattern.
+`npm run typecheck:noise` is retained only as a compatibility script name. It now runs the same full check and **must stay at 0 errors**. A future error is actionable; it is not accepted as "known noise".
 
----
+The sanctioned release gates are:
 
-## Why "fix all 487" is not on the roadmap
+- `npm run typecheck:critical` — zero errors on the high-risk economic/ECL/backend perimeter.
+- `npm run typecheck:baseline` — full-repo fingerprint gate. From v0.65.1 its approved error count is 0, so any future TypeScript diagnostic fails the release.
+- `npm run test` — runtime/unit regression suite.
+- `npm run lint` — ESLint.
+- `npm run build` — Vite production build.
 
-**Option A — fix the 5 files the previous prompt mentioned:** theater. Leaves 482 red. `npm run typecheck` still fails. Zero closed debt.
+## Historical note
 
-**Option B — fix all 487:** 4-6 hours, medium risk of propagating new type errors across shadcn wrappers used app-wide, in exchange for a green check that has never emitted a useful signal. Violates the 90-day rule: perfect typecheck over unannotated JSX is not in the 90-day critical path. Real customer data is.
-
-**Option C (adopted) — rename the script + document the reality.** No hidden false alarms in future audits. Migrating to `.tsx` gradually — file by file, only when a file's logic actually needs static types — is the correct long-term path IF and WHEN it matters. Today it doesn't.
-
----
-
-## When to revisit
-
-- If a real logic bug is ever traced back to type confusion at runtime.
-- If migrating to `.tsx` becomes strategically valuable (e.g. onboarding external engineers who benefit from IDE completions on props).
-- Not before.
-
----
-
-## What DOES emit signal in this repo
-
-- `npm run build` — Vite. Fails on real syntax / import errors.
-- `npx vitest run` — unit tests over `src/lib/` (score engine, normalizers, sync engine).
-- `npm run lint` — ESLint over `.jsx`/`.js`. Catches unused imports, missing hooks deps, real code smells.
-
-Those three ARE actionable. `typecheck:noise` is not.
+Earlier releases documented hundreds of `checkJs` diagnostics as baseline debt. That documentation is superseded by v0.65.1. The baseline mechanism remains because it provides a deterministic release invariant, but its purpose is now to enforce **zero regression from zero**, not to tolerate legacy errors.
