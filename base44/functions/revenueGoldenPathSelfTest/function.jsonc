@@ -1,0 +1,1 @@
+{"name":"revenueGoldenPathSelfTest","automations":[{"name":"Revenue golden path contract test","schedule":"0 5 * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}

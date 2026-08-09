@@ -1,0 +1,1 @@
+{"name":"realWorldValidationWorker","automations":[{"name":"Real-world pilot validation","schedule":"30 6 * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
