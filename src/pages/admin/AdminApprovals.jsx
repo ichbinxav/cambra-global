@@ -60,11 +60,18 @@ export default function AdminApprovals() {
   const handleApprove = async (approval) => {
     setBusyId(approval.id);
     try {
-      await base44.entities.Approval.update(approval.id, {
-        status: "approved",
-        approved_by: me?.email || null,
-        approved_at: new Date().toISOString(),
-      });
+      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review"].includes(approval.action_type);
+      if (commercial) {
+        const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "approve" });
+        const data = res?.data || res || {};
+        if (data.ok === false) throw new Error(data.error || "Commercial approval failed.");
+      } else {
+        await base44.entities.Approval.update(approval.id, {
+          status: "approved",
+          approved_by: me?.email || null,
+          approved_at: new Date().toISOString(),
+        });
+      }
       await load();
     } catch (e) {
       setError(e?.message || "Could not approve.");
@@ -76,12 +83,19 @@ export default function AdminApprovals() {
   const handleReject = async (approval, reason) => {
     setBusyId(approval.id);
     try {
-      await base44.entities.Approval.update(approval.id, {
-        status: "rejected",
-        approved_by: me?.email || null,
-        approved_at: new Date().toISOString(),
-        rejected_reason: reason || null,
-      });
+      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review"].includes(approval.action_type);
+      if (commercial) {
+        const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "reject", reason: reason || null });
+        const data = res?.data || res || {};
+        if (data.ok === false) throw new Error(data.error || "Commercial rejection failed.");
+      } else {
+        await base44.entities.Approval.update(approval.id, {
+          status: "rejected",
+          approved_by: me?.email || null,
+          approved_at: new Date().toISOString(),
+          rejected_reason: reason || null,
+        });
+      }
       await load();
     } catch (e) {
       setError(e?.message || "Could not reject.");
