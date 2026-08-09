@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.65.0",
-  "releaseName": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation",
+  "version": "0.65.1",
+  "releaseName": "CAMBRA v0.65.1 — Launch Security & Type Safety Hardening",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
