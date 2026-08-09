@@ -1,0 +1,140 @@
+{
+  "name": "PaymentRoutingObservation",
+  "type": "object",
+  "description": "P13 shadow-routing input observation. Stores minimized payment metadata or aggregate historical windows only; never PAN/CVV/raw processor payloads. Read/simulate only.",
+  "properties": {
+    "observation_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "integration_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "granularity": {
+      "type": "string",
+      "enum": [
+        "transaction",
+        "aggregate_window"
+      ]
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "provider_event",
+        "normalized_sync",
+        "verified_analysis",
+        "legacy_backfill"
+      ]
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "amount_minor": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "transaction_count": {
+      "type": "number"
+    },
+    "gross_volume_minor": {
+      "type": "number"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "network": {
+      "type": "string"
+    },
+    "issuer_country": {
+      "type": "string"
+    },
+    "merchant_country": {
+      "type": "string"
+    },
+    "funding_type": {
+      "type": "string"
+    },
+    "recurring_type": {
+      "type": "string"
+    },
+    "three_ds_status": {
+      "type": "string"
+    },
+    "actual_outcome": {
+      "type": "string",
+      "enum": [
+        "approved",
+        "declined",
+        "captured",
+        "settled",
+        "refunded",
+        "chargeback",
+        "unknown"
+      ]
+    },
+    "decline_category": {
+      "type": "string"
+    },
+    "observed_cost_minor": {
+      "type": "number"
+    },
+    "observed_effective_bps": {
+      "type": "number"
+    },
+    "feature_json": {
+      "type": "object"
+    },
+    "data_quality_json": {
+      "type": "object"
+    },
+    "idempotency_hash": {
+      "type": "string"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "observation_key",
+    "brand_id",
+    "provider_slug",
+    "granularity",
+    "source_type",
+    "idempotency_hash"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
