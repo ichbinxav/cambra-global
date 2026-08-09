@@ -4,7 +4,7 @@ import {
   allowlistForStage,
   P4_ALLOWLIST,
   P4_PROOF_ALLOWLIST,
-  P7_ALLOWLIST, P8_ALLOWLIST,
+  P8_ALLOWLIST,
   resolveStage,
   STAGE_ECL_P4,
   STAGE_ECL_P4_PROOF,
