@@ -5,6 +5,7 @@ import es from './locales/es.js';
 
 const dictionaries = { en, fr, es };
 const keys = Object.fromEntries(Object.entries(dictionaries).map(([lang, dict]) => [lang, Object.keys(dict).sort()]));
+const INTENTIONAL_BLANKS = new Set(['ri_sub_post','su_badge_beta']);
 
 describe('global i18n contract — EN / FR / ES', () => {
   it('keeps dictionary keys exactly in parity', () => {
@@ -14,9 +15,16 @@ describe('global i18n contract — EN / FR / ES', () => {
 
   it('does not ship empty translation values', () => {
     for (const [lang, dict] of Object.entries(dictionaries)) {
-      const empty = Object.entries(dict).filter(([, value]) => typeof value !== 'string' || value.trim().length === 0).map(([key]) => `${lang}:${key}`);
-      expect(empty).toEqual([]);
+      const invalid = Object.entries(dict).filter(([key, value]) => {
+        if (INTENTIONAL_BLANKS.has(key)) return value !== '';
+        return typeof value !== 'string' || value.trim().length === 0;
+      }).map(([key]) => `${lang}:${key}`);
+      expect(invalid).toEqual([]);
     }
+  });
+
+  it('keeps intentional semantic blanks identical across locales', () => {
+    for (const key of INTENTIONAL_BLANKS) for (const dict of Object.values(dictionaries)) expect(dict[key]).toBe('');
   });
 
   it('keeps the supported language contract fixed to the launch locales', () => {
