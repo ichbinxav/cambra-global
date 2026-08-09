@@ -1,7 +1,7 @@
 {
   "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 — these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
   "frozenAt": "2026-08-06",
-  "stage": "ECL_P5_ECONOMIC_ENFORCEMENT",
+  "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "stageComment": "v0.64.0 — ECL P5 Economic Enforcement. P1/P2/P3/P4/Production Proof remain authoritative. P5 makes canonical ECL gates mandatory at Recover economic boundaries: verified baseline use, proposal/acceptance, report approval and invoice creation. Server-resolved Stripe evidence is materialized as SavingsEvidence through the canonical eclProcessEvidence engine; merchant acceptance creates an explicit EvidenceAttestation bound to the exact evidence id/checksum shown. Invoice creation rechecks ECL immediately before the first economic write and freezes ECL provenance into Stripe metadata and billing_snapshot_json. No economic schema is widened; failures are fail-closed.",
   "allowlist": [
     "base44/entities/StatementImport.jsonc",
@@ -51,7 +51,17 @@
     "base44/functions/generateMonthlySavingsReport/entry.ts",
     "base44/functions/approveRecoverReportForInvoicing/entry.ts",
     "base44/functions/createEligibleRecoverInvoices/entry.ts",
-    "src/lib/eclP5Closure.test.js"
+    "src/lib/eclP5Closure.test.js",
+    "base44/shared/economicExecution.ts",
+    "base44/entities/Invoice.jsonc",
+    "base44/entities/PaymentEvent.jsonc",
+    "base44/functions/stripeBillingWebhook/entry.ts",
+    "base44/functions/reconcileRecoverBilling/entry.ts",
+    "base44/functions/reconcileRecoverBilling/function.jsonc",
+    "base44/functions/reconcileInvoice/entry.ts",
+    "base44/functions/recordPayment/entry.ts",
+    "base44/functions/createPaymentLink/entry.ts",
+    "src/lib/eclP6Closure.test.js"
   ],
   "entries": [
     {
