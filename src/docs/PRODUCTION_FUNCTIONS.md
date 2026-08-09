@@ -127,6 +127,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | commercialReplyAgent | B/internal · gate | CommunicationThread, CommunicationMessage, CommercialPolicy, Approval, AgentTask | Clasifica reply; routine reply solo dentro de policy; unsubscribe stop; L4 crea Approval; provider offers pasan al negotiation case |
 | startProviderNegotiation | B/internal · gate | DealActivation, Mandate, Provider, CommercialPolicy, NegotiationCase, CommunicationThread | Solo Recover payments autorizado + Mandate active con `renegotiate_with_provider=true`; provider CRM/contact + policy obligatorios |
 | providerNegotiationAgent | B/internal · gate | NegotiationCase, NegotiationOffer, CommunicationThread, CommunicationMessage, Approval, AgentTask | Multi-round pricing; estructura offers; puede contraofertar; final/material/max-round/target alcanzado → L4 Approval, nunca autoacepta |
+| reviewProviderContract | B/internal · gate | NegotiationCase, NegotiationOffer, Approval, AgentTask | Extracts contract terms from supplied contract text and deterministically compares against approved offer; mismatch/unusual clause → L4; never executes/signs |
 | resolveCommercialApproval | B · admin | Approval, NegotiationCase, NegotiationOffer, DealActivation, Mandate, CommunicationThread, OperationalLog | Revalida offer vigencia + Recover + mismo Mandate antes de aprobar; aprobación comercial no firma contrato ni hace go-live |
 
 ## B — Admin / founder-OS interno (79)
