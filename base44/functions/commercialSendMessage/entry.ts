@@ -1,13 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
-
-function noLlmTics(text:string) {
-  const t = String(text || '');
-  if (!t.trim() || t.length > 5000) return false;
-  if (/\b(as an ai|language model|i hope this email finds you well|delve into|revolutionize|game-changer)\b/i.test(t)) return false;
-  return true;
-}
+import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -23,7 +16,6 @@ Deno.serve(async (req) => {
     const subject = sanitizeExternalText(body?.subject, 300);
     const text = sanitizeExternalText(body?.text, 5000);
     if (!threadId || !subject || !text) return Response.json({ ok:false, error:'thread_subject_text_required' }, { status:400 });
-    if (!noLlmTics(text)) return Response.json({ ok:false, error:'communication_quality_gate_failed' }, { status:422 });
 
     const thread = await svc.entities.CommunicationThread.get(threadId).catch(()=>null);
     if (!thread || ['closed','suppressed'].includes(thread.status)) return Response.json({ ok:false, error:'thread_unavailable' }, { status:409 });
@@ -39,6 +31,7 @@ Deno.serve(async (req) => {
     const policies = await svc.entities.CommercialPolicy.filter({ policy_key:thread.policy_key, status:'active' }, '-created_date', 5).catch(()=>[]);
     const policy = policies.find((p:any)=>p.version === thread.policy_version) || policies[0] || null;
     const manualOverride = gate.isAdmin && body?.manual_override === true;
+    const timezone = commercialTimezone(thread, policy);
     const automatic = !manualOverride;
     if (automatic) {
       if (!policyIsActive(policy)) return Response.json({ ok:false, error:'active_policy_required' }, { status:409 });
@@ -46,7 +39,14 @@ Deno.serve(async (req) => {
       if (!authz.allowed) return Response.json({ ok:false, error:authz.reason, escalation_required:true }, { status:409 });
       if (thread.automation_paused) return Response.json({ ok:false, error:'thread_automation_paused' }, { status:409 });
       if (!gate.isInternal) return Response.json({ ok:false, error:'internal_autonomy_proof_required' }, { status:403 });
+      if (!isBusinessHour(policy,new Date(),timezone)) return Response.json({ok:false,error:'outside_business_hours'},{status:409});
+      const inboundId=String(body?.in_reply_to_message_id||'');
+      if(inboundId){ const inbound=await svc.entities.CommunicationMessage.get(inboundId).catch(()=>null); if(!inbound||inbound.thread_id!==thread.id||inbound.direction!=='inbound')return Response.json({ok:false,error:'invalid_inbound_reply_reference'},{status:409}); const earliest=Date.parse(inbound.earliest_reply_at||''); const scheduled=Date.parse(inbound.scheduled_send_at||''); const nowMs=Date.now(); if(!Number.isFinite(earliest)||nowMs<earliest)return Response.json({ok:false,error:'minimum_reply_delay_not_elapsed',earliest_reply_at:inbound.earliest_reply_at},{status:409}); if(Number.isFinite(scheduled)&&nowMs<scheduled)return Response.json({ok:false,error:'scheduled_send_not_due',scheduled_send_at:inbound.scheduled_send_at},{status:409}); }
     }
+
+    const previousOut=await svc.entities.CommunicationMessage.filter({thread_id:thread.id,direction:'outbound'},'-created_date',6).catch(()=>[]);
+    const quality=communicationQuality(text,{previous_outbound:previousOut.map((m:any)=>String(m.text_body||''))});
+    if(!quality.ok)return Response.json({ok:false,error:'communication_quality_gate_failed',quality},{status:422});
 
     const idempotency = String(body?.idempotency_key || `cambra:${thread.id}:${action}:${thread.last_inbound_at || thread.last_message_at || 'start'}`);
     const existing = await svc.entities.CommunicationMessage.filter({ thread_id:thread.id, direction:'outbound', idempotency_key:idempotency }, '-created_date', 1).catch(()=>[]);
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     const message = await svc.entities.CommunicationMessage.create({
       thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency,
       from_email:fromAddress, to_emails:[to], subject, text_body:text, classification, agent_name:String(body?.agent_name || 'commercial_orchestrator'), policy_key:thread.policy_key,
-      policy_version:thread.policy_version, approval_id:body?.approval_id || null, send_status:'sent', sent_at:now, raw_event_json:raw
+      policy_version:thread.policy_version, approval_id:body?.approval_id || null, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
     });
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_counterparty', external_thread_id:externalThreadId, last_outbound_at:now, last_message_at:now, next_action_at:body?.next_action_at || null });
     return Response.json({ ok:true, message_id:message.id, provider_message_id:providerMessageId, provider, external_thread_id:externalThreadId });

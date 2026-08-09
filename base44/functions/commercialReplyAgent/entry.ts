@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { L4_CLASSIFICATIONS, SAFE_ROUTINE_CLASSIFICATIONS, classifyHardStop, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { L4_CLASSIFICATIONS, SAFE_ROUTINE_CLASSIFICATIONS, classifyHardStop, communicationQuality, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
 async function callClaude(prompt:string) {
   const key = Deno.env.get('ANTHROPIC_API_KEY');
@@ -59,6 +59,7 @@ Deno.serve(async (req)=>{
     }
 
     if(thread.engine==='merchant_acquisition'&&classification==='meeting'){
+      const due=Date.parse(message.scheduled_send_at||message.earliest_reply_at||''); if(!Number.isFinite(due)||Date.now()<due){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',next_action_at:message.scheduled_send_at||message.earliest_reply_at});await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:'Meeting intent queued behind deterministic reply timing gate',output_payload_json:{classification,earliest_reply_at:message.earliest_reply_at,scheduled_send_at:message.scheduled_send_at},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,classification,automatic:true,queued:true,scheduled_send_at:message.scheduled_send_at});}
       const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
       const scheduled=await svc.functions.invoke('outlookMeetingCoordinator',{thread_id:thread.id,attendee_email:message.from_email,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
       const sd=scheduled?.data||scheduled||{};
@@ -97,6 +98,9 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,approval_id:approval.id,escalated:true});
     }
 
+    let quality=communicationQuality(String(result.reply_body||''));
+    if(result.response_required&& !quality.ok){ const retryPrompt=['Rewrite this CAMBRA reply so it is concise, contextual and natural. Preserve facts, intent and language. No generic opener, no corporate filler, no unnecessary list, no invented identity. Return ONLY JSON {\"reply_subject\":\"...\",\"reply_body\":\"...\"}.',JSON.stringify({subject:result.reply_subject,body:result.reply_body,quality_reasons:quality.reasons})].join('\n'); const retry=parseJson(await callClaude(retryPrompt)); if(retry?.reply_body){result.reply_body=retry.reply_body;result.reply_subject=retry.reply_subject||result.reply_subject;quality=communicationQuality(String(result.reply_body||''));} if(!quality.ok){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'communication_quality_gate_failed'});await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:'Reply failed communication quality gate after regeneration',output_payload_json:{classification,quality},completed_at:new Date().toISOString()});return Response.json({ok:true,automatic:false,escalated:true,error:'communication_quality_gate_failed',quality});}}
+
     const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]); const policy=policies.find((p:any)=>p.version===thread.policy_version)||policies[0]||null;
     const action=String(result.action||'routine_reply'); const authz=routineActionAllowed(policy,action,classification);
     if(!policyIsActive(policy)||!SAFE_ROUTINE_CLASSIFICATIONS.has(classification)||!authz.allowed||!result.response_required){
@@ -105,8 +109,10 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,automatic:false,reason:authz.reason});
     }
 
+    const due=Date.parse(message.scheduled_send_at||message.earliest_reply_at||'');
+    if(!Number.isFinite(due)||Date.now()<due){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:false,pause_reason:null,next_action_at:message.scheduled_send_at||message.earliest_reply_at});await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Autonomous ${classification} reply drafted and queued behind deterministic timing gate`,output_payload_json:{classification,action,earliest_reply_at:message.earliest_reply_at,scheduled_send_at:message.scheduled_send_at,quality},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,classification,automatic:true,queued:true,scheduled_send_at:message.scheduled_send_at});}
     const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
-    const send=await svc.functions.invoke('commercialSendMessage',{ thread_id:thread.id, action, classification, subject:sanitizeExternalText(result.reply_subject||`Re: ${message.subject||''}`,300), text:sanitizeExternalText(result.reply_body||'',5000), agent_name:'commercial_reply', idempotency_key:`reply:${message.id}:${policy.version}`, internal_secret:internal });
+    const send=await svc.functions.invoke('commercialSendMessage',{ thread_id:thread.id, action, classification, subject:sanitizeExternalText(result.reply_subject||`Re: ${message.subject||''}`,300), text:sanitizeExternalText(result.reply_body||'',5000), agent_name:'commercial_reply', idempotency_key:`reply:${message.id}:${policy.version}`, in_reply_to_message_id:message.id, internal_secret:internal });
     const sendData=send?.data||send||{};
     if(sendData?.ok===false)throw new Error(`commercial_send_rejected:${sendData?.error||'unknown'}`);
     await svc.entities.CommunicationThread.update(thread.id,{classification,automation_paused:false,pause_reason:null});
