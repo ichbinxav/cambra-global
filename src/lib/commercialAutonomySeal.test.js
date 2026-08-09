@@ -89,6 +89,14 @@ describe("commercial autonomy static boundaries", () => {
     expect(src).toContain("migration_go_live:false");
   });
 
+  it("contract mismatch is deterministic and cannot execute the contract", () => {
+    const src = read("base44/functions/reviewProviderContract/entry.ts");
+    expect(src).toContain("approved_offer_required_before_contract_review");
+    expect(src).toContain("contract_match_status:status");
+    expect(src).toContain("action_type:status==='mismatch'?'contract_mismatch':'contract_exception'");
+    expect(src).toContain("contract_execution:false");
+  });
+
   it("hourly acquisition remains fail-closed without active policy", () => {
     const cfg = read("base44/functions/autonomousCommercialWorker/function.jsonc");
     const src = read("base44/functions/autonomousCommercialWorker/entry.ts");
