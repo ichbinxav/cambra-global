@@ -1,0 +1,71 @@
+{
+  "name": "AgentPerformanceMetric",
+  "type": "object",
+  "description": "Daily measured AI/automation performance. Advisory operational telemetry; no metric can widen agent authority.",
+  "properties": {
+    "metric_key": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": "string"
+    },
+    "window_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "task_count": {
+      "type": "number"
+    },
+    "success_rate": {
+      "type": "number"
+    },
+    "escalation_rate": {
+      "type": "number"
+    },
+    "error_rate": {
+      "type": "number"
+    },
+    "override_rate": {
+      "type": "number"
+    },
+    "revenue_influenced": {
+      "type": "number"
+    },
+    "time_saved_minutes": {
+      "type": "number"
+    },
+    "customer_impact_json": {
+      "type": "object"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "methodology_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "metric_key",
+    "agent_name",
+    "task_count",
+    "calculated_at",
+    "methodology_version"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

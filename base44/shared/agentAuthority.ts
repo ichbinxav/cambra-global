@@ -1,0 +1,15 @@
+export type AgentAuthority={CAN_READ:boolean,CAN_WRITE:boolean,CAN_SEND:boolean,CAN_NEGOTIATE:boolean,CAN_SCHEDULE:boolean,CAN_EXECUTE:boolean,CAN_APPROVE:boolean,CAN_SIGN:boolean,CAN_SPEND:boolean,CAN_CHARGE:boolean};
+export const DEFAULT_AGENT_AUTHORITY:Object=Object.freeze({CAN_READ:false,CAN_WRITE:false,CAN_SEND:false,CAN_NEGOTIATE:false,CAN_SCHEDULE:false,CAN_EXECUTE:false,CAN_APPROVE:false,CAN_SIGN:false,CAN_SPEND:false,CAN_CHARGE:false});
+const A=(x:Partial<AgentAuthority>)=>Object.freeze({...DEFAULT_AGENT_AUTHORITY,...x});
+export const AGENT_AUTHORITY_MATRIX:Record<string,AgentAuthority>=Object.freeze({
+ lead_discovery:A({CAN_READ:true,CAN_WRITE:true}),lead_enrichment:A({CAN_READ:true,CAN_WRITE:true}),lead_scoring:A({CAN_READ:true,CAN_WRITE:true}),
+ outbound_volume_worker:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_EXECUTE:true}),commercial_reply:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_SCHEDULE:true,CAN_EXECUTE:true}),
+ provider_negotiation:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_NEGOTIATE:true,CAN_SCHEDULE:true,CAN_EXECUTE:true}),collective_negotiation:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_NEGOTIATE:true,CAN_SCHEDULE:true,CAN_EXECUTE:true}),
+ aggregate_demand:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),aggregate_procurement:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_NEGOTIATE:true,CAN_EXECUTE:true}),tier_progression:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_EXECUTE:true}),
+ shadow_routing:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),routing_performance:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),
+ onboarding_concierge:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_EXECUTE:true}),recover_autopilot:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),collection_operations:A({CAN_READ:true,CAN_WRITE:true,CAN_SEND:true,CAN_EXECUTE:true}),
+ autonomous_operations_supervisor:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),knowledge_integrity:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),moat_curator:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),
+ developer_migration:A({CAN_READ:true,CAN_WRITE:true,CAN_EXECUTE:true}),founder_copilot:A({CAN_READ:true}),
+});
+export function authorityForAgent(name:string):AgentAuthority{return AGENT_AUTHORITY_MATRIX[String(name||'').toLowerCase()]||DEFAULT_AGENT_AUTHORITY as AgentAuthority}
+export function assertNoMaterialAuthority(){for(const [name,a]of Object.entries(AGENT_AUTHORITY_MATRIX)){if(a.CAN_APPROVE||a.CAN_SIGN||a.CAN_SPEND||a.CAN_CHARGE)throw new Error(`material_authority_forbidden:${name}`)}return true}
