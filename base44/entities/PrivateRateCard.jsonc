@@ -1,0 +1,103 @@
+{
+  "name": "PrivateRateCard",
+  "type": "object",
+  "description": "P14 confidential CAMBRA private-rate intelligence. Distinct from public ProviderPricingVersion and never exposed as raw cross-tenant pricing.",
+  "properties": {
+    "rate_key": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "tier_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "vertical": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "segment_json": {
+      "type": "object"
+    },
+    "variable_rate_bps": {
+      "type": "number"
+    },
+    "fixed_fee_minor": {
+      "type": "number"
+    },
+    "monthly_fee_minor": {
+      "type": "number"
+    },
+    "pricing_model": {
+      "type": "string"
+    },
+    "volume_requirements_json": {
+      "type": "object"
+    },
+    "restrictions_json": {
+      "type": "object"
+    },
+    "merchant_underwriting_required": {
+      "type": "boolean",
+      "default": true
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "superseded",
+        "expired"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "rate_key",
+    "agreement_id",
+    "tier_id",
+    "provider_id",
+    "provider_slug",
+    "vertical",
+    "currency",
+    "status",
+    "effective_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
