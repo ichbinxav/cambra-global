@@ -14,7 +14,7 @@ import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
 import { recoveryEconomicsCopy, recoveryEconomicsAcceptanceText, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
-import { PRODUCT_POLICY } from '../../shared/generated/productPolicy.ts';
+import { PRODUCT_POLICY, getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
   MANDATE_DOCUMENT_VERSION,
@@ -69,7 +69,7 @@ export default async function (req: Request): Promise<Response> {
         deal_activation_id: activation.id,
         brand_id: activation.brand_id,
         provider_id: activation.provider_id,
-        fallbackPct: activation.node_share_percent ?? 25,
+        fallbackPct: activation.node_share_percent ?? getSuccessFeePct(),
       },
       month,
     );
