@@ -114,6 +114,7 @@ export default async function (req: Request): Promise<Response> {
       organization_id: activation.brand_id || '',
       deal_activation_id: activation.id,
       activation_status: activation.status,
+      payment_method_status: activation.payment_method_status || 'none',
       fee_pct: Number(fee.pct),
       month,
       baseline: baseline
