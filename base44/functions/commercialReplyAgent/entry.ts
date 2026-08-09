@@ -58,6 +58,19 @@ Deno.serve(async (req)=>{
       return Response.json({ok:true,task_id:task.id,classification,stopped:true});
     }
 
+    if(thread.engine==='merchant_acquisition'&&classification==='meeting'){
+      const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+      const scheduled=await svc.functions.invoke('outlookMeetingCoordinator',{thread_id:thread.id,attendee_email:message.from_email,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
+      const sd=scheduled?.data||scheduled||{};
+      if(sd.ok===false){
+        await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:sd.error||'meeting_scheduling_failed',classification});
+        await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:`Meeting requested but real calendar scheduling is unavailable`,output_payload_json:{classification,scheduling:sd},completed_at:new Date().toISOString()});
+        return Response.json({ok:true,task_id:task.id,classification,automatic:false,meeting:sd});
+      }
+      await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:'Meeting booked automatically from real Outlook availability',output_payload_json:{classification,meeting:sd},completed_at:new Date().toISOString()});
+      return Response.json({ok:true,task_id:task.id,classification,automatic:true,meeting:sd});
+    }
+
     if(thread.engine==='provider_negotiation'&&['offer','counteroffer'].includes(classification)){
       const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
       const run=await svc.functions.invoke('providerNegotiationAgent',{action:'process_offer',case_id:thread.related_entity_id,message_id:message.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
