@@ -46,6 +46,17 @@
       "items": {
         "type": "string"
       }
+    },
+    "website": {
+      "type": "string"
+    },
+    "contact_resolution_status": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "resolved",
+        "unresolved"
+      ]
     }
   },
   "required": [
