@@ -18,7 +18,7 @@
 // Stripe idempotency keys (`r4:inv:*:${report.id}`). Same activation+month
 // with a DIFFERENT report → typed conflict, no reuse, no pointer repair.
 // Stripe's finalized `number` is THE legal number (§19).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveBillingMode, stripeRequest } from '../../shared/stripeBilling.ts';
 import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
@@ -27,6 +27,7 @@ import { hashCalculation } from '../../shared/recoverBillingMath.ts';
 import { monthBounds } from '../../shared/billingFee.ts';
 import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecoverInvoice.ts';
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { appendPaymentEventOnce, claimRecoverInvoiceDraft, recoverExecutionKey } from '../../shared/economicExecution.ts';
 
 const BATCH = 5;
 
@@ -226,10 +227,14 @@ export default async function (req: Request): Promise<Response> {
           continue;
         }
 
-        // ── PHASE 3 — local draft (durable state before any Stripe call) ─
+        // ── PHASE 3 — local execution claim before any Stripe call ───────
+        // P6: Stripe idempotency already prevents a duplicate remote invoice,
+        // but the local mirror also needs a deterministic claim. Sequential
+        // retries reuse the same execution_key; concurrent duplicate drafts are
+        // collapsed on re-read. A committed duplicate is NEVER auto-deleted.
         let inv = prep.resume ? (existing || []).find((i: any) => String(i.id) === prep.resume!.invoice_id) : null;
         if (!inv) {
-          inv = await svc.entities.Invoice.create({
+          const claim = await claimRecoverInvoiceDraft(svc, recoverExecutionKey(report.id), {
             deal_activation_id: activation.id,
             brand_id: activation.brand_id,
             provider_id: activation.provider_id || '',
@@ -240,6 +245,7 @@ export default async function (req: Request): Promise<Response> {
             month: report.month,
             currency: 'EUR',
             status: 'draft',
+            reconciliation_status: 'pending',
             payment_provider: 'stripe',
             processor_customer_id: brand.stripe_customer_id,
             tax_treatment: tax.treatment,
@@ -264,11 +270,11 @@ export default async function (req: Request): Promise<Response> {
             discount_type: amounts.discount_pct > 0 ? 'referral_commercial_discount' : '',
             discount_amount: amounts.discount_pct > 0 ? Math.round((amounts.billable_savings_minor * amounts.discount_pct) / 100) / 100 : 0,
             prenotification_status: 'provider_managed',
-            // v61 — provenance frozen at draft creation, from the pure core.
             policy_version: prep.policyVersion || undefined,
             policy_source: prep.policySource || undefined,
             snapshot_hash: prep.snapshotHash || undefined,
           });
+          inv = claim.invoice;
         }
 
         // ── PHASE 4 — Stripe (idempotent per step, keys from report id) ──
@@ -299,7 +305,7 @@ export default async function (req: Request): Promise<Response> {
           }, `r4:inv:create:${report.id}`);
           if (!created.ok) { outcome.error = `stripe_invoice_create_failed:${created.data?.error?.code || created.status}`; continue; }
           stripeInvoiceId = created.data.id;
-          await svc.entities.Invoice.update(inv.id, { stripe_invoice_id: stripeInvoiceId, stripe_invoice_status: created.data.status || 'draft' });
+          await svc.entities.Invoice.update(inv.id, { stripe_invoice_id: stripeInvoiceId, stripe_invoice_status: created.data.status || 'draft', reconciliation_status: 'pending' });
         }
 
         // Line item (skipped if already present — resume-safe via Stripe idempotency).
@@ -384,6 +390,7 @@ export default async function (req: Request): Promise<Response> {
           policy_version: prep.policyVersion || undefined,
           snapshot_hash: prep.snapshotHash || undefined,
           policy_source: prep.policySource || undefined,
+          reconciliation_status: 'pending',
         });
         await svc.entities.MonthlySavingsReport.update(report.id, {
           billing_eligibility_status: 'invoiced',
@@ -394,7 +401,7 @@ export default async function (req: Request): Promise<Response> {
         if (!activation.first_invoice_issued_at) {
           await svc.entities.DealActivation.update(activation.id, { first_invoice_issued_at: now() }).catch(() => null);
         }
-        await svc.entities.PaymentEvent.create({
+        await appendPaymentEventOnce(svc, `p6:invoice-issued:${inv.id}:${stripeInvoiceId}`, {
           invoice_id: inv.id,
           brand_id: activation.brand_id,
           amount: amounts.total_eur,
@@ -404,7 +411,7 @@ export default async function (req: Request): Promise<Response> {
           processor_ref: stripeInvoiceId,
           metadata_json: { month: report.month, number: finalized.number || '', mode },
           occurred_at: now(),
-        }).catch(() => null);
+        });
         await svc.entities.OperationalLog.create({
           deal_activation_id: activation.id,
           brand_id: activation.brand_id,
