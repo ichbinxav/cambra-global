@@ -1,5 +1,5 @@
 import { FLOOR_FEE_PCT, feeForActivated, nextFeePct } from "@/lib/referralProgram";
-import { effectiveFee } from "../../../base44/shared/recoveryEconomicsV2.ts";
+import { effectiveRecoverFeeForPhase } from "@/lib/recoveryEconomicsV2";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 // REFERRAL-1 — the merchant's own state: current fee, activated referrals,
@@ -10,10 +10,10 @@ export default function ReferralFeeStatus({ activatedCount, timesUsed, economics
   const isV2 = economicsVersion === "recover-economics-v2";
   const legacyFee = feeForActivated(activatedCount);
   const legacyNext = nextFeePct(activatedCount);
-  const year1Fee = effectiveFee(25, activatedCount);
-  const year2Fee = effectiveFee(15, activatedCount);
-  const nextYear1 = year1Fee > FLOOR_FEE_PCT ? effectiveFee(25, activatedCount + 1) : null;
-  const nextYear2 = year2Fee > FLOOR_FEE_PCT ? effectiveFee(15, activatedCount + 1) : null;
+  const year1Fee = effectiveRecoverFeeForPhase(25, activatedCount);
+  const year2Fee = effectiveRecoverFeeForPhase(15, activatedCount);
+  const nextYear1 = year1Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(25, activatedCount + 1) : null;
+  const nextYear2 = year2Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(15, activatedCount + 1) : null;
 
   const tiles = isV2 ? [
     { label: t("ref_fee_y1_label"), value: `${year1Fee}%` },
