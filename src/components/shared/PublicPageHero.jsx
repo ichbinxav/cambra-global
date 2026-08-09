@@ -17,7 +17,7 @@ import { motion } from "framer-motion";
  *  - children: node    → optional CTA row / extra content under subtitle
  *  - align: "center" | "left" (default "center")
  */
-export default function PublicPageHero({ eyebrow, title, subtitle, children, align = "center" }) {
+export default function PublicPageHero({ eyebrow, title, subtitle, children = null, align = "center" }) {
   const isCenter = align === "center";
   return (
     <div className="px-5 pt-28 sm:pt-32">
