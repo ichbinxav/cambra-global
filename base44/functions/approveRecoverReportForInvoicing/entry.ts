@@ -19,6 +19,7 @@ import {
 import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee, periodOverlapsTerm } from '../../shared/recoveryEconomicsV2.ts';
 
 // v60.2 — the standard fee comes from the resolved contract policy (the
 // accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
@@ -88,17 +89,20 @@ export default async function (req: Request): Promise<Response> {
       for (const reason of eclApproveGate.reasons) block('blocked_missing_evidence', `ecl_approve_report:${reason}`);
     }
 
-    // Contractual calendar (§6–§7).
+    // Contractual calendar. V1 keeps its original full-month calendar.
+    // V2 is an exact 24-month term from verified conditions activation and can
+    // segment a verified partial period at activation / month 12 / month 24.
+    const isEconomicsV2 = mandate?.acceptance_snapshot_json?.recovery_economics?.version === RECOVERY_ECONOMICS_V2;
+    const reportPeriod = reportPeriodBounds(report.month, report.effective_start || null, report.effective_end || null);
     if (!activation.conditions_activated_at) {
       block('blocked_contract', 'conditions_activated_at_missing');
+    } else if (isEconomicsV2) {
+      if (!periodOverlapsTerm(reportPeriod.start, reportPeriod.endExclusive, activation.conditions_activated_at)) {
+        block('blocked_contract', 'outside_recovery_term');
+      }
     } else {
       const window = monthBillableWindow(report.month, activation.conditions_activated_at);
-      // `=== false` (not `!`): strict:false does not narrow on truthiness.
-      if (window.billable === false) {
-        // Destructured INSIDE the guard so MonthEligibility narrows.
-        const { reason } = window;
-        block('blocked_contract', reason);
-      }
+      if (window.billable === false) { const { reason } = window; block('blocked_contract', reason); }
     }
 
     // ── Measurement quality (§9) ──────────────────────────────────────────
@@ -155,10 +159,17 @@ export default async function (req: Request): Promise<Response> {
       provider_id: activation.provider_id || null,
       fallbackPct: Number.isFinite(acceptedPct) ? acceptedPct : Number(activation.node_share_percent || STANDARD_FEE_PCT),
     }, report.month);
-    const effectivePct = Math.min(
-      Number.isFinite(acceptedPct) ? acceptedPct : STANDARD_FEE_PCT,
-      Number(monthFee.pct),
-    );
+    const v2Economics = isEconomicsV2 && activation.conditions_activated_at
+      ? periodEconomicsV2({
+          activationIso: activation.conditions_activated_at,
+          periodStart: reportPeriod.start,
+          periodEndExclusive: reportPeriod.endExclusive,
+          activatedReferrals: referralCountFromYear1EquivalentFee(monthFee.pct),
+        })
+      : null;
+    const effectivePct = v2Economics
+      ? v2Economics.effective_fee_pct
+      : Math.min(Number.isFinite(acceptedPct) ? acceptedPct : STANDARD_FEE_PCT, Number(monthFee.pct));
     // v60.2 immutability guard — a re-approval must not silently change the
     // provenance. If the report was already approved with a fee, the new
     // effective fee must match; a mismatch means the contract moved underneath
@@ -171,7 +182,9 @@ export default async function (req: Request): Promise<Response> {
     // view), not the hardcoded 25. For current contracts this is 25; for a
     // future policy B contract it would be 30. A contractual 0 is preserved.
     const econView = buildContractEconomicView({ resolvedContractPolicy: contractResolved, mandate });
-    const standardFeePctForAmounts = contractResolved.resolvable ? econView.standardFeePct : STANDARD_FEE_PCT;
+    const standardFeePctForAmounts = v2Economics
+      ? v2Economics.standard_fee_pct
+      : (contractResolved.resolvable ? econView.standardFeePct : STANDARD_FEE_PCT);
 
     // ── Amounts (integer cents, §10) ──────────────────────────────────────
     const savings = Number(report.savings || 0);
@@ -238,6 +251,7 @@ export default async function (req: Request): Promise<Response> {
       fee_source: monthFee.source,
       billing_rule_id: monthFee.rule_id,
       accepted_fee_pct: acceptedPct,
+      recovery_economics: v2Economics || undefined,
       tax_treatment_preview: taxDecision.treatment,
     };
     const calcHash = await hashCalculation(calcPayload);

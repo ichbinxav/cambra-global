@@ -101,3 +101,32 @@ export function recoveryEconomicsSnapshot() {
     legal_review_required: ['survival_after_termination','data_provision_obligations','verification_after_disconnection','billing_authorization_survival','dispute_process','savings_attribution','governing_law','france_spain_enforceability'],
   };
 }
+
+export function reportPeriodBounds(month: string, effectiveStart?: string | null, effectiveEnd?: string | null) {
+  const [y,m]=String(month).split('-').map(Number);
+  if (!y || !m) throw new Error('invalid_report_month');
+  const monthStart=`${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-01`;
+  const nextMonth = new Date(Date.UTC(y, m, 1)).toISOString().slice(0,10);
+  const start = effectiveStart && effectiveStart > monthStart ? effectiveStart : monthStart;
+  let endExclusive = nextMonth;
+  if (effectiveEnd) {
+    const d = new Date(`${effectiveEnd}T00:00:00Z`);
+    if (Number.isNaN(d.getTime())) throw new Error('invalid_effective_end');
+    d.setUTCDate(d.getUTCDate()+1);
+    const candidate=d.toISOString().slice(0,10);
+    if (candidate < endExclusive) endExclusive=candidate;
+  }
+  return { start, endExclusive };
+}
+
+export function referralCountFromYear1EquivalentFee(monthRulePct: number | null | undefined) {
+  const pct=Number(monthRulePct);
+  if (!Number.isFinite(pct)) return 0;
+  const discount=Math.max(0, YEAR1_FEE_PCT-pct);
+  return Math.max(0, Math.round(discount/REFERRAL_STEP_PCT));
+}
+
+export function periodOverlapsTerm(periodStart:string, periodEndExclusive:string, activationIso:string) {
+  const term=recoveryTermFromActivation(activationIso);
+  return periodStart < term.endExclusive && periodEndExclusive > term.start;
+}

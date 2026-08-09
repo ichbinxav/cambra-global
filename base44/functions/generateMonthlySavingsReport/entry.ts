@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
+import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee } from '../../shared/recoveryEconomicsV2.ts';
 import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
 import { assertProductionEnabledVertical, ProductScopeError } from '../../shared/productScopeGuard.ts';
 import { ensureRecoverSavingsEvidence } from '../../shared/eclRecoverEvidence.ts';
@@ -205,18 +206,23 @@ Deno.serve(async (req) => {
           // to the LIVE policy — the NaN makes that path detectable below.
           fallbackPct: fallbackPct === null ? Number.NaN : fallbackPct,
         }, month);
-        const nodeSharePct = Number(feeRes.pct);
+        let nodeSharePct = Number(feeRes.pct);
         if (!Number.isFinite(nodeSharePct)) {
           errors.push({ deal_id: deal.id, reason: 'fee_unresolvable_no_rule_no_contract' });
           continue;
         }
+        const isEconomicsV2 = mandateRow?.acceptance_snapshot_json?.recovery_economics?.version === RECOVERY_ECONOMICS_V2;
+        let recoveryEconomics:any = null;
+        if (isEconomicsV2 && deal.conditions_activated_at) {
+          const period = reportPeriodBounds(month);
+          recoveryEconomics = periodEconomicsV2({ activationIso: deal.conditions_activated_at, periodStart: period.start, periodEndExclusive: period.endExclusive, activatedReferrals: referralCountFromYear1EquivalentFee(feeRes.pct) });
+          nodeSharePct = recoveryEconomics.effective_fee_pct;
+        }
         const billable = (measurementMode === 'fully_verified' || measurementMode === 'estimated_from_partial_data');
         const nodeFee = billable ? Math.max(0, savingsMonthly * (nodeSharePct / 100)) : 0;
         snapshot = {
-          ...snapshot,
-          fee_pct: nodeSharePct,
-          fee_source: feeRes.source,
-          billing_rule_id: feeRes.rule_id,
+          ...snapshot, fee_pct: nodeSharePct, fee_source: feeRes.source, billing_rule_id: feeRes.rule_id,
+          ...(recoveryEconomics ? { recovery_economics: recoveryEconomics } : {}),
         };
 
         // Confidence score
