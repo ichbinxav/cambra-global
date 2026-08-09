@@ -32,6 +32,8 @@ Deno.serve(async (req) => {
         engine,
         status: 'draft',
         countries: Array.isArray(body?.countries) ? body.countries.slice(0, 20) : ['FR','ES'],
+        icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : {},
+        excluded_domains: Array.isArray(body?.excluded_domains) ? body.excluded_domains.map((x:any)=>String(x).toLowerCase()).slice(0,200) : [],
         languages: Array.isArray(body?.languages) ? body.languages.filter((x:any)=>['en','fr','es'].includes(x)) : ['en','fr','es'],
         daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 200)),
         min_lead_score: Math.max(0, Math.min(Number(body?.min_lead_score) || 70, 100)),
@@ -60,6 +62,7 @@ Deno.serve(async (req) => {
       const now = new Date().toISOString();
       const snapshot = {
         engine: policy.engine, version: policy.version, countries: policy.countries || [], languages: policy.languages || [],
+        icp_json: policy.icp_json || {}, excluded_domains: policy.excluded_domains || [],
         daily_send_limit: policy.daily_send_limit, min_lead_score: policy.min_lead_score,
         allowed_routine_actions: policy.allowed_routine_actions || [], prohibited_actions: policy.prohibited_actions || [],
         style_policy_version: policy.style_policy_version
