@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       const version = String(body?.version || `2026.08.09-${engine}-v1`);
       const allowedDefault = engine === 'merchant_acquisition'
         ? ['initial_outreach','routine_reply','follow_up','meeting_offer']
-        : ['provider_contact','routine_reply','pricing_request','clarification','counterproposal','technical_question','implementation_question','contract_request'];
+        : ['provider_contact','routine_reply','pricing_request','clarification','counterproposal','technical_question','implementation_question','contract_request','follow_up'];
       const row = await svc.entities.CommercialPolicy.create({
         policy_key: `${engine}:${version}`,
         version,
