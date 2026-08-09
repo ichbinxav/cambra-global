@@ -25,7 +25,7 @@ const bpsToPctLocal = (bps) => (isFinite(bps) ? bps / 100 : null);
 const bigNum = { fontFamily: MONO, fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1 };
 
 // One horizontal bar in the layered / segment breakdowns.
-function SegBar({ label, valueLabel, pctOfMax, color, negotiable, negotiableLabel, note }) {
+function SegBar({ label, valueLabel, pctOfMax, color, negotiable = false, negotiableLabel = null, note = null }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
