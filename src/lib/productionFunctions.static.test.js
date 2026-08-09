@@ -67,7 +67,7 @@ const MANIFEST = [
   "phase2CleanupLegacyFields", "processUploadedFile", "processWebhookDeadLetters",
   "promoteMeToAdmin", "providerMonitorAgent", "providerResearchAgent",
   "purgeInactiveLeads", "purgePaymentsAnalysisSessions", "qaAgent", "qaMonitorAgent",
-  "recommendationEngineAgent", "reconcileInvoice", "recordPayment",
+  "recommendationEngineAgent", "reconcileInvoice", "reconcileRecoverBilling", "recordPayment",
   "recoverBillingDigest",
   "regenerateMigrationTasks", "regenerateRecommendationsForBrand",
   "researchOrchestrator", "revokeApiKey", "revokeMandate", "runApiSelfTests",
