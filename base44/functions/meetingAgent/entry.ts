@@ -130,13 +130,16 @@ Deno.serve(async (req) => {
     }
 
     if (!slots.length) {
-      // Generate 3 reasonable slots: next 3 business days at 14:00 UTC
-      const base = Date.now() + 24 * 60 * 60 * 1000;
-      slots = [0, 1, 2].map(i => {
-        const d = new Date(base + i * 24 * 60 * 60 * 1000);
-        d.setUTCHours(14, 0, 0, 0);
-        return d.toISOString();
+      // FINAL AUTONOMOUS SEAL: never invent availability. A missing/unreadable
+      // calendar is an external configuration blocker, not a reason to fabricate
+      // plausible-looking slots that may conflict with the founder's real calendar.
+      await base44.asServiceRole.entities.AgentTask.update(task.id, {
+        status: "waiting_input",
+        output_summary: "Calendar availability unavailable — real Cal.com connection/event type required",
+        output_payload_json: { blocker: "calendar_availability_unverified", cal_key_present: !!calKey, event_type_id_present: !!body?.event_type_id },
+        completed_at: new Date().toISOString(),
       });
+      return Response.json({ ok: false, task_id: task.id, status: "waiting_input", error: "calendar_availability_unverified", setup_required: true }, { status: 409 });
     }
 
     const draftContent = [
