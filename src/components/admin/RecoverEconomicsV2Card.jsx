@@ -1,0 +1,17 @@
+import { useTranslation } from '@/lib/i18n.jsx';
+const COPY={
+ en:{title:'Recover economics',version:'Economics version',term:'Recovery Term',stage:'Current stage',standard:'Standard fee',discount:'Referral discount',effective:'Effective fee',verified:'Verified savings',billed:'Billed fees',access:'Verification access',right:'Economic right',cancel:'Service cancelled',y1:'Year 1 · months 1–12',y2:'Year 2 · months 13–24',ended:'Term ended',pending:'Pending activation'},
+ fr:{title:'Économie Recover',version:'Version économique',term:'Période Recover',stage:'Phase actuelle',standard:'Commission standard',discount:'Réduction parrainage',effective:'Commission effective',verified:'Économies vérifiées',billed:'Commissions facturées',access:'Accès de vérification',right:'Droit économique',cancel:'Service résilié',y1:'Année 1 · mois 1–12',y2:'Année 2 · mois 13–24',ended:'Période terminée',pending:'Activation en attente'},
+ es:{title:'Economía Recover',version:'Versión económica',term:'Recovery Term',stage:'Fase actual',standard:'Comisión estándar',discount:'Descuento referrals',effective:'Comisión efectiva',verified:'Ahorro verificado',billed:'Comisiones facturadas',access:'Acceso de verificación',right:'Derecho económico',cancel:'Servicio cancelado',y1:'Año 1 · meses 1–12',y2:'Año 2 · meses 13–24',ended:'Término finalizado',pending:'Pendiente de activación'}
+};
+export default function RecoverEconomicsV2Card({activation,reports=[],invoices=[],rules=[]}){
+ const {lang}=useTranslation(); const c=COPY[lang]||COPY.en; if(!activation)return null;
+ const today=new Date().toISOString().slice(0,10); const start=activation.recovery_term_start_date; const y2=activation.recovery_term_year2_start_date; const end=activation.recovery_term_end_date;
+ const stage=!start?c.pending:today>=end?c.ended:today>=y2?c.y2:c.y1; const standard=!start||today>=end?0:today>=y2?15:25;
+ const currentRule=[...(rules||[])].filter(r=>r.status!=='archived'&&r.status!=='inactive').sort((a,b)=>String(b.effective_start_date||'').localeCompare(String(a.effective_start_date||'')))[0];
+ const discount=currentRule?Math.max(0,25-Number(currentRule.node_share_percent||25)):0; const effective=standard>0?Math.max(5,standard-discount):0;
+ const verified=(reports||[]).filter(r=>['verified','realized','invoiced','paid'].includes(r.verification_status)).reduce((sum,r)=>sum+Math.max(0,Number(r.savings||0)),0);
+ const billed=(invoices||[]).filter(i=>i.status!=='void').reduce((sum,i)=>sum+Number(i.subtotal_amount??i.net_amount??i.total_amount??0),0);
+ const Row=({k,v})=><div className="flex justify-between gap-3 text-xs"><span className="text-muted-foreground">{k}</span><b className="text-right">{v??'—'}</b></div>;
+ return <div className="rounded-xl border p-4 bg-card"><p className="text-sm font-semibold mb-3">{c.title}</p><div className="space-y-2"><Row k={c.version} v={activation.recovery_economics_version||'legacy/V1'}/><Row k={c.term} v={start?`${start} → ${end}`:'—'}/><Row k={c.stage} v={stage}/><Row k={c.standard} v={`${standard}%`}/><Row k={c.discount} v={`${discount} pp`}/><Row k={c.effective} v={`${effective}%`}/><Row k={c.verified} v={`€${verified.toLocaleString()}`}/><Row k={c.billed} v={`€${billed.toLocaleString()}`}/><Row k={c.access} v={activation.verification_access_status||'—'}/><Row k={c.right} v={activation.economic_right_status||'—'}/>{activation.service_cancelled_at&&<Row k={c.cancel} v={new Date(activation.service_cancelled_at).toLocaleDateString()}/>}</div></div>;
+}

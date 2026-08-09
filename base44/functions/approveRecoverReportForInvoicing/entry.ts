@@ -19,7 +19,7 @@ import {
 import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
-import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee, periodOverlapsTerm } from '../../shared/recoveryEconomicsV2.ts';
+import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee, periodOverlapsTerm, recoveryTermFromActivation } from '../../shared/recoveryEconomicsV2.ts';
 
 // v60.2 — the standard fee comes from the resolved contract policy (the
 // accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
@@ -97,8 +97,15 @@ export default async function (req: Request): Promise<Response> {
     if (!activation.conditions_activated_at) {
       block('blocked_contract', 'conditions_activated_at_missing');
     } else if (isEconomicsV2) {
+      const v2TermForCalendar = recoveryTermFromActivation(activation.conditions_activated_at);
       if (!periodOverlapsTerm(reportPeriod.start, reportPeriod.endExclusive, activation.conditions_activated_at)) {
         block('blocked_contract', 'outside_recovery_term');
+      }
+      // Activation-month savings cannot be safely day-prorated from a full-month aggregate:
+      // the pre-activation days were still on the old conditions. Require the report
+      // itself to be scoped to the post-activation interval.
+      if (reportPeriod.start < v2TermForCalendar.start && !report.effective_start) {
+        block('blocked_contract', 'partial_activation_requires_scoped_measurement');
       }
     } else {
       const window = monthBillableWindow(report.month, activation.conditions_activated_at);

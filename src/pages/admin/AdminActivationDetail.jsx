@@ -7,6 +7,7 @@ import RecoverContractAdminPanel from '@/components/admin/RecoverContractAdminPa
 import ConditionsActivationCard from '@/components/admin/recoverBilling/ConditionsActivationCard';
 import FiscalIdentityCard from '@/components/admin/recoverBilling/FiscalIdentityCard';
 import PaymentsMigrationOperations from '@/components/admin/PaymentsMigrationOperations';
+import RecoverEconomicsV2Card from '@/components/admin/RecoverEconomicsV2Card';
 
 export default function AdminActivationDetail(){
   const [sp] = useSearchParams();
@@ -91,6 +92,8 @@ export default function AdminActivationDetail(){
           ) : 'Missing'}</div>
         </div>
       </div>
+
+      <RecoverEconomicsV2Card activation={activation} reports={reports || []} invoices={invoices || []} rules={rules || []} />
 
       <div className="rounded-xl border p-4 bg-card">
         <p className="text-sm font-semibold">Mandate</p>
