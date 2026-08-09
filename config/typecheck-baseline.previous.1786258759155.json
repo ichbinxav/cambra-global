@@ -1,0 +1,1601 @@
+{
+  "state": "APPROVED",
+  "captured": true,
+  "approvedAt": "2026-08-08T23:48:27.125Z",
+  "sourceTreeHash": "91c6a5c66b94cf47694356d9c1903c34fa452a9e15e3ddad21bd4dc7e5640269",
+  "typescriptVersion": "Version 5.9.3",
+  "totalErrors": 516,
+  "distinctFingerprints": 318,
+  "entries": {
+    "00561a5fcac63e23": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "005e10b4d07ad299": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "029569b78e72760a": {
+      "file": "src/components/ui/select.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "031760755672f0b5": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "04570277bf6923a7": {
+      "file": "src/components/vault/VaultDocumentDrawer.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "05b3bd2bd797f51a": {
+      "file": "src/lib/AuthContext.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "061026a7d3120a29": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 5
+    },
+    "0675718da3887131": {
+      "file": "src/components/onboarding/OnboardingLayout.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "0736e3f38530fd3d": {
+      "file": "src/components/shared/SectionLabel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "079db53496f3c79c": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2339",
+      "count": 4
+    },
+    "07c718d73850280e": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 3
+    },
+    "088210b28c6fbfed": {
+      "file": "src/components/admin/integrations/OAuthAppsPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "08d29dd60f5e6a0d": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "08e2e31906309c72": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2741",
+      "count": 2
+    },
+    "091ccee1333cc26a": {
+      "file": "src/pages/PaymentsAnalyzer.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "0a9cd01984873966": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 7
+    },
+    "0c8e624055fe224c": {
+      "file": "src/pages/Account.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "0d84d27285628bc7": {
+      "file": "src/components/ui/input.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "0f0629d6666d469b": {
+      "file": "src/components/onboarding/StepGrid.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "10d65ab4abe94a36": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2559",
+      "count": 2
+    },
+    "10d82eda0ec35962": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "10f868c866ab1dee": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "12d32c7a2df33f4d": {
+      "file": "src/components/admin/integrations/ApiKeysTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "14bb41d9451bfcf0": {
+      "file": "src/components/ui/slider.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "15563be2f0f2056d": {
+      "file": "src/components/paymentsResults/CombinedChannelSection.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "16b948de483886bd": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 6
+    },
+    "17c3459c80b4b747": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "18190c4e3e4cbb9e": {
+      "file": "src/components/landing/ReferralProgramSection.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "18b0540ace103d96": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "19538db922cee1c9": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "1995e5b1368515a9": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "1cc91e0080a1511a": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "1e4deca8170d8484": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "1e9ab219315ed356": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "1f7b109c50f77e8c": {
+      "file": "src/pages/ConnectTools.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "204184873397d0ab": {
+      "file": "src/components/ui/tabs.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "2073258188d129b0": {
+      "file": "src/pages/Reports.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "20f62811f0147adb": {
+      "file": "src/lib/app-params.js",
+      "code": "TS2339",
+      "count": 1
+    },
+    "21461e485d222ff2": {
+      "file": "src/pages/ConnectTools.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "21d5a5f460ddfaa8": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "23605229a7a69ab9": {
+      "file": "src/components/paymentsResults/PaymentsDataInsights.jsx",
+      "code": "TS2739",
+      "count": 4
+    },
+    "25ea6242ed5e293b": {
+      "file": "src/components/admin/integrations/OrganizationsPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "26c4c459fdc675b3": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2559",
+      "count": 6
+    },
+    "2789487ad94125ea": {
+      "file": "src/components/onboarding/OnboardingLayout.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "27bb18f3e3837dc0": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "27e45dafaa6013b6": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "2843d54f970a10b7": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "28666cb5c214e654": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2559",
+      "count": 4
+    },
+    "2a3f6fc9df14b78e": {
+      "file": "src/components/paymentsResults/CollectiveModal.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "2add78092322719a": {
+      "file": "src/components/admin/BrandHealthTable.jsx",
+      "code": "TS2363",
+      "count": 2
+    },
+    "2b2ecca24c69f3ab": {
+      "file": "src/components/ui/popover.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "2b65d9126dea18c4": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "2cec46cf8e48b7ba": {
+      "file": "src/components/admin/integrations/OrganizationsPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "2d4cb26c98816bef": {
+      "file": "src/components/ui/switch.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "2d69adb4af2a3c33": {
+      "file": "src/components/paymentsResults/ResultsHistory.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "2ddfecd39c8fbc87": {
+      "file": "src/components/admin/recoverBilling/FiscalIdentityCard.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "2de943c74d7b4856": {
+      "file": "src/lib/paymentsAuditPdf.js",
+      "code": "TS2556",
+      "count": 8
+    },
+    "2e88edb5758701bf": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "307b8eb40f697ded": {
+      "file": "src/components/ui/button.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "30b41f1b459394b2": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "311c6830f3dca8d7": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "31226c461d2a63ad": {
+      "file": "src/components/dashboard/AccountSummaryPanel.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "31ace3e671b5ebd3": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 8
+    },
+    "321d6d1c29af57b3": {
+      "file": "src/components/connect/StripeConnectCard.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "34a1881d900ac47c": {
+      "file": "src/components/connect/StripeConnectCard.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "34a556e3d8ff314e": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS1345",
+      "count": 1
+    },
+    "34d9a03c01c77b1b": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "351a826ce99afada": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "35c8dc28c09b2905": {
+      "file": "src/components/ui/select.jsx",
+      "code": "TS2339",
+      "count": 7
+    },
+    "35d9675e381de82f": {
+      "file": "src/lib/AuthContext.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "372c66223807f6bb": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "3841899b931eee67": {
+      "file": "src/components/paymentsResults/CollectiveModal.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "3967959b29c75081": {
+      "file": "src/components/dashboard/AnalysisTrendPanel.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "39754e05be3cca43": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "39b767393e950f20": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2559",
+      "count": 2
+    },
+    "3a7c62810cf9628f": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "3ac763315be1519a": {
+      "file": "src/components/admin/DataIntegrityWidget.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "3d6ea8a904cc00e9": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "3d97fafb4f170cdb": {
+      "file": "src/components/paymentsResults/FeeBreakdownCard.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "3e4aef6788c11ee3": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "3f89962724e44a92": {
+      "file": "src/pages/PaymentsAnalyzer.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "3fb2f281d51ba4a4": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "4267aa689a0bebec": {
+      "file": "src/pages/Onboarding.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "42736f26186024c2": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "43faf1cf27e61608": {
+      "file": "src/components/admin/integrations/OAuthAppsPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "44721ce4b367fc38": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "44c3b72285c3f76a": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "45a8aa8b63453248": {
+      "file": "src/components/paymentsResults/PaymentsDataInsights.jsx",
+      "code": "TS2554",
+      "count": 6
+    },
+    "45a98e21df7d7bbf": {
+      "file": "src/components/ui/command.jsx",
+      "code": "TS2339",
+      "count": 6
+    },
+    "4632f48651076181": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "47a0288a589b95e4": {
+      "file": "src/components/account/MonthlyEmailPreference.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "48045cd8fddb28fc": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "484ed3d3716d1230": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "487fe2af78a29884": {
+      "file": "src/components/admin/integrations/ActivityLogTable.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "48e5d582fd9dc13c": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "4a1da37c4181d23e": {
+      "file": "src/pages/Account.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "4b641cfe787b3b52": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "4cbdedc5663dd0ff": {
+      "file": "src/pages/Contact.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "4d53a202625c424a": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "4f307b6860772631": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "4f611218ef012d00": {
+      "file": "src/lib/app-params.js",
+      "code": "TS2339",
+      "count": 2
+    },
+    "4f645bf1ba79988b": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "4fb9111aaf6fa34c": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "50b268d2ee2b1ff6": {
+      "file": "src/components/admin/integrations/FlowSelfTestPanel.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "52d12dd5a1b56cd0": {
+      "file": "src/components/admin/integrations/FlowSelfTestPanel.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "54378e6584d24545": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "544bd76992fb654f": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "5487cc6bfdb51fc4": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "56a3a8d4de38aae6": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "57b14ac4e25ec2b8": {
+      "file": "src/pages/admin/AdminApiIntegrations.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "589224dbd6fb143f": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2559",
+      "count": 3
+    },
+    "59179b68c03c3f3f": {
+      "file": "src/components/ui/dialog.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "59b86f36b4100444": {
+      "file": "src/components/admin/integrations/ApiSelfTestPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "59bb94268425f781": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "5cd785bfb54cc02e": {
+      "file": "src/components/ui/tabs.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "5d3a67282b8607ed": {
+      "file": "src/components/inputs/SmartNumberField.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "5ef9c8888183c0ee": {
+      "file": "src/pages/admin/AdminActivationDetail.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "5f48636145ef9fbc": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "5f94ba577f6125dc": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "603506ccfb8c7719": {
+      "file": "src/lib/stripeJs.js",
+      "code": "TS2339",
+      "count": 4
+    },
+    "60e4ac33306a9fd4": {
+      "file": "src/components/reports/AuditHistoryList.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "61da51c3dd157ccf": {
+      "file": "src/pages/PaymentsAnalyzer.jsx",
+      "code": "TS2554",
+      "count": 4
+    },
+    "6358c5151ec058d6": {
+      "file": "src/components/ui/progress.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "638269bfda3cfbef": {
+      "file": "src/components/admin/DataIntegrityWidget.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "64549316c3fb1489": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "64b1e44f673ddd28": {
+      "file": "src/pages/Landing.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "66683434277423e0": {
+      "file": "src/pages/ForProviders.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "67ff0ceee01a75e5": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "681543266c0bc8f3": {
+      "file": "src/components/ui/label.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "68d9864228ce6da4": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "6c60a454192ff644": {
+      "file": "src/pages/Invoices.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "6d02f11a4264160e": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "6d79c00e95d324d8": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "6f472da32be6f4cd": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "6f60c4b833d4d058": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "6f657d089b565b2d": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "708fca362c501fe9": {
+      "file": "src/pages/Testimonials.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "70d09709fe4a87cc": {
+      "file": "src/pages/Cookies.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "70da7eda6d991455": {
+      "file": "src/components/paymentsResults/RecoveryRoadmap.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "7106148ce9ff5848": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "711a8f9a5e4cd1bd": {
+      "file": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
+      "code": "TS2554",
+      "count": 4
+    },
+    "713a222562aa5ee9": {
+      "file": "src/pages/ForProviders.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "7217a3d4beb1b23b": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "728a7773d70f1f80": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "748eaa8626330277": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "776ed6fe132d9e7b": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "77a0245a57fc9f80": {
+      "file": "src/components/account/AccountFieldSection.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "77a445cced7853c0": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "7821cb85a275c76b": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2554",
+      "count": 4
+    },
+    "79101f5aff93a960": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "791c93348419ce25": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "792a4767e45320cb": {
+      "file": "src/components/admin/integrations/OrganizationsPanel.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "7e896ed20bc7bdaa": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "7e940dee1722119f": {
+      "file": "src/components/ui/command.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "7ec3a5201c7d39f3": {
+      "file": "src/components/ui/dialog.jsx",
+      "code": "TS2339",
+      "count": 4
+    },
+    "7ee5daa9226c22a9": {
+      "file": "src/components/admin/integrations/OrganizationsPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "7f1b793b81e9f282": {
+      "file": "src/lib/app-params.js",
+      "code": "TS2339",
+      "count": 2
+    },
+    "7fbd8af400985c17": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "838d14c4e93eaf43": {
+      "file": "src/components/dashboard/AccountSummaryPanel.jsx",
+      "code": "TS2741",
+      "count": 2
+    },
+    "84e7ca8c88d9f682": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "866c7c03ccf456e1": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "86bf42dca28809ea": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2559",
+      "count": 2
+    },
+    "8767264ab4fea3f6": {
+      "file": "src/components/paymentsAnalyzer/CombinedChannelBlock.jsx",
+      "code": "TS2741",
+      "count": 2
+    },
+    "87d313ebdea2e912": {
+      "file": "src/components/admin/integrations/OAuthAppsPanel.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "87ff3a4c282b3117": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "887b40e16d9295a4": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "8983f807d1c5ee34": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "89e556c65d277125": {
+      "file": "src/components/ui/popover.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "8a1d258bd6164bc2": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "8b1eedc909c73c68": {
+      "file": "src/components/dashboard/DashboardHeroV2.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "8b257c3030be1d92": {
+      "file": "src/components/inputs/SmartNumberField.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "8b90ca6a5fc25ed6": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 6
+    },
+    "8c7ce15e915969eb": {
+      "file": "src/pages/HowItWorks.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "8e4676d8438551b1": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "8ee0242973136b9d": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "900f852159c82edd": {
+      "file": "src/components/reports/InStoreBenchmarkPanel.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "910bc2b24bfec5f7": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9132cbcd60043853": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "9149fd698063b479": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "93ec59c520108fdd": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "941ef41f10ad8040": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "947b9a59300bfb86": {
+      "file": "src/components/landing/PricingDual.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "9481de78db23059b": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "94b1d91981519788": {
+      "file": "src/components/dashboard/DashboardSidebar.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "94b35f6e42af8f75": {
+      "file": "src/pages/admin/AdminCopilot.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "94f473c355c9aabc": {
+      "file": "src/pages/Contact.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9516070fbee15e94": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "965387d0c7002f0e": {
+      "file": "src/components/recover/PaymentMethodSetupCard.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "96ef16cb501eb1d0": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9780d5573f4797a3": {
+      "file": "src/components/ui/textarea.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "9858c7fe72a783db": {
+      "file": "src/lib/app-params.js",
+      "code": "TS2339",
+      "count": 3
+    },
+    "999a7d6e9204fb5e": {
+      "file": "src/components/ui/button.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "9a3cf940a7073e09": {
+      "file": "src/components/admin/integrations/FlowSelfTestPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9a80abba703b04b0": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "9b6b38991f32fdfa": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "9ba3e0e861f0094e": {
+      "file": "src/pages/PaymentsResults.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9c013f5c3b6d8a77": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2741",
+      "count": 3
+    },
+    "9c13a8744782ea0c": {
+      "file": "src/components/ui/button.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "9c8075f31a206fa6": {
+      "file": "src/components/account/MonthlyEmailPreference.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9dace28f61bbf109": {
+      "file": "src/components/admin/BrandHealthTable.jsx",
+      "code": "TS2362",
+      "count": 2
+    },
+    "9dcfc261beb28cab": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9dde0c1b8f82884b": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9e661eac827a8ac6": {
+      "file": "src/components/paymentsResults/PeerBenchmark.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "9ec4deb2c031cb83": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "9f0c70d2e1906eab": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "9f59fa66843b7d4e": {
+      "file": "src/pages/Contact.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "a19f647cc5d0bfb9": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 1
+    },
+    "a200a48d7e5bcc02": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "a2707028d6ccb084": {
+      "file": "src/components/ui/input.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "a29f176131559b5c": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 3
+    },
+    "a29f451423e1d128": {
+      "file": "src/components/ui/select.jsx",
+      "code": "TS2339",
+      "count": 3
+    },
+    "a2d2169004db4c8f": {
+      "file": "src/pages/Security.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "a30e244b869779c1": {
+      "file": "src/components/landing/PricingDual.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "a3d8ca5e67115fad": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "a517542ac9be7f7e": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "a55960bb12aca04a": {
+      "file": "src/lib/AuthContext.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "a6e2a523d0e761f2": {
+      "file": "src/pages/Contact.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "a808807e3c59ae5b": {
+      "file": "src/components/landing/RealImpactSection.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "a87201957e2ec788": {
+      "file": "src/pages/admin/AdminCopilot.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "a8e257001e036cdd": {
+      "file": "src/pages/admin/AdminActivationDetail.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "a9858abb7b11518a": {
+      "file": "src/pages/Security.jsx",
+      "code": "TS2741",
+      "count": 5
+    },
+    "a9b61e7343cc07b5": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "aa313ba78d92758c": {
+      "file": "src/components/recover/ContractDocumentCard.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "ac76b7c5b2737576": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "acb2cef001ae80a1": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "ae29c55ff31f07c5": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "aefa14d04ae6a36d": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 2
+    },
+    "af52681dcf98c92a": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b22be36882bde180": {
+      "file": "src/components/inputs/SmartNumberField.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b24882f5521d1bec": {
+      "file": "src/pages/PaymentsResults.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "b3b9fe0e19a4be9c": {
+      "file": "src/components/admin/integrations/OAuthAppsPanel.jsx",
+      "code": "TS2322",
+      "count": 5
+    },
+    "b43870d80e399fbd": {
+      "file": "src/pages/admin/AdminApiIntegrations.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "b4b077e9e97053d5": {
+      "file": "src/components/help/HelpHero.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "b5cb068f42a1e032": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b60a25c00bbf68e1": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "b69513947cb85aff": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b8a68b11d01c3794": {
+      "file": "src/components/paymentsResults/CollectiveModal.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "b8c3fed48c31aa6b": {
+      "file": "src/components/shared/LegalPageLayout.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "b91916573a521923": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b93e111bcbd33c39": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "b9c531237f195c6d": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "ba9f7ea114aa1565": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "baa2b6ed9b1f6d64": {
+      "file": "src/pages/admin/AdminApiIntegrations.jsx",
+      "code": "TS2322",
+      "count": 9
+    },
+    "bb28cde6bb8d777d": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "bd9f0abb74183643": {
+      "file": "src/components/inputs/MultiComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "be01ea6f559d94ba": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2554",
+      "count": 4
+    },
+    "be1ecd8872db3317": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "bf19e25cbc1924ad": {
+      "file": "src/components/paymentsResults/FeeBreakdownCard.jsx",
+      "code": "TS2739",
+      "count": 2
+    },
+    "c01d65c3707ffae7": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "c0dd7f2d3cc2e60a": {
+      "file": "src/components/landing/TheStackSection.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "c1b5386bc1446613": {
+      "file": "src/components/admin/integrations/ApiKeyDialog.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "c1dfbeee5627a992": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "c3c7835426bfeda9": {
+      "file": "src/components/admin/integrations/FlowSelfTestPanel.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "c42a86b2b51a0e5a": {
+      "file": "src/components/shared/LanguageSwitcher.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "c7eeb6804276edce": {
+      "file": "src/pages/Dashboard.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "c89a38c72637a182": {
+      "file": "src/pages/Reports.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "c8bde0c5da782318": {
+      "file": "src/pages/PaymentsResults.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "c9b0a167b3b76913": {
+      "file": "src/components/dashboard/LastScanBar.jsx",
+      "code": "TS2554",
+      "count": 2
+    },
+    "caa93ae769cacd24": {
+      "file": "src/pages/HowItWorks.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "cb77c7d8cc89c78a": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "cc0b66ffceda5099": {
+      "file": "src/pages/Landing.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "cc15af10b26d53a7": {
+      "file": "src/components/ui/progress.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "cdc770741140e410": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2353",
+      "count": 2
+    },
+    "ce8882749ab9c852": {
+      "file": "src/components/dashboard/AIInsightsPanel.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "d045fa11c475aec6": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "d42ce01ccd3ffdb7": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "d55b3ceef7802c0c": {
+      "file": "src/components/dashboard/SavingsTrendPanel.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "d784bd480cc476a2": {
+      "file": "src/components/onboarding/CompanyBlock.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "d80992cbfd6cd9d2": {
+      "file": "src/pages/admin/AdminInvoices.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "d8512092bdf362c0": {
+      "file": "src/components/landing/TheStackSection.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "d86b85fb05418e2e": {
+      "file": "src/pages/Reports.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "db38bbd0d2b2739a": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "db477ce25d0f3c2d": {
+      "file": "src/components/admin/waitlist/AggregateDemandPanel.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "dc52ef5e17251780": {
+      "file": "src/components/paymentsResults/PaymentsDataInsights.jsx",
+      "code": "TS2739",
+      "count": 1
+    },
+    "dd6acad03ce8ee2a": {
+      "file": "src/pages/admin/AdminApiIntegrations.jsx",
+      "code": "TS2322",
+      "count": 9
+    },
+    "de95f21795f22afe": {
+      "file": "src/pages/admin/AdminActivationDetail.jsx",
+      "code": "TS2322",
+      "count": 2
+    },
+    "e00e5f15dd52b6b2": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2559",
+      "count": 1
+    },
+    "e05f84ca5ec9df0d": {
+      "file": "src/components/ui/tabs.jsx",
+      "code": "TS2339",
+      "count": 3
+    },
+    "e06e797de91c5a57": {
+      "file": "src/components/reports/VerificationChecklist.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "e197e7e6b7617ff9": {
+      "file": "src/components/ui/popover.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "e1fe8a34045ad2fc": {
+      "file": "src/components/ui/button.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "e23d76e634ea9cd8": {
+      "file": "src/components/inputs/CategorySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "e34e1786b035fc15": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "e3cdfbbd09927ac8": {
+      "file": "src/pages/Testimonials.jsx",
+      "code": "TS2554",
+      "count": 1
+    },
+    "e3de95477dae6415": {
+      "file": "src/components/dashboard/ActionCenter.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "e4053b8c00e9f268": {
+      "file": "src/pages/Account.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "e40876040e1c9b33": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2559",
+      "count": 3
+    },
+    "e687ff176b82c1fc": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "e93cac27751dd612": {
+      "file": "src/components/ui/command.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "ea055a92d5e287b3": {
+      "file": "src/components/partners/PartnerApplicationForm.jsx",
+      "code": "TS2322",
+      "count": 4
+    },
+    "ea43d63351bf1be6": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "ec241b69239276c7": {
+      "file": "src/components/vault/VaultDocumentDrawer.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "ed68a347c65e2a4f": {
+      "file": "src/components/admin/integrations/UsageAndDLQPanel.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "ee8406f091770799": {
+      "file": "src/components/admin/integrations/WebhooksTable.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "eef95a0db530f647": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "eefe359d9a8bb5b3": {
+      "file": "src/components/account/AccountFieldSection.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "ef3376ffd44428ab": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "ef33bbfff7d5a077": {
+      "file": "src/components/inputs/ComboBox.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f008cfa5199205fc": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "f07c2b6637794d5c": {
+      "file": "src/components/ui/checkbox.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "f1e09d5bdbda3752": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "f2538f7448328780": {
+      "file": "src/components/vault/VaultLinkEditor.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f26ffc0fa0f32446": {
+      "file": "src/components/ui/select.jsx",
+      "code": "TS2741",
+      "count": 1
+    },
+    "f2f35f79e194f36e": {
+      "file": "src/components/connect/ConnectorTile.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f3d3d98766360447": {
+      "file": "src/pages/admin/AdminCopilot.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "f43f25da536e59ec": {
+      "file": "src/components/paymentsResults/ResultsHistory.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f5374cca05ba11f2": {
+      "file": "src/pages/Vault.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f6920bf1b3209175": {
+      "file": "src/components/admin/integrations/OrganizationsPanel.jsx",
+      "code": "TS2322",
+      "count": 4
+    },
+    "f6de124e52ca28d4": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 2
+    },
+    "f6ded460a6c2f8c7": {
+      "file": "src/components/onboarding/OnboardingLayout.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "f88090131579321a": {
+      "file": "src/pages/Partners.jsx",
+      "code": "TS2741",
+      "count": 2
+    },
+    "f98b4a7d0b84c83a": {
+      "file": "src/pages/Landing.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "f98cf22560213525": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "fa2825da0caf2ccb": {
+      "file": "src/components/inputs/CountrySelect.jsx",
+      "code": "TS2322",
+      "count": 1
+    },
+    "fa6a18d1b31f5001": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "fc4be53b2bbdbe35": {
+      "file": "src/components/paymentsResults/PaymentsInStoreInsights.jsx",
+      "code": "TS2339",
+      "count": 1
+    },
+    "fdf55ab22adcec4a": {
+      "file": "src/components/admin/integrations/OAuthAppsPanel.jsx",
+      "code": "TS2322",
+      "count": 3
+    },
+    "ff7dbfade5576f0c": {
+      "file": "src/components/onboarding/PaymentsModule.jsx",
+      "code": "TS2345",
+      "count": 1
+    }
+  }
+}
