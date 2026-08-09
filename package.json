@@ -2,7 +2,7 @@
   "name": "base44-app",
   "private": true,
   "version": "0.66.0",
-  "releaseName": "CAMBRA v0.65.1 — Launch Security & Type Safety Hardening",
+  "releaseName": "CAMBRA v0.66.0 — ECL P7 Production Operations & Incident Recovery",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
