@@ -8,6 +8,9 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
   const update = read('base44/functions/updatePaymentsMigrationTask/entry.ts');
   const projection = read('base44/functions/getMyPaymentsMigration/entry.ts');
   const accept = read('base44/functions/acceptRecoverMandate/entry.ts');
+  const admin = read('src/components/admin/PaymentsMigrationOperations.jsx');
+  const card = read('src/components/recover/PaymentsMigrationCard.jsx');
+  const page = read('src/pages/PaymentsMigration.jsx');
 
   it('starts only after an active mandate and owns the migration', () => {
     expect(start).toContain("status: 'active'");
@@ -48,5 +51,26 @@ describe('P9 Recover Fulfilment & Payments Migration invariants', () => {
     expect(projection).not.toContain("label: t.description");
     expect(projection).not.toContain('last_note:');
     expect(projection).not.toContain('last_actor:');
+  });
+
+
+  it('keeps P9 merchant and admin surfaces explicitly trilingual', () => {
+    for (const source of [admin, card, page]) {
+      expect(source).toContain('en:');
+      expect(source).toContain('fr:');
+      expect(source).toContain('es:');
+    }
+    expect(admin).toContain('STEP_COPY');
+    expect(admin).toContain('merchant_message_i18n');
+    expect(card).toContain('reason_i18n');
+    expect(page).toContain('reason_i18n');
+  });
+
+  it('never renders raw backend errors or internal blocker notes to merchants', () => {
+    expect(card).not.toContain('blocked_reason');
+    expect(page).not.toContain('blocked_reason');
+    expect(page).not.toContain('e?.message');
+    expect(projection).toContain("error: 'migration_projection_failed'");
+    expect(projection).not.toContain("error?.message || 'migration_projection_failed'");
   });
 });
