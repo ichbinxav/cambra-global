@@ -99,19 +99,26 @@ export default async function (req: Request): Promise<Response> {
       ...(paused || []).map(a => ({ a, was_paused: true })),
     ];
     const missingReports = candidates.filter(({ a, was_paused }) => {
-      if (!a.conditions_activated_at || !a.first_measurement_month) return false;
-      if (a.first_measurement_month > targetMonth) return false;
-      if (a.agreement_end_at && new Date(a.agreement_end_at).getTime() < monthStart) return false;
-      // DIGEST-GAP-2 — a paused activation only owes the target month if it was
-      // still in force during it. Ended before the month started → nothing due.
-      if (was_paused) {
+      if (!a.conditions_activated_at) return false;
+      const isV2 = a.recovery_economics_version === 'recover-economics-v2' && a.recovery_term_start_date && a.recovery_term_end_date;
+      if (isV2) {
+        const [ty, tm] = targetMonth.split('-').map(Number);
+        const monthEndExclusive = new Date(Date.UTC(ty, tm, 1)).toISOString().slice(0,10);
+        // Exact V2 term overlap, including the activation month when a scoped
+        // post-activation measurement could exist. Never manufactures that report.
+        if (!(targetMonth + '-01' < a.recovery_term_end_date && monthEndExclusive > a.recovery_term_start_date)) return false;
+      } else {
+        if (!a.first_measurement_month || a.first_measurement_month > targetMonth) return false;
+        if (a.agreement_end_at && new Date(a.agreement_end_at).getTime() < monthStart) return false;
+      }
+      if (was_paused && !isV2) {
         const endedAt = a.agreement_end_at || a.last_updated;
         if (!endedAt || new Date(endedAt).getTime() < monthStart) return false;
       }
       return !(reports || []).some(r =>
         r.deal_activation_id === a.id && r.month === targetMonth && r.status !== 'void'
       );
-    }).map(({ a, was_paused }) => ({ brand_id: a.brand_id, month: targetMonth, deal_activation_id: a.id, was_paused }));
+    }).map(({ a, was_paused }) => ({ brand_id: a.brand_id, month: targetMonth, deal_activation_id: a.id, was_paused, recovery_economics_version: a.recovery_economics_version || 'legacy-v1' }));
     const missingReportsPaused = missingReports.filter(r => r.was_paused).length;
 
     if (!awaitingApproval.length && !approvedNotInvoiced.length && !blocked.length && !missingReports.length) {
