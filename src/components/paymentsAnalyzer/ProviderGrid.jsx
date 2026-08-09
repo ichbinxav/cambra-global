@@ -6,7 +6,7 @@
 
 import ProviderCard from "@/components/paymentsAnalyzer/ProviderCard";
 
-export default function ProviderGrid({ options, value, onChange, className }) {
+export default function ProviderGrid({ options, value, onChange, className = "" }) {
   return (
     <div
       className={
