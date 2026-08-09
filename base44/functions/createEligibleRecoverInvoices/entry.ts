@@ -19,6 +19,7 @@
 // with a DIFFERENT report → typed conflict, no reuse, no pointer repair.
 // Stripe's finalized `number` is THE legal number (§19).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveBillingMode, stripeRequest } from '../../shared/stripeBilling.ts';
 import { readLegalIdentity } from '../../shared/cambraLegalIdentity.ts';
@@ -95,7 +96,7 @@ export default async function (req: Request): Promise<Response> {
         // ── PHASE 1 — load context (reads only) ─────────────────────────
         const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []))?.[0];
         const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
-        const mandate = activation ? (await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] : null;
+        const mandate = activation ? await resolveRecoverEconomicMandate(svc, activation) : null;
         // P5: exact report baseline, authoritative read. A persistence outage or
         // missing row must never become baselineLocked=false by a swallowed read.
         const baseline = report.baseline_id

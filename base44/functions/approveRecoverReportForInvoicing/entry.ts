@@ -7,6 +7,7 @@
 // projected measurements are refused here, permanently (§31: no projections,
 // no historical averages, no confidence scores as a substitute for evidence).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { resolveBillingMode } from '../../shared/stripeBilling.ts';
 import { determineTaxTreatment, normalizeVat, readTaxConfig } from '../../shared/recoverTax.ts';
@@ -50,8 +51,7 @@ export default async function (req: Request): Promise<Response> {
     if (!activation) return Response.json({ error: 'activation not found' }, { status: 404 });
     const brands = await svc.entities.Brand.filter({ id: report.brand_id || activation.brand_id }, '-created_date', 1).catch(() => []);
     const brand = brands?.[0];
-    const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []);
-    const mandate = mandates?.[0] || null;
+    const mandate = await resolveRecoverEconomicMandate(svc, activation);
 
     const blockers: { status: string; reason: string }[] = [];
     const block = (status: string, reason: string) => blockers.push({ status, reason });

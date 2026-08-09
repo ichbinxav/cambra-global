@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee } from '../../shared/recoveryEconomicsV2.ts';
@@ -185,8 +186,7 @@ Deno.serve(async (req) => {
         }
 
         // v60.2 — resolve the contractual terms for provenance persistence.
-        const mandateRow = (await svc.entities.Mandate
-          .filter({ deal_activation_id: deal.id, status: 'active' }, '-created_date', 1).catch(() => []))?.[0] || null;
+        const mandateRow = await resolveRecoverEconomicMandate(svc, deal);
         const contractResolved = resolveContractPolicy({ mandate: mandateRow });
 
         // ── Fee resolution — NO || 25 (v61, audit #5) ─────────────────

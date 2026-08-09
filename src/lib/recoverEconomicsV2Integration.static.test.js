@@ -24,3 +24,15 @@ describe('Recover Economics V2 integration boundaries',()=>{
   expect(src).toContain('verification_required_no_estimated_billing');
  });
 });
+
+describe('V2 pinned economic contract survival',()=>{
+ it('pins the activation-time mandate and billing resolves that exact contract after operational revocation',()=>{
+  const activation=read('base44/functions/recordConditionsActivation/entry.ts');
+  const helper=read('base44/shared/recoverEconomicMandate.ts');
+  const approval=read('base44/functions/approveRecoverReportForInvoicing/entry.ts');
+  expect(activation).toContain('recovery_mandate_id: activeMandate.id');
+  expect(helper).toContain('activation.recovery_mandate_id');
+  expect(helper).toContain("economic_right_status === 'active'");
+  expect(approval).toContain('resolveRecoverEconomicMandate(svc, activation)');
+ });
+});

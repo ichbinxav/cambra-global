@@ -227,6 +227,10 @@
     "recovery_attribution_key": {
       "type": "string",
       "description": "V2 stable cost-line attribution key. A second active Recovery with the same key is blocked unless a future explicit attribution/supersession flow resolves it."
+    },
+    "recovery_mandate_id": {
+      "type": "string",
+      "description": "V2 immutable pointer to the signed Mandate whose accepted snapshot created this activated Recovery economic right."
     }
   },
   "required": [
