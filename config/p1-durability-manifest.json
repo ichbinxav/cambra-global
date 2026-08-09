@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.69.0 — Recover Economics V2 / 24-Month Recovery Right (durability manifest)",
-  "generatedAt": "2026-08-09T16:19:12.756Z",
+  "generatedAt": "2026-08-09T16:20:58.710Z",
   "packageVersion": "0.69.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -347,8 +347,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "4a3c7b604c6180bcba98dc5b6993b685751ff42d8497133791e308d0e4c45e10",
-      "bytes": 5234
+      "sha256": "6a76df7031c0ff30a3bfd4ead9e4ecf7b724ee48e302771e02562ada9513897a",
+      "bytes": 5694
     },
     {
       "path": "scripts/install-ci-workflow.mjs",

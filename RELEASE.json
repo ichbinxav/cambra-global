@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.69.0 — Recover Economics V2 / 24-Month Recovery Right",
   "version": "0.69.0",
-  "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
+  "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 896,
   "sourceArchiveShaExternal": null,
-  "gitSha": "b82f183af7eb9d52157720e1a1cd0415a4dc1ca4",
+  "gitSha": "78bba18c329f37b9c4167fa65800376cb87baf81",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "b33491d9873c4aef7c82ee3f0beaed94b64f630bffb34e8b6ffba570f8341463",
+  "durabilityManifestSha": "3edcd9dcfef8ca1dd377f62fc1b1346864c79b40e2589ee1afb05de0667d53ae",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -43,9 +43,9 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
-    "startedAt": "2026-08-09T16:19:37.834Z",
-    "completedAt": "2026-08-09T16:19:47.196Z",
+    "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
+    "startedAt": "2026-08-09T16:21:23.167Z",
+    "completedAt": "2026-08-09T16:21:32.461Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 389,
@@ -56,9 +56,9 @@
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
-    "startedAt": "2026-08-09T16:19:47.623Z",
-    "completedAt": "2026-08-09T16:20:00.233Z",
+    "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
+    "startedAt": "2026-08-09T16:21:32.858Z",
+    "completedAt": "2026-08-09T16:21:45.122Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "8e7bf5ced9fe14c2d582a7b3149f95ba7dea14881710a8b94bcb1db989967cf3",
@@ -66,31 +66,33 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
-    "startedAt": "2026-08-09T16:19:14.564Z",
-    "completedAt": "2026-08-09T16:19:23.486Z",
+    "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
+    "startedAt": "2026-08-09T16:21:00.301Z",
+    "completedAt": "2026-08-09T16:21:08.629Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
-    "startedAt": "2026-08-09T16:19:23.876Z",
-    "completedAt": "2026-08-09T16:19:26.528Z",
+    "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
+    "startedAt": "2026-08-09T16:21:09.027Z",
+    "completedAt": "2026-08-09T16:21:11.722Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "1aa7e146e06a41c36fdcda394772a888619160dc285680668304bda11a51c389",
-    "startedAt": "2026-08-09T16:19:26.915Z",
-    "completedAt": "2026-08-09T16:19:37.423Z",
+    "sourceTreeHash": "5fd2b3c382e27e3123632874fcff52f421e9bd1dd3580e416f09315845c1b3e8",
+    "startedAt": "2026-08-09T16:21:12.138Z",
+    "completedAt": "2026-08-09T16:21:22.759Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
     "dist": "8e7bf5ced9fe14c2d582a7b3149f95ba7dea14881710a8b94bcb1db989967cf3"
   },
-  "manualRequirements": [],
-  "generatedAt": "2026-08-09T16:20:00.666Z"
+  "manualRequirements": [
+    "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled"
+  ],
+  "generatedAt": "2026-08-09T16:21:45.553Z"
 }
