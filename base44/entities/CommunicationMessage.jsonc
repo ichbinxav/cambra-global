@@ -27,6 +27,10 @@
     "provider_message_id": {
       "type": "string"
     },
+    "idempotency_key": {
+      "type": "string",
+      "description": "CAMBRA-owned durable send dedupe key; provider IDs are never used as the business idempotency key."
+    },
     "internet_message_id": {
       "type": "string"
     },
