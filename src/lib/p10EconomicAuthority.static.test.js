@@ -6,6 +6,9 @@ const API = read('base44/functions/apiV1/entry.ts');
 const MCP = read('base44/functions/mcpServer/entry.ts');
 const CREATE_KEY = read('base44/functions/createApiKey/entry.ts');
 const OPENAPI = read('base44/functions/apiOpenApiSpec/entry.ts');
+const OVERRIDES = read('base44/functions/adminOverrides/entry.ts');
+const ADMIN_REPORTS = read('src/components/admin/MonthlyReportsTable.jsx');
+const ADMIN_ACTIVATION = read('src/pages/admin/AdminActivationDetail.jsx');
 
 // P10: clients and LLM-facing protocols may observe economic state, but they
 // are never authority for DealActivation status or realized savings. Those
@@ -31,6 +34,18 @@ describe('P10 — external/AI economic authority boundary', () => {
       expect(source).not.toContain('return principal.type === "api_key" && !principal.raw?.organization_id;');
     }
     expect(CREATE_KEY).toContain('"platform"');
+  });
+
+
+  it('does not let admin UI or legacy overrides manufacture economic verification', () => {
+    expect(OVERRIDES).not.toContain("measurement_mode: 'fully_verified'");
+    expect(OVERRIDES).not.toContain('MonthlySavingsReport.update(report_id, { node_fee');
+    expect(OVERRIDES).toContain('economic_override_retired_use_canonical_recover_flow');
+    for (const source of [ADMIN_REPORTS, ADMIN_ACTIVATION]) {
+      expect(source).not.toContain("openOverride('verify_report'");
+      expect(source).not.toContain('MonthlySavingsReport.update');
+    }
+    expect(ADMIN_ACTIVATION).not.toContain("openOverride('void_invoice'");
   });
 
   it('does not grant or advertise the deprecated economic mutation scope', () => {
