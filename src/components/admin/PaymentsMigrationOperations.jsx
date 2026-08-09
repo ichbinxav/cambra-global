@@ -6,7 +6,8 @@ import { CheckCircle2, CircleDot, Ban, Play, RotateCcw } from 'lucide-react';
 export default function PaymentsMigrationOperations({ activation, tasks = [], onChanged }){
   const [busy,setBusy] = useState('');
   const [note,setNote] = useState({});
-  const rows = [...tasks].sort((a,b)=>(a.order||0)-(b.order||0));
+  const p9 = tasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
+  const rows = [...(p9.length ? p9 : [])].sort((a,b)=>(a.order||0)-(b.order||0));
   async function start(){
     setBusy('start');
     const r=await base44.functions.invoke('startPaymentsMigration',{deal_activation_id:activation.id}).catch(e=>({data:{error:e.message}}));
@@ -26,7 +27,7 @@ export default function PaymentsMigrationOperations({ activation, tasks = [], on
     </div>
     {rows.length ? <div className="space-y-2">{rows.map(t=><div key={t.id} className="rounded-lg border border-border p-3">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex gap-2 min-w-0">{t.status==='done'?<CheckCircle2 size={15} className="text-emerald-500 shrink-0 mt-0.5"/>:t.status==='blocked'?<Ban size={15} className="text-amber-500 shrink-0 mt-0.5"/>:<CircleDot size={15} className="text-muted-foreground shrink-0 mt-0.5"/>}<div><p className="text-xs font-bold">{t.order}. {t.step_name}</p><p className="text-[11px] text-muted-foreground mt-0.5">{t.description}</p><p className="text-[10px] text-muted-foreground mt-1">{t.status} · owner {t.owner_type || 'admin'}{t.requires_provider_input?' · provider input':''}{t.requires_brand_input?' · merchant input':''}</p>{t.blocked_reason&&<p className="text-[11px] text-amber-600 mt-1">Blocked: {t.blocked_reason}</p>}</div></div>
+        <div className="flex gap-2 min-w-0">{t.status==='done'?<CheckCircle2 size={15} className="text-emerald-500 shrink-0 mt-0.5"/>:t.status==='blocked'?<Ban size={15} className="text-amber-500 shrink-0 mt-0.5"/>:<CircleDot size={15} className="text-muted-foreground shrink-0 mt-0.5"/>}<div><p className="text-xs font-bold">{t.order}. {t.step_name}</p><p className="text-[11px] text-muted-foreground mt-0.5">{t.description}</p><p className="text-[10px] text-muted-foreground mt-1">{t.status} · owner {t.owner_type || 'admin'}{t.requires_provider_input?' · provider input':''}{t.requires_brand_input?' · merchant input':''}{t.due_date?` · SLA ${t.due_date}`:''}</p>{t.blocked_reason&&<p className="text-[11px] text-amber-600 mt-1">Blocked: {t.blocked_reason}</p>}</div></div>
         <div className="flex gap-1 shrink-0">
           {t.status==='pending'&&<button title="Start" onClick={()=>move(t,'in_progress')} disabled={!!busy} className="p-1.5 rounded border"><Play size={12}/></button>}
           {t.status==='blocked'&&<button title="Retry" onClick={()=>move(t,'in_progress')} disabled={!!busy} className="p-1.5 rounded border"><RotateCcw size={12}/></button>}
