@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.65.0 — ECL P6 Economic Execution & Reconciliation (durability manifest)",
-  "generatedAt": "2026-08-09T00:52:01.559Z",
+  "generatedAt": "2026-08-09T00:55:45.290Z",
   "packageVersion": "0.65.0",
   "stage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
   "freezeStage": "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION",
@@ -127,8 +127,8 @@
     },
     {
       "path": "base44/functions/reconcileInvoice/entry.ts",
-      "sha256": "5455d7eb02265e319f2ca408410bbff833ae2364916ede9453d9bf80a13203fc",
-      "bytes": 3672
+      "sha256": "37691b98887d16263006a4894d2fbeac2e7a2325be267e26da6cb12a365129b9",
+      "bytes": 3697
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
@@ -242,13 +242,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "984298d313d31c2ccbdc3bdebb15c5c4534ba7454221ae1aad14c6afad7e5ad4",
-      "bytes": 404666
+      "sha256": "74e513ceb4ee3d87aba759dca2dd885cc57d99e3e46a25b2b509dc533bccc64f",
+      "bytes": 406183
     },
     {
       "path": "package.json",
-      "sha256": "4f78b432fce92ccce9c3c3842c32bdc1ee89675fb5acca6c1a0e28864e103a8e",
-      "bytes": 5618
+      "sha256": "7c7277107183e3578af41452338391bab3690acb2a9665f59c69903cb5327121",
+      "bytes": 5682
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -512,8 +512,8 @@
     },
     {
       "path": "types/deno-shim.d.ts",
-      "sha256": "08561cccf925611e4616308b1f37c230de036f6eeee1fcd4a25b8888de6fa437",
-      "bytes": 1881
+      "sha256": "f7fe586bae205cc1e495d238a33677cdf4d91d6195be4c71b764d16535f585ba",
+      "bytes": 2244
     }
   ]
 }
