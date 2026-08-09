@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.70.0",
-  "releaseName": "CAMBRA v0.70.0 — Payments V1 Final Technical Seal",
+  "version": "0.71.0",
+  "releaseName": "CAMBRA v0.71.0 — Final Autonomous Platform Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
