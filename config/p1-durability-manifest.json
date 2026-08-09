@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.69.0 — Recover Economics V2 / 24-Month Recovery Right (durability manifest)",
-  "generatedAt": "2026-08-09T16:16:22.828Z",
+  "generatedAt": "2026-08-09T16:19:12.756Z",
   "packageVersion": "0.69.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -417,8 +417,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "0f084b42eb338e30b108e69158e0b9d98f91f0972dff0d883f59ada41750cf20",
-      "bytes": 20238
+      "sha256": "916f7df95f90abe242661db5c769db02cd54bd31ee541ad2bfabd894a09d65f2",
+      "bytes": 20658
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -492,8 +492,8 @@
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
-      "sha256": "17b5d1f438000d5385cc943788b5066a13cffbb277a9b9f44b7677bbe5a751a8",
-      "bytes": 15647
+      "sha256": "8600c5302eab495e816560df65be7bf91afc3ec5edbf5fa2854fad88812c5aef",
+      "bytes": 15654
     },
     {
       "path": "src/lib/eclP6Closure.test.js",
@@ -567,8 +567,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "30a8a3ef53bfb8bfa6662fb6d098de8050dc309ed18e12a75dc3692585f578bc",
-      "bytes": 7057
+      "sha256": "57eec6af0e030f3b347d5ff00e464691a5010f4ad8714d660edce42a6b253a73",
+      "bytes": 7108
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
