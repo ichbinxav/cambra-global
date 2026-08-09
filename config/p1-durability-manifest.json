@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.71.0 — Final Autonomous Platform Seal (durability manifest)",
-  "generatedAt": "2026-08-09T19:55:26.997Z",
+  "generatedAt": "2026-08-09T20:43:11.560Z",
   "packageVersion": "0.71.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -417,8 +417,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "128730b7ef3a5d4695bc595ce1c6b01e8265a4863d8a74aef96ff345ba92e652",
-      "bytes": 23559
+      "sha256": "617d17385c14fab69511857acefaae463b460a348f65c4b7a52154eb974b6659",
+      "bytes": 24503
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -567,8 +567,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "b26c022cd26e2d6a8d1d2e98f72474c2d240411a82fcd3a09f57a07055ebd37b",
-      "bytes": 7570
+      "sha256": "8cf660164da1559446f587ffcfa24771b3b0994b6a1309534a39129fa2256e92",
+      "bytes": 7651
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
