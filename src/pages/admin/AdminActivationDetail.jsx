@@ -121,7 +121,6 @@ export default function AdminActivationDetail(){
               <li key={r.id} className="flex items-center justify-between border rounded-md px-2 py-1">
                 <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
                 <div className="flex items-center gap-2">
-                  <button onClick={()=>openOverride('verify_report', { report_id: r.id })} className="text-xs underline">Verify</button>
                   <Link to="/admin/recover-billing" className="text-xs underline">Billing</Link>
                 </div>
               </li>
@@ -134,7 +133,6 @@ export default function AdminActivationDetail(){
                 <span>{i.month} · €{Number(i.total_amount||0).toLocaleString()} · {i.status}</span>
                 <div className="flex items-center gap-2">
                   <button onClick={()=>downloadInvoicePdf(i.id)} className="text-xs underline">PDF</button>
-                  {i.status!=='void' && <button onClick={()=>openOverride('void_invoice', { invoice_id: i.id })} className="text-xs underline">Void</button>}
                 </div>
               </li>
             ))}

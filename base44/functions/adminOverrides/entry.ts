@@ -40,28 +40,9 @@ Deno.serve(async (req) => {
         await log(activation_id, 'status_changed', 'Activation resumed', { to: next });
         result = { status: next }; activationId = activation_id; break;
       }
-      case 'void_invoice': {
-        const { invoice_id } = payload||{}; assert(invoice_id, 'invoice_id required');
-        const [inv] = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }); assert(inv, 'Invoice not found');
-        await base44.asServiceRole.entities.Invoice.update(invoice_id, { status: 'void' });
-        await log(inv.deal_activation_id||'', 'override_applied', 'Invoice voided', { invoice_id });
-        result = { invoice_status: 'void' }; activationId = inv.deal_activation_id||null; break;
-      }
-      case 'verify_report': {
-        const { report_id } = payload||{}; assert(report_id, 'report_id required');
-        const [rep] = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ id: report_id }); assert(rep, 'Report not found');
-        await base44.asServiceRole.entities.MonthlySavingsReport.update(report_id, { measurement_mode: 'fully_verified', status: 'calculated', verified_by: me.email, verified_at: new Date().toISOString() });
-        await log(rep.deal_activation_id||'', 'override_applied', 'Report verified', { report_id });
-        result = { report_status: 'calculated', measurement_mode: 'fully_verified' }; activationId = rep.deal_activation_id||null; break;
-      }
-      case 'correct_node_fee': {
-        const { report_id, node_fee } = payload||{}; assert(report_id && typeof node_fee==='number', 'report_id and node_fee required');
-        const [rep] = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ id: report_id }); assert(rep, 'Report not found');
-        const old = rep.node_fee||0;
-        await base44.asServiceRole.entities.MonthlySavingsReport.update(report_id, { node_fee });
-        await log(rep.deal_activation_id||'', 'override_applied', 'Node fee corrected', { report_id, old, node_fee });
-        result = { node_fee }; activationId = rep.deal_activation_id||null; break;
-      }
+      case 'void_invoice': throw new Error('economic_override_retired_use_canonical_recover_flow');
+      case 'verify_report': throw new Error('economic_override_retired_use_canonical_recover_flow');
+      case 'correct_node_fee': throw new Error('economic_override_retired_use_canonical_recover_flow');
       case 'revoke_mandate': {
         const { activation_id, reason_text } = payload||{}; assert(activation_id, 'activation_id required');
         const res = await base44.asServiceRole.functions.invoke('revokeMandate', { mandateId: null, dealActivationId: activation_id, reason: reason_text || reason });

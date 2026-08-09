@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ShieldCheck, X, RotateCw, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function formatEur(n) {
   return `€${Math.max(0, Math.round(Number(n) || 0)).toLocaleString()}`;
@@ -28,8 +29,6 @@ export default function MonthlyReportsTable() {
   const [reports, setReports] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [working, setWorking] = useState(null);
-  const [me, setMe] = useState(null);
   const [filterBrand, setFilterBrand] = useState("all");
   const [filterMonth, setFilterMonth] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
@@ -37,14 +36,12 @@ export default function MonthlyReportsTable() {
 
   async function load() {
     setLoading(true);
-    const [r, b, u] = await Promise.all([
+    const [r, b] = await Promise.all([
       base44.entities.MonthlySavingsReport.list("-month", 500),
       base44.entities.Brand.list(),
-      base44.auth.me().catch(() => null),
     ]);
     setReports(r);
     setBrands(b);
-    setMe(u);
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -71,37 +68,6 @@ export default function MonthlyReportsTable() {
   const monthVerified = monthRows.filter(r => r.measurement_mode === "fully_verified").length;
   const monthEstimated = monthRows.length - monthVerified;
 
-  async function verifyReport(r) {
-    setWorking(r.id);
-    await base44.entities.MonthlySavingsReport.update(r.id, {
-      verification_status: "verified",
-      measurement_mode: "fully_verified",
-      verified_by: me?.email || "admin",
-      verified_at: new Date().toISOString(),
-    });
-    await load();
-    setWorking(null);
-  }
-
-  async function voidReport(r) {
-    if (!confirm(`Void report for ${brandName(r.brand_id)} — ${r.month}? This cannot be undone.`)) return;
-    setWorking(r.id);
-    await base44.entities.MonthlySavingsReport.update(r.id, { status: "void" });
-    await load();
-    setWorking(null);
-  }
-
-  async function regenerate(r) {
-    setWorking(r.id);
-    // Void the existing then regenerate
-    await base44.entities.MonthlySavingsReport.update(r.id, { status: "void" });
-    await base44.functions.invoke("generateMonthlySavingsReport", {
-      brand_id: r.brand_id,
-      month: r.month,
-    });
-    await load();
-    setWorking(null);
-  }
 
   if (loading) {
     return <div className="p-6 text-sm text-muted-foreground">Loading monthly reports…</div>;
@@ -113,9 +79,10 @@ export default function MonthlyReportsTable() {
         <div>
           <h2 className="text-lg font-black tracking-[-0.02em]">Monthly Reports</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Measured savings per brand per month. Verify, void or regenerate.
+            Measured savings per brand per month. Verification and invoicing actions run only through the canonical Recover Billing gates.
           </p>
         </div>
+        <Link to="/admin/recover-billing" className="text-xs font-bold underline underline-offset-4">Open Recover Billing</Link>
       </div>
 
       {/* Summary strip — current month */}
@@ -212,39 +179,8 @@ export default function MonthlyReportsTable() {
                       </span>
                     </td>
                     <td className="px-3 py-2 capitalize text-muted-foreground">{r.status}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-1 justify-end">
-                        {!isVoid && r.verification_status !== "verified" && (
-                          <button
-                            disabled={working === r.id}
-                            onClick={() => verifyReport(r)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 text-[10px] font-bold hover:bg-emerald-500/20 disabled:opacity-50"
-                            title="Verify"
-                          >
-                            <ShieldCheck size={10} /> Verify
-                          </button>
-                        )}
-                        {!isVoid && (
-                          <button
-                            disabled={working === r.id}
-                            onClick={() => regenerate(r)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-border bg-card text-[10px] font-bold hover:bg-secondary disabled:opacity-50"
-                            title="Regenerate"
-                          >
-                            <RotateCw size={10} /> Regenerate
-                          </button>
-                        )}
-                        {!isVoid && (
-                          <button
-                            disabled={working === r.id}
-                            onClick={() => voidReport(r)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-red-500/30 bg-red-500/10 text-red-700 text-[10px] font-bold hover:bg-red-500/20 disabled:opacity-50"
-                            title="Void"
-                          >
-                            <X size={10} /> Void
-                          </button>
-                        )}
-                      </div>
+                    <td className="px-3 py-2 text-right">
+                      {!isVoid && <Link to="/admin/recover-billing" className="text-[10px] font-bold underline underline-offset-2">Review in billing</Link>}
                     </td>
                   </tr>
                 );
