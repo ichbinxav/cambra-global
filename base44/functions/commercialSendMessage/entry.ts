@@ -3,12 +3,17 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
 
-function cambraSignature(provider:string, engine:string){
-  if(provider==='outlook') return `Xavi M. Contero\nFounder, CAMBRA\nhttps://cambra.global`;
-  if(engine==='provider_negotiation') return `CAMBRA Operations\nCAMBRA\nhttps://cambra.global`;
-  return `CAMBRA\nInfrastructure Intelligence\nhttps://cambra.global`;
+const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
+const CAMBRA_WEB='https://www.cambra.global';
+function signatureIdentity(provider:string, engine:string){
+  if(provider==='outlook') return {name:'Xavi M. Contero',title:'Founder, CAMBRA',email:'xavi@cambra.global'};
+  if(engine==='provider_negotiation') return {name:'CAMBRA Operations',title:'Infrastructure Operations',email:'operations@contact.cambra.global'};
+  return {name:'CAMBRA Payments',title:'Infrastructure Intelligence',email:'payments@contact.cambra.global'};
 }
+function cambraSignature(provider:string, engine:string){const i=signatureIdentity(provider,engine);return `${i.name}\n${i.title}\nMail: ${i.email}\nWeb: www.cambra.global`;}
 function ensureSignature(text:string, signature:string){const t=String(text||'').trimEnd();if(t.includes(signature))return t;return `${t}\n\n${signature}`;}
+function escapeHtml(v:string){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function signedHtml(text:string,provider:string,engine:string){const i=signatureIdentity(provider,engine);const body=escapeHtml(String(text||'').trim()).replace(/\n/g,'<br>');return `<!doctype html><html><body><div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#171717">${body}<table cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse"><tr><td style="padding-right:12px;vertical-align:top"><img src="${CAMBRA_LOGO}" width="38" height="38" alt="CAMBRA" style="display:block;border:0;width:38px;height:38px"></td><td style="vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.45;color:#555"><strong style="font-size:13px;color:#171717">${escapeHtml(i.name)}</strong><br>${escapeHtml(i.title)}<br>Mail: <a href="mailto:${escapeHtml(i.email)}" style="color:#171717;text-decoration:none">${escapeHtml(i.email)}</a><br>Web: <a href="${CAMBRA_WEB}" style="color:#171717;text-decoration:none">www.cambra.global</a></td></tr></table></div></body></html>`;}
 
 Deno.serve(async (req) => {
   try {
@@ -56,7 +61,7 @@ Deno.serve(async (req) => {
     const quality=communicationQuality(text,{previous_outbound:previousOut.map((m:any)=>String(m.text_body||''))});
     if(!quality.ok)return Response.json({ok:false,error:'communication_quality_gate_failed',quality},{status:422});
 
-    const signedText=ensureSignature(text,cambraSignature(String((body?.sending_profile_key||thread.sending_profile_key||'')).startsWith('outlook:')?'outlook':'resend',String(thread.engine||'')));
+    const signatureProvider=String((body?.sending_profile_key||thread.sending_profile_key||'')).startsWith('outlook:')?'outlook':'resend';const signedText=ensureSignature(text,cambraSignature(signatureProvider,String(thread.engine||'')));const signedHTML=signedHtml(text,signatureProvider,String(thread.engine||''));
 
     const idempotency = String(body?.idempotency_key || `cambra:${thread.id}:${action}:${thread.last_inbound_at || thread.last_message_at || 'start'}`);
     const existing = await svc.entities.CommunicationMessage.filter({ thread_id:thread.id, direction:'outbound', idempotency_key:idempotency }, '-created_date', 1).catch(()=>[]);
@@ -82,13 +87,13 @@ Deno.serve(async (req) => {
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
     if (provider==='outlook' && outlook?.accessToken) {
       const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
-      const draftRes=await fetch('https://graph.microsoft.com/v1.0/me/messages',{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({subject,body:{contentType:'Text',content:signedText},toRecipients:[{emailAddress:{address:to}}],internetMessageHeaders:[{name:'X-CAMBRA-Thread',value:thread.id}]})});const draft=await draftRes.json().catch(()=>({}));if(!draftRes.ok)throw new Error(`outlook_draft_failed:${draftRes.status}`);
+      const draftRes=await fetch('https://graph.microsoft.com/v1.0/me/messages',{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({subject,body:{contentType:'HTML',content:signedHTML},toRecipients:[{emailAddress:{address:to}}],internetMessageHeaders:[{name:'X-CAMBRA-Thread',value:thread.id}]})});const draft=await draftRes.json().catch(()=>({}));if(!draftRes.ok)throw new Error(`outlook_draft_failed:${draftRes.status}`);
       const sendRes=await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(String(draft.id))}/send`,{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`}});if(!sendRes.ok)throw new Error(`outlook_send_failed:${sendRes.status}`);providerMessageId=draft.id||null;externalThreadId=draft.conversationId||externalThreadId;raw={...raw,outlook_message_id:draft.id||null,conversation_id:draft.conversationId||null};
     } else {
       const resendKey = Deno.env.get('RESEND_API_KEY');
       if (!resendKey) return Response.json({ ok:false, error:'commercial_email_not_configured', setup_required:true }, { status:503 });
-      provider='resend';const from=sendingProfile?.from_address?`CAMBRA <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||'CAMBRA <hello@contact.cambra.global>');fromAddress=String(sendingProfile?.from_address||'hello@contact.cambra.global');const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
-      const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
+      provider='resend';const resendIdentity=signatureIdentity('resend',String(thread.engine||''));const from=sendingProfile?.from_address?`${resendIdentity.name} <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||`${resendIdentity.name} <${resendIdentity.email}>`);fromAddress=String(sendingProfile?.from_address||resendIdentity.email);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
+      const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,html:signedHTML,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
     }
     const message = await svc.entities.CommunicationMessage.create({
       thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency, sending_profile_key:sendingProfile?.profile_key||thread.sending_profile_key||null,
