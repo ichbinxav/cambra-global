@@ -81,6 +81,49 @@
     "legal_basis_note": {
       "type": "string",
       "description": "Human-readable justification supporting the chosen legal_basis. For 'legitimate_interest' this doubles as the LIA (Legitimate Interest Assessment) summary."
+    },
+    "revenue_stage": {
+      "type": "string",
+      "enum": [
+        "discovered",
+        "enriched",
+        "qualified",
+        "outreach_ready",
+        "contacted",
+        "engaged",
+        "discovery",
+        "analysis_pending",
+        "analyzed",
+        "proposal",
+        "recover",
+        "won",
+        "lost",
+        "nurture",
+        "reactivation"
+      ]
+    },
+    "revenue_opportunity_score": {
+      "type": "number",
+      "description": "0-100 deterministic bounded priority projection: expected revenue \u00d7 probability \u00d7 strategic value. Does not invent missing economics."
+    },
+    "expected_revenue_value": {
+      "type": "number"
+    },
+    "close_probability": {
+      "type": "number"
+    },
+    "strategic_value": {
+      "type": "number"
+    },
+    "revenue_confidence": {
+      "type": "number"
+    },
+    "next_action_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sales_owner": {
+      "type": "string"
     }
   },
   "required": [],

@@ -13,7 +13,8 @@
         "partner_acquisition",
         "provider_negotiation",
         "merchant_operations",
-        "support"
+        "support",
+        "aggregate_procurement"
       ]
     },
     "related_entity_type": {
@@ -128,6 +129,26 @@
         "not_applicable"
       ],
       "default": "not_applicable"
+    },
+    "meeting_classification": {
+      "type": "string",
+      "enum": [
+        "low_value",
+        "operational",
+        "technical",
+        "commercial",
+        "strategic",
+        "legal",
+        "executive"
+      ]
+    },
+    "founder_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "meeting_brief_json": {
+      "type": "object",
+      "description": "Structured pre-meeting brief derived only from real thread/provider/account context. Never fabricated meeting notes."
     }
   },
   "required": [

@@ -46,6 +46,85 @@
     "resolved_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "workflow_state": {
+      "type": "string",
+      "enum": [
+        "new",
+        "investigating",
+        "auto_resolution",
+        "waiting_external",
+        "waiting_merchant",
+        "human_review",
+        "resolved",
+        "failed",
+        "archived"
+      ],
+      "default": "new"
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "merchant",
+        "provider",
+        "founder",
+        "engineering",
+        "finance",
+        "legal",
+        "operations"
+      ],
+      "default": "automation"
+    },
+    "automation_eligibility": {
+      "type": "string",
+      "enum": [
+        "safe_auto",
+        "bounded_auto",
+        "human_required"
+      ],
+      "default": "safe_auto"
+    },
+    "financial_impact_minor": {
+      "type": "number",
+      "default": 0
+    },
+    "customer_impact": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "none"
+    },
+    "legal_risk": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "none"
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "actions_taken_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "recovery_json": {
+      "type": "object"
+    },
+    "prevention_json": {
+      "type": "object"
     }
   },
   "required": [

@@ -7,7 +7,7 @@ const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1f
 const CAMBRA_WEB='https://www.cambra.global';
 function signatureIdentity(provider:string, engine:string){
   if(provider==='outlook') return {name:'Xavi M. Contero',title:'Founder, CAMBRA',email:'xavi@cambra.global'};
-  if(engine==='provider_negotiation') return {name:'CAMBRA Operations',title:'Infrastructure Operations',email:'operations@contact.cambra.global'};
+  if(['provider_negotiation','aggregate_procurement'].includes(engine)) return {name:'CAMBRA Operations',title:'Infrastructure Operations',email:'operations@contact.cambra.global'};
   return {name:'CAMBRA Payments',title:'Infrastructure Intelligence',email:'payments@contact.cambra.global'};
 }
 function cambraSignature(provider:string, engine:string){const i=signatureIdentity(provider,engine);return `${i.name}\n${i.title}\nMail: ${i.email}\nWeb: www.cambra.global`;}
