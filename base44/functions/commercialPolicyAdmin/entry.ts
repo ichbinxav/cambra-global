@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
         icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : engine === 'partner_acquisition' ? (body?.icp_json || { partner_types:['accounting_firm','fractional_cfo','ecommerce_agency','boutique_consultancy'], titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'], per_run:20 }) : {},
         excluded_domains: Array.isArray(body?.excluded_domains) ? body.excluded_domains.map((x:any)=>String(x).toLowerCase()).slice(0,200) : [],
         languages: Array.isArray(body?.languages) ? body.languages.filter((x:any)=>['en','fr','es'].includes(x)) : ['en','fr','es'],
-        daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 200)),
+        daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 500)),
         min_lead_score: Math.max(0, Math.min(Number(body?.min_lead_score) || 70, 100)),
         business_hours_start: Math.max(0, Math.min(Number(body?.business_hours_start) || 8, 23)),
         business_hours_end: Math.max(1, Math.min(Number(body?.business_hours_end) || 19, 24)),

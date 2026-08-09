@@ -5,9 +5,9 @@
     {
       "type": "scheduled",
       "name": "Merchant Acquisition Loop — hourly",
-      "description": "Policy-gated merchant acquisition sweep. Sends only inside an active founder-approved campaign policy and suppression/business-hours/daily-limit boundaries.",
+      "description": "Legacy premium merchant worker retained for controlled/manual compatibility; scheduled execution disabled because cold merchants route exclusively through outboundVolumeWorker/Resend.",
       "function_args": {},
-      "is_active": true,
+      "is_active": false,
       "schedule_mode": "recurring",
       "schedule_type": "simple",
       "repeat_unit": "hours",
