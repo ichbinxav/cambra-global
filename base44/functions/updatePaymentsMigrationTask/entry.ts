@@ -2,7 +2,14 @@
 // go-live/verification invariants. No merchant can mutate orchestration state.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-const VALID = new Set(['pending','in_progress','blocked','done','canceled']);
+const VALID = new Set(['pending','in_progress','blocked','done']);
+const PLAN_VERSION = 'payments-recover-p9-v1';
+const ALLOWED = {
+  pending: new Set(['in_progress']),
+  in_progress: new Set(['blocked','done']),
+  blocked: new Set(['in_progress']),
+  done: new Set(),
+};
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -22,19 +29,37 @@ export default async function (req: Request): Promise<Response> {
     const found = await svc.entities.MigrationTask.filter({ id: taskId }, '-created_date', 1).catch(() => []);
     const task:any = found?.[0];
     if (!task) return Response.json({ error: 'task_not_found' }, { status: 404 });
+    if (task?.metadata_json?.plan_version !== PLAN_VERSION) return Response.json({ error: 'not_p9_task' }, { status: 409 });
+    const allowed = ALLOWED[task.status] || new Set();
+    if (!allowed.has(nextStatus)) return Response.json({ error: 'invalid_task_transition', from: task.status, to: nextStatus }, { status: 409 });
+    if (nextStatus === 'done' && note.length < 3) return Response.json({ error: 'completion_evidence_note_required' }, { status: 400 });
     const acts = await svc.entities.DealActivation.filter({ id: task.deal_activation_id }, '-created_date', 1).catch(() => []);
     const activation:any = acts?.[0];
     if (!activation || activation.vertical !== 'payments') return Response.json({ error: 'payments_activation_not_found' }, { status: 404 });
 
-    const tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+    const allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+    const tasks = allTasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
+    if (nextStatus === 'in_progress' || nextStatus === 'done') {
+      const earlier = tasks.filter(t => Number(t.order || 0) < Number(task.order || 0) && t.status !== 'done');
+      if (earlier.length) return Response.json({ error: 'earlier_tasks_incomplete', task_ids: earlier.map(t => t.id) }, { status: 409 });
+    }
     if (nextStatus === 'done') {
-      const earlier = tasks.filter(t => Number(t.order || 0) < Number(task.order || 0) && !['done','canceled'].includes(t.status));
       if (earlier.length) return Response.json({ error: 'earlier_tasks_incomplete', task_ids: earlier.map(t => t.id) }, { status: 409 });
       if (task.step_name === 'go_live' && activation.status !== 'migrating') {
         return Response.json({ error: 'go_live_requires_migrating', activation_status: activation.status }, { status: 409 });
       }
-      if (task.step_name === 'verify_savings' && !activation.conditions_activated_at) {
-        return Response.json({ error: 'conditions_activation_evidence_required' }, { status: 409 });
+      if (task.step_name === 'verify_savings') {
+        if (!activation.conditions_activated_at || !activation.first_measurement_month) {
+          return Response.json({ error: 'conditions_activation_evidence_required' }, { status: 409 });
+        }
+        const reports = await svc.entities.MonthlySavingsReport.filter({ deal_activation_id: activation.id }, '-month', 50).catch(() => []);
+        const verified = (reports || []).find(r =>
+          String(r.month || '') >= String(activation.first_measurement_month || '') &&
+          r.measurement_mode === 'fully_verified' &&
+          ['verified','realized'].includes(r.verification_status) &&
+          Number.isFinite(Number(r.savings))
+        );
+        if (!verified) return Response.json({ error: 'verified_real_savings_report_required' }, { status: 409 });
       }
     }
 
@@ -55,7 +80,11 @@ export default async function (req: Request): Promise<Response> {
         await svc.entities.OperationalLog.create({ deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '', event_type: 'go_live', message: 'Payments migration went live', data_json: { task_id: taskId }, actor_email: me.email, created_at: now }).catch(() => null);
       }
       const next = tasks.find(t => Number(t.order || 0) > Number(task.order || 0) && t.status === 'pending');
-      if (next) await svc.entities.MigrationTask.update(next.id, { status: 'in_progress', updated_at: now }).catch(() => null);
+      if (next) {
+        const slaDays = Number(next?.metadata_json?.sla_days || 3);
+        const due = new Date(); due.setUTCDate(due.getUTCDate() + slaDays);
+        await svc.entities.MigrationTask.update(next.id, { status: 'in_progress', updated_at: now, due_date: due.toISOString().slice(0,10) }).catch(() => null);
+      }
     }
 
     await svc.entities.OperationalLog.create({
