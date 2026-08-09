@@ -6,6 +6,16 @@
 
 ---
 
+## Release v0.65.1 — Launch Security & Type Safety Hardening (2026-08-09)
+
+**Current ECL stage remains `ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION` — 58 exact paths, 8 frozen entries.** This is a launch-hardening patch, not P7: it changes no ECL policy, economic authorization rule, invoice calculation or Stripe reconciliation semantics. The partial P7 work was checkpointed separately and removed from the live tree before this release was sealed.
+
+The production dependency graph was re-audited against the actual lockfile. Before remediation, the live lock exposed 13 advisories (1 critical, 6 high, 6 moderate), including the six previously triaged around PostCSS, React Router, nanoid, Socket.IO parser and DOMPurify plus transitive Vite/esbuild/js-yaml/brace-expansion findings. v0.65.1 upgrades `react-router-dom` to 7.18.2, PostCSS to 8.5.26 and Vitest to 4.1.10, and pins the vulnerable transitive branches through narrow package overrides (`socket.io-parser` 4.2.7, DOMPurify 3.4.13, js-yaml 4.3.1, brace-expansion 1.1.18). `npm audit` now reports **0 vulnerabilities at every severity**. The Browserslist database was also refreshed.
+
+The historical full-repo TypeScript debt is closed rather than re-baselined. `npx tsc -p jsconfig.json` moved from the approved 516-error baseline to **0 errors**, with `allowJs`/`checkJs` still active and without blanket `@ts-nocheck` or file exclusions. The largest source was incorrect inference in shared React/Radix wrappers; the remaining work corrected real context, state, browser-environment and payments-domain shapes. The critical ECL/economic typecheck remains independently at 0 errors. The sanctioned baseline is reset through `candidate → approve` to an approved count of 0, so any future TypeScript diagnostic is a release regression.
+
+Compatibility after the dependency/type closure is verified by the full suite and production build, not assumed from package-manager output. The release remains subject to the same external distinction as P5/P6: local/Base44 `release:check` is not a GitHub Actions CI seal. A real GitHub Actions run is still required before claiming external CI sealing.
+
 ## Release v0.65.0 — ECL P6 Economic Execution & Reconciliation (2026-08-09)
 
 **Current stage: `ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION` — 58 exact paths, 8 frozen entries.** P1-P5 remain the authority for evidence, lifecycle, review and whether an economic effect is allowed. P6 starts only after P5 authorization and makes execution/reconciliation replay-safe and convergent.
