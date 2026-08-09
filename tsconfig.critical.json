@@ -1,5 +1,5 @@
 {
-  "//": "v0.65.0 ECL P6 Economic Execution & Reconciliation: critical typecheck covers P1-P5 plus the shared execution core, Stripe billing webhook and scheduled Recover reconciler. No economic authorization/execution/reconciliation boundary may escape critical tsc.",
+  "//": "v0.66.0 ECL P7 Production Operations & Incident Recovery: critical typecheck covers P1-P6 plus operational health, bounded admin recovery and webhook DLQ execution. No economic or recovery boundary may escape critical tsc.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -61,6 +61,10 @@
     "base44/functions/reconcileRecoverBilling/entry.ts",
     "base44/functions/recordPayment/entry.ts",
     "base44/functions/reconcileInvoice/entry.ts",
-    "base44/functions/createPaymentLink/entry.ts"
+    "base44/functions/createPaymentLink/entry.ts",
+    "base44/shared/eclOperationalRecovery.ts",
+    "base44/functions/eclProductionHealth/entry.ts",
+    "base44/functions/eclIncidentWorkflow/entry.ts",
+    "base44/functions/processWebhookDeadLetters/entry.ts"
   ]
 }
