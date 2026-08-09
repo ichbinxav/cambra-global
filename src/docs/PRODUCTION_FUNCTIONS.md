@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration) · **Total: 170 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration + Final Autonomous Platform Seal) · **Total: 184 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -114,6 +114,19 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | eclProductionHealth | **cada 10 min vía automation versionada** | gate (admin o interno) | AgentTask, StatementImport, SavingsEvidence, Invoice, WebhookDeadLetter, ReviewCase, OperationalIncident | P7: lecturas críticas autoritativas/fail-closed; materializa/auto-resuelve señales, **nunca ejecuta recovery** ni muta economía/evidencia |
 
 **`recoverBillingDigest` está gated y versionado.** Corre cada 7 días mediante `base44/functions/recoverBillingDigest/function.jsonc`, usando el mismo modelo de scheduler app-owner admin que el resto de automations versionadas. También admite `INTERNAL_CALL_SECRET` y ejecución manual admin; llamadas anónimas fallan cerradas. Sigue siendo read-only respecto a economía: solo envía el digest al destinatario configurado y registra `OperationalLog`; no aprueba informes ni crea facturas. La ventana de 6 h actúa además como guard de replay/idempotencia y `coverage_truncated` hace visible cualquier consulta que alcance su límite en lugar de fingir cobertura completa.
+
+## Final Autonomous Platform Seal — commercial autonomy surface
+
+| Función | Clase/Auth | Entidades | Autoridad |
+|---|---|---|---|
+| commercialPolicyAdmin | B · admin | CommercialPolicy, OperationalLog | Crea/activa/pausa policy versionada; activación exige confirmación explícita y supersede policy previa del mismo engine |
+| autonomousCommercialWorker | C · gate | CommercialPolicy, OutboundLead, ContactSuppression, CommunicationThread, CommunicationMessage, AgentTask | Hourly acquisition loop; no envía sin policy activa, legal_basis, score mínimo, business-hours, suppression y daily cap |
+| commercialSendMessage | B/internal · gate | CommunicationThread, CommunicationMessage, ContactSuppression, CommercialPolicy | Único sender autónomo; revalida policy/action/classification/suppression/idempotency antes de Resend |
+| resendInboundWebhook | pública por diseño · firma Svix/Resend | CommunicationThread, CommunicationMessage, ContactSuppression, OperationalLog | Verifica `svix-*` sobre body raw; `email.received` recupera cuerpo por Resend Receiving API; bounce/complaint suprimen |
+| commercialReplyAgent | B/internal · gate | CommunicationThread, CommunicationMessage, CommercialPolicy, Approval, AgentTask | Clasifica reply; routine reply solo dentro de policy; unsubscribe stop; L4 crea Approval; provider offers pasan al negotiation case |
+| startProviderNegotiation | B/internal · gate | DealActivation, Mandate, Provider, CommercialPolicy, NegotiationCase, CommunicationThread | Solo Recover payments autorizado + Mandate active con `renegotiate_with_provider=true`; provider CRM/contact + policy obligatorios |
+| providerNegotiationAgent | B/internal · gate | NegotiationCase, NegotiationOffer, CommunicationThread, CommunicationMessage, Approval, AgentTask | Multi-round pricing; estructura offers; puede contraofertar; final/material/max-round/target alcanzado → L4 Approval, nunca autoacepta |
+| resolveCommercialApproval | B · admin | Approval, NegotiationCase, NegotiationOffer, DealActivation, Mandate, CommunicationThread, OperationalLog | Revalida offer vigencia + Recover + mismo Mandate antes de aprobar; aprobación comercial no firma contrato ni hace go-live |
 
 ## B — Admin / founder-OS interno (79)
 
