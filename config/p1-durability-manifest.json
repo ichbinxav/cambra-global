@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.68.0 — P9 Recover Fulfilment & Payments Migration Operations (durability manifest)",
-  "generatedAt": "2026-08-09T14:53:43.714Z",
+  "generatedAt": "2026-08-09T15:44:13.846Z",
   "packageVersion": "0.68.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -72,8 +72,8 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "8258bd8f2ec1c73e842386d4d061d914ffa894bd6b999d20ab8b5c7dd60cbaaf",
-      "bytes": 15364
+      "sha256": "054d5d4892c038b6081dcc729db20097157cc9a0c50810a05a6f9a0da7a88e7d",
+      "bytes": 15435
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
@@ -152,8 +152,8 @@
     },
     {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
-      "sha256": "2ee0a5d45c74bb28de3c76b00c098cd75b36de39bcd8778842a9b95836fa89df",
-      "bytes": 5353
+      "sha256": "ce68695cc3c2f3727155ddf5eb91c4a6547674535d6cd3b1814e1e4779328f74",
+      "bytes": 6281
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -207,13 +207,13 @@
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
-      "sha256": "bd4308f6cf8932d76a24a8873f27e0bc6b77c4e8cf6b3b9ca87d39b274f9eb5a",
-      "bytes": 7803
+      "sha256": "7b72c82cf5ee9e80569bae04bc96e65d2ff29ef745ba44deb8b33c1dbf3f04a3",
+      "bytes": 7882
     },
     {
       "path": "base44/functions/stripeBillingWebhook/entry.ts",
-      "sha256": "74dc30fbfddd2ff72bba3db9d3d9e7f30d22953a6aca71d00e44ca8b8757041a",
-      "bytes": 9637
+      "sha256": "b0aaf45457140fdbe4a9d33e4ba51fe045f09e08f1ba319bb7865a8176ac0e84",
+      "bytes": 10658
     },
     {
       "path": "base44/shared/eclEconomicGate.ts",
@@ -402,13 +402,13 @@
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
-      "sha256": "b5678cbac559d6d347fce9a5bb78e5bf7e243b263ea401e5c9cd77f2e2e71a6a",
-      "bytes": 9384
+      "sha256": "aecc98739417c80004508a14dcf62ea52767381959ecc928d6470063bd0da123",
+      "bytes": 7711
     },
     {
       "path": "src/components/recover/RecoverMandatePanel.jsx",
-      "sha256": "7d7e083f3c45157fc2fa35ca7faca7207125098970ec8bdbe5ab9b95db806e86",
-      "bytes": 5250
+      "sha256": "6937c038fee9b078e9a12fd12ec5bf0471e7e6c68b6b72352030bdf3a85d4d92",
+      "bytes": 4623
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
