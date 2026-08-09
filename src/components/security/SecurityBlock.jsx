@@ -15,7 +15,7 @@ const ACCENTS = {
 export default function SecurityBlock({
   index,
   title,
-  titleAccent,
+  titleAccent = null,
   icon: Icon,
   accent = "voltio",
   children,
