@@ -15,7 +15,7 @@ import { getToolMeta, getCategoryAccent } from "@/lib/iconSystem";
  */
 export default function ToolLogo({
   name,
-  category,
+  category = null,
   size = 24,
   variant = "container",
   dark = false,
