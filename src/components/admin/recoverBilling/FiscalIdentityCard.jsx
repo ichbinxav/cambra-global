@@ -13,7 +13,15 @@ const FIELDS = [
 
 export default function FiscalIdentityCard({ brandId }) {
   const [brand, setBrand] = useState(null);
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState({
+    billing_legal_name: "",
+    billing_address_line1: "",
+    billing_address_line2: "",
+    billing_postal_code: "",
+    billing_city: "",
+    billing_country: "FR",
+    vat_number: "",
+  });
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
 
