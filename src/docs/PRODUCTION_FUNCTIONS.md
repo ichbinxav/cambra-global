@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration + Final Autonomous Platform Seal) · **Total: 184 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration + Final Autonomous Platform Seal) · **Total: 188 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
