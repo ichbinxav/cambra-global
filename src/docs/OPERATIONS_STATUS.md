@@ -6,6 +6,20 @@
 
 ---
 
+## Release v0.66.0 — ECL P7 Production Operations & Incident Recovery (2026-08-09)
+
+**Current stage: `ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY` — 67 exact paths, 8 frozen entries.** P7 is operational containment, not a new economic authority. P5 remains the authority for whether a contractual/economic effect may happen; P6 remains the authority for replay-safe Stripe execution/reconciliation. P7 observes those paths and gives an admin a bounded way to recover failed workers or delivery attempts.
+
+`eclProductionHealth` runs every 10 minutes from versioned Base44 automation. Its critical reads are authoritative/fail-closed: worker liveness, overdue provisional evidence, Stripe reconciliation mismatch/error, exhausted/overdue webhook dead letters and stuck resolving ReviewCases are never converted to empty-state success on read failure. Signals materialize into `OperationalIncident` using deterministic dedupe and bucketed idempotency keys. When a signal clears an authoritative sweep resolves the incident; if a human closes an incident while the signal still exists, the next sweep reopens the same episode rather than manufacturing green.
+
+The three operational workers now have runtime proof through `AgentTask`: `ecl_lifecycle_scheduler`, `recover_billing_reconciler` and `webhook_dead_letter_processor`. P7 does not weaken P6: `reconcileRecoverBilling` remains Stripe-GET-only and only gains telemetry. The webhook DLQ worker is now versioned to run every 5 minutes, claims before delivery, preserves the stable DLQ/delivery id and keeps the bounded automatic retry budget. Replaying an exhausted delivery is a separate path requiring an authenticated admin, exact `deadLetterId` and explicit `REPLAY_EXHAUSTED` confirmation.
+
+`eclIncidentWorkflow` is admin-only. It exposes runtime/list/get/acknowledge/recover/resolve, race-claims recovery with conditional `updateMany`, maps recovery through a closed allowlist (`eclLifecycleScheduler`, `reconcileRecoverBilling`, `processWebhookDeadLetters`) and never accepts a caller-supplied function name. `inspect_manual` incidents cannot invoke code. `/admin/ecl-operations` consumes only this workflow plus the health sweep; it has no direct Invoice/SavingsEvidence mutation path.
+
+All P7 backend boundaries are included in `tsconfig.critical.json`, while the repository-wide `allowJs/checkJs` gate remains at zero errors. Closure tests lock stage reversibility, the nine-path P7 widening, liveness/idempotency contracts, fail-closed health reads, non-auto-recovery, admin-only replay, scheduler cadences, P6 Stripe read-only preservation and the protected admin operator surface.
+
+**Seal distinction:** repository/Base44 verification can prove the source/runtime configuration represented here. A separate GitHub Actions run is still required before calling the release externally CI-sealed.
+
 ## Release v0.65.1 — Launch Security & Type Safety Hardening (2026-08-09)
 
 **Current ECL stage remains `ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION` — 58 exact paths, 8 frozen entries.** This is a launch-hardening patch, not P7: it changes no ECL policy, economic authorization rule, invoice calculation or Stripe reconciliation semantics. The partial P7 work was checkpointed separately and removed from the live tree before this release was sealed.
