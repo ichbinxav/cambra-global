@@ -49,6 +49,9 @@ if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economic
     productPolicy?.economicTerms?.recoverEconomicsV2LegalApproved !== true) {
   manualRequirements.push("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
 }
+if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
+  manualRequirements.push(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
+}
 for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
   const st = evidenceStatus(ev, tree.hash);
   if (st !== "valid") manualRequirements.push(`evidence ${name}: ${st} (run the *:evidence command)`);
