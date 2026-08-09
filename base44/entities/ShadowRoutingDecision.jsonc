@@ -1,0 +1,122 @@
+{
+  "name": "ShadowRoutingDecision",
+  "type": "object",
+  "description": "Immutable counterfactual routing decision. Simulation only; never authorizes, retries, captures, refunds or redirects a payment.",
+  "properties": {
+    "decision_key": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "routing_observation_id": {
+      "type": "string"
+    },
+    "actual_provider_slug": {
+      "type": "string"
+    },
+    "preferred_provider_slug": {
+      "type": "string"
+    },
+    "preferred_route_type": {
+      "type": "string",
+      "enum": [
+        "deployable",
+        "theoretical",
+        "actual_only"
+      ]
+    },
+    "optimization_mode": {
+      "type": "string",
+      "enum": [
+        "cost_only",
+        "approval_aware",
+        "cost_and_approval",
+        "contract_constrained",
+        "multi_provider",
+        "failover_simulation"
+      ]
+    },
+    "actual_cost_minor": {
+      "type": "number"
+    },
+    "preferred_estimated_cost_minor": {
+      "type": "number"
+    },
+    "estimated_cost_delta_minor": {
+      "type": "number"
+    },
+    "actual_approval_observed": {
+      "type": "boolean"
+    },
+    "preferred_approval_probability": {
+      "type": "number"
+    },
+    "approval_delta_estimated": {
+      "type": "number"
+    },
+    "counterfactual": {
+      "type": "boolean",
+      "default": true
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "sample_size": {
+      "type": "number"
+    },
+    "pricing_provenance_json": {
+      "type": "object"
+    },
+    "candidate_routes_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "explanation_json": {
+      "type": "object"
+    },
+    "routing_policy_id": {
+      "type": "string"
+    },
+    "intelligence_snapshot_id": {
+      "type": "string"
+    },
+    "routing_model_version": {
+      "type": "string"
+    },
+    "features_version": {
+      "type": "string"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "decision_key",
+    "brand_id",
+    "routing_observation_id",
+    "actual_provider_slug",
+    "counterfactual",
+    "routing_model_version",
+    "evaluated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
