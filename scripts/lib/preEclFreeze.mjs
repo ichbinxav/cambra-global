@@ -46,7 +46,10 @@ export const STAGE_ECL_P6 = "ECL_P6_ECONOMIC_EXECUTION_RECONCILIATION";
 // critical-worker liveness/SLO detection, idempotent operational incidents,
 // versioned DLQ scheduling, and explicit admin-only bounded recovery/replay.
 export const STAGE_ECL_P7 = "ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY";
-export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6, STAGE_ECL_P7];
+// v0.67.0 — P8 closes the founder/admin operating surface and safe scheduler configuration.
+// It adds no economic authority: human approval/invoice generation remains deliberately unscheduled.
+export const STAGE_ECL_P8 = "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS";
+export const STAGES = [STAGE_PRE_ECL, STAGE_ECL_P1, STAGE_ECL_P2, STAGE_ECL_P3, STAGE_ECL_P4, STAGE_ECL_P4_PROOF, STAGE_ECL_P5, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8];
 
 // Declared transitions. PRE_ECL → P2 is DELIBERATELY ABSENT: P1 cannot be
 // skipped, so a repo that never applied the schemas can never reach the
@@ -64,7 +67,8 @@ export const STAGE_TRANSITIONS = {
   [STAGE_ECL_P4_PROOF]: [STAGE_ECL_P4, STAGE_ECL_P5],
   [STAGE_ECL_P5]: [STAGE_ECL_P4_PROOF, STAGE_ECL_P6],
   [STAGE_ECL_P6]: [STAGE_ECL_P5, STAGE_ECL_P7],
-  [STAGE_ECL_P7]: [STAGE_ECL_P6],
+  [STAGE_ECL_P7]: [STAGE_ECL_P6, STAGE_ECL_P8],
+  [STAGE_ECL_P8]: [STAGE_ECL_P7],
 };
 
 // CODE-OWNED allowlist for ECL P1. The six schema paths, nothing else — no
@@ -215,7 +219,22 @@ export const P7_ALLOWLIST = [
   "src/lib/eclP7Closure.test.js",
 ];
 
+export const P8_ALLOWLIST = [
+  ...P7_ALLOWLIST,
+  "base44/functions/getAdminOperationsCockpit/entry.ts",
+  "base44/functions/adminAgentOperations/entry.ts",
+  "src/pages/admin/AdminCommand.jsx",
+  "src/pages/admin/AdminAgents.jsx",
+  "src/pages/admin/AdminAutomations.jsx",
+  "base44/functions/retryPendingRecoverContracts/function.jsonc",
+  "base44/functions/purgePaymentsAnalysisSessions/function.jsonc",
+  "base44/functions/purgeInactiveLeads/function.jsonc",
+  "base44/functions/scheduledBenchmarkRecompute/function.jsonc",
+  "src/lib/eclP8Closure.test.js",
+];
+
 export function allowlistForStage(stage) {
+  if (stage === STAGE_ECL_P8) return [...P8_ALLOWLIST];
   if (stage === STAGE_ECL_P7) return [...P7_ALLOWLIST];
   if (stage === STAGE_ECL_P6) return [...P6_ALLOWLIST];
   if (stage === STAGE_ECL_P5) return [...P5_ALLOWLIST];
@@ -231,7 +250,7 @@ export function allowlistForStage(stage) {
 // Stages in which the ECL policy file (config/ecl-policy.json) may exist.
 // PRE_ECL and P1 must keep failing on it — the policy layer starts in P2.
 export function eclPolicyFileAllowed(stage) {
-  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7;
+  return stage === STAGE_ECL_P2 || stage === STAGE_ECL_P3 || stage === STAGE_ECL_P4 || stage === STAGE_ECL_P4_PROOF || stage === STAGE_ECL_P5 || stage === STAGE_ECL_P6 || stage === STAGE_ECL_P7 || stage === STAGE_ECL_P8;
 }
 
 /**
