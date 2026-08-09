@@ -32,6 +32,17 @@
         "type": "string"
       }
     },
+    "icp_json": {
+      "type": "object",
+      "description": "Founder-approved acquisition ICP snapshot (industry, titles, countries, per-run discovery cap). Ignored by provider-negotiation policies."
+    },
+    "excluded_domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Domains that autonomous acquisition must never contact."
+    },
     "languages": {
       "type": "array",
       "items": {
