@@ -4,7 +4,7 @@ import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmai
 
 
 function cambraSignature(provider:string, engine:string){
-  if(provider==='outlook') return `Xavi Martínez\nFounder, CAMBRA\nhttps://cambra.global`;
+  if(provider==='outlook') return `Xavi M. Contero\nFounder, CAMBRA\nhttps://cambra.global`;
   if(engine==='provider_negotiation') return `CAMBRA Operations\nCAMBRA\nhttps://cambra.global`;
   return `CAMBRA\nInfrastructure Intelligence\nhttps://cambra.global`;
 }
