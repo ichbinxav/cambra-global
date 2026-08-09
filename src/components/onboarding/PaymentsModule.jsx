@@ -11,10 +11,45 @@ import SmartNumberField from '@/components/inputs/SmartNumberField.jsx';
 import OptionTiles from '@/components/onboarding/OptionTiles';
 import VerticalStatusBadge from '@/components/onboarding/VerticalStatusBadge';
 
+/**
+ * @typedef {{
+ *   id?: string,
+ *   brand_id?: string,
+ *   psp_actual?: string,
+ *   current_psp?: string,
+ *   blended_rate?: number,
+ *   blended_rate_percent?: number,
+ *   canales: any[],
+ *   channels?: any[],
+ *   paises: any[],
+ *   countries?: any[],
+ *   monedas: any[],
+ *   currencies?: any[],
+ *   vol_mensual?: number,
+ *   monthly_volume_eur?: number,
+ *   tx_mensuales?: number,
+ *   monthly_tx_count?: number,
+ *   aov?: number,
+ *   average_order_value_eur?: number,
+ *   refunds_rate?: number,
+ *   refunds_rate_percent?: number,
+ *   chargeback_rate?: number,
+ *   chargeback_rate_percent?: number,
+ *   payout_timing?: number,
+ *   payout_days?: number,
+ *   fraude_flags?: string[] | string,
+ *   risk_notes?: string,
+ *   contrato?: { renovacion_en?: string, tipo?: string },
+ *   contract?: { renewal_on?: string, type?: string },
+ *   frustraciones?: string,
+ *   frustrations?: string,
+ *   terminal_provider?: string,
+ * }} PaymentsProfileDraft
+ */
 
 export default function PaymentsModule(){
   const [brandId, setBrandId] = useState(null);
-  const [item, setItem] = useState({ canales: [], paises: [], monedas: [] });
+  const [item, setItem] = useState(/** @type {PaymentsProfileDraft} */ ({ canales: [], paises: [], monedas: [] }));
   const [saving, setSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [status, setStatus] = useState(null);
@@ -28,7 +63,7 @@ export default function PaymentsModule(){
     setBrandId(b?.id);
     if (!b?.id) return;
     const [pp] = await base44.entities.PaymentsProfile.filter({ brand_id: b.id }, '-updated_date', 1);
-    setItem(pp || { brand_id: b.id, canales: [], paises: [], monedas: [] });
+    setItem(/** @type {PaymentsProfileDraft} */ (pp || { brand_id: b.id, canales: [], paises: [], monedas: [] }));
     await refreshStatus();
   })(); },[]);
 
@@ -69,7 +104,7 @@ export default function PaymentsModule(){
     if (item?.id) await base44.entities.PaymentsProfile.update(item.id, body);
     else {
       const created = await base44.entities.PaymentsProfile.create(body);
-      setItem(created);
+      setItem(/** @type {PaymentsProfileDraft} */ (created));
     }
     await base44.functions.invoke('computeVerticalStatus', { brandId, vertical: 'payments' });
     await refreshStatus();
