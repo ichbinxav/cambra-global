@@ -1,0 +1,123 @@
+{
+  "name": "CommunicationMessage",
+  "type": "object",
+  "description": "Immutable-ish message ledger for commercial and operations conversations. Original provider payload/body is preserved separately from AI classification.",
+  "properties": {
+    "thread_id": {
+      "type": "string"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ]
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "portal",
+        "manual"
+      ]
+    },
+    "provider": {
+      "type": "string"
+    },
+    "provider_message_id": {
+      "type": "string"
+    },
+    "internet_message_id": {
+      "type": "string"
+    },
+    "from_email": {
+      "type": "string"
+    },
+    "to_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "subject": {
+      "type": "string"
+    },
+    "text_body": {
+      "type": "string"
+    },
+    "html_body": {
+      "type": "string"
+    },
+    "attachments_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "headers_json": {
+      "type": "object"
+    },
+    "classification": {
+      "type": "string"
+    },
+    "classification_confidence": {
+      "type": "number"
+    },
+    "classification_reason": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": "string"
+    },
+    "policy_key": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "approval_id": {
+      "type": "string"
+    },
+    "send_status": {
+      "type": "string",
+      "enum": [
+        "received",
+        "draft",
+        "scheduled",
+        "sent",
+        "delivered",
+        "failed",
+        "bounced",
+        "suppressed"
+      ]
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "raw_event_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "thread_id",
+    "direction",
+    "channel"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
