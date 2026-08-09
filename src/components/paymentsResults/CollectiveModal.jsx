@@ -26,6 +26,7 @@ function eur(n) {
   return "€" + Math.round(n).toLocaleString("en-US");
 }
 
+/** @param {{ open: boolean, onClose: () => void, context?: { gmv_eur_monthly?: number, uiContext?: string, [key: string]: any }, onSwitch?: () => void }} props */
 export default function CollectiveModal({ open, onClose, context = {}, onSwitch }) {
   const { t, lang } = useTranslation();
   const { user, isAuthenticated } = useAuth();
