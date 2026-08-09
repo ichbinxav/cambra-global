@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 971,
   "sourceArchiveShaExternal": null,
-  "gitSha": "eed344463e0b1c519898f8500bae4221d848436c",
+  "gitSha": "14957b32a2c653735e1d691d0082107a407e7254",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -43,62 +43,57 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
-    "startedAt": "2026-08-09T21:15:41.576Z",
-    "completedAt": "2026-08-09T21:16:03.041Z",
+    "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
+    "startedAt": "2026-08-09T21:35:27.732Z",
+    "completedAt": "2026-08-09T21:35:39.133Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 429,
-    "passed": 1646,
+    "testFiles": 435,
+    "passed": 1659,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
-    "startedAt": "2026-08-09T21:16:03.829Z",
-    "completedAt": "2026-08-09T21:16:23.822Z",
+    "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
+    "startedAt": "2026-08-09T21:35:39.567Z",
+    "completedAt": "2026-08-09T21:35:52.287Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "29682549a5f237d91c8eba064cd86c9bafb28dd8d2c69611cc5c26eb13fe707b",
+    "distHash": "19775ae5a6a84e989dceb35ee273c757389eb8878cf8fc244ceb8a80982fb79a",
     "artifactCount": 64
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
-    "startedAt": "2026-08-09T21:15:09.260Z",
-    "completedAt": "2026-08-09T21:15:21.850Z",
+    "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
+    "startedAt": "2026-08-09T21:35:08.540Z",
+    "completedAt": "2026-08-09T21:35:12.786Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
-    "startedAt": "2026-08-09T21:15:22.563Z",
-    "completedAt": "2026-08-09T21:15:26.539Z",
+    "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
+    "startedAt": "2026-08-09T21:35:13.177Z",
+    "completedAt": "2026-08-09T21:35:15.954Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "1ca7474f497efc197abc748c6d4f5675e1f28a048d81062bc1ccea3cfc3205ea",
-    "startedAt": "2026-08-09T21:15:27.278Z",
-    "completedAt": "2026-08-09T21:15:40.870Z",
+    "sourceTreeHash": "aad0086ab6bd763278bf5730decd1c648894f708a4c8e05e2cf395534d2ecbf4",
+    "startedAt": "2026-08-09T21:35:16.403Z",
+    "completedAt": "2026-08-09T21:35:27.281Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "29682549a5f237d91c8eba064cd86c9bafb28dd8d2c69611cc5c26eb13fe707b"
+    "dist": "19775ae5a6a84e989dceb35ee273c757389eb8878cf8fc244ceb8a80982fb79a"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
-    "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
-    "evidence tests: stale (run the *:evidence command)",
-    "evidence build: stale (run the *:evidence command)",
-    "evidence lint: stale (run the *:evidence command)",
-    "evidence typecheck-critical: stale (run the *:evidence command)",
-    "evidence typecheck-baseline: stale (run the *:evidence command)"
+    "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal"
   ],
-  "generatedAt": "2026-08-09T21:34:55.138Z"
+  "generatedAt": "2026-08-09T21:35:52.714Z"
 }
