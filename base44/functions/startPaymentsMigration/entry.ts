@@ -6,15 +6,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
-  ['takeover','CAMBRA takes over','We open the migration case, lock scope and assign operational ownership.','admin','preparing'],
-  ['provider_coordination','Provider coordination','CAMBRA coordinates commercial onboarding and required provider documentation.','admin','provider_coordination'],
-  ['provider_ready','Provider ready','The target PSP account, pricing and payment capabilities are confirmed.','provider','provider_coordination'],
-  ['technical_configuration','Payment configuration','CAMBRA prepares the payment configuration and integration changes required for cutover.','admin','preparing'],
-  ['migration_testing','Migration testing','CAMBRA validates payment, 3DS, refund, webhook and reconciliation flows before live traffic moves.','admin','scheduled'],
-  ['cutover_ready','Cutover ready','CAMBRA confirms rollback, timing and all go-live prerequisites.','admin','scheduled'],
-  ['go_live','Going live','CAMBRA moves the approved payment scope to the new provider or conditions.','admin','going_live'],
-  ['verify_savings','Verify savings','CAMBRA observes live payment data against the locked baseline before savings become billable.','admin','verifying'],
+  // key, title, description, owner, customer stage, SLA days
+  ['takeover','CAMBRA takes over','We open the migration case, lock scope and assign operational ownership.','admin','preparing',1],
+  ['provider_coordination','Provider coordination','CAMBRA coordinates commercial onboarding and required provider documentation.','admin','provider_coordination',2],
+  ['provider_ready','Provider ready','The target PSP account, pricing and payment capabilities are confirmed.','provider','provider_coordination',5],
+  ['technical_configuration','Payment configuration','CAMBRA prepares the payment configuration and integration changes required for cutover.','admin','preparing',3],
+  ['migration_testing','Migration testing','CAMBRA validates payment, 3DS, refund, webhook and reconciliation flows before live traffic moves.','admin','scheduled',2],
+  ['cutover_ready','Cutover ready','CAMBRA confirms rollback, timing and all go-live prerequisites.','admin','scheduled',1],
+  ['go_live','Going live','CAMBRA moves the approved payment scope to the new provider or conditions.','admin','going_live',1],
+  ['verify_savings','Verify savings','CAMBRA observes live payment data against the locked baseline before savings become billable.','admin','verifying',35],
 ];
+function dueIn(days:number){ const d=new Date(); d.setUTCDate(d.getUTCDate()+days); return d.toISOString().slice(0,10); }
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -39,8 +41,14 @@ export default async function (req: Request): Promise<Response> {
     const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch(() => []);
     if (!mandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
 
-    let tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
-    if (!tasks.length) {
+    let tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+    let p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
+    if (!p9Tasks.length) {
+      // Preserve legacy task history but remove it from active operations. P9 is
+      // the canonical plan from this point forward; we never silently delete evidence.
+      for (const legacy of tasks.filter(t => !['done','canceled'].includes(t.status))) {
+        await svc.entities.MigrationTask.update(legacy.id, { status: 'canceled', updated_at: new Date().toISOString(), metadata_json: { ...(legacy.metadata_json || {}), superseded_by_plan: PLAN_VERSION } }).catch(() => null);
+      }
       await svc.entities.MigrationTask.bulkCreate(PLAN.map((p:any[], idx:number) => ({
         deal_activation_id: activationId,
         brand_id: activation.brand_id || '',
@@ -53,9 +61,11 @@ export default async function (req: Request): Promise<Response> {
         requires_admin_review: p[3] === 'admin',
         completed_at: idx === 0 ? new Date().toISOString() : undefined,
         updated_at: new Date().toISOString(),
-        metadata_json: { plan_version: PLAN_VERSION, customer_stage: p[4], customer_visible: true },
+        due_date: dueIn(Number(p[5] || 3)),
+        metadata_json: { plan_version: PLAN_VERSION, customer_stage: p[4], customer_visible: true, sla_days: Number(p[5] || 3), retry_count: 0 },
       })));
       tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+      p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
       await svc.entities.OperationalLog.create({
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'tasks_generated', message: 'P9 payments migration orchestration started',
@@ -72,7 +82,7 @@ export default async function (req: Request): Promise<Response> {
       }).catch(() => null);
     }
 
-    return Response.json({ ok: true, activation_id: activationId, status: activation.status === 'authorized' ? 'migrating' : activation.status, task_count: tasks.length, plan_version: PLAN_VERSION });
+    return Response.json({ ok: true, activation_id: activationId, status: activation.status === 'authorized' ? 'migrating' : activation.status, task_count: p9Tasks.length, plan_version: PLAN_VERSION });
   } catch (error) {
     return Response.json({ error: error?.message || 'migration_start_failed' }, { status: 500 });
   }
