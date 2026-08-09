@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recoveryTermFromActivation, periodEconomicsV2, effectiveFee, parisRecoveryDate } from '../../base44/shared/recoveryEconomicsV2.ts';
+import { recoveryTermFromActivation, periodEconomicsV2, effectiveFee, parisRecoveryDate, reportPeriodBounds } from '../../base44/shared/recoveryEconomicsV2.ts';
 
 describe('Recover Economics V2', () => {
   it('uses the contractual Paris calendar date around UTC midnight', () => {
@@ -31,5 +31,28 @@ describe('Recover Economics V2', () => {
   it('handles month-end activation safely', () => {
     expect(recoveryTermFromActivation('2026-08-31T10:00:00Z').year2Start).toBe('2027-08-31');
     expect(recoveryTermFromActivation('2024-02-29T10:00:00Z').year2Start).toBe('2025-02-28');
+  });
+});
+
+import { computeInvoiceAmounts } from '../../base44/shared/recoverBillingMath.ts';
+
+describe('Recover Economics V2 billing invariants', () => {
+  it('charges zero on zero or negative verified savings regardless of phase', () => {
+    expect(computeInvoiceAmounts({ savings_eur: 0, standard_fee_pct: 25, effective_fee_pct: 25, tax_rate_bps: 0 }).fee_net_eur).toBe(0);
+    expect(computeInvoiceAmounts({ savings_eur: -1000, standard_fee_pct: 15, effective_fee_pct: 5, tax_rate_bps: 0 }).fee_net_eur).toBe(0);
+  });
+  it('applies a referral acquired mid-term prospectively when the later period resolves a larger count', () => {
+    const before=periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2027-03-01',periodEndExclusive:'2027-04-01',activatedReferrals:0});
+    const after=periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2027-04-01',periodEndExclusive:'2027-05-01',activatedReferrals:1});
+    expect(before.effective_fee_pct).toBe(25);
+    expect(after.effective_fee_pct).toBe(20);
+  });
+  it('applies referrals acquired in Year 2 against 15%, not against the old 25% absolute fee', () => {
+    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-01-01',periodEndExclusive:'2028-02-01',activatedReferrals:0}).effective_fee_pct).toBe(15);
+    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-02-01',periodEndExclusive:'2028-03-01',activatedReferrals:1}).effective_fee_pct).toBe(10);
+    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-03-01',periodEndExclusive:'2028-04-01',activatedReferrals:2}).effective_fee_pct).toBe(5);
+  });
+  it('scopes an activation-month period only when explicit measurement bounds are supplied', () => {
+    expect(reportPeriodBounds('2026-10','2026-10-15','2026-10-31')).toEqual({start:'2026-10-15',endExclusive:'2026-11-01'});
   });
 });
