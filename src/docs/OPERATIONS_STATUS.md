@@ -6,6 +6,16 @@
 
 ---
 
+## Release v0.67.0 — ECL P8 Production Admin, Automation & AI Operations (2026-08-09)
+
+**Current stage: `ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS` — 77 exact paths, 8 frozen entries.** P8 is the founder/admin operating closure, not a new economic authority. `/admin` is now the production cockpit: health, attention queues, P7 incidents, critical automation freshness and AI workforce runtime are visible from one surface. `/admin/agents` exposes the registered AI workforce behind an admin-only, fixed function allowlist; manual runs are logged and cannot invoke arbitrary backend functions or bypass existing Approval/ECL/billing/legal gates. `/admin/automations` exposes runtime proof for the four critical P4/P6/P7 workers.
+
+P8 also versions four previously scheduler-ready safe jobs: Recover contract delivery retry (15 min), anonymous payments-session retention purge (24 h), inactive-lead retention purge (30 d), and benchmark cohort recompute (7 d). Human economic approval and issuance remain deliberately unscheduled: `generateMonthlySavingsReport`, `approveRecoverReportForInvoicing` and `createEligibleRecoverInvoices` do not gain automation configs. The existing four critical automations remain versioned: webhook DLQ 5 min, production health 10 min, ECL lifecycle 15 min and Stripe-read-only billing reconciliation 15 min.
+
+Repository-wide TypeScript remains at zero and P8 closure tests lock the protected routes, closed AI invocation allowlist, read-only cockpit economics and the absence of automated human billing approval.
+
+**Seal distinction:** local/Base44 release verification is separate from the external GitHub Actions CI seal.
+
 ## Release v0.66.0 — ECL P7 Production Operations & Incident Recovery (2026-08-09)
 
 **Current stage: `ECL_P7_PRODUCTION_OPERATIONS_INCIDENT_RECOVERY` — 67 exact paths, 8 frozen entries.** P7 is operational containment, not a new economic authority. P5 remains the authority for whether a contractual/economic effect may happen; P6 remains the authority for replay-safe Stripe execution/reconciliation. P7 observes those paths and gives an admin a bounded way to recover failed workers or delivery attempts.
