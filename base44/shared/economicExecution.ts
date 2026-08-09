@@ -62,6 +62,20 @@ async function collapseInvoiceClaims(svc: any, rows: any[]) {
   return winner;
 }
 
+export async function healRecoverInvoiceDuplicatesForReport(svc: any, reportId: string) {
+  const id = String(reportId || '').trim();
+  if (!id) throw new Error('recover_invoice_heal_requires_report_id');
+  const rows = await svc.entities.Invoice.filter({ monthly_savings_report_id: id }, 'created_date', 10);
+  const winner = await collapseInvoiceClaims(svc, rows);
+  if (!winner) return null;
+  const key = recoverExecutionKey(id);
+  if (winner.execution_key !== key) {
+    await svc.entities.Invoice.update(winner.id, { execution_key: key });
+    return { ...winner, execution_key: key };
+  }
+  return winner;
+}
+
 export async function claimRecoverInvoiceDraft(svc: any, executionKey: string, record: any) {
   const before = await svc.entities.Invoice.filter({ execution_key: executionKey }, 'created_date', 10);
   const prior = await collapseInvoiceClaims(svc, before);
