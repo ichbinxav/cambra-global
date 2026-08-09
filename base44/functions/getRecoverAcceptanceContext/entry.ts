@@ -13,7 +13,7 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
-import { recoveryEconomicsCopy, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
+import { recoveryEconomicsCopy, recoveryEconomicsAcceptanceText, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
 import { PRODUCT_POLICY } from '../../shared/generated/productPolicy.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
@@ -110,7 +110,9 @@ export default async function (req: Request): Promise<Response> {
         limits_body: copy.limits_body,
         limits_bullets: copy.limits_bullets,
         summary: copy.summary,
-        checkbox: checkboxTextFor(locale, brand?.name || '', Number(fee.pct)),
+        checkbox: PRODUCT_POLICY.economicTerms.recoveryEconomicsVersion === 'recover-economics-v2'
+          ? recoveryEconomicsAcceptanceText(locale, brand?.name || '')
+          : checkboxTextFor(locale, brand?.name || '', Number(fee.pct)),
       },
       recovery_economics_copy: { version: RECOVERY_ECONOMICS_COPY_VERSION, ...economicsCopy },
       legal_review_required: PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved !== true,

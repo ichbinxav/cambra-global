@@ -20,6 +20,8 @@
 // jsPDF ships as a DEFAULT export; the shim in types/deno-shim.d.ts re-exports
 // it as such, so the import form and the declaration now agree.
 import jsPDF from 'npm:jspdf@4.0.0';
+import { RECOVERY_ECONOMICS_V2 } from './recoveryEconomicsV2.ts';
+import { recoveryEconomicsCopy, recoveryEconomicsAcceptanceText } from './recoveryEconomicsCopy.ts';
 import { checkboxTextFor, type ContractLocale } from './recoverContractTemplates.ts';
 import { contractStringsForVersion, resolveContractTemplateVersion } from './recoverContractTemplateRegistry.ts';
 import { resolveContractPolicy, buildContractEconomicView } from './contractPolicySnapshot.ts';
@@ -234,6 +236,16 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   if (snapshot.projected_savings_annual != null) {
     field(t.s3_projected, `${snapshot.projected_savings_annual} ${snapshot.baseline_currency || 'EUR'}`);
   }
+  if (snapshot?.recovery_economics?.version === RECOVERY_ECONOMICS_V2) {
+    const ec = recoveryEconomicsCopy(locale);
+    body(`${ec.title}: ${ec.y1} — ${ec.cambra} 25%, ${ec.keep} 75%.`);
+    body(`${ec.y2} — ${ec.cambra} 15%, ${ec.keep} 85%.`);
+    body(`${ec.after} — ${ec.cambra} 0%, ${ec.keep} 100%.`);
+    body(ec.referrals);
+    body(ec.verified);
+    body(ec.survival);
+    body(ec.data);
+  }
 
   heading(t.s4_title);
   t.s4_body.forEach(body);
@@ -256,7 +268,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
 
   heading(t.s9_title);
   t.s9_body.forEach(body);
-  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
+  field(t.s9_checkbox_label, snapshot?.recovery_economics?.version === RECOVERY_ECONOMICS_V2 ? recoveryEconomicsAcceptanceText(locale, mandate.legal_entity_name || '') : checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
   field(t.s9_declared_authority, t.s9_yes);
   field(t.s9_checkbox_accepted, t.s9_yes);
   field(t.client_signatory, mandate.signed_by_name || '');
@@ -292,7 +304,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   field(t.client_signatory_role, mandate.signed_by_role || '');
   field(t.s9_declared_authority, t.s9_yes);
   field(t.s9_checkbox_accepted, t.s9_yes);
-  field(t.s9_checkbox_label, checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
+  field(t.s9_checkbox_label, snapshot?.recovery_economics?.version === RECOVERY_ECONOMICS_V2 ? recoveryEconomicsAcceptanceText(locale, mandate.legal_entity_name || '') : checkboxTextFor(locale, mandate.legal_entity_name || '', snapshot.fee_pct));
   field(t.annex_snapshot_hash, mandate.acceptance_snapshot_hash || '');
   input.documentHashes.forEach(d => field(d.label, d.value));
   if (mandate.supersedes_id) field(t.annex_supersedes, mandate.supersedes_id);
