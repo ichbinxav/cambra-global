@@ -35,6 +35,7 @@ import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificatio
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import CountryField from "@/components/paymentsAnalyzer/CountryField";
+import { EUROPE_MARKETS } from "@/lib/generated/europeMarkets";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -173,24 +174,10 @@ function mapSlugForSubmit(uiSlug, options) {
   return opt.hasSeed ? opt.slug : "other";
 }
 
-// ── Country list — kept short and payments-relevant. Backend uses country
-//    only to derive region (EU/UK/US/RoW).
-const COUNTRY_OPTIONS = [
-  // M5 — FR + ES primero (países con soporte de resolución por país; el resto
-  // sigue funcionando vía fallback regional, no se quita ninguno).
-  { code: "FR", name: "France" },       { code: "ES", name: "Spain" },
-  { code: "DE", name: "Germany" },      { code: "IT", name: "Italy" },
-  { code: "PT", name: "Portugal" },     { code: "NL", name: "Netherlands" },
-  { code: "BE", name: "Belgium" },      { code: "IE", name: "Ireland" },
-  { code: "AT", name: "Austria" },      { code: "SE", name: "Sweden" },
-  { code: "DK", name: "Denmark" },      { code: "FI", name: "Finland" },
-  { code: "PL", name: "Poland" },       { code: "CZ", name: "Czech Republic" },
-  { code: "GR", name: "Greece" },       { code: "LU", name: "Luxembourg" },
-  { code: "NO", name: "Norway" },       { code: "CH", name: "Switzerland" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },       { code: "AU", name: "Australia" },
-];
+// ── P1 Europe registry — country identity comes from the generated canonical
+//    registry. Provider/rate readiness remains separate: selecting a market does
+//    NOT imply country-specific rates or legal clearance.
+const COUNTRY_OPTIONS = EUROPE_MARKETS.map((m) => ({ code: m.iso2, name: m.canonical_name }));
 
 // ── Contract §2.1 hard ranges — mirror of backend VALIDATION. UX-only guard.
 // Checkpoint H — the field labels became i18n KEYS. The ranges themselves are
