@@ -31,7 +31,7 @@ const MANIFEST = [
   // P16 Founder OS & Autonomous Company Command Center (2026-08-10).
   "getFounderOSCommandCenter", "founderOSQuery", "founderOSCommand", "founderOSSimulation", "founderChiefOfStaff",
   // P17 Autonomous Maintenance & Self-Healing Engine (2026-08-10).
-  "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker",
+  "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker",
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).
   "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
