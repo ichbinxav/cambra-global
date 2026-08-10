@@ -91,6 +91,8 @@ const manifest = {
   } : null,
   durabilityManifestSha: fs.existsSync("config/p1-durability-manifest.json")
     ? sha256("config/p1-durability-manifest.json") : null,
+  documentationManifestSha: fs.existsSync("config/documentation-drift-manifest.json")
+    ? sha256("config/documentation-drift-manifest.json") : null,
   contractTemplateVersions: tvMatch ? [tvMatch[1]] : [],
   productScope: Object.entries(policy.productScope).filter(([, v]) => v.productionEnabled).map(([k]) => k),
   stripeIntegrationStatus: policy.integrationStatus.stripe,
