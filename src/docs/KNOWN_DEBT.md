@@ -239,7 +239,7 @@ Verified sea real y no cosmético.
 
 ## BUG-3 — Contador de header "0 connected" mientras la card dice Connected
 
-**Estado:** activa (pendiente re-verificación visual en `/ConnectTools`)
+**Estado:** ✅ RESUELTA / OBSOLETA 2026-08-10 — la UX payments-only actual de `/ConnectTools` ya no renderiza el contador header connected/detected/available ni consume `sourceList/flatList`; solo muestra Stripe + upload. El síntoma descrito no existe en la superficie actual. Verificado por inspección del archivo real + suite de localización/ConnectTools.
 **Detectado:** 2026-07-09 durante validación FASE 1.5
 **Fichero:** `src/pages/ConnectTools.jsx`
 **Líneas:** ~285-293 (resumen `detectedCount` / `connectedCount` / `availableCount`)
