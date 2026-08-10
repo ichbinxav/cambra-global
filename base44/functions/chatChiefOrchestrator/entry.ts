@@ -47,6 +47,7 @@ const READ_ENTITIES = [
   "OutboundLead", "Lead", "ProviderLead",
   "BenchmarkContribution", "BenchmarkCohort",
   "StatementImport", "Recommendation",
+  "FounderDecision", "FounderSimulation", "StrategyDirective", "FounderCommandAudit",
   "User",
 ];
 
@@ -84,10 +85,38 @@ const CHAT_TOOLS = [
   },
   {
     name: "command_center_pulse",
-    description: "Read-only snapshot of the command center: KPIs, recent activity, significant events.",
+    description: "Read-only snapshot of the legacy command center: KPIs, recent activity, significant events.",
     function: "getCommandCenterPulse",
     risk_level: 1,
     input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "founder_os_query",
+    description: "PRIMARY COMPANY INTELLIGENCE TOOL. Read-only governed query across CAMBRA. Use for company summary, recommended founder actions, WHY a canonical metric has its current state, universal search, Merchant 360, Provider 360, negotiation war room and approval decision evidence. Never invent joins in prose when this tool can retrieve them.",
+    function: "founderOSQuery",
+    risk_level: 1,
+    input_schema: {type:"object",properties:{mode:{type:"string",enum:["company_summary","recommended_actions","metric_catalog","search","merchant_360","provider_360","negotiation_war_room","decision","why_metric"]},query:{type:"string"},metric:{type:"string"},brand_id:{type:"string"},provider_id:{type:"string"},case_id:{type:"string"},approval_id:{type:"string"}},required:["mode"]},
+  },
+  {
+    name: "founder_chief_of_staff",
+    description: "Generate an evidence-bounded executive Chief of Staff brief from the canonical Founder OS snapshot. Narrative may explain but never becomes financial truth.",
+    function: "founderChiefOfStaff",
+    risk_level: 1,
+    input_schema: {type:"object",properties:{}},
+  },
+  {
+    name: "founder_simulation",
+    description: "Run a clearly labeled non-production scenario simulation. Supported types: acquisition_scale, conversion, aggregate_growth. It can never modify production.",
+    function: "founderOSSimulation",
+    risk_level: 1,
+    input_schema: {type:"object",properties:{simulation_type:{type:"string",enum:["acquisition_scale","conversion","aggregate_growth"]},scenario:{type:"string",enum:["base","upside","downside","custom"]},inputs:{type:"object"}},required:["simulation_type","inputs"]},
+  },
+  {
+    name: "founder_command",
+    description: "Founder OS governed action gateway. It ALWAYS previews actions requiring confirmation before execution and creates an audit trail. Use for approval resolution, provider revenue recovery, system health investigation, Developer investigation and explicit strategy directives. Natural language never bypasses domain policy.",
+    function: "founderOSCommand",
+    risk_level: 1,
+    input_schema: {type:"object",properties:{action:{type:"string",enum:["resolve_approval","run_provider_revenue_recovery","run_system_health","investigate_developer","save_strategy_directive"]},approval_id:{type:"string"},decision:{type:"string",enum:["approve","reject"]},reason:{type:"string"},provider_id:{type:"string"},incident_id:{type:"string"},scope:{type:"string"},directive:{type:"string"},priority:{type:"number"}},required:["action"]},
   },
   {
     name: "discover_leads",
@@ -473,6 +502,10 @@ const READ_SAFE_FIELDS: Record<string, string[]> = {
   BenchmarkCohort: ['id','cohort_key','vertical','sample_size','is_public','created_date'],
   StatementImport: ['id','brand_id','provider','status','confidence','owner_email','created_date'],
   Recommendation: ['id','brand_id','vertical','title','status','priority','created_date'],
+  FounderDecision: ['id','decision_key','decision_type','status','title','summary','recommended_option','confidence','approval_id','created_at','updated_at'],
+  FounderSimulation: ['id','simulation_key','simulation_type','status','scenario','confidence','production_effect','created_at'],
+  StrategyDirective: ['id','directive_key','scope','directive','status','priority','effective_from','effective_to','created_at'],
+  FounderCommandAudit: ['id','command_key','intent','action','risk_level','material','requires_confirmation','confirmed','status','created_at'],
   User: ['id','name','role','created_date'],
 };
 
@@ -503,17 +536,20 @@ async function handleReadState(base44: any, input: any) {
 }
 
 const BULK_THRESHOLD = 5;
-const SYSTEM_PROMPT = `You are CAMBRA's Chief Orchestrator chat. You help the founder run the business by picking the right tool.
+const SYSTEM_PROMPT = `You are ASK CAMBRA, the operating interface of CAMBRA Founder OS. Your job is to help the founder OBSERVE → UNDERSTAND → DECIDE → ACT while preserving human governance.
 
-You have read access to approved operational projections via read_state (AgentTask, Approval, AgentQuestion, Brand, Integration, OutboundLead, Event, Recommendation, User, benchmarks, imports, …). Sensitive fields and credentials are intentionally unavailable. You can launch only the allowlisted agents and orchestrators exposed as tools.
+Prefer founder_os_query for company questions because it performs governed cross-domain joins and returns evidence. Use founder_chief_of_staff for an executive brief. Use founder_simulation for what-if questions. Use founder_command for governed actions. Use read_state only for narrow raw operational lookups that Founder OS does not cover.
 
-Strict rules you must follow:
-1. NEVER claim to have sent, emailed, contacted, published, or paid. Any risk_level >= 2 tool is structurally forced to DRAFT mode by the platform — the artifact lands in the Approval Inbox and requires human approve before anything external happens. Say "drafted" or "prepared for approval", not "sent".
-2. For state / count questions ("how many approvals pending?", "show me the last 10 failed tasks", "which brands are connected to Stripe?"), USE read_state — do not guess and do not answer from memory.
-3. Pick AT MOST one tool per turn. If the answer only requires reading, use read_state and stop — do not chain into a write.
-4. If the founder's request is ambiguous, ASK ONE concise clarifying question instead of picking a tool.
-5. If we truly do not have a tool for what the founder asks, say so honestly. Do not invent capabilities.
-6. For bulk operations (>= 5 items), the platform will ask the founder to confirm before executing. Just call the tool with the requested count — the confirmation step is automatic.`;
+Strict rules:
+1. NEVER invent internal data, metrics, trends, causes, meetings, approvals, provider terms or payments. If evidence is missing, say unknown.
+2. Financial state is deterministic. AI may explain numbers but must never create authoritative money values from prose.
+3. For "why?" questions, use founder_os_query mode=why_metric or a relevant 360/war-room query. Distinguish evidence from operational hypotheses.
+4. For "do it" requests, use founder_command. If it returns a preview/confirmation gate, present exactly what will happen, affected scope, financial/risk impact and reversibility. Do not claim execution before confirmation.
+5. Material contracts, exclusivity, volume guarantees, liabilities, legal decisions, money movement and production-critical changes remain governed by their existing domain policies. Chat never overrides them.
+6. Simulations are SIMULATION ONLY and never modify production.
+7. Pick AT MOST one tool per turn. Maintain conversational context, but retrieve current state rather than relying on chat memory for company facts.
+8. If a request is genuinely ambiguous and cannot be resolved from context, ask one concise clarification. Otherwise act on the best grounded interpretation.
+9. Bulk operations require explicit scope/impact confirmation before execution.`;
 
 async function callClaude(messages, tools) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -587,8 +623,8 @@ Deno.serve(async (req) => {
         base44,
         conversation_id,
         toolName: pending_tool.name,
-        toolInput: pending_tool.input,
-        userMessage: message || "(confirmed bulk action)",
+        toolInput: { ...(pending_tool.input || {}), confirmed: true, command_key: pending_tool.command_key || pending_tool.input?.command_key || undefined, conversation_id },
+        userMessage: message || "(confirmed governed action)",
         brand_id,
         bypassBulkGate: true,
       });
@@ -737,10 +773,25 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
     } catch { /* non-fatal */ }
   }
 
+  // Founder OS command gateway can return its own material-action preview.
+  if (!invokeError && tool.function === 'founderOSCommand' && invokeResult?.requires_confirmation) {
+    const preview = invokeResult.preview || {};
+    const reply = `Action preview: ${preview.action || toolName}. Risk L${preview.risk_level ?? '—'}${preview.material ? ' · material' : ''}. ${preview.summary || preview.impact || ''}`.trim();
+    await base44.asServiceRole.entities.ChatMessage.create({
+      conversation_id, role:'assistant', content:reply, blocked_by_gate:'material_action_preview',
+      tool_calls_json:[{name:toolName,status:'requires_confirmation',input:{...toolInput,command_key:invokeResult.command_key},preview,command_key:invokeResult.command_key,risk_level:preview.risk_level??null}]
+    });
+    return Response.json({ok:true,assistant_text:reply,requires_confirmation:true,pending_tool:{name:toolName,input:{...toolInput,command_key:invokeResult.command_key},command_key:invokeResult.command_key},preview,blocked_by_gate:'material_action_preview',tool_calls:[{name:toolName,status:'requires_confirmation'}]});
+  }
+
   // Build the assistant reply text
   let reply;
   if (invokeError) {
     reply = `Intenté lanzar ${tool.name}, pero falló: ${invokeError}`;
+  } else if (tool.function === 'founderOSQuery' || tool.function === 'founderChiefOfStaff' || tool.function === 'founderOSSimulation') {
+    reply = invokeResult?.brief?.headline || invokeResult?.summary || (tool.function === 'founderOSSimulation' ? 'Simulación completada. No se ha modificado producción.' : 'He consultado CAMBRA con evidencia actual.');
+  } else if (tool.function === 'founderOSCommand') {
+    reply = invokeResult?.status === 'executed' ? 'He ejecutado la acción gobernada y la he registrado en el audit trail.' : 'La acción ha pasado por Founder OS.';
   } else if (forcedDraft) {
     reply = approvalId
       ? `Preparé el draft con ${tool.name}. Está esperando tu aprobación en el Inbox.`
@@ -778,6 +829,7 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
       task_id: taskId,
       approval_id: approvalId,
     }],
+    tool_result: (tool.function === 'founderOSQuery' || tool.function === 'founderChiefOfStaff' || tool.function === 'founderOSSimulation' || tool.function === 'founderOSCommand') ? invokeResult : undefined,
     blocked_by_gate: forcedDraft ? "risk_l3_l4_forced_draft" : null,
   });
 }
