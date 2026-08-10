@@ -3,12 +3,13 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { offerHasMaterialCommitment, OFFER_EXTRACTION_VERSION, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { negotiationCohort, safeMemorySummary } from '../../shared/negotiationMemory.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 async function claude(prompt:string){return (await callCambraClaude(prompt,{tier:'high_reasoning',maxTokens:2600})).text}
 function parse(t:string){const c=t.replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(c)}catch{}const m=c.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0])}catch{}}return null}
 
 Deno.serve(async(req)=>{let task:any=null;try{
- const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;
+ const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;const emergency=await emergencyState(svc);if(emergency.safe_mode||emergency.negotiations_paused)return Response.json({ok:false,error:'emergency_control_paused:negotiations',safe_mode:emergency.safe_mode,reason:emergency.reason||null},{status:409});
  const c=await svc.entities.NegotiationCase.get(String(body?.case_id||'')).catch(()=>null);if(!c)return Response.json({ok:false,error:'negotiation_case_not_found'},{status:404});if(['approved','rejected','closed','expired'].includes(c.status))return Response.json({ok:false,error:'negotiation_case_closed'},{status:409});
  const thread=await svc.entities.CommunicationThread.get(c.thread_id).catch(()=>null);if(!thread)return Response.json({ok:false,error:'negotiation_thread_missing'},{status:409});
  task=await svc.entities.AgentTask.create({brand_id:c.brand_id,agent_name:'provider_negotiation',task_type:String(body?.action||'negotiate'),related_entity_type:'NegotiationCase',related_entity_id:c.id,status:'running',requires_approval:false,risk_level:3,input_summary:`${c.provider_name} · round ${Number(c.round||0)+1}`,started_at:new Date().toISOString()});
