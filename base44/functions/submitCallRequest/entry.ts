@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { callRequestEmail } from '../../shared/emails/callRequest.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 /**
  * submitCallRequest
@@ -132,6 +133,8 @@ Deno.serve(async (req) => {
     // 1) Confirmation to the user — EMAIL-1: localized template, routed by the
     //    locale persisted on the Lead we just created.
     try {
+      const emergency = await emergencyState(base44.asServiceRole);
+      if (!emergency.safe_mode && !emergency.communications_paused) {
       const mail = callRequestEmail(locale, { name });
       await base44.asServiceRole.integrations.Core.SendEmail({
         from_name: "CAMBRA",
@@ -139,6 +142,7 @@ Deno.serve(async (req) => {
         subject: mail.subject,
         body: mail.html,
       });
+      }
     } catch (userEmailErr) {
       console.warn("Call user confirmation email failed:", (userEmailErr as any)?.message);
     }
