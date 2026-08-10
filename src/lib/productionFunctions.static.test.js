@@ -34,8 +34,9 @@ const MANIFEST = [
   "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker", "missingInformationWorker", "privacySafeIntelligenceWorker",
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).
   "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin",
-  // P1 Europe Country Intelligence Foundation (2026-08-10).
+  // P1 Europe Country Intelligence Foundation + P3 European Rate Intelligence (2026-08-10/11).
   "seedEuropeMarketFoundation", "seedProviderIntelligenceFoundation", "resolveMerchantMarketContext", "backfillMerchantMarketContexts", "checkMarketCapability", "marketPolicyAdmin", "getEuropeMarketsCommandCenter",
+  "rateIntelligenceQuery", "rateIntelligenceWatchWorker", "seedP3RateIntelligence",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",
