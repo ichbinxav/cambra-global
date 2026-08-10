@@ -74,7 +74,9 @@ Deno.serve(async (req)=>{
 
     if(['provider_negotiation','aggregate_procurement'].includes(thread.engine)&&['offer','counteroffer'].includes(classification)){
       const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
-      const run=await svc.functions.invoke(thread.engine==='aggregate_procurement'?'collectiveNegotiationAgent':'providerNegotiationAgent',{action:'process_offer',case_id:thread.related_entity_id,message_id:message.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
+      const currentCase=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch(()=>null);
+      const monetizationReply=thread.engine==='aggregate_procurement'&&currentCase?.next_action==='await_provider_monetization_response';
+      const run=await svc.functions.invoke(monetizationReply?'providerMonetizationAgent':thread.engine==='aggregate_procurement'?'collectiveNegotiationAgent':'providerNegotiationAgent',monetizationReply?{action:'process_offer',case_id:thread.related_entity_id,bid_id:currentCase?.aggregate_bid_id,message_id:message.id,internal_secret:internal}:{action:'process_offer',case_id:thread.related_entity_id,message_id:message.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
       const rd=run?.data||run||{};
       if(rd.ok===false){
         await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'provider_offer_processing_failed',classification});
