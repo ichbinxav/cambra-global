@@ -2,7 +2,7 @@
   "name": "base44-app",
   "private": true,
   "version": "0.79.0",
-  "releaseName": "CAMBRA v0.78.0 — P17 Autonomous Maintenance & Self-Healing Engine Technical Seal",
+  "releaseName": "CAMBRA v0.79.0 — P18 Operating Bible, Founder Handbook & Living Documentation Technical Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
@@ -24,6 +24,8 @@
     "ecl:check": "node scripts/generate-ecl-policy.mjs --check",
     "durability:generate": "node scripts/generate-durability-manifest.mjs",
     "durability:check": "node scripts/generate-durability-manifest.mjs --check",
+    "documentation:generate": "node scripts/generate-documentation-manifest.mjs",
+    "documentation:check": "node scripts/check-documentation-drift.mjs",
     "clean:check": "node scripts/clean-check.mjs",
     "lint:evidence": "node scripts/run-with-evidence.mjs lint -- npx eslint . --quiet",
     "typecheck:critical": "tsc -p ./tsconfig.critical.json",
@@ -40,7 +42,7 @@
     "release:check:ci": "node scripts/check-release-manifest.mjs --ci",
     "ci:install": "node scripts/install-ci-workflow.mjs",
     "ci:check": "node scripts/install-ci-workflow.mjs --check",
-    "verify": "npm run clean:check && npm run policy:check && npm run ecl:check && npm run durability:check && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check"
+    "verify": "npm run clean:check && npm run policy:check && npm run ecl:check && npm run durability:check && npm run documentation:check && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",
