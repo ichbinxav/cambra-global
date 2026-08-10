@@ -48,7 +48,7 @@ if (name === "test") {
   try {
     const raw = JSON.parse(fs.readFileSync(vitestRaw, "utf8"));
     totals = {
-      testFiles: raw.numTotalTestSuites ?? null,
+      testFiles: Array.isArray(raw.testResults) ? raw.testResults.length : null,
       passed: raw.numPassedTests ?? null,
       failed: raw.numFailedTests ?? null,
       skipped: (raw.numPendingTests ?? 0) + (raw.numTodoTests ?? 0),
