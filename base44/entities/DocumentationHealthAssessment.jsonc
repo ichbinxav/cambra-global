@@ -1,0 +1,63 @@
+{
+  "name": "DocumentationHealthAssessment",
+  "type": "object",
+  "description": "P18 documentation drift/coverage snapshot exposed to Maintenance Center.",
+  "properties": {
+    "assessment_key": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "current_count": {
+      "type": "number"
+    },
+    "outdated_count": {
+      "type": "number"
+    },
+    "incomplete_count": {
+      "type": "number"
+    },
+    "contradictory_count": {
+      "type": "number"
+    },
+    "unverified_count": {
+      "type": "number"
+    },
+    "critical_drift_count": {
+      "type": "number"
+    },
+    "system_version": {
+      "type": "string"
+    },
+    "registry_version": {
+      "type": "string"
+    },
+    "details_json": {
+      "type": "object"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "assessment_key",
+    "score",
+    "system_version",
+    "registry_version",
+    "calculated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
