@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.77.0",
-  "releaseName": "CAMBRA v0.77.0 — P16 Founder OS & Autonomous Company Command Center Technical Seal",
+  "version": "0.78.0",
+  "releaseName": "CAMBRA v0.78.0 — P17 Autonomous Maintenance & Self-Healing Engine Technical Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
