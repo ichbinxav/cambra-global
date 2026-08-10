@@ -18,6 +18,7 @@ import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
 import ActionCenter from "@/components/dashboard/ActionCenter";
 import ReferralTeaser from "@/components/dashboard/ReferralTeaser";
 import AnalysisTrendPanel from "@/components/dashboard/AnalysisTrendPanel";
+import MerchantInformationTasks from "@/components/dashboard/MerchantInformationTasks";
 import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
@@ -138,7 +139,8 @@ export default function Dashboard() {
   /* ───── STATE A: no AnalyzerResult yet ───── */
   if (!latest) {
     return (
-      <div className="pb-10">
+      <div className="pb-10 space-y-6">
+        <MerchantInformationTasks lang={lang} />
         <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
           <div
             className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
@@ -266,6 +268,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 pb-10">
+      <MerchantInformationTasks lang={lang} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
         <div>
