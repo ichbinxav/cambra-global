@@ -83,6 +83,10 @@
     },
     "notes": {
       "type": "string"
+    },
+    "burst_per_minute": {
+      "type": "number",
+      "description": "All-message burst ceiling per sending profile. Separate from acquisition daily cap so legitimate replies are not charged against new-contact capacity."
     }
   },
   "required": [

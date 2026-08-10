@@ -1,0 +1,14 @@
+{
+  "name":"MerchantInformationRequest","type":"object","description":"Canonical missing-information dependency. CAMBRA searches first, asks the merchant only when necessary, then automatically resumes the allowlisted workflow.",
+  "properties":{
+    "request_key":{"type":"string"},"brand_id":{"type":"string"},"user_email":{"type":"string"},"recover_id":{"type":"string"},"provider_id":{"type":"string"},"workflow_type":{"type":"string"},"related_entity_type":{"type":"string"},"related_entity_id":{"type":"string"},
+    "information_type":{"type":"string","enum":["provider_contact","merchant_id","contract","renewal_date","notice_period","pricing_agreement","transaction_volume","integration_credential","billing_contact","legal_entity","technical_contact","account_permission","provider_portal_access","migration_window","other"]},
+    "state":{"type":"string","enum":["information_available","resolution_in_progress","merchant_input_required","merchant_responded","validation_required","resolved","unresolvable"],"default":"resolution_in_progress"},
+    "what_needed":{"type":"string"},"why_needed":{"type":"string"},"merchant_action":{"type":"string"},"estimated_effort":{"type":"string"},"what_happens_next":{"type":"string"},"language":{"type":"string","enum":["en","fr","es"],"default":"en"},
+    "accepted_response_methods":{"type":"array","items":{"type":"string","enum":["text","email","document","dont_know"]}},"answer_type":{"type":"string"},"answer_text":{"type":"string"},"document_id":{"type":"string"},"answer_json":{"type":"object"},
+    "resolution_attempts":{"type":"number","default":0},"resolution_history_json":{"type":"array","items":{"type":"object"}},"provenance_json":{"type":"object"},"confidence_state":{"type":"string","enum":["VERIFIED","HIGH_CONFIDENCE","PROBABLE","MERCHANT_PROVIDED","GENERIC_PROVIDER_CONTACT","UNKNOWN"],"default":"UNKNOWN"},
+    "resume_function":{"type":"string"},"resume_args_json":{"type":"object"},"resume_result_json":{"type":"object"},"blocking_reason":{"type":"string"},"owner":{"type":"string"},"next_action":{"type":"string"},"resolution_method":{"type":"string"},"next_retry_at":{"type":"string","format":"date-time"},"escalation_rule":{"type":"string"},
+    "requested_at":{"type":"string","format":"date-time"},"responded_at":{"type":"string","format":"date-time"},"resolved_at":{"type":"string","format":"date-time"},"last_attempt_at":{"type":"string","format":"date-time"},"communication_thread_id":{"type":"string"}
+  },"required":["request_key","brand_id","information_type","state","what_needed","why_needed","merchant_action","what_happens_next"],
+  "rls":{"read":{"$or":[{"user_condition":{"role":"admin"}},{"data.user_email":"{{user.email}}"}]},"write":{"user_condition":{"role":"admin"}}}
+}

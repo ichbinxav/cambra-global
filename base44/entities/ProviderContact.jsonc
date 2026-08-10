@@ -3,24 +3,107 @@
   "type": "object",
   "description": "Auditable provider-contact directory. Contacts can come from merchant-specific evidence, provider replies, existing CRM data, Apollo, or public research. Never stores an invented address.",
   "properties": {
-    "provider_id": {"type":"string"},
-    "provider_name": {"type":"string"},
-    "brand_id": {"type":"string"},
-    "recover_id": {"type":"string"},
-    "name": {"type":"string"},
-    "email": {"type":"string"},
-    "title": {"type":"string"},
-    "department": {"type":"string"},
-    "source": {"type":"string","enum":["merchant_relationship","provider_crm","provider_referral","apollo","public_research","provider_website","manual"]},
-    "source_reference": {"type":"string"},
-    "source_evidence_json": {"type":"object"},
-    "confidence": {"type":"string","enum":["high","medium","low"]},
-    "merchant_specific": {"type":"boolean","default":false},
-    "validated": {"type":"boolean","default":false},
-    "active": {"type":"boolean","default":true},
-    "last_used_at": {"type":"string","format":"date-time"},
-    "last_verified_at": {"type":"string","format":"date-time"}
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "recover_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "merchant_relationship",
+        "provider_crm",
+        "provider_referral",
+        "apollo",
+        "public_research",
+        "provider_website",
+        "manual",
+        "merchant_provided"
+      ]
+    },
+    "source_reference": {
+      "type": "string"
+    },
+    "source_evidence_json": {
+      "type": "object"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "merchant_specific": {
+      "type": "boolean",
+      "default": false
+    },
+    "validated": {
+      "type": "boolean",
+      "default": false
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "last_used_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "confidence_state": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH_CONFIDENCE",
+        "PROBABLE",
+        "MERCHANT_PROVIDED",
+        "GENERIC_PROVIDER_CONTACT",
+        "UNKNOWN"
+      ],
+      "default": "UNKNOWN"
+    }
   },
-  "required": ["provider_id","email","source","confidence","active"],
-  "rls": {"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+  "required": [
+    "provider_id",
+    "email",
+    "source",
+    "confidence",
+    "active"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
