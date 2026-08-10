@@ -1,0 +1,78 @@
+{
+  "name": "ProviderProductAvailability",
+  "type": "object",
+  "description": "P2 product-level availability by market. Provider presence never implies product availability.",
+  "properties": {
+    "availability_key": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "availability_state": {
+      "type": "string",
+      "enum": [
+        "AVAILABLE",
+        "LIMITED",
+        "UNAVAILABLE",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "availability_key",
+    "provider_product_id",
+    "market",
+    "availability_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

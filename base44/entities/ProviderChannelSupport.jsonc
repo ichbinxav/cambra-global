@@ -1,0 +1,84 @@
+{
+  "name": "ProviderChannelSupport",
+  "type": "object",
+  "description": "P2 provider-product channel support by market.",
+  "properties": {
+    "channel_key": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "ONLINE",
+        "IN_PERSON",
+        "MOTO",
+        "PAYMENT_LINK",
+        "IN_APP",
+        "MARKETPLACE",
+        "PLATFORM",
+        "OTHER"
+      ]
+    },
+    "support_state": {
+      "type": "string",
+      "enum": [
+        "SUPPORTED",
+        "LIMITED",
+        "UNSUPPORTED",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "channel_key",
+    "provider_product_id",
+    "market",
+    "channel",
+    "support_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

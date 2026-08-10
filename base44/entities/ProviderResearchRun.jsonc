@@ -1,0 +1,89 @@
+{
+  "name": "ProviderResearchRun",
+  "type": "object",
+  "description": "P2 auditable research pass. Records what was actually attempted; absence of candidates is not treated as absence of providers unless research is completed.",
+  "properties": {
+    "run_key": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "queries_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sources_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidates_found": {
+      "type": "number"
+    },
+    "verified": {
+      "type": "number"
+    },
+    "rejected": {
+      "type": "number"
+    },
+    "unresolved": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "STARTED",
+        "COMPLETED",
+        "CONFLICT",
+        "REQUIRES_DEEP_RESEARCH",
+        "FAILED"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "run_key",
+    "market",
+    "family",
+    "started_at",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "ProviderPaymentMethodSupport",
+  "type": "object",
+  "description": "P2 payment-method support by provider product and market; method support is explicit and evidence-backed.",
+  "properties": {
+    "method_support_key": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string"
+    },
+    "support_state": {
+      "type": "string",
+      "enum": [
+        "SUPPORTED",
+        "LIMITED",
+        "UNSUPPORTED",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "channel": {
+      "type": "string"
+    },
+    "currency_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "method_support_key",
+    "provider_product_id",
+    "market",
+    "payment_method",
+    "support_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
