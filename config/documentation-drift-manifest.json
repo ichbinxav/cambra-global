@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.1.0",
   "systemVersion": "0.81.0",
   "packageVersion": "0.81.0",
-  "generatedAt": "2026-08-10T20:53:04.589Z",
+  "generatedAt": "2026-08-10T22:54:14.176Z",
   "sourcePaths": {
     "base44/entities/CountryProfile.jsonc": "473de444a0cb0ce4551bdcac0d75fcc6dc5c34c5d56165978c59f28e563339eb",
     "base44/entities/DocumentationChangeProposal.jsonc": "7c682f57bb5cb65aae16a84a9b7bda65b1b6b214d1ff84a003e451f1b011d059",
@@ -16,7 +16,7 @@
     "base44/entities/MarketIntelligenceProfile.jsonc": "a8b20d6bc222c3c63b1711c1dc362a83295ba4b42f27f159f738027f7257f73a",
     "base44/entities/MarketPolicyOverride.jsonc": "dd15c2d782f02986c5aad58598ef4bdf117d11a4ef0d9e88bf7f71fc9b17b749",
     "base44/entities/MerchantMarketContext.jsonc": "5e923ac1c9acf93b25669c10161a6aca1ff2be78e9a76be45c1e18552edf5e2b",
-    "base44/entities/ProviderPricingVersion.jsonc": "aad8ecd8e6dafe3a3caafe20749bac15748f0142067236e58b32a81cacc2fc70",
+    "base44/entities/ProviderPricingVersion.jsonc": "cc140d4e79882da8ae1b375bfb2fadacc769a8aa41c2e17c5cb285f501e7234b",
     "base44/functions/acceptRecoverMandate/entry.ts": "882672fc89c5136338a9c4f4c646da631bf27a5f62332bd96424c69f6c4200db",
     "base44/functions/acquisitionLearningWorker/entry.ts": "1b4bb8024acb95d280bc0e94b734d302b36d22ba5d805d729c237b29de0ece5f",
     "base44/functions/aggregateAgreementWorker/entry.ts": "ba40d4380d6b2d88701fa8e5645d92466c180c5c117853afc65d594590cdd2a7",
@@ -44,7 +44,7 @@
     "base44/functions/getFounderOSCommandCenter/entry.ts": "0344418d377ad65ccc4040b71d14d813fce058af0c530f982694de67457e4a51",
     "base44/functions/getIntelligenceCommandCenter/entry.ts": "871c871cc2ec32575bf78bd3e8a4a21ca013fa518464154da2619da4876a271c",
     "base44/functions/getMaintenanceCenter/entry.ts": "4cb46fa6df64e19d38cc3aea1e1e2dc1ad744bdc801c0e54c3c52ab3b0e4ccc2",
-    "base44/functions/intelligenceMaintenanceWorker/entry.ts": "ae79d7ca025947e10146a7828a4442318cf3d3fefbf6ef991f0dde21e07fc149",
+    "base44/functions/intelligenceMaintenanceWorker/entry.ts": "c7e8148069201864f7c543d91644c35b3a6a477a4b744c06ee21ad9a16a24c6a",
     "base44/functions/joinCollective/entry.ts": "cae09aaffe9cac015635485bd346d21dfc38eebad224ddea3cac6a05556013fe",
     "base44/functions/knowledgeIntegrityWorker/entry.ts": "d1946dc480f7845a97b5ae5a41c9b8fbd22a7207c05ad7e445c54d04e0d41cc8",
     "base44/functions/maintenanceEngine/entry.ts": "4bbc723280caa579b254c5962ada8749a5125c459ffb3d03219043153b507c7b",
@@ -95,12 +95,12 @@
     "config/europe-markets.json": "642c8e20c99f16eb33f9f645f4053399e7cff2302fab2eb3d54dffa71808a156",
     "config/product-policy.json": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
     "scripts/check-documentation-drift.mjs": "cadb5f957b40c60b664d69394c9c73b340a3941ecacf36e0fcc43b37359788ac",
-    "scripts/check-release-manifest.mjs": "95cdd969c36cfa926c1e0d01b583abc6086361fb0e274e9443fa4d0efe434963",
+    "scripts/check-release-manifest.mjs": "ac34e1489e7d1ae3cc7bfb640ec8bde570c8c6e9fa824b6723f3a83d8904d090",
     "scripts/generate-documentation-manifest.mjs": "72df7ee9d5dadd07c8a8a0ee24d2292ea34697620d8b83fb790f08d64b347980",
     "src/App.jsx": "af18d672afdf8025a59d1778b3350ef2eedecc521c106deba27da5fa2c2a974a",
     "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md": "775d9878386f8419ca0f337412ebbc127ef9afa1bc244e5f62e6c090fcb13363",
     "src/docs/CAMBRA_FOUNDER_HANDBOOK.md": "40a2eeec1a49e45df395f9e59a0c5b386eb05e51271bce296c476c8d00589c16",
-    "src/docs/CAMBRA_OPERATING_BIBLE.md": "19b2be2157c48681946e623ba023cfd3eb79fdb1c564897f27ea03f6de3310a0",
+    "src/docs/CAMBRA_OPERATING_BIBLE.md": "1d5073db4d3d0b31b479ead1d037df37b3c3113f4c84d1a37ad3f3fe8eb3a787",
     "src/docs/OPERATIONS_STATUS.md": "5854b40d35945249d069add6ffb89faaa51798c570d1c478d02563aeabf19152",
     "src/docs/P13_SHADOW_ROUTING_ARCHITECTURE.md": "dd3b7b439de51bb8ad1c6c7b00cbd46c0bc1013eff5656fbe606d9c71bdb6f2d",
     "src/docs/P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md": "93de5be0609b42a114646183adb72fd0c740a07f650df6079141ebd8cfb46172",
@@ -118,13 +118,13 @@
     "src/pages/admin/AdminMarkets.jsx": "109df2ca7373f8d25f03bb5688cb409491f7040d3a63b61af7fd81a442d585be"
   },
   "documentationFiles": {
-    "src/docs/CAMBRA_OPERATING_BIBLE.md": "19b2be2157c48681946e623ba023cfd3eb79fdb1c564897f27ea03f6de3310a0",
+    "src/docs/CAMBRA_OPERATING_BIBLE.md": "1d5073db4d3d0b31b479ead1d037df37b3c3113f4c84d1a37ad3f3fe8eb3a787",
     "src/docs/CAMBRA_FOUNDER_HANDBOOK.md": "40a2eeec1a49e45df395f9e59a0c5b386eb05e51271bce296c476c8d00589c16",
     "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md": "775d9878386f8419ca0f337412ebbc127ef9afa1bc244e5f62e6c090fcb13363",
     "src/docs/P18_TROUBLESHOOTING_PLAYBOOKS.md": "7359c90d7ef527b39151f3eb7655580961081bc8327bddef56297ab0d0b3b541",
     "src/docs/P18_INCIDENT_PLAYBOOKS.md": "667fa271f699233684f1816770831e7fbefc4705e7b6739ab93741c59b23fc93",
     "src/docs/P18_EMERGENCY_CONTROLS.md": "118a1777e4999557b6710c3e07414d3bedbc654d1ed88f6bbfb8dfebd937c50d",
-    "src/docs/PRODUCTION_FUNCTIONS.md": "5c547770629b9d278e2270c260683790d5bc973a992e6b7fd9a5aa1e21f94dfb",
+    "src/docs/PRODUCTION_FUNCTIONS.md": "fe7cccf4c8987cfcead97c87f03615416d6e56ab4381c2d59fe50dff46abff59",
     "src/docs/P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md": "93de5be0609b42a114646183adb72fd0c740a07f650df6079141ebd8cfb46172"
   }
 }

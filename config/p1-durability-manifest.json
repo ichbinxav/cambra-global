@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation (durability manifest)",
-  "generatedAt": "2026-08-10T22:46:50.415Z",
+  "generatedAt": "2026-08-10T22:54:14.376Z",
   "packageVersion": "0.81.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -532,8 +532,8 @@
     },
     {
       "path": "scripts/check-release-manifest.mjs",
-      "sha256": "95cdd969c36cfa926c1e0d01b583abc6086361fb0e274e9443fa4d0efe434963",
-      "bytes": 7484
+      "sha256": "ac34e1489e7d1ae3cc7bfb640ec8bde570c8c6e9fa824b6723f3a83d8904d090",
+      "bytes": 8449
     },
     {
       "path": "scripts/check-typecheck-baseline.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "a5e647e3eac4ca315a9dfd2db6492d71d8ad4911c0ea73280dbfe8d2ace79bee",
-      "bytes": 8738
+      "sha256": "bfdbbb9c7dc3f610f209d8e72d201e9cc9bf12c8a2f70d3f58af20831f8d0763",
+      "bytes": 8989
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
