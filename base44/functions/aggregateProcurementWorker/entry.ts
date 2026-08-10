@@ -3,9 +3,10 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { policyIsActive } from '../../shared/commercialAutonomy.ts';
 import { canOpenRFP, truthfulDemandSnapshot, AGGREGATE_ENGINE_VERSION } from '../../shared/aggregateCore.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 const slug=(v:any)=>String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 Deno.serve(async(req)=>{try{
- const b=createClientFromRequest(req),body=await req.json().catch(()=>({})),g=await requireAdminOrInternal(req,b,body);if(!g.ok)return g.response;const s=b.asServiceRole;const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const now=new Date().toISOString();
+ const b=createClientFromRequest(req),body=await req.json().catch(()=>({})),g=await requireAdminOrInternal(req,b,body);if(!g.ok)return g.response;const s=b.asServiceRole;const emergency=await emergencyState(s);if(emergency.safe_mode||emergency.negotiations_paused)return Response.json({ok:false,error:'emergency_control_paused:negotiations',safe_mode:emergency.safe_mode,reason:emergency.reason||null},{status:409});const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const now=new Date().toISOString();
  const policies=await s.entities.CommercialPolicy.filter({engine:'aggregate_procurement',status:'active'},'-approved_at',10).catch(()=>[]);const policy=policies.find((p:any)=>policyIsActive(p))||null;
  const pools=await s.entities.AggregatePool.filter({status:{$in:['negotiation_ready','rfp_preparing','rfp_open','negotiating','renegotiating']}},'-aggregation_power_score',200).catch(()=>[]);let prepared=0,opened=0,casesCreated=0,contacted=0,skipped=0;
  for(const pool of pools){if(!canOpenRFP(pool)){skipped++;continue}let rfp=(await s.entities.AggregateRFP.filter({pool_id:pool.id,status:{$in:['prepared','open','negotiating','final_offer','human_approval','contracting']}},'-created_at',1).catch(()=>[]))[0]||null;
