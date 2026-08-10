@@ -1,0 +1,89 @@
+# CAMBRA OPERATING BIBLE — v0.79.0
+
+Canonical technical/operating reference for the implementation that exists in the repository. This document is not a product wish-list. When a section says PARTIALLY_IMPLEMENTED or MISSING, that status is intentional and must not be upgraded without source evidence.
+
+## 1. Company operating model — IMPLEMENTED
+
+CAMBRA currently operates a payments-first infrastructure intelligence and recovery system. Production product scope remains payments only. The autonomous company layer can discover/qualify prospects, onboard merchants, analyze payment data, identify savings, obtain Recover authority, negotiate, execute governed migration work, verify realized savings, bill, reconcile, collect, learn and aggregate demand. Long-term multi-vertical positioning does not make dormant verticals production features.
+
+Operating loop:
+
+DISCOVER → ACQUIRE → QUALIFY → ONBOARD → CONNECT/UPLOAD DATA → ANALYZE → IDENTIFY SAVINGS → RECOVER → AGGREGATE → NEGOTIATE → APPROVAL WHEN MATERIAL → MIGRATE → VERIFY → BILL → COLLECT → RETAIN/EXPAND → LEARN.
+
+## 2. Founder OS — IMPLEMENTED
+
+`/admin` is the Founder OS. Deterministic domain systems provide metrics and records; AI Chief of Staff explains and prioritizes but cannot become financial truth. Ask CAMBRA exposes governed read, WHY, simulation and command paths. Natural language never bypasses domain policy or approval gates.
+
+Founder Attention should contain authority-required/material items rather than routine operational work. Founder actions are expected to be observe, ask, decide, approve, intervene and strategize.
+
+## 3. Merchant lifecycle / Recover — IMPLEMENTED
+
+Recover acceptance freezes current evidence, contractual economics and canonical ECL provenance before material writes. CAMBRA then owns routine fulfilment and migration operations. Payment migrations use a versioned P9 plan and preserve task/audit history. Realized savings must be measured and verified before billable eligibility.
+
+Important truth states remain distinct: estimated savings, accepted savings, implemented state, observed savings, verified savings, billable savings, invoiced amount and collected cash.
+
+## 4. Aggregate — IMPLEMENTED
+
+Aggregate pools merchant demand without exposing individual merchant economics. Observed volume, addressable volume and committed volume are separate concepts. Only explicit commitment evidence may populate committed volume. Aggregate procurement and negotiation can run automatically inside policy, but final/material commercial commitments require human approval. Dynamic agreement tiers may progress under their contractual activation semantics.
+
+## 5. Providers and provider-side economics — IMPLEMENTED with legal activation gates
+
+Provider Intelligence stores temporal pricing/evidence/conflicts/freshness. Provider-side CAMBRA compensation is modeled and accounted separately from merchant revenue. Merchant ranking cannot be improved because a provider pays CAMBRA. Provider compensation activation remains agreement-specific and legal/tax/disclosure gated.
+
+Provider-side lifecycle is attribution → eligibility → accrual → invoicing/self-billing evidence → payment → reconciliation. Merchant invoices and provider revenue use separate ledgers.
+
+## 6. Money — IMPLEMENTED
+
+Authoritative money state is deterministic. LLM output may explain data but may not calculate authoritative balances, alter ledger state or decide that an invoice is paid.
+
+Recover issuance requires an eligible verified report plus contract, tax, economic and ECL gates. Stripe reconciliation remains convergent/read-oriented and does not use a conversational AI as truth. P18 SAFE MODE can pause new invoice issuance; reconciliation and observation remain active.
+
+## 7. AI Workforce — IMPLEMENTED
+
+The source of truth for agent authority is `base44/shared/agentAuthority.ts`, plus deterministic gates in each domain. Agents may receive read/write/send/negotiate/execute capability where explicitly configured. No registered agent receives CAN_APPROVE, CAN_SIGN, CAN_SPEND or CAN_CHARGE.
+
+UI labels or prompts cannot widen authority. Material commitments remain governed by Approval/domain functions.
+
+## 8. Autonomous Maintenance — IMPLEMENTED
+
+P17 uses the loop MONITOR → DETECT → DIAGNOSE → SAFE FIX → VERIFY → LOG → LEARN. Allowlisted reversible remediation includes selected OAuth refresh, webhook retry, provider-intelligence refresh, deterministic billing reconciliation and conservative stale-task closure. A repair is not considered resolved until post-action verification succeeds.
+
+Security, contracts, permissions, money movement and code cutover do not become automatic repair authority. Failed repairs escalate and are recorded in remediation knowledge.
+
+## 9. CAMBRA Developer — IMPLEMENTED
+
+Developer can inspect supported repositories, plan migrations/changes, prepare branch patches and PRs, inspect CI evidence, request cutover and execute guarded rollback. Investigation can be automatic. Patch application/cutover/rollback are governed by plan/CI/approval checks; production code is never silently merged by Maintenance.
+
+## 10. Routing Intelligence — PARTIALLY_IMPLEMENTED
+
+Routing is shadow-only. The system can record production-confirmed observations, simulate counterfactual routing and build readiness/performance intelligence. Real payment routing is explicitly disabled. PCI DSS, PSD2/SCA/regulatory review, provider/network contracts, real-time SLA/SLO, production kill switch, idempotency/reconciliation proof and liability review remain activation gates.
+
+## 11. Security and privacy — PARTIALLY_IMPLEMENTED
+
+Canonical admin/internal gates fail closed. Secret comparison/redaction and tenant/economic boundaries are enforced in code. Dependency security monitoring can consume GitHub Dependabot for registered workspaces. Release requirements continue to surface unresolved live-validation/legal/privacy conditions rather than hiding them.
+
+Technical controls do not constitute legal/privacy approval. P12 retention/cross-tenant derived intelligence policy and production live validation remain explicit manual requirements where the release manifest says so.
+
+## 12. Emergency controls — PARTIALLY_IMPLEMENTED
+
+P18 introduces a real founder SAFE MODE persisted in `EmergencyControl`. SAFE MODE pauses new external communications, negotiations, new migration starts and new Recover invoice issuance. It also pauses the existing global acquisition sending control and active commercial policies. Monitoring, reconciliation, evidence, incident handling and already-earned obligations remain intact.
+
+Individual pause controls also exist for acquisition/sending profiles and commercial policies. API keys/OAuth can be revoked through their canonical functions. There is not one universal switch that halts every internal/read-only agent; SAFE MODE instead blocks the material external-effect boundaries. Do not document a universal agent kill switch unless one is actually added and enforced.
+
+## 13. Founder Handbook / contextual help — IMPLEMENTED
+
+The practical manual is `CAMBRA_FOUNDER_HANDBOOK.md`. Admin screens expose contextual “How does this work?” access through the P18 documentation surface. Ask CAMBRA can query the documentation registry for system-behavior questions. Live-state questions must use Founder OS/domain tools instead.
+
+## 14. Living Documentation Engine — IMPLEMENTED
+
+`documentationRegistry.ts` is the structured runtime documentation source. `documentationMaintenanceWorker` versions it into DocumentationObject/DocumentationVersion and publishes Documentation Health. The release documentation manifest hashes the implementation source paths and canonical docs. If a watched implementation source changes without documentation closure, `npm run documentation:check` fails.
+
+Material release closure therefore includes documentation drift validation. Historical documentation is retained through DocumentationVersion and repository history rather than overwritten as if behavior had never changed.
+
+## 15. Incident learning — IMPLEMENTED
+
+Operational incidents retain symptoms, root cause where known, actions, recovery and prevention. P17 remediation knowledge learns from both verified successes and failed attempts. P18 troubleshooting/incident playbooks are updated through source-controlled documentation closure after material behavior changes or incidents.
+
+## 16. Production claims and unresolved gates
+
+A local/Base44 release check is not the same as external GitHub Actions CI evidence. Stripe/live integration claims, Recover Economics V2 legal wording, P12 privacy/retention, provider monetization legal/tax activation, real-world pilot validation and real routing activation remain governed by their explicit release/manual gates. P18 documentation must preserve these distinctions.
