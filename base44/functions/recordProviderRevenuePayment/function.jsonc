@@ -1,1 +1,4 @@
-{"name":"recordProviderRevenuePayment"}
+{
+  "name": "recordProviderRevenuePayment",
+  "entry": "entry.ts"
+}

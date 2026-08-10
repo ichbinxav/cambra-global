@@ -12,7 +12,10 @@
       "starts_at": "2026-08-10T07:00:00.000Z",
       "ends_type": "never",
       "function_name": "recoverBillingDigest",
-      "function_args": { "trigger": "scheduled" }
+      "function_args": {
+        "trigger": "scheduled"
+      }
     }
-  ]
+  ],
+  "entry": "entry.ts"
 }

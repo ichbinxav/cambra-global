@@ -1,1 +1,4 @@
-{"name":"providerMonetizationAgent"}
+{
+  "name": "providerMonetizationAgent",
+  "entry": "entry.ts"
+}

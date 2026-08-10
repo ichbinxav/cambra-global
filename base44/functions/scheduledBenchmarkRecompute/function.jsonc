@@ -5,14 +5,18 @@
       "type": "scheduled",
       "name": "Benchmark cohort recompute",
       "description": "Recomputes validated non-flagged benchmark cohorts on a 7-day cadence. It does not create merchant-facing economic effects.",
+      "function_args": {
+        "trigger": "scheduled"
+      },
       "is_active": true,
       "schedule_mode": "recurring",
+      "schedule_type": "simple",
       "repeat_unit": "days",
-      "repeat_interval": 7,
-      "starts_at": "2026-08-10T01:00:00.000Z",
+      "repeat_interval": 1,
+      "starts_at": "2026-08-11T02:30:00.000Z",
       "ends_type": "never",
-      "function_name": "scheduledBenchmarkRecompute",
-      "function_args": { "trigger": "scheduled" }
+      "function_name": "scheduledBenchmarkRecompute"
     }
-  ]
+  ],
+  "entry": "entry.ts"
 }

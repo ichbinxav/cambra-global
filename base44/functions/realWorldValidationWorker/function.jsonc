@@ -1,1 +1,15 @@
-{"name":"realWorldValidationWorker","automations":[{"name":"Real-world pilot validation","schedule":"30 6 * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
+{
+  "name": "realWorldValidationWorker",
+  "automations": [
+    {
+      "name": "Real-world pilot validation",
+      "schedule": "30 6 * * *",
+      "function_args": {
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "function_name": "realWorldValidationWorker",
+      "type": "scheduled"
+    }
+  ],
+  "entry": "entry.ts"
+}

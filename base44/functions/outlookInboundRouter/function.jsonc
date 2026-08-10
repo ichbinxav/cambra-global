@@ -3,13 +3,18 @@
   "entry": "entry.ts",
   "automations": [
     {
-      "type": "connector",
+      "type": "scheduled",
       "name": "Outlook Commercial Inbound — created",
       "description": "Routes newly created Outlook emails into CAMBRA's canonical commercial thread ledger. Ignores calendar/contact events after a safe Graph message lookup.",
       "function_args": {},
       "is_active": true,
-      "integration_type": "outlook",
-      "events": ["created"]
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 30,
+      "starts_at": "2026-08-11T00:00:00.000Z",
+      "ends_type": "never",
+      "function_name": "outlookInboundRouter"
     }
   ]
 }

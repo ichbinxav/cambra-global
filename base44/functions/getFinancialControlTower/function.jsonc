@@ -1,1 +1,4 @@
-{"name":"getFinancialControlTower"}
+{
+  "name": "getFinancialControlTower",
+  "entry": "entry.ts"
+}

@@ -1,1 +1,15 @@
-{"name":"providerRevenueLifecycleWorker","automations":[{"name":"Provider revenue lifecycle","schedule":"0 * * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
+{
+  "name": "providerRevenueLifecycleWorker",
+  "automations": [
+    {
+      "name": "Provider revenue lifecycle",
+      "schedule": "0 * * * *",
+      "function_args": {
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "function_name": "providerRevenueLifecycleWorker",
+      "type": "scheduled"
+    }
+  ],
+  "entry": "entry.ts"
+}

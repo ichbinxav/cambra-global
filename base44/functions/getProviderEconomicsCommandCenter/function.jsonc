@@ -1,1 +1,4 @@
-{"name":"getProviderEconomicsCommandCenter"}
+{
+  "name": "getProviderEconomicsCommandCenter",
+  "entry": "entry.ts"
+}

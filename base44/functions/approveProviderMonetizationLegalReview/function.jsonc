@@ -1,1 +1,4 @@
-{"name":"approveProviderMonetizationLegalReview"}
+{
+  "name": "approveProviderMonetizationLegalReview",
+  "entry": "entry.ts"
+}

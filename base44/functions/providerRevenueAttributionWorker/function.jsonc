@@ -1,1 +1,15 @@
-{"name":"providerRevenueAttributionWorker","automations":[{"name":"Provider revenue attribution","schedule":"20 * * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
+{
+  "name": "providerRevenueAttributionWorker",
+  "automations": [
+    {
+      "name": "Provider revenue attribution",
+      "schedule": "20 * * * *",
+      "function_args": {
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "function_name": "providerRevenueAttributionWorker",
+      "type": "scheduled"
+    }
+  ],
+  "entry": "entry.ts"
+}

@@ -1,1 +1,4 @@
-{"name":"founderOSSimulation"}
+{
+  "name": "founderOSSimulation",
+  "entry": "entry.ts"
+}

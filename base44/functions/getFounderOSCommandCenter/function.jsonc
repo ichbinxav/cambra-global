@@ -1,1 +1,4 @@
-{"name":"getFounderOSCommandCenter"}
+{
+  "name": "getFounderOSCommandCenter",
+  "entry": "entry.ts"
+}

@@ -1,1 +1,4 @@
-{"name":"founderOSCommand"}
+{
+  "name": "founderOSCommand",
+  "entry": "entry.ts"
+}

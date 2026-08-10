@@ -1,1 +1,15 @@
-{"name":"operatingHealthWorker","automations":[{"name":"Operating health assessment","schedule":"0 6 * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
+{
+  "name": "operatingHealthWorker",
+  "automations": [
+    {
+      "name": "Operating health assessment",
+      "schedule": "0 6 * * *",
+      "function_args": {
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "function_name": "operatingHealthWorker",
+      "type": "scheduled"
+    }
+  ],
+  "entry": "entry.ts"
+}

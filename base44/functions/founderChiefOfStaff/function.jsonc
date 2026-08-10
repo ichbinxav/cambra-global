@@ -1,1 +1,4 @@
-{"name":"founderChiefOfStaff"}
+{
+  "name": "founderChiefOfStaff",
+  "entry": "entry.ts"
+}

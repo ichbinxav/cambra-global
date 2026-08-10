@@ -1,1 +1,4 @@
-{"name":"getFounderControlCenter"}
+{
+  "name": "getFounderControlCenter",
+  "entry": "entry.ts"
+}
