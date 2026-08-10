@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.80.0 — Always-On Lead Discovery & Qualified Reservoir Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T12:56:30.111Z",
+  "generatedAt": "2026-08-10T12:58:10.865Z",
   "packageVersion": "0.80.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "8ac4aff89a658484b48f8290066c09fec0dd06ef5eb8d48eb4c9cbc529c7136e",
-      "bytes": 42844
+      "sha256": "067931c8422385707d941b77736a5879ef7cd2e834f796dc5956f9b931242716",
+      "bytes": 43200
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "2a31891a13a17f5ff11f3a5e0b9647b8d4e0bc89217ff41eeb66f6e184076840",
-      "bytes": 9933
+      "sha256": "7759ebacc05a7e0de5ead9ea5184a9d0bc1fd57b4978f588565c38a819eec18c",
+      "bytes": 9964
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
