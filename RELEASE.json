@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1178,
   "sourceArchiveShaExternal": null,
-  "gitSha": "62eabb8bdc717ef2c5c2d4117ad1aac409c383e3",
+  "gitSha": "9d9b0ec67df6ce384ce62f03a81c695ee7ff8047",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -43,53 +43,53 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
-    "startedAt": "2026-08-10T01:05:09.351Z",
-    "completedAt": "2026-08-10T01:05:18.345Z",
+    "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
+    "startedAt": "2026-08-10T08:57:03.982Z",
+    "completedAt": "2026-08-10T08:57:17.027Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 453,
-    "passed": 1766,
+    "testFiles": 455,
+    "passed": 1780,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
-    "startedAt": "2026-08-10T01:05:18.701Z",
-    "completedAt": "2026-08-10T01:05:29.638Z",
+    "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
+    "startedAt": "2026-08-10T08:57:17.478Z",
+    "completedAt": "2026-08-10T08:57:30.377Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "eab87d92074847aa827b1182311f157de9d481ad8e6edc2c123bdebc7a575a00",
-    "artifactCount": 70
+    "distHash": "0dc7c92c8486c4ac139f785e068d6b8bde76de3d1618ccc00dcc8663fbe33d91",
+    "artifactCount": 71
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
-    "startedAt": "2026-08-10T01:04:47.791Z",
-    "completedAt": "2026-08-10T01:04:56.137Z",
+    "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
+    "startedAt": "2026-08-10T08:57:30.835Z",
+    "completedAt": "2026-08-10T08:57:39.273Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
-    "startedAt": "2026-08-10T01:04:56.519Z",
-    "completedAt": "2026-08-10T01:04:59.088Z",
+    "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
+    "startedAt": "2026-08-10T08:57:53.535Z",
+    "completedAt": "2026-08-10T08:57:56.306Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
-    "startedAt": "2026-08-10T01:04:59.487Z",
-    "completedAt": "2026-08-10T01:05:08.996Z",
+    "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
+    "startedAt": "2026-08-10T08:57:56.763Z",
+    "completedAt": "2026-08-10T08:58:07.807Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "eab87d92074847aa827b1182311f157de9d481ad8e6edc2c123bdebc7a575a00"
+    "dist": "0dc7c92c8486c4ac139f785e068d6b8bde76de3d1618ccc00dcc8663fbe33d91"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
@@ -97,12 +97,7 @@
     "ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
     "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
-    "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.",
-    "evidence tests: stale (run the *:evidence command)",
-    "evidence build: stale (run the *:evidence command)",
-    "evidence lint: stale (run the *:evidence command)",
-    "evidence typecheck-critical: stale (run the *:evidence command)",
-    "evidence typecheck-baseline: stale (run the *:evidence command)"
+    "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T08:56:55.961Z"
+  "generatedAt": "2026-08-10T08:58:08.261Z"
 }
