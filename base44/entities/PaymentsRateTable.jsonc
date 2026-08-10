@@ -56,12 +56,8 @@
     },
     "fixed_fee_currency": {
       "type": "string",
-      "enum": [
-        "EUR",
-        "GBP",
-        "USD"
-      ],
-      "description": "Currency of fixed_fee_minor_units. Determines which minor-unit is used (100 cents = 1 EUR/GBP/USD)."
+      "pattern": "^[A-Z]{3}$",
+      "description": "LEGACY ADAPTER ONLY. ISO 4217 currency of fixed_fee_minor_units. P3 removed the historical EUR/GBP/USD-only architecture assumption; the canonical RateComponent currency is independently evidenced and may differ from the market's primary currency."
     },
     "terminal_rental_monthly_minor": {
       "type": "number",
