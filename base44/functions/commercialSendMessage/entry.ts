@@ -75,6 +75,7 @@ Deno.serve(async (req) => {
     const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch(()=>[]):[];
     const sendingProfile=profiles[0]||null;
     if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
+    if(sendingProfile&&!manualOverride){const minuteAgo=new Date(Date.now()-60000).toISOString();const recentBurst=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:minuteAgo}},'-sent_at',100).catch(()=>[]);const burst=Math.max(1,Math.min(60,Number(sendingProfile.burst_per_minute|| (sendingProfile.provider==='outlook'?12:30))));if(recentBurst.length>=burst)return Response.json({ok:false,error:'sending_profile_burst_limit',profile:sendingProfile.profile_key,burst_per_minute:burst,retry_after_seconds:60},{status:429});}
     const acquisitionAction=['initial_outreach','partner_outreach'].includes(action);
     if(acquisitionAction&&!manualOverride){
       const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);const control=controls[0]||null;

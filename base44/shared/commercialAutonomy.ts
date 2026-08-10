@@ -97,7 +97,7 @@ export function computeInboundReplySchedule(receivedAt:string|Date, policy:any, 
 export function communicationQuality(text:string, context?:{previous_outbound?:string[]}) {
   const t=String(text||'').trim(); const reasons:string[]=[];
   if(!t || t.length>5000) reasons.push('invalid_length');
-  const hard=[/\bi hope this (email|message) finds you well\b/i,/\bthank you for reaching out\b/i,/\bi[’']?d be happy to\b/i,/\babsolutely!\b/i,/\bcertainly!\b/i,/\bas an ai\b/i,/\blanguage model\b/i,/\bgame[- ]changer\b/i,/\bdelve into\b/i];
+  const hard=[/\bi hope this (email|message) finds you well\b/i,/\bthank you for reaching out\b/i,/\bi[’']?d be happy to\b/i,/\babsolutely!\b/i,/\bcertainly!\b/i,/\bas an ai\b/i,/\blanguage model\b/i,/\bgame[- ]changer\b/i,/\bdelve into\b/i,/\bjust (?:checking|following) in\b/i,/\btouching base\b/i,/\bcircle back\b/i,/\bunlock(?:ing)? (?:value|savings|potential)\b/i,/\brevolutioni[sz]e\b/i];
   if(hard.some(r=>r.test(t))) reasons.push('generic_llm_phrase');
   const em=(t.match(/—/g)||[]).length; if(em>=3) reasons.push('em_dash_overuse');
   const bullets=t.split('\n').filter(x=>/^\s*[-*•]\s+/.test(x)).length; if(bullets>=4 && t.length<900) reasons.push('unnecessary_list_structure');
