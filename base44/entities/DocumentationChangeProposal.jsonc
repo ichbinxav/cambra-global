@@ -1,0 +1,78 @@
+{
+  "name": "DocumentationChangeProposal",
+  "type": "object",
+  "description": "P18 living-documentation proposal created from real incidents/remediation learning. Source-controlled documentation remains canonical; proposals surface required updates instead of silently inventing documentation.",
+  "properties": {
+    "proposal_key": {
+      "type": "string"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "incident",
+        "remediation",
+        "release_drift",
+        "manual"
+      ]
+    },
+    "source_entity_type": {
+      "type": "string"
+    },
+    "source_entity_id": {
+      "type": "string"
+    },
+    "doc_key": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "acknowledged",
+        "applied",
+        "dismissed"
+      ],
+      "default": "pending"
+    },
+    "impact_summary": {
+      "type": "string"
+    },
+    "proposed_update_json": {
+      "type": "object"
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_note": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "proposal_key",
+    "trigger_type",
+    "doc_key",
+    "status",
+    "impact_summary",
+    "detected_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
