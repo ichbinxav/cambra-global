@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { collectiveJoinEmail } from '../../shared/emails/collectiveJoin.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 /**
  * joinCollective
@@ -139,6 +140,8 @@ Deno.serve(async (req) => {
     //    steps, NO concrete rate promised. EMAIL-1: template + language live in
     //    base44/shared/emails/collectiveJoin.ts, routed by the member's locale.
     try {
+      const emergency = await emergencyState(base44.asServiceRole);
+      if (!emergency.safe_mode && !emergency.communications_paused) {
       const mail = collectiveJoinEmail(locale, { gmvEurMonthly: gmv });
       await base44.asServiceRole.integrations.Core.SendEmail({
         from_name: "CAMBRA",
@@ -146,6 +149,7 @@ Deno.serve(async (req) => {
         subject: mail.subject,
         body: mail.html,
       });
+      }
     } catch (userEmailErr) {
       console.warn("Collective user confirmation email failed:", (userEmailErr as any)?.message);
     }
