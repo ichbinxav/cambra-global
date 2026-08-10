@@ -50,7 +50,7 @@ if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economic
   manualRequirements.push("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
 }
 if (fs.existsSync('src/docs/P12_INTELLIGENCE_ARCHITECTURE.md')) {
-  manualRequirements.push('LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use');
+  manualRequirements.push('LEGAL/PRIVACY RUNTIME REVIEW: CAMBRA now enforces a separate k>=10, identifier-free retained-intelligence layer; before materially widening cross-tenant benchmark use or relying on indefinite post-deletion retention at scale, re-assess lawful basis, residual re-identification risk and retention policy against actual production cohorts. Pseudonymized BenchmarkContribution data remains subject to normal deletion/retention rules.');
 }
 if (fs.existsSync('src/docs/P13_SHADOW_ROUTING_ARCHITECTURE.md')) {
   manualRequirements.push('ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.');
