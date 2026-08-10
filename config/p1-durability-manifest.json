@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation (durability manifest)",
-  "generatedAt": "2026-08-10T17:51:34.019Z",
+  "generatedAt": "2026-08-10T20:51:52.842Z",
   "packageVersion": "0.81.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -47,8 +47,8 @@
     },
     {
       "path": "base44/entities/IntelligenceEvidence.jsonc",
-      "sha256": "a8e24357b588a0ec2b3ffe26e2c2ef0d9825924eeed99f19cefac3b5a615d9ad",
-      "bytes": 4039
+      "sha256": "61353526b055d6742a2dc992f02e16fe0803afe9f8f69eccacd8015a2ab31212",
+      "bytes": 4921
     },
     {
       "path": "base44/entities/IntelligenceObservation.jsonc",
@@ -352,13 +352,13 @@
     },
     {
       "path": "base44/functions/purgeInactiveLeads/function.jsonc",
-      "sha256": "a14b3253143d2f05254488f4892770a8e672a9cc23f8edb2491a9a41e66dca00",
-      "bytes": 573
+      "sha256": "e2f1bd9264509acc173b8e8e79fbc2db6436035641e1df6ea02401235226a96a",
+      "bytes": 596
     },
     {
       "path": "base44/functions/purgePaymentsAnalysisSessions/function.jsonc",
-      "sha256": "6e8952a2c6467f220517d7b2e8716177231d7ef5e3e25e1469e84edcb805b2e7",
-      "bytes": 582
+      "sha256": "bfe26700fefdc21912eaab8e8fd711dbfb70e6e000a63254fbe620b6d200f5e8",
+      "bytes": 605
     },
     {
       "path": "base44/functions/reconcileInvoice/entry.ts",
@@ -382,13 +382,13 @@
     },
     {
       "path": "base44/functions/retryPendingRecoverContracts/function.jsonc",
-      "sha256": "b9ccc5b6ae50e54a923c870356eb8ba7e4e65f8d980582d57e0075172518d1f4",
-      "bytes": 629
+      "sha256": "729cce81f3ff85ff767046fdf76579c2168c9f2d138836976297d80d49dbcf80",
+      "bytes": 652
     },
     {
       "path": "base44/functions/scheduledBenchmarkRecompute/function.jsonc",
-      "sha256": "100428d40fd6c01147a09a28ef6385bb8e29d0b0537f042a5963deb86d91b929",
-      "bytes": 596
+      "sha256": "6d63391248511c6132b38638547850f1ba20a4a69976a2c0c30634a99534439d",
+      "bytes": 666
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
@@ -522,8 +522,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "7480f98f8b36dd4b0fbdb9e6241cc2f5167bce7d426a308166f56babc484d578",
-      "bytes": 6058
+      "sha256": "f8b01407ef7cce1b0697eda2d157c9f259c3618fdd30f5fc811de325bc5d154f",
+      "bytes": 6052
     },
     {
       "path": "scripts/advance-stage.mjs",
