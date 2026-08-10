@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.79.0 — P18 Operating Bible, Founder Handbook & Living Documentation Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T10:58:26.807Z",
-  "packageVersion": "0.79.0",
+  "release": "CAMBRA v0.80.0 — Always-On Lead Discovery & Qualified Reservoir Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-10T12:55:53.688Z",
+  "packageVersion": "0.80.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "f73440a376087130128415572dc36408ff4c5b4817c6f3b574f8d63464daace7",
+      "sha256": "796d84847e0de8cb346cae787e1164f2917d39c700929b7cac245b653b3f7cd8",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "09bbe8aa4b6c8d1e3b43bcc3a2dd7988979e2ed5951eaad53df385bcf8f0c077",
-      "bytes": 5920
+      "sha256": "f368d7715d83cd3110fdc62a9c9fbbc7ff5376ec4ef531761c6115d26b42f1f7",
+      "bytes": 5906
     },
     {
       "path": "scripts/advance-stage.mjs",
