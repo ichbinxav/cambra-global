@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.75.0 — P14 Aggregate & Final Autonomous Revenue Engine Technical Seal",
-  "version": "0.75.0",
-  "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
+  "releaseName": "CAMBRA v0.76.0 — P15 Provider Revenue Share & Dual-Sided Economics Technical Seal",
+  "version": "0.76.0",
+  "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1112,
+  "sourceTreeFileCount": 1148,
   "sourceArchiveShaExternal": null,
-  "gitSha": "7f81a6c584de8692cf9b7443343b8b4c19283fd9",
+  "gitSha": "0d8463b48fc0c90137559b7182149287671d51b9",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "e12dbff5572bf00b526dea6f6b266a5760d81ba566067e5a3a5fb3a6db6825c7",
+  "durabilityManifestSha": "6e4ea79111e5ec4f8df3667c8358cc651e65efe036de6c271c760531cbe4c1ca",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -29,7 +29,7 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "a20c76a1971a11f0229395cb812a5ea7379a87d2f3269b897e01c5fa85ddbcf7",
+  "lockfileSha": "7d289241c365595f2b0b99aae105b96461572088686931b652aa8120e3ecb4a0",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
@@ -43,60 +43,61 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
-    "startedAt": "2026-08-10T00:03:09.149Z",
-    "completedAt": "2026-08-10T00:03:18.728Z",
+    "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
+    "startedAt": "2026-08-10T00:17:18.321Z",
+    "completedAt": "2026-08-10T00:17:27.844Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 449,
-    "passed": 1739,
+    "testFiles": 451,
+    "passed": 1753,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
-    "startedAt": "2026-08-10T00:03:19.039Z",
-    "completedAt": "2026-08-10T00:03:28.999Z",
+    "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
+    "startedAt": "2026-08-10T00:17:28.160Z",
+    "completedAt": "2026-08-10T00:17:37.515Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "e00e848a48e2d5b86e6fc24cb4838c1c0bb4a219e99105a703a9285dad05f2ac",
-    "artifactCount": 69
+    "distHash": "bf942071c135c162f097c17e35d894b0692beba1bd77481f03fea5916d1bdd07",
+    "artifactCount": 70
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
-    "startedAt": "2026-08-10T00:02:52.303Z",
-    "completedAt": "2026-08-10T00:02:59.306Z",
+    "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
+    "startedAt": "2026-08-10T00:17:00.299Z",
+    "completedAt": "2026-08-10T00:17:08.059Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
-    "startedAt": "2026-08-10T00:02:59.623Z",
-    "completedAt": "2026-08-10T00:03:01.531Z",
+    "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
+    "startedAt": "2026-08-10T00:17:08.373Z",
+    "completedAt": "2026-08-10T00:17:10.329Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "39558368646f25549b5bafccf232197885011c03c86969a22ecad0860d1f95df",
-    "startedAt": "2026-08-10T00:03:01.843Z",
-    "completedAt": "2026-08-10T00:03:08.831Z",
+    "sourceTreeHash": "f0c92dca685bd4608d5866c59f0b3dc8f24026bf9dcc3dea8c537a76f4a0e182",
+    "startedAt": "2026-08-10T00:17:10.625Z",
+    "completedAt": "2026-08-10T00:17:17.983Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "e00e848a48e2d5b86e6fc24cb4838c1c0bb4a219e99105a703a9285dad05f2ac"
+    "dist": "bf942071c135c162f097c17e35d894b0692beba1bd77481f03fea5916d1bdd07"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
     "LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use",
     "ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
-    "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation."
+    "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
+    "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T00:03:29.349Z"
+  "generatedAt": "2026-08-10T00:17:37.833Z"
 }
