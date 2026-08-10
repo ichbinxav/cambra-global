@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -23,6 +23,7 @@ const NAV = [
   { path: "/admin/finance", label: "Finance", icon: Landmark },
   { path: "/admin/provider-economics", label: "Provider Economics", icon: Handshake },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
+  { path: "/admin/maintenance", label: "Maintenance", icon: Wrench },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
   { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
   { path: "/admin/overview", label: "Overview", icon: BarChart3 },
