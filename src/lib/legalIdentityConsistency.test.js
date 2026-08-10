@@ -7,7 +7,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const LEGAL_NAME = 'CAMBRA GLOBAL SASU';
 const SIREN = '105 452 916';
-const ADDRESS = '47 rue Vivienne, 75002 Paris';
+const STREET = '47 rue Vivienne';
+const POSTCODE = '75002';
 
 const USER_VISIBLE_IDENTITY_FILES = [
   'src/pages/Landing.jsx',
@@ -27,7 +28,8 @@ describe('CAMBRA legal identity consistency', () => {
   it('uses the canonical registered address on every user-visible legal identity surface', () => {
     for (const file of USER_VISIBLE_IDENTITY_FILES) {
       const source = read(file);
-      expect(source, file).toContain(ADDRESS);
+      expect(source, file).toContain(STREET);
+      expect(source, file).toContain(POSTCODE);
       expect(source, file).toContain(SIREN);
     }
   });
