@@ -11,6 +11,7 @@
 import fs from "node:fs";
 import crypto from "node:crypto";
 import process from "node:process";
+import { execFileSync } from "node:child_process";
 import { computeSourceTreeHash } from "./lib/sourceTreeHash.mjs";
 import { evidenceStatus } from "./lib/evidence.mjs";
 import { checkFreeze, resolveStage } from "./lib/preEclFreeze.mjs";
@@ -39,6 +40,12 @@ if (fs.existsSync("config/p1-durability-manifest.json")) {
   if (!m.durabilityManifestSha) fail("durabilityManifestSha is null while config/p1-durability-manifest.json exists");
   else if (m.durabilityManifestSha !== sha256("config/p1-durability-manifest.json")) fail("durability manifest changed since manifest generation (durabilityManifestSha mismatch)");
 }
+if (fs.existsSync("config/documentation-drift-manifest.json")) {
+  if (!m.documentationManifestSha) fail("documentationManifestSha is null while config/documentation-drift-manifest.json exists");
+  else if (m.documentationManifestSha !== sha256("config/documentation-drift-manifest.json")) fail("documentation drift manifest changed since release manifest generation");
+  try { execFileSync(process.execPath, ["scripts/check-documentation-drift.mjs"], { stdio: "pipe" }); }
+  catch (err) { fail(`documentation drift gate failed: ${String(err?.stderr || err?.message || err).trim().slice(0, 500)}`); }
+} else fail("P18 documentation drift manifest missing — run npm run documentation:generate");
 if (m.canonicalSdkVersion !== pkg.dependencies["@base44/sdk"]) fail("SDK version mismatch vs package.json");
 if (!Array.isArray(m.contractTemplateVersions) || m.contractTemplateVersions.length === 0) fail("contractTemplateVersions empty");
 
