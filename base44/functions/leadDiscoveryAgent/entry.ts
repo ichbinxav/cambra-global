@@ -5,6 +5,23 @@ const AGENT_NAME = "lead_discovery";
 const TASK_TYPE = "discover_leads";
 const RISK_LEVEL = 1;
 
+// Company-first prefilter: Apollo people search can return founders whose title
+// matches but whose organisation is not a merchant at all. Reject obvious
+// agencies/services/education before persisting or spending enrichment credits.
+// This is intentionally conservative: uncertain companies continue downstream
+// to enrichment/scoring; only high-confidence non-merchant patterns are removed.
+const NON_MERCHANT_ORG = /\b(university|universit[eé]|school|college|academy|agence|agency|consulting|consultant|marketing agency|growth agency|logistique|logistics|3pl|freight|software agency|web agency)\b/i;
+const GENERIC_ORG = /^(e-?commerce|commerce|retail|online store|shop)$/i;
+function merchantDiscoveryCandidate(p:any): { ok:true } | { ok:false; reason:string } {
+  const name=String(p?.organization?.name||'').trim();
+  const domain=String(p?.organization?.primary_domain||p?.organization?.website_url||'').trim().toLowerCase();
+  if(!name) return {ok:false,reason:'organization_missing'};
+  if(GENERIC_ORG.test(name)) return {ok:false,reason:'organization_generic'};
+  if(NON_MERCHANT_ORG.test(name)) return {ok:false,reason:'obvious_non_merchant_organization'};
+  if(/\.(edu|edu\.[a-z]{2})\b/i.test(domain)) return {ok:false,reason:'education_domain'};
+  return {ok:true};
+}
+
 Deno.serve(async (req) => {
   let task = null;
   try {
@@ -61,21 +78,26 @@ Deno.serve(async (req) => {
     // gdprAgent (Apollo source without documented base legal + retroactive
     // audit exposure). Do NOT remove these fields.
     const LIA_NOTE = `B2B outreach to publicly listed decision-maker (${titles.join("/")}) at a ${industry} brand in ${country}. Contact obtained from Apollo.io under their DPA (SCC/DPF). Legitimate interest documented; opt-out honored in every outreach; no special-category data processed.`;
-    const leads = people.map(p => ({
-      company_name: p?.organization?.name || null,
-      company_domain: p?.organization?.website_url || p?.organization?.primary_domain || null,
-      contact_full_name: p?.name || [p?.first_name, p?.last_name].filter(Boolean).join(" "),
-      contact_email: p?.email || null,
-      contact_title: p?.title || null,
-      linkedin_url: p?.linkedin_url || null,
-      country,
-      industry,
-      source: "apollo",
-      stage: "lead",
-      legal_basis: "legitimate_interest",
-      legal_basis_note: LIA_NOTE,
-      raw_json: p,
-    }));
+    const rejected:any[]=[];
+    const leads = people.flatMap(p => {
+      const quality=merchantDiscoveryCandidate(p);
+      if(!quality.ok){rejected.push({organization:p?.organization?.name||null,reason:quality.reason});return [];}
+      return [{
+        company_name: p?.organization?.name || null,
+        company_domain: p?.organization?.website_url || p?.organization?.primary_domain || null,
+        contact_full_name: p?.name || [p?.first_name, p?.last_name].filter(Boolean).join(" "),
+        contact_email: p?.email || null,
+        contact_title: p?.title || null,
+        linkedin_url: p?.linkedin_url || null,
+        country,
+        industry,
+        source: "apollo",
+        stage: "lead",
+        legal_basis: "legitimate_interest",
+        legal_basis_note: LIA_NOTE,
+        raw_json: p,
+      }];
+    });
 
     // Persist to OutboundLead (skipped silently if no rows; bulkCreate is faster than per-row create)
     let created = [];
@@ -91,9 +113,11 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.AgentTask.update(task.id, {
       status: "completed",
-      output_summary: `Discovered ${leads.length} leads from Apollo`,
+      output_summary: `Discovered ${leads.length} merchant candidates from Apollo; rejected ${rejected.length} obvious non-merchants`,
       output_payload_json: {
         count: leads.length,
+        rejected_count: rejected.length,
+        rejected_reasons: rejected.reduce((a:any,x:any)=>{a[x.reason]=(a[x.reason]||0)+1;return a;},{}),
         stored: Array.isArray(created) ? created.length : 0,
         sample: leads.slice(0, 5),
       },
@@ -101,7 +125,7 @@ Deno.serve(async (req) => {
     });
 
     const createdIds = Array.isArray(created) ? created.map((r:any)=>r?.id).filter(Boolean) : [];
-    return Response.json({ ok: true, task_id: task.id, count: leads.length, created_ids: createdIds, leads });
+    return Response.json({ ok: true, task_id: task.id, count: leads.length, rejected_count: rejected.length, created_ids: createdIds, leads });
   } catch (error) {
     if (task?.id) {
       try {
