@@ -105,3 +105,8 @@ Operational incidents retain symptoms, root cause where known, actions, recovery
 ## 16. Production claims and unresolved gates
 
 A local/Base44 release check is not the same as external GitHub Actions CI evidence. Stripe/live integration claims, Recover Economics V2 legal wording, P12 privacy/retention, provider monetization legal/tax activation, real-world pilot validation and real routing activation remain governed by their explicit release/manual gates. P18 documentation must preserve these distinctions.
+
+
+## Europe Market Context Foundation (P1)
+
+CAMBRA's geographic expansion foundation is the versioned 33-market registry plus `MerchantMarketContext` and deterministic `JurisdictionCapabilityPolicy`. Legacy Brand country, billing/tax and locale fields remain backward compatible and are adapted in shadow before any production cutover. Market registry membership never implies provider/rate intelligence, commercial clearance or regulated authorization. See `P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md`.

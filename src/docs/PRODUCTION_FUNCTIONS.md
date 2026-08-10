@@ -298,3 +298,17 @@ P17 reuses the existing OAuth refresh, webhook DLQ retry, Recover billing reconc
 | emergencyControlAdmin | B/admin | EmergencyControl + existing OutboundControl / CommercialPolicy | Founder emergency containment. SAFE MODE blocks new external communications, negotiation execution, migration starts and new Recover invoice issuance while preserving monitoring, reconciliation and evidence. Activation/restoration require explicit confirmation tokens. |
 
 P18 adds a release-time documentation drift gate over the implementation paths referenced by the canonical documentation registry. SAFE MODE is deliberately not described as a universal kill switch for every internal/read-only agent: it is enforced at the material external-effect boundaries, while narrower acquisition/policy/access revocation controls remain separate. Billing pause means new issuance only; existing financial truth and reconciliation continue.
+
+
+## P1 Europe market foundation
+
+| Function | Access | Purpose |
+|---|---|---|
+| seedEuropeMarketFoundation | admin/internal | Idempotent 33-market registry, placeholder intelligence state and conservative capability-policy seed |
+| resolveMerchantMarketContext | admin/internal | Evidence-first additive merchant market context; legacy fields preserved |
+| backfillMerchantMarketContexts | admin/internal | Idempotent shadow backfill with migration provenance |
+| checkMarketCapability | admin/internal | Shared deterministic jurisdiction/capability decision + audit |
+| marketPolicyAdmin | admin | Versioned policy supersession, scoped kill switch and explicit expiring override |
+| getEuropeMarketsCommandCenter | admin | Europe/Markets Admin projection |
+
+P1 production-rollout gates are also consumed at external communication, Recover mandate/contract, provider negotiation, migration and Recover billing boundaries. Default legacy/shadow rollout does not silently change existing merchant execution.
