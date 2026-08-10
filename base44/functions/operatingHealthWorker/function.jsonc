@@ -3,12 +3,17 @@
   "automations": [
     {
       "name": "Operating health assessment",
-      "schedule": "0 6 * * *",
       "function_args": {
         "internal_secret": "{{INTERNAL_CALL_SECRET}}"
       },
       "function_name": "operatingHealthWorker",
-      "type": "scheduled"
+      "type": "scheduled",
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "days",
+      "repeat_interval": 1,
+      "starts_at": "2026-08-11T06:00:00.000Z",
+      "ends_type": "never"
     }
   ],
   "entry": "entry.ts"
