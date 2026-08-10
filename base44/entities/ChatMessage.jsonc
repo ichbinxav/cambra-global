@@ -26,6 +26,10 @@
       },
       "description": "Structured record of what tools/agents the assistant decided to call, with statuses (executed | drafted | refused | requires_confirmation)."
     },
+    "tool_result_json": {
+      "type": "object",
+      "description": "P16 structured Founder OS result/evidence for rich rendering. Never authoritative by itself; source records remain authoritative."
+    },
     "agent_task_ids": {
       "type": "array",
       "items": {
@@ -42,7 +46,7 @@
     },
     "blocked_by_gate": {
       "type": "string",
-      "description": "Set when the chat refused / parked an action: 'risk_l3_l4_forced_draft' | 'bulk_needs_confirmation' | 'unknown_intent' | 'tool_not_allowed'."
+      "description": "Set when the chat refused / parked an action: risk_l3_l4_forced_draft | bulk_needs_confirmation | material_action_preview | unknown_intent | tool_not_allowed."
     }
   },
   "required": [
