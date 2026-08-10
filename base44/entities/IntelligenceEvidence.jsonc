@@ -182,6 +182,52 @@
         "STALE",
         "UNKNOWN"
       ]
+    },
+    "source_market": {
+      "type": "string"
+    },
+    "source_language": {
+      "type": "string"
+    },
+    "source_scope_type": {
+      "type": "string",
+      "enum": [
+        "MARKET",
+        "MARKET_GROUP",
+        "EU",
+        "EEA",
+        "EUROZONE",
+        "GLOBAL",
+        "CUSTOM_SCOPE"
+      ]
+    },
+    "applicable_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "researched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observation_provenance": {
+      "type": "string",
+      "enum": [
+        "VERIFIED_PRIMARY",
+        "VERIFIED_SECONDARY",
+        "ESTIMATED",
+        "MERCHANT_OBSERVED",
+        "CONTRACT_OBSERVED",
+        "NEGOTIATED",
+        "UNKNOWN"
+      ]
     }
   },
   "required": [
