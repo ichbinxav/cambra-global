@@ -1,0 +1,133 @@
+{
+  "name": "ProviderProduct",
+  "type": "object",
+  "description": "P2 provider product/capability identity. Availability is separate.",
+  "properties": {
+    "product_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "legal_entity_id": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "ONLINE_PAYMENTS",
+        "CARD_ACQUIRING",
+        "IN_PERSON_PAYMENTS",
+        "POS",
+        "TERMINALS",
+        "PAYMENT_GATEWAY",
+        "OMNICHANNEL",
+        "PAYMENT_LINKS",
+        "SUBSCRIPTIONS",
+        "MARKETPLACE_PAYMENTS",
+        "PLATFORM_PAYMENTS",
+        "BANK_PAYMENTS",
+        "LOCAL_PAYMENT_METHODS",
+        "PAYOUTS",
+        "MULTI_CURRENCY",
+        "FX",
+        "OTHER_RELEVANT_PAYMENT_PRODUCT"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "LIMITED",
+        "INACTIVE",
+        "UNKNOWN"
+      ]
+    },
+    "pricing_visibility": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_COMPLETE",
+        "PUBLIC_PARTIAL",
+        "INDICATIVE",
+        "CUSTOM_QUOTE",
+        "NEGOTIATED_ONLY",
+        "UNKNOWN"
+      ]
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "FLAT",
+        "FIXED_PLUS_PERCENT",
+        "BLENDED",
+        "INTERCHANGE_PLUS",
+        "INTERCHANGE_PLUS_PLUS",
+        "TIERED",
+        "SUBSCRIPTION_PLUS_RATE",
+        "CUSTOM",
+        "HYBRID",
+        "UNKNOWN"
+      ]
+    },
+    "pricing_research_status": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "SOURCE_FOUND",
+        "PUBLIC_PRICING_FOUND",
+        "PARTIAL_PUBLIC_PRICING",
+        "CUSTOM_PRICING_INDICATED",
+        "NO_PUBLIC_PRICING_FOUND_AFTER_RESEARCH",
+        "READY_FOR_P3"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "product_key",
+    "provider_id",
+    "product_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

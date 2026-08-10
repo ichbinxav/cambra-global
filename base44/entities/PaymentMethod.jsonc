@@ -1,0 +1,98 @@
+{
+  "name": "PaymentMethod",
+  "type": "object",
+  "description": "P2 canonical payment method/scheme/wallet/BNPL identity; never implicitly an acquirer.",
+  "properties": {
+    "method_key": {
+      "type": "string"
+    },
+    "canonical_name": {
+      "type": "string"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "CARD_SCHEME",
+        "PAYMENT_METHOD",
+        "BANK_PAYMENT_SCHEME",
+        "WALLET",
+        "BNPL_METHOD"
+      ]
+    },
+    "operator": {
+      "type": "string"
+    },
+    "home_market": {
+      "type": "string"
+    },
+    "markets_supported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "currencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "method_key",
+    "canonical_name",
+    "category"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

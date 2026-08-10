@@ -1,0 +1,83 @@
+{
+  "name": "ProviderPaymentMethod",
+  "type": "object",
+  "description": "P2 provider-product support for a canonical payment method in one market.",
+  "properties": {
+    "relationship_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "payment_method_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "support_state": {
+      "type": "string",
+      "enum": [
+        "SUPPORTED",
+        "LIMITED",
+        "UNSUPPORTED",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "relationship_key",
+    "provider_id",
+    "product_id",
+    "payment_method_id",
+    "market",
+    "support_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "name": "ProviderMarketAvailability",
+  "type": "object",
+  "description": "P2 fact-level provider \u00d7 product \u00d7 market \u00d7 channel availability. UNKNOWN is distinct from UNAVAILABLE.",
+  "properties": {
+    "availability_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "legal_entity_id": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "ECOMMERCE",
+        "IN_PERSON",
+        "OMNICHANNEL",
+        "MOTO",
+        "PAYMENT_LINK",
+        "MARKETPLACE",
+        "PLATFORM"
+      ]
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "AVAILABLE",
+        "LIMITED",
+        "INVITE_ONLY",
+        "ENTERPRISE_ONLY",
+        "PARTNER_ONLY",
+        "UNAVAILABLE",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "merchant_segment": {
+      "type": "string"
+    },
+    "supported_currencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "eligibility_notes": {
+      "type": "string"
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": [
+        "MARKET",
+        "MARKET_GROUP",
+        "EU",
+        "EEA",
+        "EUROZONE",
+        "GLOBAL",
+        "CUSTOM_SCOPE"
+      ]
+    },
+    "applicable_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_scope_statement": {
+      "type": "string"
+    },
+    "research_state": {
+      "type": "string",
+      "enum": [
+        "NOT_RESEARCHED",
+        "RESEARCHED_UNRESOLVED",
+        "RESOLVED"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "availability_key",
+    "provider_id",
+    "product_id",
+    "market",
+    "availability",
+    "research_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

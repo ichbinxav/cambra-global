@@ -1,0 +1,80 @@
+{
+  "name": "ProviderResearchState",
+  "type": "object",
+  "description": "P2 deterministic research coverage per market and family; no vanity percentages.",
+  "properties": {
+    "research_key": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "GLOBAL_PROVIDERS",
+        "REGIONAL_PROVIDERS",
+        "LOCAL_PROVIDERS",
+        "ACQUIRERS",
+        "BANK_ACQUIRERS",
+        "POS_TERMINAL",
+        "GATEWAYS",
+        "PAYMENT_METHODS"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "BASELINE_STARTED",
+        "GLOBAL_PROVIDERS_RESEARCHED",
+        "REGIONAL_PROVIDERS_RESEARCHED",
+        "LOCAL_PROVIDERS_RESEARCHED",
+        "BANK_ACQUIRERS_RESEARCHED",
+        "POS_RESEARCHED",
+        "PAYMENT_METHODS_RESEARCHED",
+        "BASELINE_COMPLETE",
+        "LONG_TAIL_IN_PROGRESS",
+        "INITIAL_DISCOVERY_COMPLETE",
+        "CONTINUOUS_MONITORING"
+      ]
+    },
+    "researched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "open_conflicts": {
+      "type": "number"
+    },
+    "research_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "research_key",
+    "market",
+    "family",
+    "state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

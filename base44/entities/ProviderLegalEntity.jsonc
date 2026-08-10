@@ -1,0 +1,89 @@
+{
+  "name": "ProviderLegalEntity",
+  "type": "object",
+  "description": "P2 legal/commercial entity under one canonical provider.",
+  "properties": {
+    "entity_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "legal_name": {
+      "type": "string"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "company_identifier": {
+      "type": "string"
+    },
+    "regulatory_identifiers": {
+      "type": "object"
+    },
+    "role": {
+      "type": "string"
+    },
+    "markets_served": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entity_key",
+    "provider_id",
+    "legal_name"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "name": "ProviderRelationship",
+  "type": "object",
+  "description": "P2 corporate/identity graph edge with evidence and temporal validity.",
+  "properties": {
+    "relationship_key": {
+      "type": "string"
+    },
+    "from_provider_id": {
+      "type": "string"
+    },
+    "to_provider_id": {
+      "type": "string"
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "SAME_PROVIDER",
+        "RELATED_ENTITY",
+        "LEGAL_ENTITY_OF",
+        "PARENT_SUBSIDIARY",
+        "BRAND_OF",
+        "REBRANDED_FROM",
+        "ACQUIRED_BY",
+        "DISTINCT_PROVIDER",
+        "UNCERTAIN"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "relationship_key",
+    "from_provider_id",
+    "relationship_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

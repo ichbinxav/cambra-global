@@ -1,7 +1,7 @@
 {
   "name": "Provider",
   "type": "object",
-  "description": "Internal provider CRM (contact emails, revenue-share terms, notes). Never rendered on public surfaces (/ForProviders is static marketing) \u2014 admin-only RLS (SECURITY-1, 2026-07-24). Backend functions use service role.",
+  "description": "Canonical provider identity + existing internal provider CRM. P2 extends this entity; no second provider system.",
   "properties": {
     "name": {
       "type": "string"
@@ -95,6 +95,134 @@
     "provider_economics_renewal_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "provider_key": {
+      "type": "string"
+    },
+    "canonical_name": {
+      "type": "string"
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trading_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provider_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "ACQUIRER",
+          "BANK_ACQUIRER",
+          "PSP",
+          "PAYMENT_FACILITATOR",
+          "PAYMENT_GATEWAY",
+          "TECHNICAL_PROCESSOR",
+          "PAYMENT_INFRASTRUCTURE",
+          "POS_PROVIDER",
+          "TERMINAL_PROVIDER",
+          "PAYMENT_ORCHESTRATION",
+          "OPEN_BANKING_PROVIDER",
+          "OTHER_PAYMENT_INFRASTRUCTURE"
+        ]
+      }
+    },
+    "commercial_category": {
+      "type": "string"
+    },
+    "regulatory_role": {
+      "type": "string"
+    },
+    "regulated_entity": {
+      "type": "boolean"
+    },
+    "regulator": {
+      "type": "string"
+    },
+    "regulatory_reference": {
+      "type": "string"
+    },
+    "corporate_status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "LIMITED",
+        "ACQUIRED",
+        "REBRANDED",
+        "INACTIVE",
+        "UNKNOWN"
+      ]
+    },
+    "parent_provider_id": {
+      "type": "string"
+    },
+    "official_website": {
+      "type": "string"
+    },
+    "significance": {
+      "type": "string",
+      "enum": [
+        "MAJOR",
+        "SIGNIFICANT",
+        "LOCAL",
+        "NICHE",
+        "UNKNOWN"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "confidence_band": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "p2_status": {
+      "type": "string",
+      "enum": [
+        "CANDIDATE",
+        "VERIFIED",
+        "REJECTED",
+        "DUPLICATE",
+        "RELATED_ENTITY",
+        "INACTIVE",
+        "UNRESOLVED"
+      ]
     }
   },
   "required": [
