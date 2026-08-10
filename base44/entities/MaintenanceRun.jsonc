@@ -1,0 +1,82 @@
+{
+  "name": "MaintenanceRun",
+  "type": "object",
+  "description": "P17 immutable-ish maintenance sweep evidence. Each run records what CAMBRA detected, safely repaired, verified, escalated and learned; it never grants economic authority.",
+  "properties": {
+    "run_key": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "completed",
+        "degraded",
+        "failed"
+      ],
+      "default": "running"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "health_score": {
+      "type": "number"
+    },
+    "signals_detected": {
+      "type": "number",
+      "default": 0
+    },
+    "automatic_repairs": {
+      "type": "number",
+      "default": 0
+    },
+    "repairs_verified": {
+      "type": "number",
+      "default": 0
+    },
+    "repairs_failed": {
+      "type": "number",
+      "default": 0
+    },
+    "escalations": {
+      "type": "number",
+      "default": 0
+    },
+    "learning_updates": {
+      "type": "number",
+      "default": 0
+    },
+    "summary_json": {
+      "type": "object"
+    },
+    "evidence_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "run_key",
+    "engine_version",
+    "status",
+    "started_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
