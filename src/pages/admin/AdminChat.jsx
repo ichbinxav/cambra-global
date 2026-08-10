@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { MessageSquare, Send, Loader2, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ChatMessageBubble from "@/components/admin/chat/ChatMessageBubble";
@@ -8,6 +9,7 @@ function newConversationId() {
 }
 
 export default function AdminChat() {
+  const [searchParams] = useSearchParams();
   const [conversationId] = useState(() => {
     const stored = sessionStorage.getItem("cambra_chat_conv");
     if (stored) return stored;
@@ -34,6 +36,7 @@ export default function AdminChat() {
   };
 
   useEffect(() => { load(); }, [conversationId]);
+  useEffect(() => { const ask=searchParams.get('ask'); if(ask) setInput(ask); }, [searchParams]);
 
   const send = async (text, opts = {}) => {
     if (!text?.trim() && !opts.pending_tool) return;
@@ -66,14 +69,14 @@ export default function AdminChat() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
-            <MessageSquare size={18} /> Chat · Chief Orchestrator
+            <MessageSquare size={18} /> Ask CAMBRA
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Habla en lenguaje natural. Yo elijo qué agentes lanzar — pero nunca salto el Inbox: cualquier acción L2+ pasa por tu aprobación.
+            Company intelligence + governed action interface. Ask why, inspect evidence, simulate, decide and say “do it” without bypassing CAMBRA policies.
           </p>
         </div>
         <div className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-700">
-          <ShieldCheck size={11} /> Inbox gate active · L3-L4 forced to draft
+          <ShieldCheck size={11} /> Founder OS governance active
         </div>
       </div>
 
@@ -88,9 +91,10 @@ export default function AdminChat() {
               </p>
               <div className="space-y-1.5 text-left">
                 {[
-                  "Busca 20 leads de moda en Francia",
-                  "Prepárame un draft de post de LinkedIn sobre el cluster engineering",
-                  "Genera un brief del estado del sistema",
+                  "¿Qué ha cambiado y qué necesita mi atención?",
+                  "¿Por qué está el revenue collected en este nivel?",
+                  "¿Qué debería hacer hoy?",
+                  "Simula qué pasa si duplicamos adquisición", 
                 ].map(s => (
                   <button
                     key={s}
@@ -123,7 +127,7 @@ export default function AdminChat() {
           value={input}
           onChange={e => setInput(e.target.value)}
           disabled={sending}
-          placeholder="Pídele a la máquina lo que necesitas…"
+          placeholder="Ask CAMBRA: why, compare, find, simulate or do…"
           className="flex-1 h-10 px-3 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
         <button
