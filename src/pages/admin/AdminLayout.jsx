@@ -48,6 +48,8 @@ const NAV = [
 ];
 
 function documentationTopic(path) {
+  if (path.startsWith('/admin/discovery') || path.startsWith('/admin/commercial-autonomy') || path.startsWith('/admin/pipeline')) return 'acquisition';
+  if (path.startsWith('/admin/intelligence')) return 'moat';
   if (path.startsWith('/admin/aggregate')) return 'aggregate';
   if (path.startsWith('/admin/provider-economics') || path.startsWith('/admin/providers')) return 'provider_economics';
   if (path.startsWith('/admin/finance') || path.startsWith('/admin/recover-billing') || path.startsWith('/admin/invoices')) return 'billing';
@@ -55,6 +57,7 @@ function documentationTopic(path) {
   if (path.startsWith('/admin/developer')) return 'developer';
   if (path.startsWith('/admin/agents') || path.startsWith('/admin/automations')) return 'ai_workforce';
   if (path.startsWith('/admin/routing-intelligence')) return 'routing';
+  if (path.startsWith('/admin/recommendations') || path.startsWith('/admin/benchmarks')) return 'product';
   if (path.startsWith('/admin/compliance') || path.startsWith('/admin/integrations') || path.startsWith('/admin/api-integrations')) return 'security_privacy';
   if (path.startsWith('/admin/documentation')) return 'documentation';
   return 'founder_os';
