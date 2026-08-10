@@ -1,0 +1,63 @@
+{
+  "name": "EmergencyControl",
+  "type": "object",
+  "description": "P18 founder emergency control state. A singleton global row gates new external communications, negotiations, migrations and new billing issuance while preserving monitoring, reconciliation, audit and evidence.",
+  "properties": {
+    "control_key": {
+      "type": "string"
+    },
+    "safe_mode": {
+      "type": "boolean",
+      "default": false
+    },
+    "communications_paused": {
+      "type": "boolean",
+      "default": false
+    },
+    "negotiations_paused": {
+      "type": "boolean",
+      "default": false
+    },
+    "migrations_paused": {
+      "type": "boolean",
+      "default": false
+    },
+    "billing_issuance_paused": {
+      "type": "boolean",
+      "default": false
+    },
+    "reason": {
+      "type": "string"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_by": {
+      "type": "string"
+    },
+    "previous_state_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "control_key",
+    "safe_mode"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
