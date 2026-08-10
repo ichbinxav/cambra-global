@@ -149,6 +149,20 @@
     "meeting_brief_json": {
       "type": "object",
       "description": "Structured pre-meeting brief derived only from real thread/provider/account context. Never fabricated meeting notes."
+    },
+    "market_jurisdiction": {
+      "type": "string",
+      "description": "P1 execution jurisdiction for deterministic market gates when this thread is cut over."
+    },
+    "market_policy_rollout": {
+      "type": "string",
+      "enum": [
+        "legacy",
+        "shadow",
+        "partial",
+        "production"
+      ],
+      "default": "legacy"
     }
   },
   "required": [

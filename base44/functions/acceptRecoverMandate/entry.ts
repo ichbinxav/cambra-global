@@ -29,6 +29,7 @@ import { RECOVER_CONTRACT_TEMPLATE_VERSION } from '../../shared/recoverContractT
 import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverContractState.ts';
 import { fireAndForget } from '../../shared/invokeInternal.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 import { createRecoverEvidenceAttestation, ensureRecoverSavingsEvidence, projectRecoverEvidenceBinding } from '../../shared/eclRecoverEvidence.ts';
 import { evidenceAttestationTextFor, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import {
@@ -93,6 +94,7 @@ export default async function (req: Request): Promise<Response> {
     const owned = await resolveOwnedActivation(svc, user, mandate.deal_activation_id);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, ownerEmail } = owned;
+    if(owned.brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand:owned.brand,brand_id:owned.brand.id,capability:'CONTRACT',actor_type:'recover_mandate_accept'})}catch(e:any){return Response.json({error:'market_capability_denied:CONTRACT',decision:e?.decision||null},{status:409})}}
 
     // 1 — terms must be identical to what was displayed.
     const month = currentMonth();

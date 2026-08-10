@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -35,6 +36,7 @@ Deno.serve(async (req) => {
 
     const thread = await svc.entities.CommunicationThread.get(threadId).catch(()=>null);
     if (!thread || ['closed','suppressed'].includes(thread.status)) return Response.json({ ok:false, error:'thread_unavailable' }, { status:409 });
+    if(thread.market_policy_rollout==='production'){const cap=['provider_negotiation','aggregate_procurement'].includes(String(thread.engine||''))?'NEGOTIATE':'OUTREACH';let brandId='';if(thread.recover_id){const a=await svc.entities.DealActivation.get(String(thread.recover_id)).catch(()=>null);brandId=String(a?.brand_id||'')}try{await assertMarketCapabilityAllowed(svc,{brand_id:brandId||undefined,jurisdiction:thread.market_jurisdiction||undefined,capability:cap,enforce:true,actor_type:String(body?.agent_name||thread.engine||'commercial_send'),ai_requested_bypass:body?.ai_requested_bypass===true})}catch(e:any){return Response.json({ok:false,error:`market_capability_denied:${cap}`,decision:e?.decision||null},{status:409})}}
     const to = normalizeEmail(body?.to || thread.counterparty_email);
     if (!to) return Response.json({ ok:false, error:'recipient_required' }, { status:400 });
 

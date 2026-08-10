@@ -14,6 +14,7 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
+import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 import { ensureRecoverSavingsEvidence, projectRecoverEvidenceBinding } from '../../shared/eclRecoverEvidence.ts';
 import {
   ACCEPTABLE_ACTIVATION_STATES,
@@ -54,6 +55,7 @@ export default async function (req: Request): Promise<Response> {
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, ownerEmail, brand } = owned;
     if (brand?.service_status === 'cancelled') return Response.json({ error: 'cambra_service_cancelled' }, { status: 409 });
+    if(brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand,brand_id:brand.id,capability:'MANDATE',actor_type:'recover_acceptance_start'})}catch(e:any){return Response.json({error:'market_capability_denied:MANDATE',decision:e?.decision||null},{status:409})}}
 
     if (!ACCEPTABLE_ACTIVATION_STATES.includes(activation.status)) {
       return Response.json({ error: 'activation_not_acceptable', activation_status: activation.status }, { status: 409 });
