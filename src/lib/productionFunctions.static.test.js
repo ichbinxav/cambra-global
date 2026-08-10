@@ -26,6 +26,8 @@ const MANIFEST = [
   "aggregateAgreementWorker", "aggregateDemandWorker", "aggregateEligibilityWorker", "aggregateProcurementWorker", "collectiveNegotiationAgent", "getAggregateCommandCenter",
   "getFinancialControlTower", "getFounderControlCenter", "operatingHealthWorker", "realWorldValidationWorker", "revenueGoldenPathSelfTest", "revenueLifecycleWorker",
   "salesPipelineWorker", "collectionOperationsWorker", "agentPerformanceWorker", "executiveDigestWorker", "customerSuccessWorker", "unitEconomicsWorker", "developerSignalWorker",
+  // P15 Provider Revenue Share & Dual-Sided Economics (2026-08-10).
+  "providerEconomicsAssessmentWorker", "providerMonetizationAgent", "providerRevenueAttributionWorker", "providerRevenueLifecycleWorker", "providerRevenueReconciliationWorker", "providerRevenueRecoveryAgent", "providerRevenueTierWorker", "providerRevenueBillingWorker", "recordProviderRevenueInvoiceIssued", "recordProviderRevenuePayment", "approveProviderMonetizationLegalReview", "getProviderEconomicsCommandCenter", "providerEconomicsIntelligenceWorker",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",

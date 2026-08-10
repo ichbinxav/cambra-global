@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.75.0",
-  "releaseName": "CAMBRA v0.75.0 — P14 Aggregate & Final Autonomous Revenue Engine Technical Seal",
+  "version": "0.76.0",
+  "releaseName": "CAMBRA v0.76.0 — P15 Provider Revenue Share & Dual-Sided Economics Technical Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

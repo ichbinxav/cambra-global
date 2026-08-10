@@ -10,4 +10,5 @@ describe("release manual gates",()=>{
   expect(src).toContain("PRODUCTION VALIDATION REQUIRED: Stripe live integration status");
  });
  it("keeps real-world autonomous revenue validation behind genuine merchant pilots",()=>expect(src).toContain("REAL-WORLD PILOT VALIDATION REQUIRED"));
+ it("keeps provider monetization behind explicit legal tax and disclosure activation",()=>expect(src).toContain("P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE"));
 });

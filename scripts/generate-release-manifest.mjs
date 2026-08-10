@@ -61,6 +61,9 @@ if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
 if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
   manualRequirements.push('REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.');
 }
+if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
+  manualRequirements.push('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
+}
 for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
   const st = evidenceStatus(ev, tree.hash);
   if (st !== "valid") manualRequirements.push(`evidence ${name}: ${st} (run the *:evidence command)`);

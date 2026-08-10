@@ -239,3 +239,24 @@ P14 private rates are distinct from public ProviderPricingVersion and are consum
 | customerSuccessWorker | C/internal · daily | Integrations, incidents, invoices, RoutingOpportunity, MerchantRateEligibility | Advisory retention/expansion signals; merchant communication remains policy-gated. |
 | unitEconomicsWorker | C/internal · daily | PilotMerchantValidation, RevenueLifecycle, CustomerSuccessSignal | Unknown CAC/cost/LTV inputs remain null and explicit in `missing_inputs`. |
 | developerSignalWorker | C/internal · 2h | Critical AutonomyIncident → AgentTask | Investigation signal only; patch/apply/merge/cutover remain DeveloperMigrationEngine approval-gated. |
+
+
+## P15 — Provider Revenue Share & Dual-Sided Economics
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| providerEconomicsAssessmentWorker | C/internal · 6h | AggregateBid → ProviderEconomicAssessment | Computes provider economics separately from Merchant Outcome Score; recommendation firewall is merchant-first and compensation_effect_on_ranking=false. |
+| providerMonetizationAgent | B/internal · gate | NegotiationCase, AggregateBid, NegotiationOffer, CommunicationThread, Approval | Opens provider-economics phase only after merchant suitability; may negotiate but cannot activate compensation or execute contract. |
+| providerRevenueAttributionWorker | C/internal · hourly | DynamicAgreement, AggregatePoolMember, DealActivation → ProviderRevenueAttribution | Attribution requires matching operational provider activation; leads/analysis alone never qualify. |
+| providerRevenueLifecycleWorker | C/internal · hourly | Attribution + production PaymentRoutingObservation → ProviderRevenueLedger | EXPECTED/ELIGIBLE/ACCRUED projection; accrual requires agreement legal status approved + activation_allowed. |
+| providerRevenueTierWorker | C/internal · 6h | ProviderCompensationTier + attributed production activity | Dynamic provider-compensation tiers; contractual automatic tiers still require the agreement legal gate. |
+| providerRevenueReconciliationWorker | C/internal · daily | ProviderRevenueStatement vs ProviderRevenueLedger | Reconciles reported provider amounts/volume and raises bounded incidents on mismatch. |
+| providerRevenueRecoveryAgent | B/internal · gate | AutonomyIncident, provider thread | Requests correction for evidenced discrepancies; cannot create or modify entitlement. |
+| providerRevenueBillingWorker | C/internal · monthly | ProviderRevenueLedger → ProviderRevenueInvoice | Supports CAMBRA invoice / provider self-billing modes; never invents invoice number or tax authority. |
+| recordProviderRevenueInvoiceIssued | B/internal · gate | ProviderRevenueInvoice, ProviderRevenueLedger | Accepts externally valid invoice number/document and advances to payment_pending; duplicate numbers rejected. |
+| recordProviderRevenuePayment | B/internal · gate | ProviderRevenueInvoice, ProviderRevenueLedger | Records evidenced provider payment with deduplicated external payment reference; no money movement. |
+| approveProviderMonetizationLegalReview | B/admin | DynamicAgreement | Requires explicit legal opinion, jurisdiction, disclosure, tax and settlement references before provider compensation can activate. |
+| getProviderEconomicsCommandCenter | B/admin | Provider-side subledger and assessments | Admin-only provider economics control tower. |
+| providerEconomicsIntelligenceWorker | C/internal · daily | Agreements, ledger, conflicts → MoatMetric/KnowledgeGap | Confidential provider-compensation intelligence; cannot influence merchant ranking. |
+
+P15 uses a strict recommendation firewall: merchant suitability/ranking is computed without provider compensation. Provider economics are optimized only after merchant terms are established. Merchant-side Invoice/PaymentEvent and provider-side ProviderRevenueLedger/ProviderRevenueInvoice are separate financial ledgers and are added only for total CAMBRA economics.
