@@ -1,8 +1,8 @@
 {
   "registryVersion": "p18-docs-1.0.0",
-  "systemVersion": "0.80.2",
-  "packageVersion": "0.80.2",
-  "generatedAt": "2026-08-10T15:36:20.284Z",
+  "systemVersion": "0.80.3",
+  "packageVersion": "0.80.3",
+  "generatedAt": "2026-08-10T17:20:01.865Z",
   "sourcePaths": {
     "base44/entities/DocumentationChangeProposal.jsonc": "7c682f57bb5cb65aae16a84a9b7bda65b1b6b214d1ff84a003e451f1b011d059",
     "base44/entities/DocumentationHealthAssessment.jsonc": "9a7c7e818bd2c6c0665ba0230bbaa08f72b4344ae25a9d62966d7125b03669d5",
@@ -65,7 +65,7 @@
     "base44/functions/startRecoverAcceptance/entry.ts": "8d308921f8dfae0e9c5b85436918801fb9f0a3be76c456da66e7482e13133c4a",
     "base44/functions/submitCallRequest/entry.ts": "da4d21115d220f03487aedf878fbc4f42899d9255fe7e5e6ef0d7e9c381a4fa7",
     "base44/shared/agentAuthority.ts": "9674c3a2283da1e94fee8ef055bce70f3ea31c463a0da20cad1bffd9f7763a6b",
-    "base44/shared/documentationRegistry.ts": "c6ba08f57ae4c5fecc909f0453e9419a5ec6c3adcc98285ba90eb9561620b2eb",
+    "base44/shared/documentationRegistry.ts": "6c24310bb1627afb35bc9937b2058b94e227bff84bad18d0772fbd89c9e5dc78",
     "base44/shared/economicExecution.ts": "b14ca7c1b394579c0ee874e42fe28d65fc9bfefafb41b3e903eb44c8a74daf8e",
     "base44/shared/intelligenceCore.ts": "24041d1e1e595f337a2456010881e0fecb98394083f59df3d51cf3be9d153459",
     "base44/shared/internalGate.ts": "918a643bb84d35ac781156cb074ce24e467efb5850c25353f4f9fc3e2021375f",
