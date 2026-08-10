@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation (durability manifest)",
-  "generatedAt": "2026-08-10T22:38:15.054Z",
+  "generatedAt": "2026-08-10T22:46:50.415Z",
   "packageVersion": "0.81.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -282,8 +282,8 @@
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
-      "sha256": "c4c261d75cf1f2f76618bd0caef4d31d8b5dea0beebb9ef655da8ca74e69fea3",
-      "bytes": 4930
+      "sha256": "c7e8148069201864f7c543d91644c35b3a6a477a4b744c06ee21ad9a16a24c6a",
+      "bytes": 4974
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "5c547770629b9d278e2270c260683790d5bc973a992e6b7fd9a5aa1e21f94dfb",
-      "bytes": 45917
+      "sha256": "fe7cccf4c8987cfcead97c87f03615416d6e56ab4381c2d59fe50dff46abff59",
+      "bytes": 47578
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -787,13 +787,13 @@
     },
     {
       "path": "src/lib/p12Intelligence.test.js",
-      "sha256": "b6854ddebaa8139f6caa8b81f836f88c6d277bbd42e4734265ded17e9e47b26c",
-      "bytes": 9254
+      "sha256": "f70e88895f435f50bd6653af9cd28e0095ec6dbdafe32f0ec236e182e15f80b2",
+      "bytes": 9410
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "bf169603b253722f5e053ebbc59596791c3d7aa5f1e1382a5afac2e95802e7d5",
-      "bytes": 10402
+      "sha256": "8577a3d3300dfc1f74ad8eaafb3cf169a13b9c8df60d19213d677749461db5cd",
+      "bytes": 10521
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",

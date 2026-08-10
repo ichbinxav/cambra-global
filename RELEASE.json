@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation",
   "version": "0.81.0",
-  "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
+  "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1267,
+  "sourceTreeFileCount": 1298,
   "sourceArchiveShaExternal": null,
-  "gitSha": "666c780f6a7688fa602722572329465f21781e7a",
+  "gitSha": "b6ae89e156f987e6b469dbfd8a77fe4db5638833",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "48adca8ee6a8705498fcfdbd33d100ea58fcfbb61a1363cdd9097cbd3e6e1e5c",
+  "durabilityManifestSha": "10fb887cef1e2de08a0ed510422997f2e35fb7255356b8add382984e20b40b06",
   "documentationManifestSha": "3d85520b6f1d958468ec718c4f28791152141ed8cbcb40e529b71639c98cc70e",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
@@ -44,22 +44,22 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
-    "startedAt": "2026-08-10T20:53:34.579Z",
-    "completedAt": "2026-08-10T20:53:45.912Z",
+    "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
+    "startedAt": "2026-08-10T22:47:10.664Z",
+    "completedAt": "2026-08-10T22:47:21.633Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 130,
-    "passed": 1877,
+    "testFiles": 131,
+    "passed": 1921,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
-    "startedAt": "2026-08-10T20:53:46.306Z",
-    "completedAt": "2026-08-10T20:53:58.546Z",
+    "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
+    "startedAt": "2026-08-10T22:47:22.026Z",
+    "completedAt": "2026-08-10T22:47:34.418Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "9018a4c37cecb6d5c1fa8aebf80d7da6eaba7318d145f22bff340e6eec3e1286",
@@ -67,25 +67,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
-    "startedAt": "2026-08-10T20:53:12.593Z",
-    "completedAt": "2026-08-10T20:53:17.720Z",
+    "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
+    "startedAt": "2026-08-10T22:46:51.355Z",
+    "completedAt": "2026-08-10T22:46:56.018Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
-    "startedAt": "2026-08-10T20:53:18.193Z",
-    "completedAt": "2026-08-10T20:53:21.510Z",
+    "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
+    "startedAt": "2026-08-10T22:46:56.406Z",
+    "completedAt": "2026-08-10T22:46:59.307Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "e62b0ef4bc8e62276a996d892c1071fd6a3b9c885359ca377aadff5ac8ccb85f",
-    "startedAt": "2026-08-10T20:53:22.120Z",
-    "completedAt": "2026-08-10T20:53:34.099Z",
+    "sourceTreeHash": "0b9f46c5047b2ed2e81a932201f033420d886331c5f78efc9c50ccf3090549f7",
+    "startedAt": "2026-08-10T22:46:59.702Z",
+    "completedAt": "2026-08-10T22:47:10.284Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -102,5 +102,5 @@
     "RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T20:53:58.958Z"
+  "generatedAt": "2026-08-10T22:47:34.851Z"
 }
