@@ -70,6 +70,25 @@
     "base44/functions/maintenanceEngine/entry.ts",
     "base44/functions/getMaintenanceCenter/entry.ts",
     "base44/functions/dependencySecurityWorker/entry.ts",
-    "base44/functions/oauthConnector/entry.ts"
+    "base44/functions/oauthConnector/entry.ts",
+    "base44/shared/operationalControl.ts",
+    "base44/shared/documentationRegistry.ts",
+    "base44/functions/emergencyControlAdmin/entry.ts",
+    "base44/functions/documentationQuery/entry.ts",
+    "base44/functions/documentationMaintenanceWorker/entry.ts",
+    "base44/functions/commercialSendMessage/entry.ts",
+    "base44/functions/startPaymentsMigration/entry.ts",
+    "base44/functions/startProviderNegotiation/entry.ts",
+    "base44/functions/providerNegotiationAgent/entry.ts",
+    "base44/functions/aggregateProcurementWorker/entry.ts",
+    "base44/functions/collectiveNegotiationAgent/entry.ts",
+    "base44/functions/providerMonetizationAgent/entry.ts",
+    "base44/functions/sendRecoverContractEmail/entry.ts",
+    "base44/functions/sendMonthlySavingsSummary/entry.ts",
+    "base44/functions/newsletterAgent/entry.ts",
+    "base44/functions/outreachAgent/entry.ts",
+    "base44/functions/onBrandCreated/entry.ts",
+    "base44/functions/joinCollective/entry.ts",
+    "base44/functions/submitCallRequest/entry.ts"
   ]
 }
