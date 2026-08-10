@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { welcomeEmail } from '../../shared/emails/welcome.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 // Email 4: Welcome to CAMBRA — triggered when a Brand entity is created (onboarding complete)
 //
@@ -43,6 +44,8 @@ Deno.serve(async (req) => {
   // creation from the active UI language), never from the request payload:
   // this function is automation-triggered and the request carries no user
   // context. Missing/unknown values resolve to 'en' inside welcomeEmail.
+  const emergency = await emergencyState(base44.asServiceRole);
+  if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:true, skipped:'emergency_control_paused:communications' });
   const mail = welcomeEmail(brand.locale, { brandName, appDomain });
 
   await base44.asServiceRole.integrations.Core.SendEmail({
