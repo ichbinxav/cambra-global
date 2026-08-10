@@ -1,0 +1,111 @@
+{
+  "name": "ProviderAuthorization",
+  "type": "object",
+  "description": "P2 fact-level regulatory authorization/registration attached to a ProviderLegalEntity. It records verified register facts only and is not a CAMBRA legal-clearance engine.",
+  "properties": {
+    "authorization_key": {
+      "type": "string"
+    },
+    "provider_legal_entity_id": {
+      "type": "string"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "regulatory_system": {
+      "type": "string",
+      "enum": [
+        "EU_EEA_PSD2",
+        "UK_PSR",
+        "SWISS",
+        "ANDORRAN",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "regulator": {
+      "type": "string"
+    },
+    "register": {
+      "type": "string"
+    },
+    "authorization_type": {
+      "type": "string"
+    },
+    "authorization_number": {
+      "type": "string"
+    },
+    "services_authorized": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "LIMITED",
+        "SUSPENDED",
+        "WITHDRAWN",
+        "EXPIRED",
+        "UNKNOWN"
+      ]
+    },
+    "home_state": {
+      "type": "string"
+    },
+    "host_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "authorization_key",
+    "provider_legal_entity_id",
+    "jurisdiction",
+    "verification_status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
