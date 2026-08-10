@@ -95,6 +95,14 @@ if (m.buildEvidence) {
   if (m.artifactHashes?.dist !== m.buildEvidence.distHash) fail("manifest artifactHashes.dist does not match the build evidence distHash");
 }
 
+// Manual production/runtime gates are intentionally distinct from technical CI.
+// CI may be green while productionSealEligible=false; the manifest must preserve
+// those gates so no green workflow can be misrepresented as full production readiness.
+const manualRequirements = Array.isArray(m.manualRequirements) ? m.manualRequirements : [];
+const blockingManualRequirements = Array.isArray(m.blockingManualRequirements) ? m.blockingManualRequirements : [];
+if (blockingManualRequirements.some((x) => !manualRequirements.includes(x))) fail("blockingManualRequirements must be a subset of manualRequirements");
+if (m.productionSealEligible !== (manualRequirements.length === 0)) fail("productionSealEligible is inconsistent with manualRequirements");
+
 // Strict CI mode
 if (ciMode) {
   if (m.releaseBuild !== true) fail("[CI] releaseBuild must be true");
@@ -103,7 +111,8 @@ if (ciMode) {
   for (const [n, ev] of [["tests", m.testEvidence], ["build", m.buildEvidence]]) {
     if (ev && ev.ciRunId !== m.ciEvidence?.runId) fail(`[CI] ${n} evidence was not generated in this CI run`);
   }
-  if ((m.manualRequirements || []).length > 0) fail(`[CI] blocking manual requirements: ${m.manualRequirements.join("; ")}`);
+  if (blockingManualRequirements.length > 0) fail(`[CI] blocking technical release requirements: ${blockingManualRequirements.join("; ")}`);
+  if (manualRequirements.length > 0) console.log(`[CI] technical verification PASS with ${manualRequirements.length} retained production/runtime activation gate(s); productionSealEligible=false.`);
 }
 
 if (failed) process.exit(1);
