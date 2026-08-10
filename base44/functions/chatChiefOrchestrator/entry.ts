@@ -98,6 +98,13 @@ const CHAT_TOOLS = [
     input_schema: {type:"object",properties:{mode:{type:"string",enum:["company_summary","recommended_actions","metric_catalog","search","merchant_360","provider_360","company_graph","negotiation_war_room","decision","why_metric"]},query:{type:"string"},metric:{type:"string"},brand_id:{type:"string"},provider_id:{type:"string"},case_id:{type:"string"},approval_id:{type:"string"},entity_type:{type:"string",enum:["merchant","provider"]},id:{type:"string"}},required:["mode"]},
   },
   {
+    name: "documentation_query",
+    description: "PRIMARY SYSTEM-BEHAVIOR DOCUMENTATION TOOL. Use for questions such as how Recover works, what an agent can do, what happens after acceptance, how billing is calculated, how Maintenance works, or how to stop CAMBRA. Returns source-backed P18 documentation and explicitly does NOT answer live operational state.",
+    function: "documentationQuery",
+    risk_level: 1,
+    input_schema: {type:"object",properties:{topic:{type:"string",enum:["founder_os","recover","aggregate","provider_economics","maintenance","billing","developer","security_privacy","routing","emergency_controls","ai_workforce","documentation"]},query:{type:"string"},locale:{type:"string",enum:["en","fr","es"]}}},
+  },
+  {
     name: "founder_chief_of_staff",
     description: "Generate an evidence-bounded executive Chief of Staff brief from the canonical Founder OS snapshot. Narrative may explain but never becomes financial truth.",
     function: "founderChiefOfStaff",
@@ -538,12 +545,12 @@ async function handleReadState(base44: any, input: any) {
 const BULK_THRESHOLD = 5;
 const SYSTEM_PROMPT = `You are ASK CAMBRA, the operating interface of CAMBRA Founder OS. Your job is to help the founder OBSERVE → UNDERSTAND → DECIDE → ACT while preserving human governance.
 
-Prefer founder_os_query for company questions because it performs governed cross-domain joins and returns evidence. Use founder_chief_of_staff for an executive brief. Use founder_simulation for what-if questions. Use founder_command for governed actions. Use read_state only for narrow raw operational lookups that Founder OS does not cover.
+Prefer founder_os_query for LIVE company questions because it performs governed cross-domain joins and returns evidence. Use documentation_query for SYSTEM-BEHAVIOR questions ("how does this work?", authority, workflow, emergency controls). Never answer a live-state question from documentation or a system-behavior question from stale chat memory. Use founder_chief_of_staff for an executive brief. Use founder_simulation for what-if questions. Use founder_command for governed actions. Use read_state only for narrow raw operational lookups that Founder OS does not cover.
 
 Strict rules:
 1. NEVER invent internal data, metrics, trends, causes, meetings, approvals, provider terms or payments. If evidence is missing, say unknown.
 2. Financial state is deterministic. AI may explain numbers but must never create authoritative money values from prose.
-3. For "why?" questions, use founder_os_query mode=why_metric or a relevant 360/war-room query. Distinguish evidence from operational hypotheses.
+3. For "why?" questions about CURRENT metrics/state, use founder_os_query mode=why_metric or a relevant 360/war-room query. For "how does this work?" questions, use documentation_query. Distinguish documentation from live evidence and operational hypotheses.
 4. For "do it" requests, use founder_command. If it returns a preview/confirmation gate, present exactly what will happen, affected scope, financial/risk impact and reversibility. Do not claim execution before confirmation.
 5. Material contracts, exclusivity, volume guarantees, liabilities, legal decisions, money movement and production-critical changes remain governed by their existing domain policies. Chat never overrides them.
 6. Simulations are SIMULATION ONLY and never modify production.
