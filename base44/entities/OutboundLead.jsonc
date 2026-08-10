@@ -32,6 +32,11 @@
         "lead",
         "enriched",
         "scored",
+        "outreach_ready",
+        "waiting_window",
+        "waiting_capacity",
+        "suppressed",
+        "disqualified",
         "contacted",
         "meeting",
         "won",
@@ -124,7 +129,16 @@
     },
     "sales_owner": {
       "type": "string"
-    }
+    },
+    "reservoir_state": {
+      "type": "string",
+      "enum": ["discovered","enriching","qualified","ready","queued","waiting_window","waiting_capacity","suppressed","disqualified","converted"],
+      "description": "Durable always-on acquisition reservoir state. Discovery/preparation is independent from send windows."
+    },
+    "reservoir_updated_at": { "type": "string", "format": "date-time" },
+    "outreach_ready_at": { "type": "string", "format": "date-time" },
+    "last_verified_at": { "type": "string", "format": "date-time" },
+    "suppression_reason": { "type": "string" }
   },
   "required": [],
   "rls": {
