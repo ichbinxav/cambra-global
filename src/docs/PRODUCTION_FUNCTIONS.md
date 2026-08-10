@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-09 con ECL P8 + P9 Recover Fulfilment & Payments Migration + Final Autonomous Platform Seal) · **Total: 188 funciones** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-11 con P1 Europe + P2 Provider Intelligence + P3 European Rate Intelligence + ECL P8/P9 + Final Autonomous Platform Seal) · **Total: 276 funciones desplegadas** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -313,3 +313,13 @@ P18 adds a release-time documentation drift gate over the implementation paths r
 | getEuropeMarketsCommandCenter | admin | Europe/Markets Admin projection |
 
 P1 production-rollout gates are also consumed at external communication, Recover mandate/contract, provider negotiation, migration and Recover billing boundaries. Default legacy/shadow rollout does not silently change existing merchant execution.
+
+## P3 European Rate Intelligence
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| rateIntelligenceQuery | B/internal + admin gate | ProviderPricingVersion, RateComponent, RateResearchState, PricingWatchTarget, KnowledgeConflict | Canonical P3 read/evaluate surface. Tenant-private observations stay tenant-scoped; resolver returns explicit UNKNOWN/PARTIAL/CONFLICT/STALE outcomes instead of guessing. No benchmark or achievable-rate inference. |
+| rateIntelligenceWatchWorker | C/internal · every 6h dispatcher | PricingWatchTarget, RateSourceSnapshot, RateChangeCandidate, Event, AgentTask | Risk-based source freshness/change watch. Unstructured source changes create `REVIEW_REQUIRED` candidates and never auto-promote numeric pricing or overwrite canonical truth. |
+| seedP3RateIntelligence | D/seed · admin/internal gate | 33-market research universe, RateResearchState/Pass, IntelligenceEvidence, RateSourceSnapshot, ProviderPricingVersion, RateComponent, EvidenceAssertion, PricingWatchTarget | Idempotent P3 bootstrap from researched evidence. Primary anchors are validated before canonical creation; unknown/custom pricing remains explicit; P4 models and P5 achievable rates are out of scope. |
+
+P3 cutover rule: `ProviderPricingVersion + RateComponent` is the canonical factual pricing ledger. `PaymentsRateTable` is compatibility-only during migration; unsafe legacy placeholders/estimates are quarantined, demo rows are ignored, and exact verified P3 truth may project downward to an existing exact-country legacy row. Legacy estimates never promote upward into canonical P3 truth.
