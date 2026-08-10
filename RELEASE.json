@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.80.0 — Always-On Lead Discovery & Qualified Reservoir Technical Seal",
-  "version": "0.80.0",
-  "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
+  "releaseName": "CAMBRA v0.80.1 — Global Technical Hygiene Seal",
+  "version": "0.80.1",
+  "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1204,
   "sourceArchiveShaExternal": null,
-  "gitSha": "03d4ef4bb61e551ff7ae777c6881b4028a5a552c",
+  "gitSha": "2bec6adeb9f1560d97dc77af31891101d35cbedb",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "1bb4c42303d955525f9c7a36af7133d7ab9efb5a9b68c86dac4d9f9136e6dcef",
-  "documentationManifestSha": "71acfa63a00a22e5142b3e451008e1f72ea0d0ada3e704f99c85a70b7147f342",
+  "durabilityManifestSha": "dd75c79cff13ea1e46c3bea9d19e09774fd6ce7349532cb5a0a489af18e32bac",
+  "documentationManifestSha": "633698f8e58adeb7f59e8364830e400368f2edbcd4b2c4e49567f7eda35dbebd",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -44,12 +44,12 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
-    "startedAt": "2026-08-10T12:58:37.238Z",
-    "completedAt": "2026-08-10T12:58:51.588Z",
+    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+    "startedAt": "2026-08-10T13:16:19.064Z",
+    "completedAt": "2026-08-10T13:16:34.088Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 457,
+    "testFiles": 125,
     "passed": 1797,
     "failed": 0,
     "skipped": 2,
@@ -57,9 +57,9 @@
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
-    "startedAt": "2026-08-10T12:58:52.093Z",
-    "completedAt": "2026-08-10T12:59:06.555Z",
+    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+    "startedAt": "2026-08-10T13:16:34.644Z",
+    "completedAt": "2026-08-10T13:16:49.015Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "538e68be8629847da8c785d152814c23b86f8744d308c9e04dddfef72a5f5328",
@@ -67,25 +67,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
-    "startedAt": "2026-08-10T12:58:12.071Z",
-    "completedAt": "2026-08-10T12:58:20.901Z",
+    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+    "startedAt": "2026-08-10T13:15:53.585Z",
+    "completedAt": "2026-08-10T13:16:02.564Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
-    "startedAt": "2026-08-10T12:58:21.363Z",
-    "completedAt": "2026-08-10T12:58:24.401Z",
+    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+    "startedAt": "2026-08-10T13:16:03.058Z",
+    "completedAt": "2026-08-10T13:16:06.280Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "abdfbbcfbac886a059d3bee3b8a9fa79c63c252bc442c6fa166fd01339e979ac",
-    "startedAt": "2026-08-10T12:58:24.880Z",
-    "completedAt": "2026-08-10T12:58:36.745Z",
+    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+    "startedAt": "2026-08-10T13:16:06.785Z",
+    "completedAt": "2026-08-10T13:16:18.580Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -100,5 +100,5 @@
     "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T12:59:07.800Z"
+  "generatedAt": "2026-08-10T13:16:50.621Z"
 }

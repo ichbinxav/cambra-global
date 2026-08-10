@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.80.0",
-  "releaseName": "CAMBRA v0.80.0 — Always-On Lead Discovery & Qualified Reservoir Technical Seal",
+  "version": "0.80.1",
+  "releaseName": "CAMBRA v0.80.1 — Global Technical Hygiene Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.80.0 — Always-On Lead Discovery & Qualified Reservoir Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T12:58:10.865Z",
-  "packageVersion": "0.80.0",
+  "release": "CAMBRA v0.80.1 — Global Technical Hygiene Seal (durability manifest)",
+  "generatedAt": "2026-08-10T13:15:51.669Z",
+  "packageVersion": "0.80.1",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -142,7 +142,7 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "cc214a8cebb71c43a1661077f96bc6d20e93ed4c17c5de8fe18d0c70e6086139",
+      "sha256": "02d3dff47f6fd34b48f4fdbf27eea2f027e376e43d71bf48d2ef415b6e450ba4",
       "bytes": 15704
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
-      "sha256": "e7c60d61b6d2f95582dfb47698f37a28fc4e2771e0477408c8727af6137ad521",
+      "sha256": "550f4e50b2bafe5a3541ccef18cad16bd28e997db7faa2c906a97f28e9677cbe",
       "bytes": 18665
     },
     {
@@ -162,13 +162,13 @@
     },
     {
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
-      "sha256": "d395a7b0a60f67796573e894eac9f74ba562ff0105e41492011a7aae52ddb99b",
+      "sha256": "730495ba738fd5066188d48aa811df4a8ae1d6462194ab0ca7165d98c6ed1e93",
       "bytes": 10928
     },
     {
       "path": "base44/functions/competitorMonitorAgent/entry.ts",
-      "sha256": "bc8cb1974ea9d0b7f4e35affceb930cb4516b9f59a48e5ddb223ea35ce232db5",
-      "bytes": 5565
+      "sha256": "75f166095cec9c946e3660591a37cf6a26ebb653e4267585c1ff01723df08c83",
+      "bytes": 5605
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
@@ -182,7 +182,7 @@
     },
     {
       "path": "base44/functions/dispatchWebhook/entry.ts",
-      "sha256": "2ad4e85fcb1b23d45db2cc959051ade1dae87215b04b17150de5ea96019ccfd8",
+      "sha256": "ed0ec6d8fdca9342a43dfa16d96fabd4a92bb42e4f7b1e5afbdc702ef61ad548",
       "bytes": 7739
     },
     {
@@ -222,12 +222,12 @@
     },
     {
       "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
-      "sha256": "d408dfd04c9a0c806da77c558395bb079f200c576e0ba1703af87ae9afb22880",
+      "sha256": "64fa86618d63e159933a9eed9b172a163168923e26ce45bde6bb9f1bf7a952b5",
       "bytes": 16726
     },
     {
       "path": "base44/functions/generateRecoverContractPdf/entry.ts",
-      "sha256": "a92c931d0b5d4907d36a132deb158d3d1086d1b784c7082981b51e79271fe23a",
+      "sha256": "aa24d0cf9413e621e53170339c3fb6ec1dd06650127d6ca411360252a9f240ff",
       "bytes": 11565
     },
     {
@@ -247,7 +247,7 @@
     },
     {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
-      "sha256": "8b9a54577b00ef43d706b644da9e11ea4ab1c679c4a4b101600e0f0f2913d27b",
+      "sha256": "c44e269b7a23e2199db08fb167568ad393b72eb0d2df096bfd06dc66a82e6d57",
       "bytes": 8573
     },
     {
@@ -392,7 +392,7 @@
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
-      "sha256": "32a2f7103c546d4d1b41b599d571fb0945f2873dc0cf5cf42aa62c827d959664",
+      "sha256": "54b5f35dae613edb16aefcd608ba09a96b34fc219a54ef6758c62fb98ebf40b8",
       "bytes": 11236
     },
     {
@@ -402,7 +402,7 @@
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
-      "sha256": "28a9268bc14b21ad3d0885a51007963262428ee574bc5e9d905c5b0ba7c75702",
+      "sha256": "8d308921f8dfae0e9c5b85436918801fb9f0a3be76c456da66e7482e13133c4a",
       "bytes": 8344
     },
     {
@@ -522,8 +522,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "f368d7715d83cd3110fdc62a9c9fbbc7ff5376ec4ef531761c6115d26b42f1f7",
-      "bytes": 5906
+      "sha256": "f62004a30d062c2b1c306fa8bf6c988c8cdb993d445c7c939ef92cff1ec8dc6c",
+      "bytes": 5874
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -587,8 +587,8 @@
     },
     {
       "path": "scripts/run-with-evidence.mjs",
-      "sha256": "a6884fe5dea8a9175dd0fd8409cca5e918112051813bcdb342b95559883271e2",
-      "bytes": 3416
+      "sha256": "71c1344620a5cd9a7a93dd95022ac8f1bb2e0787de027c472463622014dc6a17",
+      "bytes": 3448
     },
     {
       "path": "scripts/typecheck-baseline-approve.mjs",
@@ -837,8 +837,8 @@
     },
     {
       "path": "types/deno-shim.d.ts",
-      "sha256": "f7fe586bae205cc1e495d238a33677cdf4d91d6195be4c71b764d16535f585ba",
-      "bytes": 2244
+      "sha256": "6a3c098751e8a24b6742c32e42382bcfac78e878a7c565ce1fa38ece0a87e28f",
+      "bytes": 1888
     }
   ]
 }
