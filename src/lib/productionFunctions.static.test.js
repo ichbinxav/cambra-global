@@ -31,13 +31,13 @@ const MANIFEST = [
   // P16 Founder OS & Autonomous Company Command Center (2026-08-10).
   "getFounderOSCommandCenter", "founderOSQuery", "founderOSCommand", "founderOSSimulation", "founderChiefOfStaff",
   // P17 Autonomous Maintenance & Self-Healing Engine (2026-08-10).
-  "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker",
+  "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker", "missingInformationWorker",
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).
   "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",
-  "negotiationMemoryWorker", "onboardingConciergeWorker", "outlookInboundRouter", "outlookMeetingCoordinator", "outboundControlAdmin", "outboundDeliverabilityManager", "outboundVolumeWorker", "outreachExperimentLearningWorker", "postMeetingWorker", "providerContactResolver", "providerNegotiationAgent", "recoverAutopilotWorker", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
+  "negotiationMemoryWorker", "onboardingConciergeWorker", "outlookInboundRouter", "outlookMeetingCoordinator", "outboundControlAdmin", "outboundDeliverabilityManager", "outboundVolumeWorker", "outreachExperimentLearningWorker", "postMeetingWorker", "providerContactResolver", "createMerchantInformationRequest", "providerNegotiationAgent", "recoverAutopilotWorker", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.
   "applyReferralActivation", "getMyReferralStatus",
   // RECOVER-1 (2026-08-03) — Recover Margin mandate acceptance surface.
@@ -52,7 +52,7 @@ const MANIFEST = [
   "recordConditionsActivation", "checkVatVies", "approveRecoverReportForInvoicing",
   "createEligibleRecoverInvoices",
   // v61 Checkpoint D (2026-08-06) — merchant billing records, server-side scope.
-  "getMyBillingRecords",
+  "getMyBillingRecords", "getMyInformationRequests", "respondMerchantInformationRequest",
   // P9 (2026-08-09) — Recover fulfilment & payments migration operations.
   "getMyPaymentsMigration", "startPaymentsMigration", "updatePaymentsMigrationTask",
   "answerAgentQuestion", "apiAuth", "apiOpenApiSpec", "apiV1", "approveAgentRun",
