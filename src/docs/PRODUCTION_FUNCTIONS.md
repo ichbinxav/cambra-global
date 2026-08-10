@@ -305,6 +305,7 @@ P18 adds a release-time documentation drift gate over the implementation paths r
 | Function | Access | Purpose |
 |---|---|---|
 | seedEuropeMarketFoundation | admin/internal | Idempotent 33-market registry, placeholder intelligence state and conservative capability-policy seed |
+| seedProviderIntelligenceFoundation | B/internal · admin/internal gate | ProviderResearchState, MarketIntelligenceProfile, Event | P2 idempotent 33×8 research-state seed only; creates no provider/pricing facts and explicitly preserves zero-fabrication |
 | resolveMerchantMarketContext | admin/internal | Evidence-first additive merchant market context; legacy fields preserved |
 | backfillMerchantMarketContexts | admin/internal | Idempotent shadow backfill with migration provenance |
 | checkMarketCapability | admin/internal | Shared deterministic jurisdiction/capability decision + audit |

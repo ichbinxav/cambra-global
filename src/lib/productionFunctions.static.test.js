@@ -35,7 +35,7 @@ const MANIFEST = [
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).
   "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin",
   // P1 Europe Country Intelligence Foundation (2026-08-10).
-  "seedEuropeMarketFoundation", "resolveMerchantMarketContext", "backfillMerchantMarketContexts", "checkMarketCapability", "marketPolicyAdmin", "getEuropeMarketsCommandCenter",
+  "seedEuropeMarketFoundation", "seedProviderIntelligenceFoundation", "resolveMerchantMarketContext", "backfillMerchantMarketContexts", "checkMarketCapability", "marketPolicyAdmin", "getEuropeMarketsCommandCenter",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",

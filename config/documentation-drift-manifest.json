@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.1.0",
   "systemVersion": "0.81.0",
   "packageVersion": "0.81.0",
-  "generatedAt": "2026-08-10T20:51:53.058Z",
+  "generatedAt": "2026-08-10T20:53:04.589Z",
   "sourcePaths": {
     "base44/entities/CountryProfile.jsonc": "473de444a0cb0ce4551bdcac0d75fcc6dc5c34c5d56165978c59f28e563339eb",
     "base44/entities/DocumentationChangeProposal.jsonc": "7c682f57bb5cb65aae16a84a9b7bda65b1b6b214d1ff84a003e451f1b011d059",
@@ -124,7 +124,7 @@
     "src/docs/P18_TROUBLESHOOTING_PLAYBOOKS.md": "7359c90d7ef527b39151f3eb7655580961081bc8327bddef56297ab0d0b3b541",
     "src/docs/P18_INCIDENT_PLAYBOOKS.md": "667fa271f699233684f1816770831e7fbefc4705e7b6739ab93741c59b23fc93",
     "src/docs/P18_EMERGENCY_CONTROLS.md": "118a1777e4999557b6710c3e07414d3bedbc654d1ed88f6bbfb8dfebd937c50d",
-    "src/docs/PRODUCTION_FUNCTIONS.md": "c7f49d50d85e7e8897fdbe536a74c07e1d7048cb6da7a9f47c6161b35e830f55",
+    "src/docs/PRODUCTION_FUNCTIONS.md": "5c547770629b9d278e2270c260683790d5bc973a992e6b7fd9a5aa1e21f94dfb",
     "src/docs/P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md": "93de5be0609b42a114646183adb72fd0c740a07f650df6079141ebd8cfb46172"
   }
 }
