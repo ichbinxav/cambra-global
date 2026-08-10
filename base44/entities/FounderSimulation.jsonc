@@ -1,0 +1,11 @@
+{
+  "name":"FounderSimulation","type":"object","description":"P16 non-production scenario record. SIMULATION ONLY; no workflow may consume it as an execution instruction without a separate governed action.",
+  "properties":{
+    "simulation_key":{"type":"string"},"simulation_type":{"type":"string"},"status":{"type":"string","enum":["draft","completed","invalid","archived"],"default":"draft"},
+    "scenario":{"type":"string","enum":["base","upside","downside","custom"],"default":"custom"},"inputs_json":{"type":"object"},"outputs_json":{"type":"object"},
+    "assumptions_json":{"type":"array","items":{"type":"object"}},"confidence":{"type":"number"},"production_effect":{"type":"boolean","default":false},
+    "created_by":{"type":"string"},"created_at":{"type":"string","format":"date-time"}
+  },
+  "required":["simulation_key","simulation_type","status","scenario","inputs_json","outputs_json","confidence","production_effect","created_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

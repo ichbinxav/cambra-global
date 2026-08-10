@@ -1,0 +1,11 @@
+{
+  "name":"FounderCommandAudit","type":"object","description":"P16 append-style audit of Founder OS natural-language/structured commands, previews, gates and execution result.",
+  "properties":{
+    "command_key":{"type":"string"},"conversation_id":{"type":"string"},"actor_email":{"type":"string"},"intent":{"type":"string"},"action":{"type":"string"},
+    "scope_json":{"type":"object"},"risk_level":{"type":"number"},"material":{"type":"boolean"},"requires_confirmation":{"type":"boolean"},"confirmed":{"type":"boolean"},
+    "preview_json":{"type":"object"},"status":{"type":"string","enum":["previewed","blocked","executed","drafted","failed","cancelled"]},"result_json":{"type":"object"},
+    "policy_json":{"type":"object"},"created_at":{"type":"string","format":"date-time"}
+  },
+  "required":["command_key","actor_email","intent","action","risk_level","material","requires_confirmation","confirmed","status","created_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

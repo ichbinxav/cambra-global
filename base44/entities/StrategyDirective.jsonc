@@ -1,0 +1,10 @@
+{
+  "name":"StrategyDirective","type":"object","description":"P16 explicit governed founder strategy memory. Critical policy must still live in its domain policy; this entity is strategic context, not hidden conversational authority.",
+  "properties":{
+    "directive_key":{"type":"string"},"scope":{"type":"string"},"directive":{"type":"string"},"status":{"type":"string","enum":["active","superseded","expired","cancelled"],"default":"active"},
+    "priority":{"type":"number"},"effective_from":{"type":"string","format":"date-time"},"effective_to":{"type":"string","format":"date-time"},"evidence_json":{"type":"object"},
+    "created_by":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}
+  },
+  "required":["directive_key","scope","directive","status","created_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

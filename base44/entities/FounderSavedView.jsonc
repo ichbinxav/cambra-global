@@ -1,0 +1,6 @@
+{
+  "name":"FounderSavedView","type":"object","description":"P16 founder-pinned analytics/search view definition. Contains configuration only, never copied financial truth.",
+  "properties":{"view_key":{"type":"string"},"name":{"type":"string"},"view_type":{"type":"string"},"config_json":{"type":"object"},"created_by":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}},
+  "required":["view_key","name","view_type","config_json","created_by","created_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

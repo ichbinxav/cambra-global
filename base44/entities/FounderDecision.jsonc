@@ -1,0 +1,13 @@
+{
+  "name":"FounderDecision","type":"object","description":"P16 governed founder decision record. Stores options/recommendation/evidence and final human decision; it never itself executes material authority.",
+  "properties":{
+    "decision_key":{"type":"string"},"decision_type":{"type":"string"},"related_entity_type":{"type":"string"},"related_entity_id":{"type":"string"},
+    "status":{"type":"string","enum":["open","approved","rejected","delegated","superseded","expired"],"default":"open"},
+    "title":{"type":"string"},"summary":{"type":"string"},"options_json":{"type":"array","items":{"type":"object"}},"recommended_option":{"type":"string"},
+    "financial_impact_json":{"type":"object"},"risk_json":{"type":"object"},"reversibility":{"type":"string","enum":["reversible","partially_reversible","irreversible","unknown"]},
+    "confidence":{"type":"number"},"evidence_json":{"type":"array","items":{"type":"object"}},"approval_id":{"type":"string"},
+    "decided_by":{"type":"string"},"decided_at":{"type":"string","format":"date-time"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}
+  },
+  "required":["decision_key","decision_type","status","title","confidence","created_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}
