@@ -1,0 +1,10 @@
+{
+  "name":"MerchantMarketContext","type":"object","description":"P1 resolved multi-dimensional merchant market context. Never collapses legal entity, tax, home/operating/customer/transaction geography, provider establishment, settlement, currency and UI language into one country.",
+  "properties":{
+    "context_key":{"type":"string"},"brand_id":{"type":"string"},"resolver_version":{"type":"string"},"resolution_status":{"type":"string","enum":["RESOLVED","UNKNOWN","AMBIGUOUS","MULTI_MARKET","CONFLICTING_EVIDENCE","REVIEW_REQUIRED"]},
+    "legal_entity_country":{"type":"string"},"tax_jurisdictions":{"type":"array","items":{"type":"string"}},"home_market":{"type":"string"},"operating_markets":{"type":"array","items":{"type":"string"}},
+    "transaction_country_mix":{"type":"array","items":{"type":"object"}},"transaction_currency_mix":{"type":"array","items":{"type":"object"}},"website_markets":{"type":"array","items":{"type":"string"}},"billing_country":{"type":"string"},"psp_contracting_country":{"type":"string"},"provider_establishments":{"type":"array","items":{"type":"string"}},"settlement_currencies":{"type":"array","items":{"type":"string"}},
+    "preferred_language":{"type":"string"},"operational_languages":{"type":"array","items":{"type":"string"}},"resolution_sources":{"type":"array","items":{"type":"object"}},"resolution_confidence":{"type":"string","enum":["VERIFIED","HIGH","MEDIUM","LOW","UNKNOWN"]},"reason_codes":{"type":"array","items":{"type":"string"}},"last_resolved_at":{"type":"string","format":"date-time"},
+    "legacy_country_snapshot":{"type":"string"},"legacy_billing_country_snapshot":{"type":"string"},"shadow_divergence":{"type":"boolean"},"migration_provenance_json":{"type":"object"}
+  },"required":["context_key","brand_id","resolver_version","resolution_status","last_resolved_at"],"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

@@ -1,0 +1,14 @@
+{
+  "name":"CountryProfile","type":"object","description":"P1 canonical Europe market registry projection. Stable market metadata only; pricing, tax decisions, benchmarks and merchant facts live elsewhere.",
+  "properties":{
+    "iso2":{"type":"string"},"iso3":{"type":"string"},"canonical_name":{"type":"string"},"aliases":{"type":"array","items":{"type":"string"}},
+    "region":{"type":"string"},"subregion":{"type":"string"},"eu_member":{"type":"boolean"},"eea_member":{"type":"boolean"},"eurozone_member":{"type":"boolean"},"schengen_member":{"type":"boolean"},
+    "default_locale":{"type":"string"},"supported_locales":{"type":"array","items":{"type":"string"}},"default_language":{"type":"string"},"supported_languages":{"type":"array","items":{"type":"string"}},"timezones":{"type":"array","items":{"type":"string"}},
+    "primary_currency":{"type":"string"},"commonly_supported_currencies":{"type":"array","items":{"type":"string"}},
+    "intelligence_status":{"type":"string","enum":["NOT_RESEARCHED","IN_PROGRESS","READY","STALE","BLOCKED"]},"launch_status":{"type":"string","enum":["RESEARCHABLE","INTELLIGENCE_READY","ANALYZER_READY","COMMERCIAL_LIMITED","FULL_COMMERCIAL","REGULATORY_HOLD","DISABLED"]},
+    "provider_intelligence_status":{"type":"string"},"rate_intelligence_status":{"type":"string"},"benchmark_maturity":{"type":"string"},"regulatory_status":{"type":"string"},"regulatory_confidence":{"type":"string","enum":["VERIFIED","HIGH","MEDIUM","LOW","UNKNOWN"]},
+    "overall_data_confidence":{"type":"string","enum":["VERIFIED","HIGH","MEDIUM","LOW","UNKNOWN"]},"freshness_status":{"type":"string","enum":["CURRENT","FUTURE","EXPIRED","SUPERSEDED","STALE","UNKNOWN"]},"last_verified_at":{"type":"string","format":"date-time"},
+    "registry_version":{"type":"string"},"effective_from":{"type":"string"},"updated_at":{"type":"string","format":"date-time"}
+  },"required":["iso2","iso3","canonical_name","primary_currency","registry_version"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

@@ -26,7 +26,7 @@
         "es"
       ],
       "default": "en",
-      "description": "EMAIL-1 (2026-07-31) \u2014 language for every merchant-facing email tied to this business: the welcome email (onBrandCreated) and the monthly savings summary (sendMonthlySavingsSummary). Both are triggered by an automation or a scheduler, so the HTTP request carries no user context \u2014 the value stored HERE is the only reliable language signal, which is why it lives on the record and not only on a transient submit payload. Written at Brand creation from the ACTIVE UI language (the same value that governs the cambra_lang key), never inferred from Accept-Language. Absent/unrecognized \u2192 'en' via normalizeLocale (base44/shared/emailLocale.ts); brands created before this date therefore keep receiving English, exactly as they already did."
+      "description": "EMAIL-1 (2026-07-31) — language for every merchant-facing email tied to this business: the welcome email (onBrandCreated) and the monthly savings summary (sendMonthlySavingsSummary). Both are triggered by an automation or a scheduler, so the HTTP request carries no user context — the value stored HERE is the only reliable language signal, which is why it lives on the record and not only on a transient submit payload. Written at Brand creation from the ACTIVE UI language (the same value that governs the cambra_lang key), never inferred from Accept-Language. Absent/unrecognized → 'en' via normalizeLocale (base44/shared/emailLocale.ts); brands created before this date therefore keep receiving English, exactly as they already did."
     },
     "tax_id": {
       "type": "string",
@@ -125,7 +125,7 @@
     "is_demo": {
       "type": "boolean",
       "default": false,
-      "description": "Demo/fake brand for testing \u2014 never billed"
+      "description": "Demo/fake brand for testing — never billed"
     },
     "anon_session_id": {
       "type": "string",
@@ -133,7 +133,7 @@
     },
     "stripe_customer_id": {
       "type": "string",
-      "description": "RECOVER-2 (2026-08-03) \u2014 id of the Stripe Customer, IN CAMBRA'S OWN BILLING ACCOUNT, that future success-fee invoices are charged to. THE CUSTOMER OBJECT LIVES ON THE BRAND, NOT ON Organization: the Organization / OrganizationMember entities are the API-platform tenancy (quotas, rate limits) and are never linked to a Brand, so the Brand is the only record that maps 1:1 to the business we bill. Written by startPaymentMethodSetup (service role) the first time a merchant sets up a payment method, and reused on every later setup so a business never accumulates duplicate Customers. NEVER a merchant-side Stripe id: the read-only OAuth connection to the merchant's own Stripe (StripeConnection) is a different relationship and nothing crosses between them. MODE-SCOPED: a Customer created in the sandbox does not exist in live, which is why stripe_billing_mode is recorded next to it on DealActivation \u2014 see that field. Populated for at most one mode at a time; switching CAMBRA to live billing means this id must be re-created, not reused."
+      "description": "RECOVER-2 (2026-08-03) — id of the Stripe Customer, IN CAMBRA'S OWN BILLING ACCOUNT, that future success-fee invoices are charged to. THE CUSTOMER OBJECT LIVES ON THE BRAND, NOT ON Organization: the Organization / OrganizationMember entities are the API-platform tenancy (quotas, rate limits) and are never linked to a Brand, so the Brand is the only record that maps 1:1 to the business we bill. Written by startPaymentMethodSetup (service role) the first time a merchant sets up a payment method, and reused on every later setup so a business never accumulates duplicate Customers. NEVER a merchant-side Stripe id: the read-only OAuth connection to the merchant's own Stripe (StripeConnection) is a different relationship and nothing crosses between them. MODE-SCOPED: a Customer created in the sandbox does not exist in live, which is why stripe_billing_mode is recorded next to it on DealActivation — see that field. Populated for at most one mode at a time; switching CAMBRA to live billing means this id must be re-created, not reused."
     },
     "stripe_billing_mode": {
       "type": "string",
@@ -141,11 +141,11 @@
         "test",
         "live"
       ],
-      "description": "RECOVER-2 (2026-08-03) \u2014 which Stripe environment stripe_customer_id belongs to ('test' = CAMBRA's sandbox acct_1TqFip2Vr0WW305e, 'live' = acct_1TqFifJw0ka9dDf4). Exists because a Stripe Sandbox is a SEPARATE account with its own object space: a customer id from the sandbox is meaningless in live and would fail with a 'no such customer' at the worst possible moment (the first real invoice). startPaymentMethodSetup refuses to reuse a stored customer whose mode does not match the mode it is running in, and creates a fresh one instead."
+      "description": "RECOVER-2 (2026-08-03) — which Stripe environment stripe_customer_id belongs to ('test' = CAMBRA's sandbox acct_1TqFip2Vr0WW305e, 'live' = acct_1TqFifJw0ka9dDf4). Exists because a Stripe Sandbox is a SEPARATE account with its own object space: a customer id from the sandbox is meaningless in live and would fail with a 'no such customer' at the worst possible moment (the first real invoice). startPaymentMethodSetup refuses to reuse a stored customer whose mode does not match the mode it is running in, and creates a fresh one instead."
     },
     "billing_legal_name": {
       "type": "string",
-      "description": "RECOVER-4 (2026-08-04) \u2014 the customer's LEGAL entity name for invoicing. Structured billing identity lives on the Brand (organization = brand, same convention as Mandate.organization_id). Distinct from `name` (trading/brand name)."
+      "description": "RECOVER-4 (2026-08-04) — the customer's LEGAL entity name for invoicing. Structured billing identity lives on the Brand (organization = brand, same convention as Mandate.organization_id). Distinct from `name` (trading/brand name)."
     },
     "billing_address_line1": {
       "type": "string"
@@ -161,26 +161,26 @@
     },
     "billing_country": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 country of BUSINESS ESTABLISHMENT for tax purposes, ISO alpha-2. Only FR and ES are billable; anything else blocks with billing_blocked_unsupported_jurisdiction. Determined from legal/tax data \u2014 never from IP, browser language, card country or IBAN country (\u00a713)."
+      "description": "RECOVER-4 — country of BUSINESS ESTABLISHMENT for tax purposes, ISO alpha-2. Only FR and ES are billable; anything else blocks with billing_blocked_unsupported_jurisdiction. Determined from legal/tax data — never from IP, browser language, card country or IBAN country (§13)."
     },
     "vat_number": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 customer VAT identification as provided (e.g. FRxx\u2026, ESxx\u2026)."
+      "description": "RECOVER-4 — customer VAT identification as provided (e.g. FRxx…, ESxx…)."
     },
     "vat_number_normalized": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 uppercase, no spaces/dots/dashes. What VIES was queried with."
+      "description": "RECOVER-4 — uppercase, no spaces/dots/dashes. What VIES was queried with."
     },
     "vat_country": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 the 2-letter prefix of the VAT number. Must match billing_country for reverse charge."
+      "description": "RECOVER-4 — the 2-letter prefix of the VAT number. Must match billing_country for reverse charge."
     },
     "tax_customer_type": {
       "type": "string",
       "enum": [
         "business_taxable_person"
       ],
-      "description": "RECOVER-4 \u2014 the only supported customer type. B2C is never invoiced from this flow; if B2B status cannot be demonstrated the state is billing_blocked_tax_review, not a default."
+      "description": "RECOVER-4 — the only supported customer type. B2C is never invoiced from this flow; if B2B status cannot be demonstrated the state is billing_blocked_tax_review, not a default."
     },
     "tax_evidence_status": {
       "type": "string",
@@ -191,7 +191,7 @@
         "alternative_evidence_approved"
       ],
       "default": "none",
-      "description": "RECOVER-4 \u2014 how the B2B/taxable-person condition is evidenced. 'alternative_evidence_approved' exists ONLY for an advisor-approved manual review (documented, with approver and date in tax_review notes) \u2014 never created automatically."
+      "description": "RECOVER-4 — how the B2B/taxable-person condition is evidenced. 'alternative_evidence_approved' exists ONLY for an advisor-approved manual review (documented, with approver and date in tax_review notes) — never created automatically."
     },
     "tax_review_status": {
       "type": "string",
@@ -202,7 +202,7 @@
         "rejected"
       ],
       "default": "not_required",
-      "description": "RECOVER-4 \u2014 manual fiscal review state when automatic evidence (VIES) is insufficient."
+      "description": "RECOVER-4 — manual fiscal review state when automatic evidence (VIES) is insufficient."
     },
     "vies_status": {
       "type": "string",
@@ -216,7 +216,7 @@
         "manual_review_rejected"
       ],
       "default": "not_checked",
-      "description": "RECOVER-4 \u2014 result of the latest VIES consultation for vat_number_normalized. 'invalid' NEVER auto-falls-back to French TVA (\u00a714): it blocks billing until corrected or manually reviewed. 'unavailable'/'timeout' block with retry \u2014 they are not 'invalid'."
+      "description": "RECOVER-4 — result of the latest VIES consultation for vat_number_normalized. 'invalid' NEVER auto-falls-back to French TVA (§14): it blocks billing until corrected or manually reviewed. 'unavailable'/'timeout' block with retry — they are not 'invalid'."
     },
     "vies_checked_at": {
       "type": "string",
@@ -224,11 +224,11 @@
     },
     "vies_request_identifier": {
       "type": "string",
-      "description": "RECOVER-4 \u2014 VIES consultation/request identifier returned by the service, kept as evidence of the check."
+      "description": "RECOVER-4 — VIES consultation/request identifier returned by the service, kept as evidence of the check."
     },
     "vies_response_snapshot": {
       "type": "object",
-      "description": "RECOVER-4 \u2014 sanitized VIES response (valid flag, name, address, request date). No secrets, kept for the invoice's vies_evidence_json."
+      "description": "RECOVER-4 — sanitized VIES response (valid flag, name, address, request date). No secrets, kept for the invoice's vies_evidence_json."
     },
     "vies_name": {
       "type": "string"
@@ -253,6 +253,24 @@
     "service_cancellation_reason": {
       "type": "string",
       "description": "Optional merchant-provided cancellation reason; operational only."
+    },
+    "market_context_id": {
+      "type": "string",
+      "description": "P1 pointer to latest resolved MerchantMarketContext; legacy country fields remain intact."
+    },
+    "market_context_rollout": {
+      "type": "string",
+      "enum": [
+        "legacy",
+        "shadow",
+        "partial",
+        "production"
+      ],
+      "default": "legacy"
+    },
+    "market_context_last_resolved_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

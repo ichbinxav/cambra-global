@@ -1,0 +1,6 @@
+{
+  "name":"JurisdictionCapabilityPolicy","type":"object","description":"P1 versioned deterministic market/capability gate. Unknown or stale sensitive execution fails closed. AI agents have no mutation authority.",
+  "properties":{
+    "policy_key":{"type":"string"},"jurisdiction":{"type":"string"},"capability":{"type":"string"},"state":{"type":"string","enum":["ENABLED","LIMITED","REVIEW_REQUIRED","BLOCKED"]},"reason_code":{"type":"string"},"human_readable_reason":{"type":"string"},"evidence_refs":{"type":"array","items":{"type":"string"}},"confidence":{"type":"string","enum":["VERIFIED","HIGH","MEDIUM","LOW","UNKNOWN"]},"effective_from":{"type":"string","format":"date-time"},"effective_to":{"type":"string","format":"date-time"},"reviewed_at":{"type":"string","format":"date-time"},"next_review_at":{"type":"string","format":"date-time"},"policy_version":{"type":"string"},"supersedes_policy_id":{"type":"string"},"active":{"type":"boolean"},"created_by_actor":{"type":"string"}
+  },"required":["policy_key","jurisdiction","capability","state","policy_version","effective_from","active"],"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}
