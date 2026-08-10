@@ -57,7 +57,7 @@ export default {
     },
     {
       title: "8. Contacto",
-      body: "Preguntas sobre cómo usa CAMBRA las cookies y el almacenamiento del navegador: privacy@cambra.global. Editor: CAMBRA GLOBAL SASU, SIREN 105 452 916, 42 rue Vivienne, 75002 París, Francia.",
+      body: "Preguntas sobre cómo usa CAMBRA las cookies y el almacenamiento del navegador: privacy@cambra.global. Editor: CAMBRA GLOBAL SASU, SIREN 105 452 916, 47 rue Vivienne, 75002 París, Francia.",
     },
   ],
 };
