@@ -5,6 +5,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
@@ -36,6 +37,8 @@ export default async function (req: Request): Promise<Response> {
     if (!activationId) return Response.json({ error: 'deal_activation_id required' }, { status: 400 });
 
     const svc = base44.asServiceRole;
+    const emergency = await emergencyState(svc);
+    if (emergency.safe_mode || emergency.migrations_paused) return Response.json({ error: 'emergency_control_paused:migrations', safe_mode: emergency.safe_mode, reason: emergency.reason || null }, { status: 409 });
     const rows = await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []);
     const activation:any = rows?.[0];
     if (!activation) return Response.json({ error: 'activation_not_found' }, { status: 404 });
