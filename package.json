@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.80.2",
-  "releaseName": "CAMBRA v0.80.2 — Privacy-Safe Intelligence & Anonymization Technical Seal",
+  "version": "0.80.3",
+  "releaseName": "CAMBRA v0.80.3 — Global Platform Audit & Production Hardening Technical Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",
