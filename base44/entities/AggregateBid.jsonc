@@ -78,6 +78,25 @@
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "provider_economics_json": {
+      "type": "object"
+    },
+    "provider_economics_score": {
+      "type": "number"
+    },
+    "provider_expected_revenue_12m_minor": {
+      "type": "number"
+    },
+    "merchant_suitability_passed": {
+      "type": "boolean"
+    },
+    "commercial_conflict_classification": {
+      "type": "string"
+    },
+    "compensation_effect_on_ranking": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

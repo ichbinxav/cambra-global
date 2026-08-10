@@ -57,6 +57,24 @@
     "calculated_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "merchant_side_revenue": {
+      "type": "number"
+    },
+    "provider_side_revenue": {
+      "type": "number"
+    },
+    "total_cambra_revenue": {
+      "type": "number"
+    },
+    "merchant_side_ltv": {
+      "type": "number"
+    },
+    "provider_side_ltv": {
+      "type": "number"
+    },
+    "total_ltv": {
+      "type": "number"
     }
   },
   "required": [

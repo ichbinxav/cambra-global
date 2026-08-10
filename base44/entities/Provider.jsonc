@@ -76,6 +76,25 @@
     },
     "aggregate_relationship_json": {
       "type": "object"
+    },
+    "provider_monetization_status": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "opportunity",
+        "negotiating",
+        "contracted",
+        "active",
+        "prohibited"
+      ],
+      "default": "unknown"
+    },
+    "provider_compensation_summary_json": {
+      "type": "object"
+    },
+    "provider_economics_renewal_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

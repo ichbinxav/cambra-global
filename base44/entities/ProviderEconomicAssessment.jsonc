@@ -1,0 +1,102 @@
+{
+  "name": "ProviderEconomicAssessment",
+  "type": "object",
+  "description": "P15 recommendation-firewall record. Merchant Outcome Score and CAMBRA Provider Economics Score are stored independently; compensation_effect_on_ranking must remain false unless explicit approved policy says otherwise.",
+  "properties": {
+    "assessment_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "bid_id": {
+      "type": "string"
+    },
+    "merchant_outcome_score": {
+      "type": "number"
+    },
+    "merchant_estimated_savings_minor": {
+      "type": "number"
+    },
+    "provider_economics_score": {
+      "type": "number"
+    },
+    "provider_expected_revenue_12m_minor": {
+      "type": "number"
+    },
+    "provider_expected_revenue_36m_minor": {
+      "type": "number"
+    },
+    "provider_lifetime_revenue_minor": {
+      "type": "number"
+    },
+    "merchant_suitability_passed": {
+      "type": "boolean"
+    },
+    "compensation_effect_on_ranking": {
+      "type": "boolean",
+      "default": false
+    },
+    "conflict_classification": {
+      "type": "string",
+      "enum": [
+        "conflict_none",
+        "conflict_minor",
+        "conflict_material",
+        "conflict_critical"
+      ]
+    },
+    "conflict_reason": {
+      "type": "string"
+    },
+    "disclosure_status": {
+      "type": "string",
+      "enum": [
+        "disclosure_not_required",
+        "disclosure_required",
+        "disclosure_required_before_recommendation",
+        "disclosure_required_before_acceptance",
+        "legal_review_required"
+      ]
+    },
+    "policy_key": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "assessment_key",
+    "provider_id",
+    "merchant_outcome_score",
+    "provider_economics_score",
+    "merchant_suitability_passed",
+    "compensation_effect_on_ranking",
+    "conflict_classification",
+    "disclosure_status",
+    "calculated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

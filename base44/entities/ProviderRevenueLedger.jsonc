@@ -1,0 +1,123 @@
+{
+  "name": "ProviderRevenueLedger",
+  "type": "object",
+  "description": "P15 authoritative internal provider-side revenue subledger. Separate from merchant Invoice/PaymentEvent ledger. Every amount has provider/agreement/merchant/period/rate/tier provenance.",
+  "properties": {
+    "ledger_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "tier_id": {
+      "type": "string"
+    },
+    "attribution_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "period": {
+      "type": "string"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "expected",
+        "eligible",
+        "accrued",
+        "validation_pending",
+        "invoiced",
+        "payment_pending",
+        "paid",
+        "partially_paid",
+        "disputed",
+        "clawback",
+        "failed",
+        "written_off"
+      ]
+    },
+    "compensation_type": {
+      "type": "string"
+    },
+    "basis_value": {
+      "type": "number"
+    },
+    "rate_bps": {
+      "type": "number"
+    },
+    "percentage": {
+      "type": "number"
+    },
+    "fixed_fee_minor": {
+      "type": "number"
+    },
+    "expected_amount_minor": {
+      "type": "number"
+    },
+    "accrued_amount_minor": {
+      "type": "number"
+    },
+    "invoiced_amount_minor": {
+      "type": "number"
+    },
+    "paid_amount_minor": {
+      "type": "number"
+    },
+    "clawback_amount_minor": {
+      "type": "number"
+    },
+    "provider_statement_id": {
+      "type": "string"
+    },
+    "provider_payment_ref": {
+      "type": "string"
+    },
+    "calculation_json": {
+      "type": "object"
+    },
+    "agreement_terms_hash": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "ledger_key",
+    "provider_id",
+    "agreement_id",
+    "brand_id",
+    "period",
+    "currency",
+    "state",
+    "compensation_type",
+    "updated_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

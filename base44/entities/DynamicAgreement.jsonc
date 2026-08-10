@@ -86,6 +86,27 @@
     "activated_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "provider_compensation_terms_json": {
+      "type": "object",
+      "description": "P15 provider-side compensation terms, separate from merchant commercial terms."
+    },
+    "provider_compensation_legal_status": {
+      "type": "string",
+      "enum": [
+        "not_reviewed",
+        "legal_review_required",
+        "approved",
+        "prohibited"
+      ],
+      "default": "not_reviewed"
+    },
+    "provider_compensation_disclosure_policy": {
+      "type": "string"
+    },
+    "provider_compensation_activation_allowed": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

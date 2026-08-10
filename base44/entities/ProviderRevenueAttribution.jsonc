@@ -1,0 +1,80 @@
+{
+  "name": "ProviderRevenueAttribution",
+  "type": "object",
+  "description": "P15 provider-side attribution mapping. Links provider compensation to exact merchant/pool/activation/agreement evidence without double counting.",
+  "properties": {
+    "attribution_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "pool_id": {
+      "type": "string"
+    },
+    "deal_activation_id": {
+      "type": "string"
+    },
+    "migration_id": {
+      "type": "string"
+    },
+    "eligible_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "eligible_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "eligible",
+        "active",
+        "ended",
+        "disputed"
+      ]
+    },
+    "attribution_basis": {
+      "type": "string"
+    },
+    "evidence_json": {
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "attribution_key",
+    "provider_id",
+    "agreement_id",
+    "brand_id",
+    "status",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

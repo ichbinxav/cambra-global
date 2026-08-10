@@ -1,0 +1,113 @@
+{
+  "name": "ProviderCompensationTier",
+  "type": "object",
+  "description": "P15 machine-readable provider-side compensation tier. Separate from merchant pricing tiers and never used to rank merchant options.",
+  "properties": {
+    "tier_key": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "tier_number": {
+      "type": "number"
+    },
+    "name": {
+      "type": "string"
+    },
+    "metric": {
+      "type": "string",
+      "enum": [
+        "activated_volume",
+        "processed_volume",
+        "transaction_count",
+        "activated_merchants",
+        "provider_net_revenue",
+        "product_adoption",
+        "retention",
+        "growth_rate"
+      ]
+    },
+    "threshold_value": {
+      "type": "number"
+    },
+    "compensation_type": {
+      "type": "string"
+    },
+    "rate_bps": {
+      "type": "number"
+    },
+    "percentage": {
+      "type": "number"
+    },
+    "fixed_fee_minor": {
+      "type": "number"
+    },
+    "conditions_json": {
+      "type": "object"
+    },
+    "activation_mode": {
+      "type": "string",
+      "enum": [
+        "automatic_contractual",
+        "provider_confirmation",
+        "manual"
+      ]
+    },
+    "provider_validation_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "pending",
+        "confirmed",
+        "rejected"
+      ]
+    },
+    "qualification_status": {
+      "type": "string",
+      "enum": [
+        "locked",
+        "qualified",
+        "pending_confirmation",
+        "active",
+        "superseded"
+      ]
+    },
+    "progress_pct": {
+      "type": "number"
+    },
+    "amount_remaining": {
+      "type": "number"
+    },
+    "activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "tier_key",
+    "agreement_id",
+    "tier_number",
+    "metric",
+    "threshold_value",
+    "compensation_type",
+    "activation_mode",
+    "qualification_status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

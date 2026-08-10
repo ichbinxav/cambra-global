@@ -1,5 +1,5 @@
 export const PROVIDER_ECONOMICS_VERSION='p15-provider-economics-1.0.0';
-export const PROVIDER_MONETIZATION_PRODUCTION_ALLOWED=false; // legal review gate; technical negotiation/reconciliation may be tested without activating revenue entitlement.
+export const PROVIDER_MONETIZATION_PRODUCTION_ALLOWED=false;
 export const MERCHANT_SUITABILITY_MIN_SCORE=70;
 export function clamp01(n:number){return Math.max(0,Math.min(1,Number.isFinite(n)?n:0))}
 export function merchantSuitability(score:number){return Number(score||0)>=MERCHANT_SUITABILITY_MIN_SCORE}
