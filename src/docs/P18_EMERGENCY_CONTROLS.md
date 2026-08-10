@@ -32,7 +32,7 @@ Restoration requires exact confirmation `RESTORE_CAMBRA_AUTONOMY`. Restoration c
 
 ## PAUSE EMAILS / EXTERNAL COMMUNICATION — IMPLEMENTED
 
-P18 `communications_paused` / SAFE MODE is enforced in the canonical `commercialSendMessage` boundary before normal/manual send execution. Existing per-thread suppression and sending-profile pause controls remain narrower layers underneath it.
+P18 `communications_paused` / SAFE MODE is enforced in the canonical `commercialSendMessage` boundary and in major user-facing lifecycle email execution paths (Recover contract delivery, monthly savings summaries, newsletter execute, legacy approved outreach, welcome/join/call-request confirmations). Existing per-thread suppression and sending-profile pause controls remain narrower layers underneath it. Internal founder/operational alerts may continue intentionally so containment does not blind the operator.
 
 ## PAUSE NEGOTIATIONS — IMPLEMENTED
 
