@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.77.0 — P16 Founder OS & Autonomous Company Command Center Technical Seal",
-  "version": "0.77.0",
-  "sourceTreeHash": "0631827a1d49b984b5450bc93b9aebb9e50b1521251da50a87f172430c37daf5",
+  "releaseName": "CAMBRA v0.78.0 — P17 Autonomous Maintenance & Self-Healing Engine Technical Seal",
+  "version": "0.78.0",
+  "sourceTreeHash": "039d6b66332ede8ead896eba0e930cb0b5da41d8ac195e9de36fb6ccd7ad5f8d",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1167,
+  "sourceTreeFileCount": 1178,
   "sourceArchiveShaExternal": null,
-  "gitSha": "fb47532d86f6790af0b44e131ea04c15c23c1a9d",
+  "gitSha": "62eabb8bdc717ef2c5c2d4117ad1aac409c383e3",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,7 +18,7 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "ea84649a18236cc0fab028df5f187ac795e2ef01f41469407f389545e91871e9",
+  "durabilityManifestSha": "b60a5308f7c64c07bdd630ba9778189339b632c4c85bc6f4796e2d99057009c3",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -29,7 +29,7 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "18312da5ff6f8f23e1af0a05960b3d6959acf35b8e9d9ce0757beb4d5f9c4422",
+  "lockfileSha": "24c97d85ee71367543bb58d16f17d171ee8a8be7b5e91c233a741828ad2b6a5a",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
@@ -97,7 +97,12 @@
     "ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
     "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
-    "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
+    "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.",
+    "evidence tests: stale (run the *:evidence command)",
+    "evidence build: stale (run the *:evidence command)",
+    "evidence lint: stale (run the *:evidence command)",
+    "evidence typecheck-critical: stale (run the *:evidence command)",
+    "evidence typecheck-baseline: stale (run the *:evidence command)"
   ],
-  "generatedAt": "2026-08-10T01:05:30.021Z"
+  "generatedAt": "2026-08-10T08:56:55.961Z"
 }
