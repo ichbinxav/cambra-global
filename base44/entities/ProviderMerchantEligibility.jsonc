@@ -1,0 +1,124 @@
+{
+  "name": "ProviderMerchantEligibility",
+  "type": "object",
+  "description": "P2 known merchant-segment eligibility constraints for a provider product in a market. Unknown eligibility remains UNKNOWN and never implies availability.",
+  "properties": {
+    "eligibility_key": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "segment": {
+      "type": "string",
+      "enum": [
+        "SMB",
+        "MID_MARKET",
+        "ENTERPRISE",
+        "PLATFORM",
+        "MARKETPLACE",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "eligibility_state": {
+      "type": "string",
+      "enum": [
+        "ELIGIBLE",
+        "LIMITED",
+        "INELIGIBLE",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "min_volume": {
+      "type": "number"
+    },
+    "max_volume": {
+      "type": "number"
+    },
+    "volume_currency": {
+      "type": "string"
+    },
+    "business_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mcc_restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "country_of_incorporation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "country_of_operation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "other_constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "eligibility_key",
+    "provider_product_id",
+    "market",
+    "segment",
+    "eligibility_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
