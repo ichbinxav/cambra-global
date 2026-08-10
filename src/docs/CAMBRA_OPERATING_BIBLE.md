@@ -104,7 +104,7 @@ Operational incidents retain symptoms, root cause where known, actions, recovery
 
 ## 16. Production claims and unresolved gates
 
-A local/Base44 release check is not the same as external GitHub Actions CI evidence. Stripe/live integration claims, Recover Economics V2 legal wording, P12 privacy/retention, provider monetization legal/tax activation, real-world pilot validation and real routing activation remain governed by their explicit release/manual gates. P18 documentation must preserve these distinctions.
+A local/Base44 release check is not the same as external GitHub Actions CI evidence. GitHub Actions CI proves technical source/evidence integrity; it may be green while `productionSealEligible=false`. Stripe/live integration claims, Recover Economics V2 legal wording, P12 privacy/retention, provider monetization legal/tax activation, real-world pilot validation and real routing activation remain retained in `manualRequirements` and continue to block the corresponding production-readiness claim or activation even when technical CI is green. `blockingManualRequirements` is reserved for technical release prerequisites that CI itself must fail on. P18 documentation must preserve these distinctions.
 
 
 ## Europe Market Context Foundation (P1)
