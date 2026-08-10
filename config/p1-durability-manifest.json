@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.80.1 — Global Technical Hygiene Seal (durability manifest)",
-  "generatedAt": "2026-08-10T13:15:51.669Z",
-  "packageVersion": "0.80.1",
+  "release": "CAMBRA v0.80.2 — Privacy-Safe Intelligence & Anonymization Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-10T15:36:20.485Z",
+  "packageVersion": "0.80.2",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -332,8 +332,8 @@
     },
     {
       "path": "base44/functions/providerContactResolver/entry.ts",
-      "sha256": "742b919024cfbce31765743005967edd767f24d6d30b34260268004d86a2ebc7",
-      "bytes": 6785
+      "sha256": "238d2b69b638207950a69fa85571b44a62dbd1ad5db3c2aacd09dc66218bf246",
+      "bytes": 8044
     },
     {
       "path": "base44/functions/providerMonitorAgent/entry.ts",
@@ -397,8 +397,8 @@
     },
     {
       "path": "base44/functions/startProviderNegotiation/entry.ts",
-      "sha256": "b93eb004d88668405372ddc1058000f1792b3e29ea635cafbdb9a5118d47b53e",
-      "bytes": 7610
+      "sha256": "ed644f33246eb88ef96bef77fbb5daff9bcea55bbb43d2567ed3084c02543702",
+      "bytes": 7804
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "796d84847e0de8cb346cae787e1164f2917d39c700929b7cac245b653b3f7cd8",
+      "sha256": "eb03a1d18c1293ceca6f5d55fa5ac12a19a0405fc000150d6e74f00e9a07cc23",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "f62004a30d062c2b1c306fa8bf6c988c8cdb993d445c7c939ef92cff1ec8dc6c",
-      "bytes": 5874
+      "sha256": "9fda4006b91292a3d844c57bdbfa59e8a4c640560c370a30eec81ab07d2a7008",
+      "bytes": 5907
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "be8848cf41cc5e0f1c03cc81005ecd9dccd96b5cf1bede4e3929668349358a15",
-      "bytes": 7808
+      "sha256": "a98125422b9f56a1faf0c2d08db3758c46e262198f514b53fb99ca68d3211c84",
+      "bytes": 8015
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -627,13 +627,13 @@
     },
     {
       "path": "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md",
-      "sha256": "27598a892ae7671f355e1eefc6ad44174040e57e908b44f7d5041601f207026b",
-      "bytes": 6377
+      "sha256": "13af9dd234af4953e92a10c86c476d2e92dbcbaeea55e71210acb5d28e482274",
+      "bytes": 7168
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "067931c8422385707d941b77736a5879ef7cd2e834f796dc5956f9b931242716",
-      "bytes": 43200
+      "sha256": "7b41ed6590fc76183fcb506dd53c87263ba22460751588f8179860f8c8b454cf",
+      "bytes": 44652
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "7759ebacc05a7e0de5ead9ea5184a9d0bc1fd57b4978f588565c38a819eec18c",
-      "bytes": 9964
+      "sha256": "33b4ed65fbf5d3ecff3f61cd93730e4ed548b3c3f988264f62f227dba6739594",
+      "bytes": 10126
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",

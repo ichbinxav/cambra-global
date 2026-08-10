@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.80.1 — Global Technical Hygiene Seal",
-  "version": "0.80.1",
-  "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
+  "releaseName": "CAMBRA v0.80.2 — Privacy-Safe Intelligence & Anonymization Technical Seal",
+  "version": "0.80.2",
+  "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1204,
+  "sourceTreeFileCount": 1218,
   "sourceArchiveShaExternal": null,
-  "gitSha": "2bec6adeb9f1560d97dc77af31891101d35cbedb",
+  "gitSha": "50951a48ded3ac11456d474c696f9ec5719f88a5",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "dd75c79cff13ea1e46c3bea9d19e09774fd6ce7349532cb5a0a489af18e32bac",
-  "documentationManifestSha": "633698f8e58adeb7f59e8364830e400368f2edbcd4b2c4e49567f7eda35dbebd",
+  "durabilityManifestSha": "24e81f92633cef9f43b8128356106a123b7105ab3e3c2a30c5b0319c0340941c",
+  "documentationManifestSha": "8c271cc284c5f27eb7cd064267f4329ae9b29074145450a531e5121a06ed01f3",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -30,7 +30,7 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "796d84847e0de8cb346cae787e1164f2917d39c700929b7cac245b653b3f7cd8",
+  "lockfileSha": "eb03a1d18c1293ceca6f5d55fa5ac12a19a0405fc000150d6e74f00e9a07cc23",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
@@ -44,61 +44,61 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
-    "startedAt": "2026-08-10T13:16:19.064Z",
-    "completedAt": "2026-08-10T13:16:34.088Z",
+    "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
+    "startedAt": "2026-08-10T15:36:43.330Z",
+    "completedAt": "2026-08-10T15:36:55.597Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 125,
-    "passed": 1797,
+    "testFiles": 127,
+    "passed": 1808,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
-    "startedAt": "2026-08-10T13:16:34.644Z",
-    "completedAt": "2026-08-10T13:16:49.015Z",
+    "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
+    "startedAt": "2026-08-10T15:36:55.989Z",
+    "completedAt": "2026-08-10T15:37:07.655Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "538e68be8629847da8c785d152814c23b86f8744d308c9e04dddfef72a5f5328",
+    "distHash": "87338b2ba92e07da3b72b4405625a07a2396d0c7c9bd19f439218bb147d1f56b",
     "artifactCount": 72
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
-    "startedAt": "2026-08-10T13:15:53.585Z",
-    "completedAt": "2026-08-10T13:16:02.564Z",
+    "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
+    "startedAt": "2026-08-10T15:36:22.184Z",
+    "completedAt": "2026-08-10T15:36:30.344Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
-    "startedAt": "2026-08-10T13:16:03.058Z",
-    "completedAt": "2026-08-10T13:16:06.280Z",
+    "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
+    "startedAt": "2026-08-10T15:36:30.738Z",
+    "completedAt": "2026-08-10T15:36:33.568Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "1be66af895a54ff8bf4e1d8538b6ad255986672b18e10d5a7f6ccf3e4f2863b7",
-    "startedAt": "2026-08-10T13:16:06.785Z",
-    "completedAt": "2026-08-10T13:16:18.580Z",
+    "sourceTreeHash": "9a226350e1a294320e3128fbd266f32db4ccb38c586c7ca9341b900ef1207f8e",
+    "startedAt": "2026-08-10T15:36:33.958Z",
+    "completedAt": "2026-08-10T15:36:42.948Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "538e68be8629847da8c785d152814c23b86f8744d308c9e04dddfef72a5f5328"
+    "dist": "87338b2ba92e07da3b72b4405625a07a2396d0c7c9bd19f439218bb147d1f56b"
   },
   "manualRequirements": [
     "LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled",
-    "LEGAL/PRIVACY REVIEW REQUIRED: approve P12 retention/deletion, lawful basis and cross-tenant aggregation/anonymization policy before relying on derived intelligence retention beyond tenant deletion or widening benchmark use",
+    "LEGAL/PRIVACY RUNTIME REVIEW: CAMBRA now enforces a separate k>=10, identifier-free retained-intelligence layer; before materially widening cross-tenant benchmark use or relying on indefinite post-deletion retention at scale, re-assess lawful basis, residual re-identification risk and retention policy against actual production cohorts. Pseudonymized BenchmarkContribution data remains subject to normal deletion/retention rules.",
     "ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.",
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
     "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T13:16:50.621Z"
+  "generatedAt": "2026-08-10T15:37:08.634Z"
 }
