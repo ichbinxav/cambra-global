@@ -260,3 +260,15 @@ P14 private rates are distinct from public ProviderPricingVersion and are consum
 | providerEconomicsIntelligenceWorker | C/internal · daily | Agreements, ledger, conflicts → MoatMetric/KnowledgeGap | Confidential provider-compensation intelligence; cannot influence merchant ranking. |
 
 P15 uses a strict recommendation firewall: merchant suitability/ranking is computed without provider compensation. Provider economics are optimized only after merchant terms are established. Merchant-side Invoice/PaymentEvent and provider-side ProviderRevenueLedger/ProviderRevenueInvoice are separate financial ledgers and are added only for total CAMBRA economics.
+
+## P16 — Founder OS & Autonomous Company Command Center (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| getFounderOSCommandCenter | B/admin | Existing domain truth → Founder OS snapshot | Read-only canonical executive cockpit. Financial values remain ledger-derived; includes confidence/freshness and founder attention. |
+| founderOSQuery | B/admin | Cross-domain governed read projections | Company summary, WHY, search, Merchant/Provider 360, relationship graph, war room and decision evidence. Does not perform external actions or mutate financial truth. |
+| founderOSCommand | B/admin | Approval, FounderCommandAudit, StrategyDirective + existing domain resolvers | Governed `DO IT` gateway: preview → confirmation where required → canonical resolver → audit. Material commercial/aggregate approvals reuse `resolveCommercialApproval`; unknown L4 is not raw-executed. |
+| founderOSSimulation | B/admin | FounderSimulation + measured Founder OS inputs | Simulation only (`production_effect=false`). Missing ARPA/LTV/capacity remains unknown rather than invented. |
+| founderChiefOfStaff | B/admin | Canonical Founder OS snapshot + StrategyDirective | AI narrative/priority layer. Prompt forbids invented metrics/trends/targets/forecasts; evidence snapshot remains authoritative. |
+
+P16 is deliberately a governance layer above autonomous operations. It does not give AI agents approve/sign/spend/charge authority, does not create a second financial ledger and does not turn simulation into production action.
