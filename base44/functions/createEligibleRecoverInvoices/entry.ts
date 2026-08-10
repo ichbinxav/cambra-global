@@ -30,6 +30,7 @@ import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecov
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import { appendPaymentEventOnce, claimRecoverInvoiceDraft, recoverExecutionKey } from '../../shared/economicExecution.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 
 const BATCH = 5;
 
@@ -99,6 +100,7 @@ export default async function (req: Request): Promise<Response> {
         // ── PHASE 1 — load context (reads only) ─────────────────────────
         const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []))?.[0];
         const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
+        if(brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand,brand_id:brand.id,capability:'BILL',actor_type:'recover_billing'})}catch(e:any){outcome.ok=false;outcome.error='market_capability_denied:BILL';outcome.decision=e?.decision||null;continue}}
         const mandate = activation ? await resolveRecoverEconomicMandate(svc, activation) : null;
         // P5: exact report baseline, authoritative read. A persistence outage or
         // missing row must never become baselineLocked=false by a swallowed read.

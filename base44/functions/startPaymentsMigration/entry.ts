@@ -6,6 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
@@ -45,6 +46,8 @@ export default async function (req: Request): Promise<Response> {
     const isOwner = !!me && String(activation.user_email || '').toLowerCase() === String(me.email || '').toLowerCase();
     if (!gate.isInternal && !isOwner && me?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (activation.vertical !== 'payments') return Response.json({ error: 'payments_only' }, { status: 409 });
+    const marketBrand=await svc.entities.Brand.get(String(activation.brand_id||'')).catch(()=>null);
+    if(marketBrand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand:marketBrand,brand_id:marketBrand.id,capability:'MIGRATE',actor_type:'recover_migration'})}catch(e:any){return Response.json({error:'market_capability_denied:MIGRATE',decision:e?.decision||null},{status:409})}}
     if (!['authorized','migrating','live','monetizing'].includes(activation.status)) {
       return Response.json({ error: 'activation_not_ready', status: activation.status }, { status: 409 });
     }
