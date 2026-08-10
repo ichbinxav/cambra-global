@@ -58,6 +58,9 @@ if (fs.existsSync('src/docs/P13_SHADOW_ROUTING_ARCHITECTURE.md')) {
 if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
   manualRequirements.push(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
 }
+if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
+  manualRequirements.push('REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.');
+}
 for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
   const st = evidenceStatus(ev, tree.hash);
   if (st !== "valid") manualRequirements.push(`evidence ${name}: ${st} (run the *:evidence command)`);

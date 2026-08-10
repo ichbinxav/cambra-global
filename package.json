@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.73.0",
-  "releaseName": "CAMBRA v0.73.0 — P13 Payment Routing Intelligence & Shadow Orchestration",
+  "version": "0.75.0",
+  "releaseName": "CAMBRA v0.75.0 — P14 Aggregate & Final Autonomous Revenue Engine Technical Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

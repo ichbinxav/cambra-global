@@ -9,4 +9,5 @@ describe("release manual gates",()=>{
   expect(src).toContain('integrationStatus?.stripe !== "live_verified"');
   expect(src).toContain("PRODUCTION VALIDATION REQUIRED: Stripe live integration status");
  });
+ it("keeps real-world autonomous revenue validation behind genuine merchant pilots",()=>expect(src).toContain("REAL-WORLD PILOT VALIDATION REQUIRED"));
 });
