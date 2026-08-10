@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.80.2 — Privacy-Safe Intelligence & Anonymization Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T15:36:20.485Z",
-  "packageVersion": "0.80.2",
+  "release": "CAMBRA v0.80.3 — Global Platform Audit & Production Hardening Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-10T17:19:36.202Z",
+  "packageVersion": "0.80.3",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "eb03a1d18c1293ceca6f5d55fa5ac12a19a0405fc000150d6e74f00e9a07cc23",
+      "sha256": "91535852f5ea46cb79efc2af488c51bd82a1f138c9bdf7ed87220564d0b3e9ed",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "9fda4006b91292a3d844c57bdbfa59e8a4c640560c370a30eec81ab07d2a7008",
-      "bytes": 5907
+      "sha256": "03801b46392baacb5a2cedab1bb28fb90fba9423369cc54eea7f168e8cb203ab",
+      "bytes": 5904
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "a98125422b9f56a1faf0c2d08db3758c46e262198f514b53fb99ca68d3211c84",
-      "bytes": 8015
+      "sha256": "a5e647e3eac4ca315a9dfd2db6492d71d8ad4911c0ea73280dbfe8d2ace79bee",
+      "bytes": 8738
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
