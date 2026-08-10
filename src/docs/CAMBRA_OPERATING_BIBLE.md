@@ -10,6 +10,22 @@ Operating loop:
 
 DISCOVER → ACQUIRE → QUALIFY → ONBOARD → CONNECT/UPLOAD DATA → ANALYZE → IDENTIFY SAVINGS → RECOVER → AGGREGATE → NEGOTIATE → APPROVAL WHEN MATERIAL → MIGRATE → VERIFY → BILL → COLLECT → RETAIN/EXPAND → LEARN.
 
+### Product surface — IMPLEMENTED, payments-only
+
+The live merchant surface centers on onboarding/brand state, Connect Tools/uploads, Payments Analyzer, Payments Results, Dashboard, reports, account/billing records, invoices, vault/referrals and Recover acceptance/migration flows. Historical multi-vertical routes may remain dormant/redirected in source; they are not production-enabled product scope. Analyzer output is evidence/confidence bounded and must not be confused with verified realized savings.
+
+### Acquisition and CRM — IMPLEMENTED with policy gates
+
+Lead discovery/enrichment/scoring, CRM synchronization, outbound acquisition, reply handling, follow-up, meeting coordination and acquisition learning exist as separate functions/agents. Routine external communication is allowed only inside active policy/sending controls and deterministic suppression/quality/deliverability gates. Opt-out stops the thread; material commitments escalate. P18 SAFE MODE sits above the sending boundary and acquisition controls, so containment does not depend on an LLM obeying a prompt.
+
+### Merchant operations — IMPLEMENTED
+
+After Recover acceptance, routine provider contact, negotiation, documentation, payments-migration tasking, verification, billing/reconciliation and customer-success/expansion loops are designed to be operated by CAMBRA under explicit authority. The merchant/founder re-enter only for credentials, missing evidence, approvals, legal/material commitments, blocked exceptions or other authority-required states.
+
+### Intelligence / Knowledge Graph / Moat — IMPLEMENTED with governed freshness
+
+Provider pricing/evidence, temporal observations, knowledge claims/conflicts, snapshots, outcomes, gaps and moat metrics form the proprietary intelligence layer. Freshness/source/confidence are preserved where applicable. Stale or contradictory commercial truth is surfaced rather than silently used. Cross-tenant/retention/privacy policy remains subject to the explicit P12 manual/legal gates recorded by release closure.
+
 ## 2. Founder OS — IMPLEMENTED
 
 `/admin` is the Founder OS. Deterministic domain systems provide metrics and records; AI Chief of Staff explains and prioritizes but cannot become financial truth. Ask CAMBRA exposes governed read, WHY, simulation and command paths. Natural language never bypasses domain policy or approval gates.
@@ -42,7 +58,7 @@ Recover issuance requires an eligible verified report plus contract, tax, econom
 
 The source of truth for agent authority is `base44/shared/agentAuthority.ts`, plus deterministic gates in each domain. Agents may receive read/write/send/negotiate/execute capability where explicitly configured. No registered agent receives CAN_APPROVE, CAN_SIGN, CAN_SPEND or CAN_CHARGE.
 
-UI labels or prompts cannot widen authority. Material commitments remain governed by Approval/domain functions.
+UI labels or prompts cannot widen authority. Material commitments remain governed by Approval/domain functions. The source-derived catalog `src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md` enumerates the 34 agents currently declared in `agentRegistry.js` and the explicit authority rows from `agentAuthority.ts`; missing exact authority mappings are labelled unverified rather than guessed. Deterministic/scheduled backend workers are separately censused in `PRODUCTION_FUNCTIONS.md`.
 
 ## 8. Autonomous Maintenance — IMPLEMENTED
 
@@ -76,13 +92,15 @@ The practical manual is `CAMBRA_FOUNDER_HANDBOOK.md`. Admin screens expose conte
 
 ## 14. Living Documentation Engine — IMPLEMENTED
 
-`documentationRegistry.ts` is the structured runtime documentation source. `documentationMaintenanceWorker` versions it into DocumentationObject/DocumentationVersion and publishes Documentation Health. The release documentation manifest hashes the implementation source paths and canonical docs. If a watched implementation source changes without documentation closure, `npm run documentation:check` fails.
+`documentationRegistry.ts` is the structured runtime documentation source. `documentationMaintenanceWorker` versions it into DocumentationObject/DocumentationVersion and publishes Documentation Health. P17 Maintenance invokes the worker as part of its sweep, while the worker also declares its own maintenance cadence. The release documentation manifest hashes the implementation source paths and canonical docs. If a watched implementation source changes without documentation closure, `npm run documentation:check` fails.
+
+Real resolved critical incidents and observed remediation outcomes create deduplicated `DocumentationChangeProposal` records instead of allowing an LLM to silently rewrite canonical operating truth. Those proposals point to troubleshooting/incident/Bible surfaces that may need updating. Source-controlled documentation must still be verified against implementation before the proposal is considered closed.
 
 Material release closure therefore includes documentation drift validation. Historical documentation is retained through DocumentationVersion and repository history rather than overwritten as if behavior had never changed.
 
 ## 15. Incident learning — IMPLEMENTED
 
-Operational incidents retain symptoms, root cause where known, actions, recovery and prevention. P17 remediation knowledge learns from both verified successes and failed attempts. P18 troubleshooting/incident playbooks are updated through source-controlled documentation closure after material behavior changes or incidents.
+Operational incidents retain symptoms, root cause where known, actions, recovery and prevention. P17 remediation knowledge learns from both verified successes and failed attempts. P18 converts critical resolved incidents/remediation learning into Documentation Change Proposals; troubleshooting/incident playbooks are then updated through source-controlled documentation closure after verification against real behavior.
 
 ## 16. Production claims and unresolved gates
 
