@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 // Sends the monthly savings summary email to a user (or to all opted-in users when called from scheduler).
 // Payload:
@@ -37,6 +38,9 @@ Deno.serve(async (req) => {
         return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
       }
     }
+
+    const emergency = await emergencyState(base44.asServiceRole);
+    if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
 
     // Find target users
     let targets = [];
