@@ -50,7 +50,13 @@ The old benchmark loop (`BenchmarkContribution` → `BenchmarkCohort` / `Benchma
 
 ## Legal / privacy boundary
 
-P12 technically separates tenant-specific/PII-bearing evidence from global/aggregate intelligence, excludes demo data at canonical ingestion boundaries, and suppresses small cohorts. This does **not** itself establish a legal basis for retaining derived data after deletion or for every cross-tenant benchmark use. Retention, deletion/anonymization rules, contract wording and lawful-basis decisions require legal/privacy review before any broader production policy is activated.
+P12 separates three layers deliberately:
+
+1. **Tenant operational data** — identifiable merchant records needed to operate CAMBRA. Normal retention/deletion, tenant isolation and purpose limitation apply.
+2. **Pseudonymized benchmark contributions** — `BenchmarkContribution.source_anon_id = SHA-256(secret salt + brand_id)`. These are explicitly **not anonymous under GDPR while the salt/mapping capability exists**, remain admin/service internal, and are never treated as indefinitely retainable anonymous data.
+3. **Privacy-safe retained intelligence** — `privacySafeIntelligenceWorker` produces `AnonymizedIntelligenceAggregate` only when at least 10 distinct merchants contribute. Output is coarsened/rounded, contains no merchant ID, stable pseudonym, email, document/thread/source ID or reidentification mapping, and is checked by a forbidden-identifier policy before write. This layer is the only cross-tenant derived intelligence CAMBRA is designed to retain after merchant-level deletion where legally permitted.
+
+The privacy policy reflects this distinction: merely pseudonymized data does not become anonymous by naming it so. Aggregates that do not pass the minimum-diversity/privacy gate are suppressed rather than retained as anonymous intelligence.
 
 ## Deliberately deferred
 
