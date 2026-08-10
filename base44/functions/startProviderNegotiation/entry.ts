@@ -2,9 +2,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { policyIsActive, normalizeEmail } from '../../shared/commercialAutonomy.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 Deno.serve(async(req)=>{try{
- const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;
+ const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;const emergency=await emergencyState(svc);if(emergency.safe_mode||emergency.negotiations_paused)return Response.json({ok:false,error:'emergency_control_paused:negotiations',safe_mode:emergency.safe_mode,reason:emergency.reason||null},{status:409});
  const recoverId=String(body?.recover_id||'');if(!recoverId)return Response.json({ok:false,error:'recover_id_required'},{status:400});
  const activation=await svc.entities.DealActivation.get(recoverId).catch(()=>null);if(!activation||activation.vertical!=='payments')return Response.json({ok:false,error:'payments_recover_not_found'},{status:404});
  if(!['authorized','migrating','live','monetizing'].includes(String(activation.status)))return Response.json({ok:false,error:'recover_not_authorized'},{status:409});
