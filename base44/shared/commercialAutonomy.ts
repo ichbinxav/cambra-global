@@ -21,7 +21,7 @@ export const L4_CLASSIFICATIONS = new Set([
 ]);
 
 export const SAFE_ROUTINE_CLASSIFICATIONS = new Set([
-  'interested', 'question', 'objection', 'wrong_person', 'referral', 'meeting', 'ooo',
+  'interested', 'question', 'objection', 'wrong_person', 'referral', 'meeting', 'ooo', 'follow_up',
   'acknowledgement', 'information_request', 'document_request', 'clarification',
   'technical_question', 'implementation_question', 'pricing_request'
 ]);
