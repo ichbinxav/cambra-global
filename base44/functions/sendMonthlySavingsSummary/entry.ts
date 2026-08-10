@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 
@@ -10,9 +10,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    let requestedEmail = null;
+    let requestedEmail: string | null = null;
     let isAdminCaller = false;
-    let callerEmail = null;
+    let callerEmail: string | null = null;
     try {
       const caller = await base44.auth.me();
       if (caller) {
@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
       }
     } catch {}
 
-    let body = {};
+    let body: any = {};
     try { body = await req.json(); } catch {}
     requestedEmail = body?.userEmail || null;
 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
 
     // Find target users
-    let targets = [];
+    let targets: any[] = [];
     if (requestedEmail) {
       // For single-user (test) sends, use the authenticated caller directly to avoid
       // depending on filter-by-email reliability.
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       return Response.json({ sent: 0, message: 'No recipients' });
     }
 
-    const results = [];
+    const results: any[] = [];
     for (const u of targets) {
       try {
         // A2 migration (2026-07-12) — resolve the user's brand via
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
         const monthly = Math.round(total / 12);
 
         // Cumulative estimate (sum of all identified savings monthly run-rate × months active)
-        const sorted = [...analyses].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        const sorted = [...analyses].sort((a, b) => new Date(a.created_date).getTime() - new Date(b.created_date).getTime());
         const firstDate = new Date(sorted[0].created_date);
         const monthsActive = Math.max(
           1,
