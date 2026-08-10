@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -22,6 +23,8 @@ Deno.serve(async (req) => {
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
+    const emergency = await emergencyState(svc);
+    if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
 
     const threadId = String(body?.thread_id || '');
     const action = String(body?.action || 'routine_reply');
