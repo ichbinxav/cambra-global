@@ -272,3 +272,13 @@ P15 uses a strict recommendation firewall: merchant suitability/ranking is compu
 | founderChiefOfStaff | B/admin | Canonical Founder OS snapshot + StrategyDirective | AI narrative/priority layer. Prompt forbids invented metrics/trends/targets/forecasts; evidence snapshot remains authoritative. |
 
 P16 is deliberately a governance layer above autonomous operations. It does not give AI agents approve/sign/spend/charge authority, does not create a second financial ledger and does not turn simulation into production action.
+
+## P17 — Autonomous Maintenance & Self-Healing Engine (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| maintenanceEngine | C/internal · 10 min + B/admin manual | Integration, WebhookDeadLetter, AgentTask, ProviderPricingVersion, Invoice, ProviderRevenueStatement, SecurityAudit → MaintenanceRun, AutonomyIncident, RemediationKnowledge | Unified detect → diagnose → allowlisted reversible repair → verify → log → learn loop. Security/contracts/permissions/money movement/code deployment never auto-execute. |
+| getMaintenanceCenter | B/admin | MaintenanceRun + active incidents + integration/agent/provider/security health | Founder OS evidence-backed Maintenance Center. Composite health is advisory; financial ledgers remain authoritative. |
+| dependencySecurityWorker | C/internal · 6h | Registered DeveloperWorkspace repositories + GitHub Dependabot → AutonomyIncident | Continuous dependency alert watch where GitHub/Dependabot coverage exists. Findings are human-required; no dependency patch is auto-merged. |
+
+P17 reuses the existing OAuth refresh, webhook DLQ retry, Recover billing reconciliation, Provider Intelligence maintenance and Developer Migration/Signal machinery. A repair is never marked resolved until its post-action verification passes; failed recovery is escalated and retained as negative remediation evidence.
