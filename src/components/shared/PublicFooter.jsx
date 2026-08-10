@@ -66,7 +66,7 @@ export default function PublicFooter() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            CAMBRA GLOBAL SASU · SIREN 105 452 916 · 42 rue Vivienne, 75002 Paris, France · support@cambra.global
+            CAMBRA GLOBAL SASU · SIREN 105 452 916 · 47 rue Vivienne, 75002 Paris, France · support@cambra.global
             {" · "}
             {/* LEGAL-2 — GDPR access/erasure (ARCO) entry point. Deliberately
                 discreet: same size/colour as the legal line, no emphasis. */}
