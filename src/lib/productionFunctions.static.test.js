@@ -25,6 +25,7 @@ const MANIFEST = [
   // P14 Aggregate + Final Autonomous Revenue Engine technical seal (2026-08-10).
   "aggregateAgreementWorker", "aggregateDemandWorker", "aggregateEligibilityWorker", "aggregateProcurementWorker", "collectiveNegotiationAgent", "getAggregateCommandCenter",
   "getFinancialControlTower", "getFounderControlCenter", "operatingHealthWorker", "realWorldValidationWorker", "revenueGoldenPathSelfTest", "revenueLifecycleWorker",
+  "salesPipelineWorker", "collectionOperationsWorker", "agentPerformanceWorker", "executiveDigestWorker", "customerSuccessWorker", "unitEconomicsWorker", "developerSignalWorker",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",

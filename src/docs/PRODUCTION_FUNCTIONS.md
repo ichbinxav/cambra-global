@@ -231,3 +231,11 @@ _tenantGuard · createSelfTestBrand · phase2CleanupLegacyFields (migración one
 | getFounderControlCenter | B/admin | Approval, incidents, meetings, health, finance, gaps | High-value founder governance projection; routine operations remain autonomous/observable. |
 
 P14 private rates are distinct from public ProviderPricingVersion and are consumed by Shadow Routing only when the merchant has an active `eligible` MerchantRateEligibility. Aggregate proposal approval and exact contract execution are separate L4 steps.
+
+| salesPipelineWorker | C/internal · hourly | OutboundLead, AcquisitionAttribution, RevenueLifecycle, AggregatePool | Revenue-stage/priority projection; unknown monetary value remains unknown. |
+| collectionOperationsWorker | C/internal · daily | Invoice, PaymentEvent/reconciliation, AutonomyIncident, CommunicationThread | Reconciles first, reminds safely, escalates disputes; never performs a manual PaymentIntent retry. |
+| agentPerformanceWorker | C/internal · daily | AgentTask, Approval, AgentPerformanceMetric | Measures success/escalation/error/override; cannot widen authority and does not invent revenue attribution. |
+| executiveDigestWorker | C/internal · daily | Cross-domain aggregates → ExecutiveDigest | Deterministic founder digest; financial numbers come from authoritative records. |
+| customerSuccessWorker | C/internal · daily | Integrations, incidents, invoices, RoutingOpportunity, MerchantRateEligibility | Advisory retention/expansion signals; merchant communication remains policy-gated. |
+| unitEconomicsWorker | C/internal · daily | PilotMerchantValidation, RevenueLifecycle, CustomerSuccessSignal | Unknown CAC/cost/LTV inputs remain null and explicit in `missing_inputs`. |
+| developerSignalWorker | C/internal · 2h | Critical AutonomyIncident → AgentTask | Investigation signal only; patch/apply/merge/cutover remain DeveloperMigrationEngine approval-gated. |
