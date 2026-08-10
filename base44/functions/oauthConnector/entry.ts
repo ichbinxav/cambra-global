@@ -40,6 +40,7 @@
  */
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { isInternalCaller } from "../../shared/internalGate.ts";
 
 // ─── REGISTRY (keep in sync with functions/dataSyncAgent.js) ───────────────
 // Each entry declares HOW to authenticate (`auth_method`) and HOW to read data
@@ -1541,11 +1542,14 @@ async function modeRefresh(base44, user, params) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-
     const body = await req.json().catch(() => ({}));
     const mode = body?.mode;
+    // P17 — scheduled maintenance may reuse the existing refresh implementation
+    // only after proving internal identity with the canonical secret gate.
+    // No other OAuth mode receives internal-only authority.
+    let user = await base44.auth.me().catch(() => null);
+    if (!user && mode === "refresh" && isInternalCaller(req, body)) user = { role: "admin", email: "system:maintenance" };
+    if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
     if (mode === "start")           return await modeStart(base44, user, body);
     if (mode === "callback")        return await modeCallback(base44, user, body);
