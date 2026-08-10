@@ -29,6 +29,7 @@ import { monthBounds } from '../../shared/billingFee.ts';
 import { prepareEligibleRecoverInvoice } from '../../shared/prepareEligibleRecoverInvoice.ts';
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import { appendPaymentEventOnce, claimRecoverInvoiceDraft, recoverExecutionKey } from '../../shared/economicExecution.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 const BATCH = 5;
 
@@ -54,6 +55,8 @@ export default async function (req: Request): Promise<Response> {
     if (!gate.ok) return gate.response;
 
     const svc = base44.asServiceRole;
+    const emergency = await emergencyState(svc);
+    if (emergency.safe_mode || emergency.billing_issuance_paused) return Response.json({ ok:false, error:'emergency_control_paused:billing_issuance', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
     const mode = resolveBillingMode();
     const now = () => new Date().toISOString();
 
