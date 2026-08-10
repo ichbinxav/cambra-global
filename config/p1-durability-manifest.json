@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.80.3 — Global Platform Audit & Production Hardening Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T17:20:02.100Z",
-  "packageVersion": "0.80.3",
+  "release": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation (durability manifest)",
+  "generatedAt": "2026-08-10T17:51:34.019Z",
+  "packageVersion": "0.81.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -47,8 +47,8 @@
     },
     {
       "path": "base44/entities/IntelligenceEvidence.jsonc",
-      "sha256": "8c31a1c5944af7bb0443b060a0d80b9c17e02e9eabd0ca29778022bdb409aff8",
-      "bytes": 2361
+      "sha256": "a8e24357b588a0ec2b3ffe26e2c2ef0d9825924eeed99f19cefac3b5a615d9ad",
+      "bytes": 4039
     },
     {
       "path": "base44/entities/IntelligenceObservation.jsonc",
@@ -142,8 +142,8 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "02d3dff47f6fd34b48f4fdbf27eea2f027e376e43d71bf48d2ef415b6e450ba4",
-      "bytes": 15704
+      "sha256": "882672fc89c5136338a9c4f4c646da631bf27a5f62332bd96424c69f6c4200db",
+      "bytes": 16116
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
@@ -172,8 +172,8 @@
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
-      "sha256": "34265e928e8c80012d31d1d054095978e9971526f0dd086b4cce3861bbc53da4",
-      "bytes": 25878
+      "sha256": "dad8f88249b16f32db610b50ce53a79bb4fe571cfd2fde6ad8d88e3c476fa9be",
+      "bytes": 26260
     },
     {
       "path": "base44/functions/createPaymentLink/entry.ts",
@@ -392,18 +392,18 @@
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
-      "sha256": "54b5f35dae613edb16aefcd608ba09a96b34fc219a54ef6758c62fb98ebf40b8",
-      "bytes": 11236
+      "sha256": "f7ea0c6ecdd375d25a51c9fcddb197616ec39a120e85b440d08dbd1f1aa5afd6",
+      "bytes": 11742
     },
     {
       "path": "base44/functions/startProviderNegotiation/entry.ts",
-      "sha256": "ed644f33246eb88ef96bef77fbb5daff9bcea55bbb43d2567ed3084c02543702",
-      "bytes": 7804
+      "sha256": "995a2d138cc99a27fd1845bbbdedb98a9fadd4640ea1c03fb5fa0532745bcbdd",
+      "bytes": 8416
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
-      "sha256": "8d308921f8dfae0e9c5b85436918801fb9f0a3be76c456da66e7482e13133c4a",
-      "bytes": 8344
+      "sha256": "212d7d48ad23b42bfd53d20856595c678ed2894032d317f896f701c07cf328ad",
+      "bytes": 8732
     },
     {
       "path": "base44/functions/stripeBillingWebhook/entry.ts",
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "91535852f5ea46cb79efc2af488c51bd82a1f138c9bdf7ed87220564d0b3e9ed",
+      "sha256": "fba58146a5b8aef3e0644ef2ac01457e15ac8f33f9b74eafbe19e6c71a85d1cf",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "03801b46392baacb5a2cedab1bb28fb90fba9423369cc54eea7f168e8cb203ab",
-      "bytes": 5904
+      "sha256": "7480f98f8b36dd4b0fbdb9e6241cc2f5167bce7d426a308166f56babc484d578",
+      "bytes": 6058
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -607,8 +607,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "ba3672f204ee11f8a7f508e46d0ee9fdcb17ff118f55438040efc9493a640d8f",
-      "bytes": 23371
+      "sha256": "af18d672afdf8025a59d1778b3350ef2eedecc521c106deba27da5fa2c2a974a",
+      "bytes": 23525
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "7b41ed6590fc76183fcb506dd53c87263ba22460751588f8179860f8c8b454cf",
-      "bytes": 44652
+      "sha256": "c7f49d50d85e7e8897fdbe536a74c07e1d7048cb6da7a9f47c6161b35e830f55",
+      "bytes": 45660
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "33b4ed65fbf5d3ecff3f61cd93730e4ed548b3c3f988264f62f227dba6739594",
-      "bytes": 10126
+      "sha256": "f0a54d53bc97c3eb211b44a4b1dfb6ebd6bd085080701add927b1bd11f6cf761",
+      "bytes": 10364
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
@@ -817,8 +817,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "2e830370388b130fb1bd08b204c79324af063eee81ec44a426cf61382c5682c5",
-      "bytes": 15600
+      "sha256": "929f376eda67589fe54f77b0988c153b83758877e27e7ca7f225510c323c11ea",
+      "bytes": 15739
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",

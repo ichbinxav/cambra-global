@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.80.3 — Global Platform Audit & Production Hardening Technical Seal",
-  "version": "0.80.3",
-  "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
+  "releaseName": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation",
+  "version": "0.81.0",
+  "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1219,
+  "sourceTreeFileCount": 1248,
   "sourceArchiveShaExternal": null,
-  "gitSha": "0242e7336aa278654a7840a33c6ab334d7f008a2",
+  "gitSha": "7f58add6bc595973865d44f7984c255ea2988f11",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "daf4bc9660ca1bf95129bef2f06ec030b2a090f3695e8a6cc0d4d42539c54a59",
-  "documentationManifestSha": "03ceeaa4b7942de38a10fc2078bcba9b1db3cb83c2295bf2a48e20ce411d9231",
+  "durabilityManifestSha": "c5efade6443d2e7b33d9638e2c3077ece5c083705557d6664850a7bd4b224f4a",
+  "documentationManifestSha": "1c3f07bf1754e15a4ec03604bf967abc33efa7e7a1f1a8abbe468b4324288383",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -30,7 +30,7 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "91535852f5ea46cb79efc2af488c51bd82a1f138c9bdf7ed87220564d0b3e9ed",
+  "lockfileSha": "fba58146a5b8aef3e0644ef2ac01457e15ac8f33f9b74eafbe19e6c71a85d1cf",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
@@ -44,53 +44,53 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
-    "startedAt": "2026-08-10T17:20:31.302Z",
-    "completedAt": "2026-08-10T17:20:47.387Z",
+    "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
+    "startedAt": "2026-08-10T17:51:58.832Z",
+    "completedAt": "2026-08-10T17:52:12.506Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 128,
-    "passed": 1813,
+    "testFiles": 129,
+    "passed": 1864,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
-    "startedAt": "2026-08-10T17:20:48.008Z",
-    "completedAt": "2026-08-10T17:21:06.339Z",
+    "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
+    "startedAt": "2026-08-10T17:52:13.078Z",
+    "completedAt": "2026-08-10T17:52:28.716Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "c305090aa2638457913428a30dd2090bd78058ca8e7414e7c0859bfb5b5a7ce0",
-    "artifactCount": 72
+    "distHash": "9018a4c37cecb6d5c1fa8aebf80d7da6eaba7318d145f22bff340e6eec3e1286",
+    "artifactCount": 73
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
-    "startedAt": "2026-08-10T17:20:04.314Z",
-    "completedAt": "2026-08-10T17:20:14.675Z",
+    "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
+    "startedAt": "2026-08-10T17:51:36.009Z",
+    "completedAt": "2026-08-10T17:51:44.897Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
-    "startedAt": "2026-08-10T17:20:15.303Z",
-    "completedAt": "2026-08-10T17:20:18.559Z",
+    "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
+    "startedAt": "2026-08-10T17:51:45.456Z",
+    "completedAt": "2026-08-10T17:51:48.233Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "7486c9610a9936a2d6746fc0ecd180cad2b53403e5bc923ef82a1509ab44911c",
-    "startedAt": "2026-08-10T17:20:19.194Z",
-    "completedAt": "2026-08-10T17:20:30.655Z",
+    "sourceTreeHash": "132e98ddb712c9df19fe13f8679689df610c6b3d1a1ef380fa1c016eafe1cd56",
+    "startedAt": "2026-08-10T17:51:48.764Z",
+    "completedAt": "2026-08-10T17:51:58.303Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "c305090aa2638457913428a30dd2090bd78058ca8e7414e7c0859bfb5b5a7ce0"
+    "dist": "9018a4c37cecb6d5c1fa8aebf80d7da6eaba7318d145f22bff340e6eec3e1286"
   },
   "manualRequirements": [
     "CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified",
@@ -102,5 +102,5 @@
     "RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
-  "generatedAt": "2026-08-10T17:21:06.970Z"
+  "generatedAt": "2026-08-10T17:52:29.276Z"
 }
