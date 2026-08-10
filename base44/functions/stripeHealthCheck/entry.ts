@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // Admin-only diagnostic: verifies STRIPE_SECRET_KEY works against the live API

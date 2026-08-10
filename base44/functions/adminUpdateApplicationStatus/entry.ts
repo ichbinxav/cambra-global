@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const ALLOWED_STATUSES = [
   'submitted', 'in_review', 'provider_contacted', 'offer_ready', 'activated', 'rejected', 'closed'

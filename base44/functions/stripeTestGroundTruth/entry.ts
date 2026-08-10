@@ -3,7 +3,7 @@
 // paginates until exhaustion, and returns aggregate ground-truth totals so we can
 // compare against what dataSyncAgent's normalizer produces for the same window.
 // NEVER touches live money. NEVER writes to DB.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): sync-engine test harness, dormant until first live client — kept with probe.

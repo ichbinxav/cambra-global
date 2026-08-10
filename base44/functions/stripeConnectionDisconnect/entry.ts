@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
  * BUG-5 FIX (2026-07-12) — Unified Stripe disconnect for both Integration-backed

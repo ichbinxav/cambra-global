@@ -2,7 +2,7 @@
 // Idempotently turns an authorized payments Recover into an operational migration.
 // The merchant has already mandated CAMBRA to act: standard tasks are owned by
 // CAMBRA/provider, not pushed back to the merchant.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';

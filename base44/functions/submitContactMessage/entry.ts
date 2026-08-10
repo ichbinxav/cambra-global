@@ -15,7 +15,7 @@
 //   · strict validation: name (1-120), email (format), message (1-4000)
 // asServiceRole justification: anonymous callers can't write the admin-only
 // Lead entity; the response leaks no data (ok + lead_id only).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 const DEFAULT_LIMIT_PER_HOUR = 5;

@@ -11,7 +11,7 @@
 //   unavailable / timeout → BLOCKS billing with retry; NOT treated as invalid.
 // Manual review states are set by a separate, documented admin action — never
 // by this function.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeVat } from '../../shared/recoverTax.ts';
 

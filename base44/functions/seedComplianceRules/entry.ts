@@ -1,7 +1,7 @@
 // Admin-only, idempotent seeder for the two hard compliance rules (M0B skeleton).
 // Does NOT build a Compliance Center, AI review, or any rule beyond these two.
 // Re-running is safe: it upserts by rule_id and never creates duplicates.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 const HARD_RULES = [
   // ── claims ─────────────────────────────────────────────────────────────────

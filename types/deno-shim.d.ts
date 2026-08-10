@@ -14,19 +14,13 @@ declare const Deno: {
 // server-side factory the handlers import, which surfaced as "createClientFromRequest
 // is not exported". Both are re-declared explicitly here; everything else
 // still comes from the installed package's own types.
-declare module "npm:@base44/sdk@0.8.31" {
-  export * from "@base44/sdk";
-  export { default } from "@base44/sdk";
+ from "@base44/sdk";
   export function createClientFromRequest(req: Request): any;
 }
-declare module "npm:@base44/sdk@0.8.38" {
-  export * from "@base44/sdk";
-  export { default } from "@base44/sdk";
+ from "@base44/sdk";
   export function createClientFromRequest(req: Request): any;
 }
-declare module "npm:@base44/sdk@0.8.40" {
-  export * from "@base44/sdk";
-  export { default } from "@base44/sdk";
+ from "@base44/sdk";
   export function createClientFromRequest(req: Request): any;
 }
 declare module "npm:@base44/sdk@0.8.41" {

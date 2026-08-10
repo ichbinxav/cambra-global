@@ -2,7 +2,7 @@
 // Validates the full Brand -> Analyzer -> Result -> Recommendation -> DealActivation
 // -> Mandate -> AuthorizationLog -> MigrationTask -> MonthlySavingsReport -> Invoice flow.
 // Each test creates real records, asserts the link integrity, then cleans up.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 function pass(name, details) { return { name, status: "pass", details: details || null }; }
 function fail(name, details) { return { name, status: "fail", details }; }

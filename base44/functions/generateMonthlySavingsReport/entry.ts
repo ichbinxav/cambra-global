@@ -1,5 +1,5 @@
 import { sha256 } from '../../shared/intelligenceCore.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';

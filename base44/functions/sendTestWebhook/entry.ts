@@ -1,7 +1,7 @@
 // Admin-only — sends a test webhook to a registered endpoint.
 // Validates HMAC SHA-256 signing, includes timestamp + event id in signature payload,
 // records a WebhookDelivery row, and never includes secrets or sensitive documents.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 async function sign(secret, payload) {
   const enc = new TextEncoder();

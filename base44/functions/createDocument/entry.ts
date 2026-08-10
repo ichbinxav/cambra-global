@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 function extFromName(name='') { const i = name.lastIndexOf('.'); return i>0 ? name.slice(i+1).toLowerCase() : ''; }
 function baseName(name='') { const i = name.lastIndexOf('.'); return i>0 ? name.slice(0, i) : name; }

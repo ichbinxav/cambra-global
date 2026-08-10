@@ -1,7 +1,7 @@
 // P9 merchant projection. Deliberately hides internal task mechanics: the client
 // sees one CAMBRA-owned migration, a simple stage, progress and only blockers
 // that genuinely require merchant action.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const STAGES = ['preparing','provider_coordination','scheduled','going_live','verifying'];
 

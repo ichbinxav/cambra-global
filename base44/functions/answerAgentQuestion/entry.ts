@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 // Called when the founder answers an AgentQuestion from the Inbox.
 // Strict gate: only the same admin can answer, the question must be pending,

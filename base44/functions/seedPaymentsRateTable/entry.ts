@@ -22,7 +22,7 @@
 // - Engine amortizes fixed_fee against merchant's real avg_ticket at runtime
 // - No blended-to-AOV numbers ever leave this file
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 Deno.serve(async (req) => {
   try {

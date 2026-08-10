@@ -14,7 +14,7 @@
 // Expected refunds: 80 (full) + 50 (partial) = 130 EUR
 // Expected NET volume (denominator): 1295 - 130 = 1165 EUR
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): sync-engine test harness, dormant until first live client — kept with probe.

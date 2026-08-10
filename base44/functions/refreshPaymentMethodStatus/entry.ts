@@ -11,7 +11,7 @@
 // can be invoked on page load, after a redirect, or twice in a row, safely. When
 // the Stripe webhook lands it will call the same logic — which is why the write
 // is a plain projection of the intent's status and not a state machine.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveBillingMode, assertBillingAccount, stripeRequest } from '../../shared/stripeBilling.ts';
 import { resolveOwnedActivation } from '../../shared/recoverAcceptance.ts';
 

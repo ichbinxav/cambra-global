@@ -27,7 +27,7 @@
 //   Enforced by explicit field-by-field copy — no spread, no destructure. If
 //   the schema grows tomorrow, new fields DO NOT appear here until listed.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 // Inlined pure helpers from _tenantGuard (see file header there). We avoid an
 // HTTP hop on the hot read path — same rule as computeStripeVerifiedGap.

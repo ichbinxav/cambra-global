@@ -18,7 +18,7 @@
 // recompute). It is not an "intended" trigger — it was observed executing on
 // schedule, and its first live runs are what exposed the 404 bug in the internal
 // invocation path (see shared/invokeInternal.ts).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { leaseExpired } from '../../shared/recoverContractState.ts';
 import { invokeInternal } from '../../shared/invokeInternal.ts';

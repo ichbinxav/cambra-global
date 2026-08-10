@@ -17,7 +17,7 @@
 // with getMyReferralLink (base44/shared/referralLink.ts) — one row per owner,
 // duplicates consolidated with their counters summed.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
 
 export default async function (req: Request): Promise<Response> {

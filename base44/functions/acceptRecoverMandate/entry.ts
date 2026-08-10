@@ -20,7 +20,7 @@
 //   5. RE-READ the activation, then    → state is checked immediately before each
 //      walk activated → awaiting_authorization → authorized
 //   6. supersede older active mandates
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): orphan, but Subscription holds 2 rows — kept with probe.

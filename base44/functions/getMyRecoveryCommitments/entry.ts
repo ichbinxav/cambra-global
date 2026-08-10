@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { recoveryTermFromActivation, standardFeeForDate, effectiveFee, referralCountFromYear1EquivalentFee, RECOVERY_ECONOMICS_V2, parisRecoveryDate } from '../../shared/recoveryEconomicsV2.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';

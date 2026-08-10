@@ -7,7 +7,7 @@
  *    Edit BOTH files together when adding a provider.
  */
 
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 // ─── REGISTRY (keep in sync with functions/oauthConnector.js) ──────────────
 const REGISTRY = {

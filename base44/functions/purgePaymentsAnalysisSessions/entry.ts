@@ -11,7 +11,7 @@
 // created_date < cutoff, deletes in batches, and returns a summary. Safe to
 // re-run any time (rows already deleted just don't match the filter).
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 const RETENTION_DAYS = 90;

@@ -15,7 +15,7 @@
 // Runs as service role (both entities are admin-only RLS). Idempotent and
 // batched, same shape as purgePaymentsAnalysisSessions.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 
 const OUTBOUND_RETENTION_DAYS = 365;

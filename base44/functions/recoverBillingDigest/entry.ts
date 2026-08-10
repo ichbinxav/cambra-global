@@ -32,7 +32,7 @@
 // look like complete coverage: coverage_truncated is surfaced in the digest and
 // OperationalLog so operators know to inspect/paginate manually until a native
 // cursor/filter path is available for these entity queries.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
 

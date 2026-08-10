@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { callRequestEmail } from '../../shared/emails/callRequest.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';

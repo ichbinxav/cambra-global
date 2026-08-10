@@ -20,7 +20,7 @@
 // Returns a MINIMAL projection — the list needs date, PSP, country, the point
 // figure + range, and the session id to deep-link into the full report. It
 // does NOT ship the full engine_result (that's read on the detail page).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 function normalizeEmail(email) {
   if (typeof email !== 'string') return '';

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
  * ⚠️ DEPRECATED — 2026-07-12 (BUG-5 fix).

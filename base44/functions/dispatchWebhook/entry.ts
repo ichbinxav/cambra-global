@@ -11,7 +11,7 @@
 // path, add auth here first.
 // asServiceRole justification: reads all active WebhookEndpoints across tenants
 // (event dispatch is a platform-level concern) and writes delivery/DLQ audit rows.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { quarantineProbe } from "../../shared/internalGate.ts";
 import { isInternalCaller, redactSecrets } from "../../shared/internalSecret.ts";
 import { buildPublicWebhookPayload } from "../../shared/webhookPublicPayload.ts";

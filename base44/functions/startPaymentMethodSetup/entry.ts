@@ -17,7 +17,7 @@
 // ORDER OF OPERATIONS: the mandate comes first. Collecting a payment method for
 // an activation with no ACTIVE mandate would be collecting means of payment for
 // something the merchant has not authorized, so that is refused with 409.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   resolveBillingMode,
   assertBillingAccount,

@@ -20,7 +20,7 @@
 // are admin-write RLS entities. The token endpoint has no user session — it
 // has a client_id and, if applicable, a client_secret. Every access to these
 // entities passes the client_id/secret+PKCE checks above.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 const ACCESS_TTL_SECONDS = 3600;            // 1h
 const REFRESH_TTL_SECONDS = 60 * 60 * 24 * 60; // 60d

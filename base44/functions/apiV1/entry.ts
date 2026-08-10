@@ -29,7 +29,7 @@
 //
 // Compat: legacy paths (/brands, /kpis, ...) still work — they're rewritten to /v1/*.
 // =============================================================================
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 // -----------------------------------------------------------------------------
 // Helpers

@@ -53,7 +53,7 @@
 // returns them in any response field, never logs them, and NEVER echoes any
 // value from Stripe's account object that could contain a key.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // See file header for why this is a copy (third consumer of the engine).

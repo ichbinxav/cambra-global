@@ -14,7 +14,7 @@
 //     explicit brand scope, re-verified in JS after the read.
 //   • Everything returned goes through a projection ALLOWLIST — the merchant
 //     gets their figures, not the internal tax/accounting evidence.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   normalizeEmail,
   pickOwnedBrand,

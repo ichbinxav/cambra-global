@@ -1,7 +1,7 @@
 // Admin-only safe demo data seeder. Idempotent — checks for is_demo=true brands first.
 // Creates 3 fake brands, analyzer results, recommendations, deal activations, mandate,
 // monthly savings report, invoice, and 3 providers. All marked is_demo=true where possible.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 Deno.serve(async (req) => {
   try {

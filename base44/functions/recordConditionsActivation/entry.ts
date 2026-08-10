@@ -5,7 +5,7 @@
 // only (a human verifies evidence; no internal/scheduled path on purpose).
 // Never inferred from the RECOVER-1 acceptance, the SetupIntent or a frontend
 // edit (§6). Derives the whole contractual calendar from it.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   agreementEndAt,
   firstMeasurementMonth,

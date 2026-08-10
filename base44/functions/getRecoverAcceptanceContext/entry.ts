@@ -8,7 +8,7 @@
 // the merchant cannot read their own rows directly. Ownership is proven first, and
 // the verified-baseline criterion is applied inside the shared module before
 // anything leaves this function — Baseline's RLS stays untouched by design.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';

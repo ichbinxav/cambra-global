@@ -5,7 +5,7 @@
 //
 // Requires the user to be logged in via Base44 auth. On consent, issues a
 // short-lived authorization code (10 min) and redirects back to the client.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);

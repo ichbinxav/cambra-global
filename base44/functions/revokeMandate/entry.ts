@@ -18,7 +18,7 @@
 //     does not un-authorize a past authorization and must never rewind the
 //     billing state machine (fees already earned on savings already verified
 //     remain due). monetizing/live/migrating now map to 'paused'.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 function updatedExactlyOne(result:any){ return Boolean(result && (result.updated === 1 || result.modified_count === 1 || result.matched_count === 1)); }
 function statusAfterRevocation(status:string){

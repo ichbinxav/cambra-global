@@ -6,7 +6,7 @@
 // report this function marked 'eligible' can ever reach Stripe — estimated or
 // projected measurements are refused here, permanently (§31: no projections,
 // no historical averages, no confidence scores as a substitute for evidence).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { resolveBillingMode } from '../../shared/stripeBilling.ts';

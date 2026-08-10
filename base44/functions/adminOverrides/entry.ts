@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 function assert(c,m){ if(!c) throw new Error(m); }
 

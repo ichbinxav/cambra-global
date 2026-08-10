@@ -1,6 +1,6 @@
 // P9 admin operation: advance/block/retry a migration task with sequential and
 // go-live/verification invariants. No merchant can mutate orchestration state.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const VALID = new Set(['pending','in_progress','blocked','done']);
 const PLAN_VERSION = 'payments-recover-p9-v1';

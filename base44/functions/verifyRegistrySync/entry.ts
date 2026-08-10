@@ -39,7 +39,7 @@
  * =============================================================================
  */
 
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 // Fields that MUST match exactly between the two registries. Anything outside
 // this list is metadata (e.g. logo, description) and is ignored on purpose to

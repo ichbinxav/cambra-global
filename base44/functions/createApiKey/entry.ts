@@ -1,6 +1,6 @@
 // Create API key (admin-only). Returns the raw key ONCE — never stored.
 // SHA-256 hashed at rest. Optional organization_id for tenant binding.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const VALID_SCOPES = [
   "read", "write", "admin", "platform",

@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { jsPDF } from 'npm:jspdf@4.0.0';
 
 function pad(n, w = 5) { return String(n).padStart(w, '0'); }

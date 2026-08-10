@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 // Single endpoint that powers the Command Center top bar + recent activity.
 // Aggregates counts across AgentTask, Approval, Event, AgentQuestion in

@@ -23,7 +23,7 @@
 // entropy. Reuses the same RateLimitCounter bucket pattern + DERIVED IP salt
 // as submitPaymentsAnalysis.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

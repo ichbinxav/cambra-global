@@ -22,7 +22,7 @@
 // Explicitly OUT OF SCOPE for Chunk 3: claim flow, email capture, frontend,
 // TTL purge job (deferred to Chunk 6 as agreed).
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 // EMAIL-1 T2 — locale normalization lives OUTSIDE the SYNC block on purpose:
 // it is transport/metadata concern, never engine logic.
 import { normalizeLocale } from '../../shared/emailLocale.ts';

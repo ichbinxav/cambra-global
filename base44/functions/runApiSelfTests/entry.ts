@@ -3,7 +3,7 @@
 // since cross-function HTTP testing inside Deno deploy isolates is fragile.
 // Validates: scope schema sync, tenant binding, OpenAPI spec validity, MCP catalog,
 // idempotency entity, rate-limit entity, OAuth entities, key hashing.
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);

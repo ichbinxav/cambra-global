@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const AGENT_NAME = "linkedin";
 const TASK_TYPE = "publish_linkedin_post";

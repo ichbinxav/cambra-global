@@ -17,7 +17,7 @@
 // single secret shared across modes is a stop criterion for RECOVER-2.
 //
 // Never returns key values, only prefixes and booleans.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { assertBillingAccount, expectedAccountId } from '../../shared/stripeBilling.ts';
 import { getWebhookSecret } from '../../shared/stripeWebhookSecret.ts';
 

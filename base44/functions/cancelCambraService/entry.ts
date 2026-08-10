@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { RECOVERY_ECONOMICS_V2 } from '../../shared/recoveryEconomicsV2.ts';
 export default async function(req:Request):Promise<Response>{
  try{

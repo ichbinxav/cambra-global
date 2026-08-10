@@ -24,7 +24,7 @@
 // function that needs the check with zero HTTP hop. Prefer inlining for
 // hot-path writes; use the invoke path only for one-off admin tools.
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 // ── Pure helpers (no I/O, testable in isolation) ─────────────────────────
 

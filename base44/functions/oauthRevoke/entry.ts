@@ -1,6 +1,6 @@
 // OAuth 2.0 — Revocation endpoint (RFC 7009)
 // POST /functions/oauthRevoke   body: token, token_type_hint? (access_token | refresh_token)
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.31";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { quarantineProbe } from "../../shared/internalGate.ts";
 
 async function sha256Hex(input) {

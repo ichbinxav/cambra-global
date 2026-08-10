@@ -13,7 +13,7 @@
 // WHAT IT REFUSES TO DO: it never writes Mandate.status, never touches
 // DealActivation, and never rebuilds the snapshot from current data. A failure
 // here leaves an active mandate active — the acceptance already happened.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { hashSnapshot } from '../../shared/recoverAcceptance.ts';

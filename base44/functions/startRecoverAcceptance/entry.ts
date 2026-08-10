@@ -9,7 +9,7 @@
 // baseline moved produces a different hash — and therefore a different, honest
 // acceptance instead of quietly reusing stale terms.
 import { PRODUCT_POLICY } from '../../shared/generated/productPolicy.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { getSuccessFeePct, getFeeDurationMonths } from '../../shared/generated/productPolicy.ts';
 import { rejectClientTerms } from '../../shared/contractPolicySnapshot.ts';

@@ -14,7 +14,7 @@
 // same owner. Both now share base44/shared/referralLink.ts, which also
 // consolidates any pre-existing duplicates (counters summed, oldest row wins).
 
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
 
 export default async function(req: Request): Promise<Response> {

@@ -10,7 +10,7 @@
 // no queue, so if the fire-and-forget call at acceptance was lost, the merchant
 // simply opening their reports page re-queues the work (subject to the backoff
 // window). Admins get the operational fields for the same mandate.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveOwnedActivation } from '../../shared/recoverAcceptance.ts';
 import { leaseExpired, maskEmail, safeReference } from '../../shared/recoverContractState.ts';
 import { fireAndForget } from '../../shared/invokeInternal.ts';

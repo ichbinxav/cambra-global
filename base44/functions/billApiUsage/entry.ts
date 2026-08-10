@@ -9,7 +9,7 @@
 //   · `billed: true` is set ONLY after the Invoice creation is confirmed —
 //     the old `.catch(() => null)` silently swallowed invoice failures while
 //     still marking the record billed (revenue silently lost).
-import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 
 Deno.serve(async (req) => {

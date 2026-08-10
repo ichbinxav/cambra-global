@@ -10,7 +10,7 @@
 // A revoked or superseded mandate is still downloadable — it is evidence of what
 // was agreed — and the response says so explicitly so no UI can present a revoked
 // agreement as being in force.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveOwnedActivation } from '../../shared/recoverAcceptance.ts';
 import { logContractEvent, safeReference } from '../../shared/recoverContractState.ts';
 

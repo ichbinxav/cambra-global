@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.26';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
 // Endpoint classification: AUTH_REQUIRED (bootstrap-gated ADMIN_REQUIRED).
