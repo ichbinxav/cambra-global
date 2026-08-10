@@ -56,7 +56,7 @@ async function callClaude(prompt) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-5",
+      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     }),

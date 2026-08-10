@@ -12,7 +12,7 @@ async function callClaude(prompt) {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-5",
+      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
       max_tokens: 2048,
       messages: [{ role: "user", content: prompt }],
     }),

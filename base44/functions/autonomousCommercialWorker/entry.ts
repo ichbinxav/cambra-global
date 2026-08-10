@@ -2,7 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { isBusinessHour, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
-async function claude(prompt:string){const key=Deno.env.get('ANTHROPIC_API_KEY');if(!key)throw new Error('anthropic_not_configured');const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1600,messages:[{role:'user',content:prompt}]})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`anthropic_failed:${r.status}`);return String(d?.content?.[0]?.text||'')}
+async function claude(prompt:string){const key=Deno.env.get('ANTHROPIC_API_KEY');if(!key)throw new Error('anthropic_not_configured');const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',max_tokens:1600,messages:[{role:'user',content:prompt}]})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`anthropic_failed:${r.status}`);return String(d?.content?.[0]?.text||'')}
 function parse(text:string){const c=text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(c)}catch{}const m=c.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0])}catch{}}return null}
 function isoDayStart(){const d=new Date();d.setUTCHours(0,0,0,0);return d.toISOString()}
 

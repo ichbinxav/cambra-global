@@ -207,7 +207,7 @@ ${brandInfo}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-5',
+          model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
           max_tokens: 512,
           temperature: 0.4,
           system: systemPrompt,

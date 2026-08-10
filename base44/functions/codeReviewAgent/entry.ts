@@ -11,7 +11,7 @@ async function callClaude(prompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 4000, messages: [{ role: "user", content: prompt }] }),
+    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 4000, messages: [{ role: "user", content: prompt }] }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);

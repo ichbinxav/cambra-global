@@ -38,7 +38,7 @@ async function claudeDraft(key:string, prospect:any, language:string, variant:an
   'Return ONLY JSON {"subject":"","body":""}.',
   'PROSPECT:', JSON.stringify(prospect)
  ].join('\n');
- const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:850,messages:[{role:'user',content:prompt}]})});
+ const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',max_tokens:850,messages:[{role:'user',content:prompt}]})});
  const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`anthropic_partner_draft_failed:${r.status}`);const t=String(d?.content?.[0]?.text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(t)}catch{const m=t.match(/\{[\s\S]*\}/);if(m)try{return JSON.parse(m[0])}catch{}return null}
 }
 
