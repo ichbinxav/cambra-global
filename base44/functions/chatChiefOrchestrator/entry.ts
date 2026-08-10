@@ -817,6 +817,7 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
       approval_id: approvalId,
       error: invokeError,
     }],
+    tool_result_json: (!invokeError && (tool.function === 'founderOSQuery' || tool.function === 'founderChiefOfStaff' || tool.function === 'founderOSSimulation' || tool.function === 'founderOSCommand')) ? invokeResult : undefined,
   });
 
   return Response.json({
