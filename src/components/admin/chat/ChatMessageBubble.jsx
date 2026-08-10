@@ -1,77 +1,40 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ShieldAlert, Lock, AlertTriangle, Send } from "lucide-react";
+import { CheckCircle2, ShieldAlert, Lock, AlertTriangle, Send, Database, Sparkles } from "lucide-react";
 
-function gateBadge(blocked_by_gate) {
-  if (!blocked_by_gate) return null;
+function gateBadge(blocked) {
+  if (!blocked) return null;
   const map = {
-    risk_l3_l4_forced_draft: { label: "Forced draft — review in Inbox", icon: Lock, cls: "bg-amber-50 text-amber-700 border-amber-200" },
-    bulk_needs_confirmation: { label: "Confirmation needed", icon: AlertTriangle, cls: "bg-orange-50 text-orange-700 border-orange-200" },
-    tool_not_allowed:        { label: "Tool refused", icon: ShieldAlert, cls: "bg-rose-50 text-rose-700 border-rose-200" },
-    unknown_intent:          { label: "Asking for clarification", icon: AlertTriangle, cls: "bg-blue-50 text-blue-700 border-blue-200" },
+    risk_l3_l4_forced_draft: { label: "Draft · approval required", icon: Lock, cls: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+    bulk_needs_confirmation: { label: "Scope confirmation required", icon: AlertTriangle, cls: "bg-orange-500/10 text-orange-300 border-orange-500/30" },
+    material_action_preview: { label: "Action preview · confirm to execute", icon: ShieldAlert, cls: "bg-rose-500/10 text-rose-300 border-rose-500/30" },
+    tool_not_allowed: { label: "Tool refused", icon: ShieldAlert, cls: "bg-rose-500/10 text-rose-300 border-rose-500/30" },
+    unknown_intent: { label: "Clarification needed", icon: AlertTriangle, cls: "bg-blue-500/10 text-blue-300 border-blue-500/30" },
   };
-  const g = map[blocked_by_gate];
-  if (!g) return null;
-  const Icon = g.icon;
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${g.cls}`}>
-      <Icon size={9} /> {g.label}
-    </span>
-  );
+  const g = map[blocked]; if (!g) return null; const Icon = g.icon;
+  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${g.cls}`}><Icon size={9}/>{g.label}</span>;
 }
-
+const fmtMoney=n=>Number.isFinite(Number(n))?new Intl.NumberFormat('en-US',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(n)):"—";
+const valueOf=m=>m?.unit?.startsWith?.('EUR')?fmtMoney(m.value):m?.value??'—';
+function EvidenceResult({r}){
+  if(!r||typeof r!=="object")return null;
+  if(r.brief){const b=r.brief;return <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3"><div className="flex items-center gap-2 text-xs font-black"><Sparkles size={12}/>Chief of Staff</div><p className="text-sm font-semibold">{b.headline}</p><div className="grid sm:grid-cols-2 gap-2 text-[11px] text-neutral-300">{[['Money',b.money],['Growth',b.growth],['Merchant value',b.merchant_value],['Aggregate',b.aggregate],['Providers',b.providers],['Operations',b.operations]].filter(([,v])=>v).map(([k,v])=><div key={k} className="rounded-lg border border-white/10 p-2"><b className="text-white">{k}</b><div className="mt-1">{v}</div></div>)}</div>{b.founder_actions?.length>0&&<div><p className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold">Founder actions</p>{b.founder_actions.slice(0,5).map((a,i)=><div key={i} className="mt-2 rounded-lg border border-white/10 p-2"><b className="text-xs">{a.title}</b><p className="text-[11px] text-neutral-300 mt-1">{a.why}</p><p className="text-[11px] mt-1">→ {a.recommended_action}</p></div>)}</div>}<p className="text-[10px] text-neutral-500">AI narrative · authoritative values remain in the evidence snapshot.</p></div>}
+  if(r.metrics&&r.attention){const keys=['collected_revenue','verified_savings','active_merchants','aggregate_addressable','provider_accrued','company_health'];return <div className="mt-3 space-y-3"><div className="grid grid-cols-2 sm:grid-cols-3 gap-2">{keys.filter(k=>r.metrics[k]).map(k=><div key={k} className="rounded-lg border border-white/10 p-2"><p className="text-[9px] uppercase text-neutral-400">{k.replaceAll('_',' ')}</p><p className="text-sm font-black mt-1">{valueOf(r.metrics[k])}</p><p className="text-[9px] text-neutral-500">{r.metrics[k].confidence}</p></div>)}</div>{r.attention?.length>0&&<div><p className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold">What needs you</p>{r.attention.slice(0,4).map(x=><div key={x.id} className="mt-1.5 rounded-lg border border-white/10 p-2"><div className="flex justify-between gap-2"><b className="text-[11px]">{x.title}</b><span className="text-[10px]">P{Math.round(x.priority||0)}</span></div><p className="text-[10px] text-neutral-400 mt-1">{x.summary}</p></div>)}</div>}</div>}
+  if(r.metric&&r.causes){return <div className="mt-3 rounded-xl border border-white/10 p-3"><div className="flex items-center gap-2 text-xs font-black"><Database size={11}/>{r.metric.replaceAll('_',' ')}</div><p className="text-[11px] text-neutral-400 mt-1">{r.definition?.definition}</p><div className="mt-3 space-y-2">{r.causes.length?r.causes.map((c,i)=><div key={i} className="rounded-lg bg-white/[0.04] p-2"><b className="text-[11px]">{c.cause}</b>{c.impact_eur!=null&&<span className="ml-2 text-[11px]">{fmtMoney(c.impact_eur)}</span>}<p className="text-[10px] text-neutral-500 mt-1">Evidence: {c.evidence?.entity||'internal records'}</p></div>):<p className="text-[11px] text-neutral-400">No evidenced contributor was found in the supported causal tree.</p>}</div><p className="text-[10px] text-neutral-500 mt-2">{r.evidence_boundary}</p></div>}
+  if(r.simulation_only){return <div className="mt-3 rounded-xl border border-violet-500/30 bg-violet-500/5 p-3"><div className="text-[10px] font-black uppercase text-violet-300">Simulation only · no production effect</div><pre className="mt-2 text-[11px] whitespace-pre-wrap overflow-auto">{JSON.stringify(r.outputs,null,2)}</pre><p className="text-[10px] text-neutral-500 mt-2">Confidence {Math.round((r.confidence||0)*100)}%</p></div>}
+  if(r.results&&Array.isArray(r.results)){return <div className="mt-3 space-y-1.5">{r.results.slice(0,10).map(x=><div key={`${x.entity}:${x.id}`} className="rounded-lg border border-white/10 p-2"><b className="text-[11px]">{x.label}</b><span className="text-[10px] text-neutral-500 ml-2">{x.type} · {x.secondary}</span></div>)}</div>}
+  if(r.brand){return <div className="mt-3 rounded-xl border border-white/10 p-3"><b className="text-sm">{r.brand.name}</b><p className="text-[11px] text-neutral-400 mt-1">Merchant 360 · {r.brand.country||'—'} · open incidents {r.health?.open_incidents||0}</p><div className="grid grid-cols-3 gap-2 mt-2 text-[10px]"><div>Integrations<br/><b>{r.integrations?.length||0}</b></div><div>Negotiations<br/><b>{r.cases?.length||0}</b></div><div>Invoices<br/><b>{r.invoices?.length||0}</b></div></div></div>}
+  if(r.provider){return <div className="mt-3 rounded-xl border border-white/10 p-3"><b className="text-sm">{r.provider.name}</b><p className="text-[11px] text-neutral-400 mt-1">Provider 360 · {r.relationship?.merchant_count||0} merchants · {r.relationship?.open_negotiations||0} open negotiations</p><p className="text-[11px] mt-2">Paid provider revenue: {fmtMoney((r.relationship?.provider_revenue_paid_minor||0)/100)}</p></div>}
+  if(r.decision){return <div className="mt-3 rounded-xl border border-white/10 p-3"><b className="text-xs">Decision · {r.decision.decision}</b><p className="text-[11px] text-neutral-300 mt-2">Recommendation: {r.decision.recommendation}</p><p className="text-[10px] text-neutral-500 mt-1">Risk L{r.decision.risk?.level} · {r.decision.reversibility}</p></div>}
+  if(r.status==='executed'&&r.preview){return <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><b className="text-xs text-emerald-300">Executed · audited</b><p className="text-[11px] mt-1">{r.preview.action}</p></div>}
+  return null;
+}
 export default function ChatMessageBubble({ message, onConfirm }) {
-  const isUser = message.role === "user";
-  const calls = Array.isArray(message.tool_calls_json) ? message.tool_calls_json : [];
-  const pendingConfirm = calls.find(c => c.status === "requires_confirmation");
-
-  return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-        isUser
-          ? "bg-white text-neutral-900"
-          : "bg-neutral-900 border border-white/10 text-white"
-      }`}>
-        {message.content && <p className="text-sm whitespace-pre-wrap">{message.content}</p>}
-
-        {gateBadge(message.blocked_by_gate) && (
-          <div className="mt-2">{gateBadge(message.blocked_by_gate)}</div>
-        )}
-
-        {/* Inline tool calls (executed / drafted / refused) */}
-        {!isUser && calls.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {calls.filter(c => c.status !== "requires_confirmation").map((c, i) => (
-              <div key={i} className="text-[11px] flex items-center gap-1.5 flex-wrap">
-                {c.status === "drafted" && <Lock size={10} className="text-amber-700" />}
-                {c.status === "executed" && <CheckCircle2 size={10} className="text-emerald-700" />}
-                {c.status === "refused" && <ShieldAlert size={10} className="text-rose-700" />}
-                <span className="font-bold text-foreground">{c.name}</span>
-                <span className="text-muted-foreground">· {c.status}{c.forced_draft ? " (L≥2 → forced draft)" : ""}</span>
-                {c.task_id && (
-                  <Link to="/admin/activity" className="text-foreground underline">task</Link>
-                )}
-                {c.approval_id && (
-                  <Link to="/admin/inbox" className="text-amber-700 font-bold underline">Review in Inbox →</Link>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Confirmation prompt */}
-        {!isUser && pendingConfirm && onConfirm && (
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onConfirm(pendingConfirm)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-foreground text-background text-xs font-bold hover:opacity-90"
-            >
-              <Send size={10} /> Confirm — proceed with {pendingConfirm.count} items
-            </button>
-            <span className="text-[11px] text-muted-foreground">All output will still go to the Inbox.</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const isUser=message.role==='user',calls=Array.isArray(message.tool_calls_json)?message.tool_calls_json:[],pending=calls.find(c=>c.status==='requires_confirmation'),preview=pending?.preview;
+  return <div className={`flex ${isUser?'justify-end':'justify-start'}`}><div className={`max-w-[92%] md:max-w-[82%] rounded-2xl px-4 py-3 ${isUser?'bg-white text-neutral-900':'bg-neutral-900 border border-white/10 text-white'}`}>
+    {message.content&&<p className="text-sm whitespace-pre-wrap">{message.content}</p>}
+    {gateBadge(message.blocked_by_gate)&&<div className="mt-2">{gateBadge(message.blocked_by_gate)}</div>}
+    {!isUser&&<EvidenceResult r={message.tool_result_json}/>} 
+    {!isUser&&calls.length>0&&<div className="mt-2 space-y-1">{calls.filter(c=>c.status!=='requires_confirmation').map((c,i)=><div key={i} className="text-[10px] flex items-center gap-1.5 flex-wrap text-neutral-400">{c.status==='drafted'&&<Lock size={9}/>} {c.status==='executed'&&<CheckCircle2 size={9}/>} {c.status==='refused'&&<ShieldAlert size={9}/>}<span className="font-bold text-neutral-200">{c.name}</span><span>· {c.status}</span>{c.task_id&&<Link to="/admin/activity" className="underline">task</Link>}{c.approval_id&&<Link to="/admin/approvals" className="font-bold underline">approval</Link>}</div>)}</div>}
+    {!isUser&&pending&&onConfirm&&<div className="mt-3 rounded-xl border border-rose-500/20 bg-rose-500/5 p-3"><p className="text-[10px] uppercase font-black text-rose-300">Confirm governed action</p>{preview&&<div className="text-[11px] mt-2 space-y-1"><p><b>Action:</b> {preview.action}</p>{preview.action_type&&<p><b>Type:</b> {preview.action_type}</p>}<p><b>Risk:</b> L{preview.risk_level??'—'}{preview.material?' · material':''}</p>{preview.financial_impact!=null&&<p><b>Financial impact:</b> {typeof preview.financial_impact==='number'?fmtMoney(preview.financial_impact):String(preview.financial_impact)}</p>}<p><b>Reversible:</b> {String(preview.reversible??'unknown')}</p></div>}<button type="button" onClick={()=>onConfirm(pending)} className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-white text-black text-xs font-bold"><Send size={10}/>Confirm — do it</button></div>}
+  </div></div>;
 }
