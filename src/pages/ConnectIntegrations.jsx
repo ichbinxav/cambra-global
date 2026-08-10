@@ -177,17 +177,19 @@ export default function ConnectIntegrations() {
     })();
   }, []);
 
-  /* For Fase 0, the demo entries are always available — there's no Discovery
-     row for fictional providers. Real providers (later phases) will appear
-     only if Discovery detected them. */
+  /* Demo connectors are a development/test harness only. They must never be
+     injected into the merchant production UI merely because they exist in the
+     registry. Opt-in explicitly with VITE_ENABLE_DEMO_CONNECTORS=true (or Vite
+     DEV mode); real providers still require Discovery evidence. */
   const rows = useMemo(() => {
     const integByProvider = new Map(integrations.map(i => [i.provider, i]));
-    const demoRows = ["demo_provider", "demo_apikey_provider"].map(slug => ({
+    const showDemoConnectors = import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEMO_CONNECTORS === "true";
+    const demoRows = showDemoConnectors ? ["demo_provider", "demo_apikey_provider"].map(slug => ({
       provider: slug,
       meta: CLIENT_REGISTRY_MIRROR[slug],
       detection: null,
       integration: integByProvider.get(slug) || null,
-    }));
+    })) : [];
     // Real providers from Discovery — only those present in the client mirror
     // get a Connect button. Anything else stays hidden in Fase 0.
     const realRows = detected
