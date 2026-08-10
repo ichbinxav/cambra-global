@@ -65,6 +65,11 @@
     "base44/shared/eclOperationalRecovery.ts",
     "base44/functions/eclProductionHealth/entry.ts",
     "base44/functions/eclIncidentWorkflow/entry.ts",
-    "base44/functions/processWebhookDeadLetters/entry.ts"
+    "base44/functions/processWebhookDeadLetters/entry.ts",
+    "base44/shared/maintenanceCore.ts",
+    "base44/functions/maintenanceEngine/entry.ts",
+    "base44/functions/getMaintenanceCenter/entry.ts",
+    "base44/functions/dependencySecurityWorker/entry.ts",
+    "base44/functions/oauthConnector/entry.ts"
   ]
 }
