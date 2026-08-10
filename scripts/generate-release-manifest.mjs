@@ -43,6 +43,7 @@ const baseline = fs.existsSync("config/typecheck-baseline.json")
   ? JSON.parse(fs.readFileSync("config/typecheck-baseline.json", "utf8")) : null;
 if (!baseline || baseline.state !== "APPROVED") manualRequirements.push("typecheck baseline: candidate/approve flow not completed");
 if (!fs.existsSync(".github/workflows/ci.yml")) manualRequirements.push("CI workflow not installed (npm run ci:install from a real checkout)");
+if (!process.env.GITHUB_RUN_ID) manualRequirements.push("CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified");
 const productPolicy = fs.existsSync("config/product-policy.json")
   ? JSON.parse(fs.readFileSync("config/product-policy.json", "utf8")) : null;
 if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economics-v2" &&
@@ -60,6 +61,9 @@ if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
 }
 if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
   manualRequirements.push('REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.');
+}
+if (fs.existsSync('base44/functions/maintenanceEngine/function.jsonc') && fs.existsSync('base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc')) {
+  manualRequirements.push('RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.');
 }
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
   manualRequirements.push('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
