@@ -42,7 +42,9 @@
     "release:check:ci": "node scripts/check-release-manifest.mjs --ci",
     "ci:install": "node scripts/install-ci-workflow.mjs",
     "ci:check": "node scripts/install-ci-workflow.mjs --check",
-    "verify": "npm run clean:check && npm run policy:check && npm run ecl:check && npm run durability:check && npm run documentation:check && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check"
+    "verify": "npm run clean:check && npm run policy:check && npm run markets:check && npm run ecl:check && npm run durability:check && npm run documentation:check && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check",
+    "markets:generate": "node scripts/generate-europe-markets.mjs",
+    "markets:check": "node scripts/generate-europe-markets.mjs --check"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.41",
