@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.78.0 — P17 Autonomous Maintenance & Self-Healing Engine Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T08:55:37.797Z",
-  "packageVersion": "0.78.0",
+  "release": "CAMBRA v0.79.0 — P18 Operating Bible, Founder Handbook & Living Documentation Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-10T10:58:26.807Z",
+  "packageVersion": "0.79.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -172,8 +172,8 @@
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
-      "sha256": "ad3b208db32bb8945c05240fd66cafedb98bf93abcae0bccbfb13e8f5646484e",
-      "bytes": 25527
+      "sha256": "34265e928e8c80012d31d1d054095978e9971526f0dd086b4cce3861bbc53da4",
+      "bytes": 25878
     },
     {
       "path": "base44/functions/createPaymentLink/entry.ts",
@@ -392,13 +392,13 @@
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
-      "sha256": "64c3f8404a4c324bbe290f31bf61d14eede0717ae5dcbd975f3deec289572cc4",
-      "bytes": 10903
+      "sha256": "32a2f7103c546d4d1b41b599d571fb0945f2873dc0cf5cf42aa62c827d959664",
+      "bytes": 11236
     },
     {
       "path": "base44/functions/startProviderNegotiation/entry.ts",
-      "sha256": "17b676910cf8844a9f704f91350127add20b91773e62ce61d1be1cc926323e3e",
-      "bytes": 7293
+      "sha256": "b93eb004d88668405372ddc1058000f1792b3e29ea635cafbdb9a5118d47b53e",
+      "bytes": 7610
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "24c97d85ee71367543bb58d16f17d171ee8a8be7b5e91c233a741828ad2b6a5a",
+      "sha256": "f73440a376087130128415572dc36408ff4c5b4817c6f3b574f8d63464daace7",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "88cbc31d58fe5b3c1545ee84ddc552213d72edf7fda68cf33d814128cc467183",
-      "bytes": 5722
+      "sha256": "09bbe8aa4b6c8d1e3b43bcc3a2dd7988979e2ed5951eaad53df385bcf8f0c077",
+      "bytes": 5920
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -532,8 +532,8 @@
     },
     {
       "path": "scripts/check-release-manifest.mjs",
-      "sha256": "996413a618a6cc7d2ddbfaa1ff44ffa1e48cd917a99ca5815b9dd4e3c7eeae3e",
-      "bytes": 6736
+      "sha256": "95cdd969c36cfa926c1e0d01b583abc6086361fb0e274e9443fa4d0efe434963",
+      "bytes": 7484
     },
     {
       "path": "scripts/check-typecheck-baseline.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "142363e1e9688f04bc40ab8e02a104782c61bc24c469b70feac07d0b1c1e7a56",
-      "bytes": 7657
+      "sha256": "be8848cf41cc5e0f1c03cc81005ecd9dccd96b5cf1bede4e3929668349358a15",
+      "bytes": 7808
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -607,8 +607,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "06a07ae71e2209ec3bb241d4e3aeedef7f146b06f0a956d59cb8593c3ec8a3de",
-      "bytes": 23193
+      "sha256": "ba3672f204ee11f8a7f508e46d0ee9fdcb17ff118f55438040efc9493a640d8f",
+      "bytes": 23371
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "e7ca2d04421fcbf9e33a42c16cdec4344cd9fdb6a772d7e4da01299ae6b21833",
-      "bytes": 41268
+      "sha256": "8ac4aff89a658484b48f8290066c09fec0dd06ef5eb8d48eb4c9cbc529c7136e",
+      "bytes": 42844
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "9cd00c9cdcab03383b46c766cde4238f7f601030aee4ba4a2de3ebd388cc0f8b",
-      "bytes": 9770
+      "sha256": "2a31891a13a17f5ff11f3a5e0b9647b8d4e0bc89217ff41eeb66f6e184076840",
+      "bytes": 9933
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
@@ -807,8 +807,8 @@
     },
     {
       "path": "src/pages/admin/AdminCommand.jsx",
-      "sha256": "814c526aac174d40a089b52f90fd84e4afd0e196f1a61decf5415466efd8ef4f",
-      "bytes": 12532
+      "sha256": "02283b51f21320a5c532f734733e0841770dcf7ed1699cc0630b3bd20cc3da90",
+      "bytes": 12740
     },
     {
       "path": "src/pages/admin/AdminIntelligence.jsx",
@@ -817,8 +817,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "a2193f0a0a72e92ce93dc3f13eae3b19921b8ce418ca52b02a338e02b108935f",
-      "bytes": 13930
+      "sha256": "2e830370388b130fb1bd08b204c79324af063eee81ec44a426cf61382c5682c5",
+      "bytes": 15600
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
@@ -832,8 +832,8 @@
     },
     {
       "path": "tsconfig.critical.json",
-      "sha256": "1b1fa4451ebc5d5ed7d1841e873e842dc9e2780e8a34dbe26df61cbf6bdc7aa9",
-      "bytes": 3232
+      "sha256": "fa3899ac68e292c4bbedd03701d8fe2f47084e6e958740ed7aad83dabdd28448",
+      "bytes": 4258
     },
     {
       "path": "types/deno-shim.d.ts",
