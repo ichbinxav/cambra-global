@@ -1,0 +1,115 @@
+{
+  "name": "ProviderMarketPresence",
+  "type": "object",
+  "description": "P2 provider commercial/operational presence in a market. Presence does not imply every product is available or every merchant is eligible.",
+  "properties": {
+    "presence_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "legal_entity_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "presence_state": {
+      "type": "string",
+      "enum": [
+        "PRESENT",
+        "LIMITED",
+        "PARTNER_ONLY",
+        "UNAVAILABLE",
+        "UNKNOWN",
+        "NOT_RESEARCHED"
+      ]
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": [
+        "MARKET",
+        "MARKET_GROUP",
+        "EU",
+        "EEA",
+        "EUROZONE",
+        "GLOBAL",
+        "CUSTOM_SCOPE"
+      ]
+    },
+    "applicable_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    },
+    "research_state": {
+      "type": "string",
+      "enum": [
+        "NOT_RESEARCHED",
+        "RESEARCHED_UNRESOLVED",
+        "RESOLVED"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "presence_key",
+    "provider_id",
+    "market",
+    "presence_state",
+    "research_state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
