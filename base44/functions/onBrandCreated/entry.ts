@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { welcomeEmail } from '../../shared/emails/welcome.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
