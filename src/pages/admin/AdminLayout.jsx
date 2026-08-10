@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
@@ -9,18 +9,19 @@ import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
-  { path: "/admin", label: "Command Center", icon: LayoutDashboard, exact: true },
+  { path: "/admin", label: "Founder OS", icon: LayoutDashboard, exact: true },
   { path: "/admin/inbox", label: "Inbox", icon: Inbox, showQuestionsBadge: true },
   { path: "/admin/agents", label: "AI Operations", icon: Bot },
   { path: "/admin/developer", label: "CAMBRA Developer", icon: Code2 },
   { path: "/admin/automations", label: "Automations", icon: Workflow },
-  { path: "/admin/chat", label: "Chat", icon: MessageSquare },
+  { path: "/admin/chat", label: "Ask CAMBRA", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
   { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
   { path: "/admin/routing-intelligence", label: "Routing Intelligence", icon: Route },
   { path: "/admin/aggregate", label: "Aggregate", icon: Layers3 },
   { path: "/admin/finance", label: "Finance", icon: Landmark },
+  { path: "/admin/provider-economics", label: "Provider Economics", icon: Handshake },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
   { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
@@ -53,6 +54,8 @@ export default function AdminLayout() {
   const [pendingQuestions, setPendingQuestions] = useState(0);
   const [newWaitlist, setNewWaitlist] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [quickCommand, setQuickCommand] = useState("");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -232,7 +235,13 @@ export default function AdminLayout() {
               </span>
             ))}
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 min-w-0">
+            <form onSubmit={(e)=>{e.preventDefault();const q=quickCommand.trim();if(q){navigate(`/admin/chat?ask=${encodeURIComponent(q)}`);setQuickCommand("")}}} className="hidden md:flex items-center h-8 min-w-[220px] lg:min-w-[340px] rounded-lg border border-border/60 bg-background/50 px-2">
+              <Search size={12} className="text-muted-foreground shrink-0"/>
+              <input value={quickCommand} onChange={e=>setQuickCommand(e.target.value)} placeholder="Search or ask CAMBRA…" className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"/>
+              <span className="text-[9px] text-muted-foreground">↵</span>
+            </form>
+            <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label="Ask CAMBRA"><MessageSquare size={13}/></button>
             <a
               href="/Dashboard"
               className="h-8 px-3 rounded-lg border border-border/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
