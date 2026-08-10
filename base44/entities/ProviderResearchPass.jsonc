@@ -1,0 +1,88 @@
+{
+  "name": "ProviderResearchPass",
+  "type": "object",
+  "description": "P2 auditable research execution record. Proves what was attempted per market/family without inventing provider coverage.",
+  "properties": {
+    "pass_key": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "RUNNING",
+        "COMPLETED",
+        "PARTIAL",
+        "FAILED"
+      ]
+    },
+    "queries_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_types_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidates_found": {
+      "type": "number"
+    },
+    "verified": {
+      "type": "number"
+    },
+    "rejected": {
+      "type": "number"
+    },
+    "unresolved": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "pass_key",
+    "market",
+    "family",
+    "status",
+    "started_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
