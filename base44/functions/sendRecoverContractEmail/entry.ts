@@ -18,6 +18,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { recoverContractEmail } from '../../shared/emails/recoverContract.ts';
 import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 import {
   MAX_ATTEMPTS,
   PERMANENT_EMAIL_ERRORS,
@@ -39,6 +40,8 @@ export default async function (req: Request): Promise<Response> {
   if (!gate.ok) return gate.response;
 
   const svc = base44.asServiceRole;
+  const emergency = await emergencyState(svc);
+  if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
   const mandate_id = String(body?.mandate_id || '');
   // An admin resend is the ONLY way a second copy is ever sent, and it is logged
   // as a distinct event.
