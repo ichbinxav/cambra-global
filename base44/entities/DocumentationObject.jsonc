@@ -1,0 +1,81 @@
+{
+  "name": "DocumentationObject",
+  "type": "object",
+  "description": "P18 current documentation projection derived from source-controlled documentation registry. Historical versions live in DocumentationVersion.",
+  "properties": {
+    "doc_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "implementation_status": {
+      "type": "string",
+      "enum": [
+        "IMPLEMENTED",
+        "PARTIALLY_IMPLEMENTED",
+        "PLANNED",
+        "DEPRECATED",
+        "MISSING"
+      ]
+    },
+    "drift_status": {
+      "type": "string",
+      "enum": [
+        "CURRENT",
+        "OUTDATED",
+        "INCOMPLETE",
+        "CONTRADICTORY",
+        "UNVERIFIED"
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "system_version": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "content_json": {
+      "type": "object"
+    },
+    "content_hash": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "doc_key",
+    "title",
+    "implementation_status",
+    "drift_status",
+    "version",
+    "system_version"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
