@@ -178,6 +178,14 @@ describe("Public surfaces — no dormant-vertical CTAs or routes", () => {
     expect(src).not.toMatch(/^\s*slack:\s*{/m);
   });
 
+  it("demo connectors are hidden from merchant production UI unless explicitly enabled for dev/test", () => {
+    const src = readSrc("src/pages/ConnectIntegrations.jsx");
+    expect(src).toContain('VITE_ENABLE_DEMO_CONNECTORS === "true"');
+    expect(src).toContain('import.meta.env.DEV');
+    expect(src).toContain('const demoRows = showDemoConnectors ?');
+    expect(src).toContain('})) : [];');
+  });
+
   it("Onboarding does not import or render Shipping/SaaS modules", () => {
     const src = readSrc("src/pages/Onboarding.jsx");
     expect(src).not.toMatch(/import\s+ShippingModule/);
