@@ -39,38 +39,43 @@ const tcCritical = readEvidence("typecheck-critical");
 const tcBaseline = readEvidence("typecheck-baseline");
 
 const manualRequirements = [];
+const blockingManualRequirements = [];
+const addRequirement = (message, { blocking = false } = {}) => {
+  manualRequirements.push(message);
+  if (blocking) blockingManualRequirements.push(message);
+};
 const baseline = fs.existsSync("config/typecheck-baseline.json")
   ? JSON.parse(fs.readFileSync("config/typecheck-baseline.json", "utf8")) : null;
-if (!baseline || baseline.state !== "APPROVED") manualRequirements.push("typecheck baseline: candidate/approve flow not completed");
-if (!fs.existsSync(".github/workflows/ci.yml")) manualRequirements.push("CI workflow not installed (npm run ci:install from a real checkout)");
-if (!process.env.GITHUB_RUN_ID) manualRequirements.push("CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified");
+if (!baseline || baseline.state !== "APPROVED") addRequirement("typecheck baseline: candidate/approve flow not completed", { blocking: true });
+if (!fs.existsSync(".github/workflows/ci.yml")) addRequirement("CI workflow not installed (npm run ci:install from a real checkout)", { blocking: true });
+if (!process.env.GITHUB_RUN_ID) addRequirement("CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified");
 const productPolicy = fs.existsSync("config/product-policy.json")
   ? JSON.parse(fs.readFileSync("config/product-policy.json", "utf8")) : null;
 if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economics-v2" &&
     productPolicy?.economicTerms?.recoverEconomicsV2LegalApproved !== true) {
-  manualRequirements.push("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
+  addRequirement("LEGAL REVIEW REQUIRED: Recover Economics V2 contractual wording must be approved before new V2 acceptance is enabled");
 }
 if (fs.existsSync('src/docs/P12_INTELLIGENCE_ARCHITECTURE.md')) {
-  manualRequirements.push('LEGAL/PRIVACY RUNTIME REVIEW: CAMBRA now enforces a separate k>=10, identifier-free retained-intelligence layer; before materially widening cross-tenant benchmark use or relying on indefinite post-deletion retention at scale, re-assess lawful basis, residual re-identification risk and retention policy against actual production cohorts. Pseudonymized BenchmarkContribution data remains subject to normal deletion/retention rules.');
+  addRequirement('LEGAL/PRIVACY RUNTIME REVIEW: CAMBRA now enforces a separate k>=10, identifier-free retained-intelligence layer; before materially widening cross-tenant benchmark use or relying on indefinite post-deletion retention at scale, re-assess lawful basis, residual re-identification risk and retention policy against actual production cohorts. Pseudonymized BenchmarkContribution data remains subject to normal deletion/retention rules.');
 }
 if (fs.existsSync('src/docs/P13_SHADOW_ROUTING_ARCHITECTURE.md')) {
-  manualRequirements.push('ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.');
+  addRequirement('ROUTING ACTIVATION PROHIBITED: P13 is shadow/simulation only. Before any real routing, complete PCI DSS scope, PSD2/SCA and regulatory assessment, provider/network contractual review, real-time SLA/SLO and incident architecture, kill switch, payment idempotency/reconciliation proof, merchant controls and financial-liability review.');
 }
 if (productPolicy?.integrationStatus?.stripe !== "live_verified") {
-  manualRequirements.push(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
+  addRequirement(`PRODUCTION VALIDATION REQUIRED: Stripe live integration status is ${productPolicy?.integrationStatus?.stripe || "unknown"}; complete a real live-account connect/sync/verification proof before claiming full production seal`);
 }
 if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
-  manualRequirements.push('REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.');
+  addRequirement('REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.');
 }
 if (fs.existsSync('base44/functions/maintenanceEngine/function.jsonc') && fs.existsSync('base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc')) {
-  manualRequirements.push('RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.');
+  addRequirement('RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.');
 }
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
-  manualRequirements.push('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
+  addRequirement('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
 }
 for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
   const st = evidenceStatus(ev, tree.hash);
-  if (st !== "valid") manualRequirements.push(`evidence ${name}: ${st} (run the *:evidence command)`);
+  if (st !== "valid") addRequirement(`evidence ${name}: ${st} (run the *:evidence command)`, { blocking: true });
 }
 
 const manifest = {
@@ -113,6 +118,8 @@ const manifest = {
   typecheckBaselineEvidence: tcBaseline,
   artifactHashes: buildEvidence?.distHash ? { dist: buildEvidence.distHash } : null,
   manualRequirements,
+  blockingManualRequirements,
+  productionSealEligible: manualRequirements.length === 0,
   generatedAt: new Date().toISOString(),
 };
 
