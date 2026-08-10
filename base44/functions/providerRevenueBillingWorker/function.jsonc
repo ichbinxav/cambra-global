@@ -1,0 +1,1 @@
+{"name":"providerRevenueBillingWorker","automations":[{"name":"Provider revenue billing preparation","schedule":"0 10 1 * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
