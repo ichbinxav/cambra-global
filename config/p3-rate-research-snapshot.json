@@ -166,7 +166,7 @@
           "family": "LOCAL_PSP",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "adyen",
@@ -258,7 +258,7 @@
           "family": "LOCAL_PSP",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "worldline",
@@ -412,7 +412,7 @@
           "family": "LOCAL_PSP",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "adyen",
@@ -560,7 +560,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         }
       ]
     },
@@ -698,7 +698,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         }
       ]
     },
@@ -966,7 +966,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "ccv",
@@ -982,7 +982,7 @@
           "family": "PAYMENT_METHOD",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "wero",
@@ -1028,7 +1028,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "payu_p24",
@@ -1044,7 +1044,7 @@
           "family": "PAYMENT_METHOD",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         }
       ]
     },
@@ -1128,7 +1128,7 @@
           "family": "LOCAL_PSP",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "adyen",
@@ -1376,7 +1376,7 @@
           "family": "GLOBAL_PSP",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "worldline",
@@ -1400,7 +1400,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "nets_nexi",
@@ -1416,7 +1416,7 @@
           "family": "PAYMENT_METHOD",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         }
       ]
     },
@@ -1592,7 +1592,7 @@
           "family": "PAYMENT_METHOD",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         }
       ]
     },
@@ -1606,7 +1606,7 @@
           "family": "POS_TERMINAL",
           "evidence_level": "R",
           "materiality": "MATERIAL_TIER_1",
-          "research_outcome": "VERIFIED_PUBLIC"
+          "research_outcome": "PUBLIC_PARTIAL"
         },
         {
           "slug": "adyen",
