@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.75.0 — P14 Aggregate & Final Autonomous Revenue Engine Technical Seal (durability manifest)",
-  "generatedAt": "2026-08-10T00:02:43.789Z",
-  "packageVersion": "0.75.0",
+  "release": "CAMBRA v0.76.0 — P15 Provider Revenue Share & Dual-Sided Economics Technical Seal (durability manifest)",
+  "generatedAt": "2026-08-10T00:16:52.372Z",
+  "packageVersion": "0.76.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "a20c76a1971a11f0229395cb812a5ea7379a87d2f3269b897e01c5fa85ddbcf7",
+      "sha256": "7d289241c365595f2b0b99aae105b96461572088686931b652aa8120e3ecb4a0",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "6b021fff66d9d21807d7dbed331a598987698f3547122f7d3d9599aff07ab16b",
-      "bytes": 5721
+      "sha256": "bdb70ff69d6b50916abbb8e726e740aa03dcdbfd9d046cedb7fc94bd921c580b",
+      "bytes": 5723
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -557,8 +557,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "361deb9a923d48956550eaa365f5ade702ae2ac2ddf7388d46e9da74c82f036d",
-      "bytes": 7167
+      "sha256": "142363e1e9688f04bc40ab8e02a104782c61bc24c469b70feac07d0b1c1e7a56",
+      "bytes": 7657
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -607,8 +607,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "bd828bf5529c272ab31827a56edf5d56b3af6cde51c9d504d020a05c204b27b5",
-      "bytes": 22828
+      "sha256": "fbe97e6686422dcf6e84b746a53962d8545a2eb01f5cf2053fbc01bc9f9d3ecd",
+      "bytes": 23023
     },
     {
       "path": "src/components/recover/RecoverMandateModal.jsx",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "a1cda2bfd28f8e62dca3e241bc15dfa04f0676033db49a10ead641699e1b351e",
-      "bytes": 35019
+      "sha256": "8683f9386a4c9f624374e2035a01eba80a44916c2a3c2c240f9165f0ac31bbb0",
+      "bytes": 38318
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "dc6683011796975ca3fb90828c6e8918520539859597087279085b82a7282d87",
-      "bytes": 8915
+      "sha256": "aaa77a70585ea7e014ae4e25bdb4b914288dc2edd7ad281de4d3c6326f6191f1",
+      "bytes": 9442
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
