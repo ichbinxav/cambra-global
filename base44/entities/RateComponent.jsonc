@@ -1,0 +1,149 @@
+{
+  "name": "RateComponent",
+  "type": "object",
+  "description": "P3 atomic fee component. Integer ppm for percentages and integer minor units for money; mixed currencies are allowed when evidenced.",
+  "properties": {
+    "component_key": {
+      "type": "string"
+    },
+    "pricing_observation_id": {
+      "type": "string"
+    },
+    "component_type": {
+      "type": "string",
+      "enum": [
+        "PROCESSING_FEE",
+        "ACQUIRER_MARGIN",
+        "INTERCHANGE",
+        "SCHEME_FEE",
+        "FIXED_TRANSACTION_FEE",
+        "MONTHLY_FEE",
+        "SUBSCRIPTION_FEE",
+        "TERMINAL_PURCHASE",
+        "TERMINAL_RENTAL",
+        "SETUP_FEE",
+        "MINIMUM_MONTHLY_FEE",
+        "AUTHORIZATION_FEE",
+        "REFUND_FEE",
+        "CHARGEBACK_FEE",
+        "DISPUTE_FEE",
+        "FX_FEE",
+        "CROSS_BORDER_FEE",
+        "COMMERCIAL_CARD_UPLIFT",
+        "NON_EEA_UPLIFT",
+        "PREMIUM_CARD_UPLIFT",
+        "INTERNATIONAL_CARD_UPLIFT",
+        "PAYOUT_FEE",
+        "INSTANT_PAYOUT_FEE",
+        "SETTLEMENT_FEE",
+        "PAYMENT_METHOD_FEE",
+        "VOLUME_TIER",
+        "MINIMUM_COMMITMENT",
+        "CUSTOM_COMPONENT",
+        "OTHER_VERIFIED_COMPONENT"
+      ]
+    },
+    "fee_layer": {
+      "type": "string",
+      "enum": [
+        "PROVIDER",
+        "ACQUIRER",
+        "INTERCHANGE",
+        "SCHEME",
+        "PAYMENT_METHOD",
+        "GATEWAY",
+        "FX",
+        "HARDWARE",
+        "OTHER",
+        "UNKNOWN"
+      ]
+    },
+    "percentage_ppm": {
+      "type": "number"
+    },
+    "amount_minor": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "minimum_amount_minor": {
+      "type": "number"
+    },
+    "maximum_amount_minor": {
+      "type": "number"
+    },
+    "unit_basis": {
+      "type": "string",
+      "enum": [
+        "PER_TRANSACTION",
+        "PER_AUTHORIZATION",
+        "PER_REFUND",
+        "PER_CHARGEBACK",
+        "PER_PAYOUT",
+        "PER_SETTLEMENT",
+        "PER_MONTH",
+        "PER_ACCOUNT",
+        "PER_TERMINAL",
+        "PER_DEVICE",
+        "PER_ORDER",
+        "PER_CONVERSION",
+        "OTHER"
+      ]
+    },
+    "value_mode": {
+      "type": "string",
+      "enum": [
+        "KNOWN",
+        "PASS_THROUGH",
+        "UNKNOWN"
+      ]
+    },
+    "tax_treatment": {
+      "type": "string",
+      "enum": [
+        "INCLUDED",
+        "EXCLUDED",
+        "UNKNOWN"
+      ]
+    },
+    "condition_json": {
+      "type": "object"
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_assertion_id": {
+      "type": "string"
+    },
+    "component_sequence": {
+      "type": "number"
+    },
+    "semantic_fingerprint": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "component_key",
+    "pricing_observation_id",
+    "component_type",
+    "value_mode"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

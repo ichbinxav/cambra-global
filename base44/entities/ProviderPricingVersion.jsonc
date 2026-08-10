@@ -1,7 +1,7 @@
 {
   "name": "ProviderPricingVersion",
   "type": "object",
-  "description": "P12 bitemporal provider pricing ledger. Historical versions are append-only; active/current is resolved by time and state.",
+  "description": "P3 canonical PricingObservation ledger (legacy name preserved for compatibility). Append-only/versioned factual pricing truth; P4 statistical inference is forbidden here.",
   "properties": {
     "pricing_key": {
       "type": "string"
@@ -109,6 +109,315 @@
     "is_demo": {
       "type": "boolean",
       "default": false
+    },
+    "provider_legal_entity_id": {
+      "type": "string"
+    },
+    "provider_authorization_id": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "pricing_plan_id": {
+      "type": "string"
+    },
+    "payment_method_id": {
+      "type": "string"
+    },
+    "card_scope_id": {
+      "type": "string"
+    },
+    "pricing_schedule_version_id": {
+      "type": "string"
+    },
+    "pricing_visibility": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_COMPLETE",
+        "PUBLIC_PARTIAL",
+        "INDICATIVE",
+        "CUSTOM_QUOTE",
+        "NEGOTIATED_ONLY",
+        "CONTRACT_ONLY",
+        "NOT_PUBLIC",
+        "UNKNOWN"
+      ]
+    },
+    "pricing_model": {
+      "type": "string",
+      "enum": [
+        "FLAT",
+        "BLENDED",
+        "FIXED_PLUS_PERCENT",
+        "INTERCHANGE_PLUS",
+        "INTERCHANGE_PLUS_PLUS",
+        "TIERED",
+        "SUBSCRIPTION_PLUS_RATE",
+        "CUSTOM",
+        "HYBRID",
+        "PASS_THROUGH",
+        "UNKNOWN"
+      ]
+    },
+    "observation_type": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_PUBLISHED",
+        "PROVIDER_QUOTE_OBSERVED",
+        "MERCHANT_OBSERVED",
+        "CONTRACT_OBSERVED",
+        "STATEMENT_OBSERVED",
+        "NEGOTIATED",
+        "LEGACY_ESTIMATE",
+        "UNKNOWN"
+      ]
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": [
+        "MARKET",
+        "MARKET_GROUP",
+        "EU",
+        "EEA",
+        "EUROZONE",
+        "GLOBAL",
+        "CUSTOM_SCOPE",
+        "CUSTOM_CONTRACT",
+        "UNKNOWN_SCOPE"
+      ]
+    },
+    "applicable_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_markets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "merchant_segment": {
+      "type": "string"
+    },
+    "merchant_segment_scope_id": {
+      "type": "string"
+    },
+    "display_currency": {
+      "type": "string"
+    },
+    "processing_currency": {
+      "type": "string"
+    },
+    "settlement_currency": {
+      "type": "string"
+    },
+    "volume_min_minor": {
+      "type": "number"
+    },
+    "volume_max_minor": {
+      "type": "number"
+    },
+    "volume_currency": {
+      "type": "string"
+    },
+    "volume_period": {
+      "type": "string",
+      "enum": [
+        "MONTHLY",
+        "ANNUAL",
+        "OTHER"
+      ]
+    },
+    "transaction_amount_min_minor": {
+      "type": "number"
+    },
+    "transaction_amount_max_minor": {
+      "type": "number"
+    },
+    "transaction_amount_currency": {
+      "type": "string"
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_date_certainty": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "BOUNDED",
+        "INFERRED_FROM_OFFICIAL_CONTEXT",
+        "UNKNOWN"
+      ]
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retired_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "DISCOVERED",
+        "RESEARCHED",
+        "VERIFIED_PRIMARY",
+        "VERIFIED_SECONDARY",
+        "VERIFIED_MULTI_SOURCE",
+        "MERCHANT_OBSERVED",
+        "CONTRACT_VERIFIED",
+        "NEGOTIATED_VERIFIED",
+        "ESTIMATED_LEGACY",
+        "CONFLICT",
+        "STALE",
+        "SUPERSEDED",
+        "REJECTED",
+        "UNVERIFIED",
+        "UNKNOWN"
+      ]
+    },
+    "observation_completeness": {
+      "type": "string",
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "STRUCTURE_ONLY",
+        "UNKNOWN"
+      ]
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "confidence_band": {
+      "type": "string",
+      "enum": [
+        "VERIFIED_HIGH",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "DISCOVERY_ONLY",
+        "UNKNOWN"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CANDIDATE",
+        "CURRENT",
+        "SUPERSEDED",
+        "STALE",
+        "CONFLICT",
+        "REJECTED",
+        "QUARANTINED",
+        "ARCHIVED"
+      ]
+    },
+    "supersedes_observation_id": {
+      "type": "string"
+    },
+    "superseded_by_observation_id": {
+      "type": "string"
+    },
+    "research_pass_id": {
+      "type": "string"
+    },
+    "source_snapshot_id": {
+      "type": "string"
+    },
+    "evidence_assertion_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "semantic_fingerprint": {
+      "type": "string"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "access_scope": {
+      "type": "string",
+      "enum": [
+        "GLOBAL_PUBLIC",
+        "TENANT_PRIVATE",
+        "INTERNAL_RESTRICTED"
+      ]
+    },
+    "sensitivity_class": {
+      "type": "string",
+      "enum": [
+        "PUBLIC",
+        "COMMERCIAL_CONFIDENTIAL",
+        "MERCHANT_CONFIDENTIAL",
+        "RESTRICTED"
+      ]
+    },
+    "source_owner": {
+      "type": "string"
+    },
+    "sharing_policy": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_REUSE",
+        "TENANT_ONLY",
+        "AGGREGATE_ONLY",
+        "NO_REUSE"
+      ]
+    },
+    "promotion_policy_version": {
+      "type": "string"
+    },
+    "extractor_version": {
+      "type": "string"
+    },
+    "parser_version": {
+      "type": "string"
+    },
+    "resolver_policy_version": {
+      "type": "string"
+    },
+    "manual_override": {
+      "type": "boolean",
+      "default": false
+    },
+    "manual_override_reason": {
+      "type": "string"
+    },
+    "manual_override_by": {
+      "type": "string"
+    },
+    "manual_override_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [
@@ -118,7 +427,6 @@
     "pricing_dimension",
     "truth_level",
     "knowledge_state",
-    "effective_at",
     "observed_at",
     "version"
   ],

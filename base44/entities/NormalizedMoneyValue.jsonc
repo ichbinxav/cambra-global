@@ -1,0 +1,68 @@
+{
+  "name": "NormalizedMoneyValue",
+  "type": "object",
+  "description": "P3 optional derivative money normalization; original values remain immutable.",
+  "properties": {
+    "normalization_key": {
+      "type": "string"
+    },
+    "source_entity_type": {
+      "type": "string"
+    },
+    "source_entity_id": {
+      "type": "string"
+    },
+    "original_amount_minor": {
+      "type": "number"
+    },
+    "original_currency": {
+      "type": "string"
+    },
+    "normalized_amount_minor": {
+      "type": "number"
+    },
+    "normalized_currency": {
+      "type": "string"
+    },
+    "fx_snapshot_id": {
+      "type": "string"
+    },
+    "fx_rate_scaled_1e12": {
+      "type": "number"
+    },
+    "fx_source": {
+      "type": "string"
+    },
+    "fx_effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fx_retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "normalization_key",
+    "source_entity_type",
+    "source_entity_id",
+    "original_amount_minor",
+    "original_currency",
+    "normalized_amount_minor",
+    "normalized_currency",
+    "fx_source",
+    "fx_effective_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

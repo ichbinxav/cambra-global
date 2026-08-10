@@ -1,0 +1,76 @@
+{
+  "name": "RateChangeCandidate",
+  "type": "object",
+  "description": "P3 pre-promotion rate change state. Canonical pricing is never overwritten directly by fetch/extraction.",
+  "properties": {
+    "candidate_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "source_snapshot_id": {
+      "type": "string"
+    },
+    "current_observation_id": {
+      "type": "string"
+    },
+    "candidate_observation_json": {
+      "type": "object"
+    },
+    "semantic_fingerprint": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "DETECTED",
+        "EXTRACTED",
+        "VALIDATED",
+        "AUTO_PROMOTABLE",
+        "REVIEW_REQUIRED",
+        "PROMOTED",
+        "REJECTED",
+        "CONFLICT",
+        "FAILED"
+      ]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "detected_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "promotion_policy_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "candidate_key",
+    "state",
+    "detected_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

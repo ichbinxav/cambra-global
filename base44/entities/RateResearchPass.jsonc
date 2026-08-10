@@ -1,0 +1,125 @@
+{
+  "name": "RateResearchPass",
+  "type": "object",
+  "description": "P3 auditable research execution record with checkpoints/retry state.",
+  "properties": {
+    "pass_key": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "RUNNING",
+        "CHECKPOINTED",
+        "COMPLETED",
+        "PARTIAL",
+        "FAILED"
+      ]
+    },
+    "queries_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_urls_attempted": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "languages_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sources_discovered": {
+      "type": "number"
+    },
+    "sources_verified": {
+      "type": "number"
+    },
+    "observations_created": {
+      "type": "number"
+    },
+    "observations_updated": {
+      "type": "number"
+    },
+    "candidates_rejected": {
+      "type": "number"
+    },
+    "conflicts": {
+      "type": "number"
+    },
+    "unresolved_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "worker": {
+      "type": "string"
+    },
+    "parser_version": {
+      "type": "string"
+    },
+    "checkpoint_cursor": {
+      "type": "string"
+    },
+    "retry_count": {
+      "type": "number"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "pass_key",
+    "market",
+    "provider_slug",
+    "status",
+    "started_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

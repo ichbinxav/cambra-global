@@ -1,0 +1,89 @@
+{
+  "name": "MarketResearchUniverse",
+  "type": "object",
+  "description": "P3 versioned denominator for defensible market research completeness.",
+  "properties": {
+    "universe_key": {
+      "type": "string"
+    },
+    "snapshot_version": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "materiality": {
+      "type": "string",
+      "enum": [
+        "MATERIAL_TIER_1",
+        "MATERIAL_TIER_2",
+        "LONG_TAIL",
+        "DISCOVERY_CANDIDATE",
+        "NON_MATERIAL",
+        "OUT_OF_SCOPE"
+      ]
+    },
+    "materiality_reason": {
+      "type": "string"
+    },
+    "research_outcome": {
+      "type": "string",
+      "enum": [
+        "VERIFIED_PUBLIC",
+        "PUBLIC_PARTIAL",
+        "CUSTOM_QUOTE_VERIFIED",
+        "NOT_PUBLIC_VERIFIED",
+        "UNKNOWN_AFTER_RESEARCH",
+        "CONFLICT_RECORDED",
+        "PRESENCE_VERIFIED",
+        "CANDIDATE_UNRESOLVED",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "researched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "universe_key",
+    "snapshot_version",
+    "market",
+    "provider_slug",
+    "materiality",
+    "research_outcome"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

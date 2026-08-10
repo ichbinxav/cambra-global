@@ -1,0 +1,100 @@
+{
+  "name": "PricingWatchTarget",
+  "type": "object",
+  "description": "P3 risk-based source watch target.",
+  "properties": {
+    "watch_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "NORMAL",
+        "LOW"
+      ]
+    },
+    "cadence_hours": {
+      "type": "number"
+    },
+    "freshness_sla_hours": {
+      "type": "number"
+    },
+    "last_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_changed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "fresh_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_check_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stale_reason": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "PAUSED",
+        "STALE",
+        "FAILED",
+        "ACCESS_RESTRICTED",
+        "UNKNOWN"
+      ]
+    },
+    "failure_count": {
+      "type": "number"
+    },
+    "last_snapshot_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "watch_key",
+    "provider_slug",
+    "source_url",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "name": "RateApplicabilityCondition",
+  "type": "object",
+  "description": "P3 structured applicability condition that cannot safely be flattened into market/card/plan dimensions.",
+  "properties": {
+    "condition_key": {
+      "type": "string"
+    },
+    "pricing_observation_id": {
+      "type": "string"
+    },
+    "condition_type": {
+      "type": "string"
+    },
+    "operator": {
+      "type": "string"
+    },
+    "value_json": {
+      "type": "object"
+    },
+    "normalized_text": {
+      "type": "string"
+    },
+    "source_assertion_id": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "condition_key",
+    "pricing_observation_id",
+    "condition_type"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "FxSnapshot",
+  "type": "object",
+  "description": "P3 non-destructive FX normalization snapshot; reference rates are analytics inputs, never provider settlement truth.",
+  "properties": {
+    "fx_key": {
+      "type": "string"
+    },
+    "base_currency": {
+      "type": "string"
+    },
+    "quote_currency": {
+      "type": "string"
+    },
+    "rate_scaled_1e12": {
+      "type": "number"
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED_REFERENCE",
+        "STALE",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "fx_key",
+    "base_currency",
+    "quote_currency",
+    "source",
+    "effective_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

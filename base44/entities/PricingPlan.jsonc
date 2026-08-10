@@ -1,0 +1,66 @@
+{
+  "name": "PricingPlan",
+  "type": "object",
+  "description": "P3 canonical/versionable provider pricing plan identity.",
+  "properties": {
+    "plan_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "canonical_name": {
+      "type": "string"
+    },
+    "normalized_category": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "FUTURE",
+        "SUPERSEDED",
+        "INACTIVE",
+        "UNKNOWN"
+      ]
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effective_to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "plan_key",
+    "provider_id",
+    "canonical_name"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

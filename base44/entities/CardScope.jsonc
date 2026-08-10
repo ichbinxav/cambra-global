@@ -1,0 +1,81 @@
+{
+  "name": "CardScope",
+  "type": "object",
+  "description": "P3 card scope dimensions; unsupported dimensions remain UNKNOWN rather than inferred.",
+  "properties": {
+    "card_scope_key": {
+      "type": "string"
+    },
+    "schemes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "funding_type": {
+      "type": "string",
+      "enum": [
+        "DEBIT",
+        "CREDIT",
+        "PREPAID",
+        "UNKNOWN"
+      ]
+    },
+    "merchant_card_class": {
+      "type": "string",
+      "enum": [
+        "CONSUMER",
+        "COMMERCIAL",
+        "BUSINESS",
+        "CORPORATE",
+        "UNKNOWN"
+      ]
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "DOMESTIC",
+        "EEA",
+        "UK",
+        "NON_EEA",
+        "INTERNATIONAL",
+        "UNKNOWN"
+      ]
+    },
+    "premium": {
+      "type": "string",
+      "enum": [
+        "STANDARD",
+        "PREMIUM",
+        "UNKNOWN"
+      ]
+    },
+    "issuer_country": {
+      "type": "string"
+    },
+    "card_present_context": {
+      "type": "string"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "card_scope_key"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

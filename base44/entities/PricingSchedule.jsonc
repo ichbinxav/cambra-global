@@ -1,0 +1,50 @@
+{
+  "name": "PricingSchedule",
+  "type": "object",
+  "description": "P3 logical pricing schedule grouping related observations from one provider/product/market/plan.",
+  "properties": {
+    "schedule_key": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "pricing_plan_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "SUPERSEDED",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "schedule_key",
+    "provider_id",
+    "market"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "name": "RateSourceSnapshot",
+  "type": "object",
+  "description": "P3 normalized source snapshot for safe change detection without unnecessary full-page archival.",
+  "properties": {
+    "snapshot_key": {
+      "type": "string"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "http_status": {
+      "type": "number"
+    },
+    "etag": {
+      "type": "string"
+    },
+    "last_modified": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "normalized_content_hash": {
+      "type": "string"
+    },
+    "pricing_section_hash": {
+      "type": "string"
+    },
+    "normalized_extract_json": {
+      "type": "object"
+    },
+    "parser_version": {
+      "type": "string"
+    },
+    "extractor_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "HEALTHY",
+        "CHANGED",
+        "UNAVAILABLE",
+        "ACCESS_RESTRICTED",
+        "PARSER_FAILED",
+        "STALE",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "snapshot_key",
+    "source_url",
+    "retrieved_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

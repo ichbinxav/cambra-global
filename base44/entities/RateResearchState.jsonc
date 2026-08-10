@@ -1,0 +1,83 @@
+{
+  "name": "RateResearchState",
+  "type": "object",
+  "description": "P3 deterministic pricing research state per market/provider/product/family. Unknown after research is a valid closed state.",
+  "properties": {
+    "research_key": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "provider_slug": {
+      "type": "string"
+    },
+    "provider_product_id": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "NOT_RESEARCHED",
+        "SOURCE_DISCOVERY_STARTED",
+        "PRIMARY_SOURCE_FOUND",
+        "PUBLIC_PRICING_FOUND",
+        "PUBLIC_PARTIAL_PRICING_FOUND",
+        "CUSTOM_PRICING_CONFIRMED",
+        "NO_PUBLIC_PRICING_FOUND_AFTER_RESEARCH",
+        "CONFLICTING_SOURCES",
+        "STALE",
+        "READY",
+        "NOT_APPLICABLE",
+        "UNKNOWN_AFTER_RESEARCH",
+        "REQUIRES_DEEP_RESEARCH"
+      ]
+    },
+    "last_pass_id": {
+      "type": "string"
+    },
+    "last_researched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_count": {
+      "type": "number"
+    },
+    "primary_source_count": {
+      "type": "number"
+    },
+    "observation_count": {
+      "type": "number"
+    },
+    "unresolved_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "research_key",
+    "market",
+    "provider_slug",
+    "state"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
