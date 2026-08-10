@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "outreach";
 const TASK_TYPE = "send_outreach_email";
@@ -49,6 +50,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE MODE — strict Approval gate ════════════════════════════
     if (mode === "execute") {
+      const emergency = await emergencyState(base44.asServiceRole);
+      if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
