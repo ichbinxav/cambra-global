@@ -1,0 +1,73 @@
+{
+  "name": "RemediationKnowledge",
+  "type": "object",
+  "description": "P17 structured incident-learning library. Stores only validated remediation metadata, never secrets or raw provider payloads.",
+  "properties": {
+    "knowledge_key": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "incident_type": {
+      "type": "string"
+    },
+    "successful_action": {
+      "type": "string"
+    },
+    "root_cause": {
+      "type": "string"
+    },
+    "validation_count": {
+      "type": "number",
+      "default": 0
+    },
+    "success_count": {
+      "type": "number",
+      "default": 0
+    },
+    "failure_count": {
+      "type": "number",
+      "default": 0
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_incident_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prevention_json": {
+      "type": "object"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "knowledge_key",
+    "domain",
+    "incident_type",
+    "successful_action"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
