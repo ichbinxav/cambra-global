@@ -102,7 +102,7 @@ const CHAT_TOOLS = [
     description: "PRIMARY SYSTEM-BEHAVIOR DOCUMENTATION TOOL. Use for questions such as how Recover works, what an agent can do, what happens after acceptance, how billing is calculated, how Maintenance works, or how to stop CAMBRA. Returns source-backed P18 documentation and explicitly does NOT answer live operational state.",
     function: "documentationQuery",
     risk_level: 1,
-    input_schema: {type:"object",properties:{topic:{type:"string",enum:["founder_os","recover","aggregate","provider_economics","maintenance","billing","developer","security_privacy","routing","emergency_controls","ai_workforce","documentation"]},query:{type:"string"},locale:{type:"string",enum:["en","fr","es"]}}},
+    input_schema: {type:"object",properties:{topic:{type:"string",enum:["founder_os","product","acquisition","recover","aggregate","provider_intelligence","moat","provider_economics","maintenance","billing","developer","security_privacy","routing","emergency_controls","ai_workforce","documentation"]},query:{type:"string"},locale:{type:"string",enum:["en","fr","es"]}}},
   },
   {
     name: "founder_chief_of_staff",
