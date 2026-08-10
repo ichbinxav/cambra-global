@@ -1,0 +1,1 @@
+{"name":"providerRevenueAttributionWorker","automations":[{"name":"Provider revenue attribution","schedule":"20 * * * *","input":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"}}]}
