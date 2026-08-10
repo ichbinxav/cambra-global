@@ -77,6 +77,7 @@ const AdminIntelligence = lazy(() => import('@/pages/admin/AdminIntelligence'));
 const AdminRoutingIntelligence = lazy(() => import('@/pages/admin/AdminRoutingIntelligence'));
 const AdminAggregate = lazy(() => import('@/pages/admin/AdminAggregate'));
 const AdminFinance = lazy(() => import('@/pages/admin/AdminFinance'));
+const AdminProviderEconomics = lazy(() => import('@/pages/admin/AdminProviderEconomics'));
 const AdminFounderControl = lazy(() => import('@/pages/admin/AdminFounderControl'));
 const ReviewQueue = lazy(() => import('@/pages/admin/ReviewQueue'));
 const EclOperations = lazy(() => import('@/pages/admin/EclOperations')); 
@@ -330,6 +331,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/routing-intelligence" element={withBoundary(<AdminRoutingIntelligence />)} />
           <Route path="/admin/aggregate" element={withBoundary(<AdminAggregate />)} />
           <Route path="/admin/finance" element={withBoundary(<AdminFinance />)} />
+          <Route path="/admin/provider-economics" element={withBoundary(<AdminProviderEconomics />)} />
           <Route path="/admin/founder-control" element={withBoundary(<AdminFounderControl />)} />
           <Route path="/admin/evidence-review" element={withBoundary(<ReviewQueue />)} />
           <Route path="/admin/ecl-operations" element={withBoundary(<EclOperations />)} />
