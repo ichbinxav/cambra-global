@@ -1,0 +1,58 @@
+{
+  "name": "DocumentationVersion",
+  "type": "object",
+  "description": "P18 append-only-ish documentation history. A new row is written when a DocumentationObject content hash changes.",
+  "properties": {
+    "version_key": {
+      "type": "string"
+    },
+    "doc_key": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "system_version": {
+      "type": "string"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "content_json": {
+      "type": "object"
+    },
+    "source_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version_key",
+    "doc_key",
+    "version",
+    "system_version",
+    "content_hash",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
