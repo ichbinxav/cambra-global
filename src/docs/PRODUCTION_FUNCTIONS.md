@@ -282,3 +282,13 @@ P16 is deliberately a governance layer above autonomous operations. It does not 
 | dependencySecurityWorker | C/internal · 6h | Registered DeveloperWorkspace repositories + GitHub Dependabot → AutonomyIncident | Continuous dependency alert watch where GitHub/Dependabot coverage exists. Findings are human-required; no dependency patch is auto-merged. |
 
 P17 reuses the existing OAuth refresh, webhook DLQ retry, Recover billing reconciliation, Provider Intelligence maintenance and Developer Migration/Signal machinery. A repair is never marked resolved until its post-action verification passes; failed recovery is escalated and retained as negative remediation evidence.
+
+## P18 — Operating Bible, Founder Handbook & Living Documentation (2026-08-10)
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| documentationQuery | B/admin | Source-controlled documentation registry | Answers system-behavior questions in EN/FR/ES and explicitly labels the result non-live. Current metrics/incidents must still use Founder OS/domain queries. |
+| documentationMaintenanceWorker | C/internal · daily | Documentation registry → DocumentationObject / DocumentationVersion / DocumentationHealthAssessment | Versions structured documentation and publishes runtime Documentation Health. It cannot modify product/economic behavior or promote a feature from planned/partial to implemented by itself. |
+| emergencyControlAdmin | B/admin | EmergencyControl + existing OutboundControl / CommercialPolicy | Founder emergency containment. SAFE MODE blocks new external communications, negotiation execution, migration starts and new Recover invoice issuance while preserving monitoring, reconciliation and evidence. Activation/restoration require explicit confirmation tokens. |
+
+P18 adds a release-time documentation drift gate over the implementation paths referenced by the canonical documentation registry. SAFE MODE is deliberately not described as a universal kill switch for every internal/read-only agent: it is enforced at the material external-effect boundaries, while narrower acquisition/policy/access revocation controls remain separate. Billing pause means new issuance only; existing financial truth and reconciliation continue.
