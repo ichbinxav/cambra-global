@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -24,6 +24,7 @@ const NAV = [
   { path: "/admin/provider-economics", label: "Provider Economics", icon: Handshake },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
   { path: "/admin/maintenance", label: "Maintenance", icon: Wrench },
+  { path: "/admin/documentation", label: "Operating Bible", icon: BookOpen },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
   { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
   { path: "/admin/overview", label: "Overview", icon: BarChart3 },
@@ -45,6 +46,19 @@ const NAV = [
   { path: "/admin/approvals", label: "Approvals", icon: ShieldAlert, showPendingBadge: true },
   { path: "/admin/copilot", label: "Founder Copilot", icon: Sparkles },
 ];
+
+function documentationTopic(path) {
+  if (path.startsWith('/admin/aggregate')) return 'aggregate';
+  if (path.startsWith('/admin/provider-economics') || path.startsWith('/admin/providers')) return 'provider_economics';
+  if (path.startsWith('/admin/finance') || path.startsWith('/admin/recover-billing') || path.startsWith('/admin/invoices')) return 'billing';
+  if (path.startsWith('/admin/maintenance') || path.startsWith('/admin/ecl-operations')) return 'maintenance';
+  if (path.startsWith('/admin/developer')) return 'developer';
+  if (path.startsWith('/admin/agents') || path.startsWith('/admin/automations')) return 'ai_workforce';
+  if (path.startsWith('/admin/routing-intelligence')) return 'routing';
+  if (path.startsWith('/admin/compliance') || path.startsWith('/admin/integrations') || path.startsWith('/admin/api-integrations')) return 'security_privacy';
+  if (path.startsWith('/admin/documentation')) return 'documentation';
+  return 'founder_os';
+}
 
 export default function AdminLayout() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -243,6 +257,7 @@ export default function AdminLayout() {
               <span className="text-[9px] text-muted-foreground">↵</span>
             </form>
             <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label="Ask CAMBRA"><MessageSquare size={13}/></button>
+            <Link to={`/admin/documentation?topic=${documentationTopic(location.pathname)}`} className="hidden lg:inline-flex h-8 px-3 rounded-lg border border-border/60 text-[11px] font-bold items-center gap-1.5 hover:bg-secondary"><HelpCircle size={12}/>How does this work?</Link>
             <a
               href="/Dashboard"
               className="h-8 px-3 rounded-lg border border-border/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
