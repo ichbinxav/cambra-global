@@ -1,3 +1,7 @@
+// Legacy P6 lead-fit scorer. Despite the historical function name, this is
+// not canonical P5 merchant economics and must never emit savings, rates or
+// executable recommendations. Canonical P5 lives in p5OpportunityEngine.js
+// and MerchantOpportunity.jsonc.
 function n(v:any){const x=Number(v);return Number.isFinite(x)?x:null}
 function s(v:any){return String(v||'').toLowerCase()}
 export function deterministicMerchantOpportunity(lead:any){
