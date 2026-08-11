@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { handleAdminGlobalSearch } from '../adminGlobalSearch/entry.ts';
 
 Deno.serve(async (req) => {
+  const routedBody = await req.clone().json().catch(() => ({}));
+  if (routedBody?.action === 'global_search') return handleAdminGlobalSearch(req);
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();

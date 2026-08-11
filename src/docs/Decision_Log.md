@@ -2399,7 +2399,7 @@ Motor puro `src/lib/paymentsGap.js` + endpoint Deno `base44/functions/calculateP
 - Secret `INTERNAL_CALL_SECRET` (32-hex, generado local con `openssl rand -hex 32`).
 
 **Deudas conocidas de Chunk 2 (documentadas, no bugs):**
-- FX cross-currency: motor asume EUR/GBP/USD ≈ 1:1 para el componente `fixed_fee` (magnitudes <€0.50). Es correcto para primera-pasada; cuando entren datos live de Stripe se refinará con tipo de cambio real.
+- **Registro histórico supersedido:** aquella primera pasada asumía paridad para un componente pequeño. La política vigente no permite esa inferencia: conserva moneda original, exige tipo/fuente/fecha FX explícitos y el proyector documental bloquea cualquier moneda distinta de EUR con `analyzer_requires_eur`. No hay feed FX de producción verificado.
 - Field `intl_pct` normalizado y aceptado pero NO consumido aún — reservado para uplift de tarjetas internacionales cuando se seedeen filas premium/intl en Fase 6.
 - `BPS_PER_PCT` const declarada pero no usada (guardián por si evoluciona el output — 3 líneas de código a limpiar si molesta).
 

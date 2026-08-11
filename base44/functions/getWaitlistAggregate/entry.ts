@@ -4,10 +4,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
  * getWaitlistAggregate — admin-only.
  *
  * Purpose: aggregate demand across all "Join to recover" waitlist signups —
- * combined volume, brand count, breakdown by tier and country. This is
- * NEGOTIATION AMMUNITION for the founder ("142 brands, €38M combined volume
- * ready to move"), not a public page. Never expose these numbers publicly
- * without an aggregation floor.
+ * verified combined volume, brand count, breakdown by tier and country.
+ * Unverified/manual/anonymous estimates are counted as excluded demand but
+ * NEVER enter economic totals or negotiation claims.
  *
  * Data flow (single source of truth):
  *   Lead (waitlist)  → session_id parsed from `notes`  →  AnalyzerResult
@@ -16,13 +15,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
  *   AnalyzerInput.monthly_revenue, which are the outputs of scoreEngine.js.
  *   NEVER recomputes anything here — this is a read + sum, not a calculator.
  *
- * Trust note: until server-side recalculation lands (see TODO in
- * submitAnonymousAnalysis), the AnalyzerResult figures on anonymous sessions
- * are client-declared. We defend the aggregate with:
- *   - a per-brand cap (default €5M/yr in savings, €50M/mo in revenue) — anything
- *     above is treated as an outlier and dropped from the aggregate (still
- *     visible in the raw Lead list, just not summed);
- *   - the aggregate is admin-only.
+ * Trust boundary: a row contributes money only when it is non-anonymous,
+ * verification_status=verified and carries integration/vertical provenance.
+ * Per-brand caps remain a second layer against corrupted verified rows.
  *
  * Endpoint classification: ADMIN_REQUIRED.
  * asServiceRole justification: reads Lead / AnalyzerResult / AnalyzerInput
@@ -53,6 +48,13 @@ function parseSessionId(notes: string | undefined | null): string | null {
   if (!m) return null;
   const id = m[1];
   return UUID_V4.test(id) ? id : null;
+}
+
+function isVerifiedEconomicEvidence(result: any): boolean {
+  if (!result || result.was_anonymous === true || result.anon_session_id) return false;
+  if (result.verification_status !== 'verified') return false;
+  const scopes = Array.isArray(result.verification_scope) ? result.verification_scope.filter(Boolean) : [];
+  return Boolean(result.source_integration_id) || scopes.length > 0;
 }
 
 Deno.serve(async (req) => {
@@ -132,6 +134,7 @@ Deno.serve(async (req) => {
     let combined_savings = 0;
     let combined_monthly_revenue = 0;
     let linked_brands = 0;
+    let unverified_excluded = 0;
     let outliers_dropped = 0;
 
     const byTier:    Record<string, { brands: number; savings: number; monthly_revenue: number }> = {};
@@ -140,6 +143,11 @@ Deno.serve(async (req) => {
 
     for (const { result } of linkedResults) {
       const input = result.input_id ? inputById.get(result.input_id) : null;
+
+      if (!isVerifiedEconomicEvidence(result)) {
+        unverified_excluded += 1;
+        continue;
+      }
 
       const savings = Number(result.total_savings || 0);
       const monthlyRev = Number(input?.monthly_revenue || 0);
@@ -184,6 +192,8 @@ Deno.serve(async (req) => {
         total_signups: totalSignups,
         signups_without_session: withoutSession, // landing-page-only signups
         linked_brands,
+        linked_estimates: linkedResults.length,
+        unverified_excluded,
         outliers_dropped,
         combined_savings_yearly: Math.round(combined_savings),
         combined_monthly_revenue: Math.round(combined_monthly_revenue),
@@ -195,10 +205,7 @@ Deno.serve(async (req) => {
           savings_per_brand: CAP_SAVINGS_PER_BRAND,
           monthly_revenue: CAP_MONTHLY_REVENUE,
         },
-        // Trust flag — the numbers above come from client-declared
-        // AnalyzerResults on the anonymous path. Surface this in the UI so
-        // the admin knows what they're looking at.
-        source_verification: 'client_declared_unverified',
+        source_verification: 'verified_only_unverified_excluded',
       },
     });
   } catch (error) {

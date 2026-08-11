@@ -1,4 +1,4 @@
-# CAMBRA AI WORKFORCE — SOURCE-DERIVED OPERATING CATALOG — v0.79.0
+# CAMBRA AI WORKFORCE — SOURCE-DERIVED OPERATING CATALOG — v0.92.0
 
 Derived from `src/lib/agentRegistry.js` and `base44/shared/agentAuthority.ts`. Backend deterministic/scheduled workers are catalogued separately in `src/docs/PRODUCTION_FUNCTIONS.md`. Missing authority mappings are never inferred.
 
@@ -16,9 +16,9 @@ Derived from `src/lib/agentRegistry.js` and `base44/shared/agentAuthority.ts`. B
 | Acquisition Loop | `autonomousCommercialWorker` | L3 | Hourly policy-gated lead outreach; suppression, business-hours and daily caps are deterministic. | context/domain state | Claude + Resend |
 | Reply Operator | `commercialReplyAgent` | L3 | Classifies inbound replies and continues routine threads; opt-out stops immediately and L4 escalates. | context/domain state | Claude + Resend |
 | Provider Negotiation | `providerNegotiationAgent` | L3 | Persistent multi-round pricing negotiation inside a Recover mandate; never auto-accepts a final/material deal. | context/domain state | Claude + Resend |
-| Outreach Legacy | `outreachAgent` | L3 | Legacy per-email approval path retained for controlled/manual outreach. | context/domain state | Resend |
-| Follow Up Legacy | `followUpAgent` | L3 | Legacy approval-gated follow-up path; autonomous threads use Commercial Autonomy instead. | context/domain state | Instantly |
-| Meeting | `meetingAgent` | L3 | Uses real Cal.com availability only; missing calendar data is a blocker, never fabricated slots. | context/domain state | Cal.com |
+| Outreach Legacy | `outreachAgent` | L3 | Legacy per-email approval path retained for controlled/manual outreach; approved execution is delegated to the canonical sender. | context/domain state | Central commercial sender |
+| Follow Up Legacy | `followUpAgent` | L3 | Legacy approval-gated follow-up path; approved execution is delegated to the canonical sender. | context/domain state | Central commercial sender |
+| Meeting | `meetingAgent` | L3 | Compatibility adapter to the governed Founder meeting coordinator; Outlook is the only availability/booking truth and missing calendar data blocks. | context/domain state | Outlook |
 | Blog | `blogAgent` | L2 | Drafts de artículos largos. | context/domain state | Claude + SurferSEO |
 | Newsletter | `newsletterAgent` | L2 | Draft del newsletter mensual. | context/domain state | Claude |
 | LinkedIn | `linkedinAgent` | L2 | Drafts de posts de LinkedIn. | context/domain state | Taplio |

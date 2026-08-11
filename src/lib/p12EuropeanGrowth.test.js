@@ -57,14 +57,14 @@ describe('P12 European launch and growth intelligence', () => {
     const policy = json('config/p12-growth-policy.json'); const kpis = json('config/p12-kpi-definitions.json'); expect(policy.version).toBe(DEFAULT_GROWTH_POLICY.version); expect(policy.mode).toBe('SHADOW_RECOMMEND_ONLY'); expect(kpis.kpis).toHaveLength(10); expect(kpis.kpis.find((x) => x.key === 'cac').definition).toContain('missing cost categories make CAC unknown');
   });
 
-  it('builds the 33-market portfolio inside P8 without a second orchestrator', () => {
-    const worker = read('base44/functions/europeanGrowthIntelligenceWorker/entry.ts'); const orchestrator = read('base44/functions/autonomousCompanyOrchestrator/entry.ts');
-    expect(worker).toContain('for (const market of EUROPE_MARKETS'); expect(worker).toContain('material_execution:false'); expect(worker).toContain("event_type:'MARKET_PORTFOLIO_UPDATED'"); expect(worker).not.toMatch(/commercialSendMessage|createEligibleRecoverInvoices|startPaymentsMigration|stripeBillingWebhook/); expect(orchestrator).toContain("'europeanGrowthIntelligenceWorker'");
+  it('builds the 33-market portfolio inside P8 without a second orchestrator or function slot', () => {
+    const runtime = read('base44/shared/growthPathRuntime.ts'); const config = json('base44/functions/getEuropeMarketsCommandCenter/function.jsonc');
+    expect(runtime).toContain('for (const market of EUROPE_MARKETS'); expect(runtime).toContain('material_execution:false'); expect(runtime).toContain("event_type:'MARKET_PORTFOLIO_UPDATED'"); expect(runtime).not.toMatch(/commercialSendMessage|createEligibleRecoverInvoices|startPaymentsMigration|stripeBillingWebhook/); expect(config.automations[0]).toMatchObject({ function_name:'getEuropeMarketsCommandCenter',repeat_unit:'hours',repeat_interval:6,is_active:true,function_args:{internal_secret:'{{INTERNAL_CALL_SECRET}}'} });
   });
 
   it('reuses P9, P10, P11, Founder OS, approval inbox, SEO, partners and emergency controls', () => {
-    const worker = read('base44/functions/europeanGrowthIntelligenceWorker/entry.ts'); const command = read('base44/functions/getEuropeanGrowthCommandCenter/entry.ts');
-    expect(worker).toContain("from '../../shared/localeRuntime.ts'"); expect(worker).toContain('RegulatoryPolicyVersion'); expect(worker).toContain('ProductionReadinessSnapshot'); expect(worker).toContain('emergencyState'); expect(command).toContain("Approval.filter({ status:'pending' }");
+    const runtime = read('base44/shared/growthPathRuntime.ts'); const command = read('base44/functions/getEuropeanGrowthCommandCenter/entry.ts');
+    expect(runtime).toContain("from './localeRuntime.ts'"); expect(runtime).toContain('RegulatoryPolicyVersion'); expect(runtime).toContain('ProductionReadinessSnapshot'); expect(runtime).toContain('emergencyState'); expect(command).toContain("Approval.filter({ status:'pending' }");
     expect(read('base44/functions/founderOSQuery/entry.ts')).toContain('why_metric'); expect(fs.existsSync('base44/functions/seoAgent/entry.ts')).toBe(true); expect(fs.existsSync('base44/shared/referralProgram.ts')).toBe(true);
   });
 

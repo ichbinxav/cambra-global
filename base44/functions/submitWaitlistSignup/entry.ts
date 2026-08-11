@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { consumeRateLimit } from '../../shared/rateLimit.ts';
 
 /**
  * submitWaitlistSignup
@@ -39,34 +40,8 @@ async function checkRateLimit(base44: any, ip: string) {
   const parsed = envRaw ? parseInt(envRaw, 10) : NaN;
   const limit = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_LIMIT_PER_HOUR;
 
-  const now = new Date();
-  const windowStart = new Date(Math.floor(now.getTime() / 3600000) * 3600000).toISOString();
-  const reset = new Date(new Date(windowStart).getTime() + 3600000).toISOString();
   const principalId = `submitWaitlistSignup:${ip}`;
-
-  const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({
-    principal_id: principalId,
-    window_start: windowStart,
-  }).catch(() => []);
-
-  const counter = matches?.[0];
-  if (!counter) {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id: principalId,
-      principal_type: 'ip',
-      window_start: windowStart,
-      count: 1,
-      limit_per_minute: limit,
-    }).catch(() => null);
-    return { ok: true, remaining: limit - 1, limit, reset };
-  }
-  if ((counter.count || 0) >= limit) {
-    return { ok: false, remaining: 0, limit, reset };
-  }
-  await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, {
-    count: (counter.count || 0) + 1,
-  }).catch(() => null);
-  return { ok: true, remaining: limit - (counter.count || 0) - 1, limit, reset };
+  return consumeRateLimit(base44.asServiceRole,{principal_id:principalId,principal_type:'ip',limit,window_seconds:3600});
 }
 
 Deno.serve(async (req) => {

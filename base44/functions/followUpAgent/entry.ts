@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { assertOperationAllowed } from '../../shared/operationalControl.ts';
+import { canonicalMarket } from '../../shared/marketContext.ts';
 
 const AGENT_NAME = "follow_up";
 const TASK_TYPE = "send_follow_up_email";
@@ -17,6 +17,46 @@ function parseDraftEmail(text) {
     subject: (subjectMatch?.[1] || "").trim(),
     body: (bodyMatch?.[1] || text).trim(),
   };
+}
+
+function languageFor(country) {
+  const iso2 = canonicalMarket(country)?.iso2;
+  return iso2 === 'FR' ? 'fr' : iso2 === 'ES' ? 'es' : 'en';
+}
+
+async function ensureCanonicalThread(svc, lead, preferredId = '') {
+  if (preferredId) {
+    const preferred = await svc.entities.CommunicationThread.get(preferredId).catch(() => null);
+    if (preferred && !['closed', 'suppressed'].includes(String(preferred.status || ''))) return preferred;
+  }
+  const rows = await svc.entities.CommunicationThread.filter(
+    { engine: 'merchant_acquisition', lead_id: lead.id }, '-created_date', 5,
+  ).catch(() => []);
+  const available = rows.find((row) => !['closed', 'suppressed'].includes(String(row.status || '')));
+  if (available) return available;
+
+  return svc.entities.CommunicationThread.create({
+    thread_key: `legacy-follow-up:${lead.id}`,
+    engine: 'merchant_acquisition',
+    related_entity_type: 'OutboundLead',
+    related_entity_id: lead.id,
+    lead_id: lead.id,
+    counterparty_email: lead.contact_email,
+    counterparty_name: lead.contact_full_name || '',
+    company_name: lead.company_name || '',
+    relationship_type: 'merchant',
+    language: languageFor(lead.country),
+    status: 'awaiting_approval',
+    conversation_state: 'WAITING_APPROVAL',
+    policy_key: '',
+    policy_version: '',
+    sending_profile_resolution_status: 'REVIEW_REQUIRED',
+    sending_profile_resolution_reason: 'legacy_thread_has_no_deterministic_profile_evidence',
+    automation_paused: true,
+    pause_reason: 'legacy_sending_profile_review_required',
+    summary: `Legacy approved follow-up to ${lead.company_name || lead.contact_email}`,
+    market_jurisdiction: canonicalMarket(lead.country)?.iso2 || '',
+  });
 }
 
 Deno.serve(async (req) => {
@@ -56,33 +96,38 @@ Deno.serve(async (req) => {
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
-      const instantlyKey = Deno.env.get("INSTANTLY_API_KEY");
-      if (!instantlyKey) {
-        throw new Error("TOOL_NOT_CONFIGURED: añade INSTANTLY_API_KEY a Base44 secrets para enviar emails");
-      }
-
       const payload = ap.draft_payload_json || {};
-      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`email:legacy-follow-up:${ap.id}`, category:'email', provider:'instantly', source:'followUpAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.instantly.ai/api/v2/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${instantlyKey}` },
-        body: JSON.stringify({
-          to: payload.to,
-          subject: payload.subject,
-          body: payload.body,
-          reply_to_thread_id: payload.thread_id || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(`Instantly API error: ${data?.error?.message || res.statusText}`);
+      const lead = payload.lead_id
+        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch(() => null)
+        : null;
+      if (!lead) throw new Error('approved_follow_up_lead_missing');
+      const thread = await ensureCanonicalThread(base44.asServiceRole, lead, payload.communication_thread_id || '');
+      const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+      const send = await base44.asServiceRole.functions.invoke('commercialSendMessage', {
+        thread_id: thread.id,
+        action: 'follow_up',
+        classification: 'follow_up',
+        subject: payload.subject,
+        text: payload.body,
+        to: payload.to,
+        approval_id: ap.id,
+        agent_name: 'follow_up',
+        idempotency_key: `legacy-follow-up-approved:${ap.id}`,
+        sending_profile_key: thread.sending_profile_key || undefined,
+        manual_override: true,
+        internal_secret: internal,
+      }).catch((error) => ({ data: { ok: false, error: String(error?.message || error) } }));
+      const sent = send?.data || send || {};
+      if (sent.ok === false) throw new Error(`central_send_failed:${sent.error || 'unknown'}`);
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
         output_summary: `Sent follow-up #${payload.step || "?"} to ${payload.to}`,
-        output_payload_json: { instantly_response: data, approval_id: ap.id },
+        output_payload_json: { central_send: sent, communication_thread_id: thread.id, approval_id: ap.id },
         completed_at: new Date().toISOString(),
       });
 
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, sent: true });
+      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, thread_id: thread.id, sent: true });
     }
 
     // ═══ DRAFT MODE — never calls Instantly ═════════════════════════════
@@ -94,6 +139,8 @@ Deno.serve(async (req) => {
     const lead = await base44.asServiceRole.entities.OutboundLead.get(leadId).catch(() => null);
     if (!lead) return Response.json({ ok: false, error: "Lead not found" }, { status: 404 });
     if (!lead.contact_email) return Response.json({ ok: false, error: "Lead has no contact_email" }, { status: 400 });
+
+    const thread = await ensureCanonicalThread(base44.asServiceRole, lead, body?.communication_thread_id || '');
 
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id: "_platform",
@@ -148,7 +195,8 @@ Deno.serve(async (req) => {
       body: emailBody,
       lead_id: lead.id,
       step,
-      thread_id: body?.thread_id || null,
+      communication_thread_id: thread.id,
+      legacy_external_thread_id: body?.thread_id || null,
     };
 
     approval = await base44.asServiceRole.entities.Approval.create({

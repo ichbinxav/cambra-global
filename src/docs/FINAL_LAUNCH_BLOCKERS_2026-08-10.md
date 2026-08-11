@@ -1,5 +1,11 @@
 # CAMBRA Final Launch-Blocker Audit — 2026-08-10
 
+> Historical evidence snapshot. Statements below about connected accounts,
+> enabled switches or active policies describe what was observed on 2026-08-10;
+> they are not current runtime proof for v0.92.0. Use
+> `CAMBRA_AZ_FINAL_AUDIT_2026-08-11.md`, fresh deployed gate evidence and the
+> final-SHA release manifest for the current launch decision.
+
 This register is deliberately separate from historical decision logs. It classifies current launch readiness from the actual repository/runtime evidence available during the final autonomy pass.
 
 ## CLOSED / VERIFIED IN REPOSITORY

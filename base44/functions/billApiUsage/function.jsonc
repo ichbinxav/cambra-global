@@ -1,0 +1,21 @@
+{
+  "name": "billApiUsage",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Bill API Usage (Monthly Overage)",
+      "description": "Invoices each organization's API request overage from the previous month. Runs on the 1st of each month and remains protected by the global emergency control and per-record idempotency claim.",
+      "function_args": {},
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "months",
+      "repeat_interval": 1,
+      "repeat_on_day_of_month": 1,
+      "start_time": "00:00",
+      "ends_type": "never",
+      "function_name": "billApiUsage"
+    }
+  ]
+}

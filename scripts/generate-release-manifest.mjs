@@ -37,6 +37,7 @@ const buildEvidence = readEvidence("build");
 const lintEvidence = readEvidence("lint");
 const tcCritical = readEvidence("typecheck-critical");
 const tcBaseline = readEvidence("typecheck-baseline");
+const dependencyAudit = readEvidence("dependency-audit");
 
 const manualRequirements = [];
 const blockingManualRequirements = [];
@@ -70,6 +71,14 @@ if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
 if (fs.existsSync('base44/functions/maintenanceEngine/function.jsonc') && fs.existsSync('base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc')) {
   addRequirement('RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.');
 }
+if (fs.existsSync('base44/entities/IncidentAlertDelivery.jsonc')) {
+  addRequirement('RUNTIME ALERT DELIVERY CONFIGURATION REQUIRED: configure a Founder/Admin alert recipient, deploy the alert ledger, and prove HIGH/CRITICAL delivery, retry, deduplication and Founder Admin visibility with a controlled incident.');
+}
+if (fs.existsSync('base44/entities/CostBudgetControl.jsonc')) {
+  addRequirement('POST-DEPLOYMENT COST CONTROL MIGRATION REQUIRED: re-apply the Founder-approved daily/monthly/category budget so the new CAS reservation fields are initialized; until then paid operations intentionally fail closed.');
+}
+addRequirement('EMAIL DELIVERABILITY PROOF REQUIRED: verify production SPF/DKIM/DMARC plus bounce, complaint, unsubscribe and suppression handling against the real sending domain and provider.');
+addRequirement('FOUNDER CONTROL DRILL REQUIRED: in the real runtime prove start/pause/resume/approve/reject and GLOBAL EMERGENCY STOP, confirm safe Analyzer/read-only availability while stopped, then prove safe resume and complete-loop observability.');
 if (fs.existsSync('docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md')) {
   addRequirement('P6-P8 RUNTIME/COVERAGE PROOF REQUIRED: deploy the autonomous company coordinator and CommercialIntelligenceSnapshot, verify scheduled runtime evidence, and license/implement additional discovery adapters before claiming continuous coverage of the European merchant universe.');
 }
@@ -91,7 +100,7 @@ if (fs.existsSync('src/docs/P12_EUROPEAN_LAUNCH_GROWTH.md')) {
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
   addRequirement('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
 }
-for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline]]) {
+for (const [name, ev] of [["tests", testEvidence], ["build", buildEvidence], ["lint", lintEvidence], ["typecheck-critical", tcCritical], ["typecheck-baseline", tcBaseline], ["dependency-audit", dependencyAudit]]) {
   const st = evidenceStatus(ev, tree.hash);
   if (st !== "valid") addRequirement(`evidence ${name}: ${st} (run the *:evidence command)`, { blocking: true });
 }
@@ -120,6 +129,11 @@ const manifest = {
     ? sha256("config/p1-durability-manifest.json") : null,
   documentationManifestSha: fs.existsSync("config/documentation-drift-manifest.json")
     ? sha256("config/documentation-drift-manifest.json") : null,
+  schedulerInventorySha: fs.existsSync("config/scheduler-inventory.json")
+    ? sha256("config/scheduler-inventory.json") : null,
+  dataRetentionMatrixSha: fs.existsSync("config/data-retention-matrix.json")
+    ? sha256("config/data-retention-matrix.json") : null,
+  secretScannerSha: sha256("scripts/check-secrets.mjs"),
   contractTemplateVersions: tvMatch ? [tvMatch[1]] : [],
   productScope: Object.entries(policy.productScope).filter(([, v]) => v.productionEnabled).map(([k]) => k),
   stripeIntegrationStatus: policy.integrationStatus.stripe,
@@ -134,10 +148,12 @@ const manifest = {
   lintEvidence,
   typecheckCriticalEvidence: tcCritical,
   typecheckBaselineEvidence: tcBaseline,
+  dependencyAuditEvidence: dependencyAudit,
   artifactHashes: buildEvidence?.distHash ? { dist: buildEvidence.distHash } : null,
   manualRequirements,
   blockingManualRequirements,
   productionSealEligible: manualRequirements.length === 0,
+  finalVerdict: manualRequirements.length === 0 ? "PASS" : (blockingManualRequirements.length === 0 ? "PASS WITH EXTERNAL VALIDATION PENDING" : "NOT READY"),
   generatedAt: new Date().toISOString(),
 };
 

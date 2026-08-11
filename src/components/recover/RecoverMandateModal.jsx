@@ -1,12 +1,13 @@
 // Recover acceptance shell. Contractual wording still comes from the backend
 // (same copy used by the PDF); only interface copy lives in recoverUiCopy.
-import { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, ShieldCheck, Loader2, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/lib/i18n.jsx";
 import MandateTermsSummary from "./MandateTermsSummary";
 import MandateLimitsBlock from "./MandateLimitsBlock";
 import { recoverUiCopy } from "./recoverUiCopy";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   const { lang } = useLanguage();
@@ -21,6 +22,7 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   const [role, setRole] = useState("");
   const [evidenceAgreed, setEvidenceAgreed] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const acceptedRef = useRef(false);
 
   useEffect(() => {
     let alive = true;
@@ -33,6 +35,7 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
           return;
         }
         setMandateId(r.data.mandate_id);
+        trackProductEvent('recover_started',{source:'recover_mandate'});
         setStartedSnapshot(r.data.acceptance_snapshot || null);
         setEvidencePreview(r.data.evidence_preview || null);
       } catch {
@@ -61,6 +64,8 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
         setError(code === "terms_changed" ? c.changed : c.genericError);
         return;
       }
+      acceptedRef.current=true;
+      trackProductEvent('recover_accepted',{source:'recover_mandate'});
       onAccepted(r?.data);
     } catch (e) {
       const code = e?.response?.data?.error;
@@ -71,12 +76,13 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
   };
 
   const canSubmit = !!mandateId && evidenceAgreed && agreed && name.trim().length >= 2 && !submitting;
+  const close=()=>{if(!acceptedRef.current)trackProductEvent('recover_abandoned',{source:'recover_mandate'});onClose();};
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="recover-title">
       <div className="cambra-card w-full max-w-lg max-h-[90vh] overflow-y-auto p-7">
         <div className="relative">
-          <button onClick={onClose} className="absolute right-0 top-0 text-white/50 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label={c.close}>
+          <button onClick={close} className="absolute right-0 top-0 text-white/50 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" aria-label={c.close}>
             <X size={18} />
           </button>
 

@@ -8,8 +8,8 @@ import { TrendingUp, Users, Globe2, CreditCard, AlertTriangle, RefreshCw } from 
  * Reads getWaitlistAggregate and renders:
  *   - three headline KPIs (linked brands, combined savings, combined GMV)
  *   - breakdown tables by tier, country, payment provider
- *   - trust banner: the underlying figures are client-declared until server-
- *     side recalculation ships. Admin needs to know that.
+ *   - trust banner: unverified/manual/anonymous figures are excluded from all
+ *     economic totals rather than being softened by a warning.
  *
  * Pure presentation. No calculations happen here.
  */
@@ -58,7 +58,7 @@ export default function AggregateDemandPanel() {
         <div>
           <h2 className="text-lg font-black tracking-tight text-foreground">Aggregate demand</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Combined negotiation ammunition across every brand on the waitlist.
+            Verified demand evidence only. Estimates remain visible as excluded counts.
           </p>
         </div>
         <button
@@ -71,7 +71,7 @@ export default function AggregateDemandPanel() {
         </button>
       </div>
 
-      {/* Trust banner — admins must know these figures are unverified */}
+      {/* Trust banner — no unverified estimate enters an economic total. */}
       <div
         className="flex items-start gap-3 rounded-xl px-4 py-3"
         style={{
@@ -81,8 +81,8 @@ export default function AggregateDemandPanel() {
       >
         <AlertTriangle size={14} className="text-amber-300 mt-0.5 flex-shrink-0" />
         <div className="text-xs text-amber-100/80 leading-relaxed">
-          <span className="font-bold text-amber-200">Client-declared, unverified.</span>{" "}
-          Figures come from anonymous analyzer submissions. Per-brand outliers above
+          <span className="font-bold text-amber-200">Verified-only totals.</span>{" "}
+          {data.unverified_excluded.toLocaleString("en-US")} linked estimate(s) are excluded because they lack verified integration/vertical provenance. Per-brand outliers above
           €{data.caps.savings_per_brand.toLocaleString("en-US")}/yr in savings or
           €{data.caps.monthly_revenue.toLocaleString("en-US")}/mo in revenue are dropped from the aggregate.
           {data.outliers_dropped > 0 && (
@@ -95,21 +95,21 @@ export default function AggregateDemandPanel() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Kpi
           icon={Users}
-          label="Linked brands"
+          label="Verified linked brands"
           value={data.linked_brands.toLocaleString("en-US")}
-          hint={`${data.total_signups} total signups · ${data.signups_without_session} landing-only (no session)`}
+          hint={`${data.linked_estimates} linked estimates · ${data.unverified_excluded} unverified excluded · ${data.total_signups} signups`}
         />
         <Kpi
           icon={TrendingUp}
           label="Combined savings"
           value={`€${(data.combined_savings_yearly).toLocaleString("en-US")}`}
-          hint="per year, summed from AnalyzerResult"
+          hint="per year, verified evidence only"
         />
         <Kpi
           icon={CreditCard}
           label="Combined GMV"
           value={`€${(data.combined_annual_gmv).toLocaleString("en-US")}`}
-          hint={`€${data.combined_monthly_revenue.toLocaleString("en-US")}/mo across linked brands`}
+          hint={`€${data.combined_monthly_revenue.toLocaleString("en-US")}/mo across verified linked brands`}
         />
       </div>
 

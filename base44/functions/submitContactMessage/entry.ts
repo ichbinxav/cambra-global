@@ -19,6 +19,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { consumeRateLimit } from '../../shared/rateLimit.ts';
 
 const DEFAULT_LIMIT_PER_HOUR = 5;
 const MAX_BODY_BYTES = 16 * 1024;
@@ -30,32 +31,7 @@ function getClientIp(req: Request): string {
 }
 
 async function checkRateLimit(base44: any, ip: string) {
-  const limit = DEFAULT_LIMIT_PER_HOUR;
-  const now = new Date();
-  const windowStart = new Date(Math.floor(now.getTime() / 3600000) * 3600000).toISOString();
-  const principalId = `submitContactMessage:${ip}`;
-
-  const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({
-    principal_id: principalId,
-    window_start: windowStart,
-  }).catch(() => []);
-
-  const counter = matches?.[0];
-  if (!counter) {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id: principalId,
-      principal_type: 'ip',
-      window_start: windowStart,
-      count: 1,
-      limit_per_minute: limit,
-    }).catch(() => null);
-    return { ok: true };
-  }
-  if ((counter.count || 0) >= limit) return { ok: false };
-  await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, {
-    count: (counter.count || 0) + 1,
-  }).catch(() => null);
-  return { ok: true };
+  return consumeRateLimit(base44.asServiceRole,{principal_id:`submitContactMessage:${ip}`,principal_type:'ip',limit:DEFAULT_LIMIT_PER_HOUR,window_seconds:3600});
 }
 
 Deno.serve(async (req) => {

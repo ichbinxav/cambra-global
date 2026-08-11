@@ -1,0 +1,26 @@
+{
+  "name": "IncidentAlertDelivery",
+  "type": "object",
+  "description": "Transport ledger for externally pushed HIGH/CRITICAL AutonomyIncident alerts. AutonomyIncident remains the sole incident source of truth.",
+  "properties": {
+    "alert_key": { "type": "string" },
+    "incident_id": { "type": "string" },
+    "severity": { "type": "string", "enum": ["HIGH", "CRITICAL"] },
+    "channel": { "type": "string", "enum": ["EMAIL"] },
+    "recipient_fingerprint": { "type": "string" },
+    "status": { "type": "string", "enum": ["PENDING", "DELIVERED", "RETRY_PENDING", "CONFIGURATION_REQUIRED", "FAILED"] },
+    "attempt_count": { "type": "number", "minimum": 0 },
+    "last_attempt_at": { "type": "string", "format": "date-time" },
+    "delivered_at": { "type": "string", "format": "date-time" },
+    "next_retry_at": { "type": "string", "format": "date-time" },
+    "provider_message_id": { "type": "string" },
+    "last_error_code": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["alert_key", "incident_id", "severity", "channel", "status", "attempt_count", "created_at", "updated_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

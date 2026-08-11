@@ -1,10 +1,5 @@
-// InitialsAvatar — honest placeholder avatar for testimonials.
-//
-// Renders a colored circle with the person's initials. NO external
-// dependency, NO photo — deliberately NOT a photo-realistic face, because
-// pairing a fake face + fake quote as a "real customer" is misleading
-// advertising (fake-testimonial rules). Initials avatars read clearly as
-// illustration, so they're safe for placeholder testimonials.
+// InitialsAvatar — deterministic, privacy-preserving fallback for real users.
+// Renders initials without fetching a profile image or leaking an external URL.
 //
 // Color is DETERMINISTIC from the name (same name → same color every render),
 // picked from a small on-brand palette that reads well on dark surfaces.

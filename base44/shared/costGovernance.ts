@@ -1,5 +1,6 @@
-export const COST_GOVERNANCE_VERSION = 'cost-governance-1.0.0';
+export const COST_GOVERNANCE_VERSION = 'cost-governance-1.1.0';
 export const COST_CATEGORIES = Object.freeze(['ai', 'api', 'enrichment', 'email']);
+export const COST_RESERVATION_MAX_CAS_ATTEMPTS = 6;
 
 const positiveInteger = (value:any) => Number.isInteger(Number(value)) && Number(value) > 0;
 
@@ -23,8 +24,35 @@ export function validateCostBudget(control:any) {
   if (!Number.isFinite(warning) || warning < 1 || warning >= 100) blockers.push('cost_anomaly_warning_pct_invalid');
   if (!Number.isFinite(hardStop) || hardStop < warning || hardStop > 100) blockers.push('cost_hard_stop_pct_invalid');
   if (control?.emergency_stop_active === true) blockers.push('cost_emergency_stop_active');
+  if (!Number.isInteger(Number(control?.reservation_revision)) || Number(control?.reservation_revision) < 0) blockers.push('cost_reservation_revision_required');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(control?.reservation_day_key || ''))) blockers.push('cost_reservation_day_key_required');
+  if (!/^\d{4}-\d{2}$/.test(String(control?.reservation_month_key || ''))) blockers.push('cost_reservation_month_key_required');
+  if (!Number.isFinite(Number(control?.reserved_daily_total_minor)) || Number(control?.reserved_daily_total_minor) < 0) blockers.push('cost_reserved_daily_total_invalid');
+  if (!Number.isFinite(Number(control?.reserved_monthly_total_minor)) || Number(control?.reserved_monthly_total_minor) < 0) blockers.push('cost_reserved_monthly_total_invalid');
+  if (!control?.reserved_category_json || typeof control.reserved_category_json !== 'object') blockers.push('cost_reserved_category_state_required');
+  if (!Array.isArray(control?.reservation_recent_event_keys)) blockers.push('cost_reservation_event_claims_required');
   return { ok:blockers.length === 0, blockers:[...new Set(blockers)], version:COST_GOVERNANCE_VERSION };
 }
+
+export function reservationWindowKeys(at=new Date()){
+  const iso=at.toISOString();return{day_key:iso.slice(0,10),month_key:iso.slice(0,7)};
+}
+
+/** Converts the CAS counters into the same usage shape as the ledger summary. */
+export function reservationUsageFromControl(control:any,at=new Date()){
+  const keys=reservationWindowKeys(at),dayMatches=control?.reservation_day_key===keys.day_key,monthMatches=control?.reservation_month_key===keys.month_key,categories:any={};
+  for(const category of COST_CATEGORIES){const row=control?.reserved_category_json?.[category]||{};categories[category]={daily_minor:dayMatches?Math.max(0,Number(row.daily_minor||0)):0,monthly_minor:monthMatches?Math.max(0,Number(row.monthly_minor||0)):0};}
+  return{daily_total_minor:dayMatches?Math.max(0,Number(control?.reserved_daily_total_minor||0)):0,monthly_total_minor:monthMatches?Math.max(0,Number(control?.reserved_monthly_total_minor||0)):0,categories,day_start:`${keys.day_key}T00:00:00.000Z`,month_start:`${keys.month_key}-01T00:00:00.000Z`};
+}
+
+export function nextCostReservationState(control:any,category:string,amountMinor:number,eventKey:string,at=new Date()){
+  const keys=reservationWindowKeys(at),usage=reservationUsageFromControl(control,at),categories:any={};
+  for(const key of COST_CATEGORIES)categories[key]={daily_minor:Number(usage.categories[key].daily_minor||0)+(key===category?amountMinor:0),monthly_minor:Number(usage.categories[key].monthly_minor||0)+(key===category?amountMinor:0)};
+  const recent=control?.reservation_month_key===keys.month_key&&Array.isArray(control?.reservation_recent_event_keys)?control.reservation_recent_event_keys:[];
+  return{reservation_revision:Number(control.reservation_revision)+1,reservation_day_key:keys.day_key,reservation_month_key:keys.month_key,reserved_daily_total_minor:Number(usage.daily_total_minor)+amountMinor,reserved_monthly_total_minor:Number(usage.monthly_total_minor)+amountMinor,reserved_category_json:categories,reservation_recent_event_keys:[...new Set([...recent,eventKey])].slice(-500),updated_by:'cost_governor',updated_at:at.toISOString()};
+}
+
+function updatedExactlyOne(result:any){return Boolean(result&&(result.updated===1||result.modified_count===1||result.matched_count===1));}
 
 function utcBounds(at = new Date()) {
   const day = new Date(at); day.setUTCHours(0, 0, 0, 0);
@@ -89,29 +117,40 @@ export async function reservePaidOperation(svc:any, input:any) {
   const eventKey = String(input?.event_key || '').trim();
   if (!eventKey) throw Object.assign(new Error('cost_event_key_required'), { code:'COST_EVENT_KEY_REQUIRED' });
   const existing = await svc.entities.CostUsageEvent.filter({ event_key:eventKey }, '-occurred_at', 2).catch(() => []);
-  if (existing[0] && !['VOID','FAILED'].includes(String(existing[0].status))) return { duplicate:true, event:existing[0], decision:{ allowed:true, reason:'existing_cost_reservation' } };
+  if(existing[0]){
+    if(!['VOID','FAILED'].includes(String(existing[0].status)))return{duplicate:true,event:existing[0],decision:{allowed:true,reason:'existing_cost_reservation'}};
+    throw Object.assign(new Error('terminal_cost_event_key_reuse_forbidden'),{code:'TERMINAL_COST_EVENT_KEY_REUSE_FORBIDDEN'});
+  }
   const controls = await svc.entities.CostBudgetControl.filter({ control_key:'global', status:'active' }, '-approved_at', 5).catch(() => []);
   const control = controls[0] || null;
   const validation = validateCostBudget(control);
   if (!validation.ok) throw Object.assign(new Error(validation.blockers[0]), { code:'COST_BUDGET_BLOCKED', blockers:validation.blockers });
-  const bounds = utcBounds();
-  const events = await svc.entities.CostUsageEvent.filter({ occurred_at:{ $gte:bounds.monthStart } }, '-occurred_at', 5000).catch(() => []);
-  if (events.length >= 5000) throw Object.assign(new Error('cost_usage_coverage_truncated'), { code:'COST_USAGE_COVERAGE_TRUNCATED' });
-  const usage = summarizeCostUsage(events);
   const configuredAmount = Number(control?.estimated_unit_cost_minor_json?.[String(input.category || '')]);
   const amountMinor = Number.isFinite(Number(input.amount_minor)) && Number(input.amount_minor) > 0 ? Number(input.amount_minor) : configuredAmount;
-  const decision = costReservationDecision({ control, usage, category:input.category, amount_minor:amountMinor });
-  if (!decision.allowed) {
-    await activateCostEmergencyStop(svc, control, decision.reason, { category:input.category, projected:decision.projected, blockers:decision.blockers });
-    throw Object.assign(new Error(decision.reason), { code:'COST_BUDGET_EXCEEDED', blockers:decision.blockers, projected:decision.projected });
+  let claimedControl:any=null,decision:any=null;
+  for(let attempt=1;attempt<=COST_RESERVATION_MAX_CAS_ATTEMPTS;attempt++){
+    const fresh=await svc.entities.CostBudgetControl.get(control.id).catch(()=>null);const freshValidation=validateCostBudget(fresh);
+    if(!freshValidation.ok)throw Object.assign(new Error(freshValidation.blockers[0]),{code:'COST_BUDGET_BLOCKED',blockers:freshValidation.blockers});
+    if((fresh.reservation_recent_event_keys||[]).includes(eventKey)){
+      const persisted=(await svc.entities.CostUsageEvent.filter({event_key:eventKey},'-occurred_at',2).catch(()=>[]))[0]||null;
+      if(persisted&&!['VOID','FAILED'].includes(String(persisted.status)))return{duplicate:true,event:persisted,decision:{allowed:true,reason:'existing_cost_reservation'}};
+      if(persisted)throw Object.assign(new Error('terminal_cost_event_key_reuse_forbidden'),{code:'TERMINAL_COST_EVENT_KEY_REUSE_FORBIDDEN'});
+      throw Object.assign(new Error('cost_event_claimed_concurrently'),{code:'COST_EVENT_CLAIMED_CONCURRENTLY'});
+    }
+    const usage=reservationUsageFromControl(fresh);decision=costReservationDecision({control:fresh,usage,category:input.category,amount_minor:amountMinor});
+    if(!decision.allowed){await activateCostEmergencyStop(svc,fresh,decision.reason,{category:input.category,projected:decision.projected,blockers:decision.blockers});throw Object.assign(new Error(decision.reason),{code:'COST_BUDGET_EXCEEDED',blockers:decision.blockers,projected:decision.projected});}
+    const next=nextCostReservationState(fresh,String(input.category),decision.amount_minor,eventKey);
+    const changed=await svc.entities.CostBudgetControl.updateMany({id:fresh.id,reservation_revision:Number(fresh.reservation_revision)},{$set:next}).catch(()=>null);
+    if(updatedExactlyOne(changed)){claimedControl={...fresh,...next};break;}
   }
-  const event = await svc.entities.CostUsageEvent.create({
-    event_key:eventKey, category:String(input.category), provider:String(input.provider || 'unknown'), source:String(input.source || 'unknown'),
-    related_entity_type:String(input.related_entity_type || ''), related_entity_id:String(input.related_entity_id || ''),
-    amount_minor:decision.amount_minor, currency:'EUR', status:'RESERVED', usage_json:{ reservation:true },
-    budget_version:control.version, occurred_at:new Date().toISOString(),
-  });
-  return { duplicate:false, event, decision, control };
+  if(!claimedControl)throw Object.assign(new Error('cost_reservation_concurrency_exhausted'),{code:'COST_RESERVATION_CONCURRENCY_EXHAUSTED'});
+  try{
+    const event = await svc.entities.CostUsageEvent.create({event_key:eventKey,category:String(input.category),provider:String(input.provider||'unknown'),source:String(input.source||'unknown'),related_entity_type:String(input.related_entity_type||''),related_entity_id:String(input.related_entity_id||''),amount_minor:decision.amount_minor,currency:'EUR',status:'RESERVED',usage_json:{reservation:true,reservation_revision:claimedControl.reservation_revision},budget_version:claimedControl.version,occurred_at:new Date().toISOString()});
+    return{duplicate:false,event,decision,control:claimedControl};
+  }catch(error){
+    await svc.entities.OperationalLog.create({event_type:'cost_reservation_ledger_write_failed',message:'CAS budget claim retained conservatively; paid operation blocked',data_json:{event_key:eventKey,category:String(input.category),reservation_revision:claimedControl.reservation_revision},actor_email:'cost_governor',created_at:new Date().toISOString()}).catch(()=>null);
+    throw Object.assign(new Error('cost_reservation_ledger_write_failed'),{code:'COST_RESERVATION_LEDGER_WRITE_FAILED',cause:error});
+  }
 }
 
 export async function settlePaidOperation(svc:any, reservation:any, input:any = {}) {
@@ -157,15 +196,17 @@ export async function costRuntimeSnapshot(svc:any) {
   const bounds = utcBounds();
   const events = await svc.entities.CostUsageEvent.filter({ occurred_at:{ $gte:bounds.monthStart } }, '-occurred_at', 5000).catch(() => []);
   const usage = summarizeCostUsage(events);
+  const reservationUsage=control?reservationUsageFromControl(control):summarizeCostUsage([]);
+  const governedUsage={daily_total_minor:Math.max(usage.daily_total_minor,reservationUsage.daily_total_minor),monthly_total_minor:Math.max(usage.monthly_total_minor,reservationUsage.monthly_total_minor),categories:Object.fromEntries(COST_CATEGORIES.map((category)=>[category,{daily_minor:Math.max(usage.categories[category].daily_minor,reservationUsage.categories[category].daily_minor),monthly_minor:Math.max(usage.categories[category].monthly_minor,reservationUsage.categories[category].monthly_minor)}]))};
   const validation = validateCostBudget(control);
   const pct = (used:number, limit:any) => Number(limit) > 0 ? used * 100 / Number(limit) : null;
   const utilization = {
-    daily_total_pct:pct(usage.daily_total_minor, control?.daily_total_limit_minor),
-    monthly_total_pct:pct(usage.monthly_total_minor, control?.monthly_total_limit_minor),
+    daily_total_pct:pct(governedUsage.daily_total_minor, control?.daily_total_limit_minor),
+    monthly_total_pct:pct(governedUsage.monthly_total_minor, control?.monthly_total_limit_minor),
     categories:Object.fromEntries(COST_CATEGORIES.map((category) => [category, {
-      daily_pct:pct(usage.categories[category].daily_minor, control?.category_limits_json?.[category]?.daily_limit_minor),
-      monthly_pct:pct(usage.categories[category].monthly_minor, control?.category_limits_json?.[category]?.monthly_limit_minor),
+      daily_pct:pct(governedUsage.categories[category].daily_minor, control?.category_limits_json?.[category]?.daily_limit_minor),
+      monthly_pct:pct(governedUsage.categories[category].monthly_minor, control?.category_limits_json?.[category]?.monthly_limit_minor),
     }])),
   };
-  return { control, validation, usage, utilization, coverage_truncated:events.length >= 5000 };
+  return { control, validation, usage, reservation_usage:reservationUsage, governed_usage:governedUsage, utilization, coverage_truncated:events.length >= 5000 };
 }

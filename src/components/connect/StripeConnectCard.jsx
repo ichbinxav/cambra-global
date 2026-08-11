@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { CheckCircle2, RefreshCw, LogOut, Clock, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/components/shared/Toast.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { trackProductEvent } from "@/lib/productAnalytics";
 // M3-Chunk 6 — Verified analysis is an EXPLICIT user action, not an
 // automatic post-sync side effect (the auto-materialize cadena was retired
 // in the payments-only cutover, see Decision_Log 2026-07-09). After the
@@ -33,6 +34,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
   // rates from Stripe…") because the wait is meaningful (2-8s) and users
   // deserve to know what's happening rather than seeing a blank spinner.
   const [computing, setComputing] = useState(false);
+  const connectedTrackedRef = useRef(false);
 
   // FASE 1 — Integration is now the source of truth for "connected" state.
   // We read Integration rows with any of the 3 Stripe provider slugs
@@ -50,6 +52,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
         last_sync_at: stripe.last_sync_at,
         provider: stripe.connection_kind === "integration" ? stripe.connection_provider : null,
       } : null);
+      if(stripe?.connection_id&&!connectedTrackedRef.current){connectedTrackedRef.current=true;trackProductEvent('integration_connected',{source:'stripe_connect_card',provider:'stripe'});}
     } catch {
       setConnection(null);
     } finally {
@@ -84,6 +87,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
     }
     setBusy(true);
     setError("");
+    trackProductEvent('integration_started',{source:'stripe_connect_card',provider:'stripe'});
     try {
       const res = await base44.functions.invoke("oauthConnector", {
         mode: "start",
@@ -94,10 +98,12 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
       const data = res?.data || res;
       // 503 when STRIPE_CLIENT_ID isn't configured — surface the coming-soon state.
       if (data?.error && /not configured|missing STRIPE_CLIENT_ID/i.test(data.error)) {
+        trackProductEvent('integration_failed',{source:'stripe_connect_card',provider:'stripe',reason_code:'configuration_required'});
         setSetupRequired(true);
         return;
       }
       if (!data?.ok || !data.authorize_url) {
+        trackProductEvent('integration_failed',{source:'stripe_connect_card',provider:'stripe',reason_code:'start_rejected'});
         const msg = data?.error || t("connect_error");
         setError(msg);
         toast.error(t("connect_error"), msg);
@@ -107,6 +113,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
       // /IntegrationsCallback?state&code, which completes the handshake.
       window.location.href = data.authorize_url;
     } catch (e) {
+      trackProductEvent('integration_failed',{source:'stripe_connect_card',provider:'stripe',reason_code:'network'});
       const msg = e?.message || t("connect_error");
       setError(msg);
       toast.error(t("connect_error"), msg);

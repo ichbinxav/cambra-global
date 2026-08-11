@@ -98,7 +98,7 @@ export default function AdminLayout() {
     if (query.length < 2) { setSearchResults([]); setSearching(false); return; }
     setSearching(true);
     const timer = setTimeout(() => {
-      base44.functions.invoke("adminGlobalSearch", { query }).then(response => {
+      base44.functions.invoke("adminSummaries", { action: "global_search", query }).then(response => {
         const data = response?.data || response || {};
         setSearchResults(data.results || []);
       }).catch(() => setSearchResults([])).finally(() => setSearching(false));

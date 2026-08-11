@@ -6,13 +6,13 @@
       "function_args": {
         "internal_secret": "{{INTERNAL_CALL_SECRET}}"
       },
-      "function_name": "providerRevenueBillingWorker",
       "type": "scheduled",
       "schedule_mode": "recurring",
-      "schedule_type": "monthly",
-      "monthly_mode": "day",
-      "day_of_month": 1,
-      "starts_at": "2026-09-01T10:00:00.000Z",
+      "schedule_type": "simple",
+      "repeat_unit": "months",
+      "repeat_interval": 1,
+      "repeat_on_day_of_month": 1,
+      "start_time": "10:00",
       "ends_type": "never",
       "is_active": true
     }

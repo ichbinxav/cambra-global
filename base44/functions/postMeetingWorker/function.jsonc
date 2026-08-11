@@ -5,7 +5,7 @@
     {
       "type": "scheduled",
       "name": "Post-meeting Continuation \u2014 hourly",
-      "description": "Sends policy-gated, evidence-safe post-meeting follow-ups after booked acquisition meetings without restarting the cold sequence.",
+      "description": "Resumes the same canonical commercial thread only after a real founder outcome is captured; missing outcomes create one Founder Inbox question and never fabricate commitments.",
       "function_args": {},
       "is_active": true,
       "schedule_mode": "recurring",

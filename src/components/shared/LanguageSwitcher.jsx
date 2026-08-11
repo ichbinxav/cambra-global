@@ -1,45 +1,36 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { ChevronDown, Languages } from "lucide-react";
 import { useTranslation, LANGUAGES } from "@/lib/i18n.jsx";
 
-/**
- * LanguageSwitcher — compact EN / FR / ES segmented toggle.
- * Works on dark navbars (default) and light surfaces via `variant="light"`.
- */
+/** Compact, accessible selector: automatic local language first, English always
+ * explicit, and every currently supported manual language in one dropdown. */
 export default function LanguageSwitcher({ className = "", variant = "dark" }) {
-  const { lang, setLang } = useTranslation();
-
-  const isDark = variant === "dark";
-  const wrapperBase = isDark
-    ? "border border-white/15 bg-white/5"
-    : "border border-border/60 bg-secondary/40";
-  const inactiveText = isDark ? "text-white/50 hover:text-white" : "text-muted-foreground hover:text-foreground";
-  const activeStyle  = isDark
-    ? "text-white border-white/30 bg-white/10"
-    : "text-foreground border-foreground/30 bg-background";
+  const { lang, detectedLang, isAutomatic, setLang, setAutoLang, t } = useTranslation();
+  const dark = variant === "dark";
+  const detected = LANGUAGES.find((item) => item.code === detectedLang) || LANGUAGES[0];
+  const ordered = useMemo(() => {
+    const english = LANGUAGES.find((item) => item.code === "en");
+    return [english, ...LANGUAGES.filter((item) => item.code !== "en")].filter(Boolean);
+  }, []);
+  const value = isAutomatic ? "auto" : lang;
 
   return (
-    <div
-      className={`inline-flex items-center gap-0.5 rounded-full p-0.5 ${wrapperBase} ${className}`}
-      role="group"
-      aria-label="Select language"
-    >
-      {LANGUAGES.map((l) => {
-        const active = l.code === lang;
-        return (
-          <button
-            key={l.code}
-            type="button"
-            onClick={() => setLang(l.code)}
-            aria-pressed={active}
-            aria-label={`Switch language to ${l.label}`}
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider transition-colors border border-transparent ${
-              active ? activeStyle : inactiveText
-            }`}
-          >
-            {l.short}
-          </button>
-        );
-      })}
-    </div>
+    <label className={`relative inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full border pl-2.5 pr-1.5 ${dark ? "border-white/15 bg-white/[.06] text-white" : "border-border/60 bg-secondary/40 text-foreground"} ${className}`}>
+      <Languages aria-hidden="true" size={13} className={dark ? "text-white/65" : "text-muted-foreground"} />
+      <span className="sr-only">{t("language_switcher_label")}</span>
+      <select
+        value={value}
+        onChange={(event) => event.target.value === "auto" ? setAutoLang() : setLang(event.target.value)}
+        aria-label={t("language_switcher_label")}
+        className={`peer absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full opacity-0 ${dark ? "text-white" : "text-foreground"}`}
+      >
+        <option value="auto">{t("language_detected", { language:detected.label })}</option>
+        {ordered.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
+      </select>
+      <span aria-hidden="true" className="max-w-[6.8rem] truncate text-[11px] font-bold">
+        {isAutomatic ? detected.label : (LANGUAGES.find((item) => item.code === lang)?.label || "English")}
+      </span>
+      <ChevronDown aria-hidden="true" size={12} className={dark ? "text-white/55" : "text-muted-foreground"} />
+    </label>
   );
 }

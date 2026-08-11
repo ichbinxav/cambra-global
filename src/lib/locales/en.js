@@ -193,6 +193,8 @@ export default {
     nav_contact:      "Contact",
     nav_referrals:    "Referrals",
     nav_sign_in:      "Sign in",
+    language_switcher_label: "Choose language",
+    language_detected: "Automatic · {language}",
 
     /* mobile nav menu */
     nav_group_home:           "Home",
@@ -601,12 +603,12 @@ export default {
     hiw_cta_button:   "Run your free audit",
     hiw_cta_note:     "Free forever for early operators · No credit card required",
 
-    /* 0.4 — Testimonials page (chrome only; quotes stay untranslated placeholders) */
-    tst_hero_badge:   "Testimonials · From real operators",
-    tst_hero_h1:      "What businesses say about CAMBRA.",
-    tst_hero_sub:     "Real results from independent businesses across Europe.",
+    /* 0.4 — Evidence standards page */
+    tst_hero_badge:   "Evidence · No invented case studies",
+    tst_hero_h1:      "Proof must come before claims.",
+    tst_hero_sub:     "CAMBRA only presents merchant outcomes when the underlying documents and consent support them.",
     tst_role_at:      "{role} at {company}",
-    tst_illustrative_note: "Illustrative sample quotes — not real customers yet.",
+    tst_illustrative_note: "Only evidenced, consented customer outcomes may be published.",
 
     /* 0.4 — Pricing page */
     prc_split_eyebrow:   "Pricing model",
@@ -1045,11 +1047,11 @@ export default {
     fl_p2:                 "That's why I started CAMBRA.",
     fl_role:               "Founder",
 
-    /* Landing — Testimonials carousel */
-    tst_eyebrow:           "Real findings",
-    tst_h2_pre:            "What brands",
-    tst_h2_kw:             "actually recovered.",
-    tst_category:          "Payments",
+    /* Landing — evidence standards */
+    tst_eyebrow:           "Evidence standards",
+    tst_h2_pre:            "What CAMBRA",
+    tst_h2_kw:             "will and will not claim.",
+    tst_category:          "Verified by design",
     tst_before:            "Before",
     tst_after:             "After",
     tst_saved:             "Saved",
@@ -1057,11 +1059,16 @@ export default {
     tst_role_founder:      "Founder",
     tst_role_coo:          "COO",
     tst_role_finance:      "Finance lead",
-    tst_q1:                "We were paying 2.4% blended and thought that was just the cost of cards. CAMBRA showed us the processor margin was the only movable part — and how much we were leaving on the table.",
-    tst_q2:                "The 3-minute audit was more transparent about our card fees than our PSP had been in three years. We saw exactly where the money leaked.",
-    tst_q3:                "Joining the collective got us to a rate we'd never have reached negotiating alone at our size. Brands moving as one — that's the whole point.",
-    tst_q4:                "No retainer, no contract. They only got paid once our bank statements confirmed the savings. That alignment is rare.",
-    tst_q5:                "CAMBRA benchmarked us against French brands our size — we were in the most expensive third. Seeing that in one number changed how we think about payments.",
+    tst_proof_title1:      "Document-derived findings",
+    tst_proof_title2:      "Traceable extraction",
+    tst_proof_title3:      "Forecasts stay forecasts",
+    tst_proof_title4:      "No synthetic social proof",
+    tst_proof_title5:      "Fail-closed automation",
+    tst_q1:                "Fees, volumes and conditions are reported only when the uploaded source supports them. Missing data remains missing.",
+    tst_q2:                "Invoice and statement fields keep source, confidence and review status so a result can be inspected instead of merely trusted.",
+    tst_q3:                "Estimated opportunity, negotiated terms and bank-confirmed savings remain separate states. CAMBRA never presents a forecast as recovered money.",
+    tst_q4:                "Customer names, quotes and outcomes are not fabricated. Public case studies require real evidence and explicit permission.",
+    tst_q5:                "Outbound, negotiation, migration and billing stop when required policy, authority, data or runtime controls are incomplete.",
 
     /* Landing — final CTA */
     cta_final_eyebrow:     "The final call",

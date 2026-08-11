@@ -12,15 +12,23 @@ import { reservePaidOperation, settlePaidOperation } from '../../shared/costGove
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
 const CAMBRA_WEB='https://www.cambra.global';
-function signatureIdentity(provider:string, engine:string){
-  if(provider==='outlook') return {name:'Xavi M. Contero',title:'Founder, CAMBRA',email:'xavi@cambra.global'};
-  if(['provider_negotiation','aggregate_procurement'].includes(engine)) return {name:'CAMBRA Operations',title:'Infrastructure Operations',email:'operations@contact.cambra.global'};
-  return {name:'CAMBRA Payments',title:'Infrastructure Intelligence',email:'payments@contact.cambra.global'};
+function signatureIdentity(provider:string, engine:string, configuredEmail=''){
+  const email=normalizeEmail(configuredEmail);
+  if(provider==='outlook') return {name:'CAMBRA',title:'Founder Office',email};
+  if(['provider_negotiation','aggregate_procurement'].includes(engine)) return {name:'CAMBRA Operations',title:'Infrastructure Operations',email};
+  return {name:'CAMBRA Payments',title:'Infrastructure Intelligence',email};
 }
-function cambraSignature(provider:string, engine:string){const i=signatureIdentity(provider,engine);return `${i.name}\n${i.title}\nMail: ${i.email}\nWeb: www.cambra.global`;}
+function cambraSignature(provider:string, engine:string, email:string){const i=signatureIdentity(provider,engine,email);return [i.name,i.title,i.email?`Mail: ${i.email}`:null,'Web: www.cambra.global'].filter(Boolean).join('\n');}
 function ensureSignature(text:string, signature:string){const t=String(text||'').trimEnd();if(t.includes(signature))return t;return `${t}\n\n${signature}`;}
 function escapeHtml(v:string){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function signedHtml(text:string,provider:string,engine:string){const i=signatureIdentity(provider,engine);const body=escapeHtml(String(text||'').trim()).replace(/\n/g,'<br>');return `<!doctype html><html><body><div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#171717">${body}<table cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse"><tr><td style="padding-right:12px;vertical-align:top"><img src="${CAMBRA_LOGO}" width="38" height="38" alt="CAMBRA" style="display:block;border:0;width:38px;height:38px"></td><td style="vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.45;color:#555"><strong style="font-size:13px;color:#171717">${escapeHtml(i.name)}</strong><br>${escapeHtml(i.title)}<br>Mail: <a href="mailto:${escapeHtml(i.email)}" style="color:#171717;text-decoration:none">${escapeHtml(i.email)}</a><br>Web: <a href="${CAMBRA_WEB}" style="color:#171717;text-decoration:none">www.cambra.global</a></td></tr></table></div></body></html>`;}
+function signedHtml(text:string,provider:string,engine:string,email:string){const i=signatureIdentity(provider,engine,email);const body=escapeHtml(String(text||'').trim()).replace(/\n/g,'<br>');const mail=i.email?`<br>Mail: <a href="mailto:${escapeHtml(i.email)}" style="color:#171717;text-decoration:none">${escapeHtml(i.email)}</a>`:'';return `<!doctype html><html><body><div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#171717">${body}<table cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse"><tr><td style="padding-right:12px;vertical-align:top"><img src="${CAMBRA_LOGO}" width="38" height="38" alt="CAMBRA" style="display:block;border:0;width:38px;height:38px"></td><td style="vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.45;color:#555"><strong style="font-size:13px;color:#171717">${escapeHtml(i.name)}</strong><br>${escapeHtml(i.title)}${mail}<br>Web: <a href="${CAMBRA_WEB}" style="color:#171717;text-decoration:none">www.cambra.global</a></td></tr></table></div></body></html>`;}
+function mailboxFromSetting(value:string){const match=String(value||'').match(/<([^>]+)>/);return normalizeEmail(match?.[1]||value);}
+function approvalBoundToThread(approval:any,thread:any){
+  const payload=approval?.draft_payload_json||{};
+  const threadBindings=new Set([thread?.id,thread?.related_entity_id,thread?.lead_id,thread?.recover_id].map(String).filter(Boolean));
+  const approvalBindings=[approval?.related_entity_id,payload?.thread_id,payload?.communication_thread_id,payload?.related_entity_id].map(String).filter(Boolean);
+  return approvalBindings.some((id:string)=>threadBindings.has(id));
+}
 
 Deno.serve(async (req) => {
   try {
@@ -58,8 +66,14 @@ Deno.serve(async (req) => {
     }
 
     const manualOverrideRequested=body?.manual_override === true;
-    if(manualOverrideRequested&&!gate.isAdmin)return Response.json({ok:false,error:'admin_manual_override_required'},{status:403});
-    const manualOverride=gate.isAdmin && body?.manual_override === true;
+    let approvedOverride:any=null;
+    if(manualOverrideRequested&&!gate.isAdmin&&gate.isInternal&&body?.approval_id){
+      approvedOverride=await svc.entities.Approval.get(String(body.approval_id)).catch(()=>null);
+      const expired=approvedOverride?.expires_at&&Date.parse(String(approvedOverride.expires_at))<=Date.now();
+      if(approvedOverride?.status!=='approved'||expired||!approvalBoundToThread(approvedOverride,thread))approvedOverride=null;
+    }
+    if(manualOverrideRequested&&!gate.isAdmin&&!approvedOverride)return Response.json({ok:false,error:'admin_or_approved_internal_manual_override_required'},{status:403});
+    const manualOverride=manualOverrideRequested&&(gate.isAdmin||Boolean(approvedOverride));
     const automatic=!manualOverride;
     const agentName=String(body?.agent_name||thread.engine||'commercial_orchestrator').toLowerCase();
     const authority=authorityForAgent(agentName);
@@ -96,8 +110,6 @@ Deno.serve(async (req) => {
     const quality=communicationQuality(text,{previous_outbound:previousOut.map((m:any)=>String(m.text_body||''))});
     if(!quality.ok)return Response.json({ok:false,error:'communication_quality_gate_failed',quality},{status:422});
 
-    const signatureProvider=String((body?.sending_profile_key||thread.sending_profile_key||'')).startsWith('outlook:')?'outlook':'resend';const signedText=ensureSignature(text,cambraSignature(signatureProvider,String(thread.engine||'')));const signedHTML=signedHtml(text,signatureProvider,String(thread.engine||''));
-
     const idempotency = String(body?.idempotency_key || `cambra:${thread.id}:${action}:${thread.last_inbound_at || thread.last_message_at || 'start'}`);
     const existing = await svc.entities.CommunicationMessage.filter({ thread_id:thread.id, direction:'outbound', idempotency_key:idempotency }, '-created_date', 1).catch(()=>[]);
     if (existing.length) return Response.json({ ok:true, duplicate:true, message_id:existing[0].id, provider:existing[0].provider || null });
@@ -107,6 +119,11 @@ Deno.serve(async (req) => {
     const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch(()=>[]):[];
     const sendingProfile=profiles[0]||null;
     if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
+    if(approvedOverride&&['initial_outreach','follow_up','partner_outreach'].includes(action)&&!sendingProfile)return Response.json({ok:false,error:'approved_send_profile_required',review_required:true},{status:409});
+    const signatureProvider=sendingProfile?.provider==='resend'?'resend':'outlook';
+    const configuredSignatureEmail=mailboxFromSetting(String(sendingProfile?.from_address||(signatureProvider==='outlook'?Deno.env.get('CAMBRA_OUTLOOK_SIGNATURE_EMAIL'):Deno.env.get('RESEND_FROM'))||''));
+    const signedText=ensureSignature(text,cambraSignature(signatureProvider,String(thread.engine||''),configuredSignatureEmail));
+    const signedHTML=signedHtml(text,signatureProvider,String(thread.engine||''),configuredSignatureEmail);
     if(sendingProfile&&!manualOverride){const minuteAgo=new Date(Date.now()-60000).toISOString();const recentBurst=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:minuteAgo}},'-sent_at',100).catch(()=>[]);const burst=Math.max(1,Math.min(60,Number(sendingProfile.burst_per_minute|| (sendingProfile.provider==='outlook'?12:30))));if(recentBurst.length>=burst)return Response.json({ok:false,error:'sending_profile_burst_limit',profile:sendingProfile.profile_key,burst_per_minute:burst,retry_after_seconds:60},{status:429});}
     const acquisitionAction=['initial_outreach','partner_outreach'].includes(action);
     if(acquisitionAction&&!manualOverride){
@@ -132,10 +149,10 @@ Deno.serve(async (req) => {
     }
     let manualOverrideAudit:any=null;
     if(manualOverride){
-      manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Admin override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.0.0'}).catch(()=>null);
+      manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Approved override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||approvedOverride?.approved_by||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.1.0'}).catch(()=>null);
       if(!manualOverrideAudit)return Response.json({ok:false,error:'manual_override_audit_required'},{status:409});
     }
-    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_audit_id:manualOverrideAudit?.id||null};
+    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_approval_id:approvedOverride?.id||null,manual_override_audit_id:manualOverrideAudit?.id||null};
     const costReservation=await reservePaidOperation(svc,{event_key:`email:${idempotency}`,category:'email',provider,source:'commercialSendMessage',related_entity_type:'CommunicationThread',related_entity_id:thread.id});
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
     if (provider==='outlook' && outlook?.accessToken) {
@@ -145,13 +162,13 @@ Deno.serve(async (req) => {
     } else {
       const resendKey = Deno.env.get('RESEND_API_KEY');
       if (!resendKey) return Response.json({ ok:false, error:'commercial_email_not_configured', setup_required:true }, { status:503 });
-      provider='resend';const resendIdentity=signatureIdentity('resend',String(thread.engine||''));const from=sendingProfile?.from_address?`${resendIdentity.name} <${sendingProfile.from_address}>`:(Deno.env.get('RESEND_FROM')||`${resendIdentity.name} <${resendIdentity.email}>`);fromAddress=String(sendingProfile?.from_address||resendIdentity.email);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
+      provider='resend';const resendIdentity=signatureIdentity('resend',String(thread.engine||''),configuredSignatureEmail);const fromSetting=String(sendingProfile?.from_address||Deno.env.get('RESEND_FROM')||'').trim();if(!fromSetting)return Response.json({ok:false,error:'resend_from_identity_required',setup_required:true},{status:503});const from=fromSetting.includes('<')?fromSetting:`${resendIdentity.name} <${fromSetting}>`;fromAddress=mailboxFromSetting(fromSetting);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
       const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,html:signedHTML,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
     }
     const message = await svc.entities.CommunicationMessage.create({
       thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency, sending_profile_key:sendingProfile?.profile_key||thread.sending_profile_key||null,
       from_email:fromAddress, to_emails:[to], subject, text_body:signedText, classification, agent_name:String(body?.agent_name || 'commercial_orchestrator'), policy_key:thread.policy_key,
-      policy_version:thread.policy_version, approval_id:body?.approval_id || null, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
+      policy_version:thread.policy_version, approval_id:body?.approval_id || null, message_intent:String(body?.message_intent||action).toUpperCase(), thread_context_snapshot_json:{thread_id:thread.id,engine:thread.engine,policy_key:thread.policy_key,policy_version:thread.policy_version,market_jurisdiction:jurisdiction||null}, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
     });
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_counterparty', external_thread_id:externalThreadId, last_outbound_at:now, last_message_at:now, next_action_at:body?.next_action_at || null });
     await settlePaidOperation(svc,costReservation,{ok:true,usage_json:{provider_message_id:providerMessageId,thread_id:thread.id}});

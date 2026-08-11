@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
+import React, { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
 // SWEEP-1 T3 (2026-07-24): dictionaries split into per-language files.
 // Parity verified programmatically at extraction: 537/537 keys per language,
 // zero value diffs (+2 new SWEEP-1 T2 keys). API of this module is unchanged.
@@ -69,7 +69,10 @@ function interpolate(str, params) {
  * @typedef {{
  *   lang: string,
  *   locale: string,
+ *   detectedLang: string,
+ *   isAutomatic: boolean,
  *   setLang: (next: string) => void,
+ *   setAutoLang: () => void,
  *   t: (keyOrObj: any, paramsOrLang?: any) => any,
  *   formatCurrency: (amount: any) => string,
  *   formatDate: (date: any) => string,
@@ -78,7 +81,10 @@ function interpolate(str, params) {
 const LanguageContext = createContext(/** @type {TranslationContextValue} */ ({
   lang: "en",
   locale: "en-GB",
+  detectedLang: "en",
+  isAutomatic: true,
   setLang: (_next) => {},
+  setAutoLang: () => {},
   t: (keyOrObj, _paramsOrLang) => keyOrObj,
   formatCurrency: (n) => formatCurrency(n, "en"),
   formatDate: (d) => formatDate(d, "en"),
@@ -89,7 +95,7 @@ const LanguageContext = createContext(/** @type {TranslationContextValue} */ ({
 // country/locale signal client-side — no geo-IP call needed). Supported:
 // fr/es → those; anything else → en. The detected language is NOT persisted,
 // so the switcher stays authoritative: only a manual pick writes storage.
-function detectBrowserLang() {
+export function detectBrowserLang() {
   try {
     const candidates = Array.isArray(navigator.languages) && navigator.languages.length
       ? navigator.languages
@@ -100,6 +106,13 @@ function detectBrowserLang() {
     }
   } catch {}
   return "en";
+}
+
+function hasStoredLang() {
+  try {
+    if (localStorage.getItem(STORAGE_KEY)) return true;
+    return LEGACY_KEYS.some((key) => localStorage.getItem(key));
+  } catch { return false; }
 }
 
 function readStoredLang() {
@@ -127,14 +140,39 @@ function updateMetaTags(lang) {
 }
 
 export function LanguageProvider({ children }) {
+  const [detectedLang, setDetectedLang] = useState(() => detectBrowserLang());
   const [lang, setLangState] = useState(() => readStoredLang());
+  const [isAutomatic, setIsAutomatic] = useState(() => !hasStoredLang());
 
   const setLang = useCallback((next) => {
     if (!DICT[next]) return;
     setLangState(next);
+    setIsAutomatic(false);
     try { localStorage.setItem(STORAGE_KEY, next); } catch {}
     updateMetaTags(next);
   }, []);
+
+  const setAutoLang = useCallback(() => {
+    const detected = detectBrowserLang();
+    setDetectedLang(detected);
+    setLangState(detected);
+    setIsAutomatic(true);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      for (const key of LEGACY_KEYS) localStorage.removeItem(key);
+    } catch {}
+    updateMetaTags(detected);
+  }, []);
+
+  useEffect(() => {
+    const syncDetectedLanguage = () => {
+      const detected = detectBrowserLang();
+      setDetectedLang(detected);
+      if (isAutomatic) setLangState(detected);
+    };
+    window.addEventListener?.("languagechange", syncDetectedLanguage);
+    return () => window.removeEventListener?.("languagechange", syncDetectedLanguage);
+  }, [isAutomatic]);
 
   useEffect(() => {
     updateMetaTags(lang);
@@ -157,11 +195,14 @@ export function LanguageProvider({ children }) {
   const value = useMemo(() => ({
     lang,
     locale: localeForLanguage(lang),
+    detectedLang,
+    isAutomatic,
     setLang,
+    setAutoLang,
     t,
     formatCurrency: (n) => formatCurrency(n, lang),
     formatDate:     (d) => formatDate(d, lang),
-  }), [lang, setLang, t]);
+  }), [lang, detectedLang, isAutomatic, setLang, setAutoLang, t]);
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

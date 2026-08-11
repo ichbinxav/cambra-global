@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   hashEntries, isExcluded, EXCLUDED_FILES, SOURCE_TREE_HASH_ALGORITHM, computeSourceTreeHash,
+  collectSourceTreeEntries,
 } from "../../scripts/lib/sourceTreeHash.mjs";
 import crypto from "node:crypto";
 
@@ -46,6 +47,8 @@ describe("sourceTreeHash (sha256-tree-v1)", () => {
     expect(isExcluded("coverage/lcov.info")).toBe(true);
     expect(isExcluded(".release-evidence/tests.json")).toBe(true);
     expect(isExcluded("debug.log")).toBe(true);
+    expect(isExcluded("CAMBRA-final.zip")).toBe(true);
+    expect(isExcluded(".release-artifacts/CAMBRA-final.zip")).toBe(true);
     expect(isExcluded("src/pages/Landing.jsx")).toBe(false);
     expect(isExcluded("base44/entities/Baseline.jsonc")).toBe(false);
   });
@@ -61,5 +64,15 @@ describe("sourceTreeHash (sha256-tree-v1)", () => {
     const b = computeSourceTreeHash(".");
     expect(a.hash).toBe(b.hash);
     expect(a.fileCount).toBeGreaterThan(0);
+  });
+
+  it("hashing consumes exactly the paths returned by the canonical source selector", () => {
+    const selected = collectSourceTreeEntries(".");
+    const tree = computeSourceTreeHash(".");
+    expect(tree.fileCount).toBe(selected.length);
+    expect(tree.hash).toBe(hashEntries(selected));
+    expect(selected.map((entry) => entry.path)).toEqual(
+      [...selected.map((entry) => entry.path)].sort(),
+    );
   });
 });

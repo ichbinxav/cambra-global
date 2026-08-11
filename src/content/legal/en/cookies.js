@@ -52,7 +52,7 @@ export default {
   after: [
     {
       title: "6. Your consent choices",
-      body: "On your first visit, a consent banner offers 'Accept all' and 'Manage preferences', where analytics and marketing can be toggled individually (strictly necessary storage is always on). Your choice is recorded in cambra_cookie_consent with a timestamp. In plain words: CAMBRA currently sets no analytics or marketing cookies or storage at all — your recorded choice will only take effect if such tools are ever introduced, and this policy will be updated beforehand. The only usage measurement in place is a first-party page-view counter: when you navigate between pages, the application sends the page name (e.g. 'Analyzer') to our hosting platform on this same domain. It writes nothing on your device — no cookie, no storage — and involves no third party or advertising network.",
+      body: "On your first visit, a consent banner offers 'Accept all' and 'Manage preferences', where analytics and marketing can be toggled individually (strictly necessary storage is always on). Your choice is recorded in cambra_cookie_consent with a timestamp. CAMBRA uses two first-party measurements on the same hosting platform: a page-view counter sends the page name when you navigate, and — only when analytics is enabled — a closed set of product-funnel events such as analysis started/completed or Recover accepted. These events reject email addresses, names, tokens, URLs, session/user/entity identifiers, filenames and free text. Neither measurement sets an analytics or advertising cookie; no third-party advertising network is involved. Turning analytics off prevents the consent-gated product events.",
     },
     {
       title: "7. Managing cookies & storage",

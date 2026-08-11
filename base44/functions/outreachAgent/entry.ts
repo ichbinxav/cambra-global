@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { canonicalMarket } from '../../shared/marketContext.ts';
 
 const AGENT_NAME = "outreach";
 const TASK_TYPE = "send_outreach_email";
@@ -17,6 +17,42 @@ function parseDraftEmail(text) {
     subject: (subjectMatch?.[1] || "").trim(),
     body: (bodyMatch?.[1] || text).trim(),
   };
+}
+
+function languageFor(country) {
+  const iso2 = canonicalMarket(country)?.iso2;
+  return iso2 === 'FR' ? 'fr' : iso2 === 'ES' ? 'es' : 'en';
+}
+
+async function ensureCanonicalThread(svc, lead) {
+  const rows = await svc.entities.CommunicationThread.filter(
+    { engine: 'merchant_acquisition', lead_id: lead.id }, '-created_date', 5,
+  ).catch(() => []);
+  const available = rows.find((row) => !['closed', 'suppressed'].includes(String(row.status || '')));
+  if (available) return available;
+
+  return svc.entities.CommunicationThread.create({
+    thread_key: `legacy-outreach:${lead.id}`,
+    engine: 'merchant_acquisition',
+    related_entity_type: 'OutboundLead',
+    related_entity_id: lead.id,
+    lead_id: lead.id,
+    counterparty_email: lead.contact_email,
+    counterparty_name: lead.contact_full_name || '',
+    company_name: lead.company_name || '',
+    relationship_type: 'merchant',
+    language: languageFor(lead.country),
+    status: 'awaiting_approval',
+    conversation_state: 'WAITING_APPROVAL',
+    policy_key: '',
+    policy_version: '',
+    sending_profile_resolution_status: 'REVIEW_REQUIRED',
+    sending_profile_resolution_reason: 'legacy_thread_has_no_deterministic_profile_evidence',
+    automation_paused: true,
+    pause_reason: 'legacy_sending_profile_review_required',
+    summary: `Legacy approved outreach to ${lead.company_name || lead.contact_email}`,
+    market_jurisdiction: canonicalMarket(lead.country)?.iso2 || '',
+  });
 }
 
 /**
@@ -62,27 +98,33 @@ Deno.serve(async (req) => {
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
-      const resendKey = Deno.env.get("RESEND_API_KEY");
-      if (!resendKey) {
-        throw new Error("TOOL_NOT_CONFIGURED: añade RESEND_API_KEY a Base44 secrets para enviar emails");
-      }
-
       const payload = ap.draft_payload_json || {};
-      const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
-      const replyTo = Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "hello@cambra.global";
-      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`email:legacy-outreach:${ap.id}`, category:'email', provider:'resend', source:'outreachAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: payload.to,
-          reply_to: replyTo,
-          subject: payload.subject,
-          text: payload.body,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(`Resend API error: ${data?.message || data?.error?.message || res.statusText}`);
+      const lead = payload.lead_id
+        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch(() => null)
+        : null;
+      if (!lead) throw new Error('approved_outreach_lead_missing');
+      const preferredThread = payload.communication_thread_id
+        ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id).catch(() => null)
+        : null;
+      const thread = preferredThread || await ensureCanonicalThread(base44.asServiceRole, lead);
+      if (!thread) throw new Error('approved_outreach_thread_missing');
+      const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+      const send = await base44.asServiceRole.functions.invoke('commercialSendMessage', {
+        thread_id: thread.id,
+        action: 'initial_outreach',
+        classification: 'initial_outreach',
+        subject: payload.subject,
+        text: payload.body,
+        to: payload.to,
+        approval_id: ap.id,
+        agent_name: 'outreach',
+        idempotency_key: `legacy-outreach-approved:${ap.id}`,
+        sending_profile_key: thread.sending_profile_key || undefined,
+        manual_override: true,
+        internal_secret: internal,
+      }).catch((error) => ({ data: { ok: false, error: String(error?.message || error) } }));
+      const sent = send?.data || send || {};
+      if (sent.ok === false) throw new Error(`central_send_failed:${sent.error || 'unknown'}`);
 
       // Mark lead as contacted
       if (payload.lead_id) {
@@ -94,11 +136,11 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
         output_summary: `Sent outreach email to ${payload.to}`,
-        output_payload_json: { resend_response: data, approval_id: ap.id },
+        output_payload_json: { central_send: sent, communication_thread_id: thread.id, approval_id: ap.id },
         completed_at: new Date().toISOString(),
       });
 
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, sent: true });
+      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, thread_id: thread.id, sent: true });
     }
 
     // ═══ DRAFT MODE — never calls Instantly ═════════════════════════════
@@ -108,6 +150,8 @@ Deno.serve(async (req) => {
     const lead = await base44.asServiceRole.entities.OutboundLead.get(leadId).catch(() => null);
     if (!lead) return Response.json({ ok: false, error: "Lead not found" }, { status: 404 });
     if (!lead.contact_email) return Response.json({ ok: false, error: "Lead has no contact_email" }, { status: 400 });
+
+    const thread = await ensureCanonicalThread(base44.asServiceRole, lead);
 
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id: "_platform",
@@ -156,6 +200,7 @@ Deno.serve(async (req) => {
       body: emailBody,
       lead_id: lead.id,
       campaign_id: body?.campaign_id || null,
+      communication_thread_id: thread.id,
     };
 
     approval = await base44.asServiceRole.entities.Approval.create({

@@ -123,11 +123,12 @@ describe("commercial autonomy static boundaries", () => {
     expect(src).toContain("commercial_email_not_configured");
   });
 
-  it("Outlook inbound is event-driven and routes only real mail", () => {
+  it("Outlook inbound is scheduled, idempotent and routes only real mail", () => {
     const cfg = read("base44/functions/outlookInboundRouter/function.jsonc");
     const src = read("base44/functions/outlookInboundRouter/entry.ts");
-    expect(cfg).toContain('"integration_type": "outlook"');
-    expect(cfg).toContain('"events": ["created"]');
+    expect(cfg).toContain('"repeat_unit": "minutes"');
+    expect(cfg).toContain('"repeat_interval": 5');
+    expect(src).toContain("mode: 'scheduled_poll'");
     expect(src).toContain("/me/messages/");
     expect(src).toContain("not_email_or_draft");
     expect(src).toContain("commercialReplyAgent");

@@ -15,6 +15,7 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
       - run: npm ci
+      - run: npm run toolchain:check
       - run: npm run policy:check
       - run: npm run clean:check
       - run: npm run markets:check
@@ -23,6 +24,10 @@ jobs:
       - run: npm run ecl:check
       - run: npm run durability:check
       - run: npm run documentation:check
+      - run: npm run scheduler:check
+      - run: npm run retention:check
+      - run: npm run secrets:check
+      - run: npm run dependency:audit
       - run: npm run ci:check
       - run: npm run lint:evidence
       - run: npm run typecheck:critical:evidence

@@ -15,6 +15,8 @@
 // The EN constants below are a FALLBACK for a context that predates mandate_copy
 // — they are the v1 wording, not a second source of truth.
 
+import React from 'react';
+
 const EN_FALLBACK = {
   fee_label: "Success fee on verified savings",
   duration_label: "Duration",

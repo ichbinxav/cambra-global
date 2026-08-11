@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -7,7 +8,7 @@ Deno.serve(async (req) => {
     if (!u) return Response.json({ ok:false, error:'Unauthorized' }, { status:401 });
     if (u.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const s = b.asServiceRole;
-    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation, production] = await Promise.all([
+    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation, production, alertDeliveries, schedulerRuns] = await Promise.all([
       s.entities.MaintenanceRun.list('-started_at', 50),
       s.entities.AutonomyIncident.filter({ status:'open' }, '-last_seen_at', 500),
       s.entities.Integration.list('-last_sync_at', 2000),
@@ -17,6 +18,8 @@ Deno.serve(async (req) => {
       s.entities.SecurityAudit.list('-created_date', 500),
       s.entities.DocumentationHealthAssessment.list('-calculated_at', 20).catch(() => []),
       s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch(() => []),
+      s.entities.IncidentAlertDelivery.list('-updated_at', 200).catch(() => []),
+      s.entities.SchedulerRun.list('-started_at', 5000).catch(() => []),
     ]);
     const last = runs[0] || null;
     const doc = documentation[0] || null;
@@ -30,6 +33,7 @@ Deno.serve(async (req) => {
     const human = incidents.filter((x:any) => x.automation_eligibility === 'human_required' || x.workflow_state === 'human_review');
     const recentSecurity = security.filter((x:any) => x.success === false && t - Date.parse(x.created_date || '') < 24 * 3600000);
     const documentationDrift = Number(doc?.outdated_count || 0) + Number(doc?.incomplete_count || 0) + Number(doc?.contradictory_count || 0) + Number(doc?.unverified_count || 0);
+    const schedulerHealth=evaluateSchedulerEvidence(schedulerRuns,t);
     return Response.json({
       ok:true,
       generated_at:new Date().toISOString(),
@@ -53,6 +57,7 @@ Deno.serve(async (req) => {
         calculated_at:doc.calculated_at || null,
       } : null,
       production_readiness: production[0] || null,
+      scheduler_health:schedulerHealth,
       metrics:{
         active_issues:incidents.length,
         critical_incidents:critical.length,
@@ -70,10 +75,13 @@ Deno.serve(async (req) => {
         documentation_critical_drift:Number(doc?.critical_drift_count || 0),
         production_sealed:production[0]?.sealed === true,
         production_external_blockers:(production[0]?.external_blockers || []).length,
+        critical_alerts_delivered:alertDeliveries.filter((x:any)=>x.status==='DELIVERED').length,
+        critical_alerts_pending:alertDeliveries.filter((x:any)=>['PENDING','RETRY_PENDING','CONFIGURATION_REQUIRED','FAILED'].includes(x.status)).length,
       },
       last_run:last,
       runs:runs.slice(0,20),
       incidents:incidents.slice(0,100),
+      incident_alert_deliveries:alertDeliveries.slice(0,100),
       integration_issues:integrationIssues.slice(0,50).map((x:any) => ({ id:x.id, provider:x.provider, brand_id:x.brand_id, status:x.status, last_sync_at:x.last_sync_at, last_error:x.last_error })),
       stale_pricing:stalePricing.slice(0,50).map((x:any) => ({ id:x.id, provider_slug:x.provider_slug, country:x.country, channel:x.channel, observed_at:x.observed_at })),
       remediation_knowledge:knowledge.slice(0,50).map((x:any) => ({ id:x.id, domain:x.domain, incident_type:x.incident_type, successful_action:x.successful_action, validation_count:x.validation_count, success_count:x.success_count, failure_count:x.failure_count, confidence:x.confidence, last_verified_at:x.last_verified_at })),
@@ -83,6 +91,7 @@ Deno.serve(async (req) => {
         financial_integrity:'authoritative Invoice/ProviderRevenue ledgers and reconciliation workers remain source of truth',
         security:'signals are escalated; P17 never autonomously weakens auth, permissions or security controls',
         developer:'technical incidents may create investigation tasks; code application/cutover remains DeveloperMigrationEngine approval-gated',
+        incident_alerting:'AutonomyIncident is the sole incident source of truth; IncidentAlertDelivery is only a deduplicated transport/retry ledger for HIGH/CRITICAL pushes.',
       },
     });
   } catch (e) {

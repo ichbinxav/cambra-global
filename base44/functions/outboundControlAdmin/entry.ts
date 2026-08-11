@@ -1,10 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { evaluateCommercialGoLiveReadiness } from '../../shared/commercialActivationRuntime.ts';
+import { handleGoLiveControlAdmin } from '../goLiveControlAdmin/entry.ts';
 
 const START_SCOPE:Record<string,string>={start_premium:'outlook',start_volume:'resend',start_all:'all'};
+const GO_LIVE_ACTIONS=new Set(['status','verify_runtime','configure_cost_budget','configure_sending_profile','enable_sending_profile_warmup','pause_sending_profile','clear_cost_emergency_stop','cost_kill_switch_drill','emergency_drill','verify_founder_control']);
 
 Deno.serve(async(req)=>{
+  const routedAction=String((await req.clone().json().catch(()=>({})))?.action||'');
+  if(GO_LIVE_ACTIONS.has(routedAction))return handleGoLiveControlAdmin(req);
   try{
     const base44=createClientFromRequest(req);
     const body=await req.json().catch(()=>({}));
@@ -19,6 +23,22 @@ Deno.serve(async(req)=>{
     const now=new Date().toISOString();
     let patch:any={};
 
+    if(action==='preflight'){
+      const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_id:body?.policy_id,policy_ids:body?.policy_ids,provider_scope:body?.provider_scope,final_sha:body?.final_sha});
+      const preflight={...readiness,requested_by:String(gate.user?.email||gate.user?.id||'admin')};
+      await svc.entities.OutboundControl.update(control.id,{
+        preflight_status:readiness.allowed?'PASS':'BLOCKED',preflight_hash:readiness.preflight_hash||null,
+        preflight_policy_id:readiness.policy_id||null,preflight_policy_ids:readiness.policy_ids||[],preflight_provider_scope:readiness.provider_scope,
+        preflight_checked_at:readiness.checked_at,preflight_expires_at:readiness.expires_at||null,preflight_json:preflight,
+      });
+      for(const policyId of readiness.policy_ids||[])await svc.entities.CommercialPolicy.update(policyId,{activation_readiness_snapshot_json:preflight}).catch(()=>null);
+      await svc.entities.OperationalLog.create({
+        event_type:'commercial_go_live_preflight',message:readiness.allowed?'CANARY preflight passed':'CANARY preflight blocked',
+        data_json:{allowed:readiness.allowed,blockers:readiness.blockers,preflight_hash:readiness.preflight_hash||null,policy_ids:readiness.policy_ids||[],provider_scope:readiness.provider_scope},
+        actor_email:String(gate.user?.email||''),created_at:readiness.checked_at,
+      }).catch(()=>null);
+      return Response.json({ok:readiness.allowed,dry_run:true,outbound_unchanged:true,...readiness},{status:readiness.allowed?200:409});
+    }
     if(action==='exercise_controls'){
       if(body?.confirmation!=='EXERCISE_FOUNDER_CANARY_CONTROL')return Response.json({ok:false,error:'exercise_confirmation_required'},{status:409});
       if(control.acquisition_enabled===true)return Response.json({ok:false,error:'exercise_requires_outbound_paused'},{status:409});

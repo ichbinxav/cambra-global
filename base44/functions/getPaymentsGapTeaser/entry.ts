@@ -24,6 +24,7 @@
 // as submitPaymentsAnalysis.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { consumeRateLimit } from '../../shared/rateLimit.ts';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -60,34 +61,8 @@ async function checkAndIncrementRateLimit(
   ipHash: string,
   limitPerHour: number,
 ): Promise<{ ok: boolean; retry_after_seconds?: number }> {
-  const now = new Date();
-  const hourStart = new Date(now);
-  hourStart.setUTCMinutes(0, 0, 0);
-  const window_start = hourStart.toISOString();
   const principal_id = `getPaymentsGapTeaser:${ipHash}`;
-
-  const existing = await base44.asServiceRole.entities.RateLimitCounter.filter({ principal_id, window_start });
-  const current = existing?.[0];
-  const count = current ? (current.count || 0) : 0;
-
-  if (count >= limitPerHour) {
-    const nextHour = new Date(hourStart);
-    nextHour.setUTCHours(hourStart.getUTCHours() + 1);
-    return { ok: false, retry_after_seconds: Math.ceil((nextHour.getTime() - now.getTime()) / 1000) };
-  }
-
-  if (current) {
-    await base44.asServiceRole.entities.RateLimitCounter.update(current.id, { count: count + 1 });
-  } else {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id,
-      principal_type: 'ip',
-      window_start,
-      count: 1,
-      limit_per_minute: limitPerHour,
-    });
-  }
-  return { ok: true };
+  return consumeRateLimit(base44.asServiceRole,{principal_id,principal_type:'ip',limit:limitPerHour,window_seconds:3600});
 }
 
 Deno.serve(async (req) => {

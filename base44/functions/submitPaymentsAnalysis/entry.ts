@@ -26,6 +26,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 // EMAIL-1 T2 — locale normalization lives OUTSIDE the SYNC block on purpose:
 // it is transport/metadata concern, never engine logic.
 import { normalizeLocale } from '../../shared/emailLocale.ts';
+import { consumeRateLimit } from '../../shared/rateLimit.ts';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // Base44 functions cannot share code via imports and do not share a service
@@ -1544,34 +1545,8 @@ async function checkAndIncrementRateLimit(
   ipHash: string,
   limitPerHour: number,
 ): Promise<{ ok: boolean; remaining: number; retry_after_seconds?: number }> {
-  const now = new Date();
-  const hourStart = new Date(now);
-  hourStart.setUTCMinutes(0, 0, 0);
-  const window_start = hourStart.toISOString();
   const principal_id = `submitPaymentsAnalysis:${ipHash}`;
-
-  const existing = await base44.asServiceRole.entities.RateLimitCounter.filter({ principal_id, window_start });
-  const current = existing?.[0];
-  const count = current ? (current.count || 0) : 0;
-
-  if (count >= limitPerHour) {
-    const nextHour = new Date(hourStart);
-    nextHour.setUTCHours(hourStart.getUTCHours() + 1);
-    return { ok: false, remaining: 0, retry_after_seconds: Math.ceil((nextHour.getTime() - now.getTime()) / 1000) };
-  }
-
-  if (current) {
-    await base44.asServiceRole.entities.RateLimitCounter.update(current.id, { count: count + 1 });
-  } else {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id,
-      principal_type: 'ip',
-      window_start,
-      count: 1,
-      limit_per_minute: limitPerHour,
-    });
-  }
-  return { ok: true, remaining: limitPerHour - (count + 1) };
+  return consumeRateLimit(base44.asServiceRole,{principal_id,principal_type:'ip',limit:limitPerHour,window_seconds:3600});
 }
 
 // ─── Input validation — hard ranges, no clamp ───────────────────────────────

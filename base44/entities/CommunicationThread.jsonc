@@ -38,6 +38,16 @@
     "counterparty_name": {
       "type": "string"
     },
+    "counterparty_role": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": ["merchant", "provider", "partner", "agency", "accountant", "strategic"]
+    },
     "language": {
       "type": "string",
       "enum": [
@@ -60,6 +70,40 @@
     },
     "classification": {
       "type": "string"
+    },
+    "conversation_state": {
+      "type": "string",
+      "enum": [
+        "AI_HANDLING",
+        "AI_NEGOTIATING",
+        "HUMAN_MEETING_RECOMMENDED",
+        "MEETING_PROPOSED",
+        "MEETING_SCHEDULING",
+        "MEETING_BOOKED",
+        "FOUNDER_PREP_REQUIRED",
+        "FOUNDER_MEETING",
+        "MEETING_COMPLETED",
+        "POST_MEETING_FOLLOWUP",
+        "AI_RESUMED",
+        "CLOSED_WON",
+        "CLOSED_LOST",
+        "PAUSED",
+        "NURTURE",
+        "LEGAL_BLOCKED",
+        "WAITING_COUNTERPARTY",
+        "WAITING_APPROVAL"
+      ],
+      "default": "AI_HANDLING"
+    },
+    "current_intent": {
+      "type": "string"
+    },
+    "objection_category": {
+      "type": "string"
+    },
+    "negotiation_memory_json": {
+      "type": "object",
+      "description": "Thread-specific offers, objections, concessions, authority boundaries and next action. Never shared across tenants as raw terms."
     },
     "policy_key": {
       "type": "string"
@@ -138,6 +182,46 @@
     "meeting_event_id": {
       "type": "string"
     },
+    "meeting_status": {
+      "type": "string",
+      "enum": ["recommended", "proposed", "scheduling", "booked", "in_progress", "completed", "cancelled", "no_show" ]
+    },
+    "meeting_type": {
+      "type": "string",
+      "enum": [
+        "MERCHANT_SALES_CALL",
+        "MERCHANT_NEGOTIATION_CALL",
+        "PROVIDER_NEGOTIATION_CALL",
+        "PARTNERSHIP_CALL",
+        "STRATEGIC_RELATIONSHIP_CALL",
+        "MIGRATION_CALL",
+        "LEGAL_COMMERCIAL_CALL"
+      ]
+    },
+    "meeting_mode": {
+      "type": "string",
+      "enum": ["DISABLED", "RECOMMEND_ONLY", "PROPOSE", "AUTO_BOOK_WITHIN_POLICY"]
+    },
+    "founder_meeting_policy_version": {
+      "type": "string"
+    },
+    "founder_meeting_policy_snapshot_json": {
+      "type": "object"
+    },
+    "founder_escalation_score": {
+      "type": "number"
+    },
+    "founder_escalation_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "founder_expected_value_minor": {
+      "type": "number"
+    },
+    "counterparty_requested_founder": {
+      "type": "boolean",
+      "default": false
+    },
     "meeting_start_at": {
       "type": "string",
       "format": "date-time"
@@ -175,6 +259,22 @@
     "meeting_brief_json": {
       "type": "object",
       "description": "Structured pre-meeting brief derived only from real thread/provider/account context. Never fabricated meeting notes."
+    },
+    "meeting_outcome_json": {
+      "type": "object",
+      "description": "Founder-captured structured outcome separating discussed, agreed, proposed and approval-required items."
+    },
+    "meeting_outcome_captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "meeting_follow_up_due_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "meeting_no_show_count": {
+      "type": "number",
+      "default": 0
     },
     "market_jurisdiction": {
       "type": "string",

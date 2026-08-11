@@ -1,6 +1,6 @@
 // CAMBRA commercial autonomy boundary — deterministic authority, timing and quality gates.
 // v1.2.0 (2026-08-11)
-export const COMMUNICATION_STYLE_POLICY_VERSION = 'cambra-comms-1.1.0';
+export const COMMUNICATION_STYLE_POLICY_VERSION = 'cambra-comms-1.2.0';
 export const OFFER_EXTRACTION_VERSION = 'provider-offer-1.0.0';
 export const DEFAULT_COMMERCIAL_TIMEZONE = 'Europe/Paris';
 export const MIN_INBOUND_REPLY_DELAY_MINUTES = 25;
@@ -12,7 +12,7 @@ export const CAMBRA_COMMUNICATION_STYLE_POLICY = Object.freeze({
   version: COMMUNICATION_STYLE_POLICY_VERSION,
   identity: ['CAMBRA','CAMBRA Payments','CAMBRA Operations','CAMBRA Partnerships'],
   principles: ['concise','contextual','commercially_intelligent','professionally_casual_when_appropriate','thread_aware','natural'],
-  avoid: ['startup_cliches','corporate_filler','hyperbole','excessive_enthusiasm','unnecessary_summaries','excessive_formatting','artificial_bullets','generic_openings','repetitive_closings','invented_people','claims_of_manual_human_authorship']
+  avoid: ['startup_cliches','corporate_filler','hyperbole','excessive_enthusiasm','unnecessary_summaries','excessive_formatting','artificial_bullets','generic_openings','repetitive_closings','invented_people','claims_of_manual_human_authorship','fake_familiarity','fake_urgency','template_clones','thread_amnesia']
 });
 
 export const L4_CLASSIFICATIONS = new Set([
@@ -138,15 +138,27 @@ export function computeInboundReplySchedule(receivedAt:string|Date, policy:any, 
   return { earliest_reply_at: earliest.toISOString(), scheduled_send_at: nextBusinessSendAt(policy,naturalCandidate,timeZone).toISOString() };
 }
 
+function normalizedTokens(value:string) {
+  return new Set(String(value || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).filter((token) => token.length > 3));
+}
+
+function similarity(a:string,b:string) {
+  const left=normalizedTokens(a),right=normalizedTokens(b); if(!left.size||!right.size)return 0;
+  let common=0; for(const token of left)if(right.has(token))common++;
+  return common/Math.max(left.size,right.size);
+}
+
 export function communicationQuality(text:string, context?:{previous_outbound?:string[]}) {
   const t=String(text||'').trim(); const reasons:string[]=[];
   if(!t || t.length>5000) reasons.push('invalid_length');
-  const hard=[/\bi hope this (email|message) finds you well\b/i,/\bthank you for reaching out\b/i,/\bi[’']?d be happy to\b/i,/\babsolutely!\b/i,/\bcertainly!\b/i,/\bas an ai\b/i,/\blanguage model\b/i,/\bgame[- ]changer\b/i,/\bdelve into\b/i,/\bjust (?:checking|following) in\b/i,/\btouching base\b/i,/\bcircle back\b/i,/\bunlock(?:ing)? (?:value|savings|potential)\b/i,/\brevolutioni[sz]e\b/i];
+  const hard=[/\bi hope this (email|message) finds you well\b/i,/\bthank you for reaching out\b/i,/\bi[’']?d be happy to\b/i,/\babsolutely!\b/i,/\bgreat question\b/i,/\bcertainly!\b/i,/\bas an ai\b/i,/\blanguage model\b/i,/\bgame[- ]changer\b/i,/\bdelve into\b/i,/\bjust (?:checking|following) in\b/i,/\btouching base\b/i,/\bcircle back\b/i,/\bunlock(?:ing)? (?:value|savings|potential)\b/i,/\brevolutioni[sz]e\b/i,/\bwe(?:'|’)ve been following (?:you|your)\b/i,/\bloved your latest\b/i,/\bxavi asked me to\b/i];
   if(hard.some(r=>r.test(t))) reasons.push('generic_llm_phrase');
+  const fakeUrgency=[/\bact now\b/i,/\blimited time\b/i,/\bother bidders?\b/i,/\bexpires? today\b/i]; if(fakeUrgency.some(r=>r.test(t))) reasons.push('unsupported_urgency_pattern');
   const em=(t.match(/—/g)||[]).length; if(em>=3) reasons.push('em_dash_overuse');
   const bullets=t.split('\n').filter(x=>/^\s*[-*•]\s+/.test(x)).length; if(bullets>=4 && t.length<900) reasons.push('unnecessary_list_structure');
   const greetings=(t.match(/\b(bonjour|hello|hi|hola)\b/gi)||[]).length; if(greetings>1) reasons.push('repeated_greeting');
   if(t.length>900 && /\?$/.test((context?.previous_outbound||[]).join(' '))===false) reasons.push('overlong_routine_reply');
+  if((context?.previous_outbound||[]).some((previous)=>similarity(t,previous)>=0.86)) reasons.push('near_duplicate_message');
   return { ok: reasons.length===0, reasons };
 }
 

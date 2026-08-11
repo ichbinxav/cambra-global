@@ -7,9 +7,10 @@
       "description": "Weekly operational reminder for missing Recover reports, approvals, invoice-ready reports and blockers. Read-only apart from sending the configured admin digest and its audit log; it never approves or invoices.",
       "is_active": true,
       "schedule_mode": "recurring",
+      "schedule_type": "simple",
       "repeat_unit": "days",
       "repeat_interval": 7,
-      "starts_at": "2026-08-10T07:00:00.000Z",
+      "start_time": "07:00",
       "ends_type": "never",
       "function_name": "recoverBillingDigest",
       "function_args": {

@@ -6,6 +6,7 @@
 // invoice economics. Runs every 15 minutes and is also admin/internal callable.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { resolveBillingMode, stripeRequest } from '../../shared/stripeBilling.ts';
 import {
   appendPaymentEventOnce,
@@ -23,6 +24,8 @@ const RECONCILER_AGENT = 'recover_billing_reconciler';
 export default async function (req: Request): Promise<Response> {
   let svc: any = null;
   let task: any = null;
+  let schedulerClaim: any = null;
+  let schedulerOk = true;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -32,6 +35,8 @@ export default async function (req: Request): Promise<Response> {
     const requested = Number(body?.args?.limit ?? body?.limit ?? 50);
     const limit = Math.max(1, Math.min(MAX_BATCH, Number.isFinite(requested) ? Math.floor(requested) : 50));
     svc = base44.asServiceRole;
+    schedulerClaim = await claimSchedulerRun(svc, req, { worker_key:'reconcileRecoverBilling', cadence_seconds:900 });
+    if (!schedulerClaim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:schedulerClaim.run_key });
     const mode = resolveBillingMode();
     task = await svc.entities.AgentTask.create({
       brand_id: PLATFORM_TENANT,
@@ -159,6 +164,7 @@ export default async function (req: Request): Promise<Response> {
       results,
       guarantee: 'stripe_read_only_local_convergence',
     };
+    schedulerOk = summary.ok;
     if (task?.id) await svc.entities.AgentTask.update(task.id, {
       status: errors === 0 ? 'completed' : 'failed',
       output_summary: `Recover reconciliation: ${matched} matched · ${corrected} corrected · ${mismatched} mismatch · ${errors} errors`,
@@ -168,8 +174,11 @@ export default async function (req: Request): Promise<Response> {
     }).catch(() => null);
     return Response.json(summary);
   } catch (error) {
+    schedulerOk = false;
     const message = String((error as Error)?.message || error || 'reconciliation_failed');
     if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch(() => null);
     return Response.json({ ok: false, error: message }, { status: 500 });
+  } finally {
+    if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:'reconcileRecoverBilling' }, schedulerOk);
   }
 }

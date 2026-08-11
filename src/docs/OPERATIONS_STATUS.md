@@ -6,6 +6,25 @@
 
 ---
 
+## Release v0.92.0 — Ultimate A–Z Audit & Human Communication Seal (2026-08-11)
+
+**Local source feature-freeze ready; external blockers remain and canary stays off.**
+Commercial email now converges on one fail-closed sender, approved internal
+overrides are live/unexpired and bound to the same thread, Founder meetings use
+governed Outlook availability and a versioned policy, post-meeting continuation
+requires a structured outcome, public proof contains no invented testimonials,
+and unverified/anonymous waitlist estimates are excluded from economic totals.
+The navbar uses one automatic/manual language selector for EN/FR/ES. Critical
+external-effect schedulers claim and report cadence slots while runtime duplicate
+proof remains mandatory.
+
+Local lint, critical/full types, all policy checks, 2,113 passing tests (2
+intentional skips), clean-room `npm ci`, dependency audit and production build
+are green. The authoritative status and A–Z scorecard are in
+`CAMBRA_AZ_FINAL_AUDIT_2026-08-11.md`. GitHub final-SHA CI, Base44 deployment,
+real sender/worker/Admin/stop-resume evidence, restore, legal/tax decisions,
+extractor corpus and pilot cohorts remain unsatisfied external gates.
+
 ## Release v0.91.0 — Final Pre-Launch Remediation & Founder Control Seal (2026-08-11)
 
 **Local implementation verified; classification remains `NOT_GO_READY`.** The

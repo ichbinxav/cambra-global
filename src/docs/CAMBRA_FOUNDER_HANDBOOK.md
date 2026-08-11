@@ -1,4 +1,4 @@
-# CAMBRA FOUNDER HANDBOOK — v0.79.0
+# CAMBRA FOUNDER HANDBOOK — v0.92.0
 
 Practical operating manual. For implementation detail, use the Operating Bible. For current company state, use Founder OS / Ask CAMBRA live tools.
 
@@ -12,6 +12,8 @@ Routine acquisition inside active policies, standard replies/follow-ups, onboard
 
 ### What requires me?
 Material/final commercial commitments, L4 approvals, contracts/signature authority, legal/tax/provider-compensation activation, high/critical security or financial exceptions, material Developer cutover/rollback and strategic decisions outside approved policy.
+
+Founder meetings are recommend-only by default. In Founder Control you can restrict types and counterparties, set working hours and daily/weekly caps, or explicitly allow auto-booking inside that policy. CAMBRA uses real Outlook availability, gives you an evidence-only brief and resumes the same commercial thread only after a structured outcome is captured. It never invents availability or sends an automated message as if you personally wrote it.
 
 ### What should I not operate manually?
 Do not manually edit financial truth, invent payment status, manually coordinate every follow-up, bypass ECL/billing gates, bypass negotiation approvals, or merge Developer changes around CI/approval. Use the canonical domain action or Ask CAMBRA DO IT path.
@@ -36,6 +38,8 @@ Acquisition routinière sous policy active, réponses/follow-ups standards, onbo
 ### Qu’est-ce qui me requiert ?
 Engagements commerciaux matériels/finals, approbations L4, contrats/signature, activation juridique/fiscale de la compensation fournisseur, exceptions sécurité/finance critiques, cutover/rollback Developer matériels et décisions stratégiques hors policy.
 
+Les réunions Founder restent en recommandation par défaut. Founder Control permet de limiter types, interlocuteurs, horaires et caps ; l’auto-booking exige une activation explicite. CAMBRA utilise uniquement la disponibilité Outlook réelle, prépare un brief fondé sur les preuves et ne reprend le thread qu’après un outcome structuré. Elle n’invente jamais un créneau et ne se fait pas passer pour Xavi.
+
 ### Que ne dois-je pas opérer manuellement ?
 Ne modifiez pas la vérité financière à la main, ne contournez pas ECL/billing/approvals et ne fusionnez pas des changements Developer en contournant CI. Utilisez les actions canoniques ou Ask CAMBRA.
 
@@ -55,6 +59,8 @@ Adquisición rutinaria bajo policies activas, respuestas y follow-ups estándar,
 
 ### ¿Qué me necesita a mí?
 Compromisos comerciales materiales/finales, aprobaciones L4, contratos/firma, activación legal/fiscal de revenue share de proveedor, excepciones críticas de seguridad/finanzas, cutover/rollback material de Developer y decisiones estratégicas fuera de policy.
+
+Las reuniones con Founder son solo recomendación por defecto. En Founder Control puedes limitar tipos, interlocutores, horario y cupos diarios/semanales, o activar explícitamente el auto-booking dentro de esa policy. CAMBRA usa únicamente disponibilidad real de Outlook, prepara un brief basado en evidencia y retoma el mismo hilo después de capturar un outcome estructurado. Nunca inventa una hora ni se hace pasar por Xavi.
 
 ### ¿Qué no debo operar manualmente?
 No edites verdad financiera a mano, no inventes estados de pago, no coordines cada follow-up, no te saltes ECL/billing/approvals y no merges cambios Developer saltándote CI. Usa la acción canónica o Ask CAMBRA.

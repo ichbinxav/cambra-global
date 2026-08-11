@@ -1,0 +1,35 @@
+{
+  "name": "FounderMeetingPolicy",
+  "type": "object",
+  "description": "Versioned founder-owned policy for high-leverage meeting escalation. It controls recommendation, proposal and booking without bypassing P10/P11, commercial authority or calendar truth.",
+  "properties": {
+    "policy_key": { "type": "string" },
+    "version": { "type": "string" },
+    "status": { "type": "string", "enum": ["draft", "active", "paused", "superseded"], "default": "draft" },
+    "mode": { "type": "string", "enum": ["DISABLED", "RECOMMEND_ONLY", "PROPOSE", "AUTO_BOOK_WITHIN_POLICY"], "default": "RECOMMEND_ONLY" },
+    "allowed_meeting_types": { "type": "array", "items": { "type": "string" } },
+    "allowed_relationship_types": { "type": "array", "items": { "type": "string" } },
+    "minimum_expected_value_minor": { "type": "number" },
+    "minimum_escalation_score": { "type": "number" },
+    "daily_meeting_cap": { "type": "number" },
+    "weekly_meeting_cap": { "type": "number" },
+    "minimum_notice_hours": { "type": "number" },
+    "default_duration_minutes": { "type": "number" },
+    "preferred_start_hour": { "type": "number" },
+    "preferred_end_hour": { "type": "number" },
+    "timezone": { "type": "string" },
+    "blocked_weekdays": { "type": "array", "items": { "type": "number" } },
+    "paused_until": { "type": "string", "format": "date-time" },
+    "auto_book_allowed": { "type": "boolean", "default": false },
+    "explicit_request_priority": { "type": "boolean", "default": true },
+    "approval_snapshot_json": { "type": "object" },
+    "approved_by": { "type": "string" },
+    "approved_at": { "type": "string", "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["policy_key", "version", "status", "mode"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

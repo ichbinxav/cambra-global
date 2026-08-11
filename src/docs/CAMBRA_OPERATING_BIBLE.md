@@ -1,4 +1,4 @@
-# CAMBRA OPERATING BIBLE — v0.79.0
+# CAMBRA OPERATING BIBLE — v0.92.0
 
 Canonical technical/operating reference for the implementation that exists in the repository. This document is not a product wish-list. When a section says PARTIALLY_IMPLEMENTED or MISSING, that status is intentional and must not be upgraded without source evidence.
 
@@ -16,7 +16,11 @@ The live merchant surface centers on onboarding/brand state, Connect Tools/uploa
 
 ### Acquisition and CRM — IMPLEMENTED with policy gates
 
-Lead discovery/enrichment/scoring, CRM synchronization, outbound acquisition, reply handling, follow-up, meeting coordination and acquisition learning exist as separate functions/agents. Routine external communication is allowed only inside active policy/sending controls and deterministic suppression/quality/deliverability gates. Opt-out stops the thread; material commitments escalate. P18 SAFE MODE sits above the sending boundary and acquisition controls, so containment does not depend on an LLM obeying a prompt.
+Lead discovery/enrichment/scoring, CRM synchronization, outbound acquisition, reply handling, follow-up, meeting coordination and acquisition learning exist as separate functions/agents. Every commercial email path, including the legacy approval flows, converges on `commercialSendMessage`; routine external communication is allowed only inside active policy/sending controls and deterministic suppression, approval-binding, quality, cost and deliverability gates. Opt-out stops the thread; material commitments escalate. P18 SAFE MODE sits above the sending boundary and acquisition controls, so containment does not depend on an LLM obeying a prompt.
+
+Commercial conversations persist relationship type, language, participant identity, context summary, open questions, objection history, promises, commitments and the next step on the canonical `CommunicationThread`. CAMBRA communicates as CAMBRA or the Founder Office. It may disclose that automation assists when asked, but it may never impersonate Xavi or claim that he personally wrote an automated message. Public proof must be evidence-backed; anonymous/unverified waitlist estimates are excluded from economic totals.
+
+Founder meeting escalation is governed by a versioned `FounderMeetingPolicy`. The default is recommend-only. Automatic booking requires an explicit founder switch, an allowed meeting type and relationship, P10/P11 readiness, business hours and daily/weekly capacity. Availability and booking use the connected Outlook calendar only; failure returns a blocker and never invents a slot. Briefs and post-meeting outcomes remain attached to the same thread, and discussed, agreed, proposed and approval-required facts remain separate.
 
 ### Merchant operations — IMPLEMENTED
 
@@ -31,6 +35,8 @@ Provider pricing/evidence, temporal observations, knowledge claims/conflicts, sn
 `/admin` is the Founder OS. Deterministic domain systems provide metrics and records; AI Chief of Staff explains and prioritizes but cannot become financial truth. Ask CAMBRA exposes governed read, WHY, simulation and command paths. Natural language never bypasses domain policy or approval gates.
 
 Founder Attention should contain authority-required/material items rather than routine operational work. Founder actions are expected to be observe, ask, decide, approve, intervene and strategize.
+
+Founder Control includes a governed meeting-policy editor, meeting recommendations, briefs, outcome capture and safe resumption. Natural-language meeting commands are translated into deterministic previews; ambiguous commands do not mutate policy. The public language selector has one automatic browser-language mode plus explicit English, French and Spanish choices. Manual choice is persisted; unsupported browser languages fall back honestly rather than claiming native localization.
 
 ## 3. Merchant lifecycle / Recover — IMPLEMENTED
 

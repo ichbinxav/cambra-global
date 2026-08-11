@@ -70,11 +70,9 @@ export default function ContractDocumentCard({ dealActivationId }) {
 
   const download = async () => {
     setBusy(true);
-    base44.analytics.track({ eventName: "recover_contract_pdf_download_clicked" });
     try {
       const r = await base44.functions.invoke("downloadRecoverContract", { deal_activation_id: dealActivationId });
       if (r?.data?.download_url) {
-        base44.analytics.track({ eventName: "recover_contract_pdf_download_succeeded" });
         window.open(r.data.download_url, "_blank", "noopener");
       }
     } finally {

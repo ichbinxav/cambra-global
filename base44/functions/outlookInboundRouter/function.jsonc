@@ -3,14 +3,16 @@
   "entry": "entry.ts",
   "automations": [
     {
-      "type": "integration_event",
-      "name": "Outlook Commercial Inbound — created",
-      "description": "Routes newly created Outlook emails into CAMBRA canonical commercial thread ledger and safely ignores non-email events.",
-      "integration_type": "outlook",
-      "events": ["created"],
-      "function_name": "outlookInboundRouter",
+      "type": "scheduled",
+      "name": "Outlook Commercial Inbound — every 5 minutes",
+      "description": "Polls Outlook for replies associated with active CAMBRA commercial threads. Dedupe and bounded lookback make each run idempotent.",
       "function_args": {},
-      "is_active": true
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5,
+      "ends_type": "never"
     }
   ]
 }

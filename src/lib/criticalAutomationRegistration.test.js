@@ -15,4 +15,19 @@ describe("critical automation registration", () => {
     expect(a).toMatchObject({ is_active: true, schedule_mode: "recurring", repeat_unit: "minutes", repeat_interval: cadence, function_name: fn });
     expect(new Date(a.starts_at).toString()).not.toBe("Invalid Date");
   });
+
+  it("billApiUsage has a valid monthly cadence and duplicate-run protection", () => {
+    const automation = load("base44/functions/billApiUsage/function.jsonc").automations?.[0];
+    const source = readFileSync(join(process.cwd(), "base44/functions/billApiUsage/entry.ts"), "utf8");
+    expect(automation).toMatchObject({
+      is_active: true,
+      schedule_mode: "recurring",
+      repeat_unit: "months",
+      repeat_interval: 1,
+      repeat_on_day_of_month: 1,
+      function_name: "billApiUsage",
+    });
+    expect(source).toContain("billing_run_id");
+    expect(source).toContain("assertOperationAllowed(svc, 'billing_issuance')");
+  });
 });

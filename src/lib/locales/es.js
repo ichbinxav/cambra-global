@@ -189,6 +189,8 @@ export default {
     nav_contact:      "Contacto",
     nav_referrals:    "Referidos",
     nav_sign_in:      "Iniciar sesión",
+    language_switcher_label: "Elegir idioma",
+    language_detected: "Automático · {language}",
 
     /* mobile nav menu */
     nav_group_home:           "Inicio",
@@ -570,12 +572,12 @@ export default {
     hiw_cta_button:   "Haz tu auditoría gratis",
     hiw_cta_note:     "Gratis para siempre para los primeros operadores · Sin tarjeta",
 
-    /* 0.4 — Testimonials page (chrome only) */
-    tst_hero_badge:   "Testimonios · De operadores reales",
-    tst_hero_h1:      "Lo que dicen los comercios de CAMBRA.",
-    tst_hero_sub:     "Resultados reales de comercios independientes de toda Europa.",
+    /* 0.4 — Estándares de evidencia */
+    tst_hero_badge:   "Evidencia · Sin casos inventados",
+    tst_hero_h1:      "Primero la prueba; después la afirmación.",
+    tst_hero_sub:     "CAMBRA solo presenta resultados de comercios cuando los documentos fuente y el consentimiento los respaldan.",
     tst_role_at:      "{role} en {company}",
-    tst_illustrative_note: "Testimonios de ejemplo — aún no son clientes reales.",
+    tst_illustrative_note: "Solo pueden publicarse resultados de clientes demostrados y autorizados.",
 
     /* 0.4 — Pricing page */
     prc_split_eyebrow:   "Modelo de precios",
@@ -1009,11 +1011,11 @@ export default {
     fl_p2:                 "Por eso creé CAMBRA.",
     fl_role:               "Fundador",
 
-    /* Landing — Testimonials carousel */
-    tst_eyebrow:           "Casos reales",
-    tst_h2_pre:            "Lo que las marcas",
-    tst_h2_kw:             "recuperaron de verdad.",
-    tst_category:          "Pagos",
+    /* Landing — estándares de evidencia */
+    tst_eyebrow:           "Estándares de evidencia",
+    tst_h2_pre:            "Lo que CAMBRA",
+    tst_h2_kw:             "afirma y lo que no.",
+    tst_category:          "Verificado por diseño",
     tst_before:            "Antes",
     tst_after:             "Después",
     tst_saved:             "Ahorrado",
@@ -1021,11 +1023,16 @@ export default {
     tst_role_founder:      "Fundadora",
     tst_role_coo:          "COO",
     tst_role_finance:      "Responsable financiero",
-    tst_q1:                "Pagábamos un 2,4 % blended y creíamos que ese era simplemente el coste de las tarjetas. CAMBRA nos enseñó que el margen del procesador era la única parte movible — y cuánto estábamos dejando sobre la mesa.",
-    tst_q2:                "La auditoría de 3 minutos fue más transparente sobre nuestras comisiones de tarjeta que nuestro PSP en tres años. Vimos exactamente por dónde se escapaba el dinero.",
-    tst_q3:                "Entrar en el colectivo nos llevó a una tarifa que jamás habríamos conseguido negociando solos con nuestro tamaño. Marcas moviéndose como una sola — de eso va todo.",
-    tst_q4:                "Sin cuota fija ni contrato. Solo cobraron cuando nuestros extractos bancarios confirmaron el ahorro. Esa alineación es rara.",
-    tst_q5:                "CAMBRA nos comparó con marcas francesas de nuestro tamaño — estábamos en el tercio más caro. Verlo en una sola cifra cambió nuestra forma de pensar los pagos.",
+    tst_proof_title1:      "Hallazgos derivados de documentos",
+    tst_proof_title2:      "Extracción trazable",
+    tst_proof_title3:      "Una previsión sigue siendo una previsión",
+    tst_proof_title4:      "Sin prueba social sintética",
+    tst_proof_title5:      "Automatización fail-closed",
+    tst_q1:                "Las comisiones, volúmenes y condiciones solo se muestran cuando la fuente subida los respalda. Lo que falta sigue figurando como dato ausente.",
+    tst_q2:                "Los campos de facturas y extractos conservan fuente, confianza y estado de revisión para que el resultado pueda inspeccionarse.",
+    tst_q3:                "La oportunidad estimada, los términos negociados y el ahorro confirmado por el banco son estados separados. Una previsión nunca se presenta como dinero recuperado.",
+    tst_q4:                "No se inventan nombres, citas ni resultados de clientes. Todo caso público requiere evidencia real y permiso explícito.",
+    tst_q5:                "El outbound, la negociación, la migración y la facturación se detienen si faltan política, autoridad, datos o controles reales de runtime.",
 
     /* Landing — final CTA */
     cta_final_eyebrow:     "La última llamada",

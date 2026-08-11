@@ -7,11 +7,10 @@
       "description": "Deletes anonymous PaymentsAnalysisSession rows older than the committed 90-day retention window. Idempotent and bounded.",
       "is_active": true,
       "schedule_mode": "recurring",
+      "schedule_type": "simple",
       "repeat_unit": "hours",
       "repeat_interval": 24,
-      "starts_at": "2026-08-10T01:15:00.000Z",
       "ends_type": "never",
-      "function_name": "purgePaymentsAnalysisSessions",
       "function_args": {}
     }
   ],

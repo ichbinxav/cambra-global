@@ -22,6 +22,7 @@ import { useRef, useState } from "react";
 import { FileUp, Lock, Clock, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 export default function StatementUploadCard({ providerLabel, extractionLive }) {
   const { t } = useTranslation();
@@ -75,6 +76,8 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
     setMessage("");
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const documentType=String(file.name.split('.').pop()||'unknown').toLowerCase().slice(0,12);
+      trackProductEvent('document_uploaded',{source:'statement_upload',document_type:documentType});
       const resp = await base44.functions.invoke("processUploadedFile", {
         file_url,
         file_name: file.name,
@@ -85,6 +88,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       // with no `error` field. Treat a non-recognized document as an honest
       // failure the merchant can act on.
       if (body?.error || body?.status !== "success" || body?.detected === "unknown" || body?.projection_eligible !== true) {
+        trackProductEvent('document_processing_failed',{source:'statement_upload',document_type:documentType,reason_code:'review_or_unknown'});
         setStatus("error");
         setMessage(t("su_err_unreadable"));
         return;
@@ -92,6 +96,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       setStatus("done");
       setMessage(t("su_received"));
     } catch {
+      trackProductEvent('document_processing_failed',{source:'statement_upload',reason_code:'upload_or_network'});
       setStatus("error");
       setMessage(t("su_err_upload"));
     }

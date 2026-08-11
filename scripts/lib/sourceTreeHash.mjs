@@ -21,6 +21,7 @@ export const EXCLUDED_DIRS = [
   ".cache",
   ".vite",
   ".turbo",
+  ".release-artifacts",
 ];
 export const EXCLUDED_FILES = [
   "RELEASE.json",
@@ -40,6 +41,7 @@ export const EXCLUDED_PATTERNS = [
   /\.tmp$/i,
   /~$/,
   /^\.DS_Store$/,
+  /\.zip$/i,
   // v62.2.1 — archived baselines are historical scratch, same reasoning.
   /^typecheck-baseline\.previous\.\d+\.json$/,
 ];
@@ -64,8 +66,12 @@ export function hashEntries(entries) {
   return sha256Hex(Buffer.from(concatenated, "utf8"));
 }
 
-/** Walks `root` applying the exclusion list and returns the tree hash. */
-export function computeSourceTreeHash(root = ".") {
+/**
+ * The one canonical source selector used by BOTH hashing and packaging.
+ * Returning paths and hashes together makes selection drift testable: a
+ * packager is not allowed to maintain a second include/exclude policy.
+ */
+export function collectSourceTreeEntries(root = ".") {
   const entries = [];
   const walk = (dir) => {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -77,5 +83,11 @@ export function computeSourceTreeHash(root = ".") {
     }
   };
   walk(root);
+  return entries.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+}
+
+/** Walks `root` applying the canonical selector and returns the tree hash. */
+export function computeSourceTreeHash(root = ".") {
+  const entries = collectSourceTreeEntries(root);
   return { hash: hashEntries(entries), fileCount: entries.length, algorithm: SOURCE_TREE_HASH_ALGORITHM };
 }

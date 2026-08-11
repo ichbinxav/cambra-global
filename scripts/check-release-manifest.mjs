@@ -33,6 +33,11 @@ if (m.releaseName !== pkg.releaseName) fail(`releaseName mismatch: "${m.releaseN
 if (m.policyVersion !== policy.policyVersion) fail(`policy drift: manifest ${m.policyVersion} vs live ${policy.policyVersion}`);
 if (m.policyFileSha !== sha256("config/product-policy.json")) fail("stale manifest: product policy changed since generation");
 if (m.lockfileSha !== sha256("package-lock.json")) fail("stale manifest: package-lock.json changed since generation");
+if (m.nodeVersion !== "v20.20.2") fail(`unsupported release Node: ${m.nodeVersion}; exact v20.20.2 required`);
+if (m.npmVersion !== "10.8.2") fail(`unsupported release npm: ${m.npmVersion}; exact 10.8.2 required`);
+if (m.schedulerInventorySha !== sha256("config/scheduler-inventory.json")) fail("scheduler inventory changed since manifest generation");
+if (m.dataRetentionMatrixSha !== sha256("config/data-retention-matrix.json")) fail("data retention matrix changed since manifest generation");
+if (m.secretScannerSha !== sha256("scripts/check-secrets.mjs")) fail("secret scanner changed since manifest generation");
 // v62.6 — the durability manifest is EXCLUDED from sourceTreeHash (it hashes
 // the tree it lives in), so its dedicated SHA must be independently verified:
 // otherwise closure would be silently mutable after sealing.
@@ -86,6 +91,7 @@ requireEvidence("build", m.buildEvidence);
 requireEvidence("lint", m.lintEvidence);
 requireEvidence("typecheck-critical", m.typecheckCriticalEvidence);
 requireEvidence("typecheck-baseline", m.typecheckBaselineEvidence);
+requireEvidence("dependency-audit", m.dependencyAuditEvidence);
 if (m.testEvidence && (m.testEvidence.failed !== 0 || m.testEvidence.passed === null)) fail("test evidence reports failures or null totals");
 
 // v62.2.1 — real build artifacts required
@@ -102,6 +108,8 @@ const manualRequirements = Array.isArray(m.manualRequirements) ? m.manualRequire
 const blockingManualRequirements = Array.isArray(m.blockingManualRequirements) ? m.blockingManualRequirements : [];
 if (blockingManualRequirements.some((x) => !manualRequirements.includes(x))) fail("blockingManualRequirements must be a subset of manualRequirements");
 if (m.productionSealEligible !== (manualRequirements.length === 0)) fail("productionSealEligible is inconsistent with manualRequirements");
+const expectedVerdict = manualRequirements.length === 0 ? "PASS" : (blockingManualRequirements.length === 0 ? "PASS WITH EXTERNAL VALIDATION PENDING" : "NOT READY");
+if (m.finalVerdict !== expectedVerdict) fail(`finalVerdict is inconsistent: expected ${expectedVerdict}`);
 
 // Strict CI mode
 if (ciMode) {

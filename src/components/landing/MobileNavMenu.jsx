@@ -1,7 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, Handshake, UserPlus } from "lucide-react";
-import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 // ─────────────────────────────────────────────
@@ -156,7 +155,6 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
               transition={{ duration: 0.4, delay: 0.05 }}
               className="px-5 pt-5 pb-4"
             >
-              {/* UX-1 T0 — language switcher, previously desktop-only */}
               <div className="flex items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
                 <span className="relative flex h-1.5 w-1.5">
@@ -167,7 +165,6 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                   {t("nav_status_live")}
                 </span>
               </div>
-              <LanguageSwitcher variant="dark" />
               </div>
               <p className="mt-3 text-[12px] text-white/55 leading-snug max-w-[280px]">
                 {t("nav_tagline")}

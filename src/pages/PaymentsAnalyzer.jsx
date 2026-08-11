@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 import GmvSlider       from "@/components/paymentsAnalyzer/GmvSlider";
 import AvgTicketInput  from "@/components/paymentsAnalyzer/AvgTicketInput";
@@ -440,6 +441,7 @@ export default function PaymentsAnalyzer() {
     }
 
     setSubmitting(true);
+    trackProductEvent('analysis_started',{source:'payments_analyzer',channel,locale:lang});
     try {
       let payload;
       if (channel === "combined") {
@@ -501,6 +503,7 @@ export default function PaymentsAnalyzer() {
       const body = resp?.data || resp;
 
       if (body?.error === "rate_limited") {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'rate_limited'});
         const secs = Number(body.retry_after_seconds) || 0;
         const mins = Math.max(1, Math.ceil(secs / 60));
         setErrorBanner(t("az_err_rate_limited", { mins }));
@@ -508,11 +511,13 @@ export default function PaymentsAnalyzer() {
         return;
       }
       if (body?.error === "invalid_input") {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'invalid_input'});
         setErrorBanner(t("az_err_invalid_input", { field: body.field }));
         setSubmitting(false);
         return;
       }
       if (!body?.ok || !body.anon_session_id) {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'unexpected_response'});
         setErrorBanner(t("az_err_generic"));
         setSubmitting(false);
         return;
@@ -520,8 +525,10 @@ export default function PaymentsAnalyzer() {
       // Navigate to the CANONICAL /Results route — not /PaymentsResults, which
       // is an alias that <Navigate replace> resolves to /Results but STRIPS the
       // query string in the process, breaking the session handoff.
+      trackProductEvent('analysis_completed',{source:'payments_analyzer',channel,mode:'estimated'});
       navigate(`/Results?session=${encodeURIComponent(body.anon_session_id)}`);
     } catch {
+      trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'network'});
       setErrorBanner(t("az_err_network"));
       setSubmitting(false);
     }

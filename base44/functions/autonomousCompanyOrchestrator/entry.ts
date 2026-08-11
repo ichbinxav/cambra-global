@@ -5,10 +5,10 @@ import { emergencyState } from '../../shared/operationalControl.ts';
 
 const VERSION = 'autonomous-company-orchestrator-p8-1.0.0';
 
-async function invokeStep(service: any, name: string, internalSecret: string) {
+async function invokeStep(service: any, name: string, internalSecret: string, payload: any = {}) {
   const startedAt = new Date().toISOString();
   try {
-    const result = await service.functions.invoke(name, { internal_secret: internalSecret });
+    const result = await service.functions.invoke(name, { ...payload,internal_secret: internalSecret });
     const data = result?.data || result || {};
     return { name, ok: data?.ok !== false, started_at: startedAt, completed_at: new Date().toISOString(), result: data };
   } catch (error) {
@@ -71,7 +71,6 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     steps.push(await invokeStep(service, 'alwaysOnLeadDiscoveryWorker', internalSecret));
     steps.push(await invokeStep(service, 'salesPipelineWorker', internalSecret));
     steps.push(await invokeStep(service, 'outreachExperimentLearningWorker', internalSecret));
-    steps.push(await invokeStep(service, 'europeanGrowthIntelligenceWorker', internalSecret));
     steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret));
 
     const [commercialRows, maintenanceRows, criticalIncidents] = await Promise.all([

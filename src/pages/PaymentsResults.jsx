@@ -52,6 +52,7 @@ import ActionCenter from "@/components/dashboard/ActionCenter";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 // A merchant whose opportunity is this large gets routed to a human call
 // instead of the self-serve collective. Either high monthly GMV OR high
@@ -223,6 +224,11 @@ export default function PaymentsResults() {
   // PaymentsRateTable — read once when a result is ready, ONLY to derive the
   // neutral ambition line (marketRange). Public read RLS. Never blocks render.
   const [rateTable, setRateTable] = useState(null);
+  const resultsTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if(status==='ready'&&!resultsTrackedRef.current){resultsTrackedRef.current=true;trackProductEvent('results_viewed',{source:'payments_results',mode:isVerifiedPath?'verified':'estimated'});}
+  },[status,isVerifiedPath]);
 
   useEffect(() => {
     // ── PATH B — verified (authenticated real-data read) ───────────────

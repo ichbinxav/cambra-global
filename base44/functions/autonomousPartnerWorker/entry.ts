@@ -6,6 +6,7 @@ import { canonicalMarket } from '../../shared/marketContext.ts';
 import { sendingProfileIsValid } from '../../shared/commercialActivation.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 
 const FREE=new Set(['gmail.com','googlemail.com','hotmail.com','outlook.com','yahoo.com','icloud.com','proton.me','protonmail.com']);
 const TYPE_RULES=[
@@ -31,12 +32,12 @@ async function apollo(svc:any,key:string,country:string,titles:string[],perPage:
 
 async function claudeDraft(svc:any, prospect:any, language:string, variant:any, eventKey:string){
  const prompt=[
-  'Write the first B2B partnership email from Xavi M. Contero, Founder of CAMBRA.',
+  'Write the first B2B partnership email from the CAMBRA Founder Office. Never claim the founder personally wrote or sent it.',
   'Use ONLY the supplied prospect facts. Do not invent clients, referrals, shared contacts, revenue, merchant count, savings, partnerships, credentials or prior knowledge.',
   'CAMBRA helps ecommerce/retail merchants analyze and improve infrastructure economics, starting with payments. The goal is to explore a distribution/referral partnership where genuinely relevant.',
   'Natural and founder-to-founder/professional tone. Concise, specific, no startup clichés, no hype, no generic opener, no em-dash-heavy prose, no bullet list. Use at most 1-2 verified personalization signals and never force a detail. Max 90 words.',
   'APPROACH: '+String(variant?.instruction||''),
-  'Do NOT add a signature, sender name, title, email address or website: the sending system adds Xavi’s verified HTML signature deterministically.',
+  'Do NOT add a signature, sender name, title, email address or website: the sending system adds the verified CAMBRA organizational signature deterministically.',
   'A short plain opt-out sentence is allowed and should sound natural.',
   `Language: ${language}`,
   'Return ONLY JSON {"subject":"","body":""}.',
@@ -45,8 +46,8 @@ async function claudeDraft(svc:any, prospect:any, language:string, variant:any, 
  const out=await callCambraClaude(prompt,{tier:'standard',maxTokens:850,svc,eventKey,source:'autonomousPartnerWorker'});const t=String(out.text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(t)}catch{const m=t.match(/\{[\s\S]*\}/);if(m)try{return JSON.parse(m[0])}catch{}return null}
 }
 
-Deno.serve(async(req)=>{let task:any=null;try{
- const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;
+Deno.serve(async(req)=>{let task:any=null;let schedulerSvc:any=null;let schedulerClaim:any=null;let schedulerOk=true;try{
+ const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'autonomousPartnerWorker',cadence_seconds:3600});if(!schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:schedulerClaim.run_key});
  const policies=await svc.entities.CommercialPolicy.filter({engine:'partner_acquisition',status:'active'},'-approved_at',10).catch(()=>[]);const policy=policies.find((p:any)=>policyIsActive(p))||null;
  if(!policy)return Response.json({ok:true,automatic:false,reason:'partner_policy_missing'});
  let sendingProfile:any=null;for(const profileKey of policy.sending_profile_keys||[]){const rows=await svc.entities.OutboundSendingProfile.filter({profile_key:profileKey},'-created_date',1).catch(()=>[]);if(rows[0]?.provider==='outlook'&&sendingProfileIsValid(rows[0])){sendingProfile=rows[0];break}}if(!sendingProfile)return Response.json({ok:true,automatic:false,reason:'partner_policy_outlook_profile_missing'});
@@ -74,4 +75,4 @@ Deno.serve(async(req)=>{let task:any=null;try{
   }
  }
  await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Partners: ${discovered} discovered, ${created} new, ${contacted} contacted, ${skipped} skipped`,output_payload_json:{discovered,created,contacted,skipped,failures:failures.slice(0,20)},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,discovered,created,contacted,skipped,failures:failures.length});
-}catch(error){console.error('autonomousPartnerWorker failed',error);if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:String(error?.message||error),completed_at:new Date().toISOString()})}catch{}}return Response.json({ok:false,error:'autonomous_partner_worker_failed',detail:String(error?.message||error),task_id:task?.id||null},{status:500})}});
+}catch(error){schedulerOk=false;console.error('autonomousPartnerWorker failed',error);if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:String(error?.message||error),completed_at:new Date().toISOString()})}catch{}}return Response.json({ok:false,error:'autonomous_partner_worker_failed',detail:String(error?.message||error),task_id:task?.id||null},{status:500})}finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRun(schedulerSvc,schedulerClaim,{worker_key:'autonomousPartnerWorker'},schedulerOk)}});

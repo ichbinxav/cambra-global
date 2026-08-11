@@ -13,6 +13,13 @@
     "estimated_unit_cost_minor_json": { "type": "object", "description": "Conservative reservation cost per provider operation, in minor currency units." },
     "anomaly_warning_pct": { "type": "number", "minimum": 1, "maximum": 100 },
     "hard_stop_pct": { "type": "number", "minimum": 1, "maximum": 100 },
+    "reservation_revision": { "type": "number", "minimum": 0, "description": "Optimistic-CAS revision for concurrent paid-operation reservations." },
+    "reservation_day_key": { "type": "string" },
+    "reservation_month_key": { "type": "string" },
+    "reserved_daily_total_minor": { "type": "number", "minimum": 0 },
+    "reserved_monthly_total_minor": { "type": "number", "minimum": 0 },
+    "reserved_category_json": { "type": "object", "description": "CAS-protected daily/monthly reserved totals per cost category." },
+    "reservation_recent_event_keys": { "type": "array", "items": { "type": "string" }, "description": "Bounded recent idempotency claims used to stop concurrent duplicate paid execution before the usage event is persisted." },
     "emergency_stop_active": { "type": "boolean", "default": false },
     "emergency_stop_reason": { "type": "string" },
     "approved_by": { "type": "string" },
@@ -20,7 +27,7 @@
     "updated_by": { "type": "string" },
     "updated_at": { "type": "string", "format": "date-time" }
   },
-  "required": ["control_key", "version", "status", "currency", "emergency_stop_active"],
+  "required": ["control_key", "version", "status", "currency", "reservation_revision", "reservation_day_key", "reservation_month_key", "reserved_daily_total_minor", "reserved_monthly_total_minor", "reserved_category_json", "reservation_recent_event_keys", "emergency_stop_active"],
   "rls": {
     "read": { "user_condition": { "role": "admin" } },
     "write": { "user_condition": { "role": "admin" } }

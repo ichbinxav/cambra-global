@@ -2,5 +2,18 @@
   "name":"LocalePreference","type":"object","description":"P9 explicit user/merchant locale preference. Language, locale, market and currency remain separate; explicit user choice wins and geolocation never locks it.",
   "properties":{"preference_key":{"type":"string"},"user_id":{"type":"string"},"brand_id":{"type":"string"},"locale":{"type":"string"},"language":{"type":"string"},"market_code":{"type":"string"},"currency":{"type":"string"},"timezone":{"type":"string"},"source":{"type":"string","enum":["explicit_user","merchant_preference","admin","migration"]},"registry_version":{"type":"string"},"updated_at":{"type":"string","format":"date-time"}},
   "required":["preference_key","locale","language","source","registry_version","updated_at"],
-  "rls":{"read":{"user_condition":{"$or":[{"user_id":"{{user.id}}"},{"role":"admin"}]}},"write":{"user_condition":{"$or":[{"user_id":"{{user.id}}"},{"role":"admin"}]}}}
+  "rls": {
+    "read": {
+      "$or": [
+        { "user_condition": { "role": "admin" } },
+        { "data.user_id": "{{user.id}}" }
+      ]
+    },
+    "write": {
+      "$or": [
+        { "user_condition": { "role": "admin" } },
+        { "data.user_id": "{{user.id}}" }
+      ]
+    }
+  }
 }

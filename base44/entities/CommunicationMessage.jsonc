@@ -74,6 +74,18 @@
     "classification_reason": {
       "type": "string"
     },
+    "message_intent": {
+      "type": "string",
+      "description": "Deterministic commercial purpose such as ANSWER, NEGOTIATE, PROPOSE_MEETING or POST_MEETING_FOLLOWUP."
+    },
+    "thread_context_snapshot_json": {
+      "type": "object",
+      "description": "Minimal decision-time context used for continuity and audit; secrets and unnecessary financial data are forbidden."
+    },
+    "disclosure_policy_json": {
+      "type": "object",
+      "description": "Records whether an AI/identity disclosure question was detected and the deterministic policy applied."
+    },
     "agent_name": {
       "type": "string"
     },

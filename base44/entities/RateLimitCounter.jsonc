@@ -27,11 +27,17 @@
     "limit_per_minute": {
       "type": "number",
       "default": 120
+    },
+    "window_seconds": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Actual bucket duration. limit_per_minute is retained as a legacy field name and stores the configured bucket limit."
     }
   },
   "required": [
     "principal_id",
-    "window_start"
+    "window_start",
+    "window_seconds"
   ],
   "rls": {
     "read": {

@@ -6,6 +6,7 @@ import PaymentsModule from '@/components/onboarding/PaymentsModule';
 // FASE 1.3 — ShippingModule + SaasModule deprecated (payments-only phase).
 import { base44 } from '@/api/base44Client';
 import Navbar from '@/components/landing/Navbar';
+import { trackProductEvent } from '@/lib/productAnalytics';
 
 export default function Onboarding(){
   const [tab, setTab] = useState('general');
@@ -22,7 +23,7 @@ export default function Onboarding(){
   };
 
 
-  useEffect(()=>{ load(); },[]);
+  useEffect(()=>{ trackProductEvent('onboarding_started',{source:'onboarding'});load(); },[]);
 
   return (
     <>

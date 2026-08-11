@@ -16,6 +16,8 @@
 // than omitting one: the checkbox text (also server-provided) still states the
 // terms the merchant is accepting.
 
+import React from 'react';
+
 export default function MandateLimitsBlock({ copy }) {
   const title = copy?.titles?.limits;
   const body = Array.isArray(copy?.limits_body) ? copy.limits_body.filter(Boolean) : [];

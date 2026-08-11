@@ -1,1 +1,20 @@
-{"name":"getEuropeMarketsCommandCenter","entry":"entry.ts"}
+{
+  "name": "getEuropeMarketsCommandCenter",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "Growth Path + Europe-33 recompute — 6h",
+      "description": "Recomputes the evidence-limited market portfolio and Growth Path snapshot. Recommendation-only; no send, spend, contract, migration or billing execution.",
+      "function_args": { "view": "growth", "action": "recompute", "source": "scheduled", "confirmation": "RECOMPUTE_GROWTH_PATH", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 6,
+      "ends_type": "never",
+      "function_name": "getEuropeMarketsCommandCenter",
+      "starts_at": "2026-08-11T18:00:00.000Z"
+    }
+  ]
+}

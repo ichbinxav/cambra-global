@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { costReservationDecision, summarizeCostUsage, validateCostBudget } from '../../base44/shared/costGovernance.ts';
+import { costReservationDecision, nextCostReservationState, reservationUsageFromControl, summarizeCostUsage, validateCostBudget } from '../../base44/shared/costGovernance.ts';
 import { evaluateGoLiveHardGates, GO_LIVE_GATE_REQUIREMENTS } from '../../base44/shared/goLiveHardGates.ts';
 import { evaluateSchedulerEvidence, GO_CRITICAL_SCHEDULERS } from '../../base44/shared/schedulerRun.ts';
 
@@ -15,6 +15,7 @@ const budget = {
   status:'active', currency:'EUR', version:'founder-v1', daily_total_limit_minor:1000, monthly_total_limit_minor:10000,
   category_limits_json:Object.fromEntries(['ai','api','enrichment','email'].map(category => [category, { daily_limit_minor:400, monthly_limit_minor:4000 }])),
   anomaly_warning_pct:70, hard_stop_pct:95, emergency_stop_active:false,
+  reservation_revision:0,reservation_day_key:'2026-08-11',reservation_month_key:'2026-08',reserved_daily_total_minor:0,reserved_monthly_total_minor:0,reserved_category_json:Object.fromEntries(['ai','api','enrichment','email'].map(category=>[category,{daily_minor:0,monthly_minor:0}])),reservation_recent_event_keys:[],
 };
 
 describe('final GO-live hard gates', () => {
@@ -24,6 +25,14 @@ describe('final GO-live hard gates', () => {
     }));
     expect(evaluateGoLiveHardGates({ evidence, final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'GO_READY_FOR_CANARY', allowed:true, passed:GO_LIVE_GATE_REQUIREMENTS.length });
     expect(evaluateGoLiveHardGates({ evidence:evidence.filter(row => row.gate_key !== 'EMERGENCY_STOP'), final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'NOT_GO_READY', allowed:false });
+  });
+
+  it('serializes concurrent budget reservations through a CAS revision',()=>{
+    const at=new Date(NOW);const first=nextCostReservationState(budget,'ai',390,'first',at);const afterFirst={...budget,...first};
+    expect(first.reservation_revision).toBe(1);
+    expect(reservationUsageFromControl(afterFirst,at).categories.ai.daily_minor).toBe(390);
+    expect(costReservationDecision({control:afterFirst,usage:reservationUsageFromControl(afterFirst,at),category:'ai',amount_minor:20})).toMatchObject({allowed:false,reason:'ai_daily_cost_budget_exceeded'});
+    expect(afterFirst.reservation_recent_event_keys).toContain('first');
   });
 
   it('rejects local assertions, stale proof and proof from a different SHA', () => {

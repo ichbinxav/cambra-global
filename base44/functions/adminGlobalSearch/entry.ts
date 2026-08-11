@@ -11,7 +11,7 @@ const SOURCES = [
   { entity:'CommunicationThread', type:'thread', route:'/admin/commercial-autonomy', fields:['thread_key','counterparty_email','counterparty_name','summary','status'] },
 ];
 
-Deno.serve(async (req) => {
+export async function handleAdminGlobalSearch(req: Request) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
@@ -36,4 +36,4 @@ Deno.serve(async (req) => {
     console.error('adminGlobalSearch failed', error);
     return Response.json({ ok:false, error:'admin_global_search_failed' }, { status:500 });
   }
-});
+}

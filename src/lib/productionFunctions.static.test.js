@@ -29,7 +29,7 @@ const MANIFEST = [
   // P15 Provider Revenue Share & Dual-Sided Economics (2026-08-10).
   "providerEconomicsAssessmentWorker", "providerMonetizationAgent", "providerRevenueAttributionWorker", "providerRevenueLifecycleWorker", "providerRevenueReconciliationWorker", "providerRevenueRecoveryAgent", "providerRevenueTierWorker", "providerRevenueBillingWorker", "recordProviderRevenueInvoiceIssued", "recordProviderRevenuePayment", "approveProviderMonetizationLegalReview", "getProviderEconomicsCommandCenter", "providerEconomicsIntelligenceWorker",
   // P16 Founder OS & Autonomous Company Command Center (2026-08-10).
-  "getFounderOSCommandCenter", "founderOSQuery", "founderOSCommand", "founderOSSimulation", "founderChiefOfStaff", "autonomousCompanyOrchestrator",
+  "getFounderOSCommandCenter", "founderOSQuery", "founderOSCommand", "founderOSSimulation", "founderChiefOfStaff", "founderMeetingAdmin", "autonomousCompanyOrchestrator",
   // P17 Autonomous Maintenance & Self-Healing Engine (2026-08-10).
   "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker", "missingInformationWorker", "privacySafeIntelligenceWorker",
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).

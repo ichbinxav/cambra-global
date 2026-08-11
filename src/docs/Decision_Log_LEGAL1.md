@@ -30,7 +30,7 @@
 
 - Tres tablas por **mecanismo real**: Cookies / localStorage / sessionStorage — la distinción que faltaba.
 - Token de Base44 documentado (§4, primera fila).
-- **Coherencia con el banner** (`CookieConsent.jsx`, sin tocar): ofrece "Accept all" + "Manage preferences" con toggles de analítica y marketing (necesarias siempre on), escribe `cambra_cookie_consent`, y **el rechazo no bloquea nada porque hoy no existe NINGÚN almacenamiento de analítica ni marketing** (grep: cero llamadas a gtag/plausible/posthog/analytics.track en src). El texto lo dice en claro (§6): la elección registrada solo tendrá efecto si esas herramientas se introducen, previa actualización de la política. Decisión: no se recortan los toggles del banner — registrar la preferencia es sobre-divulgación inocua; prometer granularidad inexistente en el texto no lo era.
+- **Actualización v0.94 (supersede la observación histórica):** el banner sigue escribiendo `cambra_cookie_consent`, pero ahora `src/lib/productAnalytics.js` bloquea por defecto una taxonomía cerrada de eventos first-party y sólo la habilita cuando `analytics === true`. Rechaza PII, identificadores, URL, nombres de archivo y texto libre. La política §6 EN/FR/ES fue actualizada a la vez; marketing sigue sin instrumentarse.
 - **"Last updated" era `new Date()`** (fecha dinámica diaria) tanto en Cookies.jsx:43 como en LegalPageLayout.jsx:42 → sustituido por constante en el contenido: **24 de julio de 2026** en las tres páginas.
 
 ## FASE 2 — Auditoría de claims (antes → después)

@@ -1,6 +1,6 @@
 {
-  "release": "0.91.0",
-  "comment": "CAMBRA v0.91.0 — final pre-launch remediation and Founder control seal. GO is a 15-gate fail-closed decision bound to real runtime/external evidence; paid operations require budgets; critical schedulers prove cadence and uniqueness; sender warm-up requires verified SPF/DKIM/DMARC; and the Founder can inspect, approve/reject, pause, resume and exercise both emergency stops from Admin.",
+  "release": "0.92.0",
+  "comment": "CAMBRA v0.92.0 — Ultimate A–Z audit and human communication seal. Commercial email converges on one fail-closed sender; approvals are live and thread-bound; Founder meetings use governed Outlook availability and structured outcomes; public proof and waitlist economics remain evidence-only; critical schedulers claim deterministic slots; and GO remains blocked until real runtime/external evidence is complete.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -311,6 +311,32 @@
     "src/components/landing/Navbar.jsx",
     "src/components/ui/toast.jsx",
     "src/pages/Landing.jsx",
-    "src/lib/i18nParity.test.js"
+    "src/lib/i18nParity.test.js",
+    "base44/entities/FounderMeetingPolicy.jsonc",
+    "base44/functions/founderMeetingAdmin/entry.ts",
+    "base44/functions/founderMeetingAdmin/function.jsonc",
+    "base44/functions/outlookMeetingCoordinator/entry.ts",
+    "base44/functions/outlookMeetingCoordinator/function.jsonc",
+    "base44/shared/founderMeeting.ts",
+    "base44/functions/getWaitlistAggregate/entry.ts",
+    "src/components/admin/waitlist/AggregateDemandPanel.jsx",
+    "src/components/landing/TestimonialsCarousel.jsx",
+    "src/components/shared/InitialsAvatar.jsx",
+    "src/components/shared/LanguageSwitcher.jsx",
+    "src/lib/humanCommunicationFounder.test.js",
+    "src/lib/commercialCommunicationHardening.test.js",
+    "src/lib/commercialSignature.test.js",
+    "src/lib/i18n.jsx",
+    "src/pages/Testimonials.jsx",
+    "src/pages/admin/AdminWaitlist.jsx",
+    "src/docs/CAMBRA_AZ_FINAL_AUDIT_2026-08-11.md",
+    "src/docs/CAMBRA_OPERATING_BIBLE.md",
+    "src/docs/CAMBRA_FOUNDER_HANDBOOK.md",
+    "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md",
+    "base44/functions/founderOSCommand/entry.ts",
+    "base44/functions/getFounderControlCenter/entry.ts",
+    "base44/functions/postMeetingWorker/function.jsonc",
+    "src/docs/FINAL_LAUNCH_BLOCKERS_2026-08-10.md",
+    "src/lib/p11AutonomousOperations.test.js"
   ]
 }

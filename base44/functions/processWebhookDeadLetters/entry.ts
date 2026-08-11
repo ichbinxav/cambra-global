@@ -4,6 +4,7 @@
 // an exhausted row. The stable DLQ id remains the delivery id on every attempt.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { claimSchedulerRun, finishSchedulerRun } from "../../shared/schedulerRun.ts";
 
 const BACKOFF_MINUTES = [5, 30, 120, 720, 1440, 1440];
 const MAX_TOTAL_ATTEMPTS = 9;
@@ -22,12 +23,16 @@ async function hmacSha256Hex(secret: string, body: string) {
 export default async function (req: Request): Promise<Response> {
   let svc: any = null;
   let task: any = null;
+  let schedulerClaim: any = null;
+  let schedulerOk = true;
   try {
     const base44 = createClientFromRequest(req);
     const body0 = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body0);
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;
+    schedulerClaim = await claimSchedulerRun(svc, req, { worker_key:"processWebhookDeadLetters", cadence_seconds:300 });
+    if (!schedulerClaim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:schedulerClaim.run_key });
 
     const manualReplay = body0?.manualReplay === true;
     if (manualReplay && (!gate.isAdmin || body0?.confirm !== "REPLAY_EXHAUSTED" || typeof body0?.deadLetterId !== "string" || !body0.deadLetterId)) {
@@ -98,8 +103,11 @@ export default async function (req: Request): Promise<Response> {
     if (task?.id) await svc.entities.AgentTask.update(task.id, { status: "completed", output_summary: `Webhook DLQ ${manualReplay ? "manual replay" : "sweep"}: ${results.length} processed`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch(() => null);
     return Response.json({ ok: true, ...summary });
   } catch (error) {
+    schedulerOk = false;
     const message = String((error as Error)?.message || error || "webhook_dead_letter_worker_failed").slice(0, 500);
     if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: "failed", error: message, completed_at: new Date().toISOString() }).catch(() => null);
     return Response.json({ ok: false, error: "webhook_dead_letter_worker_failed", message }, { status: 500 });
+  } finally {
+    if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:"processWebhookDeadLetters" }, schedulerOk);
   }
 }

@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { EUROPE_CURRENCIES, EUROPE_MARKETS, EUROPE_MARKET_REGISTRY } from '../../shared/generated/europeMarkets.ts';
 import { localizationReadiness } from '../../shared/localeRuntime.ts';
 import { REGULATORY_ACTIVITIES } from '../../shared/regulatoryControl.ts';
+import { handleEuropeanGrowthCommandCenter } from '../getEuropeanGrowthCommandCenter/entry.ts';
 
 function regulatoryReadiness(policies:any[]) {
   if (policies.length !== REGULATORY_ACTIVITIES.length) return { status:'MISSING_POLICY_COVERAGE',gate:'REVIEW',covered:policies.length,expected:REGULATORY_ACTIVITIES.length };
@@ -12,6 +13,8 @@ function regulatoryReadiness(policies:any[]) {
 }
 
 Deno.serve(async (req) => {
+  const routedBody = await req.clone().json().catch(() => ({}));
+  if (routedBody?.view === 'growth') return handleEuropeanGrowthCommandCenter(req);
   try {
     const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch(() => null);
     if (!user || user.role !== 'admin') return Response.json({ ok:false,error:'Forbidden' }, { status:403 });

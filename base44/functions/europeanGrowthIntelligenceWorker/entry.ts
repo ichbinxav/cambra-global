@@ -1,44 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { EUROPE_MARKETS } from '../../shared/generated/europeMarkets.ts';
-import { canonicalMarket } from '../../shared/marketContext.ts';
-import { localizationReadiness } from '../../shared/localeRuntime.ts';
-import { REGULATORY_ACTIVITIES, REGULATORY_CONTROL_VERSION } from '../../shared/regulatoryControl.ts';
-import { DEFAULT_GROWTH_POLICY, EUROPEAN_GROWTH_VERSION, launchReadiness, maturityTier, scoreMarketAttractiveness } from '../../shared/europeanGrowth.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
+import { recomputeEuropeanMarketPortfolio } from '../../shared/growthPathRuntime.ts';
 
-function regulatoryGate(rows:any[]) {
-  if (rows.length !== REGULATORY_ACTIVITIES.length) return { gate:'REVIEW',status:'MISSING_POLICY_COVERAGE',policy_version:REGULATORY_CONTROL_VERSION };
-  if (rows.some((x:any) => ['PROHIBITED','REGISTRATION_REQUIRED','AUTHORIZATION_REQUIRED','PARTNER_REQUIRED'].includes(x.status))) return { gate:'BLOCK',status:'RESTRICTED_OR_AUTHORITY_REQUIRED',policy_version:rows[0]?.policy_version };
-  if (rows.some((x:any) => ['UNCERTAIN','LEGAL_REVIEW_REQUIRED'].includes(x.status))) return { gate:'REVIEW',status:'LEGAL_REVIEW_REQUIRED',policy_version:rows[0]?.policy_version };
-  return { gate:'CONDITIONS',status:'POLICY_AVAILABLE',policy_version:rows[0]?.policy_version };
-}
-
+// Compatibility entrypoint for source archives. The deployed runtime routes the
+// same bounded calculation through getEuropeMarketsCommandCenter so CAMBRA does
+// not consume another Base44 function name.
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({})); const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
-    const svc = base44.asServiceRole; const now = new Date(); const day = now.toISOString().slice(0,10); const emergency = await emergencyState(svc);
-    const [profiles,intelligence,leads,regulatoryPolicies,productionRows,activations] = await Promise.all([
-      svc.entities.CountryProfile.list('iso2', 100).catch(() => []),svc.entities.MarketIntelligenceProfile.list('jurisdiction', 100).catch(() => []),svc.entities.OutboundLead.list('-created_date', 5000).catch(() => []),svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-effective_from', 5000).catch(() => []),svc.entities.ProductionReadinessSnapshot.list('-calculated_at', 1).catch(() => []),svc.entities.MarketActivationState.list('-updated_at', 100).catch(() => []),
-    ]);
-    const production = productionRows[0] || { sealed:false,status:'P11_BLOCKED_NOT_SEALED' }; let upserted = 0; const portfolio:any[] = [];
-    for (const market of EUROPE_MARKETS as any[]) {
-      const profile = profiles.find((x:any) => x.iso2 === market.iso2) || null; const intel = intelligence.find((x:any) => x.jurisdiction === market.iso2) || null; const marketLeads = leads.filter((x:any) => canonicalMarket(x.country)?.iso2 === market.iso2); const contacted = marketLeads.filter((x:any) => ['contacted','meeting','won'].includes(String(x.stage))).length; const realOutcomes = marketLeads.filter((x:any) => x.stage === 'won').length; const dataMaturity = maturityTier({ observations:marketLeads.length,real_outcomes:realOutcomes }); const localization = localizationReadiness(market.iso2); const regulatory = regulatoryGate(regulatoryPolicies.filter((x:any) => x.jurisdiction === market.iso2));
-      const readiness = launchReadiness({ production,regulatory,localization,data_maturity:dataMaturity,commercial_ready:contacted >= 3 });
-      const dimensions:any = {
-        merchant_supply:marketLeads.length ? { value:Math.min(100,marketLeads.length),evidence_refs:marketLeads.slice(0,20).map((x:any) => `OutboundLead:${x.id}`) } : null,
-        data_maturity:profile ? { value:dataMaturity * 25,evidence_refs:[`CountryProfile:${profile.id}`] } : null,
-        commercial_evidence:contacted ? { value:Math.min(100,contacted * 5),evidence_refs:marketLeads.filter((x:any) => ['contacted','meeting','won'].includes(String(x.stage))).slice(0,20).map((x:any) => `OutboundLead:${x.id}`) } : null,
-        provider_landscape:intel && intel.provider_discovery_status !== 'PENDING_PROVIDER_DISCOVERY' ? { value:50,evidence_refs:[`MarketIntelligenceProfile:${intel.id}`] } : null,
-        localization:{ value:localization.translation_readiness === 'NATIVE_PRODUCT' ? 100 : localization.translation_readiness === 'PARTIAL_NATIVE' ? 65 : 20,evidence_refs:[`LocaleRegistry:${localization.registry_version}`] },
-        regulatory:regulatory.gate === 'CONDITIONS' ? { value:75,evidence_refs:regulatoryPolicies.filter((x:any) => x.jurisdiction === market.iso2).map((x:any) => `RegulatoryPolicyVersion:${x.id}`) } : null,
-        production:production.sealed ? { value:100,evidence_refs:[`ProductionReadinessSnapshot:${production.id}`] } : null,
-      };
-      const attractiveness = scoreMarketAttractiveness(dimensions, DEFAULT_GROWTH_POLICY); const activation = activations.find((x:any) => x.market_code === market.iso2); const strategy = readiness.state === 'TECHNICAL_BLOCKED' || readiness.state === 'REGULATORY_BLOCKED' ? 'RESTRICT' : attractiveness.status === 'INSUFFICIENT_EVIDENCE' ? 'RESEARCH' : readiness.state === 'READY' ? 'EXPERIMENT' : 'RESEARCH'; const mainBlocker = readiness.hard_blocker || (attractiveness.status === 'INSUFFICIENT_EVIDENCE' ? 'DATA' : null); const snapshot:any = { snapshot_key:`market-growth:${market.iso2}:${day}`,market_code:market.iso2,segment_key:'ALL',launch_state:readiness.state,activation_state:activation?.state || 'RESEARCH_ONLY',strategy,attractiveness_score:attractiveness.score ?? undefined,attractiveness_status:attractiveness.status,attractiveness_json:attractiveness,data_maturity:dataMaturity,localization_readiness:localization,regulatory_readiness:regulatory,production_readiness:{ status:production.status,sealed:production.sealed === true,snapshot_id:production.id || null },commercial_readiness:{ observed_leads:marketLeads.length,contacted,real_outcomes:realOutcomes,ready:contacted >= 3 },main_blocker:mainBlocker || '',next_action:mainBlocker === 'P11' ? 'Complete P11 external production evidence' : mainBlocker === 'P10' ? 'Complete evidence-backed legal review' : mainBlocker === 'DATA' ? 'Collect bounded P3/P4/P6 evidence' : 'Review limited launch experiment',policy_versions_json:{ growth:DEFAULT_GROWTH_POLICY.version,regulatory:regulatory.policy_version || null,security:production.version || null,model:EUROPEAN_GROWTH_VERSION },source_refs:[...(profile ? [`CountryProfile:${profile.id}`] : []),...(intel ? [`MarketIntelligenceProfile:${intel.id}`] : [])],calculated_at:now.toISOString() };
-      const old = await svc.entities.MarketGrowthSnapshot.filter({ snapshot_key:snapshot.snapshot_key }, '-calculated_at', 1).catch(() => []); if (old[0]) await svc.entities.MarketGrowthSnapshot.update(old[0].id, snapshot); else await svc.entities.MarketGrowthSnapshot.create(snapshot); upserted++; portfolio.push(snapshot);
-    }
-    const limitations = [...new Set(portfolio.map((x:any) => x.main_blocker).filter(Boolean))]; const brief = { brief_key:`growth-brief:daily:${day}`,cadence:'DAILY',period_from:new Date(now.getTime()-86400000).toISOString(),period_to:now.toISOString(),changes_json:[],attention_json:portfolio.filter((x:any) => x.main_blocker).map((x:any) => ({ market:x.market_code,blocker:x.main_blocker,next_action:x.next_action })).slice(0,20),autonomous_actions_json:[{ action:'market_portfolio_recomputed',markets:portfolio.length,mode:'SHADOW_RECOMMEND_ONLY',external_effect:false }],opportunities_json:portfolio.filter((x:any) => x.attractiveness_status === 'SCORED' && x.launch_state === 'READY').slice(0,10),limitations,source_refs:portfolio.flatMap((x:any) => x.source_refs).slice(0,100),generated_at:now.toISOString() }; const priorBrief = await svc.entities.FounderGrowthBrief.filter({ brief_key:brief.brief_key }, '-generated_at', 1).catch(() => []); if (priorBrief[0]) await svc.entities.FounderGrowthBrief.update(priorBrief[0].id, brief); else await svc.entities.FounderGrowthBrief.create(brief);
-    await svc.entities.Event.create({ brand_id:'_platform',event_type:'MARKET_PORTFOLIO_UPDATED',source:'european_growth_intelligence',entity_type:'MarketGrowthSnapshot',entity_id:`europe-33:${day}`,payload_json:{ markets:portfolio.length,scored:portfolio.filter((x:any) => x.attractiveness_status === 'SCORED').length,launch_ready:portfolio.filter((x:any) => x.launch_state === 'READY').length,safe_mode:emergency.safe_mode,mode:'SHADOW_RECOMMEND_ONLY',material_execution:false },status:'processed',processed_at:now.toISOString() }).catch(() => null);
-    return Response.json({ ok:true,markets:portfolio.length,upserted,scored:portfolio.filter((x:any) => x.attractiveness_status === 'SCORED').length,launch_ready:portfolio.filter((x:any) => x.launch_state === 'READY').length,mode:'SHADOW_RECOMMEND_ONLY',material_execution:false });
-  } catch (error) { console.error(error); return Response.json({ ok:false,error:'european_growth_intelligence_failed' }, { status:500 }); }
+    const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({})); const gate = await requireAdminOrInternal(req,base44,body); if (!gate.ok) return gate.response;
+    return Response.json({ ok:true,...await recomputeEuropeanMarketPortfolio(base44.asServiceRole) });
+  } catch (error) { console.error(error); return Response.json({ ok:false,error:'european_growth_intelligence_failed' },{ status:500 }); }
 });

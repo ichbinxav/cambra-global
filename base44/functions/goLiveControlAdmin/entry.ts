@@ -61,9 +61,13 @@ async function verifyRuntime(svc:any, finalSha:string, actor:string) {
     ecl_lifecycle_scheduler:{ worker_key:'eclLifecycleScheduler', cadence_seconds:900 },
     recover_billing_reconciler:{ worker_key:'reconcileRecoverBilling', cadence_seconds:900 },
   };
+  const nativeScheduledWorkerKeys = new Set(schedulerRuns.filter((run:any) => run.invocation_kind === 'SCHEDULED').map((run:any) => String(run.worker_key || '')));
   const legacyRuns = tasks.flatMap((task:any) => {
     const mapped = legacySchedulerMap[String(task.agent_name || '')];
     if (!mapped) return [];
+    // Once a worker emits native SchedulerRun evidence, do not double-count
+    // its compatibility AgentTask projection as a second execution.
+    if (nativeScheduledWorkerKeys.has(mapped.worker_key)) return [];
     if (mapped.worker_key === 'processWebhookDeadLetters' && task.task_type !== 'scheduled_dead_letter_retry') return [];
     if (mapped.worker_key === 'eclLifecycleScheduler' && !String(task.input_summary || '').includes('scheduled')) return [];
     const started = Date.parse(task.started_at || task.created_date || '');
@@ -77,7 +81,7 @@ async function verifyRuntime(svc:any, finalSha:string, actor:string) {
   const suppression = { pass:['bounce','complaint','opt_out'].every((reason) => reasons.has(reason)), observed_reasons:[...reasons], signed_events:signedSuppressionLogs.length, event_count:suppressionLogs.length };
   const observed = tasks.some((task:any) => ['operating_health','autonomous_company_orchestrator'].includes(String(task.agent_name || ''))) || health.length > 0;
   const decided = tasks.some((task:any) => ['autonomous_company_orchestrator','founder_chief_of_staff'].includes(String(task.agent_name || '')));
-  const acted = tasks.some((task:any) => ['commercial_follow_up','outbound_volume_worker','webhook_dead_letter_processor','recover_autopilot'].includes(String(task.agent_name || '')));
+  const acted = tasks.some((task:any) => ['commercial_follow_up','outbound_volume_worker','autonomous_partner_worker','post_meeting_worker','webhook_dead_letter_processor','recover_autopilot'].includes(String(task.agent_name || '')));
   const verified = health.length > 0 && scheduler.active;
   const loop = { pass:observed && decided && acted && verified, observed, decided, acted, verified, recent_health_assessments:health.length, recent_tasks:tasks.length };
   const now = new Date().toISOString(), expires = new Date(Date.now() + 25 * 3600000).toISOString();
@@ -126,7 +130,7 @@ async function emergencyDrill(svc:any, finalSha:string, actor:string) {
   return { stop_pass:stopPass, safe_resume_pass:resumePass, blocked, after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true };
 }
 
-Deno.serve(async (req) => {
+export async function handleGoLiveControlAdmin(req: Request) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
@@ -149,7 +153,7 @@ Deno.serve(async (req) => {
     if (action === 'configure_cost_budget') {
       if (body.confirmation !== CONFIRM_BUDGET) return Response.json({ ok:false, error:'confirmation_required', required:CONFIRM_BUDGET }, { status:409 });
       const current = await svc.entities.CostBudgetControl.filter({ control_key:'global', status:'active' }, '-approved_at', 20).catch(() => []);
-      const candidate = { control_key:'global', version:String(body.version || `founder-${Date.now()}`), status:'active', currency:'EUR', daily_total_limit_minor:Number(body.daily_total_limit_minor), monthly_total_limit_minor:Number(body.monthly_total_limit_minor), category_limits_json:body.category_limits_json || {}, estimated_unit_cost_minor_json:body.estimated_unit_cost_minor_json || {}, anomaly_warning_pct:Number(body.anomaly_warning_pct), hard_stop_pct:Number(body.hard_stop_pct), emergency_stop_active:false, emergency_stop_reason:'', approved_by:actor, approved_at:new Date().toISOString(), updated_by:actor, updated_at:new Date().toISOString() };
+      const configuredAt=new Date(),dayKey=configuredAt.toISOString().slice(0,10),monthKey=configuredAt.toISOString().slice(0,7);const candidate = { control_key:'global', version:String(body.version || `founder-${Date.now()}`), status:'active', currency:'EUR', daily_total_limit_minor:Number(body.daily_total_limit_minor), monthly_total_limit_minor:Number(body.monthly_total_limit_minor), category_limits_json:body.category_limits_json || {}, estimated_unit_cost_minor_json:body.estimated_unit_cost_minor_json || {}, anomaly_warning_pct:Number(body.anomaly_warning_pct), hard_stop_pct:Number(body.hard_stop_pct), reservation_revision:0,reservation_day_key:dayKey,reservation_month_key:monthKey,reserved_daily_total_minor:0,reserved_monthly_total_minor:0,reserved_category_json:Object.fromEntries(['ai','api','enrichment','email'].map((category)=>[category,{daily_minor:0,monthly_minor:0}])),reservation_recent_event_keys:[],emergency_stop_active:false, emergency_stop_reason:'', approved_by:actor, approved_at:configuredAt.toISOString(), updated_by:actor, updated_at:configuredAt.toISOString() };
       const validation = validateCostBudget(candidate);
       if (!validation.ok) return Response.json({ ok:false, error:'invalid_cost_budget', blockers:validation.blockers }, { status:400 });
       for (const row of current) await svc.entities.CostBudgetControl.update(row.id, { status:'superseded', updated_by:actor, updated_at:new Date().toISOString() });
@@ -268,4 +272,4 @@ Deno.serve(async (req) => {
     console.error('goLiveControlAdmin failed', error);
     return Response.json({ ok:false, error:String(error?.message || 'go_live_control_failed').slice(0,300) }, { status:Number(error?.status || 500) });
   }
-});
+}

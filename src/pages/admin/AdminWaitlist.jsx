@@ -88,9 +88,9 @@ export default function AdminWaitlist() {
         <StatCard icon={Sparkles} label="From landing" value={fromLanding} />
       </div>
 
-      {/* Aggregate demand — negotiation ammunition, admin-only.
+      {/* Aggregate demand — verified evidence only, admin-only.
           Reads AnalyzerResult / AnalyzerInput via getWaitlistAggregate
-          (single source of truth: scoreEngine outputs, never recomputed here). */}
+          and excludes anonymous/manual estimates from every economic total. */}
       <AggregateDemandPanel />
 
       {/* Table */}

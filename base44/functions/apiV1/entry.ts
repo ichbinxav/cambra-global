@@ -30,6 +30,7 @@
 // Compat: legacy paths (/brands, /kpis, ...) still work — they're rewritten to /v1/*.
 // =============================================================================
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { consumeRateLimit } from '../../shared/rateLimit.ts';
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -172,21 +173,7 @@ async function trackUsage(base44, principal) {
 // -----------------------------------------------------------------------------
 async function rateLimit(base44, principal) {
   const limit = principal.raw?.rate_limit_per_minute || 120;
-  const now = new Date();
-  const windowStart = new Date(Math.floor(now.getTime() / 60000) * 60000).toISOString();
-  const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({ principal_id: principal.id, window_start: windowStart });
-  let counter = matches?.[0];
-  if (!counter) {
-    counter = await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id: principal.id, principal_type: principal.type, window_start: windowStart, count: 1, limit_per_minute: limit,
-    });
-    return { ok: true, remaining: limit - 1, limit, reset: new Date(new Date(windowStart).getTime() + 60000).toISOString() };
-  }
-  if ((counter.count || 0) >= limit) {
-    return { ok: false, remaining: 0, limit, reset: new Date(new Date(windowStart).getTime() + 60000).toISOString() };
-  }
-  await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, { count: (counter.count || 0) + 1 });
-  return { ok: true, remaining: limit - (counter.count || 0) - 1, limit, reset: new Date(new Date(windowStart).getTime() + 60000).toISOString() };
+  return consumeRateLimit(base44.asServiceRole,{principal_id:principal.id,principal_type:principal.type,limit,window_seconds:60});
 }
 
 // -----------------------------------------------------------------------------
