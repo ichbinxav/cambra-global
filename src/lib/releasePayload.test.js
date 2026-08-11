@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { collectSourceTreeEntries } from "../../scripts/lib/sourceTreeHash.mjs";
 import { collectReleasePayloadPaths, RELEASE_CONTROL_FILES } from "../../scripts/lib/releasePayload.mjs";
+import fs from "node:fs";
 
 describe("release payload source binding", () => {
   it("contains every and only canonically selected source path plus explicit control evidence", () => {
@@ -13,5 +14,13 @@ describe("release payload source binding", () => {
 
   it("cannot silently package an excluded zip", () => {
     expect(collectReleasePayloadPaths(".").some((rel) => rel.endsWith(".zip"))).toBe(false);
+  });
+
+  it("validates the exact evidence keys emitted by RELEASE.json", () => {
+    const packager = fs.readFileSync("scripts/package-release.mjs", "utf8");
+    for (const key of ["testEvidence", "buildEvidence", "lintEvidence", "typecheckCriticalEvidence", "typecheckBaselineEvidence", "dependencyAuditEvidence"]) {
+      expect(packager).toContain(`\"${key}\"`);
+    }
+    expect(packager).not.toContain('`${name}Evidence`');
   });
 });

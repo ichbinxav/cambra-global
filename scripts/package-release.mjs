@@ -27,8 +27,7 @@ const tree = computeSourceTreeHash(root);
 if (release.sourceTreeHash !== tree.hash || release.sourceTreeFileCount !== tree.fileCount) {
   fail("RELEASE.json does not identify the current source tree");
 }
-for (const name of ["tests", "build", "lint", "typecheckCritical", "typecheckBaseline", "dependencyAudit"]) {
-  const key = `${name}Evidence`;
+for (const key of ["testEvidence", "buildEvidence", "lintEvidence", "typecheckCriticalEvidence", "typecheckBaselineEvidence", "dependencyAuditEvidence"]) {
   if (evidenceStatus(release[key], tree.hash) !== "valid") fail(`${key} is missing, stale or failed`);
 }
 
