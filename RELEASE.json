@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.86.0 — P6–P8 Autonomous Company Foundation",
-  "version": "0.86.0",
-  "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+  "releaseName": "CAMBRA v0.90.0 — P9–P12 European Operating Architecture",
+  "version": "0.90.0",
+  "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1323,
+  "sourceTreeFileCount": 1384,
   "sourceArchiveShaExternal": null,
-  "gitSha": "de3b0161193883642f4e5e04caa3b402ca975bd9",
+  "gitSha": "a8171c55ec15c7ec6406c181090987cc7631782f",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "4bd9fd221d6a2edb2c823209d786fbdcb023d8362c35436a92377685cd7efd01",
-  "documentationManifestSha": "650a5c7fcdb86a4ad41e7e7e8d4ac06f9c2a38c19b35fba4ba3d936c92015021",
+  "durabilityManifestSha": "7d7d68f8dea93405cfc25e1040764682c13951a56278b71f47e5c516f9bcdfc6",
+  "documentationManifestSha": "b5793495437bf79348e5145cee2c0a4cc514ecd86cf6222477c2ed800a82dddb",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -30,13 +30,13 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "cdc35c54ea87ecfebfc9081cda4eecf336d353b5fdad08f543559033e473e75b",
+  "lockfileSha": "9857281693dba804b9f81602705f392c3b23fa2f14e4fd1236e1877823325535",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
     "base44/entities/SavingsEvidence.jsonc": "21be09e33b376f57e03aef336fc1bc4b06d641ca72d840ad8f671a2ab4af1731",
     "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
-    "base44/functions/processUploadedFile/entry.ts": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
+    "base44/functions/processUploadedFile/entry.ts": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
     "base44/entities/EvidenceAttestation.jsonc": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
     "base44/entities/EvidenceLifecycleEvent.jsonc": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
     "base44/entities/EvidenceStrike.jsonc": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
@@ -44,53 +44,53 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
-    "startedAt": "2026-08-11T02:29:54.854Z",
-    "completedAt": "2026-08-11T02:29:57.610Z",
+    "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
+    "startedAt": "2026-08-11T03:12:43.398Z",
+    "completedAt": "2026-08-11T03:12:45.996Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 137,
-    "passed": 2016,
+    "testFiles": 142,
+    "passed": 2061,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
-    "startedAt": "2026-08-11T02:29:57.868Z",
-    "completedAt": "2026-08-11T02:30:02.371Z",
+    "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
+    "startedAt": "2026-08-11T03:12:46.171Z",
+    "completedAt": "2026-08-11T03:12:50.235Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "0e40db95e1621e58f20b9b5d5e6f1472b578bb416d2bbb25b52a1b90f09d83ae",
-    "artifactCount": 73
+    "distHash": "8d42cf12bbbf1ab07473aef12f7d4bbed562cea097b6ca5600025fab4e6e2b9d",
+    "artifactCount": 74
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
-    "startedAt": "2026-08-11T02:29:45.544Z",
-    "completedAt": "2026-08-11T02:29:48.724Z",
+    "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
+    "startedAt": "2026-08-11T03:12:35.052Z",
+    "completedAt": "2026-08-11T03:12:38.058Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
-    "startedAt": "2026-08-11T02:29:48.957Z",
-    "completedAt": "2026-08-11T02:29:50.210Z",
+    "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
+    "startedAt": "2026-08-11T03:12:38.218Z",
+    "completedAt": "2026-08-11T03:12:39.314Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
-    "startedAt": "2026-08-11T02:29:50.462Z",
-    "completedAt": "2026-08-11T02:29:54.623Z",
+    "sourceTreeHash": "74083cd1b5e34bb14d60669bb7864b9992da59d1350d6a875f2416219ebfac7c",
+    "startedAt": "2026-08-11T03:12:39.475Z",
+    "completedAt": "2026-08-11T03:12:43.234Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "0e40db95e1621e58f20b9b5d5e6f1472b578bb416d2bbb25b52a1b90f09d83ae"
+    "dist": "8d42cf12bbbf1ab07473aef12f7d4bbed562cea097b6ca5600025fab4e6e2b9d"
   },
   "manualRequirements": [
     "CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified",
@@ -102,9 +102,13 @@
     "RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.",
     "P6-P8 RUNTIME/COVERAGE PROOF REQUIRED: deploy the autonomous company coordinator and CommercialIntelligenceSnapshot, verify scheduled runtime evidence, and license/implement additional discovery adapters before claiming continuous coverage of the European merchant universe.",
     "DOCUMENT EXTRACTION PRODUCTION EVAL REQUIRED: after DPA/retention approval and dual-model configuration, validate the extractor against a redacted multilingual real-document golden corpus and publish field-level precision/recall, false-accept and review-rate evidence before calling statement extraction production-verified.",
+    "P9 MARKET LOCALIZATION LIMIT: only en-GB, fr-FR and es-ES product locales are implemented; fallback-only markets require native product/legal review and localized URL/SSR architecture before full native launch claims.",
+    "P10 LEGAL EVIDENCE REQUIRED: conservative market/activity coverage is not legal clearance. Qualified review must approve current primary-authority evidence, registrations, passport notifications and/or partner mandates before each production activity is enabled.",
+    "P11 PRODUCTION SEAL EVIDENCE REQUIRED: final-SHA remote CI, Base44 runtime proof, dependency alert proof, real RPO/RTO restore exercise and multilingual real-document extractor corpus evidence remain external gates.",
+    "P12 LAUNCH/GROWTH EVIDENCE REQUIRED: architecture may run honestly in cold start, but real market ranking, CAC, conversion, retention, forecasts and business performance require observed production cohorts; P12 cannot override P10/P11 blockers.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
   "blockingManualRequirements": [],
   "productionSealEligible": false,
-  "generatedAt": "2026-08-11T02:30:13.856Z"
+  "generatedAt": "2026-08-11T03:12:50.418Z"
 }
