@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.86.0 — P6–P8 Autonomous Company Foundation (durability manifest)",
-  "generatedAt": "2026-08-11T02:29:44.117Z",
-  "packageVersion": "0.86.0",
+  "release": "CAMBRA v0.90.0 — P9–P12 European Operating Architecture (durability manifest)",
+  "generatedAt": "2026-08-11T03:11:08.696Z",
+  "packageVersion": "0.90.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -22,8 +22,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
-      "bytes": 793
+      "sha256": "e28922c871c273f7a8e0a902650e1454c0119d79bb0458349341d3beca0aba2e",
+      "bytes": 1037
     },
     {
       "path": "base44/entities/AnalyzerResult.jsonc",
@@ -172,8 +172,8 @@
     },
     {
       "path": "base44/functions/autonomousCompanyOrchestrator/entry.ts",
-      "sha256": "c3104a9c0e8d391408e0a5229a15b04c5b2cbe2a52d9db8495ea3d81c56f25d4",
-      "bytes": 7255
+      "sha256": "ec728e5ff5e30413674f553ac78b54daffe83627251e4658c6a421ada18b6a62",
+      "bytes": 7350
     },
     {
       "path": "base44/functions/autonomousCompanyOrchestrator/function.jsonc",
@@ -352,8 +352,8 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
-      "bytes": 17261
+      "sha256": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
+      "bytes": 18294
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -457,13 +457,13 @@
     },
     {
       "path": "base44/shared/documentExtraction.ts",
-      "sha256": "a051eb5e10c496526fa55ae54dd7dd017c45123b801eb3617d8b4a2017321683",
-      "bytes": 14583
+      "sha256": "5c77dd9a64206ccd2b1e664fd81225a59ab91e8c55ad616880daf2a607a85373",
+      "bytes": 15491
     },
     {
       "path": "base44/shared/documentationRegistry.ts",
-      "sha256": "176c3ec621b4f371c8576e6a55de0183745f7b6135af182765e792951161f995",
-      "bytes": 31555
+      "sha256": "a3f13777dc3eeaff5fa01ec09b1eab5049392562ae7a94b590abe8ee09167601",
+      "bytes": 37782
     },
     {
       "path": "base44/shared/eclEconomicGate.ts",
@@ -542,8 +542,8 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "f0ba65dc252f197a0c8671528d404243e4a4142418558b1515407ccf2a7c3b12",
-      "bytes": 793
+      "sha256": "e28922c871c273f7a8e0a902650e1454c0119d79bb0458349341d3beca0aba2e",
+      "bytes": 1037
     },
     {
       "path": "config/ecl-policy.json",
@@ -552,12 +552,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "36861933ea4174e213cf2f536bbb4010447a5b0cb9670276d7166d440d955812",
-      "bytes": 33207
+      "sha256": "49b9113bf2ed2012bd8c90593f435b732de3aa33d774ce18a6d0f7d2dac27c55",
+      "bytes": 33765
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "73c2cb56b13f16811be23721e014c034978fb2d2150b97a52a4d7dda956d3f60",
+      "sha256": "483c8ff8e67e7204a248fcd9b15cce596bb589a10b192930ca0ae0302103efca",
       "bytes": 6981
     },
     {
@@ -582,13 +582,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "cdc35c54ea87ecfebfc9081cda4eecf336d353b5fdad08f543559033e473e75b",
+      "sha256": "9857281693dba804b9f81602705f392c3b23fa2f14e4fd1236e1877823325535",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "a612172b92fb1e225db28f57ea690176dc1ea0b6ded4c61405a90baf48d1d3f8",
-      "bytes": 6048
+      "sha256": "3b82b40cd1e2a231bbf729e6721e46cc94d1b4454f594e85565982b30b0d07af",
+      "bytes": 6374
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -622,8 +622,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "10478a29b1a8be6ea3828a05026c63a107883889573d1f8e0756941bea7c11a4",
-      "bytes": 9758
+      "sha256": "d1c7d24ad19a811bc125b0a334d2b0549777329108d66232b8b42fbee617d59b",
+      "bytes": 11047
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -672,8 +672,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "af18d672afdf8025a59d1778b3350ef2eedecc521c106deba27da5fa2c2a974a",
-      "bytes": 23525
+      "sha256": "5926811caf52e30eef372f5cb6f09fe8dda6b69d72d672d507868ab3458bea7e",
+      "bytes": 23676
     },
     {
       "path": "src/components/paymentsAnalyzer/AnalyzerEntryCards.jsx",
@@ -737,8 +737,8 @@
     },
     {
       "path": "src/lib/documentExtractionV2.test.js",
-      "sha256": "63dd91fa108634978b039793f3ca89fe11149b986a5dd7044430db41e99c80f9",
-      "bytes": 10720
+      "sha256": "4c83bb92543e0556c9db66fee76e20096fd1307bc68845c32e5cef6de957ad19",
+      "bytes": 12042
     },
     {
       "path": "src/lib/eclEngine.js",
@@ -947,8 +947,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "929f376eda67589fe54f77b0988c153b83758877e27e7ca7f225510c323c11ea",
-      "bytes": 15739
+      "sha256": "2fe48615b1e05fc2cc71ff0857113acb9b5bdff08361cfbc3c9da0b7a81bb217",
+      "bytes": 15862
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",

@@ -681,6 +681,15 @@
       "oldHash": "a4d28e5eeb02c1c6d4972d2dd61ab5ff0f46dd469aeac78109688be0450b1a3f",
       "newHash": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
       "reason": "P6-P8 extraction v2 contract correction: documented OpenAI input_file shape, JSON as untrusted text and preflight text-size cap"
+    },
+    {
+      "date": "2026-08-11T03:09:37.047Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
+      "newHash": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
+      "reason": "P11 sanctioned upload hardening: pre-buffer byte limits, strict document/evidence contract, scoped ownership linking and no ECL economic semantics change"
     }
   ]
 }

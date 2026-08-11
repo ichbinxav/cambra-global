@@ -1,4 +1,4 @@
-import { LOCALE_MARKET_BY_CODE, LOCALE_REGISTRY, PRODUCT_LOCALES } from './generated/localeRegistry.ts';
+import { LOCALE_MARKET_BY_CODE, LOCALE_REGISTRY, PRODUCT_LOCALES } from './generated/localeRegistry';
 
 export const LOCALE_RUNTIME_VERSION = 'p9-locale-runtime-1.0.0';
 export const TRANSLATION_GLOSSARY_VERSION = 'p9-glossary-1.0.0';

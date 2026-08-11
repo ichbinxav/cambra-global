@@ -85,6 +85,9 @@ if (fs.existsSync('src/docs/P10_REGULATORY_CONTROL.md')) {
 if (fs.existsSync('src/docs/P11_PRODUCTION_SECURITY_RELIABILITY.md')) {
   addRequirement('P11 PRODUCTION SEAL EVIDENCE REQUIRED: final-SHA remote CI, Base44 runtime proof, dependency alert proof, real RPO/RTO restore exercise and multilingual real-document extractor corpus evidence remain external gates.');
 }
+if (fs.existsSync('src/docs/P12_EUROPEAN_LAUNCH_GROWTH.md')) {
+  addRequirement('P12 LAUNCH/GROWTH EVIDENCE REQUIRED: architecture may run honestly in cold start, but real market ranking, CAC, conversion, retention, forecasts and business performance require observed production cohorts; P12 cannot override P10/P11 blockers.');
+}
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
   addRequirement('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
 }

@@ -5,7 +5,7 @@ import { useState, useEffect, createContext, useContext, useCallback, useMemo } 
 import en from "@/lib/locales/en";
 import fr from "@/lib/locales/fr";
 import es from "@/lib/locales/es";
-import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime.ts";
+import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
    CAMBRA i18n — EN / FR / ES with flat-key dictionaries.

@@ -70,6 +70,7 @@ Deno.serve(async (req) => {
     steps.push(await invokeStep(service, 'alwaysOnLeadDiscoveryWorker', internalSecret));
     steps.push(await invokeStep(service, 'salesPipelineWorker', internalSecret));
     steps.push(await invokeStep(service, 'outreachExperimentLearningWorker', internalSecret));
+    steps.push(await invokeStep(service, 'europeanGrowthIntelligenceWorker', internalSecret));
     steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret));
 
     const [commercialRows, maintenanceRows, criticalIncidents] = await Promise.all([

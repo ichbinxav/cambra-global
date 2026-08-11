@@ -75,6 +75,7 @@ const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 const AdminCommercialAutonomy = lazy(() => import('@/pages/admin/AdminCommercialAutonomy'));
 const AdminIntelligence = lazy(() => import('@/pages/admin/AdminIntelligence'));
 const AdminMarkets = lazy(() => import('@/pages/admin/AdminMarkets'));
+const AdminGrowth = lazy(() => import('@/pages/admin/AdminGrowth'));
 const AdminRoutingIntelligence = lazy(() => import('@/pages/admin/AdminRoutingIntelligence'));
 const AdminAggregate = lazy(() => import('@/pages/admin/AdminAggregate'));
 const AdminFinance = lazy(() => import('@/pages/admin/AdminFinance'));
@@ -332,6 +333,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
           <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligence />)} />
           <Route path="/admin/markets" element={withBoundary(<AdminMarkets />)} />
+          <Route path="/admin/growth" element={withBoundary(<AdminGrowth />)} />
           <Route path="/admin/routing-intelligence" element={withBoundary(<AdminRoutingIntelligence />)} />
           <Route path="/admin/aggregate" element={withBoundary(<AdminAggregate />)} />
           <Route path="/admin/finance" element={withBoundary(<AdminFinance />)} />

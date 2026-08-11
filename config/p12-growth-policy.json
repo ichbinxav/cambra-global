@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "version": "p12-growth-policy-2026.08.11",
+  "mode": "SHADOW_RECOMMEND_ONLY",
+  "marketAttractivenessWeights": {"merchant_supply":0.14,"tpv_potential":0.12,"overpayment_opportunity":0.14,"data_maturity":0.12,"commercial_evidence":0.12,"unit_economics":0.12,"provider_landscape":0.08,"localization":0.06,"regulatory":0.05,"production":0.05},
+  "minimumScoredDimensions": 5,
+  "minimumExperimentSamplePerArm": 50,
+  "explorationShare": 0.2,
+  "contactFatigue": {"maxAttempts30d":4,"minimumDaysBetweenAttempts":5},
+  "activationStates": ["DISABLED","RESEARCH_ONLY","INTERNAL_TEST","LIMITED_LAUNCH","FULL_LAUNCH","PAUSED"],
+  "autonomousAuthority": ["research","score","recommend","allocate_shadow_capacity","schedule_approved_followup"],
+  "founderAuthorityRequired": ["market_activation","paid_spend","binding_partner_terms","material_concession","regulatory_exception","security_exception"]
+}

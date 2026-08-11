@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -19,6 +19,7 @@ const NAV = [
   { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
   { path: "/admin/markets", label: "Europe · Markets", icon: Globe2 },
+  { path: "/admin/growth", label: "Europe · Growth", icon: TrendingUp },
   { path: "/admin/routing-intelligence", label: "Routing Intelligence", icon: Route },
   { path: "/admin/aggregate", label: "Aggregate", icon: Layers3 },
   { path: "/admin/finance", label: "Finance", icon: Landmark },
@@ -50,7 +51,7 @@ const NAV = [
 
 function documentationTopic(path) {
   if (path.startsWith('/admin/discovery') || path.startsWith('/admin/commercial-autonomy') || path.startsWith('/admin/pipeline')) return 'acquisition';
-  if (path.startsWith('/admin/markets')) return 'markets';
+  if (path.startsWith('/admin/markets') || path.startsWith('/admin/growth')) return 'markets';
   if (path.startsWith('/admin/intelligence')) return 'moat';
   if (path.startsWith('/admin/aggregate')) return 'aggregate';
   if (path.startsWith('/admin/provider-economics') || path.startsWith('/admin/providers')) return 'provider_economics';

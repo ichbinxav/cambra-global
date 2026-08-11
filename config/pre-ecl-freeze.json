@@ -103,7 +103,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
+      "sha256": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
       "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
       "allowedChange": false
     },

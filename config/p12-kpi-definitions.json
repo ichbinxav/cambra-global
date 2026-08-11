@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "version": "p12-kpis-2026.08.11",
+  "kpis": [
+    {"key":"active_merchant","definition":"Non-demo merchant with active/live/monetizing Recover lifecycle or a connected production integration.","source":"Brand + DealActivation + Integration"},
+    {"key":"qualified_lead","definition":"Deduplicated lead that passes current evidence, fit, regulatory and contactability policy.","source":"OutboundLead"},
+    {"key":"opportunity","definition":"P5 evidence-backed merchant opportunity; not theoretical market size.","source":"MerchantOpportunity"},
+    {"key":"recover_acceptance","definition":"Completed governed Recover acceptance with canonical mandate evidence.","source":"RecoverMandate"},
+    {"key":"verified_savings","definition":"Realized savings from fully verified reports only.","source":"MonthlySavingsReport"},
+    {"key":"cambra_revenue","definition":"Merchant collected cash plus separately evidenced provider paid revenue; never pipeline.","source":"Invoice + ProviderRevenueLedger"},
+    {"key":"weighted_pipeline","definition":"Known expected values multiplied by explicit probabilities; unknown values excluded and counted.","source":"OutboundLead + AcquisitionAttribution"},
+    {"key":"cac","definition":"All attributable paid media, tools, enrichment, email, AI, people and agency costs divided by attributed new customers; missing cost categories make CAC unknown.","source":"GrowthCostLedger + AcquisitionAttribution"},
+    {"key":"payback","definition":"CAC divided by evidenced contribution margin per period; unknown if either input is missing.","source":"GrowthCostLedger + MerchantUnitEconomics"},
+    {"key":"conversion","definition":"Unique entities reaching a later canonical funnel stage divided by unique entities in the selected earlier stage.","source":"Event + AcquisitionAttribution"}
+  ]
+}
