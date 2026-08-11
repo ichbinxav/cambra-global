@@ -1,7 +1,7 @@
 {
   "name": "FxSnapshot",
   "type": "object",
-  "description": "P3 non-destructive FX normalization snapshot; reference rates are analytics inputs, never provider settlement truth.",
+  "description": "P3 immutable reference-FX observation used only for sourced, historical currency normalization. Provider FX/markup remains provider economics in RateComponent and is never represented as reference FX.",
   "properties": {
     "fx_key": {
       "type": "string"
@@ -12,16 +12,49 @@
     "quote_currency": {
       "type": "string"
     },
+    "rate_kind": {
+      "type": "string",
+      "enum": [
+        "REFERENCE"
+      ]
+    },
     "rate_scaled_1e12": {
       "type": "number"
+    },
+    "rate_decimal": {
+      "type": "string"
     },
     "source": {
       "type": "string"
     },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "CENTRAL_BANK",
+        "OFFICIAL_REFERENCE",
+        "PRIMARY_REFERENCE",
+        "MANUAL_VERIFIED",
+        "OTHER_PRIMARY"
+      ]
+    },
     "source_url": {
       "type": "string"
     },
+    "source_snapshot_id": {
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string"
+    },
     "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_effective_at": {
       "type": "string",
       "format": "date-time"
     },
@@ -29,21 +62,59 @@
       "type": "string",
       "format": "date-time"
     },
+    "resolution_method": {
+      "type": "string",
+      "enum": [
+        "DIRECT_EXACT",
+        "DIRECT_PRIOR_AVAILABLE",
+        "INVERSE_EXACT",
+        "INVERSE_PRIOR_AVAILABLE",
+        "IDENTITY"
+      ]
+    },
     "status": {
       "type": "string",
       "enum": [
+        "CURRENT",
         "VERIFIED_REFERENCE",
         "STALE",
+        "MISSING",
+        "CONFLICT",
+        "SOURCE_ERROR",
         "UNKNOWN"
       ]
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "version": {
+      "type": "number"
+    },
+    "content_hash": {
+      "type": "string"
+    },
+    "supersedes_fx_snapshot_id": {
+      "type": "string"
+    },
+    "superseded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_policy_version": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
     }
   },
   "required": [
     "fx_key",
     "base_currency",
     "quote_currency",
+    "rate_kind",
     "source",
-    "effective_at"
+    "effective_at",
+    "status"
   ],
   "rls": {
     "read": {
