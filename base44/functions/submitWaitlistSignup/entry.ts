@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 /**
@@ -170,8 +172,9 @@ Deno.serve(async (req) => {
         // the Lead is already persisted and visible in the admin dashboard.
         const resendKey = Deno.env.get("RESEND_API_KEY");
         const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
-        if (resendKey) {
-          await fetch("https://api.resend.com/emails", {
+        const emergency = await emergencyState(base44.asServiceRole);
+        if (resendKey && !emergency.safe_mode && !emergency.communications_paused) {
+          await paidProviderFetch(base44.asServiceRole, { event_key:`email:waitlist-notification:${lead?.id || crypto.randomUUID()}`, category:'email', provider:'resend', source:'submitWaitlistSignup', related_entity_type:'Lead', related_entity_id:lead?.id || '' }, "https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -21,12 +21,12 @@ import { useTranslation } from "@/lib/i18n.jsx";
  */
 export default function JoinWaitlistButton({
   variant = "primary",
-  label = "Join to recover",
+  label = null,
   fullWidth = false,
   source = "landing_waitlist",
   context = null,
 }) {
-  const { lang } = useTranslation();
+  const { lang, t } = useTranslation();
   const [state, setState] = useState("idle"); // idle | form | submitting | done
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export default function JoinWaitlistButton({
     e.preventDefault();
     if (state === "submitting") return; // double-submit guard (CONSOLIDATE-1 T2)
     if (!isValidEmail(email)) {
-      setError("Enter a valid email");
+      setError(t("waitlist_email_invalid"));
       return;
     }
     setError("");
@@ -53,11 +53,11 @@ export default function JoinWaitlistButton({
       if (payload?.ok) {
         setState("done");
       } else {
-        setError(payload?.error === "invalid_email" ? "Enter a valid email" : "Something went wrong, try again");
+        setError(payload?.error === "invalid_email" ? t("waitlist_email_invalid") : t("waitlist_error"));
         setState("form");
       }
     } catch {
-      setError("Something went wrong, try again");
+      setError(t("waitlist_error"));
       setState("form");
     }
   };
@@ -75,7 +75,7 @@ export default function JoinWaitlistButton({
         aria-live="polite"
       >
         <Check size={14} className="text-cyan-300" />
-        You're on the list — we'll be in touch.
+        {t("waitlist_done")}
       </div>
     );
   }
@@ -92,14 +92,14 @@ export default function JoinWaitlistButton({
           autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@brand.com"
+          placeholder={t("waitlist_email_placeholder")}
           disabled={submitting}
           className="flex-1 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/40 outline-none disabled:opacity-60"
           style={{
             background: "rgba(255,255,255,0.04)",
             border: `1px solid ${error ? "rgba(239,68,68,0.45)" : "rgba(255,255,255,0.14)"}`,
           }}
-          aria-label="Email address"
+          aria-label={t("waitlist_email_label")}
           aria-invalid={error ? "true" : "false"}
         />
         <button
@@ -108,7 +108,7 @@ export default function JoinWaitlistButton({
           className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[14px] font-medium text-white transition-transform hover:-translate-y-0.5 disabled:opacity-70"
           style={{ background: "var(--g-voltio)", boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)" }}
         >
-          {submitting ? <><Loader2 size={14} className="animate-spin" /> Joining…</> : <>Join <ArrowRight size={14} /></>}
+          {submitting ? <><Loader2 size={14} className="animate-spin" /> {t("waitlist_joining")}</> : <>{t("waitlist_join")} <ArrowRight size={14} /></>}
         </button>
         {error && (
           <span className="text-[12px] text-red-300 sm:hidden">{error}</span>
@@ -140,7 +140,7 @@ export default function JoinWaitlistButton({
       className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-medium ${variant === "primary" ? "transition-transform hover:-translate-y-0.5" : "transition-colors hover:bg-white/5"} ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
       style={commonStyle}
     >
-      {label}
+      {label || t("waitlist_cta")}
       <ArrowRight size={16} />
     </button>
   );

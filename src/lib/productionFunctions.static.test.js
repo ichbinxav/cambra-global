@@ -21,7 +21,7 @@ const FUNCTIONS_DIR = path.join(REPO_ROOT, "base44", "functions");
 
 // Censo actualizado para ECL P4 — fuente: src/docs/PRODUCTION_FUNCTIONS.md.
 const MANIFEST = [
-  "_tenantGuard", "adminAgentOperations", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
+  "_tenantGuard", "adminAgentOperations", "adminGlobalSearch", "adminOverrides", "adminSummaries", "adminUpdateApplicationStatus",
   // P14 Aggregate + Final Autonomous Revenue Engine technical seal (2026-08-10).
   "aggregateAgreementWorker", "aggregateDemandWorker", "aggregateEligibilityWorker", "aggregateProcurementWorker", "collectiveNegotiationAgent", "getAggregateCommandCenter",
   "getFinancialControlTower", "getFounderControlCenter", "operatingHealthWorker", "realWorldValidationWorker", "revenueGoldenPathSelfTest", "revenueLifecycleWorker",
@@ -33,7 +33,7 @@ const MANIFEST = [
   // P17 Autonomous Maintenance & Self-Healing Engine (2026-08-10).
   "maintenanceEngine", "getMaintenanceCenter", "dependencySecurityWorker", "alwaysOnLeadDiscoveryWorker", "missingInformationWorker", "privacySafeIntelligenceWorker",
   // P18 Operating Bible, Founder Handbook & Living Documentation (2026-08-10).
-  "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin",
+  "documentationQuery", "documentationMaintenanceWorker", "emergencyControlAdmin", "goLiveControlAdmin", "costGovernanceWorker",
   // P1 Europe Country Intelligence Foundation + P3 European Rate Intelligence (2026-08-10/11).
   "seedEuropeMarketFoundation", "seedProviderIntelligenceFoundation", "resolveMerchantMarketContext", "backfillMerchantMarketContexts", "checkMarketCapability", "marketPolicyAdmin", "getEuropeMarketsCommandCenter",
   "rateIntelligenceQuery", "rateIntelligenceWatchWorker", "seedP3RateIntelligence", "projectVerifiedPaymentsToP4", "requestP4Estimate",

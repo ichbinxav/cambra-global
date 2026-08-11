@@ -690,6 +690,15 @@
       "oldHash": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
       "newHash": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
       "reason": "P11 sanctioned upload hardening: pre-buffer byte limits, strict document/evidence contract, scoped ownership linking and no ECL economic semantics change"
+    },
+    {
+      "date": "2026-08-11T09:44:47.233Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
+      "newHash": "e13bd0285391408cc6e52820f9f4871a4b26844f8e2ef6cdaba4b5ec2ada219d",
+      "reason": "Final pre-launch cost governance: gate both independent extraction providers before paid execution; extraction/ECL economic semantics unchanged"
     }
   ]
 }

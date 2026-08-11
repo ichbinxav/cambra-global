@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 
 // ════════════════════════════════════════════════════════════════════
 // Chief Orchestrator Chat
@@ -558,8 +559,8 @@ Strict rules:
 8. If a request is genuinely ambiguous and cannot be resolved from context, ask one concise clarification. Otherwise act on the best grounded interpretation.
 9. Bulk operations require explicit scope/impact confirmation before execution.`;
 
-async function callClaude(messages, tools) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+async function callClaude(svc, messages, tools, eventKey) {
+  const res = await paidProviderFetch(svc, { event_key:`ai:chat-chief:${eventKey}`, category:'ai', provider:'anthropic', source:'chatChiefOrchestrator' }, "https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "x-api-key": ANTHROPIC_API_KEY,
@@ -649,7 +650,7 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, assistant_text: assistantText, tool_calls: [], blocked_by_gate: "no_api_key" });
     }
 
-    const claudeRes = await callClaude(claudeMessages, CHAT_TOOLS);
+    const claudeRes = await callClaude(base44.asServiceRole, claudeMessages, CHAT_TOOLS, `${conversation_id}:${crypto.randomUUID()}`);
 
     // Parse Claude's reply
     let assistantText = "";

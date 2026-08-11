@@ -1,22 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 const AGENT_NAME = "contract_ip";
 const TASK_TYPE = "contract_ip_review";
 const RISK_LEVEL = 1;
 const LEGAL_DISCLAIMER = "⚠️ Análisis asistido por IA. NO es asesoramiento legal. Requiere revisión por un abogado humano para confirmar el estado contractual y de IP.";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 2500, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'high_reasoning', maxTokens:2500, svc, eventKey, source:'contractIPAgent' })).text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -104,7 +94,7 @@ Deno.serve(async (req) => {
       JSON.stringify(structural, null, 2),
     ].join("\n");
 
-    const text = await callClaude(prompt);
+    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
     const parsed = safeParseJSON(text) || { checklist: [], summary: "Could not parse analysis" };
     const checklist = Array.isArray(parsed.checklist) ? parsed.checklist : [];
 

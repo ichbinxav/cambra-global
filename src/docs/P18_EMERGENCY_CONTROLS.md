@@ -42,9 +42,13 @@ P18 `negotiations_paused` / SAFE MODE is checked by provider and collective nego
 
 P18 `migrations_paused` / SAFE MODE blocks `startPaymentsMigration`. It does not automatically roll back or destroy already-running migration evidence/tasks. In-flight migration containment must use the canonical task/Developer/go-live governance paths. Automatic forced rollback would be unsafe and is intentionally absent.
 
-## PAUSE BILLING — IMPLEMENTED FOR NEW ISSUANCE
+## PAUSE BILLING — IMPLEMENTED FOR NEW EXECUTION
 
-P18 `billing_issuance_paused` / SAFE MODE blocks `createEligibleRecoverInvoices` before new invoice issuance. Reconciliation, processor-state observation and already-existing invoice/payment obligations continue. This is intentionally not a switch that falsifies or freezes financial truth.
+P18 `billing_issuance_paused` / SAFE MODE blocks `createEligibleRecoverInvoices`,
+`providerRevenueBillingWorker`, `billApiUsage` and `createPaymentLink` before a
+new billing/payment effect. Reconciliation, processor-state observation and
+already-existing invoice/payment obligations continue. This is intentionally
+not a switch that falsifies or freezes financial truth.
 
 ## DISABLE INTEGRATION — PARTIALLY_IMPLEMENTED
 

@@ -1,13 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 const AGENT_NAME = "competitor_monitor";
 const TASK_TYPE = "competitor_monitor";
 const RISK_LEVEL = 1;
 
-async function callPerplexity(prompt) {
+async function callPerplexity(svc, prompt) {
   const key = Deno.env.get("PERPLEXITY_API_KEY");
   if (!key) return null;
-  const res = await fetch("https://api.perplexity.ai/v1/sonar", {
+  const res = await paidProviderFetch(svc, { event_key:`api:competitor-monitor:${new Date().toISOString().slice(0,13)}`, category:'api', provider:'perplexity', source:'competitorMonitorAgent' }, "https://api.perplexity.ai/v1/sonar", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({
@@ -21,18 +23,7 @@ async function callPerplexity(prompt) {
   return { content: data?.choices?.[0]?.message?.content || "", citations: data?.citations || [] };
 }
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY o PERPLEXITY_API_KEY a Base44 secrets");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 2048, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2048, svc, eventKey, source:'competitorMonitorAgent' })).text; }
 
 // L1 — research only, no Approval. Output goes into the Founder Copilot day briefing.
 Deno.serve(async (req) => {
@@ -79,14 +70,14 @@ Deno.serve(async (req) => {
     let citations = [];
     let source = "perplexity";
 
-    const pplx = await callPerplexity(prompt).catch((e) => { throw e; });
+    const pplx = await callPerplexity(base44.asServiceRole, prompt).catch((e) => { throw e; });
     if (pplx) {
       summary = pplx.content;
       citations = pplx.citations;
     } else {
-      const fallback = await callClaude(
+      const fallback = await callClaude(base44.asServiceRole,
         prompt + "\n\nNOTA IMPORTANTE: No tienes acceso a internet ni a datos en tiempo real. Marca explícitamente al inicio: '⚠️ Análisis sin datos en tiempo real — basado en conocimiento general del sector hasta tu fecha de corte.' Y no inventes eventos específicos con fechas."
-      );
+      , task?.id || crypto.randomUUID());
       summary = fallback;
       source = "claude_fallback";
     }

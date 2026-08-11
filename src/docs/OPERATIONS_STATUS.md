@@ -6,6 +6,21 @@
 
 ---
 
+## Release v0.91.0 — Final Pre-Launch Remediation & Founder Control Seal (2026-08-11)
+
+**Local implementation verified; classification remains `NOT_GO_READY`.** The
+release adds a 15-gate real-evidence GO decision, fail-closed AI/API/enrichment/
+email budgets, scheduler cadence/duplicate proof, real deliverability and
+suppression verification, explicit sender-profile warm-up, Founder control
+exercises and end-to-end emergency/cost stops. Admin becomes the activation
+command plane and preserves safe Analyzer/read-only intelligence during
+containment. Exact local results and the external activation runbook are in
+`FINAL_PRE_LAUNCH_REMEDIATION.md`.
+
+Remote GitHub CI, Base44 parity, production backfill/seeds, real DNS/webhook/
+scheduler evidence, real restore and the anonymized multilingual extractor
+corpus remain required. No local result can satisfy those gates.
+
 ## Release v0.86.0 — P6–P8 Autonomous Company Foundation (2026-08-11)
 
 **Repository implementation complete; deployment/runtime proof pending.** The

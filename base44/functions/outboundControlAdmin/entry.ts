@@ -19,6 +19,13 @@ Deno.serve(async(req)=>{
     const now=new Date().toISOString();
     let patch:any={};
 
+    if(action==='exercise_controls'){
+      if(body?.confirmation!=='EXERCISE_FOUNDER_CANARY_CONTROL')return Response.json({ok:false,error:'exercise_confirmation_required'},{status:409});
+      if(control.acquisition_enabled===true)return Response.json({ok:false,error:'exercise_requires_outbound_paused'},{status:409});
+      const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_ids:body.policy_ids||[],provider_scope:String(body.provider_scope||'all'),final_sha:body.final_sha});
+      await svc.entities.OperationalLog.create({event_type:'commercial_canary_control_exercised',message:'Founder exercised start/pause/resume control path without enabling outbound',data_json:{provider_scope:String(body.provider_scope||'all'),readiness_allowed:readiness.allowed,blockers:readiness.blockers,start_requires_confirmation:true,pause_available:true,resume_requires_fresh_preflight:true,no_message_sent:true},actor_email:String(gate.user?.email||''),created_at:now}).catch(()=>null);
+      return Response.json({ok:true,exercise:true,no_message_sent:true,readiness,capabilities:{start_canary:true,change_limits:true,pause:true,resume_with_fresh_preflight:true,inspect_blockers:true}});
+    }
     if(START_SCOPE[action]){
       const providerScope=START_SCOPE[action];
       const requestedHash=String(body?.preflight_hash||'');
@@ -27,7 +34,7 @@ Deno.serve(async(req)=>{
       if(control.preflight_status!=='PASS'||control.preflight_hash!==requestedHash||control.preflight_provider_scope!==providerScope)return Response.json({ok:false,error:'matching_preflight_required'},{status:409});
       if(!control.preflight_expires_at||Date.parse(control.preflight_expires_at)<=Date.now())return Response.json({ok:false,error:'preflight_expired'},{status:409});
 
-      const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_ids:control.preflight_policy_ids||[control.preflight_policy_id].filter(Boolean),provider_scope:providerScope});
+      const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_ids:control.preflight_policy_ids||[control.preflight_policy_id].filter(Boolean),provider_scope:providerScope,final_sha:control.preflight_json?.go_live?.final_sha||control.preflight_json?.evidence?.go_live?.final_sha});
       if(!readiness.allowed)return Response.json({ok:false,error:'preflight_recheck_blocked',blockers:readiness.blockers},{status:409});
       if(readiness.preflight_hash!==requestedHash)return Response.json({ok:false,error:'preflight_state_changed',expected_hash:readiness.preflight_hash},{status:409});
       const common={acquisition_enabled:true,activated_by:gate.user?.email||'admin',activated_at:now,paused_reason:null,activation_preflight_hash:requestedHash};

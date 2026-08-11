@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { collectiveJoinEmail } from '../../shared/emails/collectiveJoin.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 
 /**
  * joinCollective
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
       const emergency = await emergencyState(base44.asServiceRole);
       if (!emergency.safe_mode && !emergency.communications_paused) {
       const mail = collectiveJoinEmail(locale, { gmvEurMonthly: gmv });
-      await base44.asServiceRole.integrations.Core.SendEmail({
+      await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:collective-confirmation:${member.id}`, source:'joinCollective', related_entity_type:'CollectiveMember', related_entity_id:member.id }, {
         from_name: "CAMBRA",
         to: email,
         subject: mail.subject,
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
           `Locale: ${locale}`,
           `Member ID: ${member.id}`,
         ].filter(Boolean).join("\n");
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:collective-admin:${member.id}`, source:'joinCollective', related_entity_type:'CollectiveMember', related_entity_id:member.id }, {
           from_name: "CAMBRA",
           to: adminEmail,
           subject: `New collective member: ${email}${gmvFmt ? ` · €${gmvFmt}/mo` : ""}`,

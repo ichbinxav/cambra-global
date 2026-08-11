@@ -135,9 +135,12 @@ export default function Navbar() {
         <div className="md:hidden flex items-center gap-1">
           <LanguageSwitcher variant="dark" />
           <button
+            type="button"
             className="p-2 text-white/70 hover:text-white transition-colors -mr-2"
             onClick={() => setOpen(v => !v)}
             aria-label="Toggle menu"
+            aria-expanded={open}
+            aria-controls="cambra-mobile-navigation"
           >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>

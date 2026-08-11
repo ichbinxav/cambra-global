@@ -91,7 +91,7 @@ describe('commercial pre-GO activation seal',()=>{
     expect(gate).toBeGreaterThan(0);
     expect(gate).toBeLessThan(worker.indexOf('CommercialPolicy.filter'));
     expect(gate).toBeLessThan(worker.indexOf('CommunicationMessage.filter'));
-    expect(gate).toBeLessThan(worker.indexOf('await claude(prompt)'));
+    expect(gate).toBeLessThan(worker.lastIndexOf('claude(svc,prompt'));
     expect(worker).toContain("sending_profile_resolution_status:'REVIEW_REQUIRED'");
   });
 

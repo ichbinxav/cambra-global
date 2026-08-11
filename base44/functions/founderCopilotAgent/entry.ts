@@ -1,29 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 const AGENT_NAME = "founder_copilot";
 const TASK_TYPE = "daily_brief";
 const RISK_LEVEL = 0;
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:1024, svc, eventKey, source:'founderCopilotAgent' })).text; }
 
 Deno.serve(async (req) => {
   let task = null;
@@ -95,7 +77,7 @@ Deno.serve(async (req) => {
     ].filter(Boolean).join("\n");
 
     // 4) Call Claude
-    const brief = await callClaude(prompt);
+    const brief = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
 
     // 5) Mark task completed
     const output = {

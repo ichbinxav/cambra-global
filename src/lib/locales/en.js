@@ -259,6 +259,15 @@ export default {
     how_step3_desc:       "Read-only. Your estimate becomes a confirmed number from your real transaction data.",
     how_step4_title:      "Join to recover it",
     how_step4_desc:       "Claim your savings and join the businesses negotiating as one. Together we get rates none of us could get alone.",
+    how_step_label:       "Step",
+    waitlist_cta:         "Join to recover",
+    waitlist_email_label: "Email address",
+    waitlist_email_placeholder: "you@yourbusiness.com",
+    waitlist_email_invalid: "Enter a valid email address.",
+    waitlist_error:       "Something went wrong. Please try again.",
+    waitlist_join:        "Join",
+    waitlist_joining:     "Joining…",
+    waitlist_done:        "You're on the list — we'll be in touch.",
 
     /* landing — hero */
 
@@ -278,6 +287,8 @@ export default {
     footer_contact:       "Contact",
     footer_data_requests: "Data requests",
     footer_for_providers: "For providers",
+    footer_security:      "Security",
+    footer_cookies:       "Cookies",
 
     /* analyzer — step 1 */
 

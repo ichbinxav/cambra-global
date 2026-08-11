@@ -255,6 +255,15 @@ export default {
     how_step3_desc:       "En lecture seule. Votre estimation devient un chiffre confirmé, à partir de vos transactions réelles.",
     how_step4_title:      "Rejoignez-nous pour la récupérer",
     how_step4_desc:       "Récupérez vos économies et rejoignez les commerces qui négocient d'une seule voix. Ensemble, nous obtenons des tarifs qu'aucun n'obtiendrait seul.",
+    how_step_label:       "Étape",
+    waitlist_cta:         "Rejoindre pour récupérer",
+    waitlist_email_label: "Adresse e-mail",
+    waitlist_email_placeholder: "vous@votreentreprise.fr",
+    waitlist_email_invalid: "Saisissez une adresse e-mail valide.",
+    waitlist_error:       "Une erreur s'est produite. Réessayez.",
+    waitlist_join:        "Rejoindre",
+    waitlist_joining:     "Inscription…",
+    waitlist_done:        "Vous êtes sur la liste — nous vous contacterons.",
 
 
 
@@ -268,6 +277,8 @@ export default {
     footer_contact:       "Contact",
     footer_data_requests: "Demandes de données",
     footer_for_providers: "Pour les prestataires",
+    footer_security:      "Sécurité",
+    footer_cookies:       "Cookies",
 
 
     detected_source_stripe:  "Stripe",

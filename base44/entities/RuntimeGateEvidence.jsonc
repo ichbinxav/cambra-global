@@ -1,0 +1,27 @@
+{
+  "name": "RuntimeGateEvidence",
+  "type": "object",
+  "description": "Admin-only, time-bounded evidence for a pre-launch runtime gate. Local/static assertions can be retained for context but can never satisfy REAL_RUNTIME or EXTERNAL gate requirements.",
+  "properties": {
+    "evidence_key": { "type": "string" },
+    "gate_key": { "type": "string" },
+    "environment": { "type": "string" },
+    "git_sha": { "type": "string" },
+    "source_tree_hash": { "type": "string" },
+    "status": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"] },
+    "evidence_kind": { "type": "string", "enum": ["REAL_RUNTIME", "EXTERNAL", "OPERATOR_EXERCISE", "LOCAL_STATIC"] },
+    "source": { "type": "string" },
+    "external_run_id": { "type": "string" },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "details_json": { "type": "object" },
+    "evidence_hash": { "type": "string" },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "recorded_by": { "type": "string" }
+  },
+  "required": ["evidence_key", "gate_key", "environment", "status", "evidence_kind", "source", "observed_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

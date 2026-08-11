@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "crm";
 const TASK_TYPE = "sync_leads_to_crm";
@@ -12,6 +14,8 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
+    const emergency = await emergencyState(base44.asServiceRole);
+    if (emergency.safe_mode) return Response.json({ ok:false, error:'emergency_control_paused:external_crm_sync' }, { status:409 });
     const leadIds = Array.isArray(body?.lead_ids) ? body.lead_ids : null;
     const limit = Math.min(Number(body?.limit) || 25, 100);
 
@@ -59,7 +63,7 @@ Deno.serve(async (req) => {
     for (const lead of leads) {
       if (!fallback) {
         try {
-          const res = await fetch("https://api.attio.com/v2/objects/companies/records", {
+          const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:attio:company:${lead.id}`, category:'api', provider:'attio', source:'crmAgent', related_entity_type:'OutboundLead', related_entity_id:lead.id }, "https://api.attio.com/v2/objects/companies/records", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

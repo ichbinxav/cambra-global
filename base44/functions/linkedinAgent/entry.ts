@@ -1,26 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "linkedin";
 const TASK_TYPE = "publish_linkedin_post";
 const RISK_LEVEL = 2;
 const ACTION_TYPE = "publish_linkedin_post";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 2048,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2048, svc, eventKey, source:'linkedinAgent' })).text; }
 
 Deno.serve(async (req) => {
   let task = null;
@@ -35,6 +23,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE — strict Approval gate ═════════════════════════════════
     if (mode === "execute") {
+      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
@@ -51,7 +41,7 @@ Deno.serve(async (req) => {
       if (!taplioKey) throw new Error("TOOL_NOT_CONFIGURED: añade TAPLIO_API_KEY a Base44 secrets para publicar en LinkedIn");
 
       const payload = ap.draft_payload_json || {};
-      const res = await fetch("https://api.taplio.com/v1/posts", {
+      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:taplio:publish:${ap.id}`, category:'api', provider:'taplio', source:'linkedinAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.taplio.com/v1/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${taplioKey}` },
         body: JSON.stringify({ content: payload.content, schedule_at: payload.schedule_at || null }),
@@ -89,7 +79,7 @@ Deno.serve(async (req) => {
 
     if (taplioKey) {
       try {
-        const res = await fetch("https://api.taplio.com/v1/generate", {
+        const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:taplio:generate:${task.id}`, category:'api', provider:'taplio', source:'linkedinAgent', related_entity_type:'AgentTask', related_entity_id:task.id }, "https://api.taplio.com/v1/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${taplioKey}` },
           body: JSON.stringify({ topic, angle, tone: "founder", length: "medium" }),
@@ -110,7 +100,7 @@ Deno.serve(async (req) => {
         `Tema: ${topic}`,
         `Ángulo: ${angle}`,
       ].join("\n");
-      content = (await callClaude(prompt)).trim();
+      content = (await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID())).trim();
     }
 
     if (!content) throw new Error("Failed to generate post content");

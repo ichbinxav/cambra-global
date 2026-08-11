@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "lead_discovery";
 const TASK_TYPE = "discover_leads";
@@ -49,6 +50,7 @@ Deno.serve(async (req) => {
     if (!apolloKey) {
       throw new Error("TOOL_NOT_CONFIGURED: añade APOLLO_API_KEY a Base44 secrets para activar este agente");
     }
+    const costReservation = await reservePaidOperation(base44.asServiceRole,{ event_key:`api:apollo:lead-discovery:${country}:${titles.join(',')}:${new Date().toISOString().slice(0,13)}`, category:'api', provider:'apollo', source:'leadDiscoveryAgent', related_entity_type:'AgentTask', related_entity_id:task.id });
 
     // Apollo People Search (api_search endpoint — the v1/mixed_people/search
     // endpoint was deprecated for API callers in 2026; api_search is the
@@ -71,6 +73,7 @@ Deno.serve(async (req) => {
 
     const data = await res.json();
     if (!res.ok) throw new Error(`Apollo API error: ${data?.error || data?.message || res.statusText}`);
+    await settlePaidOperation(base44.asServiceRole,costReservation,{ ok:true, usage_json:{ people_returned:Array.isArray(data?.people) ? data.people.length : 0 } });
 
     const people = Array.isArray(data?.people) ? data.people : [];
     // GDPR Art. 6(1)(f) — every Apollo-sourced lead ships with an explicit

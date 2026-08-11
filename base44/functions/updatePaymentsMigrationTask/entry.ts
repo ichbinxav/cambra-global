@@ -3,6 +3,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { sha256Canonical } from '../../shared/legalExecution.ts';
 import { enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 const VALID = new Set(['pending','in_progress','blocked','done']);
 const PLAN_VERSION = 'payments-recover-p9-v1';
@@ -35,6 +36,10 @@ export default async function (req: Request): Promise<Response> {
     }
 
     const svc = base44.asServiceRole;
+    if (nextStatus === 'in_progress' || nextStatus === 'done') {
+      try { await assertOperationAllowed(svc, 'migrations'); }
+      catch (error:any) { return Response.json({ error:error?.message || 'emergency_control_paused:migrations' }, { status:409 }); }
+    }
     const found = await svc.entities.MigrationTask.filter({ id: taskId }, '-created_date', 1).catch(() => []);
     const task:any = found?.[0];
     if (!task) return Response.json({ error: 'task_not_found' }, { status: 404 });

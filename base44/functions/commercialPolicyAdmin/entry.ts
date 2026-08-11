@@ -66,6 +66,25 @@ Deno.serve(async (req) => {
     const policy = await svc.entities.CommercialPolicy.get(policyId).catch(() => null);
     if (!policy) return Response.json({ ok:false, error:'not_found' }, { status:404 });
 
+    if (action === 'update_draft') {
+      if (policy.status !== 'draft') return Response.json({ ok:false, error:'only_draft_policies_are_editable' }, { status:409 });
+      const requestedDaily = Number(body?.daily_send_limit);
+      const requestedScore = Number(body?.min_lead_score);
+      const patch = {
+        countries:Array.isArray(body?.countries) ? [...new Set(body.countries.map((value:any) => String(value || '').trim().toUpperCase()).filter(Boolean))].slice(0,20) : policy.countries || [],
+        sending_profile_keys:Array.isArray(body?.sending_profile_keys) ? [...new Set(body.sending_profile_keys.map((value:any) => String(value || '').trim()).filter(Boolean))].slice(0,20) : policy.sending_profile_keys || [],
+        daily_send_limit:Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : Number(policy.daily_send_limit || 0),
+        min_lead_score:Number.isFinite(requestedScore) ? Math.max(0, Math.min(requestedScore, 100)) : Number(policy.min_lead_score || 0),
+      };
+      if (acquisitionEngine(policy.engine)) {
+        const validation = validateCanaryPolicy({ ...policy, ...patch, status:'active' });
+        if (!validation.ok) return Response.json({ ok:false, error:'canary_policy_not_ready', blockers:validation.blockers }, { status:400 });
+      }
+      const updated = await svc.entities.CommercialPolicy.update(policy.id, patch);
+      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_draft_updated', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id, ...patch }, actor_email:user.email, created_at:new Date().toISOString() }).catch(() => null);
+      return Response.json({ ok:true, policy:updated });
+    }
+
     if (action === 'activate') {
       if (body?.confirmation !== 'APPROVE_AUTONOMY_POLICY') return Response.json({ ok:false, error:'confirmation_required' }, { status:409 });
       if (acquisitionEngine(policy.engine)) {

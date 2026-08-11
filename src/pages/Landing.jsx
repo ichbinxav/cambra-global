@@ -220,7 +220,6 @@ function Hero() {
             alt={t("hero_image_alt")}
             width={620}
             height={620}
-            fetchPriority="high"
             className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[8%]"
             style={{ filter: "contrast(0.97)" }}
             draggable={false}
@@ -323,7 +322,7 @@ function HowItWorksSection() {
                       style={{ background: "var(--voltio-2)", boxShadow: "0 0 12px rgba(139,123,255,0.8)" }}
                       aria-hidden
                     />
-                    <SectionLabel>Step {s.n}</SectionLabel>
+                    <SectionLabel>{t("how_step_label")} {s.n}</SectionLabel>
                   </div>
                   <h3 className="text-title mb-3" style={{ color: "var(--ink)" }}>{s.title}</h3>
                   <p className="text-[14px]" style={{ color: "var(--gris-1)" }}>{s.desc}</p>
@@ -349,10 +348,10 @@ function LandingFooter() {
   const { t } = useTranslation();
   const links = [
     { to: "/ForProviders", label: t("footer_for_providers") },
-    { to: "/Security", label: "Security" },
+    { to: "/Security", label: t("footer_security") },
     { to: "/Privacy", label: t("footer_privacy") },
     { to: "/Terms", label: t("footer_terms") },
-    { to: "/Cookies", label: "Cookies" },
+    { to: "/Cookies", label: t("footer_cookies") },
     { to: "/Contact", label: t("footer_contact") },
   ];
   return (

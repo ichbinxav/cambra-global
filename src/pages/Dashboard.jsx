@@ -23,6 +23,8 @@ import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsig
 import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
 import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
+import RecoverMandatePanel from "@/components/recover/RecoverMandatePanel";
+import PaymentsMigrationCard from "@/components/recover/PaymentsMigrationCard";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 // A merchant whose opportunity is this large gets routed to a human call
@@ -322,6 +324,11 @@ export default function Dashboard() {
         onCollective={() => setCollectiveOpen(true)}
         onAddChannel={() => navigate("/Analyzer")}
       />
+
+      {/* Recover is a first-class merchant journey: authorize once, then see
+          exactly what CAMBRA is handling and whether anything needs attention. */}
+      <RecoverMandatePanel />
+      <PaymentsMigrationCard />
 
       {/* ── SAVINGS HERO v2 — single source of truth (engine_result), gauge, CTAs ── */}
       <DashboardHeroV2

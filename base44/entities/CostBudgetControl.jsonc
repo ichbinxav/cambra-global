@@ -1,0 +1,28 @@
+{
+  "name": "CostBudgetControl",
+  "type": "object",
+  "description": "Founder-approved daily/monthly spend ceilings for paid AI, API, enrichment and email execution. Missing or invalid active limits mean zero autonomous paid execution.",
+  "properties": {
+    "control_key": { "type": "string" },
+    "version": { "type": "string" },
+    "status": { "type": "string", "enum": ["draft", "active", "paused", "superseded"], "default": "draft" },
+    "currency": { "type": "string", "enum": ["EUR"] },
+    "daily_total_limit_minor": { "type": "number", "minimum": 1 },
+    "monthly_total_limit_minor": { "type": "number", "minimum": 1 },
+    "category_limits_json": { "type": "object", "description": "ai/api/enrichment/email each require positive daily_limit_minor and monthly_limit_minor values." },
+    "estimated_unit_cost_minor_json": { "type": "object", "description": "Conservative reservation cost per provider operation, in minor currency units." },
+    "anomaly_warning_pct": { "type": "number", "minimum": 1, "maximum": 100 },
+    "hard_stop_pct": { "type": "number", "minimum": 1, "maximum": 100 },
+    "emergency_stop_active": { "type": "boolean", "default": false },
+    "emergency_stop_reason": { "type": "string" },
+    "approved_by": { "type": "string" },
+    "approved_at": { "type": "string", "format": "date-time" },
+    "updated_by": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["control_key", "version", "status", "currency", "emergency_stop_active"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

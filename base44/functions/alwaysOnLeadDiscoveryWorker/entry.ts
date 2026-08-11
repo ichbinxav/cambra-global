@@ -1,3 +1,4 @@
+import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { buildCommercialIntelligence, COMMERCIAL_INTELLIGENCE_VERSION, normalizeCompanyDomain } from '../../shared/commercialIntelligence.ts';
@@ -7,13 +8,16 @@ const VERSION = 'always-on-lead-discovery-2.0.0';
 const now = () => new Date().toISOString();
 const COUNTRY_NAMES: Record<string, string> = { FR: 'France', ES: 'Spain', DE: 'Germany', IT: 'Italy', PT: 'Portugal', BE: 'Belgium', AT: 'Austria', NL: 'Netherlands', IE: 'Ireland', GB: 'United Kingdom', LU: 'Luxembourg', DK: 'Denmark', SE: 'Sweden', FI: 'Finland', NO: 'Norway', PL: 'Poland', CZ: 'Czechia', GR: 'Greece', RO: 'Romania' };
 
-Deno.serve(async (req) => {
+Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     const service = base44.asServiceRole;
+    __schedulerSvc=service;
+    __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'alwaysOnLeadDiscoveryWorker',cadence_seconds:3600});
+    if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key});
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const policies = await service.entities.CommercialPolicy.filter({ engine: 'merchant_acquisition', status: 'active' }, '-approved_at', 10).catch(() => []);
     const policy = policies[0] || null;
@@ -150,8 +154,8 @@ Deno.serve(async (req) => {
       market_sizing: intelligence.market_sizing,
       source_coverage: intelligence.source_coverage,
     });
-  } catch (error) {
+  } catch (error) {__schedulerOk=false;
     console.error(error);
     return Response.json({ ok: false, error: 'always_on_lead_discovery_failed', message: String((error as Error)?.message || error).slice(0, 300) }, { status: 500 });
-  }
+  }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}
 });

@@ -1,0 +1,25 @@
+{
+  "name": "CostUsageEvent",
+  "type": "object",
+  "description": "Idempotent paid-operation reservation and observed-usage ledger used by the fail-closed cost governor.",
+  "properties": {
+    "event_key": { "type": "string" },
+    "category": { "type": "string", "enum": ["ai", "api", "enrichment", "email"] },
+    "provider": { "type": "string" },
+    "source": { "type": "string" },
+    "related_entity_type": { "type": "string" },
+    "related_entity_id": { "type": "string" },
+    "amount_minor": { "type": "number", "minimum": 0 },
+    "currency": { "type": "string", "enum": ["EUR"] },
+    "status": { "type": "string", "enum": ["RESERVED", "OBSERVED", "RECONCILED", "VOID", "FAILED"] },
+    "usage_json": { "type": "object" },
+    "budget_version": { "type": "string" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["event_key", "category", "provider", "source", "amount_minor", "currency", "status", "occurred_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

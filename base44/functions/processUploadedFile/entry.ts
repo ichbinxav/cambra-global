@@ -6,6 +6,7 @@ import {
   normalizeExtractionCandidate,
   validateDocumentEnvelope,
 } from '../../shared/documentExtraction.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 // processUploadedFile v2 — authenticated, tenant-scoped and fail-closed.
 //
@@ -127,13 +128,14 @@ function anthropicContent(kind: string, mime: string, base64: string, bytes: Uin
   return { type: 'text', text: `<untrusted_document>\n${text}\n</untrusted_document>` };
 }
 
-async function callAnthropic(kind: string, mime: string, base64: string, bytes: Uint8Array) {
+async function callAnthropic(svc:any, checksum:string, kind: string, mime: string, base64: string, bytes: Uint8Array) {
   if (Deno.env.get('EXTRACTION_LLM_ENABLED') !== 'true') return { ok: false, reason: 'primary_disabled' };
   const key = Deno.env.get('ANTHROPIC_API_KEY');
   if (!key) return { ok: false, reason: 'primary_key_missing' };
   const document = anthropicContent(kind, mime, base64, bytes);
   if (!document) return { ok: false, reason: 'text_document_too_large_for_independent_review' };
   const model = Deno.env.get('ANTHROPIC_EXTRACTION_MODEL') || 'claude-sonnet-4-5';
+  const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:anthropic:${checksum}`, category:'ai', provider:'anthropic', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -141,6 +143,7 @@ async function callAnthropic(kind: string, mime: string, base64: string, bytes: 
       body: JSON.stringify({ model, temperature: 0, max_tokens: 1800, system: EXTRACTION_PROMPT, messages: [{ role: 'user', content: [document, { type: 'text', text: `Extract this file. JSON schema: ${JSON.stringify(EXTRACTION_SCHEMA)}` }] }] }),
     });
     const data = await response.json().catch(() => ({}));
+    await settlePaidOperation(svc, reservation, { ok:response.ok, usage_json:data?.usage || {}, amount_quality:'CONSERVATIVE_RESERVATION' });
     if (!response.ok) return { ok: false, reason: `primary_http_${response.status}` };
     const parsed = parseJson(data?.content?.find((part: any) => part?.type === 'text')?.text || '');
     return parsed ? { ok: true, model, parsed } : { ok: false, reason: 'primary_invalid_json' };
@@ -164,11 +167,12 @@ function openAiOutputText(data: any): string {
   return '';
 }
 
-async function callOpenAI(kind: string, mime: string, base64: string, fileName: string, bytes: Uint8Array) {
+async function callOpenAI(svc:any, checksum:string, kind: string, mime: string, base64: string, fileName: string, bytes: Uint8Array) {
   if (Deno.env.get('EXTRACTION_L3_ENABLED') !== 'true') return { ok: false, reason: 'secondary_disabled' };
   const key = Deno.env.get('OPENAI_API_KEY');
   if (!key) return { ok: false, reason: 'secondary_key_missing' };
   const model = Deno.env.get('OPENAI_EXTRACTION_MODEL') || 'gpt-4.1';
+  const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:openai:${checksum}`, category:'ai', provider:'openai', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -180,6 +184,7 @@ async function callOpenAI(kind: string, mime: string, base64: string, fileName: 
       }),
     });
     const data = await response.json().catch(() => ({}));
+    await settlePaidOperation(svc, reservation, { ok:response.ok, usage_json:data?.usage || {}, amount_quality:'CONSERVATIVE_RESERVATION' });
     if (!response.ok) return { ok: false, reason: `secondary_http_${response.status}` };
     const parsed = parseJson(openAiOutputText(data));
     return parsed ? { ok: true, model, parsed } : { ok: false, reason: 'secondary_invalid_json' };
@@ -250,9 +255,10 @@ Deno.serve(async (req) => {
     }
 
     const base64 = bytesToBase64(bytes);
+    const svc = base44.asServiceRole;
     const [primaryRaw, secondaryRaw] = await Promise.all([
-      callAnthropic(envelope.kind, envelope.mime, base64, bytes),
-      callOpenAI(envelope.kind, envelope.mime, base64, fileName, bytes),
+      callAnthropic(svc, checksum, envelope.kind, envelope.mime, base64, bytes),
+      callOpenAI(svc, checksum, envelope.kind, envelope.mime, base64, fileName, bytes),
     ]);
     const primary = primaryRaw.ok ? normalizeExtractionCandidate(primaryRaw.parsed, { checksum, model: primaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: primaryRaw.reason }], candidate: null };
     const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed, { checksum, model: secondaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: secondaryRaw.reason }], candidate: null };

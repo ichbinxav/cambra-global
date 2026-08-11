@@ -1,21 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "seo";
 const TASK_TYPE = "seo_keyword_analysis";
 const RISK_LEVEL = 1;
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 2048, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2048, svc, eventKey, source:'seoAgent' })).text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -60,7 +51,7 @@ Deno.serve(async (req) => {
       try {
         const out = [];
         for (const kw of seedKeywords.slice(0, 5)) {
-          const res = await fetch(`https://app.surferseo.com/api/v1/keyword_research`, {
+          const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:surfer:keyword:${task.id}:${kw}`, category:'api', provider:'surfer', source:'seoAgent', related_entity_type:'AgentTask', related_entity_id:task.id }, `https://app.surferseo.com/api/v1/keyword_research`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "API-KEY": surferKey },
             body: JSON.stringify({ keyword: kw, location }),
@@ -91,7 +82,7 @@ Deno.serve(async (req) => {
         `Keywords: ${JSON.stringify(seedKeywords)}`,
         `Location: ${location}`,
       ].join("\n");
-      const text = await callClaude(prompt);
+      const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
       analysis = safeParseJSON(text);
       if (!analysis) throw new Error(`Claude returned unparseable analysis: ${text.slice(0, 200)}`);
     }

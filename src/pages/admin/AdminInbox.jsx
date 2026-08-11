@@ -53,21 +53,25 @@ export default function AdminInbox() {
 
   useEffect(() => { load(); }, []);
 
+  const resolveThroughFounderOS = async (approval, decision, reason = "") => {
+    const previewRes = await base44.functions.invoke("founderOSCommand", {
+      action: "resolve_approval", approval_id: approval.id, decision, reason, confirmed: false,
+    });
+    const preview = previewRes?.data || previewRes || {};
+    if (preview.ok === false || !preview.command_key) throw new Error(preview.error || "Approval preview failed.");
+    const confirmRes = await base44.functions.invoke("founderOSCommand", {
+      action: "resolve_approval", approval_id: approval.id, decision, reason,
+      confirmed: true, command_key: preview.command_key,
+    });
+    const result = confirmRes?.data || confirmRes || {};
+    if (result.ok === false) throw new Error(result.error || "Founder approval command failed.");
+    return result;
+  };
+
   const handleApprove = async (approval) => {
     setBusyId(approval.id);
     try {
-      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review", "contract_mismatch", "contract_exception"].includes(approval.action_type);
-      if (commercial) {
-        const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "approve" });
-        const data = res?.data || res || {};
-        if (data.ok === false) throw new Error(data.error || "Commercial approval failed.");
-      } else {
-        await base44.entities.Approval.update(approval.id, {
-          status: "approved",
-          approved_by: me?.email || null,
-          approved_at: new Date().toISOString(),
-        });
-      }
+      await resolveThroughFounderOS(approval, "approve");
       await load();
     } catch (e) {
       setError(e?.message || "Could not approve.");
@@ -79,19 +83,7 @@ export default function AdminInbox() {
   const handleReject = async (approval, reason) => {
     setBusyId(approval.id);
     try {
-      const commercial = ["final_provider_deal", "commercial_reply_exception", "provider_negotiation_review", "contract_mismatch", "contract_exception"].includes(approval.action_type);
-      if (commercial) {
-        const res = await base44.functions.invoke("resolveCommercialApproval", { approval_id: approval.id, decision: "reject", reason: reason || null });
-        const data = res?.data || res || {};
-        if (data.ok === false) throw new Error(data.error || "Commercial rejection failed.");
-      } else {
-        await base44.entities.Approval.update(approval.id, {
-          status: "rejected",
-          approved_by: me?.email || null,
-          approved_at: new Date().toISOString(),
-          rejected_reason: reason || null,
-        });
-      }
+      await resolveThroughFounderOS(approval, "reject", reason || "");
       await load();
     } catch (e) {
       setError(e?.message || "Could not reject.");

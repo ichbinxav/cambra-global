@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.90.2",
-  "releaseName": "CAMBRA v0.90.2 — P1–P13 Europe V1 Pre-GO CANARY Seal",
+  "version": "0.91.0",
+  "releaseName": "CAMBRA v0.91.0 — Final Pre-Launch Remediation & Founder Control Seal",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

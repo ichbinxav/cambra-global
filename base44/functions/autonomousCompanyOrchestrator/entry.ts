@@ -1,3 +1,4 @@
+import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
@@ -46,14 +47,14 @@ async function upsertMarketDecision(service: any, snapshot: any) {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
   let task: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
-    const service = base44.asServiceRole;
+    const service = base44.asServiceRole;__schedulerSvc=service;__schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'autonomousCompanyOrchestrator',cadence_seconds:21600});if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key});
     const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const emergency = await emergencyState(service);
     task = await service.entities.AgentTask.create({
@@ -107,13 +108,14 @@ Deno.serve(async (req) => {
     }).catch(() => null);
     return Response.json({ ok: failedSteps.length === 0, task_id: task.id, ...output }, { status: failedSteps.length ? 207 : 200 });
   } catch (error) {
+    __schedulerOk=false;
     console.error('autonomousCompanyOrchestrator failed', error);
     if (task?.id) {
       try {
         const base44 = createClientFromRequest(req);
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: 'failed', error: 'autonomous_company_orchestration_failed', completed_at: new Date().toISOString() });
-      } catch { /* best effort */ }
+      } catch {__schedulerOk=false; /* best effort */ }
     }
     return Response.json({ ok: false, error: 'autonomous_company_orchestration_failed', task_id: task?.id || null }, { status: 500 });
-  }
+  }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator'},__schedulerOk)}
 });

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 
 // ─── CAMBRA product knowledge base ────────────────────────────────────────
 //
@@ -199,7 +200,7 @@ ${brandInfo}`;
     // Note: Anthropic's Messages API uses a top-level `system` field (not a
     // system message in `messages[]`) — that's the correct shape.
     try {
-      const anRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const anRes = await paidProviderFetch(base44.asServiceRole, { event_key:`ai:merchant-copilot:${user.email || user.id}:${new Date().toISOString().slice(0,16)}`, category:'ai', provider:'anthropic', source:'copilotChat', related_entity_type:'Brand', related_entity_id:brandContext?.id || '' }, 'https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'x-api-key': apiKey,

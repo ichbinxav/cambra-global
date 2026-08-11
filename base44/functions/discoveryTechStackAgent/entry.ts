@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 /**
  * Discovery / Tech Stack Agent — Brain B1
@@ -45,26 +46,7 @@ const CATEGORY_TO_VERTICAL = {
   other: "other",
 };
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("ANTHROPIC_API_KEY not set");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2000, svc, eventKey, source:'discoveryTechStackAgent' })).text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -222,7 +204,7 @@ Deno.serve(async (req) => {
       ].join("\n");
 
       try {
-        const text = await callClaude(prompt);
+        const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
         const parsed = safeParseJSON(text);
         if (parsed) {
           // Hard validation: drop any interpretation that references an

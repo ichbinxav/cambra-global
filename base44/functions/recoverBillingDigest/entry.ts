@@ -35,6 +35,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 
 const SEND_WINDOW_MS = 6 * 60 * 60 * 1000;
 
@@ -54,6 +56,8 @@ export default async function (req: Request): Promise<Response> {
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
+    const emergency = await emergencyState(svc);
+    if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:true, sent:false, reason:'emergency_control_paused:communications' });
 
     const last = await svc.entities.OperationalLog.filter(
       { event_type: 'status_changed', message: 'recover_billing_digest_sent' }, '-created_date', 1
@@ -166,7 +170,7 @@ export default async function (req: Request): Promise<Response> {
     const to = Deno.env.get('ADMIN_NOTIFICATION_EMAIL') || Deno.env.get('FOUNDER_EMAIL');
     if (!to) return Response.json({ ok: false, error: 'no_admin_recipient_configured' }, { status: 500 });
 
-    await svc.integrations.Core.SendEmail({
+    await sendCostGovernedEmail(svc, { event_key:`email:recover-billing-digest:${new Date().toISOString().slice(0,10)}`, source:'recoverBillingDigest' }, {
       from_name: 'CAMBRA',
       to,
       subject: `Recover billing — ${awaitingApproval.length} to approve, ${approvedNotInvoiced.length} to invoice${missingReports.length ? `, ${missingReports.length} with no report` : ''}`,

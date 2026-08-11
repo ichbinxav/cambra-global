@@ -1,26 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "follow_up";
 const TASK_TYPE = "send_follow_up_email";
 const RISK_LEVEL = 3;
 const ACTION_TYPE = "send_follow_up_email";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 2048,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2048, svc, eventKey, source:'followUpAgent' })).text; }
 
 function parseDraftEmail(text) {
   const subjectMatch = text.match(/Subject:\s*(.+)/i);
@@ -45,6 +33,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE MODE — strict Approval gate ════════════════════════════
     if (mode === "execute") {
+      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
@@ -72,7 +62,7 @@ Deno.serve(async (req) => {
       }
 
       const payload = ap.draft_payload_json || {};
-      const res = await fetch("https://api.instantly.ai/api/v2/emails", {
+      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`email:legacy-follow-up:${ap.id}`, category:'email', provider:'instantly', source:'followUpAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.instantly.ai/api/v2/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${instantlyKey}` },
         body: JSON.stringify({
@@ -145,7 +135,7 @@ Deno.serve(async (req) => {
       JSON.stringify(previousMessages),
     ].join("\n");
 
-    const text = await callClaude(prompt);
+    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
     const { subject, body: emailBody } = parseDraftEmail(text);
     if (!subject || !emailBody) {
       throw new Error(`Claude returned unparseable email: ${text.slice(0, 200)}`);

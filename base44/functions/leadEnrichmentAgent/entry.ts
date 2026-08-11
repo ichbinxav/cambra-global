@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "lead_enrichment";
 const TASK_TYPE = "enrich_leads";
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
       }
 
       try {
+        const costReservation = await reservePaidOperation(base44.asServiceRole,{ event_key:`enrichment:clay:${lead.id}:${new Date().toISOString().slice(0,10)}`, category:'enrichment', provider:'clay', source:'leadEnrichmentAgent', related_entity_type:'OutboundLead', related_entity_id:lead.id });
         const res = await fetch("https://api.clay.com/v1/enrich", {
           method: "POST",
           headers: {
@@ -79,6 +81,7 @@ Deno.serve(async (req) => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error?.message || res.statusText);
+        await settlePaidOperation(base44.asServiceRole,costReservation,{ ok:true, usage_json:{ lead_id:lead.id } });
 
         updates.push({
           id: lead.id,

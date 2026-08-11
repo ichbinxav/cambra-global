@@ -11,6 +11,7 @@
 //     still marking the record billed (revenue silently lost).
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { assertOperationAllowed } from "../../shared/operationalControl.ts";
 
 Deno.serve(async (req) => {
   try {
@@ -19,6 +20,9 @@ Deno.serve(async (req) => {
 
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
+    const svc = base44.asServiceRole;
+    try { await assertOperationAllowed(svc, 'billing_issuance'); }
+    catch (error:any) { return Response.json({ error:error?.message || 'emergency_control_paused:billing_issuance' }, { status:409 }); }
 
     // Previous month bucket
     const now = new Date();

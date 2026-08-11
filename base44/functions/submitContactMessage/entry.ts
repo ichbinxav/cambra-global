@@ -16,6 +16,8 @@
 // asServiceRole justification: anonymous callers can't write the admin-only
 // Lead entity; the response leaks no data (ok + lead_id only).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 
 const DEFAULT_LIMIT_PER_HOUR = 5;
@@ -177,9 +179,10 @@ Deno.serve(async (req) => {
     // Notify admin — best-effort, never blocks the response.
     const adminEmail = String(Deno.env.get('ADMIN_NOTIFICATION_EMAIL') || '').trim();
     const resendKey = Deno.env.get('RESEND_API_KEY');
-    if (adminEmail && resendKey) {
+    const emergency = await emergencyState(base44.asServiceRole);
+    if (adminEmail && resendKey && !emergency.safe_mode && !emergency.communications_paused) {
       try {
-        await fetch('https://api.resend.com/emails', {
+        await paidProviderFetch(base44.asServiceRole, { event_key:`email:contact-notification:${lead?.id || crypto.randomUUID()}`, category:'email', provider:'resend', source:'submitContactMessage', related_entity_type:'Lead', related_entity_id:lead?.id || '' }, 'https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
           body: JSON.stringify({

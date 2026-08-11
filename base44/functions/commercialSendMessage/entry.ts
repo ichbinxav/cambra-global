@@ -7,6 +7,7 @@ import { authorityForAgent } from '../../shared/agentAuthority.ts';
 import { commercialLegalAction, enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { acquisitionEngine } from '../../shared/commercialActivation.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -135,6 +136,7 @@ Deno.serve(async (req) => {
       if(!manualOverrideAudit)return Response.json({ok:false,error:'manual_override_audit_required'},{status:409});
     }
     let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_audit_id:manualOverrideAudit?.id||null};
+    const costReservation=await reservePaidOperation(svc,{event_key:`email:${idempotency}`,category:'email',provider,source:'commercialSendMessage',related_entity_type:'CommunicationThread',related_entity_id:thread.id});
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
     if (provider==='outlook' && outlook?.accessToken) {
       const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
@@ -152,6 +154,7 @@ Deno.serve(async (req) => {
       policy_version:thread.policy_version, approval_id:body?.approval_id || null, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
     });
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_counterparty', external_thread_id:externalThreadId, last_outbound_at:now, last_message_at:now, next_action_at:body?.next_action_at || null });
+    await settlePaidOperation(svc,costReservation,{ok:true,usage_json:{provider_message_id:providerMessageId,thread_id:thread.id}});
     return Response.json({ ok:true, message_id:message.id, provider_message_id:providerMessageId, provider, external_thread_id:externalThreadId });
   } catch (error) {
     console.error('commercialSendMessage failed', error);

@@ -1,22 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "x_twitter";
 const TASK_TYPE = "publish_x_post";
 const RISK_LEVEL = 2;
 const ACTION_TYPE = "publish_x_post";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 1024, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:1024, svc, eventKey, source:'xTwitterAgent' })).text; }
 
 Deno.serve(async (req) => {
   let task = null;
@@ -31,6 +23,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE ════════════════════════════════════════════════════════
     if (mode === "execute") {
+      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required" }, { status: 400 });
       const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch(() => null);
@@ -46,7 +40,7 @@ Deno.serve(async (req) => {
       if (!typefullyKey) throw new Error("TOOL_NOT_CONFIGURED: añade TYPEFULLY_API_KEY a Base44 secrets para publicar en X");
 
       const payload = ap.draft_payload_json || {};
-      const res = await fetch("https://api.typefully.com/v1/drafts/", {
+      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:typefully:publish:${ap.id}`, category:'api', provider:'typefully', source:'xTwitterAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.typefully.com/v1/drafts/", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-API-KEY": typefullyKey },
         body: JSON.stringify({ content: payload.content, share: true, "auto-retweet-enabled": false }),
@@ -84,7 +78,7 @@ Deno.serve(async (req) => {
 
     if (typefullyKey) {
       try {
-        const res = await fetch("https://api.typefully.com/v1/ai/generate", {
+        const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:typefully:generate:${task.id}`, category:'api', provider:'typefully', source:'xTwitterAgent', related_entity_type:'AgentTask', related_entity_id:task.id }, "https://api.typefully.com/v1/ai/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-API-KEY": typefullyKey },
           body: JSON.stringify({ topic, format }),
@@ -110,7 +104,7 @@ Deno.serve(async (req) => {
             "",
             `Tema: ${topic}`,
           ].join("\n");
-      content = (await callClaude(prompt)).trim();
+      content = (await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID())).trim();
     }
 
     if (!content) throw new Error("Failed to generate X content");

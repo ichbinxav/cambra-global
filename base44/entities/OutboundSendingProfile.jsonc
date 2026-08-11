@@ -16,6 +16,11 @@
     "domain": {
       "type": "string"
     },
+    "dkim_selectors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Explicit DKIM selectors that the real-runtime deliverability verifier must resolve. Missing selectors block GO."
+    },
     "from_address": {
       "type": "string"
     },

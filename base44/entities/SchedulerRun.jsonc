@@ -1,0 +1,24 @@
+{
+  "name": "SchedulerRun",
+  "type": "object",
+  "description": "Runtime heartbeat and duplicate-execution guard for GO-critical Base44 workers. A duplicate slot is surfaced and stopped before worker side effects.",
+  "properties": {
+    "run_key": { "type": "string" },
+    "worker_key": { "type": "string" },
+    "slot_started_at": { "type": "string", "format": "date-time" },
+    "cadence_seconds": { "type": "number", "minimum": 300 },
+    "automation_id": { "type": "string" },
+    "invocation_kind": { "type": "string", "enum": ["SCHEDULED", "MANUAL", "INTERNAL"] },
+    "status": { "type": "string", "enum": ["CLAIMED", "RUNNING", "COMPLETED", "FAILED", "DUPLICATE_BLOCKED"] },
+    "duplicate_of": { "type": "string" },
+    "details_json": { "type": "object" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "heartbeat_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["run_key", "worker_key", "cadence_seconds", "invocation_kind", "status", "started_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

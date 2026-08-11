@@ -1,22 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "blog";
 const TASK_TYPE = "publish_blog";
 const RISK_LEVEL = 2;
 const ACTION_TYPE = "publish_blog";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 4096, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:4096, svc, eventKey, source:'blogAgent' })).text; }
 
 Deno.serve(async (req) => {
   let task = null;
@@ -84,7 +75,7 @@ Deno.serve(async (req) => {
 
     if (surferKey) {
       try {
-        const res = await fetch("https://app.surferseo.com/api/v1/content_editors", {
+        const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:surfer:content-editor:${task.id}`, category:'api', provider:'surfer', source:'blogAgent', related_entity_type:'AgentTask', related_entity_id:task.id }, "https://app.surferseo.com/api/v1/content_editors", {
           method: "POST",
           headers: { "Content-Type": "application/json", "API-KEY": surferKey },
           body: JSON.stringify({ keyword: topic, location: "United Kingdom" }),
@@ -124,7 +115,7 @@ Deno.serve(async (req) => {
       brief ? `\nSEO brief (Surfer):\n${JSON.stringify(brief)}` : "",
     ].join("\n");
 
-    const text = await callClaude(prompt);
+    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
     const titleMatch = text.match(/TITLE:\s*(.+)/i);
     const excerptMatch = text.match(/EXCERPT:\s*(.+)/i);
     const outlineMatch = text.match(/OUTLINE:\s*([\s\S]+?)\nINTRO:/i);

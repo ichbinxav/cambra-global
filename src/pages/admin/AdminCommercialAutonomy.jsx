@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, RefreshCw, ShieldCheck, PauseCircle, PlayCircle, MessageSquare, Handshake, Mail, AlertTriangle } from "lucide-react";
+import { Bot, RefreshCw, ShieldCheck, PauseCircle, PlayCircle, MessageSquare, Handshake, Mail, AlertTriangle, Pencil, Save, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const badge = (s) => s === "active" || s === "approved" ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/30" : s === "awaiting_final_approval" || s === "awaiting_approval" ? "bg-rose-500/10 text-rose-700 border-rose-500/30" : s === "paused" || s === "suppressed" ? "bg-amber-500/10 text-amber-700 border-amber-500/30" : "bg-secondary text-foreground border-border/60";
@@ -13,6 +13,8 @@ export default function AdminCommercialAutonomy() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [draftForm, setDraftForm] = useState({ countries:"", sendingProfiles:"", daily:10, score:70 });
 
   const load = async () => {
     setLoading(true);
@@ -66,7 +68,25 @@ export default function AdminCommercialAutonomy() {
       const d = r?.data || r || {};
       if (d.ok === false) throw new Error(d.error || "Could not create policy draft.");
       await load();
+      const policy = d.policy;
+      if (policy) beginEdit(policy);
     } catch (e) { setError(e?.message || "Could not create policy draft."); }
+    finally { setBusy(null); }
+  };
+
+  const beginEdit = (policy) => {
+    setEditing(policy.id);
+    setDraftForm({ countries:(policy.countries || []).join(", "), sendingProfiles:(policy.sending_profile_keys || []).join(", "), daily:policy.daily_send_limit ?? 10, score:policy.min_lead_score ?? 70 });
+  };
+
+  const saveDraft = async (policy) => {
+    setBusy(policy.id); setError(null);
+    try {
+      const response = await base44.functions.invoke("commercialPolicyAdmin", { action:"update_draft", policy_id:policy.id, countries:draftForm.countries.split(",").map(value => value.trim()).filter(Boolean), sending_profile_keys:draftForm.sendingProfiles.split(",").map(value => value.trim()).filter(Boolean), daily_send_limit:Number(draftForm.daily), min_lead_score:Number(draftForm.score) });
+      const data = response?.data || response || {};
+      if (data.ok === false) throw Object.assign(new Error(data.error || "Draft validation failed."), { blockers:data.blockers });
+      setEditing(null); await load();
+    } catch (e) { setError([e?.message, ...(e?.blockers || [])].filter(Boolean).join(" · ")); }
     finally { setBusy(null); }
   };
 
@@ -84,7 +104,8 @@ export default function AdminCommercialAutonomy() {
 
     <section className="rounded-2xl border bg-card p-4 space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap"><div><h2 className="text-sm font-black flex items-center gap-2"><ShieldCheck size={14}/> Founder-approved policies</h2><p className="text-[11px] text-muted-foreground mt-1">No autonomous external send is allowed without an active versioned policy.</p></div><div className="flex gap-2"><button onClick={() => createDraft("merchant_acquisition")} disabled={busy} className="h-8 px-3 rounded-lg border text-xs font-bold">New acquisition policy</button><button onClick={() => createDraft("partner_acquisition")} disabled={busy} className="h-8 px-3 rounded-lg border text-xs font-bold">New partner policy</button><button onClick={() => createDraft("provider_negotiation")} disabled={busy} className="h-8 px-3 rounded-lg border text-xs font-bold">New negotiation policy</button></div></div>
-      <div className="overflow-x-auto"><table className="w-full text-xs"><thead><tr className="text-left text-muted-foreground border-b"><th className="py-2">Engine</th><th>Version</th><th>Status</th><th>Countries</th><th>Daily cap</th><th>Approved</th><th></th></tr></thead><tbody>{policies.map(p => <tr key={p.id} className="border-b last:border-0"><td className="py-2 font-bold">{p.engine}</td><td>{p.version}</td><td><span className={`border rounded-full px-2 py-0.5 text-[10px] font-bold ${badge(p.status)}`}>{p.status}</span></td><td>{(p.countries || []).join(", ") || "—"}</td><td>{p.daily_send_limit ?? "—"}</td><td>{p.approved_by || "—"}</td><td className="text-right">{p.status === "draft" && <button onClick={() => policyAction(p,"activate")} disabled={busy===p.id} className="h-7 px-2 rounded-lg bg-foreground text-background font-bold inline-flex items-center gap-1"><PlayCircle size={11}/>Activate</button>}{p.status === "active" && <button onClick={() => policyAction(p,"pause")} disabled={busy===p.id} className="h-7 px-2 rounded-lg border font-bold inline-flex items-center gap-1"><PauseCircle size={11}/>Pause</button>}</td></tr>)}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full text-xs"><thead><tr className="text-left text-muted-foreground border-b"><th className="py-2">Engine</th><th>Version</th><th>Status</th><th>Countries</th><th>Daily cap</th><th>Approved</th><th></th></tr></thead><tbody>{policies.map(p => <tr key={p.id} className="border-b last:border-0"><td className="py-2 font-bold">{p.engine}</td><td>{p.version}</td><td><span className={`border rounded-full px-2 py-0.5 text-[10px] font-bold ${badge(p.status)}`}>{p.status}</span></td><td>{(p.countries || []).join(", ") || "—"}</td><td>{p.daily_send_limit ?? "—"}</td><td>{p.approved_by || "—"}</td><td className="text-right"><div className="inline-flex gap-1">{p.status === "draft" && <button onClick={() => beginEdit(p)} disabled={busy===p.id} className="h-7 px-2 rounded-lg border font-bold inline-flex items-center gap-1"><Pencil size={11}/>Edit</button>}{p.status === "draft" && <button onClick={() => policyAction(p,"activate")} disabled={busy===p.id} className="h-7 px-2 rounded-lg bg-foreground text-background font-bold inline-flex items-center gap-1"><PlayCircle size={11}/>Activate</button>}{p.status === "active" && <button onClick={() => policyAction(p,"pause")} disabled={busy===p.id} className="h-7 px-2 rounded-lg border font-bold inline-flex items-center gap-1"><PauseCircle size={11}/>Pause</button>}</div></td></tr>)}</tbody></table></div>
+      {editing && (() => { const policy=policies.find(row => row.id === editing); return policy ? <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[.04] p-4"><div className="flex items-center justify-between"><div><p className="text-xs font-black">Configure {policy.engine} CANARY draft</p><p className="text-[10px] text-muted-foreground mt-1">Use only markets proven READY by P10/P11 and an explicitly configured sending profile. Activation remains a separate approval.</p></div><button aria-label="Close editor" onClick={() => setEditing(null)}><X size={15}/></button></div><div className="grid md:grid-cols-4 gap-3 mt-3"><label className="text-[10px] uppercase text-muted-foreground">Markets (ISO2)<input value={draftForm.countries} onChange={e => setDraftForm({...draftForm,countries:e.target.value})} placeholder="ES, DE" className="mt-1 h-9 w-full rounded-lg border bg-background px-2 text-xs text-foreground" /></label><label className="text-[10px] uppercase text-muted-foreground">Sending profiles<input value={draftForm.sendingProfiles} onChange={e => setDraftForm({...draftForm,sendingProfiles:e.target.value})} placeholder="resend:contact.cambra.global" className="mt-1 h-9 w-full rounded-lg border bg-background px-2 text-xs text-foreground" /></label><label className="text-[10px] uppercase text-muted-foreground">Daily (1–15)<input type="number" min="1" max="15" value={draftForm.daily} onChange={e => setDraftForm({...draftForm,daily:Number(e.target.value)})} className="mt-1 h-9 w-full rounded-lg border bg-background px-2 text-xs text-foreground" /></label><label className="text-[10px] uppercase text-muted-foreground">Min score (70–100)<input type="number" min="70" max="100" value={draftForm.score} onChange={e => setDraftForm({...draftForm,score:Number(e.target.value)})} className="mt-1 h-9 w-full rounded-lg border bg-background px-2 text-xs text-foreground" /></label></div><button onClick={() => saveDraft(policy)} disabled={busy===policy.id} className="mt-3 h-8 px-3 rounded-lg bg-cyan-300 text-slate-950 text-xs font-black inline-flex items-center gap-1"><Save size={11}/>Validate and save draft</button></div> : null; })()}
       {!policies.length && !loading && <p className="text-xs text-muted-foreground">No autonomy policy exists. External autonomous sends remain fail-closed.</p>}
     </section>
 

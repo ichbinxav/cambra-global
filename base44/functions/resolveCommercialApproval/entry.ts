@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { sha256 } from '../../shared/intelligenceCore.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 Deno.serve(async(req)=>{try{
  const base44=createClientFromRequest(req);const user=await base44.auth.me().catch(()=>null);if(!user||user.role!=='admin')return Response.json({ok:false,error:'forbidden'},{status:403});const body=await req.json().catch(()=>({}));const id=String(body?.approval_id||'');const decision=String(body?.decision||'');if(!id||!['approve','reject'].includes(decision))return Response.json({ok:false,error:'approval_id_and_decision_required'},{status:400});const svc=base44.asServiceRole;const ap=await svc.entities.Approval.get(id).catch(()=>null);if(!ap)return Response.json({ok:false,error:'not_found'},{status:404});if(ap.status!=='pending')return Response.json({ok:false,error:'approval_not_pending',status:ap.status},{status:409});if(ap.expires_at&&Date.parse(ap.expires_at)<=Date.now()) {await svc.entities.Approval.update(ap.id,{status:'expired'});return Response.json({ok:false,error:'approval_expired'},{status:409});}
@@ -11,6 +12,9 @@ Deno.serve(async(req)=>{try{
    await svc.entities.OperationalLog.create({event_type:'commercial_approval_rejected',message:ap.action_type,data_json:{approval_id:ap.id,related_entity_id:ap.related_entity_id,reason:body?.reason||null},actor_email:user.email,created_at:now}).catch(()=>null);
    return Response.json({ok:true,status:'rejected'});
  }
+
+ try { await assertOperationAllowed(svc, ap.action_type === 'commercial_reply_exception' ? 'communications' : 'negotiations'); }
+ catch (error:any) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused' }, { status:409 }); }
 
  if(ap.action_type==='final_provider_deal'){
    const c=await svc.entities.NegotiationCase.get(ap.related_entity_id).catch(()=>null);if(!c||c.final_approval_id!==ap.id)return Response.json({ok:false,error:'negotiation_approval_binding_mismatch'},{status:409});

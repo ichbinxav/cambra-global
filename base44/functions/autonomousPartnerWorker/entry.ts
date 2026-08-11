@@ -4,6 +4,8 @@ import { commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, san
 import { chooseVariant, personalizationFacts, compactFacts } from '../../shared/outreachExperiment.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { sendingProfileIsValid } from '../../shared/commercialActivation.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 const FREE=new Set(['gmail.com','googlemail.com','hotmail.com','outlook.com','yahoo.com','icloud.com','proton.me','protonmail.com']);
 const TYPE_RULES=[
@@ -20,13 +22,14 @@ function score(p:any){let n=25;const why:any={base:25};const text=`${p.organizat
   const domain=String(p.organization_domain||normalizeEmail(p.contact_email).split('@')[1]||'').toLowerCase();if(domain&&!FREE.has(domain)){n+=10;why.business_domain=10}
   return {score:Math.min(100,n),why};
 }
-async function apollo(key:string,country:string,titles:string[],perPage:number){
+async function apollo(svc:any,key:string,country:string,titles:string[],perPage:number){
  const keywords='accounting OR ecommerce agency OR fractional CFO OR boutique consultancy OR expert comptable OR asesoría';
+ const reservation=await reservePaidOperation(svc,{event_key:`api:apollo:partners:${country}:${new Date().toISOString().slice(0,13)}`,category:'api',provider:'apollo',source:'autonomousPartnerWorker'});
  const r=await fetch('https://api.apollo.io/api/v1/mixed_people/api_search',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache','x-api-key':key},body:JSON.stringify({person_titles:titles,person_locations:[country],q_keywords:keywords,page:1,per_page:perPage})});
- const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`apollo_partner_search_failed:${r.status}`);return Array.isArray(d?.people)?d.people:[];
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`apollo_partner_search_failed:${r.status}`);await settlePaidOperation(svc,reservation,{ok:true,usage_json:{people_returned:Array.isArray(d?.people)?d.people.length:0}});return Array.isArray(d?.people)?d.people:[];
 }
 
-async function claudeDraft(key:string, prospect:any, language:string, variant:any){
+async function claudeDraft(svc:any, prospect:any, language:string, variant:any, eventKey:string){
  const prompt=[
   'Write the first B2B partnership email from Xavi M. Contero, Founder of CAMBRA.',
   'Use ONLY the supplied prospect facts. Do not invent clients, referrals, shared contacts, revenue, merchant count, savings, partnerships, credentials or prior knowledge.',
@@ -39,8 +42,7 @@ async function claudeDraft(key:string, prospect:any, language:string, variant:an
   'Return ONLY JSON {"subject":"","body":""}.',
   'PROSPECT:', JSON.stringify(prospect)
  ].join('\n');
- const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',max_tokens:850,messages:[{role:'user',content:prompt}]})});
- const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`anthropic_partner_draft_failed:${r.status}`);const t=String(d?.content?.[0]?.text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(t)}catch{const m=t.match(/\{[\s\S]*\}/);if(m)try{return JSON.parse(m[0])}catch{}return null}
+ const out=await callCambraClaude(prompt,{tier:'standard',maxTokens:850,svc,eventKey,source:'autonomousPartnerWorker'});const t=String(out.text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(t)}catch{const m=t.match(/\{[\s\S]*\}/);if(m)try{return JSON.parse(m[0])}catch{}return null}
 }
 
 Deno.serve(async(req)=>{let task:any=null;try{
@@ -53,13 +55,12 @@ Deno.serve(async(req)=>{let task:any=null;try{
  const day=new Date();day.setUTCHours(0,0,0,0);const sentToday=await svc.entities.CommunicationMessage.filter({direction:'outbound',policy_key:policy.policy_key,sent_at:{$gte:day.toISOString()}},'-sent_at',Math.min(Number(policy.daily_send_limit||20)+5,100)).catch(()=>[]);let remaining=Math.max(0,Number(policy.daily_send_limit||20)-sentToday.length);if(!remaining)return Response.json({ok:true,automatic:true,contacted:0,reason:'daily_limit'});
  task=await svc.entities.AgentTask.create({brand_id:'_platform',agent_name:'autonomous_partner_worker',task_type:'partner_acquisition_sweep',status:'running',requires_approval:false,risk_level:3,input_summary:'Discover, score and contact distribution partners',started_at:now.toISOString()});
  const apolloKey=Deno.env.get('APOLLO_API_KEY');if(!apolloKey)throw new Error('apollo_not_configured');
- const anthropicKey=Deno.env.get('ANTHROPIC_API_KEY');if(!anthropicKey)throw new Error('anthropic_not_configured');
  const expStats=await svc.entities.OutreachExperimentStats.filter({engine:'partner_acquisition'},'-updated_at',50).catch(()=>[]);
  const priorPartners=await svc.entities.PartnerProspect.filter({stage:{$in:['contacted','replied','meeting','qualified','won']}},'-created_date',1000).catch(()=>[]);const contactedOrgDomains=new Set(priorPartners.map((p:any)=>String(p.organization_domain||'').replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].toLowerCase()).filter(Boolean));const seenOrgDomains=new Set<string>();
  const icp=policy.icp_json||{};const titles=Array.isArray(icp.titles)&&icp.titles.length?icp.titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'];const per=Math.max(1,Math.min(Number(icp.per_run||20),50));
  const countries=Array.isArray(policy.countries)?policy.countries:[];
  let discovered=0,created=0,contacted=0,skipped=0;const failures:any[]=[];
- for(const countryCode of countries){const market=canonicalMarket(countryCode);if(!market){failures.push({country:String(countryCode),error:'market_not_canonical'});continue}const country=market.canonical_name;const people=await apollo(apolloKey,country,titles,per).catch((e:any)=>{failures.push({country,error:String(e?.message||e)});return[]});discovered+=people.length;
+ for(const countryCode of countries){const market=canonicalMarket(countryCode);if(!market){failures.push({country:String(countryCode),error:'market_not_canonical'});continue}const country=market.canonical_name;const people=await apollo(svc,apolloKey,country,titles,per).catch((e:any)=>{failures.push({country,error:String(e?.message||e)});return[]});discovered+=people.length;
   for(const person of people){if(contacted>=remaining)break;const email=normalizeEmail(person?.email);if(!email){skipped++;continue}const org=person?.organization||{};const orgName=String(org.name||'').trim();if(!orgName){skipped++;continue}const domain=String(org.primary_domain||org.website_url||email.split('@')[1]||'').replace(/^https?:\/\//,'').replace(/\/.*$/,'').toLowerCase();if(!domain||seenOrgDomains.has(domain)||contactedOrgDomains.has(domain)){skipped++;continue}seenOrgDomains.add(domain);
    const suppressed=await svc.entities.ContactSuppression.filter({email,active:true},'-created_date',1).catch(()=>[]);if(suppressed.length){skipped++;continue}
    const existing=await svc.entities.PartnerProspect.filter({contact_email:email},'-created_date',5).catch(()=>[]);let prospect=existing[0]||null;
@@ -67,7 +68,7 @@ Deno.serve(async(req)=>{let task:any=null;try{
    if(Number(prospect.score||0)<Number(policy.min_lead_score||65)||['contacted','replied','meeting','qualified','won','lost','suppressed'].includes(String(prospect.stage))){skipped++;continue}
    const threads=await svc.entities.CommunicationThread.filter({thread_key:`partner:${prospect.id}`},'-created_date',2).catch(()=>[]);if(threads.length){skipped++;continue}
    const language=market.iso2==='FR'?'fr':market.iso2==='ES'?'es':'en';const facts=compactFacts(personalizationFacts(prospect,'partner'));const variant=chooseVariant('partner_acquisition',String(prospect.id),expStats);const thread=await svc.entities.CommunicationThread.create({thread_key:`partner:${prospect.id}`,engine:'partner_acquisition',related_entity_type:'PartnerProspect',related_entity_id:prospect.id,counterparty_email:email,counterparty_name:prospect.contact_name||'',language,status:'open',policy_key:policy.policy_key,policy_version:policy.version,automation_paused:false,summary:`Distribution partner prospect: ${orgName}`,sending_profile_key:sendingProfile.profile_key,market_jurisdiction:market.iso2,experiment_key:'partner-outreach-v1',experiment_variant:variant.key,personalization_json:{facts,variant_mode:variant.mode}});
-   const draft=await claudeDraft(anthropicKey,facts,language,variant).catch((e:any)=>{failures.push({prospect_id:prospect.id,error:String(e?.message||e)});return null});
+   const draft=await claudeDraft(svc,facts,language,variant,`partner:${prospect.id}:${policy.version}`).catch((e:any)=>{failures.push({prospect_id:prospect.id,error:String(e?.message||e)});return null});
    if(!draft?.subject||!draft?.body){skipped++;continue}
    const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const send=await svc.functions.invoke('commercialSendMessage',{thread_id:thread.id,action:'partner_outreach',classification:'partner_outreach',subject:sanitizeExternalText(draft.subject,300),text:sanitizeExternalText(draft.body,5000),agent_name:'autonomous_partner_worker',idempotency_key:`partner-initial:${prospect.id}:${policy.version}`,sending_profile_key:sendingProfile.profile_key,next_action_at:new Date(Date.now()+72*3600000).toISOString(),internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));const sd=send?.data||send||{};if(sd.ok===false){failures.push({prospect_id:prospect.id,error:sd.error});continue}contactedOrgDomains.add(domain);await svc.entities.PartnerProspect.update(prospect.id,{stage:'contacted',last_contacted_at:new Date().toISOString(),next_action_at:new Date(Date.now()+72*3600000).toISOString()});contacted++;
   }

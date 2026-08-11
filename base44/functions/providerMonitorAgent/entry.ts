@@ -1,14 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "provider_monitor";
 const TASK_TYPE = "provider_monitor";
 const RISK_LEVEL = 1;
 
-async function callPerplexity(prompt) {
+async function callPerplexity(svc, prompt, eventKey) {
   const key = Deno.env.get("PERPLEXITY_API_KEY");
   if (!key) return null;
+  const reservation = await reservePaidOperation(svc,{event_key:`api:perplexity:${eventKey}`,category:'api',provider:'perplexity',source:'providerMonitorAgent'});
   const res = await fetch("https://api.perplexity.ai/v1/sonar", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
@@ -20,10 +22,11 @@ async function callPerplexity(prompt) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`Perplexity API error: ${data?.error?.message || res.statusText}`);
+  await settlePaidOperation(svc,reservation,{ok:true,usage_json:{model:'sonar-pro'}});
   return { content: data?.choices?.[0]?.message?.content || "", citations: data?.citations || [] };
 }
 
-async function callClaude(prompt) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000}); return out.text; }
+async function callClaude(svc, prompt, eventKey) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000,svc,eventKey,source:'providerMonitorAgent'}); return out.text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -103,13 +106,14 @@ Deno.serve(async (req) => {
     let citations = [];
     let source = "perplexity";
 
-    const pplx = await callPerplexity(scanPrompt).catch((e) => { throw e; });
+    const pplx = await callPerplexity(base44.asServiceRole,scanPrompt,`monitor:${new Date().toISOString().slice(0,10)}`).catch((e) => { throw e; });
     if (pplx) {
       rawText = pplx.content;
       citations = pplx.citations;
     } else {
-      rawText = await callClaude(
-        scanPrompt + "\n\n⚠️ Sin acceso a internet. Devuelve {\"changes\":[]} salvo que tengas conocimiento robusto y datado de un cambio. No inventes."
+      rawText = await callClaude(base44.asServiceRole,
+        scanPrompt + "\n\n⚠️ Sin acceso a internet. Devuelve {\"changes\":[]} salvo que tengas conocimiento robusto y datado de un cambio. No inventes.",
+        `fallback:${new Date().toISOString().slice(0,10)}`
       );
       source = "claude_fallback";
     }

@@ -1,27 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "outreach";
 const TASK_TYPE = "send_outreach_email";
 const RISK_LEVEL = 3;
 const ACTION_TYPE = "send_outreach_email";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 2048,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2048, svc, eventKey, source:'outreachAgent' })).text; }
 
 function parseDraftEmail(text) {
   const subjectMatch = text.match(/Subject:\s*(.+)/i);
@@ -83,7 +70,7 @@ Deno.serve(async (req) => {
       const payload = ap.draft_payload_json || {};
       const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
       const replyTo = Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "hello@cambra.global";
-      const res = await fetch("https://api.resend.com/emails", {
+      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`email:legacy-outreach:${ap.id}`, category:'email', provider:'resend', source:'outreachAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
         body: JSON.stringify({
@@ -155,7 +142,7 @@ Deno.serve(async (req) => {
       }),
     ].join("\n");
 
-    const text = await callClaude(prompt);
+    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
     const { subject, body: emailBody } = parseDraftEmail(text);
 
     if (!subject || !emailBody) {

@@ -1,23 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "newsletter";
 const TASK_TYPE = "send_newsletter";
 const RISK_LEVEL = 2;
 const ACTION_TYPE = "send_newsletter";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 4096, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:4096, svc, eventKey, source:'newsletterAgent' })).text; }
 
 Deno.serve(async (req) => {
   let task = null;
@@ -55,7 +46,7 @@ Deno.serve(async (req) => {
       for (const sub of subscribers) {
         if (!sub.email) continue;
         try {
-          await base44.asServiceRole.integrations.Core.SendEmail({
+          await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:newsletter:${ap.id}:${sub.id || sub.email}`, source:'newsletterAgent', related_entity_type:'Approval', related_entity_id:ap.id }, {
             from_name: "CAMBRA",
             to: sub.email,
             subject: payload.subject,
@@ -110,7 +101,7 @@ Deno.serve(async (req) => {
       `Tema del mes: ${theme}`,
     ].join("\n");
 
-    const text = await callClaude(prompt);
+    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
     const subjectMatch = text.match(/SUBJECT:\s*(.+)/i);
     const introMatch = text.match(/INTRO:\s*([\s\S]+?)\nSECTION_1_TITLE:/i);
     const s1tMatch = text.match(/SECTION_1_TITLE:\s*(.+)/i);

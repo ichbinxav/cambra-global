@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { welcomeEmail } from '../../shared/emails/welcome.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 
 // Email 4: Welcome to CAMBRA — triggered when a Brand entity is created (onboarding complete)
 //
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
   if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:true, skipped:'emergency_control_paused:communications' });
   const mail = welcomeEmail(brand.locale, { brandName, appDomain });
 
-  await base44.asServiceRole.integrations.Core.SendEmail({
+  await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:brand-welcome:${brand.id}`, source:'onBrandCreated', related_entity_type:'Brand', related_entity_id:brand.id }, {
     from_name: "CAMBRA",
     to: userEmail,
     subject: mail.subject,

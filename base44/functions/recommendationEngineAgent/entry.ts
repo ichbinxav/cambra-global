@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 /**
  * Recommendation Engine Agent — Brain B3
@@ -159,22 +160,7 @@ function defaultAction(vertical, toolName) {
   return `Review ${toolName} contract`;
 }
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("ANTHROPIC_API_KEY not set");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type":"application/json", "x-api-key": key, "anthropic-version":"2023-06-01" },
-    body: JSON.stringify({
-      model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5',
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2000, svc, eventKey, source:'recommendationEngineAgent' })).text; }
 function safeParseJSON(t) {
   if (!t) return null;
   const c = t.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
@@ -328,7 +314,7 @@ Deno.serve(async (req) => {
         })), null, 2),
       ].join("\n");
       try {
-        const text = await callClaude(prompt);
+        const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
         const parsed = safeParseJSON(text);
         const allowed = new Set(opportunities.map(o => o.current_tool));
         const rewrites = parsed && Array.isArray(parsed.rewrites)

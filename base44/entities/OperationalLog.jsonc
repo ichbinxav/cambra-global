@@ -13,21 +13,7 @@
     },
     "event_type": {
       "type": "string",
-      "enum": [
-        "activation_created",
-        "baseline_frozen",
-        "mandate_signed",
-        "mandate_revoked",
-        "tasks_generated",
-        "task_updated",
-        "status_changed",
-        "go_live",
-        "override_applied",
-        "quarantine_probe",
-        "intelligence_override",
-        "intelligence_event"
-      ],
-      "description": "PURGE-2 (2026-07-24): 'quarantine_probe' added \u2014 written by the invocation probe injected at the top of every [QUARANTINE 2026-08-15] function. A row here means someone actually invoked a function the static census classified as orphan; review these rows before the second purge sweep."
+      "description": "Open event namespace for immutable operational audit. Producers use documented snake_case names; a stale enum must never cause silent audit loss."
     },
     "message": {
       "type": "string"

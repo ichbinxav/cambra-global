@@ -1,13 +1,15 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
 
 const AGENT_NAME = "provider_research";
 const TASK_TYPE = "provider_research";
 const RISK_LEVEL = 1;
 
-async function callPerplexity(prompt) {
+async function callPerplexity(svc, prompt, eventKey) {
   const key = Deno.env.get("PERPLEXITY_API_KEY");
   if (!key) return null;
+  const reservation = await reservePaidOperation(svc,{event_key:`api:perplexity:${eventKey}`,category:'api',provider:'perplexity',source:'providerResearchAgent'});
   const res = await fetch("https://api.perplexity.ai/v1/sonar", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
@@ -19,10 +21,11 @@ async function callPerplexity(prompt) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(`Perplexity API error: ${data?.error?.message || res.statusText}`);
+  await settlePaidOperation(svc,reservation,{ok:true,usage_json:{model:'sonar-pro'}});
   return { content: data?.choices?.[0]?.message?.content || "", citations: data?.citations || [] };
 }
 
-async function callClaude(prompt) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000}); return out.text; }
+async function callClaude(svc, prompt, eventKey) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000,svc,eventKey,source:'providerResearchAgent'}); return out.text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -76,13 +79,14 @@ Deno.serve(async (req) => {
     let citations = [];
     let researchSource = "perplexity";
 
-    const pplx = await callPerplexity(researchPrompt).catch((e) => { throw e; });
+    const pplx = await callPerplexity(base44.asServiceRole,researchPrompt,`research:${providerName}:${country}`).catch((e) => { throw e; });
     if (pplx) {
       rawResearch = pplx.content;
       citations = pplx.citations;
     } else {
-      rawResearch = await callClaude(
-        researchPrompt + "\n\n⚠️ NOTA: No tienes acceso a internet. Basa la respuesta en conocimiento general del proveedor hasta tu fecha de corte. No inventes pricing específico ni fechas. Marca claramente qué es conocimiento general vs lo que necesita verificación."
+      rawResearch = await callClaude(base44.asServiceRole,
+        researchPrompt + "\n\n⚠️ NOTA: No tienes acceso a internet. Basa la respuesta en conocimiento general del proveedor hasta tu fecha de corte. No inventes pricing específico ni fechas. Marca claramente qué es conocimiento general vs lo que necesita verificación.",
+        `research:${providerName}:${country}`
       );
       researchSource = "claude_fallback";
     }
@@ -102,7 +106,7 @@ Deno.serve(async (req) => {
       rawResearch,
     ].join("\n");
 
-    const structuredText = await callClaude(structurePrompt);
+    const structuredText = await callClaude(base44.asServiceRole,structurePrompt,`structure:${providerName}:${country}`);
     const structured = safeParseJSON(structuredText);
     if (!structured) throw new Error(`Failed to structure research: ${structuredText.slice(0, 200)}`);
 

@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { callRequestEmail } from '../../shared/emails/callRequest.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 
 /**
  * submitCallRequest
@@ -136,7 +137,7 @@ Deno.serve(async (req) => {
       const emergency = await emergencyState(base44.asServiceRole);
       if (!emergency.safe_mode && !emergency.communications_paused) {
       const mail = callRequestEmail(locale, { name });
-      await base44.asServiceRole.integrations.Core.SendEmail({
+      await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:call-request-confirmation:${lead.id}`, source:'submitCallRequest', related_entity_type:'Lead', related_entity_id:lead.id }, {
         from_name: "CAMBRA",
         to: email,
         subject: mail.subject,
@@ -164,7 +165,7 @@ Deno.serve(async (req) => {
           ``,
           `Lead ID: ${lead.id}`,
         ].filter(Boolean).join("\n");
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:call-request-admin:${lead.id}`, source:'submitCallRequest', related_entity_type:'Lead', related_entity_id:lead.id }, {
           from_name: "CAMBRA",
           to: adminEmail,
           subject: `Call request: ${email}${gmvFmt ? ` · €${gmvFmt}/mo` : ""}`,

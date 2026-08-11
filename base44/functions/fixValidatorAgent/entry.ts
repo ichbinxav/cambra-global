@@ -1,22 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 const AGENT_NAME = "fix_validator";
 const TASK_TYPE = "fix_validation";
 const RISK_LEVEL = 1;
 const ENG_DISCLAIMER = "⚠️ Validación asistida por IA. Revísala antes de cerrar el ticket. El validador NO confía en lo que dice Base44 — re-escanea y revisa la respuesta.";
 
-async function callClaude(prompt) {
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!key) throw new Error("TOOL_NOT_CONFIGURED: añade ANTHROPIC_API_KEY a Base44 secrets para activar este agente");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: Deno.env.get('ANTHROPIC_STANDARD_MODEL')||'claude-sonnet-5', max_tokens: 2500, messages: [{ role: "user", content: prompt }] }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Claude API error: ${data?.error?.message || res.statusText}`);
-  return data?.content?.[0]?.text || "";
-}
+async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:2500, svc, eventKey, source:'fixValidatorAgent' })).text; }
 
 function safeParseJSON(text) {
   if (!text) return null;
@@ -249,7 +239,7 @@ Deno.serve(async (req) => {
         base44Response.slice(0, 6000),
       ].join("\n");
 
-      const text = await callClaude(prompt);
+      const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
       const parsed = safeParseJSON(text);
       if (!parsed) throw new Error(`Failed to parse review verdict: ${text.slice(0, 200)}`);
 

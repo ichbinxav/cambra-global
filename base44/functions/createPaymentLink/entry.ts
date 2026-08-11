@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import Stripe from 'npm:stripe@14.25.0';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -8,6 +9,8 @@ Deno.serve(async (req) => {
     if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
+    try { await assertOperationAllowed(base44.asServiceRole, 'billing_issuance'); }
+    catch (error:any) { return Response.json({ error:error?.message || 'emergency_control_paused:billing_issuance' }, { status:409 }); }
 
     const body = await req.json();
     const { invoice_id, success_url = '/', cancel_url = '/' } = body || {};

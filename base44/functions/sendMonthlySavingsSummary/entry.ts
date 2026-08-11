@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 
 // Sends the monthly savings summary email to a user (or to all opted-in users when called from scheduler).
 // Payload:
@@ -112,7 +113,7 @@ Deno.serve(async (req) => {
           appDomain: Deno.env.get('APP_DOMAIN') || 'cambra.global',
         });
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
+        await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:monthly-savings:${u.id || u.email}:${new Date().toISOString().slice(0,7)}`, source:'sendMonthlySavingsSummary', related_entity_type:'User', related_entity_id:u.id || u.email }, {
           from_name: 'CAMBRA',
           to: u.email,
           subject: mail.subject,

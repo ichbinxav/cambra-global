@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -49,6 +49,19 @@ const NAV = [
   { path: "/admin/copilot", label: "Founder Copilot", icon: Sparkles },
 ];
 
+const GROUP_ORDER = ["Overview", "Command", "Inbox", "Intelligence", "Commercial", "Operations", "Company", "System"];
+function navGroup(path) {
+  if (["/admin", "/admin/overview"].includes(path)) return "Overview";
+  if (["/admin/founder-control", "/admin/chat", "/admin/copilot"].includes(path)) return "Command";
+  if (["/admin/inbox", "/admin/approvals"].includes(path)) return "Inbox";
+  if (["/admin/intelligence", "/admin/markets", "/admin/growth", "/admin/routing-intelligence", "/admin/benchmarks", "/admin/recommendations"].includes(path)) return "Intelligence";
+  if (["/admin/discovery", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
+  if (["/admin/agents", "/admin/automations", "/admin/developer", "/admin/maintenance", "/admin/evidence-review", "/admin/ecl-operations", "/admin/activity"].includes(path)) return "Operations";
+  if (["/admin/users", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
+  return "System";
+}
+const GROUPED_NAV = [...NAV].sort((a, b) => GROUP_ORDER.indexOf(navGroup(a.path)) - GROUP_ORDER.indexOf(navGroup(b.path)) || NAV.indexOf(a) - NAV.indexOf(b));
+
 function documentationTopic(path) {
   if (path.startsWith('/admin/discovery') || path.startsWith('/admin/commercial-autonomy') || path.startsWith('/admin/pipeline')) return 'acquisition';
   if (path.startsWith('/admin/markets') || path.startsWith('/admin/growth')) return 'markets';
@@ -77,6 +90,21 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [quickCommand, setQuickCommand] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    const query = quickCommand.trim();
+    if (query.length < 2) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    const timer = setTimeout(() => {
+      base44.functions.invoke("adminGlobalSearch", { query }).then(response => {
+        const data = response?.data || response || {};
+        setSearchResults(data.results || []);
+      }).catch(() => setSearchResults([])).finally(() => setSearching(false));
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [quickCommand]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -173,9 +201,13 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(item => {
+          {GROUPED_NAV.map((item, index) => {
             const active = isActive(item.path, item.exact);
+            const group = navGroup(item.path);
+            const startsGroup = index === 0 || navGroup(GROUPED_NAV[index - 1].path) !== group;
             return (
+              <Fragment key={item.path}>
+              {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{group}</p>}
               <Link
                 key={item.path}
                 to={item.path}
@@ -210,6 +242,7 @@ export default function AdminLayout() {
                   </span>
                 )}
               </Link>
+              </Fragment>
             );
           })}
         </nav>
@@ -257,10 +290,11 @@ export default function AdminLayout() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2 min-w-0">
-            <form onSubmit={(e)=>{e.preventDefault();const q=quickCommand.trim();if(q){navigate(`/admin/chat?ask=${encodeURIComponent(q)}`);setQuickCommand("")}}} className="hidden md:flex items-center h-8 min-w-[220px] lg:min-w-[340px] rounded-lg border border-border/60 bg-background/50 px-2">
+            <form onSubmit={(e)=>{e.preventDefault();const q=quickCommand.trim();if(searchResults[0]){navigate(searchResults[0].route);setQuickCommand("");setSearchResults([])}else if(q){navigate(`/admin/chat?ask=${encodeURIComponent(q)}`);setQuickCommand("")}}} className="relative hidden md:flex items-center h-8 min-w-[220px] lg:min-w-[340px] rounded-lg border border-border/60 bg-background/50 px-2">
               <Search size={12} className="text-muted-foreground shrink-0"/>
               <input value={quickCommand} onChange={e=>setQuickCommand(e.target.value)} placeholder="Search or ask CAMBRA…" className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"/>
               <span className="text-[9px] text-muted-foreground">↵</span>
+              {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-muted-foreground">Searching…</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-muted-foreground truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-muted-foreground">No exact matches. Press Enter to ask CAMBRA.</p>}</div>}
             </form>
             <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label="Ask CAMBRA"><MessageSquare size={13}/></button>
             <Link to={`/admin/documentation?topic=${documentationTopic(location.pathname)}`} className="hidden lg:inline-flex h-8 px-3 rounded-lg border border-border/60 text-[11px] font-bold items-center gap-1.5 hover:bg-secondary"><HelpCircle size={12}/>How does this work?</Link>

@@ -9,13 +9,15 @@ Outbound is off by default. Passing local tests, creating a policy or running th
 3. **Resolve review queue.** A thread with ambiguous or absent evidence stays paused with `sending_profile_resolution_status: REVIEW_REQUIRED`. Assign a verified profile through an audited admin correction and re-run the migration. Never infer one from engine, country or a convenient default.
 4. **Create the production acquisition policy.** Initial mode is `CANARY`, `daily_send_limit` is 10 (permitted range 1–15), `min_lead_score` is at least 70, and `sending_profile_keys` is explicit.
 5. **Choose markets from evidence.** `countries` contains only markets whose exact acquisition action is READY under current P10 and P11 evidence. There is no France-first default and registry membership is not clearance.
-6. **Verify sending profiles.** Every allowlisted profile exists, uses Outlook or Resend, is `warming`/`active`, has an explicit domain and has a finite positive central daily cap.
-7. **Verify credentials.** Resend scope requires `RESEND_API_KEY`; Outlook scope requires a live Outlook connector token. `all` requires both.
-8. **Run the dry-run preflight.** Invoke `commercialGoLiveReadiness` for the active policy and exact provider scope while `OutboundControl.acquisition_enabled` is false. It recomputes P10/P11 per market and emits immutable decision evidence.
-9. **Review PASS evidence.** PASS requires no eligible automatic follow-up without a valid profile, no truncated legacy scan, no invalid policy/profile/credentials and every selected market allowed by P10/P11. `REVIEW_REQUIRED` threads remain visible and paused.
-10. **Start the CANARY.** Invoke `outboundControlAdmin` with the same provider scope, `confirmation: START_CANARY_OUTBOUND` and the unexpired `preflight_hash`. The function recomputes readiness and rejects any state change or hash mismatch.
-11. **Observe at 10–15/day.** Review delivery, bounce, complaint, reply, suppression, legal and incident evidence before changing policy. Missing or invalid `daily_send_limit` produces zero automatic sends.
-12. **Scale through a new approved policy.** Do not mutate evidence or bypass CANARY gates. Scaling requires a separately reviewed policy and real cohort evidence.
+6. **Configure sending profiles paused.** Every allowlisted profile uses Outlook or Resend, has an exact sender/domain, explicit DKIM selectors and a 1–15/day canary cap. Admin deliberately saves it `paused`.
+7. **Verify DNS and credentials.** Run the real-runtime verifier. Every configured profile must pass SPF, every explicit DKIM selector and DMARC; Resend also requires `RESEND_API_KEY` plus `RESEND_WEBHOOK_SECRET`, and Outlook requires a live connector token.
+8. **Enable warm-up explicitly.** Use `enable_sending_profile_warmup` with the exact profile key, final SHA and confirmation `ENABLE_SENDING_PROFILE_WARMUP`. Fresh matching deliverability evidence is mandatory. This does not start outbound.
+9. **Close all GO hard gates.** Founder Control must show 15/15 using acceptable, fresh real/external/operator evidence on the deployed final SHA where required.
+10. **Run the dry-run preflight.** Invoke `commercialGoLiveReadiness` for the active policy and exact provider scope while `OutboundControl.acquisition_enabled` is false. It recomputes P10/P11 per market and emits immutable decision evidence.
+11. **Review PASS evidence.** PASS requires no eligible automatic follow-up without a valid profile, no truncated legacy scan, no invalid policy/profile/credentials and every selected market allowed by P10/P11. `REVIEW_REQUIRED` threads remain visible and paused.
+12. **Start the CANARY.** Invoke `outboundControlAdmin` with the same provider scope, `confirmation: START_CANARY_OUTBOUND` and the unexpired `preflight_hash`. The function recomputes readiness and rejects any state change or hash mismatch.
+13. **Observe at 10–15/day.** Review delivery, bounce, complaint, reply, suppression, legal, cost and incident evidence before changing policy. Missing or invalid `daily_send_limit` produces zero automatic sends.
+14. **Scale through a new approved policy.** Do not mutate evidence or bypass CANARY gates. Scaling requires a separately reviewed policy and real cohort evidence.
 
 ## Final invariant
 

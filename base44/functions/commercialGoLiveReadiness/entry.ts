@@ -8,7 +8,7 @@ Deno.serve(async(req)=>{
     if(!user||user.role!=='admin')return Response.json({ok:false,error:'forbidden'},{status:403});
     const body=await req.json().catch(()=>({}));
     const svc=base44.asServiceRole;
-    const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_id:body?.policy_id,policy_ids:body?.policy_ids,provider_scope:body?.provider_scope});
+    const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_id:body?.policy_id,policy_ids:body?.policy_ids,provider_scope:body?.provider_scope,final_sha:body?.final_sha});
     const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);
     const control=controls[0]||null;
     if(!control)return Response.json({ok:false,error:'outbound_control_missing',readiness},{status:409});

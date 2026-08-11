@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { Webhook } from 'npm:svix';
 import { classifyHardStop, commercialTimezone, computeInboundReplySchedule, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 
@@ -44,6 +45,7 @@ Deno.serve(async (req) => {
         const threads = await svc.entities.CommunicationThread.filter({ counterparty_email:email }, '-last_message_at', 50).catch(()=>[]);
         for (const t of threads) await svc.entities.CommunicationThread.update(t.id, { status:'suppressed', automation_paused:true, pause_reason:reason }).catch(()=>null);
       }
+      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:type, data_json:{ provider:'resend', lifecycle_id, event_type:type, suppression_reason:reason, recipient_count:new Set(emails).size, signature_verified:true }, actor_email:'resend_webhook', created_at:new Date().toISOString() }).catch(() => null);
       return Response.json({ ok:true, handled:type, suppressed:emails.length });
     }
 
@@ -55,7 +57,7 @@ Deno.serve(async (req) => {
 
     const resendKey = Deno.env.get('RESEND_API_KEY');
     if (!resendKey) return Response.json({ ok:false, error:'resend_api_not_configured' }, { status:503 });
-    const emailRes = await fetch(`https://api.resend.com/emails/receiving/${encodeURIComponent(emailId)}`, { headers:{ Authorization:`Bearer ${resendKey}` } });
+    const emailRes = await paidProviderFetch(svc, { event_key:`api:resend-receiving:${emailId}`, category:'api', provider:'resend', source:'resendInboundWebhook', related_entity_type:'CommunicationMessage', related_entity_id:emailId }, `https://api.resend.com/emails/receiving/${encodeURIComponent(emailId)}`, { headers:{ Authorization:`Bearer ${resendKey}` } });
     const email = await emailRes.json().catch(()=>({}));
     if (!emailRes.ok) throw new Error(`resend_receive_fetch_failed:${emailRes.status}`);
 
@@ -86,11 +88,13 @@ Deno.serve(async (req) => {
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_cambra', last_inbound_at:receivedAt, last_message_at:receivedAt, next_action_at:timing.scheduled_send_at, counterparty_email:from || thread.counterparty_email });
 
     if (hardStop === 'unsubscribe' || hardStop === 'complaint') {
+      const suppressionReason = hardStop === 'unsubscribe' ? 'opt_out' : 'complaint';
       if (from) {
         const rows = await svc.entities.ContactSuppression.filter({ email:from, active:true }, '-created_date', 1).catch(()=>[]);
-        if (!rows.length) await svc.entities.ContactSuppression.create({ email:from, reason:hardStop === 'unsubscribe' ? 'opt_out':'complaint', source:'inbound_email', source_message_id:msg.id, active:true, suppressed_at:now });
+        if (!rows.length) await svc.entities.ContactSuppression.create({ email:from, reason:suppressionReason, source:'inbound_email', source_message_id:msg.id, active:true, suppressed_at:now });
       }
       await svc.entities.CommunicationThread.update(thread.id, { status:'suppressed', automation_paused:true, pause_reason:hardStop });
+      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:hardStop, data_json:{ provider:'resend', event_type:'email.received', suppression_reason:suppressionReason, thread_id:thread.id, message_id:msg.id, signature_verified:true }, actor_email:'resend_webhook', created_at:now }).catch(() => null);
       return Response.json({ ok:true, routed:true, hard_stop:hardStop });
     }
 

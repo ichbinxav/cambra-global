@@ -19,6 +19,7 @@ import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { recoverContractEmail } from '../../shared/emails/recoverContract.ts';
 import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 import {
   MAX_ATTEMPTS,
   PERMANENT_EMAIL_ERRORS,
@@ -113,7 +114,7 @@ export default async function (req: Request): Promise<Response> {
       durationMonths: econ.feeDurationMonths,
     });
 
-    const sent = await svc.integrations.Core.SendEmail({
+    const sent = await sendCostGovernedEmail(svc, { event_key:`email:recover-contract:${mandate.id}:${mandate.contract_version || 'current'}`, source:'sendRecoverContractEmail', related_entity_type:'Mandate', related_entity_id:mandate.id }, {
       from_name: 'CAMBRA',
       to: recipient,
       subject: mail.subject,

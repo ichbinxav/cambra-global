@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 
 const AGENT_NAME = "meeting";
 const TASK_TYPE = "schedule_meeting";
@@ -19,6 +21,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE MODE — strict Approval gate ════════════════════════════
     if (mode === "execute") {
+      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
@@ -49,7 +53,7 @@ Deno.serve(async (req) => {
       const selectedSlot = body?.selected_slot || payload?.slots?.[0];
       if (!selectedSlot) throw new Error("No slot selected for booking");
 
-      const res = await fetch("https://api.cal.com/v2/bookings", {
+      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:cal:booking:${ap.id}`, category:'api', provider:'cal.com', source:'meetingAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.cal.com/v2/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +119,7 @@ Deno.serve(async (req) => {
       try {
         const from = new Date();
         const to = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        const res = await fetch(
+        const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:cal:slots:${task.id}`, category:'api', provider:'cal.com', source:'meetingAgent', related_entity_type:'AgentTask', related_entity_id:task.id },
           `https://api.cal.com/v2/slots?eventTypeId=${body.event_type_id}&startTime=${from.toISOString()}&endTime=${to.toISOString()}`,
           { headers: { "Authorization": `Bearer ${calKey}`, "cal-api-version": "2024-09-04" } }
         );

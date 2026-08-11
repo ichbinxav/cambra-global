@@ -1,0 +1,20 @@
+{
+  "name": "costGovernanceWorker",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "name": "cost-governance-hourly",
+      "type": "scheduled",
+      "description": "Validates founder-approved paid-operation budgets, records runtime evidence and activates the cost kill-switch at the hard threshold.",
+      "function_args": { "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "costGovernanceWorker",
+      "starts_at": "2026-08-11T00:00:00.000Z"
+    }
+  ]
+}

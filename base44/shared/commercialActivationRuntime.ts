@@ -1,6 +1,7 @@
 import { policyIsActive } from './commercialAutonomy.ts';
 import { sha256Canonical } from './legalExecution.ts';
 import { evaluateLegalExecution } from './legalExecutionRuntime.ts';
+import { collectGoLiveRuntime } from './goLiveRuntime.ts';
 import {
   COMMERCIAL_ACTIVATION_VERSION, automaticFollowUpCandidate, commercialActionForEngine,
   sendingProfileIsValid, validateCanaryPolicy,
@@ -97,6 +98,9 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   if(invalidCandidates.length)blockers.push('eligible_legacy_threads_without_valid_profile');
   if(legacyCoverageTruncated)blockers.push('legacy_thread_coverage_truncated');
 
+  const goLive=await collectGoLiveRuntime(svc,input).catch((error:any)=>({allowed:false,classification:'NOT_GO_READY',blockers:[`go_live_runtime_unavailable:${String(error?.message||error).slice(0,120)}`],gates:[]}));
+  if(goLive.allowed!==true)blockers.push(...(goLive.blockers||['go_live_hard_gates_not_ready']).map((blocker:string)=>`go_live_hard_gate:${blocker}`));
+
   const evidence={
     version:COMMERCIAL_ACTIVATION_VERSION,provider_scope:providerScope,
     policies:validated.map(({policy,validation}:any)=>({id:policy.id,key:policy.policy_key,version:policy.version,engine:policy.engine,mode:policy.mode,daily_send_limit:policy.daily_send_limit,min_lead_score:policy.min_lead_score,countries:validation.markets,sending_profile_keys:validation.sending_profile_keys})),
@@ -105,6 +109,7 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
     markets:marketDecisions.map(({authority_snapshot_id,...decision})=>decision),
     legacy_threads:{automatic_follow_up_candidates:candidates.length,eligible_without_valid_profile:invalidCandidates.length,review_required:reviewRows.length,coverage_truncated:legacyCoverageTruncated},
     outbound_paused:control?.acquisition_enabled!==true,
+    go_live:{classification:goLive.classification,allowed:goLive.allowed,passed:goLive.passed,total:goLive.total,final_sha:goLive.final_sha},
   };
   const hash=await sha256Canonical(evidence);
   const policyIds=policySet.policies.map((policy:any)=>String(policy.id));
@@ -114,6 +119,7 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
     evidence,market_decisions:marketDecisions,
     unresolved_legacy_threads:reviewRows.slice(0,100).map((thread:any)=>({thread_id:thread.id,thread_key:thread.thread_key||null,reason:thread.sending_profile_resolution_reason||null,paused:thread.automation_paused===true})),
     invalid_eligible_threads:invalidCandidates.slice(0,100).map((thread:any)=>({thread_id:thread.id,thread_key:thread.thread_key||null,sending_profile_key:thread.sending_profile_key||null})),
+    go_live,
     version:COMMERCIAL_ACTIVATION_VERSION,
   };
 }
