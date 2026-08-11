@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation",
   "version": "0.81.0",
-  "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
+  "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1298,
   "sourceArchiveShaExternal": null,
-  "gitSha": "549ea18f7880c9ee1942beec2e0b0896efb604be",
+  "gitSha": "ed06e5a27eb79049b6ce8fcdca02ea047493005c",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -19,7 +19,7 @@
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
   "durabilityManifestSha": "ab23545c051bf698cad61f56a854cf2465b2f19e811827f7b782cd131c9dfdaf",
-  "documentationManifestSha": "52148d54ee507f44534e98dee20f9a3134c63a6cb168c3704b00c802675bdbd5",
+  "documentationManifestSha": "e798a8469374d59db3ad740e4f554d5e23ef57abb6ea3dc60cfa16dc8a26ced4",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -44,22 +44,22 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
-    "startedAt": "2026-08-10T22:54:39.387Z",
-    "completedAt": "2026-08-10T22:54:50.114Z",
+    "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
+    "startedAt": "2026-08-11T00:39:03.174Z",
+    "completedAt": "2026-08-11T00:39:15.495Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 131,
-    "passed": 1922,
+    "passed": 1929,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
-    "startedAt": "2026-08-10T22:54:50.530Z",
-    "completedAt": "2026-08-10T22:55:02.668Z",
+    "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
+    "startedAt": "2026-08-11T00:39:15.933Z",
+    "completedAt": "2026-08-11T00:39:28.183Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "9018a4c37cecb6d5c1fa8aebf80d7da6eaba7318d145f22bff340e6eec3e1286",
@@ -67,25 +67,25 @@
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
-    "startedAt": "2026-08-10T22:54:15.525Z",
-    "completedAt": "2026-08-10T22:54:24.734Z",
+    "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
+    "startedAt": "2026-08-11T00:38:43.194Z",
+    "completedAt": "2026-08-11T00:38:47.520Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
-    "startedAt": "2026-08-10T22:54:25.114Z",
-    "completedAt": "2026-08-10T22:54:28.017Z",
+    "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
+    "startedAt": "2026-08-11T00:38:47.950Z",
+    "completedAt": "2026-08-11T00:38:50.980Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "05decd527f7b1bc2f6338ef6f58a61d28fe5b5655eb09ced14529a405bba8b6d",
-    "startedAt": "2026-08-10T22:54:28.434Z",
-    "completedAt": "2026-08-10T22:54:39.000Z",
+    "sourceTreeHash": "e91750dead95d9fdb2ffb14182323e70aaadb28075d9a8c957c3d7817e2e4022",
+    "startedAt": "2026-08-11T00:38:51.418Z",
+    "completedAt": "2026-08-11T00:39:02.738Z",
     "exitCode": 0,
     "ciRunId": null
   },
@@ -104,5 +104,5 @@
   ],
   "blockingManualRequirements": [],
   "productionSealEligible": false,
-  "generatedAt": "2026-08-10T22:55:03.084Z"
+  "generatedAt": "2026-08-11T00:39:28.616Z"
 }

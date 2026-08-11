@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.1.0",
   "systemVersion": "0.81.0",
   "packageVersion": "0.81.0",
-  "generatedAt": "2026-08-10T22:54:14.176Z",
+  "generatedAt": "2026-08-11T00:38:41.012Z",
   "sourcePaths": {
     "base44/entities/CountryProfile.jsonc": "473de444a0cb0ce4551bdcac0d75fcc6dc5c34c5d56165978c59f28e563339eb",
     "base44/entities/DocumentationChangeProposal.jsonc": "7c682f57bb5cb65aae16a84a9b7bda65b1b6b214d1ff84a003e451f1b011d059",
@@ -87,7 +87,7 @@
     "base44/shared/jurisdictionPolicy.ts": "37eb64a0288ebd9b69ef633d1f3ea8d0a0290f599a7abcf9686a309cebfdd3b3",
     "base44/shared/maintenanceCore.ts": "6b05c2c31ec03aaea08d7a241c86da3f21a3e71191e099b80df9a590292c2d89",
     "base44/shared/marketContext.ts": "03938c756462a9ad2090e818de19795c9df8be824fd2f6f5b787e5bc9b79f80b",
-    "base44/shared/marketMoney.ts": "5f896f4dd29d6cc8433ef358d232b404629a63cb405039d38d029f1eb4c2d083",
+    "base44/shared/marketMoney.ts": "4bcf1c580b5c8a982c21232140557d71b1dadc12725dc4c1bffa369180dadc58",
     "base44/shared/marketPolicyRuntime.ts": "f69198adae59d02e3884158e335f380034b20b522be2c63fcd7392d2c580e877",
     "base44/shared/operationalControl.ts": "3a27ef4d9fc1d01c70e0b4fe143fd401b1ca20fd30088388e04a66dcfbc68cb3",
     "base44/shared/prepareEligibleRecoverInvoice.ts": "8fb959963b4c447bb9b8d606c3d2f0070ed9013c28885c3d57375a3f98cd522f",
