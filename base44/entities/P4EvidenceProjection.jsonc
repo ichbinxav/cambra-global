@@ -1,0 +1,21 @@
+{
+  "name": "P4EvidenceProjection",
+  "type": "object",
+  "description": "Private, append-only P3/verified-measurement projection for the P4 EvidenceStore. It contains aggregate factual inputs only; it is not P3 rate truth and cannot be read by merchants.",
+  "properties": {
+    "projection_key": { "type": "string" },
+    "source_type": { "type": "string", "enum": ["PAYMENTS_ANALYSIS_VERIFIED"] },
+    "source_id": { "type": "string" },
+    "source_fingerprint": { "type": "string" },
+    "brand_id": { "type": "string" },
+    "integration_id": { "type": "string" },
+    "observation_json": { "type": "object", "description": "P4 Observation DTO with HMAC-pseudonymized merchant/contract keys; no raw credential, cardholder, contact or contract-text data." },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "known_at": { "type": "string", "format": "date-time" },
+    "p3_schema_version": { "type": "string" },
+    "projection_version": { "type": "string" },
+    "status": { "type": "string", "enum": ["CURRENT", "SUPERSEDED", "REJECTED"], "default": "CURRENT" }
+  },
+  "required": ["projection_key", "source_type", "source_id", "source_fingerprint", "brand_id", "integration_id", "observation_json", "observed_at", "known_at", "projection_version", "status"],
+  "rls": { "read": { "user_condition": { "role": "admin" } }, "write": { "user_condition": { "role": "admin" } } }
+}

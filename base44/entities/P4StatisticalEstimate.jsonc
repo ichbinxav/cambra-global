@@ -1,0 +1,23 @@
+{
+  "name": "P4StatisticalEstimate",
+  "type": "object",
+  "description": "Versioned P4 statistical inference cached for P5 consumption. It is never a ProviderPricingVersion and never factual P3 rate truth.",
+  "properties": {
+    "estimate_key": { "type": "string" },
+    "brand_id": { "type": "string" },
+    "p4_estimate_id": { "type": "string" },
+    "target_spec_id": { "type": "string" },
+    "model_version_id": { "type": "string" },
+    "lineage_hash": { "type": "string" },
+    "as_of": { "type": "string", "format": "date-time" },
+    "known_at": { "type": "string", "format": "date-time" },
+    "training_cutoff": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string" },
+    "ood_status": { "type": "string" },
+    "estimate_json": { "type": "object", "description": "Tenant-safe P4 response only; excludes feature vectors and raw evidence." },
+    "source_projection_refs": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["estimate_key", "brand_id", "p4_estimate_id", "target_spec_id", "model_version_id", "lineage_hash", "as_of", "known_at", "status", "estimate_json"],
+  "rls": { "read": { "user_condition": { "role": "admin" } }, "write": { "user_condition": { "role": "admin" } } }
+}
