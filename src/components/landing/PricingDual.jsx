@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
  * Pricing — three-tier edition (Addendum R1, 2026-07-12).
@@ -85,6 +86,7 @@ function Tier({
   features,
   ctaText,
   ctaPrimary,
+  ctaHref,
 }) {
   return (
     <div className="relative flex flex-col p-6 sm:p-7 h-full">
@@ -157,7 +159,7 @@ function Tier({
 
       {/* CTA */}
       <Link
-        to="/Analyzer"
+        to={ctaHref}
         className="mt-7 inline-flex w-full items-center justify-center gap-1.5 rounded-full px-4 h-11 font-bold text-[13px] transition-all hover:translate-y-[-1px]"
         style={
           ctaPrimary
@@ -183,6 +185,7 @@ function Tier({
 export default function PricingDual() {
   const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
+  const { experience } = useMarket();
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       {/* ambient halo */}
@@ -266,6 +269,7 @@ export default function PricingDual() {
               features={FREE_FEATURE_KEYS.map((k) => t(k))}
               ctaText={t("pd_t1_cta")}
               ctaPrimary={false}
+              ctaHref={experience.analyzer.href}
             />
           </div>
 
@@ -341,8 +345,9 @@ export default function PricingDual() {
                 priceGradient
                 caption={t("pd_t2_caption")}
                 features={RECOVERY_FEATURE_KEYS.map((k) => t(k))}
-                ctaText={t("pd_t2_cta")}
+                ctaText={t(experience.analyzer.status === "ENABLED" ? "pd_t2_cta" : "market_cta_access")}
                 ctaPrimary={true}
+                ctaHref={experience.analyzer.href}
               />
             </div>
           </div>

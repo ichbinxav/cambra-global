@@ -52,7 +52,7 @@ export default function FounderLetter() {
           >
             <img
               src={FOUNDER_PHOTO}
-              alt="Xavier M. Contero — Founder of CAMBRA"
+              alt={t("fl_image_alt")}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
                 filter: "grayscale(70%) contrast(1.08) brightness(0.92)",

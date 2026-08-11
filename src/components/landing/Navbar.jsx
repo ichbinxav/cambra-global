@@ -4,7 +4,9 @@ import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity,
 import { useAuth } from "@/lib/AuthContext";
 import MobileNavMenu from "@/components/landing/MobileNavMenu";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import MarketSwitcher from "@/components/shared/MarketSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useMarket } from "@/lib/publicExperience.jsx";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 // CAMBRA public navigation — SAME set of links in every public page, whether
@@ -32,7 +34,12 @@ export default function Navbar() {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const { t } = useTranslation();
-  const NAV = NAV_PUBLIC;
+  const { experience } = useMarket();
+  const NAV = NAV_PUBLIC.map((item) => (
+    item.label === "Analyzer"
+      ? { ...item, href: experience.analyzer.href, activeHref: "/Analyzer" }
+      : item
+  ));
   const isAdmin = user?.role === "admin";
 
   // Translation map for visible navbar labels
@@ -72,7 +79,7 @@ export default function Navbar() {
           to={isAuthenticated ? "/Dashboard" : "/"}
           className="flex-shrink-0 inline-flex items-center gap-2"
           style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18, color: "#ffffff" }}
-          aria-label={isAuthenticated ? "CAMBRA dashboard" : "CAMBRA home"}
+          aria-label={t(isAuthenticated ? "nav_logo_dashboard_aria" : "nav_logo_home_aria")}
         >
           <img src={BRAND_ASSETS.cMarkWhite} alt="" width={22} height={22} className="h-[22px] w-[22px]" draggable={false} />
           CAMBRA
@@ -81,7 +88,8 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {NAV.map(item => {
-            const active = location.pathname === item.href || location.pathname.startsWith(item.href + "/");
+            const activeHref = "activeHref" in item ? item.activeHref : item.href;
+            const active = location.pathname === activeHref || location.pathname.startsWith(activeHref + "/");
             return (
               <Link
                 key={item.label}
@@ -103,6 +111,7 @@ export default function Navbar() {
 
         {/* Desktop CTAs — dark variant to match landing */}
         <div className="hidden md:flex items-center gap-2">
+          <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" className="mr-1" />
           {isAuthenticated ? (
             <>
@@ -124,8 +133,8 @@ export default function Navbar() {
               >
                 {t("nav_sign_in")}
               </a>
-              <Link to="/Analyzer" className="btn-base btn-primary-inverse btn-sm">
-                {t("nav_get_started")} <ArrowRight className="h-3 w-3" />
+              <Link to={experience.analyzer.href} className="btn-base btn-primary-inverse btn-sm">
+                {t(experience.analyzer.status === "ENABLED" ? "nav_get_started" : "market_cta_access")} <ArrowRight className="h-3 w-3" />
               </Link>
             </>
           )}
@@ -133,12 +142,13 @@ export default function Navbar() {
 
         {/* Mobile — language switcher always visible + menu toggle */}
         <div className="md:hidden flex items-center gap-1">
+          <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" />
           <button
             type="button"
             className="p-2 text-white/70 hover:text-white transition-colors -mr-2"
             onClick={() => setOpen(v => !v)}
-            aria-label="Toggle menu"
+            aria-label={t("nav_toggle_menu_aria")}
             aria-expanded={open}
             aria-controls="cambra-mobile-navigation"
           >

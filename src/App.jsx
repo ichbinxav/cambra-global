@@ -6,6 +6,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { LanguageProvider } from '@/lib/i18n.jsx';
+import { MarketProvider } from '@/lib/publicExperience.jsx';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 
@@ -376,6 +377,7 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <LanguageProvider>
+      <MarketProvider>
       <ErrorBoundary>
         <ToastProvider>
           <AuthProvider>
@@ -392,6 +394,7 @@ function App() {
           </AuthProvider>
         </ToastProvider>
       </ErrorBoundary>
+      </MarketProvider>
     </LanguageProvider>
   );
 }

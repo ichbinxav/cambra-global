@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, Handshake, UserPlus } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 // ─────────────────────────────────────────────
 // Premium grouped structure — fintech editorial
@@ -59,6 +60,7 @@ function NavRow({ item, index }) {
 
 export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
   const { t } = useTranslation();
+  const { experience } = useMarket();
 
   const PUBLIC_GROUPS = [
     {
@@ -70,7 +72,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
     {
       label: t("nav_group_analyzer"),
       items: [
-        { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: "/Analyzer", Icon: ScanSearch },
+        { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: experience.analyzer.href, Icon: ScanSearch },
         { label: t("nav_item_how"), sub: t("nav_item_how_sub"), href: "/HowItWorks", Icon: Workflow },
         { label: t("nav_item_pricing"), sub: t("nav_item_pricing_sub"), href: "/Pricing", Icon: Receipt },
       ],
@@ -224,7 +226,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
               className="px-5 py-5 space-y-2.5"
             >
               {isAuthenticated ? (
-                <Link to="/Analyzer" className="block group">
+                <Link to={experience.analyzer.href} className="block group">
                   <div className="relative">
                     <div
                       aria-hidden
@@ -240,7 +242,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                 </Link>
               ) : (
                 <>
-                  <Link to="/Analyzer" className="block group">
+                  <Link to={experience.analyzer.href} className="block group">
                     <div className="relative">
                       {/* Glow halo */}
                       <div
@@ -258,7 +260,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
                           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }}
                         />
                         <Sparkles className="relative h-3.5 w-3.5" />
-                        <span className="relative">{t("nav_run_free")}</span>
+                        <span className="relative">{t(experience.analyzer.status === "ENABLED" ? "nav_run_free" : "market_cta_access")}</span>
                         <ArrowRight className="relative h-3.5 w-3.5" />
                       </div>
                     </div>

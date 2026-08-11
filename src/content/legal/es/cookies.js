@@ -4,7 +4,7 @@
 export default {
   badge: "Legal · Política de cookies",
   title: "Política de cookies.",
-  lastUpdated: "Última actualización: 24 de julio de 2026",
+  lastUpdated: "Última actualización: 12 de agosto de 2026",
   back: "Volver",
   columns: { name: "Nombre", purpose: "Finalidad", duration: "Duración", category: "Categoría" },
   intro: [
@@ -31,8 +31,9 @@ export default {
       rows: [
         { name: "base44_access_token", purpose: "Token de autenticación emitido por nuestro proveedor de plataforma (Base44) que mantiene tu sesión iniciada. El SDK de la plataforma escribe en paralelo un alias heredado llamado «token»", duration: "Hasta cerrar sesión o borrar los datos del navegador", category: "Estrictamente necesario" },
         { name: "cambra_pending_anon_session", purpose: "Misma finalidad que la cookie cambra_anon_session, por el mismo navegador; se elimina automáticamente una vez vinculado tu informe", duration: "Se elimina automáticamente tras su uso", category: "Estrictamente necesario" },
-        { name: "cambra_cookie_consent", purpose: "Registra tu elección de consentimiento de cookies y su marca de tiempo", duration: "Hasta borrar los datos del navegador", category: "Estrictamente necesario" },
+        { name: "cambra_cookie_consent", purpose: "Registra la versión de la política, tus elecciones por categoría, el idioma de interfaz, la fuente de elección y su marca de tiempo", duration: "Hasta borrar los datos o retirar el consentimiento", category: "Estrictamente necesario" },
         { name: "cambra_lang", purpose: "Recuerda tu preferencia de idioma (EN/FR/ES). Una clave heredada de una versión anterior (node_lang) puede seguir leyéndose — nunca se escribe — para migrar esta preferencia", duration: "Hasta borrar los datos del navegador", category: "Funcional" },
+        { name: "cambra_market", purpose: "Recuerda el mercado operativo europeo que has elegido. El idioma o zona horaria del navegador solo sugiere un mercado hasta que eliges expresamente", duration: "Hasta borrar los datos o restaurar el modo automático", category: "Funcional" },
         { name: "cambra_copilot_open", purpose: "Recuerda si el panel del asistente está abierto o cerrado", duration: "Hasta borrar los datos del navegador", category: "Funcional" },
       ],
     },
@@ -49,7 +50,7 @@ export default {
   after: [
     {
       title: "6. Tus opciones de consentimiento",
-      body: "En tu primera visita, un banner de consentimiento ofrece «Aceptar todo» y «Gestionar preferencias», donde analítica y marketing pueden activarse por separado (el almacenamiento estrictamente necesario permanece activo). Tu elección se registra en cambra_cookie_consent con una marca de tiempo. CAMBRA usa dos mediciones propias en la misma plataforma de alojamiento: un contador de páginas vistas envía el nombre de la página al navegar y, solo cuando activas analítica, una lista cerrada de eventos del embudo de producto, como análisis iniciado/completado o Recover aceptado. Estos eventos rechazan correos, nombres, tokens, URL, identificadores de sesión/usuario/entidad, nombres de archivo y texto libre. Ninguna medición instala cookies analíticas o publicitarias y no interviene ninguna red publicitaria externa. Desactivar analítica impide los eventos de producto sujetos a consentimiento.",
+      body: "En tu primera visita, el banner permite aceptar todo, rechazar las categorías opcionales o gestionar preferencias. Analítica y marketing empiezan desactivados; el almacenamiento estrictamente necesario permanece activo. Tu elección versionada se registra en cambra_cookie_consent. CAMBRA usa dos mediciones propias en la misma plataforma de alojamiento: un contador de páginas vistas envía el nombre de la página al navegar y, solo cuando activas analítica, una lista cerrada de eventos del embudo de producto, como análisis iniciado/completado o Recover aceptado. Estos eventos rechazan correos, nombres, tokens, URL, identificadores de sesión/usuario/entidad, nombres de archivo y texto libre. Ninguna medición instala cookies analíticas o publicitarias y no interviene ninguna red publicitaria externa. Desactivar analítica impide los eventos de producto sujetos a consentimiento. Puedes reabrir los ajustes desde esta página en cualquier momento.",
     },
     {
       title: "7. Gestionar cookies y almacenamiento",

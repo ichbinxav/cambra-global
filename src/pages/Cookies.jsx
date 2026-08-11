@@ -48,7 +48,7 @@ function StorageTable({ table, columns }) {
 }
 
 export default function Cookies() {
-  const { lang } = useTranslation();
+  const { lang, t } = useTranslation();
   const c = CONTENT[lang] || CONTENT.en;
 
   return (
@@ -80,6 +80,19 @@ export default function Cookies() {
           </h1>
           <p className="text-sm mb-12" style={{ color: "var(--gris-2)" }}>{c.lastUpdated}</p>
 
+          <aside className="mb-8 rounded-2xl p-4 text-[12px] leading-relaxed" style={{ color: "var(--gris-1)", background: "rgba(91,76,245,.045)", border: "1px solid rgba(91,76,245,.18)" }}>
+            <strong style={{ color: "var(--ink)" }}>{t("legal_review_badge")}</strong>{" "}{t("legal_review_notice")}
+          </aside>
+
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("cambra:open-cookie-settings"))}
+            className="mb-10 inline-flex h-10 items-center rounded-full px-5 text-[12px] font-bold"
+            style={{ color: "#fff", background: "var(--g-voltio)" }}
+          >
+            {t("cookie_open_settings")}
+          </button>
+
           <div className="space-y-10 text-sm leading-relaxed" style={{ color: "var(--gris-1)" }}>
             {c.intro.map((s) => (
               <section key={s.title}>
@@ -100,6 +113,7 @@ export default function Cookies() {
             ))}
           </div>
         </motion.div>
+        <style>{`@media print { header, footer { display:none !important; } main { background:#fff !important; } }`}</style>
       </div>
     </PublicPageShell>
   );

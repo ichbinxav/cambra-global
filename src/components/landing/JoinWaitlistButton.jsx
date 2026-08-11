@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
  * JoinWaitlistButton — "Join to recover" CTA.
@@ -27,6 +28,7 @@ export default function JoinWaitlistButton({
   context = null,
 }) {
   const { lang, t } = useTranslation();
+  const { marketCode } = useMarket();
   const [state, setState] = useState("idle"); // idle | form | submitting | done
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -47,7 +49,7 @@ export default function JoinWaitlistButton({
         email: email.trim(),
         source,
         locale: lang, // EMAIL-1 T2 — persisted on the Lead for future emails
-        context: context || {},
+        context: { ...(context || {}), market_code: marketCode },
       });
       const payload = res?.data || res;
       if (payload?.ok) {

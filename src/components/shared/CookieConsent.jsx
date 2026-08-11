@@ -8,35 +8,41 @@ import { useTranslation } from "@/lib/i18n.jsx";
    Stores choice in localStorage under "cambra_cookie_consent". */
 
 const STORAGE_KEY = "cambra_cookie_consent";
+const CONSENT_VERSION = "2026-08-12";
 
 function readStoredConsent() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object" && parsed.timestamp) return parsed;
+    if (parsed && typeof parsed === "object" && parsed.timestamp && parsed.version === CONSENT_VERSION) return parsed;
     return null;
   } catch {
     return null;
   }
 }
 
-function writeConsent(prefs) {
+function writeConsent(prefs, locale, source) {
+  const record = {
+    version: CONSENT_VERSION,
+    necessary: true,
+    analytics: !!prefs.analytics,
+    marketing: !!prefs.marketing,
+    locale,
+    source,
+    timestamp: new Date().toISOString(),
+  };
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      necessary: true,
-      analytics: !!prefs.analytics,
-      marketing: !!prefs.marketing,
-      timestamp: new Date().toISOString(),
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
   } catch {}
+  try { window.dispatchEvent(new CustomEvent("cambra:consent-updated", { detail: record })); } catch {}
 }
 
 export default function CookieConsent() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [analytics, setAnalytics] = useState(true);
+  const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
 
   useEffect(() => {
@@ -47,17 +53,37 @@ export default function CookieConsent() {
     return () => clearTimeout(id);
   }, []);
 
-  const acceptAll = useCallback(() => {
-    writeConsent({ analytics: true, marketing: true });
-    setVisible(false);
-    setModalOpen(false);
+  useEffect(() => {
+    const openSettings = () => {
+      const stored = readStoredConsent();
+      setAnalytics(Boolean(stored?.analytics));
+      setMarketing(Boolean(stored?.marketing));
+      setVisible(true);
+      setModalOpen(true);
+    };
+    window.addEventListener("cambra:open-cookie-settings", openSettings);
+    return () => window.removeEventListener("cambra:open-cookie-settings", openSettings);
   }, []);
 
-  const savePreferences = useCallback(() => {
-    writeConsent({ analytics, marketing });
+  const acceptAll = useCallback(() => {
+    writeConsent({ analytics: true, marketing: true }, locale, "accept_all");
     setVisible(false);
     setModalOpen(false);
-  }, [analytics, marketing]);
+  }, [locale]);
+
+  const rejectOptional = useCallback(() => {
+    setAnalytics(false);
+    setMarketing(false);
+    writeConsent({ analytics: false, marketing: false }, locale, "reject_optional");
+    setVisible(false);
+    setModalOpen(false);
+  }, [locale]);
+
+  const savePreferences = useCallback(() => {
+    writeConsent({ analytics, marketing }, locale, "save_preferences");
+    setVisible(false);
+    setModalOpen(false);
+  }, [analytics, marketing, locale]);
 
   if (!visible) return null;
 
@@ -86,7 +112,14 @@ export default function CookieConsent() {
             <p className="flex-1 text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
               {t("cookie_banner_text")}
             </p>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
+              <button
+                onClick={rejectOptional}
+                className="rounded-full px-4 h-9 text-[12px] font-semibold transition-colors"
+                style={{ color: "rgba(255,255,255,0.75)", background: "transparent", border: "1px solid rgba(255,255,255,.12)" }}
+              >
+                {t("cookie_reject_optional")}
+              </button>
               <button
                 onClick={() => setModalOpen(true)}
                 className="rounded-full px-4 h-9 text-[12px] font-semibold transition-colors"
@@ -126,7 +159,7 @@ export default function CookieConsent() {
           >
             <button
               onClick={() => setModalOpen(false)}
-              aria-label="Close"
+              aria-label={t("cookie_close")}
               className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-white/10 transition-colors"
             >
               <X size={16} className="text-white/70" />
@@ -172,6 +205,13 @@ export default function CookieConsent() {
             </p>
 
             <div className="mt-5 flex flex-col sm:flex-row gap-2 sm:justify-end">
+              <button
+                onClick={rejectOptional}
+                className="rounded-full px-5 h-10 text-[13px] font-semibold transition-colors"
+                style={{ color: "rgba(255,255,255,0.85)", background: "transparent", border: "1px solid rgba(255,255,255,0.12)" }}
+              >
+                {t("cookie_reject_optional")}
+              </button>
               <button
                 onClick={acceptAll}
                 className="rounded-full px-5 h-10 text-[13px] font-semibold transition-colors order-2 sm:order-1"

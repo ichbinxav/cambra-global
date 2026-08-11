@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.95.0 — P7/P8 Autonomous Commercial Execution (durability manifest)",
-  "generatedAt": "2026-08-11T21:52:18.786Z",
+  "generatedAt": "2026-08-11T22:31:45.311Z",
   "packageVersion": "0.95.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1162,8 +1162,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "1cb64746f7a95daadad5014a276f988bc43b47def5afdeea8fe374fe4b5a8b53",
-      "bytes": 7121
+      "sha256": "5798cd5e617cb3c46fd3277d210f23d1dabee1b20e01a9f187dceee6f93dbe02",
+      "bytes": 7305
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -1257,8 +1257,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "19fb8d3804ac35ee5e68bc2757d558bee7acbf41569b380d5586f51e07a99f7b",
-      "bytes": 24108
+      "sha256": "3acb6c0645f057243853b5d1b90b2f26e9b43ac94fab356c2686e65555a42fb9",
+      "bytes": 24216
     },
     {
       "path": "src/components/admin/waitlist/AggregateDemandPanel.jsx",
@@ -1267,18 +1267,18 @@
     },
     {
       "path": "src/components/landing/JoinWaitlistButton.jsx",
-      "sha256": "da8f3679588af94e08e0a69d86d4aa1217ed59d372b85f7052e6d3cda574893f",
-      "bytes": 5078
+      "sha256": "537b7d64fd3a1819f3545c3d2ca7c81112048533aff522368c424e3d892be244",
+      "bytes": 5206
     },
     {
       "path": "src/components/landing/MobileNavMenu.jsx",
-      "sha256": "f17ed16ce0311726a480e524568e052ae4aa034fb08ca824d37729b642b5342a",
-      "bytes": 13995
+      "sha256": "4c448e4ab4f01fc31d7c5e975cde22442a004326fccc8b0857fdbd085ed213d1",
+      "bytes": 14197
     },
     {
       "path": "src/components/landing/Navbar.jsx",
-      "sha256": "3fb288190fa4d391686ca7b5277c11ce2942af23fd0b97df2eac35774143ad2b",
-      "bytes": 6162
+      "sha256": "bdfbe90610ec11680b16034b017e7f6b8f3be93f9a0740b3610f999ae315c592",
+      "bytes": 6746
     },
     {
       "path": "src/components/landing/TestimonialsCarousel.jsx",
@@ -1587,8 +1587,8 @@
     },
     {
       "path": "src/lib/i18n.jsx",
-      "sha256": "a7843a52d9dbf00bd64c51ff61c3158e2697fbd82908b78c9167abfa231eaf7e",
-      "bytes": 8889
+      "sha256": "d48848fdd87d33b2d4479a53befa06d31f3e42c74ec8ec9359e93e8ebc379ee0",
+      "bytes": 8936
     },
     {
       "path": "src/lib/i18nParity.test.js",
@@ -1597,18 +1597,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "afbae7e94576db480aacdd09f0ef3ebcb7f25cd450b7c67842ecf5e612bf69ba",
-      "bytes": 90421
+      "sha256": "4d2cc6ce73cb013dc8960a9b6b0bfdaeb241a5331f7e76d416875953773d5e79",
+      "bytes": 95312
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "b9485cd9e45988ff3100eb9a72cfabb3a73ec94b6e1349b3bceeccb47d2156f2",
-      "bytes": 91419
+      "sha256": "d96dde188186b982f9e8a2a4c55867a16c8a1027302c69472d8f7d1dcc193056",
+      "bytes": 96602
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "4ed3aaaf2c2ba834db9c14b65897da9ca295b1226aaf6e1731ac92bfea754747",
-      "bytes": 96120
+      "sha256": "656fe61b897ae6b3f4d40d00d39126ec5322851bb81135f1919e3c81fd643c65",
+      "bytes": 101355
     },
     {
       "path": "src/lib/normalizedEvidence.js",
@@ -1677,8 +1677,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "4dc412864017b71270dd7a6e54b3a2045480812a3580d674d9a817aa2cd6ddfd",
-      "bytes": 19542
+      "sha256": "f932479b4731d78932906478bc0c218596faf7035367da817ac3dab0431fefe4",
+      "bytes": 19819
     },
     {
       "path": "src/pages/Testimonials.jsx",

@@ -50,12 +50,14 @@
     "release:package": "node scripts/package-release.mjs",
     "ci:install": "node scripts/install-ci-workflow.mjs",
     "ci:check": "node scripts/install-ci-workflow.mjs --check",
-    "verify": "npm run toolchain:check && npm run clean:check && npm run policy:check && npm run markets:check && npm run locales:check && npm run growth:check && npm run ecl:check && npm run durability:check && npm run documentation:check && npm run scheduler:check && npm run retention:check && npm run secrets:check && npm run dependency:audit && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check",
+    "verify": "npm run toolchain:check && npm run clean:check && npm run policy:check && npm run markets:check && npm run locales:check && npm run growth:check && npm run landing:check && npm run ecl:check && npm run durability:check && npm run documentation:check && npm run scheduler:check && npm run retention:check && npm run secrets:check && npm run dependency:audit && npm run lint:evidence && npm run typecheck:critical:evidence && npm run typecheck:baseline:evidence && npm run test:evidence && npm run build:evidence && npm run release:manifest && npm run release:check",
     "markets:generate": "node scripts/generate-europe-markets.mjs",
     "markets:check": "node scripts/generate-europe-markets.mjs --check",
     "locales:generate": "node scripts/generate-locale-registry.mjs",
     "locales:check": "node scripts/generate-locale-registry.mjs --check",
     "growth:check": "node scripts/check-p12-growth-config.mjs",
+    "landing:report": "node scripts/generate-landing-readiness-report.mjs",
+    "landing:check": "node scripts/generate-landing-readiness-report.mjs --check",
     "europe:report": "node scripts/generate-europe-v1-report.mjs"
   },
   "dependencies": {

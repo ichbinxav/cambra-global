@@ -9,7 +9,10 @@
 // Extracted from PaymentsAnalyzer so the single-channel and combined
 // layouts render the exact same field instead of two copies.
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 export default function CountryField({ value, onChange, options }) {
+  const { t } = useTranslation();
   const missing = !value;
 
   return (
@@ -19,10 +22,10 @@ export default function CountryField({ value, onChange, options }) {
           className="text-[11px] font-semibold uppercase tracking-[0.14em]"
           style={{ color: "rgba(255,255,255,0.85)" }}
         >
-          Country <span style={{ color: "#FCA5A5" }}>*</span>
+          {t("az_country_label")} <span style={{ color: "#FCA5A5" }}>*</span>
         </span>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-          Required · sets your country's rules
+          {t("az_country_required_hint")}
         </span>
       </div>
       <select
@@ -38,15 +41,15 @@ export default function CountryField({ value, onChange, options }) {
           colorScheme: "dark",
         }}
       >
-        <option value="">Select your country…</option>
+        <option value="">{t("az_country_placeholder")}</option>
         {options.map((c) => (
           <option key={c.code} value={c.code}>{c.name}</option>
         ))}
       </select>
       <p className="text-[10.5px] leading-relaxed" style={{ color: missing ? "#FCA5A5" : "rgba(255,255,255,0.5)" }}>
         {missing
-          ? "Pick your country — we price your rate against your country's rules, not a generic average."
-          : "We compare your rate with the providers and the legal caps of this country."}
+          ? t("az_country_missing_help")
+          : t("az_country_selected_help")}
       </p>
     </div>
   );

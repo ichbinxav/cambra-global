@@ -1,0 +1,463 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-12",
+  "source_versions": {
+    "markets": "p1-europe-2026.08.10",
+    "locales": "p9-locales-2026.08.11"
+  },
+  "truth_status": "PARTIAL_PRODUCTION_READINESS",
+  "launch_claim": "NOT_GO_READY_FROM_LANDING_WORK_ALONE",
+  "product_locales": [
+    {
+      "locale": "en-GB",
+      "language": "en",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "fr-FR",
+      "language": "fr",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "es-ES",
+      "language": "es",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    }
+  ],
+  "market_rows": [
+    {
+      "market_code": "AT",
+      "market_name": "Austria",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "BE",
+      "market_name": "Belgium",
+      "currency": "EUR",
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "BG",
+      "market_name": "Bulgaria",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "HR",
+      "market_name": "Croatia",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "CY",
+      "market_name": "Cyprus",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "CZ",
+      "market_name": "Czechia",
+      "currency": "CZK",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "DK",
+      "market_name": "Denmark",
+      "currency": "DKK",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "EE",
+      "market_name": "Estonia",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "FI",
+      "market_name": "Finland",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "FR",
+      "market_name": "France",
+      "currency": "EUR",
+      "default_locale": "fr-FR",
+      "translation_readiness": "NATIVE_PRODUCT",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "ENABLED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "DE",
+      "market_name": "Germany",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "GR",
+      "market_name": "Greece",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "HU",
+      "market_name": "Hungary",
+      "currency": "HUF",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "IE",
+      "market_name": "Ireland",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "IT",
+      "market_name": "Italy",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "LV",
+      "market_name": "Latvia",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "LT",
+      "market_name": "Lithuania",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "LU",
+      "market_name": "Luxembourg",
+      "currency": "EUR",
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "MT",
+      "market_name": "Malta",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "NL",
+      "market_name": "Netherlands",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "PL",
+      "market_name": "Poland",
+      "currency": "PLN",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "PT",
+      "market_name": "Portugal",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "RO",
+      "market_name": "Romania",
+      "currency": "RON",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "SK",
+      "market_name": "Slovakia",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "SI",
+      "market_name": "Slovenia",
+      "currency": "EUR",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "ES",
+      "market_name": "Spain",
+      "currency": "EUR",
+      "default_locale": "es-ES",
+      "translation_readiness": "NATIVE_PRODUCT",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "ENABLED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "SE",
+      "market_name": "Sweden",
+      "currency": "SEK",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "NO",
+      "market_name": "Norway",
+      "currency": "NOK",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "IS",
+      "market_name": "Iceland",
+      "currency": "ISK",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "LI",
+      "market_name": "Liechtenstein",
+      "currency": "CHF",
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "CH",
+      "market_name": "Switzerland",
+      "currency": "CHF",
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "GB",
+      "market_name": "United Kingdom",
+      "currency": "GBP",
+      "default_locale": "en-GB",
+      "translation_readiness": "NATIVE_PRODUCT",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    },
+    {
+      "market_code": "AD",
+      "market_name": "Andorra",
+      "currency": "EUR",
+      "default_locale": "es-ES",
+      "translation_readiness": "PARTIAL_NATIVE",
+      "landing_status": "AVAILABLE",
+      "analyzer_status": "LIMITED",
+      "recovery_status": "REVIEW_REQUIRED",
+      "legal_applicability_status": "LEGAL_REVIEW_REQUIRED",
+      "legal_translation_status": "IMPLEMENTED_UNVERIFIED"
+    }
+  ],
+  "legal_sources": [
+    {
+      "scope": "EU personal-data baseline",
+      "authority": "EUR-Lex",
+      "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj?locale=EN",
+      "status": "AUTHORITATIVE_SOURCE_RECORDED"
+    },
+    {
+      "scope": "Electronic communications and device storage baseline",
+      "authority": "EUR-Lex",
+      "url": "https://eur-lex.europa.eu/eli/dir/2002/58/oj",
+      "status": "AUTHORITATIVE_SOURCE_RECORDED"
+    },
+    {
+      "scope": "Consent interpretation",
+      "authority": "European Data Protection Board",
+      "url": "https://www.edpb.europa.eu/documents/guideline/guidelines-052020-on-consent-under-regulation-2016679_en",
+      "status": "AUTHORITATIVE_GUIDANCE_RECORDED"
+    },
+    {
+      "scope": "EU online-service transparency baseline",
+      "authority": "European Commission",
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/e-commerce-directive",
+      "status": "AUTHORITATIVE_SOURCE_RECORDED"
+    }
+  ],
+  "blockers": [
+    "Native product translation is implemented only for en-GB, fr-FR and es-ES.",
+    "Every market remains LEGAL_REVIEW_REQUIRED for market-specific applicability.",
+    "Localized URL/SSR infrastructure does not exist, so hreflang is intentionally not emitted.",
+    "Analyzer execution is enabled only for FR and ES; the other 31 markets are intelligence-only."
+  ]
+}

@@ -16,11 +16,13 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Store, ArrowRight, CreditCard } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
-const PROVIDERS = ["SumUp", "Stripe Terminal", "Smile & Pay", "Zettle", "Bank TPVs"];
+const PROVIDER_KEYS = ["landing_channel_online", "landing_channel_instore", "landing_channel_acquirer", "landing_channel_documents"];
 
 export default function InStoreUpsellStrip() {
   const { t } = useTranslation();
+  const { experience } = useMarket();
   return (
     <section
       aria-label={t("landing_upsell_in_store_title")}
@@ -92,9 +94,9 @@ export default function InStoreUpsellStrip() {
 
             {/* Provider chips */}
             <div className="mt-6 flex flex-wrap gap-2">
-              {PROVIDERS.map((p) => (
+              {PROVIDER_KEYS.map((key) => (
                 <span
-                  key={p}
+                  key={key}
                   className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
                   style={{
                     color: "var(--gris-1)",
@@ -103,7 +105,7 @@ export default function InStoreUpsellStrip() {
                   }}
                 >
                   <CreditCard size={11} style={{ color: "var(--voltio)" }} />
-                  {p}
+                  {t(key)}
                 </span>
               ))}
             </div>
@@ -112,7 +114,7 @@ export default function InStoreUpsellStrip() {
           {/* RIGHT — CTA */}
           <div className="shrink-0">
             <Link
-              to="/Analyzer"
+              to={experience.analyzer.href}
               className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-[14px] font-bold transition-transform hover:-translate-y-0.5 whitespace-nowrap"
               style={{
                 background: "var(--g-voltio)",
@@ -120,7 +122,7 @@ export default function InStoreUpsellStrip() {
                 boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
               }}
             >
-              {t("landing_upsell_in_store_cta")}
+              {t(experience.analyzer.status === "ENABLED" ? "landing_upsell_in_store_cta" : "market_cta_access")}
               <ArrowRight size={15} />
             </Link>
           </div>

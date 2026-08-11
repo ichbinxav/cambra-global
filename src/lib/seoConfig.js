@@ -47,13 +47,13 @@ export const OG_LOCALE = { en: "en_GB", fr: "fr_FR", es: "es_ES" };
 export const HOMEPAGE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "CAMBRA Card Payment Cost Audit",
+  name: "CAMBRA European Infrastructure Intelligence",
   url: SEO_ORIGIN,
-  provider: { "@type": "Organization", name: "CAMBRA", legalName: "CAMBRA Global" },
-  serviceType: "Card payment cost audit",
+  provider: { "@type": "Organization", name: "CAMBRA", legalName: "CAMBRA GLOBAL SASU" },
+  serviceType: "European infrastructure intelligence with payment-cost analysis",
   areaServed: "Europe",
   description:
-    "CAMBRA audits card payment costs for independent brands, online and in-store, comparing the merchant's effective rate against European payment benchmarks built from public pricing and regulatory interchange floors, and recovers the negotiable margin. Free analysis — success fee only on verified savings.",
+    "CAMBRA turns payment costs, provider terms and market context into evidence-aware infrastructure intelligence for independent European businesses. Payments are the entry point; conclusions and actions depend on market readiness and the available evidence.",
 };
 
 // Build a WebPage JSON-LD block for a non-homepage public route.
@@ -77,14 +77,14 @@ export const SEO_STATIC = {
     robots: DEFAULT_ROBOTS,
     schema: HOMEPAGE_SCHEMA, // SeoMeta skips writing it (index.html static copy)
     title: {
-      en: "CAMBRA — Card payment cost audit for independent brands",
-      fr: "CAMBRA — Audit des coûts de paiement par carte pour marques indépendantes",
-      es: "CAMBRA — Auditoría de costes de pago con tarjeta para marcas independientes",
+      en: "CAMBRA — European Infrastructure Intelligence",
+      fr: "CAMBRA — Intelligence d'infrastructure européenne",
+      es: "CAMBRA — Inteligencia de infraestructura europea",
     },
     description: {
-      en: "Find out how much you overpay for card payments, online and in-store. CAMBRA compares your effective rate against European benchmarks and recovers the negotiable margin. Free analysis — you only pay on verified savings.",
-      fr: "Découvrez combien vous surpayez pour vos paiements par carte, en ligne et en point de vente. CAMBRA compare votre taux effectif aux benchmarks européens et récupère la marge négociable. Analyse gratuite — vous ne payez que sur les économies vérifiées.",
-      es: "Descubre cuánto pagas de más por tus pagos con tarjeta, online y en tienda. CAMBRA compara tu tasa efectiva con los benchmarks europeos y recupera el margen negociable. Análisis gratuito — solo pagas sobre el ahorro verificado.",
+      en: "Evidence-aware intelligence for payment costs, provider terms and European market context. Start with payments; act only when market policy and evidence support the next step.",
+      fr: "Une intelligence fondée sur les preuves pour les coûts de paiement, les conditions fournisseurs et le contexte des marchés européens. Agissez uniquement lorsque la politique marché et les preuves le permettent.",
+      es: "Inteligencia basada en evidencia para costes de pago, condiciones de proveedores y contexto de mercados europeos. Actúa solo cuando la política de mercado y la evidencia lo permiten.",
     },
   },
   "/Analyzer": {
@@ -97,9 +97,9 @@ export const SEO_STATIC = {
       es: "Analizador gratuito de costes de pago con tarjeta — CAMBRA",
     },
     description: {
-      en: "Run a free card payment cost analysis. Compare your online and in-store effective rate against European benchmarks and see the negotiable margin you could recover.",
-      fr: "Lancez une analyse gratuite de vos coûts de paiement par carte. Comparez votre taux effectif en ligne et en point de vente aux benchmarks européens et voyez la marge négociable récupérable.",
-      es: "Ejecuta un análisis gratuito de tus costes de pago con tarjeta. Compara tu tasa efectiva online y en tienda con los benchmarks europeos y ve el margen negociable recuperable.",
+      en: "Run a market-aware payment-cost analysis. Results identify their evidence state and are withheld when the selected market lacks sufficient support.",
+      fr: "Lancez une analyse des coûts de paiement adaptée au marché. Les résultats indiquent leur niveau de preuve et sont retenus si le marché choisi manque de support.",
+      es: "Ejecuta un análisis de costes de pago adaptado al mercado. Los resultados muestran su estado de evidencia y se retienen si el mercado elegido no tiene soporte suficiente.",
     },
   },
   "/HowItWorks": {

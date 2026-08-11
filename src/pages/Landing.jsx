@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
@@ -18,62 +18,16 @@ import TheStackSection from "@/components/landing/TheStackSection";
 import RealImpactSection from "@/components/landing/RealImpactSection";
 import ReferralProgramSection from "@/components/landing/ReferralProgramSection";
 import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
-
-/* FIX 12 — JSON-LD structured data for SoftwareApplication */
-const LANDING_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "CAMBRA",
-  "slogan": "Pay less for card payments",
-  "description": "CAMBRA helps independent businesses reduce what they pay for card payments. An anonymous 60-second analysis compares what you pay with the minimum banks and card networks allow, and recovers the difference.",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Web",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "EUR",
-    "description": "Free anonymous payments analysis during early access. Optional recovery service earns 25% of verified savings over 24 months — only when CAMBRA actually recovers margin. No upfront fee, no subscription."
-  },
-  "featureList": [
-    "Card fee comparison vs. industry",
-    "Minimum allowed rate analysis",
-    "What you really pay, calculated",
-    "Anonymous 60-second audit"
-  ],
-  "audience": {
-    "@type": "BusinessAudience",
-    "audienceType": "Independent ecommerce brands"
-  }
-};
-
-function useJsonLd(data) {
-  useEffect(() => {
-    const id = "cambra-landing-jsonld";
-    let el = /** @type {HTMLScriptElement | null} */ (document.getElementById(id));
-    if (!el) {
-      el = document.createElement("script");
-      el.type = "application/ld+json";
-      el.id = id;
-      document.head.appendChild(el);
-    }
-    el.textContent = JSON.stringify(data);
-    return () => { /* keep across SPA navigation */ };
-  }, [data]);
-}
+import MarketAvailabilitySection from "@/components/landing/MarketAvailabilitySection";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 /* ──────────────────────────────────────────────────────────
    CAMBRA Landing — editorial redesign · EN / FR / ES
    ────────────────────────────────────────────────────────── */
 
-// JSON-LD injector — no visible UI. The visible navbar is the shared
-// <Navbar /> component so every public page renders the same header.
-function LandingJsonLd() {
-  useJsonLd(LANDING_JSON_LD);
-  return null;
-}
-
 function Hero() {
   const { t } = useTranslation();
+  const { experience } = useMarket();
   return (
     <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 48 }}>
       {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
@@ -149,7 +103,7 @@ function Hero() {
           >
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
               <Link
-                to="/Analyzer"
+                to={experience.analyzer.href}
                 className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-transform hover:-translate-y-0.5"
                 style={{
                   background: "var(--g-voltio)",
@@ -157,7 +111,7 @@ function Hero() {
                   boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
                 }}
               >
-                {t("hero_cta_primary")}
+                {t(experience.analyzer.status === "ENABLED" ? "hero_cta_primary" : "market_cta_access")}
                 <ArrowRight size={16} />
               </Link>
             </motion.div>
@@ -204,8 +158,6 @@ function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
-          {/* Solid paper backdrop that hides the fixed dot-mesh behind the
-              transparent hero image. Radial fade so there's no hard edge. */}
           <div
             aria-hidden
             className="absolute pointer-events-none"
@@ -215,15 +167,23 @@ function Hero() {
                 "radial-gradient(ellipse 62% 62% at 50% 48%, var(--paper) 0%, var(--paper) 55%, transparent 78%)",
             }}
           />
-          <img
-            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/6cf6e66f1_IMG_3459.webp"
-            alt={t("hero_image_alt")}
-            width={620}
-            height={620}
-            className="relative w-full max-w-none h-auto select-none lg:w-[135%] lg:-translate-x-[8%]"
-            style={{ filter: "contrast(0.97)" }}
-            draggable={false}
-          />
+          <div className="relative w-full max-w-[500px] overflow-hidden rounded-[30px] p-5 sm:p-6" role="img" aria-label={t("hero_image_alt")} style={{ background: "linear-gradient(165deg,#171330 0%,#0A0818 78%)", border: "1px solid rgba(139,123,255,.35)", boxShadow: "0 35px 90px -40px rgba(91,76,245,.65)" }}>
+            <div aria-hidden className="absolute inset-0 opacity-50" style={{ backgroundImage: "radial-gradient(rgba(139,123,255,.35) 1px,transparent 1px)", backgroundSize: "24px 24px", maskImage: "linear-gradient(to bottom,#000,transparent 85%)" }} />
+            <div className="relative flex items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div><p className="text-[9px] uppercase tracking-[.22em] font-bold text-white/40">CAMBRA</p><p className="mt-1 text-[14px] font-bold text-white">{t("hero_visual_title")}</p></div>
+              <span className="rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[.14em] font-bold" style={{ color: "#2FE0A8", background: "rgba(47,224,168,.1)", border: "1px solid rgba(47,224,168,.25)" }}>{t("hero_visual_status")}</span>
+            </div>
+            <div className="relative mt-5 space-y-3">
+              {["market", "provider", "rate", "opportunity"].map((layer, index) => (
+                <motion.div key={layer} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .35 + index * .1 }} className="flex items-center gap-3 rounded-2xl p-3.5" style={{ background: "rgba(255,255,255,.045)", border: "1px solid rgba(255,255,255,.08)" }}>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[10px] font-black" style={{ color: "#B9AEFF", background: "rgba(139,123,255,.14)" }}>0{index + 1}</span>
+                  <div className="min-w-0 flex-1"><p className="text-[12.5px] font-semibold text-white">{t(`hero_visual_${layer}`)}</p><p className="mt-0.5 truncate text-[10.5px] text-white/42">{t(`hero_visual_${layer}_sub`)}</p></div>
+                  <span className="h-2 w-2 rounded-full" style={{ background: index < 3 ? "#8B7BFF" : "#39C6F0", boxShadow: "0 0 12px currentColor" }} />
+                </motion.div>
+              ))}
+            </div>
+            <p className="relative mt-5 text-[10.5px] leading-relaxed text-white/45">{t("hero_visual_footer")}</p>
+          </div>
         </motion.div>
       </div>
     </section>
@@ -444,12 +404,12 @@ export default function Landing() {
         }}
       />
 
-      <LandingJsonLd />
       <Navbar />
       <main className="relative">
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
         <Hero />
+        <MarketAvailabilitySection />
         {/* Sections render directly on the paper canvas — NO wrappers.
             Each section owns its own inner dark pills/cards internally. */}
         <InStoreUpsellStrip />

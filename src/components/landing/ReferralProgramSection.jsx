@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT } from "@/lib/referralProgram";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
  * REFERRAL-3 — public referral section (replaces the pre-pivot Founding 150
@@ -23,6 +24,7 @@ import { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT } from "@/lib/referralProgram"
  */
 export default function ReferralProgramSection() {
   const { t } = useTranslation();
+  const { experience } = useMarket();
 
   const entryPct = BASE_FEE_PCT - STEP_POINTS;
   const sub = t("ref_land_sub")
@@ -84,8 +86,8 @@ export default function ReferralProgramSection() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-5">
-            <Link to="/Analyzer" className="btn-primary inline-flex items-center gap-2">
-              {t("ref_land_cta")}
+            <Link to={experience.analyzer.href} className="btn-primary inline-flex items-center gap-2">
+              {t(experience.analyzer.status === "ENABLED" ? "ref_land_cta" : "market_cta_access")}
               <ArrowRight size={16} />
             </Link>
             <Link

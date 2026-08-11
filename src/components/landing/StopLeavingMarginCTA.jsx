@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
  * Final CTA block — the WOW closer.
@@ -14,6 +15,7 @@ import { useTranslation } from "@/lib/i18n.jsx";
  */
 export default function StopLeavingMarginCTA() {
   const { t } = useTranslation();
+  const { experience } = useMarket();
   return (
     <section className="relative py-16 sm:py-20 px-4 sm:px-6">
      {/* Dark closer pill — this section is a full-bleed cinematic dark block,
@@ -159,7 +161,7 @@ export default function StopLeavingMarginCTA() {
           >
             <div className="flex-1">
               <Link
-                to="/Analyzer"
+                to={experience.analyzer.href}
                 className="group w-full inline-flex items-center justify-center gap-3 rounded-full font-medium text-[15px] transition-transform hover:-translate-y-0.5"
                 style={{
                   background: "var(--g-voltio)",
@@ -169,7 +171,7 @@ export default function StopLeavingMarginCTA() {
                 }}
               >
                 <Sparkles size={16} style={{ color: "#ffffff" }} />
-                <span>{t("cta_final_primary")}</span>
+                <span>{t(experience.analyzer.status === "ENABLED" ? "cta_final_primary" : "market_cta_access")}</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>

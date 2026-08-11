@@ -74,7 +74,7 @@ function interpolate(str, params) {
  *   setLang: (next: string) => void,
  *   setAutoLang: () => void,
  *   t: (keyOrObj: any, paramsOrLang?: any) => any,
- *   formatCurrency: (amount: any) => string,
+ *   formatCurrency: (amount: any, currency?: string) => string,
  *   formatDate: (date: any) => string,
  * }} TranslationContextValue
  */
@@ -200,7 +200,7 @@ export function LanguageProvider({ children }) {
     setLang,
     setAutoLang,
     t,
-    formatCurrency: (n) => formatCurrency(n, lang),
+    formatCurrency: (n, currency = "EUR") => formatCurrency(n, lang, currency),
     formatDate:     (d) => formatDate(d, lang),
   }), [lang, detectedLang, isAutomatic, setLang, setAutoLang, t]);
 

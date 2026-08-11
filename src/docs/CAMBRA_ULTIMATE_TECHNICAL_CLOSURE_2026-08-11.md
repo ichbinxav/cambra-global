@@ -1,4 +1,4 @@
-# CAMBRA v0.94.0 — Ultimate technical closure
+# CAMBRA v0.95.0 — Ultimate technical closure
 
 Status vocabulary is deliberately narrow: `PASS`, `PASS WITH EXTERNAL VALIDATION PENDING`, or `NOT READY`. The source release verdict is computed in `RELEASE.json`; the commercial GO verdict is independently computed from real-runtime evidence and may remain `NOT_GO_READY` when the source release is technically sound.
 
@@ -27,6 +27,23 @@ The systemic cause is established: the archive file selector and the source-hash
 - Removal of hardcoded operator identity from production sending logic. Automatic sends require an explicit, valid, policy-allowed sending profile.
 - Growth Path Engine V1: deterministic actual-versus-plan bridges, versioned targets/assumptions, bounded scenarios, evidence-labelled forecasts and recommendation-only authority.
 - Founder meeting control: deterministic policy parsing, explicit confirmation, truthful calendar state, structured outcomes and approval separation.
+
+## Landing 0–365 public-experience closure
+
+The public experience now positions CAMBRA as European Infrastructure Intelligence with payments as the first operational wedge. The implementation keeps the existing brand system and replaces unsupported public outcomes with source, confidence and authority language.
+
+- `App` now provides one canonical market context to every public route.
+- Market and language remain separate choices. Browser detection is a suggestion; an explicit visitor choice wins and is persisted locally.
+- The public registry exposes all 33 canonical European markets and their display currencies. Product UI remains EN/FR/ES only; unsupported market languages are labelled as English fallback rather than presented as native translations.
+- The payments Analyzer is public-action enabled only for France and Spain under the current source policy. Other markets remain informational and route to a market-access review. Missing policy, legal state or market resolution fails closed.
+- CTA routing, desktop/mobile navigation and Analyzer submission use the same capability decision, preventing a limited-market visitor from bypassing the landing gate through a different entry point.
+- Public payment claims distinguish market context, provider evidence, rate observations and opportunity ranges. Missing evidence produces a limitation; it does not produce a benchmark, saving or customer result.
+- Cookie controls keep analytics and marketing off by default, provide equally available accept/reject/manage choices, record a versioned decision and allow reopening or withdrawal from the Cookies page.
+- A deterministic 33-market release matrix and machine-readable readiness report are generated from canonical market, locale and capability sources. The release check fails if those artifacts drift.
+- Localized URLs and server-rendered locale documents do not yet exist. Consequently, no `hreflang` set is emitted: publishing 33 language alternates that resolve to one mutable SPA URL would be misleading.
+- Legal copy is implemented but no market is marked legally approved by this source change. Qualified market-specific validation remains `LEGAL_REVIEW_REQUIRED` before regulated, contractual or outbound activity.
+
+Canonical evidence for this closure is generated in `src/docs/CAMBRA_LANDING_RELEASE_MATRIX.md` and `src/docs/CAMBRA_LANDING_READINESS.json`.
 
 ## Runtime truth boundary
 

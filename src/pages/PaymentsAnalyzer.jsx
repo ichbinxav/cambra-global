@@ -36,6 +36,7 @@ import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificatio
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import CountryField from "@/components/paymentsAnalyzer/CountryField";
+import { EUROPE_MARKETS, marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -174,24 +175,6 @@ function mapSlugForSubmit(uiSlug, options) {
   return opt.hasSeed ? opt.slug : "other";
 }
 
-// ── Country list — existing Analyzer surface preserved by P1. The 33-market
-//    Europe registry is intelligence/policy infrastructure; it does NOT imply
-//    Analyzer/rate readiness. P2/P3/P4 may widen this surface with evidence.
-const COUNTRY_OPTIONS = [
-  { code: "FR", name: "France" },       { code: "ES", name: "Spain" },
-  { code: "DE", name: "Germany" },      { code: "IT", name: "Italy" },
-  { code: "PT", name: "Portugal" },     { code: "NL", name: "Netherlands" },
-  { code: "BE", name: "Belgium" },      { code: "IE", name: "Ireland" },
-  { code: "AT", name: "Austria" },      { code: "SE", name: "Sweden" },
-  { code: "DK", name: "Denmark" },      { code: "FI", name: "Finland" },
-  { code: "PL", name: "Poland" },       { code: "CZ", name: "Czech Republic" },
-  { code: "GR", name: "Greece" },       { code: "LU", name: "Luxembourg" },
-  { code: "NO", name: "Norway" },       { code: "CH", name: "Switzerland" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },       { code: "AU", name: "Australia" },
-];
-
 // ── Contract §2.1 hard ranges — mirror of backend VALIDATION. UX-only guard.
 // Checkpoint H — the field labels became i18n KEYS. The ranges themselves are
 // untouched (they mirror the backend contract); only the wording is translated.
@@ -227,7 +210,12 @@ function fieldRangeError(key, value, t, lang) {
 
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
-  const { t, lang } = useTranslation();
+  const { t, lang, locale } = useTranslation();
+  const { marketCode, setMarket } = useMarket();
+  const countryOptions = useMemo(() => EUROPE_MARKETS.map((market) => ({
+    code: market.iso2,
+    name: marketDisplayName(market.iso2, locale),
+  })).sort((a, b) => a.name.localeCompare(b.name, locale)), [locale]);
 
   // M4-TPV Fase 2B — REACTIVADO 2026-07-12 tras Fase 2A-redo verificada.
   // Precondiciones cumplidas: motor 1.4.0 en las 3 copias SYNC byte-idénticas
@@ -251,7 +239,13 @@ export default function PaymentsAnalyzer() {
   // Now the visual default and the state default are the same value at mount.
   const [intlPct, setIntlPct]           = useState("0");
   const [providerSlug, setProviderSlug] = useState("");
-  const [country, setCountry]           = useState("");
+  const [country, setCountry]           = useState(() => {
+    try {
+      const requested = new URLSearchParams(window.location.search).get("market")?.toUpperCase();
+      if (EUROPE_MARKETS.some((market) => market.iso2 === requested)) return requested;
+    } catch {}
+    return marketCode;
+  });
   const [cardMixOpen, setCardMixOpen]   = useState(false);
   const [cardMixDebit, setCardMixDebit] = useState("");
   // Combined mode holds independent per-channel form state, so switching
@@ -295,6 +289,10 @@ export default function PaymentsAnalyzer() {
       }
     } catch { /* storage unavailable — attribution simply not captured */ }
   }, []);
+
+  useEffect(() => {
+    if (country) setMarket(country);
+  }, [country, setMarket]);
 
   // SEED-ES — country-aware provider catalogs. Recomputed when the country
   // changes; ES swaps in the Spanish lists, everything else is unchanged.
@@ -362,6 +360,7 @@ export default function PaymentsAnalyzer() {
       if (!providerSlug) errors.push(t(channel === "in_store" ? "az_err_tpv_req" : "az_err_provider_req"));
     }
     if (!country) errors.push(t("az_err_country_req"));
+    else if (!["FR", "ES"].includes(country)) errors.push(t("az_err_market_limited"));
 
     // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
     const trimmedBrand = brandName.trim();
@@ -722,7 +721,7 @@ export default function PaymentsAnalyzer() {
               {/* Country lives at the top level — single field shared by
                   both channels (a merchant is in one country). */}
               <FieldCard>
-                <CountryField value={country} onChange={setCountry} options={COUNTRY_OPTIONS} />
+                <CountryField value={country} onChange={setCountry} options={countryOptions} />
               </FieldCard>
             </>
           ) : (
@@ -753,7 +752,7 @@ export default function PaymentsAnalyzer() {
                 options, low frequency, no need for a grid. Lifted from its
                 own row into this one to reclaim the desktop width. */}
             <FieldCard>
-              <CountryField value={country} onChange={setCountry} options={COUNTRY_OPTIONS} />
+              <CountryField value={country} onChange={setCountry} options={countryOptions} />
             </FieldCard>
           </div>
 
