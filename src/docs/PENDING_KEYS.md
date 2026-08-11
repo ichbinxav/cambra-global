@@ -38,7 +38,19 @@ How it works:
 Until the IDs are provided, the UI will show "Setup pending" and the button will be disabled (expected).
 
 ## Other secrets/keys
-- (Add here any additional API keys or webhooks you plan to share later.)
+
+### Instantly API v2 — required before any external pilot
+
+- `INSTANTLY_API_KEY`: store only as a Base44 runtime secret.
+- `INSTANTLY_WEBHOOK_SECRET`: generate a long random value and store only as a Base44 runtime secret. The same value is installed as the custom `x-cambra-instantly-secret` webhook header by the governed Admin action.
+- Never paste either value into source, an entity, a screenshot, a test fixture or this document.
+- Until both exist, Admin reports `NOT_CONFIGURED`, effective Instantly capacity is `0`, campaign creation/auth/webhook verification is blocked and outbound remains paused.
+- After configuration: run the Admin API v2 diagnostic, configure a paused exact sender profile, create only the DRAFT CAMBRA campaign, register the deployed HTTPS webhook, prove sender warm-up and SPF/DKIM/DMARC, run zero-send dry-run, execute emergency-stop drill, then run a fresh matching CANARY preflight. Starting a pilot remains a separate explicit Founder action.
+
+### Apollo sunset
+
+- Existing `APOLLO_API_KEY` remains temporary lead-intelligence input only through **2026-09-07**.
+- Do not add new canonical dependencies on Apollo IDs. Useful harvested data must remain in CAMBRA canonical entities with provenance before expiry.
 
 ---
 When you hand over the connector IDs, paste them into `src/lib/connectors.config.js`, save, and the Connect buttons will become active automatically.

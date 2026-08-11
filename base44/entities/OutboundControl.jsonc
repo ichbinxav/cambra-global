@@ -18,6 +18,11 @@
       "type": "boolean",
       "default": false
     },
+    "instantly_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Independent fail-closed switch for Instantly transport. It never enables discovery or another provider."
+    },
     "activated_by": {
       "type": "string"
     },
@@ -69,7 +74,8 @@
     "control_key",
     "acquisition_enabled",
     "premium_outlook_enabled",
-    "volume_resend_enabled"
+    "volume_resend_enabled",
+    "instantly_enabled"
   ],
   "rls": {
     "read": {

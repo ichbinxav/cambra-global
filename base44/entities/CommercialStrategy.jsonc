@@ -1,0 +1,38 @@
+{
+  "name": "CommercialStrategy",
+  "type": "object",
+  "description": "Versioned P7 decision artifact connecting canonical P1-P6 intelligence to P8 execution. It stores evidence and uncertainty, not provider-owned campaign state.",
+  "properties": {
+    "strategy_key": { "type": "string" },
+    "strategy_version": { "type": "string" },
+    "lead_id": { "type": "string" },
+    "canonical_company_key": { "type": "string" },
+    "policy_key": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "opportunity_reference_json": { "type": "object" },
+    "selected_contact_json": { "type": "object" },
+    "market": { "type": "string" },
+    "language": { "type": "string", "enum": ["en", "fr", "es"] },
+    "language_basis": { "type": "string" },
+    "commercial_hypothesis": { "type": "string" },
+    "reason_to_contact": { "type": "string" },
+    "supporting_evidence_json": { "type": "array", "items": { "type": "object" } },
+    "message_angle": { "type": "string" },
+    "cta": { "type": "string" },
+    "followup_strategy_json": { "type": "object" },
+    "priority": { "type": "number" },
+    "confidence": { "type": "number" },
+    "approval_required": { "type": "boolean" },
+    "status": { "type": "string", "enum": ["READY", "REVIEW_REQUIRED", "BLOCKED", "SUPERSEDED", "EXECUTED"] },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "created_at": { "type": "string", "format": "date-time" },
+    "created_by": { "type": "string" },
+    "executed_at": { "type": "string", "format": "date-time" },
+    "thread_id": { "type": "string" }
+  },
+  "required": ["strategy_key", "strategy_version", "lead_id", "policy_key", "policy_version", "status", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

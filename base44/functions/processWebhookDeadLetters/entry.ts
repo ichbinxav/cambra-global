@@ -5,6 +5,8 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { claimSchedulerRun, finishSchedulerRun } from "../../shared/schedulerRun.ts";
+import { handleInstantlyProviderEventRetryWorker } from "../instantlyProviderEventRetryWorker/entry.ts";
+import { handleInstantlyReconciliationWorker } from "../instantlyReconciliationWorker/entry.ts";
 
 const BACKOFF_MINUTES = [5, 30, 120, 720, 1440, 1440];
 const MAX_TOTAL_ATTEMPTS = 9;
@@ -12,6 +14,10 @@ const LOCK_TTL_MIN = 10;
 const MAX_BATCH = 50;
 const PLATFORM_TENANT = "_platform";
 const WORKER_AGENT = "webhook_dead_letter_processor";
+
+function workerRequest(req:Request,body:any){
+  return new Request(req.url,{method:req.method,headers:req.headers,body:JSON.stringify(body)});
+}
 
 async function hmacSha256Hex(secret: string, body: string) {
   const enc = new TextEncoder();
@@ -35,6 +41,7 @@ export default async function (req: Request): Promise<Response> {
     if (!schedulerClaim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:schedulerClaim.run_key });
 
     const manualReplay = body0?.manualReplay === true;
+    const providerMaintenanceOnly = body0?.provider_maintenance_only === true;
     if (manualReplay && (!gate.isAdmin || body0?.confirm !== "REPLAY_EXHAUSTED" || typeof body0?.deadLetterId !== "string" || !body0.deadLetterId)) {
       return Response.json({ ok: false, error: "manual_replay_requires_admin_confirmation_and_deadLetterId" }, { status: 403 });
     }
@@ -51,7 +58,7 @@ export default async function (req: Request): Promise<Response> {
       if (one.status !== "exhausted") return Response.json({ ok: false, error: "manual_replay_only_for_exhausted" }, { status: 409 });
       pending = [one];
       dueNow = [one];
-    } else {
+    } else if(!providerMaintenanceOnly) {
       pending = await svc.entities.WebhookDeadLetter.filter({ status: "pending_retry" }, "-created_date", limit);
       dueNow = pending.filter((d: any) => !d.next_retry_at || new Date(d.next_retry_at) <= now).slice(0, limit);
     }
@@ -99,7 +106,16 @@ export default async function (req: Request): Promise<Response> {
       }
     }
 
-    const summary = { processed: results.length, pending_total: pending.length, manual_replay: manualReplay, results };
+    let instantlyEventRetry:any=null,instantlyReconciliation:any=null;
+    if(!manualReplay){
+      const internalSecret=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+      const workerBody={internal_secret:internalSecret,host_worker:'processWebhookDeadLetters'};
+      const retryResponse=await handleInstantlyProviderEventRetryWorker(workerRequest(req,workerBody));
+      instantlyEventRetry=await retryResponse.json().catch(()=>({ok:false,error:'instantly_retry_response_invalid'}));
+      const reconciliationResponse=await handleInstantlyReconciliationWorker(workerRequest(req,workerBody));
+      instantlyReconciliation=await reconciliationResponse.json().catch(()=>({ok:false,error:'instantly_reconciliation_response_invalid'}));
+    }
+    const summary = { processed: results.length, pending_total: pending.length, manual_replay: manualReplay, provider_maintenance_only:providerMaintenanceOnly, results, instantly_event_retry:instantlyEventRetry, instantly_reconciliation:instantlyReconciliation, host_worker_fallback:true };
     if (task?.id) await svc.entities.AgentTask.update(task.id, { status: "completed", output_summary: `Webhook DLQ ${manualReplay ? "manual replay" : "sweep"}: ${results.length} processed`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch(() => null);
     return Response.json({ ok: true, ...summary });
   } catch (error) {

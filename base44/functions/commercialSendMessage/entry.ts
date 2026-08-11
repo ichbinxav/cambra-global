@@ -8,6 +8,7 @@ import { commercialLegalAction, enforceLegalExecution, legalBlockResponse } from
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { acquisitionEngine } from '../../shared/commercialActivation.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { InstantlyOutboundProvider, instantlyProfileReady } from '../../shared/outboundProvider.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -120,8 +121,8 @@ Deno.serve(async (req) => {
     const sendingProfile=profiles[0]||null;
     if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
     if(approvedOverride&&['initial_outreach','follow_up','partner_outreach'].includes(action)&&!sendingProfile)return Response.json({ok:false,error:'approved_send_profile_required',review_required:true},{status:409});
-    const signatureProvider=sendingProfile?.provider==='resend'?'resend':'outlook';
-    const configuredSignatureEmail=mailboxFromSetting(String(sendingProfile?.from_address||(signatureProvider==='outlook'?Deno.env.get('CAMBRA_OUTLOOK_SIGNATURE_EMAIL'):Deno.env.get('RESEND_FROM'))||''));
+    const signatureProvider=String(sendingProfile?.provider||'outlook');
+    const configuredSignatureEmail=mailboxFromSetting(String(sendingProfile?.from_address||(signatureProvider==='outlook'?Deno.env.get('CAMBRA_OUTLOOK_SIGNATURE_EMAIL'):signatureProvider==='resend'?Deno.env.get('RESEND_FROM'):'')||''));
     const signedText=ensureSignature(text,cambraSignature(signatureProvider,String(thread.engine||''),configuredSignatureEmail));
     const signedHTML=signedHtml(text,signatureProvider,String(thread.engine||''),configuredSignatureEmail);
     if(sendingProfile&&!manualOverride){const minuteAgo=new Date(Date.now()-60000).toISOString();const recentBurst=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:minuteAgo}},'-sent_at',100).catch(()=>[]);const burst=Math.max(1,Math.min(60,Number(sendingProfile.burst_per_minute|| (sendingProfile.provider==='outlook'?12:30))));if(recentBurst.length>=burst)return Response.json({ok:false,error:'sending_profile_burst_limit',profile:sendingProfile.profile_key,burst_per_minute:burst,retry_after_seconds:60},{status:429});}
@@ -132,6 +133,7 @@ Deno.serve(async (req) => {
       if(!sendingProfile)return Response.json({ok:false,error:'sending_profile_required'},{status:409});
       if(sendingProfile.provider==='outlook'&&!control.premium_outlook_enabled)return Response.json({ok:false,error:'premium_outlook_paused'},{status:409});
       if(sendingProfile.provider==='resend'&&!control.volume_resend_enabled)return Response.json({ok:false,error:'volume_resend_paused'},{status:409});
+      if(sendingProfile.provider==='instantly'&&!control.instantly_enabled)return Response.json({ok:false,error:'instantly_outbound_paused'},{status:409});
     }
     let governor:any={allowed:true,reason:'admin_manual_override'};
     if(automatic){
@@ -152,29 +154,57 @@ Deno.serve(async (req) => {
       manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Approved override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||approvedOverride?.approved_by||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.1.0'}).catch(()=>null);
       if(!manualOverrideAudit)return Response.json({ok:false,error:'manual_override_audit_required'},{status:409});
     }
-    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_approval_id:approvedOverride?.id||null,manual_override_audit_id:manualOverrideAudit?.id||null};
-    const costReservation=await reservePaidOperation(svc,{event_key:`email:${idempotency}`,category:'email',provider,source:'commercialSendMessage',related_entity_type:'CommunicationThread',related_entity_id:thread.id});
-    const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
-    if (provider==='outlook' && outlook?.accessToken) {
-      const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
-      const draftRes=await fetch('https://graph.microsoft.com/v1.0/me/messages',{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({subject,body:{contentType:'HTML',content:signedHTML},toRecipients:[{emailAddress:{address:to}}],internetMessageHeaders:[{name:'X-CAMBRA-Thread',value:thread.id}]})});const draft=await draftRes.json().catch(()=>({}));if(!draftRes.ok)throw new Error(`outlook_draft_failed:${draftRes.status}`);
-      const sendRes=await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(String(draft.id))}/send`,{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`}});if(!sendRes.ok)throw new Error(`outlook_send_failed:${sendRes.status}`);providerMessageId=draft.id||null;externalThreadId=draft.conversationId||externalThreadId;raw={...raw,outlook_message_id:draft.id||null,conversation_id:draft.conversationId||null};
-    } else {
-      const resendKey = Deno.env.get('RESEND_API_KEY');
-      if (!resendKey) return Response.json({ ok:false, error:'commercial_email_not_configured', setup_required:true }, { status:503 });
-      provider='resend';const resendIdentity=signatureIdentity('resend',String(thread.engine||''),configuredSignatureEmail);const fromSetting=String(sendingProfile?.from_address||Deno.env.get('RESEND_FROM')||'').trim();if(!fromSetting)return Response.json({ok:false,error:'resend_from_identity_required',setup_required:true},{status:503});const from=fromSetting.includes('<')?fromSetting:`${resendIdentity.name} <${fromSetting}>`;fromAddress=mailboxFromSetting(fromSetting);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
-      const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,html:signedHTML,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
+    const liveThread=await svc.entities.CommunicationThread.get(thread.id).catch(()=>null);
+    if(!liveThread||['closed','suppressed'].includes(liveThread.status)||liveThread.automation_paused===true)return Response.json({ok:false,error:'thread_state_changed_before_send'},{status:409});
+    const liveSuppressions=await svc.entities.ContactSuppression.filter({email:to,active:true},'-created_date',1).catch(()=>[]);if(liveSuppressions.length)return Response.json({ok:false,error:'contact_suppressed_before_send'},{status:409});
+    if(action==='follow_up'){
+      if(['MEETING_BOOKED','MEETING_COMPLETED','CLOSED_WON','CLOSED_LOST'].includes(String(liveThread.conversation_state||''))||['booked','completed'].includes(String(liveThread.meeting_status||'')))return Response.json({ok:false,error:'follow_up_cancelled_by_meeting_or_closed_state'},{status:409});
+      const latest=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',10).catch(()=>[]);const latestInbound=latest.find((message:any)=>message.direction==='inbound');const latestOutbound=latest.find((message:any)=>message.direction==='outbound');if(latestInbound&&(!latestOutbound||Date.parse(latestInbound.received_at||latestInbound.created_date||0)>=Date.parse(latestOutbound.actual_sent_at||latestOutbound.sent_at||latestOutbound.created_date||0)))return Response.json({ok:false,error:'follow_up_cancelled_by_new_reply'},{status:409});
     }
+    let provider=String(sendingProfile?.provider||'outlook'); let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let externalLeadId=thread.external_lead_id||null; let sendStatus='sent'; let actualSentAt:any=now; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_approval_id:approvedOverride?.id||null,manual_override_audit_id:manualOverrideAudit?.id||null};
+    const costReservation=await reservePaidOperation(svc,{event_key:`email:${idempotency}`,category:'email',provider,source:'commercialSendMessage',related_entity_type:'CommunicationThread',related_entity_id:thread.id});
+    try{
+      if(provider==='instantly'){
+        if(!instantlyProfileReady(sendingProfile))throw Object.assign(new Error('instantly_profile_not_ready'),{status:409});
+        const instantlyKey=Deno.env.get('INSTANTLY_API_KEY')||'';if(!instantlyKey)throw Object.assign(new Error('instantly_not_configured'),{status:503});
+        const transport=new InstantlyOutboundProvider(instantlyKey);fromAddress=mailboxFromSetting(String(sendingProfile.from_address||''));
+        if(acquisitionAction){
+          const lead=thread.lead_id?await svc.entities.OutboundLead.get(String(thread.lead_id)).catch(()=>null):null;
+          const queued=await transport.queueInitial({campaign_id:sendingProfile.external_campaign_id,to,contact_name:thread.counterparty_name||lead?.contact_full_name||'',contact_title:thread.counterparty_role||lead?.contact_title||'',company_name:thread.company_name||lead?.company_name||'',company_domain:lead?.company_domain||'',personalization:(thread.personalization_json?.facts||[]).slice(0,5).join('; '),subject,text:signedText,thread_id:thread.id,idempotency_key:idempotency});
+          externalLeadId=queued.provider_lead_id||externalLeadId;sendStatus='scheduled';actualSentAt=null;raw={...raw,instantly_lead_id:queued.provider_lead_id||null,instantly_campaign_id:queued.campaign_id,queued:true,provider_response:queued.raw};
+        }else{
+          const inboundId=String(body?.in_reply_to_message_id||'');const inbound=inboundId?await svc.entities.CommunicationMessage.get(inboundId).catch(()=>null):null;
+          if(!inbound?.provider_message_id)throw Object.assign(new Error('instantly_reply_reference_required'),{status:409});
+          const sent=await transport.sendReply({eaccount:fromAddress,reply_to_uuid:inbound.provider_message_id,subject,text:signedText,html:signedHTML});
+          providerMessageId=sent.provider_message_id||null;externalThreadId=sent.external_thread_id||externalThreadId;raw={...raw,instantly_email_id:providerMessageId,instantly_thread_id:externalThreadId,provider_response:sent.raw};
+        }
+      }else if(provider==='outlook'){
+        const outlook=await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));if(!outlook?.accessToken)throw Object.assign(new Error('outlook_connector_required'),{status:503});
+        const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);
+        const draftRes=await fetch('https://graph.microsoft.com/v1.0/me/messages',{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`,'Content-Type':'application/json'},body:JSON.stringify({subject,body:{contentType:'HTML',content:signedHTML},toRecipients:[{emailAddress:{address:to}}],internetMessageHeaders:[{name:'X-CAMBRA-Thread',value:thread.id}]})});const draft=await draftRes.json().catch(()=>({}));if(!draftRes.ok)throw new Error(`outlook_draft_failed:${draftRes.status}`);
+        const sendRes=await fetch(`https://graph.microsoft.com/v1.0/me/messages/${encodeURIComponent(String(draft.id))}/send`,{method:'POST',headers:{Authorization:`Bearer ${outlook.accessToken}`}});if(!sendRes.ok)throw new Error(`outlook_send_failed:${sendRes.status}`);providerMessageId=draft.id||null;externalThreadId=draft.conversationId||externalThreadId;raw={...raw,outlook_message_id:draft.id||null,conversation_id:draft.conversationId||null};
+      }else if(provider==='resend'){
+        const resendKey=Deno.env.get('RESEND_API_KEY');if(!resendKey)throw Object.assign(new Error('commercial_email_not_configured'),{status:503});
+        const resendIdentity=signatureIdentity('resend',String(thread.engine||''),configuredSignatureEmail);const fromSetting=String(sendingProfile?.from_address||Deno.env.get('RESEND_FROM')||'').trim();if(!fromSetting)throw Object.assign(new Error('resend_from_identity_required'),{status:503});const from=fromSetting.includes('<')?fromSetting:`${resendIdentity.name} <${fromSetting}>`;fromAddress=mailboxFromSetting(fromSetting);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
+        const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,html:signedHTML,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
+      }else throw Object.assign(new Error('unsupported_outbound_provider'),{status:409});
+    }catch(error:any){await settlePaidOperation(svc,costReservation,{ok:false,usage_json:{thread_id:thread.id,error_code:String(error?.code||error?.message||'transport_failed').slice(0,160)}}).catch(()=>null);throw error;}
     const message = await svc.entities.CommunicationMessage.create({
       thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency, sending_profile_key:sendingProfile?.profile_key||thread.sending_profile_key||null,
       from_email:fromAddress, to_emails:[to], subject, text_body:signedText, classification, agent_name:String(body?.agent_name || 'commercial_orchestrator'), policy_key:thread.policy_key,
-      policy_version:thread.policy_version, approval_id:body?.approval_id || null, message_intent:String(body?.message_intent||action).toUpperCase(), thread_context_snapshot_json:{thread_id:thread.id,engine:thread.engine,policy_key:thread.policy_key,policy_version:thread.policy_version,market_jurisdiction:jurisdiction||null}, send_status:'sent', sent_at:now, actual_sent_at:now, quality_gate_json:quality, raw_event_json:raw
+      policy_version:thread.policy_version, approval_id:body?.approval_id || null, message_intent:String(body?.message_intent||action).toUpperCase(), thread_context_snapshot_json:{thread_id:thread.id,engine:thread.engine,policy_key:thread.policy_key,policy_version:thread.policy_version,market_jurisdiction:jurisdiction||null}, send_status:sendStatus, sent_at:now, actual_sent_at:actualSentAt, quality_gate_json:quality, raw_event_json:raw
     });
-    await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_counterparty', external_thread_id:externalThreadId, last_outbound_at:now, last_message_at:now, next_action_at:body?.next_action_at || null });
+    const threadPatch:any={status:'awaiting_counterparty',external_provider:provider,last_message_at:now,next_action_at:body?.next_action_at||null};
+    if(externalThreadId)threadPatch.external_thread_id=externalThreadId;
+    if(provider==='instantly'&&sendingProfile?.external_campaign_id)threadPatch.external_campaign_id=sendingProfile.external_campaign_id;
+    if(externalLeadId)threadPatch.external_lead_id=externalLeadId;
+    if(sendStatus==='sent')threadPatch.last_outbound_at=now;
+    await svc.entities.CommunicationThread.update(thread.id,threadPatch);
     await settlePaidOperation(svc,costReservation,{ok:true,usage_json:{provider_message_id:providerMessageId,thread_id:thread.id}});
-    return Response.json({ ok:true, message_id:message.id, provider_message_id:providerMessageId, provider, external_thread_id:externalThreadId });
-  } catch (error) {
+    return Response.json({ ok:true, queued:sendStatus==='scheduled', message_id:message.id, provider_message_id:providerMessageId, provider, external_thread_id:externalThreadId, external_lead_id:externalLeadId });
+  } catch (error:any) {
     console.error('commercialSendMessage failed', error);
-    return Response.json({ ok:false, error:'commercial_send_failed' }, { status:500 });
+    const safe=String(error?.message||'commercial_send_failed').slice(0,160);
+    return Response.json({ ok:false, error:safe }, { status:Number(error?.status||500) });
   }
 });

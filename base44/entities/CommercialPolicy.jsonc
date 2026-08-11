@@ -83,6 +83,38 @@
     "min_lead_score": {
       "type": "number"
     },
+    "min_opportunity_score": {
+      "type": "number",
+      "description": "Minimum bounded P5 opportunity score for acquisition execution. Missing or invalid values fail GO validation for new CANARY policies."
+    },
+    "min_confidence": {
+      "type": "number",
+      "description": "Minimum propagated evidence confidence from P5/P6 for P7/P8 autonomous execution."
+    },
+    "autonomous_replies_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "meeting_proposals_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "provider_selection_json": {
+      "type": "object",
+      "description": "Founder-approved provider preference and fallback constraints. Sending profile allowlists remain authoritative."
+    },
+    "approval_thresholds_json": {
+      "type": "object"
+    },
+    "qualification_rules_json": {
+      "type": "object"
+    },
+    "negotiation_authority_json": {
+      "type": "object"
+    },
+    "risk_controls_json": {
+      "type": "object"
+    },
     "business_hours_start": {
       "type": "number"
     },

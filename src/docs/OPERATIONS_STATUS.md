@@ -6,6 +6,14 @@
 
 ---
 
+## Release v0.95.0 — P7/P8 Autonomous Commercial Execution (2026-08-11)
+
+**Repository implementation complete; real Instantly validation and any pilot remain blocked.** P7 now persists an evidence-backed `CommercialStrategy` only for canonical P6 leads that are truly READY_FOR_CONTACT. P8 consumes that artifact through a replaceable outbound-provider contract. Instantly API v2 is transport only: CAMBRA retains scoring, policy, message content, thread memory, reply classification, next-best-action, approval and suppression authority. Provider-native reply AI is a hard conflict, not a second brain.
+
+Inbound events use an authenticated webhook, deterministic event ledger, bounded retry/DLQ and a 15-minute official-API reconciliation worker. Initial queueing and replies share the central sender, idempotency, policy, cost, kill-switch and race rechecks. Founder Admin exposes zero-send E2E dry-run, provider status, DRAFT campaign/webhook setup, fresh preflight, explicit canary activation and local+remote emergency pause. Instantly capacity is zero unless all real gates pass.
+
+`INSTANTLY_API_KEY` and `INSTANTLY_WEBHOOK_SECRET` are not configured in the observed Base44 runtime, so the honest runtime state is `NOT_CONFIGURED`. No campaign was created, no webhook was registered and no unsolicited message was sent. See `CAMBRA_V095_AUTONOMOUS_COMMERCIAL_EXECUTION.md` for architecture, tests, activation order and external blockers.
+
 ## Release v0.92.0 — Ultimate A–Z Audit & Human Communication Seal (2026-08-11)
 
 **Local source feature-freeze ready; external blockers remain and canary stays off.**
@@ -574,3 +582,13 @@ be recovered from any source, so callers block instead of billing 0.
 
 - Owner: CAMBRA product + legal.
 - Last review: 2026-08-05 (v60.2 — contract policy wiring closed end-to-end).
+
+## v0.95 Base44 runtime deployment — 2026-08-11
+
+- Entity sync: PASS, including `CommercialStrategy`, `CommercialProviderState` and `OutboundProviderEvent`.
+- Existing function updates: PASS. The P7/P8/Instantly routes are deployed through `outboundControlAdmin`, `resendInboundWebhook` and `processWebhookDeadLetters` because the app rejects new function names at its current quota.
+- Founder Admin provider status: PASS and honestly `NOT_CONFIGURED`; no API key, no profiles, acquisition off, Instantly off, secret value not exposed.
+- Controlled P7→P8→reply dry-run: PASS with zero real provider calls and zero unsolicited sends.
+- Hosted provider maintenance proof: PASS. The isolated run processed 0 legacy webhook deliveries, event retry completed with 0 due/0 DLQ, reconciliation completed honestly as `NOT_CONFIGURED`, and both logical worker keys recorded `COMPLETED` SchedulerRun rows.
+- Site: deployed to `https://cambra-global-d7ac1fab.base44.app`.
+- Production outbound: intentionally DRAFT/effective capacity 0 pending scoped secrets, real auth, authenticated webhook, warm-up/domain evidence, cost configuration, controlled drills and explicit founder pilot authorization.

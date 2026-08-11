@@ -1,4 +1,5 @@
 import { EUROPE_33 } from './legalExecution.ts';
+import { instantlyProfileReady } from './outboundProvider.ts';
 
 export const COMMERCIAL_ACTIVATION_VERSION = 'commercial-activation-1.0.0';
 export const LEGACY_SENDING_PROFILE_RESOLVER_VERSION = 'legacy-sending-profile-1.0.0';
@@ -24,8 +25,9 @@ export function commercialActionForEngine(engine:any){
 export function sendingProfileIsValid(profile:any){
   const cap=Number(profile?.current_daily_cap);
   return Boolean(
-    profile?.profile_key&&['outlook','resend'].includes(String(profile.provider||''))&&profile.domain&&
+    profile?.profile_key&&['outlook','resend','instantly'].includes(String(profile.provider||''))&&profile.domain&&
     ['warming','active'].includes(String(profile.status||''))&&Number.isFinite(cap)&&cap>0&&cap<=550
+    &&(profile.provider!=='instantly'||instantlyProfileReady(profile))
   );
 }
 
@@ -100,6 +102,11 @@ export function validateCanaryPolicy(policy:any){
   if(!Number.isInteger(daily)||daily<CANARY_DAILY_SEND_MIN||daily>CANARY_DAILY_SEND_MAX)blockers.push('daily_send_limit_must_be_1_to_15');
   const score=Number(policy?.min_lead_score);
   if(!Number.isFinite(score)||score<CANARY_MIN_LEAD_SCORE||score>100)blockers.push('min_lead_score_must_be_70_to_100');
+  const opportunity=Number(policy?.min_opportunity_score);
+  if(!Number.isFinite(opportunity)||opportunity<0||opportunity>100)blockers.push('min_opportunity_score_must_be_0_to_100');
+  const confidence=Number(policy?.min_confidence);
+  if(!Number.isFinite(confidence)||confidence<0.5||confidence>1)blockers.push('min_confidence_must_be_0_5_to_1');
+  if(policy?.risk_controls_json?.provider_ai_reply!==false)blockers.push('provider_ai_reply_must_be_disabled');
   const markets=uniqueStrings(policy?.countries).map((x)=>x.toUpperCase());
   if(!markets.length)blockers.push('ready_markets_required');
   if(markets.some((market)=>!EUROPE_33.includes(market)))blockers.push('market_outside_europe_33');

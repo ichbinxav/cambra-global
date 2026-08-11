@@ -12,6 +12,9 @@
         "opt_out",
         "bounce",
         "complaint",
+        "not_interested",
+        "wrong_person",
+        "provider_blocklist",
         "legal",
         "manual",
         "customer_exclusion"

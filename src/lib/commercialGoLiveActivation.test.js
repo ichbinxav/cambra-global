@@ -44,7 +44,7 @@ describe('commercial pre-GO activation seal',()=>{
   });
 
   it('requires a bounded CANARY policy with explicit ready markets and profiles',()=>{
-    const valid={engine:'merchant_acquisition',status:'active',mode:'CANARY',daily_send_limit:10,min_lead_score:70,countries:['ES','DE'],sending_profile_keys:[resend.profile_key]};
+    const valid={engine:'merchant_acquisition',status:'active',mode:'CANARY',daily_send_limit:10,min_lead_score:70,min_opportunity_score:60,min_confidence:.7,risk_controls_json:{provider_ai_reply:false},countries:['ES','DE'],sending_profile_keys:[resend.profile_key]};
     expect(validateCanaryPolicy(valid)).toMatchObject({ok:true,blockers:[]});
     expect(validateCanaryPolicy({...valid,daily_send_limit:0}).blockers).toContain('daily_send_limit_must_be_1_to_15');
     expect(validateCanaryPolicy({...valid,daily_send_limit:16}).blockers).toContain('daily_send_limit_must_be_1_to_15');
@@ -65,11 +65,11 @@ describe('commercial pre-GO activation seal',()=>{
 
   it('makes start depend on a matching fresh hash and an immediate recomputation',()=>{
     const control=source('base44/functions/outboundControlAdmin/entry.ts');
-    expect(control).toContain("confirmation!=='START_CANARY_OUTBOUND'");
-    expect(control).toContain("error:'preflight_hash_required'");
-    expect(control).toContain("control.preflight_status!=='PASS'");
+    expect(control).toMatch(/confirmation\s*!==\s*["']START_CANARY_OUTBOUND["']/);
+    expect(control).toMatch(/error:\s*["']preflight_hash_required["']/);
+    expect(control).toMatch(/control\.preflight_status\s*!==\s*["']PASS["']/);
     expect(control).toContain('evaluateCommercialGoLiveReadiness');
-    expect(control).toContain("error:'preflight_state_changed'");
+    expect(control).toMatch(/error:\s*["']preflight_state_changed["']/);
   });
 
   it('checks P10/P11, credentials and the legacy invariant before GO',()=>{
@@ -79,7 +79,9 @@ describe('commercial pre-GO activation seal',()=>{
     expect(runtime).toContain("getConnection('outlook')");
     expect(runtime).toContain('eligible_legacy_threads_without_valid_profile');
     expect(runtime).toContain('legacy_thread_coverage_truncated');
-    expect(runtime).toContain("return {merchant_acquisition:'resend',partner_acquisition:'outlook'}");
+    expect(runtime).toContain("return {merchant_acquisition:['resend','instantly'],partner_acquisition:['outlook']}");
+    expect(runtime).toContain("Deno.env.get('INSTANTLY_API_KEY')");
+    expect(runtime).toContain('instantly_authenticated_webhook_configuration_required');
     expect(runtime).toContain('policy_ids:policyIds');
     expect(source('base44/functions/outboundVolumeWorker/entry.ts')).toContain('policy.sending_profile_keys||[]');
     expect(source('base44/functions/autonomousPartnerWorker/entry.ts')).toContain('policy.sending_profile_keys||[]');

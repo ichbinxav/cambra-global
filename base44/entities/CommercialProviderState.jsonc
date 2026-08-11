@@ -1,0 +1,27 @@
+{
+  "name": "CommercialProviderState",
+  "type": "object",
+  "description": "Provider-agnostic operational status for replaceable commercial intelligence and outbound providers. Secrets are never persisted here.",
+  "properties": {
+    "provider_key": { "type": "string" },
+    "role": { "type": "string", "enum": ["lead_intelligence", "outbound"] },
+    "status": { "type": "string", "enum": ["NOT_CONFIGURED", "CONFIGURED", "AUTHENTICATED", "DEGRADED", "ACTIVE", "ERROR", "EXPIRED"] },
+    "api_version": { "type": "string" },
+    "secret_present": { "type": "boolean", "default": false },
+    "auth_test_pass": { "type": "boolean" },
+    "last_checked_at": { "type": "string", "format": "date-time" },
+    "last_success_at": { "type": "string", "format": "date-time" },
+    "circuit_open_until": { "type": "string", "format": "date-time" },
+    "campaigns_json": { "type": "object" },
+    "accounts_json": { "type": "object" },
+    "webhook_json": { "type": "object" },
+    "metrics_json": { "type": "object" },
+    "configuration_json": { "type": "object", "description": "Non-secret provider configuration and capability flags only." },
+    "last_error_code": { "type": "string" }
+  },
+  "required": ["provider_key", "role", "status", "api_version", "secret_present"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

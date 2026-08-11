@@ -1,0 +1,4 @@
+{
+  "name": "commercialExecutionDryRun",
+  "entry": "serve.ts"
+}

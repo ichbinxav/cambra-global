@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.94.0 — Ultimate Technical Closure Candidate (durability manifest)",
-  "generatedAt": "2026-08-11T20:01:46.611Z",
-  "packageVersion": "0.94.0",
+  "release": "CAMBRA v0.95.0 — P7/P8 Autonomous Commercial Execution (durability manifest)",
+  "generatedAt": "2026-08-11T21:34:35.613Z",
+  "packageVersion": "0.95.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -42,18 +42,18 @@
     },
     {
       "path": "base44/entities/CommercialPolicy.jsonc",
-      "sha256": "b1daef074b70f45270d2050c3abfd68495b7dbddd88c339c026cd88b893b713c",
-      "bytes": 3654
+      "sha256": "5d9901670297520599cf751afeffd2386318a06e5f0ce087fd511e5fdf9d4a4d",
+      "bytes": 4664
     },
     {
       "path": "base44/entities/CommunicationMessage.jsonc",
-      "sha256": "850fd5b8c42a9837000ca698e12e1466c959f167cc268fb7265f61a23369810f",
-      "bytes": 3471
+      "sha256": "a26697830ba440609e4a7c856c2833103cae64ec4e58fc4e4dc1998637928f2b",
+      "bytes": 3493
     },
     {
       "path": "base44/entities/CommunicationThread.jsonc",
-      "sha256": "7b973466b24f5647b0265c68751df72e3efb4c333de1f3781533bfec85a19f95",
-      "bytes": 7381
+      "sha256": "c8fafa09e6361934fd2e84bf157dda2886bb7fe89f73cc52452d3fc582588da8",
+      "bytes": 7679
     },
     {
       "path": "base44/entities/CostBudgetControl.jsonc",
@@ -187,13 +187,13 @@
     },
     {
       "path": "base44/entities/OutboundControl.jsonc",
-      "sha256": "07b5d33f8182374d10342855c1282bc3ea6ac2401b7b1e2c8b9c66405c95ca53",
-      "bytes": 1759
+      "sha256": "6986fb4cfc44a5fb92306d2091ee973c1da80775990fe4550876d38666bf93b8",
+      "bytes": 1994
     },
     {
       "path": "base44/entities/OutboundSendingProfile.jsonc",
-      "sha256": "d35b01948cf03aaa39a42a11507bf7ac4dbd4eb53cea6462000d8fc207e01a40",
-      "bytes": 2477
+      "sha256": "122cd6286cf17afe6442767d23138585435f8b6658f97e6a19dbf20dce55ddda",
+      "bytes": 3114
     },
     {
       "path": "base44/entities/PaymentEvent.jsonc",
@@ -357,8 +357,8 @@
     },
     {
       "path": "base44/functions/commercialPolicyAdmin/entry.ts",
-      "sha256": "c16e1090a7bc10a6d757fbaafcd430958c0084628b59372072a3dbe11393fba7",
-      "bytes": 13836
+      "sha256": "a598411cdbc965e3eab2dd70870d0ecdb7ddb58bf66b5209ae1ec7a9c5e0e403",
+      "bytes": 15988
     },
     {
       "path": "base44/functions/commercialReplyAgent/entry.ts",
@@ -367,8 +367,8 @@
     },
     {
       "path": "base44/functions/commercialSendMessage/entry.ts",
-      "sha256": "2f8bf5a2cad319741efa072326b408e018b1b54035f87e014ad7d1c871b50c22",
-      "bytes": 21964
+      "sha256": "e3e5e366c1b634601fe4be7483ddace41d51439639275d6c5883b8841bd275a1",
+      "bytes": 26665
     },
     {
       "path": "base44/functions/competitorMonitorAgent/entry.ts",
@@ -552,8 +552,8 @@
     },
     {
       "path": "base44/functions/goLiveControlAdmin/entry.ts",
-      "sha256": "a7958e61c71b86fa3f4ee8d378fb5314fd29081c0aa1b2f149811e9e0090fdcf",
-      "bytes": 33470
+      "sha256": "5949d0ee5dd65e65771100d5b5e73c98cfd4b5a1e29a1b032832b7fd0a45ce3e",
+      "bytes": 34776
     },
     {
       "path": "base44/functions/goLiveControlAdmin/function.jsonc",
@@ -622,8 +622,8 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "sha256": "b350202f9970ec8c5b2b8eed9f987ee8b2e3ddd36b65aca62892b2524958c645",
-      "bytes": 23068
+      "sha256": "f86c0a909771ab60bac9696694f905a42a6732712baee84df9ea7923c69474c1",
+      "bytes": 23216
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
@@ -692,8 +692,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "321c26e3bfa57db42e117652d0d7ee1a05dd05025c644645293b0a9977dc71a1",
-      "bytes": 7213
+      "sha256": "cf56770989770a8b77b22a3aa296139ea35a239f2b38171c9ee4a9bba9e2f3c2",
+      "bytes": 15010
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
@@ -702,8 +702,8 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "sha256": "09b15edf6bdb2f5f050f48a20221daac85dd5120b39d1b33b4da6b8d0a1a5d1c",
-      "bytes": 9742
+      "sha256": "7f7d67e20dc6a785a249daf9f795f5b3e3fcf2f757033c4993a8c1b07368115c",
+      "bytes": 11239
     },
     {
       "path": "base44/functions/outcomeLearningWorker/entry.ts",
@@ -747,8 +747,8 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "0f52bd4e870a660f541ea713451f1cbe7a42da39e9bc8254d9a853cc47d473f0",
-      "bytes": 8352
+      "sha256": "a4ed2094bf2fd733da7e868343af5d622e8160aaddfda4c5c69b96d42f9dd6d8",
+      "bytes": 9718
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/function.jsonc",
@@ -847,8 +847,8 @@
     },
     {
       "path": "base44/functions/resendInboundWebhook/entry.ts",
-      "sha256": "8bdc4ab91fc76a34e9c20c455e46908cc96d9dbb763aed479f2875814d858735",
-      "bytes": 8813
+      "sha256": "d37a403ff05d7d074d3ffe3cec93c13ee426f8f3fbe8115081a4bcc8a12aa43f",
+      "bytes": 9850
     },
     {
       "path": "base44/functions/resolveCommercialApproval/entry.ts",
@@ -957,18 +957,18 @@
     },
     {
       "path": "base44/shared/commercialActivation.ts",
-      "sha256": "528828cd379953c56e48ed9e70c2a7385a1f1886779459eced84e77390defa18",
-      "bytes": 6370
+      "sha256": "0f54ce9147a0726f2b22b3528a357a2f06b436cf91fb2ccfd952535044207dd5",
+      "bytes": 6976
     },
     {
       "path": "base44/shared/commercialActivationRuntime.ts",
-      "sha256": "292ad412975be1d507b12672bbbe6f9752e6b5d2f68f5dc0bf2016d7607bf957",
-      "bytes": 9356
+      "sha256": "5ea0a787947ee5659557481278722932ce290a17621dd90c2c963e96afdbcc6d",
+      "bytes": 10291
     },
     {
       "path": "base44/shared/commercialAutonomy.ts",
-      "sha256": "4d73c945f68abc0a697a18ceba53dcd3b3ae5cfaaa68c352961b291150826973",
-      "bytes": 12519
+      "sha256": "2065c12df810ba2463ac7841ce399b31983b711e33af00e556f362aad0bbe0af",
+      "bytes": 12894
     },
     {
       "path": "base44/shared/commercialIntelligence.ts",
@@ -982,8 +982,8 @@
     },
     {
       "path": "base44/shared/costGovernance.ts",
-      "sha256": "5f96095ce68ee1baf91eab825ed67107590c29b9312deb34a759ef0011a2aa6a",
-      "bytes": 18937
+      "sha256": "f560c1da47bcda50120744125dfb6efe74f2b805399b29a010617568ab10f6b9",
+      "bytes": 19264
     },
     {
       "path": "base44/shared/documentExtraction.ts",
@@ -992,7 +992,7 @@
     },
     {
       "path": "base44/shared/documentationRegistry.ts",
-      "sha256": "0ea24afc1d0dda6e6650dd87a8f80713faf66a5c5352df81b49d8dad44cf846d",
+      "sha256": "df23e5e1b3c940b3c3702b07aaadbe9703db304cd8dc88db9ce5109c75ea5e1a",
       "bytes": 46035
     },
     {
@@ -1047,8 +1047,8 @@
     },
     {
       "path": "base44/shared/goLiveRuntime.ts",
-      "sha256": "dfc6deec0fd94a2316b29a58771a2d5367d054ae77eae32a470c0ffd975b15fb",
-      "bytes": 2845
+      "sha256": "24d9fcab236937f18c60d4ba3cfd82171859db4c1bb64ebc1eac986d4faf8191",
+      "bytes": 4415
     },
     {
       "path": "base44/shared/intelligenceCapabilities.ts",
@@ -1097,8 +1097,8 @@
     },
     {
       "path": "base44/shared/schedulerRun.ts",
-      "sha256": "ae96827c843f4c3d4a6723e71f98768c344a559ae5ca99e0a11b98256265995e",
-      "bytes": 11416
+      "sha256": "b542fee75a669718e9ea07b61e8c303fbaf0685baab4c09e0fa7db4a4c2eb2a5",
+      "bytes": 12503
     },
     {
       "path": "base44/shared/webhookPublicPayload.ts",
@@ -1157,13 +1157,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "99ffb0a94c8ac497ffb9eef6aeb4a60bae00773feb71206098dcbf2bae20a91a",
+      "sha256": "1b596987d7d2da10242702322c1b635a4b5a405607e4f457a813165f7933fe75",
       "bytes": 399642
     },
     {
       "path": "package.json",
-      "sha256": "48be31695219e4412e0f4625f5f92d1ed3cb71ddd088aa51f1a0849141a91e8b",
-      "bytes": 7120
+      "sha256": "1cb64746f7a95daadad5014a276f988bc43b47def5afdeea8fe374fe4b5a8b53",
+      "bytes": 7121
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -1207,8 +1207,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "1d17c09ec8b3c7abcb0ca0154bd53698ea48345fd09b943be8fb8f720d551998",
-      "bytes": 12737
+      "sha256": "bd1db18ea5a348855dc2474dd0f5f47ffb7cac1cf10d2cfc5cca61946add660d",
+      "bytes": 13866
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -1367,8 +1367,8 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "ac26b78204629b8de0bf7bff12ee87e248d8e4aff63cc1e20ae6e02d3f180b9a",
-      "bytes": 44921
+      "sha256": "7d9d8e46887c9afb2d8df54be3f434b04fff094357b82a42dceda693d0c110f2",
+      "bytes": 47563
     },
     {
       "path": "src/docs/P11_EUROPEAN_LEGAL_EXECUTION.md",
@@ -1392,8 +1392,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "7576595b5e9d6d0ca37237a8745c0469306517288dbb5e4c42dee776e86a58a7",
-      "bytes": 54856
+      "sha256": "66e09c149189265946c08037c201906f0796f0c46570b0b35fc07ea06d0c128f",
+      "bytes": 56930
     },
     {
       "path": "src/lib/commercialCommunicationHardening.test.js",
@@ -1402,8 +1402,8 @@
     },
     {
       "path": "src/lib/commercialGoLiveActivation.test.js",
-      "sha256": "367ecf92f771b8d18015c64fc867d79d5ea3043ccfdb4d58ba6549d6b81a6253",
-      "bytes": 7675
+      "sha256": "512b1ec400ae7f057672bf6a8a7512fac15cf0a0da52b782232352f795d442b0",
+      "bytes": 7971
     },
     {
       "path": "src/lib/commercialHardeningPatch.test.js",
@@ -1422,8 +1422,8 @@
     },
     {
       "path": "src/lib/commercialSignature.test.js",
-      "sha256": "2a12a4a562f0cddf4eb4068668781c2d20e3364c4ca8631c565ba982ac9f5b30",
-      "bytes": 1362
+      "sha256": "ecefe8d3ba490ea7b3565b5f429a1f9841a5471582ea848344471dbec2aaee64",
+      "bytes": 1441
     },
     {
       "path": "src/lib/confidenceResult.js",
@@ -1622,8 +1622,8 @@
     },
     {
       "path": "src/lib/outboundSendingSafety.test.js",
-      "sha256": "c7c689bc20a2fca3b90893d6f9c70b9fcb584dd408ba5fa14093c22e15e33072",
-      "bytes": 2915
+      "sha256": "204d32501f2d0400ce81315608756ec2264c97089bb9906f1edc6f9cee36ef63",
+      "bytes": 3144
     },
     {
       "path": "src/lib/p11AutonomousOperations.test.js",
@@ -1657,8 +1657,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "dd31fee7947e66f8689fe5b7c00cb2e1a466605f430a1a7aa1b9faf8c9811daa",
-      "bytes": 11136
+      "sha256": "df49080f7d4adb13b8febfd3ec06941fb5d9936bdbd9fdd1a8009c7840d4b6fe",
+      "bytes": 11310
     },
     {
       "path": "src/lib/todayAuditHardening.test.js",
@@ -1707,13 +1707,13 @@
     },
     {
       "path": "src/pages/admin/AdminCommercialAutonomy.jsx",
-      "sha256": "5d5c73845bf4acb7c60e252e34e9d97efe59e7633a3f2f8c0f2e3e246308453b",
-      "bytes": 14224
+      "sha256": "f3c8188c897a539b1973ecdfc9fe1ca52d45194db95a6148c4840245afccba60",
+      "bytes": 15527
     },
     {
       "path": "src/pages/admin/AdminFounderControl.jsx",
-      "sha256": "98d7c30b742d8fac93e0c447bcbec9bd2a0b0b6cdbdd2e127951903395712352",
-      "bytes": 31521
+      "sha256": "c7b8c90f0292e9b4d0a299605b9da123bc2ef935fdcc779abb24018d0881f6b2",
+      "bytes": 36651
     },
     {
       "path": "src/pages/admin/AdminInbox.jsx",
@@ -1747,8 +1747,8 @@
     },
     {
       "path": "tsconfig.critical.json",
-      "sha256": "b2df3acca35ba3db0e8515d42b2cfab06fbd6044803a29ecc49a8774f28c6f94",
-      "bytes": 4601
+      "sha256": "efd66ff4f046226ba4c5e9af5ee6b25962a63d1d4ffc813f87324cd2f55768e9",
+      "bytes": 5384
     },
     {
       "path": "types/deno-shim.d.ts",

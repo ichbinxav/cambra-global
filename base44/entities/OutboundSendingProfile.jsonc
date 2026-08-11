@@ -10,7 +10,8 @@
       "type": "string",
       "enum": [
         "outlook",
-        "resend"
+        "resend",
+        "instantly"
       ]
     },
     "domain": {
@@ -92,6 +93,22 @@
     "burst_per_minute": {
       "type": "number",
       "description": "All-message burst ceiling per sending profile. Separate from acquisition daily cap so legitimate replies are not charged against new-contact capacity."
+    },
+    "external_campaign_id": {
+      "type": "string",
+      "description": "Provider campaign reference only. CAMBRA remains the canonical owner of lead, strategy, message and conversation state."
+    },
+    "provider_config_json": {
+      "type": "object",
+      "description": "Non-secret adapter configuration such as account emails, campaign template revision and feature flags."
+    },
+    "webhook_status": {
+      "type": "string",
+      "enum": ["NOT_CONFIGURED", "CONFIGURED", "ACTIVE", "DEGRADED", "ERROR"]
+    },
+    "last_provider_health_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

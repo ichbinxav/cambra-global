@@ -46,6 +46,15 @@ Deno.serve(async (req) => {
         daily_send_limit: Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : 0,
         sending_profile_keys: profileKeys,
         min_lead_score: Number.isFinite(requestedScore) ? Math.max(0, Math.min(requestedScore, 100)) : 0,
+        min_opportunity_score: Math.max(0,Math.min(100,Number(body?.min_opportunity_score??50))),
+        min_confidence: Math.max(0,Math.min(1,Number(body?.min_confidence??0.55))),
+        autonomous_replies_enabled: body?.autonomous_replies_enabled!==false,
+        meeting_proposals_enabled: body?.meeting_proposals_enabled===true,
+        provider_selection_json: body?.provider_selection_json||{mode:'sending_profile_allowlist',fallback_requires_preflight:true},
+        approval_thresholds_json: body?.approval_thresholds_json||{material_commitments:'human_required',risk_level:4},
+        qualification_rules_json: body?.qualification_rules_json||{positive_reply_alone_is_insufficient:true,evidence_required:true},
+        negotiation_authority_json: body?.negotiation_authority_json||{binding_acceptance:false,custom_economics:false,legal_terms:false},
+        risk_controls_json: body?.risk_controls_json||{stop_on_reply:true,stop_on_suppression:true,provider_ai_reply:false},
         business_hours_start: Math.max(0, Math.min(Number(body?.business_hours_start) || 8, 23)),
         business_hours_end: Math.max(1, Math.min(Number(body?.business_hours_end) || 19, 24)),
         fallback_timezone: String(body?.fallback_timezone || 'Europe/Paris'),
@@ -109,6 +118,10 @@ Deno.serve(async (req) => {
         sending_profile_keys:Array.isArray(body?.sending_profile_keys) ? [...new Set(body.sending_profile_keys.map((value:any) => String(value || '').trim()).filter(Boolean))].slice(0,20) : policy.sending_profile_keys || [],
         daily_send_limit:Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : Number(policy.daily_send_limit || 0),
         min_lead_score:Number.isFinite(requestedScore) ? Math.max(0, Math.min(requestedScore, 100)) : Number(policy.min_lead_score || 0),
+        min_opportunity_score:Number.isFinite(Number(body?.min_opportunity_score))?Math.max(0,Math.min(100,Number(body.min_opportunity_score))):Number(policy.min_opportunity_score||50),
+        min_confidence:Number.isFinite(Number(body?.min_confidence))?Math.max(0,Math.min(1,Number(body.min_confidence))):Number(policy.min_confidence||0.55),
+        autonomous_replies_enabled:body?.autonomous_replies_enabled===undefined?policy.autonomous_replies_enabled!==false:body.autonomous_replies_enabled===true,
+        meeting_proposals_enabled:body?.meeting_proposals_enabled===undefined?policy.meeting_proposals_enabled===true:body.meeting_proposals_enabled===true,
       };
       if (acquisitionEngine(policy.engine)) {
         const validation = validateCanaryPolicy({ ...policy, ...patch, status:'active' });
@@ -131,7 +144,7 @@ Deno.serve(async (req) => {
       const snapshot = {
         engine: policy.engine, version: policy.version, mode:policy.mode||null, countries: policy.countries || [], languages: policy.languages || [],
         icp_json: policy.icp_json || {}, excluded_domains: policy.excluded_domains || [],
-        daily_send_limit: policy.daily_send_limit, sending_profile_keys:policy.sending_profile_keys||[], min_lead_score: policy.min_lead_score,
+        daily_send_limit: policy.daily_send_limit, sending_profile_keys:policy.sending_profile_keys||[], min_lead_score: policy.min_lead_score,min_opportunity_score:policy.min_opportunity_score,min_confidence:policy.min_confidence,autonomous_replies_enabled:policy.autonomous_replies_enabled,meeting_proposals_enabled:policy.meeting_proposals_enabled,provider_selection_json:policy.provider_selection_json||{},approval_thresholds_json:policy.approval_thresholds_json||{},qualification_rules_json:policy.qualification_rules_json||{},negotiation_authority_json:policy.negotiation_authority_json||{},risk_controls_json:policy.risk_controls_json||{},
         allowed_routine_actions: policy.allowed_routine_actions || [], prohibited_actions: policy.prohibited_actions || [],
         style_policy_version: policy.style_policy_version, business_hours_start:policy.business_hours_start, business_hours_end:policy.business_hours_end, fallback_timezone:policy.fallback_timezone||'Europe/Paris', minimum_inbound_reply_delay_minutes:25
       };

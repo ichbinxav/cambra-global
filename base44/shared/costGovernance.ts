@@ -1,4 +1,6 @@
-export const COST_GOVERNANCE_VERSION = 'cost-governance-1.1.0';
+import { pauseAllInstantlyCampaigns } from './instantlyRuntime.ts';
+
+export const COST_GOVERNANCE_VERSION = 'cost-governance-1.2.0';
 export const COST_CATEGORIES = Object.freeze(['ai', 'api', 'enrichment', 'email']);
 export const COST_RESERVATION_MAX_CAS_ATTEMPTS = 6;
 
@@ -105,12 +107,13 @@ export async function activateCostEmergencyStop(svc:any, control:any, reason:str
   const now = new Date().toISOString();
   await svc.entities.CostBudgetControl.update(control.id, { emergency_stop_active:true, emergency_stop_reason:reason, updated_at:now, updated_by:'cost_governor' }).catch(() => null);
   const outbound = (await svc.entities.OutboundControl.filter({ control_key:'global' }, '-created_date', 1).catch(() => []))[0];
-  if (outbound) await svc.entities.OutboundControl.update(outbound.id, { acquisition_enabled:false, premium_outlook_enabled:false, volume_resend_enabled:false, paused_reason:`cost_emergency_stop:${reason}` }).catch(() => null);
+  if (outbound) await svc.entities.OutboundControl.update(outbound.id, { acquisition_enabled:false, premium_outlook_enabled:false, volume_resend_enabled:false, instantly_enabled:false, paused_reason:`cost_emergency_stop:${reason}` }).catch(() => null);
+  const instantlyPause=await pauseAllInstantlyCampaigns(svc,`cost_emergency_stop:${reason}`).catch((error:any)=>({ok:false,reason:String(error?.message||'instantly_remote_pause_failed')}));
   const old = await svc.entities.AutonomyIncident.filter({ dedupe_key:'cost-budget-emergency-stop', status:'open' }, '-last_seen_at', 1).catch(() => []);
   const incident = { domain:'financial', severity:'critical', status:'open', subject_type:'CostBudgetControl', subject_id:control.id, summary:`Paid execution stopped: ${reason}`, details_json:{ ...details, budget_version:control.version }, first_seen_at:old[0]?.first_seen_at || now, last_seen_at:now, workflow_state:'human_review', owner_type:'founder', automation_eligibility:'human_required', financial_impact_minor:0, customer_impact:'none', legal_risk:'none' };
   if (old[0]) await svc.entities.AutonomyIncident.update(old[0].id, incident).catch(() => null);
   else await svc.entities.AutonomyIncident.create({ dedupe_key:'cost-budget-emergency-stop', ...incident }).catch(() => null);
-  await svc.entities.OperationalLog.create({ event_type:'cost_emergency_stop_activated', message:reason, data_json:details, actor_email:'cost_governor', created_at:now }).catch(() => null);
+  await svc.entities.OperationalLog.create({ event_type:'cost_emergency_stop_activated', message:reason, data_json:{...details,instantly_remote_pause:instantlyPause}, actor_email:'cost_governor', created_at:now }).catch(() => null);
 }
 
 export async function reservePaidOperation(svc:any, input:any) {

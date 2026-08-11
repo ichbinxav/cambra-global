@@ -27,7 +27,8 @@ describe('P6 autonomous discovery radar', () => {
     const discovery = read('base44/functions/leadDiscoveryAgent/entry.ts');
     const enrichment = read('base44/functions/leadEnrichmentAgent/entry.ts');
     expect(discovery.indexOf('canonical_company_key')).toBeLessThan(discovery.indexOf('bulkCreate'));
-    expect(discovery.indexOf("'/mixed_companies/search'")).toBeLessThan(discovery.indexOf("'/mixed_people/api_search'"));
+    expect(discovery.indexOf('providerAdapter.searchCompanies')).toBeLessThan(discovery.indexOf('providerAdapter.searchPeople'));
+    expect(discovery).toContain('new ApolloLeadProvider');
     expect(discovery).toContain('provider_credit_cost_documented:1');
     expect(enrichment).toContain('enrichment_worthy===true');
     expect(enrichment).toContain('enrichment_daily_limit');

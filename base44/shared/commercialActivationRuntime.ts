@@ -7,10 +7,11 @@ import {
   sendingProfileIsValid, validateCanaryPolicy,
 } from './commercialActivation.ts';
 
-function engineProviders(scope:string):Record<string,string>{
-  if(scope==='resend')return {merchant_acquisition:'resend'};
-  if(scope==='outlook')return {partner_acquisition:'outlook'};
-  return {merchant_acquisition:'resend',partner_acquisition:'outlook'};
+function engineProviders(scope:string):Record<string,string[]>{
+  if(scope==='resend')return {merchant_acquisition:['resend']};
+  if(scope==='outlook')return {partner_acquisition:['outlook']};
+  if(scope==='instantly')return {merchant_acquisition:['instantly']};
+  return {merchant_acquisition:['resend','instantly'],partner_acquisition:['outlook']};
 }
 
 async function policiesForScope(svc:any,scope:string,input:any){
@@ -32,7 +33,7 @@ async function policiesForScope(svc:any,scope:string,input:any){
 /** Read-only readiness apart from the immutable P10/P11 decision evidence it intentionally creates. */
 export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   const checkedAt=new Date().toISOString();
-  const providerScope=['resend','outlook','all'].includes(String(input?.provider_scope||''))?String(input.provider_scope):'all';
+  const providerScope=['resend','outlook','instantly','all'].includes(String(input?.provider_scope||''))?String(input.provider_scope):'all';
   const blockers:string[]=[];
   const policySet=await policiesForScope(svc,providerScope,input);
   for(const engine of policySet.missing)blockers.push(`active_acquisition_policy_required:${engine}`);
@@ -52,17 +53,22 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   for(const key of selectedKeys)if(!sendingProfileIsValid(profileByKey.get(key)))blockers.push(`sending_profile_invalid:${key}`);
   const expectedProviders=engineProviders(providerScope);
   for(const {policy,validation} of validated){
-    const provider=expectedProviders[policy.engine];
-    if(provider&&!validation.sending_profile_keys.some((key:string)=>sendingProfileIsValid(profileByKey.get(key))&&profileByKey.get(key)?.provider===provider))blockers.push(`${policy.engine}:policy_profile_required:${provider}`);
+    const providers=expectedProviders[policy.engine]||[];
+    for(const provider of providers)if(!validation.sending_profile_keys.some((key:string)=>sendingProfileIsValid(profileByKey.get(key))&&profileByKey.get(key)?.provider===provider))blockers.push(`${policy.engine}:policy_profile_required:${provider}`);
   }
 
-  const needsResend=Object.values(expectedProviders).includes('resend');
-  const needsOutlook=Object.values(expectedProviders).includes('outlook');
+  const requiredProviders=Object.values(expectedProviders).flat();
+  const needsResend=requiredProviders.includes('resend');
+  const needsOutlook=requiredProviders.includes('outlook');
+  const needsInstantly=requiredProviders.includes('instantly');
   const resendConfigured=!needsResend||Boolean(Deno.env.get('RESEND_API_KEY'));
   const outlook=needsOutlook?await svc.connectors.getConnection('outlook').catch(()=>null):null;
   const outlookConfigured=!needsOutlook||Boolean(outlook?.accessToken);
+  const instantlyStates=needsInstantly?await svc.entities.CommercialProviderState.filter({provider_key:'instantly',role:'outbound'},'-last_checked_at',1).catch(()=>[]):[];
+  const instantlyConfigured=!needsInstantly||(Boolean(Deno.env.get('INSTANTLY_API_KEY'))&&Boolean(Deno.env.get('INSTANTLY_WEBHOOK_SECRET'))&&['AUTHENTICATED','ACTIVE'].includes(String(instantlyStates[0]?.status||''))&&instantlyStates[0]?.auth_test_pass===true);
   if(!resendConfigured)blockers.push('resend_credentials_required');
   if(!outlookConfigured)blockers.push('outlook_connector_required');
+  if(!instantlyConfigured)blockers.push('instantly_authenticated_webhook_configuration_required');
 
   const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);
   const control=controls[0]||null;
@@ -98,14 +104,14 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   if(invalidCandidates.length)blockers.push('eligible_legacy_threads_without_valid_profile');
   if(legacyCoverageTruncated)blockers.push('legacy_thread_coverage_truncated');
 
-  const goLive=await collectGoLiveRuntime(svc,input).catch((error:any)=>({allowed:false,classification:'NOT_GO_READY',blockers:[`go_live_runtime_unavailable:${String(error?.message||error).slice(0,120)}`],gates:[]}));
+  const goLive:any=await collectGoLiveRuntime(svc,input).catch((error:any)=>({allowed:false,classification:'NOT_GO_READY',blockers:[`go_live_runtime_unavailable:${String(error?.message||error).slice(0,120)}`],gates:[],passed:0,total:0,final_sha:String(input?.final_sha||'')}));
   if(goLive.allowed!==true)blockers.push(...(goLive.blockers||['go_live_hard_gates_not_ready']).map((blocker:string)=>`go_live_hard_gate:${blocker}`));
 
   const evidence={
     version:COMMERCIAL_ACTIVATION_VERSION,provider_scope:providerScope,
     policies:validated.map(({policy,validation}:any)=>({id:policy.id,key:policy.policy_key,version:policy.version,engine:policy.engine,mode:policy.mode,daily_send_limit:policy.daily_send_limit,min_lead_score:policy.min_lead_score,countries:validation.markets,sending_profile_keys:validation.sending_profile_keys})),
     profiles:selectedProfiles.filter(Boolean).map((profile:any)=>({profile_key:profile.profile_key,provider:profile.provider,status:profile.status,current_daily_cap:profile.current_daily_cap,domain:profile.domain})),
-    credentials:{resend_configured:resendConfigured,outlook_configured:outlookConfigured},
+    credentials:{resend_configured:resendConfigured,outlook_configured:outlookConfigured,instantly_configured:instantlyConfigured,instantly_status:instantlyStates[0]?.status||'NOT_CONFIGURED'},
     markets:marketDecisions.map(({authority_snapshot_id,...decision})=>decision),
     legacy_threads:{automatic_follow_up_candidates:candidates.length,eligible_without_valid_profile:invalidCandidates.length,review_required:reviewRows.length,coverage_truncated:legacyCoverageTruncated},
     outbound_paused:control?.acquisition_enabled!==true,
@@ -119,7 +125,7 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
     evidence,market_decisions:marketDecisions,
     unresolved_legacy_threads:reviewRows.slice(0,100).map((thread:any)=>({thread_id:thread.id,thread_key:thread.thread_key||null,reason:thread.sending_profile_resolution_reason||null,paused:thread.automation_paused===true})),
     invalid_eligible_threads:invalidCandidates.slice(0,100).map((thread:any)=>({thread_id:thread.id,thread_key:thread.thread_key||null,sending_profile_key:thread.sending_profile_key||null})),
-    go_live,
+    go_live:goLive,
     version:COMMERCIAL_ACTIVATION_VERSION,
   };
 }

@@ -2,6 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { Webhook } from 'npm:svix';
 import { classifyHardStop, commercialTimezone, computeInboundReplySchedule, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { providerSecretMatches } from '../../shared/inboundConversationProvider.ts';
+import { processInstantlyProviderEvent } from '../../shared/outboundProviderEventProcessing.ts';
 
 function threadIdFromRecipients(to:any[]) {
   for (const raw of Array.isArray(to) ? to : []) {
@@ -14,6 +16,17 @@ function threadIdFromRecipients(to:any[]) {
 
 Deno.serve(async (req) => {
   try {
+    const instantlyHeader=req.headers.get('x-cambra-instantly-secret')||'';
+    if(instantlyHeader){
+      const instantlySecret=Deno.env.get('INSTANTLY_WEBHOOK_SECRET')||'';
+      if(!instantlySecret)return Response.json({ok:false,error:'instantly_webhook_not_configured'},{status:503});
+      if(!await providerSecretMatches(instantlySecret,instantlyHeader))return Response.json({ok:false,error:'invalid_webhook_secret'},{status:401});
+      const event=await req.json().catch(()=>null);
+      if(!event||typeof event!=='object'||Array.isArray(event))return Response.json({ok:false,error:'invalid_json_payload'},{status:400});
+      const base44=createClientFromRequest(req);
+      const result=await processInstantlyProviderEvent(base44.asServiceRole,event);
+      return Response.json(result,{status:result.ok?200:result.queued_retry?202:500});
+    }
     const raw = await req.text();
     const secret = Deno.env.get('RESEND_WEBHOOK_SECRET');
     if (!secret) return Response.json({ ok:false, error:'webhook_not_configured' }, { status:503 });

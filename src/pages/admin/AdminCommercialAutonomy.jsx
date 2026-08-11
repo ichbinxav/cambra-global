@@ -10,6 +10,8 @@ export default function AdminCommercialAutonomy() {
   const [threads, setThreads] = useState([]);
   const [cases, setCases] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [strategies, setStrategies] = useState([]);
+  const [provider, setProvider] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
@@ -19,17 +21,21 @@ export default function AdminCommercialAutonomy() {
   const load = async () => {
     setLoading(true);
     try {
-      const [p, t, c, m] = await Promise.all([
+      const [p, t, c, m, s, providerStatus] = await Promise.all([
         base44.functions.invoke("commercialPolicyAdmin", { action: "list" }),
         base44.entities.CommunicationThread.list("-last_message_at", 100).catch(() => []),
         base44.entities.NegotiationCase.list("-started_at", 100).catch(() => []),
         base44.entities.CommunicationMessage.list("-created_date", 200).catch(() => []),
+        base44.entities.CommercialStrategy.list("-created_at", 200).catch(() => []),
+        base44.functions.invoke("outboundControlAdmin", { action:"instantly_status" }).catch(() => null),
       ]);
       const pd = p?.data || p || {};
       setPolicies(Array.isArray(pd.policies) ? pd.policies : []);
       setThreads(Array.isArray(t) ? t : []);
       setCases(Array.isArray(c) ? c : []);
       setMessages(Array.isArray(m) ? m : []);
+      setStrategies(Array.isArray(s) ? s : []);
+      setProvider(providerStatus?.data || providerStatus || null);
       setError(null);
     } catch (e) {
       setError(e?.message || "Could not load commercial autonomy state.");
@@ -46,7 +52,8 @@ export default function AdminCommercialAutonomy() {
     negotiations: cases.filter(c => !["approved", "rejected", "closed", "expired"].includes(c.status)).length,
     awaitingApproval: cases.filter(c => c.status === "awaiting_final_approval").length,
     outbound: messages.filter(m => m.direction === "outbound" && m.send_status === "sent").length,
-  }), [policies, threads, cases, messages]);
+    strategyReady: strategies.filter(s => s.status === "READY").length,
+  }), [policies, threads, cases, messages, strategies]);
 
   const policyAction = async (policy, action) => {
     setBusy(policy.id);
@@ -97,6 +104,8 @@ export default function AdminCommercialAutonomy() {
     </div>
 
     {error && <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3 text-xs text-rose-700">{error}</div>}
+
+    <section className="rounded-2xl border bg-card p-4"><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3"><div><h2 className="text-sm font-black">Commercial transport readiness</h2><p className="text-[11px] text-muted-foreground mt-1">Instantly is transport only. CAMBRA retains canonical strategies, threads, messages, decisions and suppressions.</p></div><div className="text-right"><span className={`border rounded-full px-2 py-1 text-[10px] font-black ${badge(String(provider?.provider?.status || "NOT_CONFIGURED").toLowerCase())}`}>{provider?.provider?.status || "NOT_CONFIGURED"}</span><p className="text-[10px] text-muted-foreground mt-1">{stats.strategyReady} P7 strategies ready · effective sending remains founder-gated</p></div></div></section>
 
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
       {[["Active policies",stats.activePolicies],["Open threads",stats.openThreads],["Paused",stats.pausedThreads],["Negotiations",stats.negotiations],["Need approval",stats.awaitingApproval],["Sent",stats.outbound]].map(([l,v]) => <div key={l} className="rounded-xl border bg-card p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</p><p className="text-2xl font-black mt-1">{v}</p></div>)}

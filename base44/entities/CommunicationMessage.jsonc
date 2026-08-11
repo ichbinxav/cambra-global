@@ -108,6 +108,7 @@
         "delivered",
         "failed",
         "bounced",
+        "complained",
         "suppressed"
       ]
     },

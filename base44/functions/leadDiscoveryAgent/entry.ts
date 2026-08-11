@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { ApolloLeadProvider } from '../../shared/leadIntelligenceProvider.ts';
 import {
   APOLLO_EXPIRY_AT,
   APOLLO_MAX_PAGE,
@@ -121,6 +122,7 @@ Deno.serve(async (req) => {
     service = base44.asServiceRole;
     const apolloKey = Deno.env.get('APOLLO_API_KEY') || '';
     const provider = discoveryProviderStatus(Boolean(apolloKey));
+    const providerAdapter = new ApolloLeadProvider((path, options)=>apolloRequest(path, apolloKey, options), Boolean(apolloKey));
 
     if (body?.action === 'diagnose') {
       let auth = { pass:false, healthy:false, is_logged_in:false, error_code:provider.reason };
@@ -188,7 +190,7 @@ Deno.serve(async (req) => {
     else if (industry) organizationSearchBody.q_organization_keyword_tags = [industry];
     if (body?.employee_range) organizationSearchBody.organization_num_employees_ranges = [String(body.employee_range)];
     if (body?.technology) organizationSearchBody.currently_using_any_of_technology_uids = [String(body.technology)];
-    const result = await apolloRequest('/mixed_companies/search', apolloKey, { body:organizationSearchBody });
+    const result = await providerAdapter.searchCompanies(organizationSearchBody);
     const organizations = Array.isArray(result.payload?.organizations)
       ? result.payload.organizations
       : Array.isArray(result.payload?.accounts) ? result.payload.accounts : [];
@@ -215,11 +217,11 @@ Deno.serve(async (req) => {
       .slice(0, 100);
     let people:any[] = [];
     if (organizationIds.length) {
-      const peopleResult = await apolloRequest('/mixed_people/api_search', apolloKey, { body:{
+      const peopleResult = await providerAdapter.searchPeople({
         organization_ids:organizationIds, person_titles:titles,
         person_seniorities:Array.isArray(body?.seniorities) ? body.seniorities.slice(0,12) : ['owner','founder','c_suite','vp','head','director','manager'],
         include_similar_titles:true, page:1, per_page:100,
-      }});
+      });
       people = Array.isArray(peopleResult.payload?.people) ? peopleResult.payload.people : [];
       const candidateByOrganizationId = new Map<string, any>();
       for (const candidate of bestByCompany.values()) {

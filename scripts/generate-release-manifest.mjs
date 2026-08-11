@@ -85,6 +85,11 @@ if (fs.existsSync('docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md')) {
 if (fs.existsSync('base44/shared/documentExtraction.ts')) {
   addRequirement('DOCUMENT EXTRACTION PRODUCTION EVAL REQUIRED: after DPA/retention approval and dual-model configuration, validate the extractor against a redacted multilingual real-document golden corpus and publish field-level precision/recall, false-accept and review-rate evidence before calling statement extraction production-verified.');
 }
+if (fs.existsSync('base44/shared/outboundProvider.ts')) {
+  addRequirement('INSTANTLY PRODUCTION VALIDATION REQUIRED: configure the scoped API v2 secret and authenticated webhook secret in Base44, prove real provider auth/capabilities, verify mapped sender warm-up and domain health, then complete a founder-authorized zero-send rehearsal before any bounded pilot. Missing or unverified provider state intentionally keeps Instantly NOT_CONFIGURED and effective outbound capacity at 0.');
+  addRequirement('P7/P8 RUNTIME LOOP PROOF REQUIRED: after deployment, prove one controlled non-delivering strategy-to-action dry-run plus webhook/reconciliation replay, classification, next-best-action, suppression, approval and global-stop behavior before claiming real commercial pilot readiness. Broad outreach remains prohibited.');
+  addRequirement('BASE44 FUNCTION QUOTA: the linked app currently rejects new function names, so v0.95 logical routes are safely hosted in existing deployed functions. Upgrade/raise the quota before deploying the standalone names; do not delete unrelated production functions merely to free slots.');
+}
 if (fs.existsSync('src/docs/P9_EUROPEAN_LOCALIZATION.md')) {
   addRequirement('P9 MARKET LOCALIZATION LIMIT: only en-GB, fr-FR and es-ES product locales are implemented; fallback-only markets require native product/legal review and localized URL/SSR architecture before full native launch claims.');
 }

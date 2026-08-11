@@ -83,6 +83,8 @@ export function routineActionAllowed(policy: any, action: string, classification
   if (!policyIsActive(policy)) return { allowed: false, reason: 'policy_not_active' };
   if (L4_CLASSIFICATIONS.has(classification)) return { allowed: false, reason: 'l4_classification' };
   if (!SAFE_ROUTINE_CLASSIFICATIONS.has(classification)) return { allowed: false, reason: 'classification_not_allowlisted' };
+  if (!['initial_outreach','partner_outreach','follow_up'].includes(classification) && policy?.autonomous_replies_enabled === false) return { allowed:false, reason:'autonomous_replies_disabled' };
+  if ((classification === 'meeting' || action === 'meeting_offer') && policy?.meeting_proposals_enabled === false) return { allowed:false, reason:'meeting_proposals_disabled' };
   const prohibited = new Set(Array.isArray(policy.prohibited_actions) ? policy.prohibited_actions : []);
   if (prohibited.has(action)) return { allowed: false, reason: 'action_prohibited' };
   const allowed = new Set(Array.isArray(policy.allowed_routine_actions) ? policy.allowed_routine_actions : []);

@@ -4,6 +4,7 @@ import { collectGoLiveRuntime } from '../../shared/goLiveRuntime.ts';
 import { assertOperationAllowed, emergencyState } from '../../shared/operationalControl.ts';
 import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
 import { recordRuntimeGateEvidence, runtimeGitSha } from '../../shared/runtimeEvidence.ts';
+import { pauseAllInstantlyCampaigns } from '../../shared/instantlyRuntime.ts';
 
 const CONFIRM_BUDGET = 'APPLY_FOUNDER_COST_BUDGET';
 const CONFIRM_CLEAR_COST = 'CLEAR_COST_EMERGENCY_STOP';
@@ -37,13 +38,16 @@ async function verifyDeliverability(svc:any) {
     }
     rows.push({ profile_key:profile.profile_key, provider:profile.provider, domain, selectors, spf_pass:spf.answers.some((value:string) => value.toLowerCase().includes('v=spf1')), dmarc_pass:dmarc.answers.some((value:string) => value.toUpperCase().includes('V=DMARC1')), dkim_pass:selectors.length > 0 && dkim.every((row) => row.pass), dkim });
   }
-  const credentials = { resend_api_key:Boolean(Deno.env.get('RESEND_API_KEY')), resend_webhook_secret:Boolean(Deno.env.get('RESEND_WEBHOOK_SECRET')), outlook_connected:false };
+  const credentials:any = { resend_api_key:Boolean(Deno.env.get('RESEND_API_KEY')), resend_webhook_secret:Boolean(Deno.env.get('RESEND_WEBHOOK_SECRET')), outlook_connected:false, instantly_api_key:Boolean(Deno.env.get('INSTANTLY_API_KEY')), instantly_webhook_secret:Boolean(Deno.env.get('INSTANTLY_WEBHOOK_SECRET')) };
   if (profiles.some((profile:any) => profile.provider === 'outlook')) {
     const connection = await svc.connectors.getConnection('outlook').catch(() => null);
     credentials.outlook_connected = Boolean(connection?.accessToken);
   }
-  const pass = profiles.length > 0 && rows.every((row) => row.spf_pass && row.dkim_pass && row.dmarc_pass) && (!profiles.some((p:any) => p.provider === 'resend') || (credentials.resend_api_key && credentials.resend_webhook_secret)) && (!profiles.some((p:any) => p.provider === 'outlook') || credentials.outlook_connected);
-  return { pass, profiles:rows, credentials, blockers:[...(profiles.length ? [] : ['configured_sending_profile_required']), ...rows.flatMap((row) => [!row.spf_pass ? `${row.profile_key}:spf` : '', !row.dkim_pass ? `${row.profile_key}:dkim` : '', !row.dmarc_pass ? `${row.profile_key}:dmarc` : '']).filter(Boolean)] };
+  const resendCredentials=!profiles.some((p:any)=>p.provider==='resend')||(credentials.resend_api_key&&credentials.resend_webhook_secret);
+  const outlookCredentials=!profiles.some((p:any)=>p.provider==='outlook')||credentials.outlook_connected;
+  const instantlyCredentials=!profiles.some((p:any)=>p.provider==='instantly')||(credentials.instantly_api_key&&credentials.instantly_webhook_secret&&profiles.filter((p:any)=>p.provider==='instantly').every((p:any)=>p.external_campaign_id&&p.webhook_status==='ACTIVE'));
+  const pass = profiles.length > 0 && rows.every((row) => row.spf_pass && row.dkim_pass && row.dmarc_pass) && resendCredentials && outlookCredentials && instantlyCredentials;
+  return { pass, profiles:rows, credentials, blockers:[...(profiles.length ? [] : ['configured_sending_profile_required']),...(!resendCredentials?['resend_credentials_required']:[]),...(!outlookCredentials?['outlook_connector_required']:[]),...(!instantlyCredentials?['instantly_campaign_webhook_credentials_required']:[]), ...rows.flatMap((row) => [!row.spf_pass ? `${row.profile_key}:spf` : '', !row.dkim_pass ? `${row.profile_key}:dkim` : '', !row.dmarc_pass ? `${row.profile_key}:dmarc` : '']).filter(Boolean)] };
 }
 
 async function verifyRuntime(svc:any, finalSha:string, actor:string) {
@@ -110,6 +114,7 @@ async function emergencyDrill(svc:any, finalSha:string, actor:string) {
   const before = await emergencyState(svc);
   const now = new Date().toISOString();
   await svc.entities.EmergencyControl.update(row.id, { safe_mode:true, communications_paused:true, negotiations_paused:true, migrations_paused:true, billing_issuance_paused:true, reason:'Founder GO-live emergency-stop drill', previous_state_json:before, activated_at:now, updated_at:now, updated_by:actor });
+  const remotePause=await pauseAllInstantlyCampaigns(svc,'founder_emergency_stop_drill');
   const capabilities = ['communications','negotiations','migrations','billing_issuance'];
   const blocked:any = {};
   for (const capability of capabilities) {
@@ -121,13 +126,13 @@ async function emergencyDrill(svc:any, finalSha:string, actor:string) {
   const after = await emergencyState(svc);
   const outboundAfter = (await svc.entities.OutboundControl.filter({ control_key:'global' }, '-created_date', 1).catch(() => []))[0];
   const policiesAfter = await svc.entities.CommercialPolicy.filter({ status:'active' }, '-approved_at', 200).catch(() => []);
-  const stopPass = capabilities.every((capability) => blocked[capability]);
+  const stopPass = capabilities.every((capability) => blocked[capability])&&remotePause.ok!==false;
   const resumePass = !after.safe_mode && safeRead.every(Array.isArray) && outboundAfter?.acquisition_enabled !== true && policiesAfter.length === 0;
   const at = new Date().toISOString();
-  await recordRuntimeGateEvidence(svc, { gate_key:'EMERGENCY_STOP', git_sha:finalSha, status:stopPass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ blocked, analyzer_read_only_alive:safeRead.every(Array.isArray), before, after }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
+  await recordRuntimeGateEvidence(svc, { gate_key:'EMERGENCY_STOP', git_sha:finalSha, status:stopPass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ blocked, instantly_remote_pause:remotePause, analyzer_read_only_alive:safeRead.every(Array.isArray), before, after }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
   await recordRuntimeGateEvidence(svc, { gate_key:'SAFE_RESUME', git_sha:finalSha, status:resumePass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true, active_commercial_policies:policiesAfter.length, analyzer_read_only_alive:safeRead.every(Array.isArray) }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
-  await svc.entities.OperationalLog.create({ event_type:'emergency_control_drill_completed', message:stopPass && resumePass ? 'PASS':'FAIL', data_json:{ blocked, stop_pass:stopPass, safe_resume_pass:resumePass }, actor_email:actor, created_at:at }).catch(() => null);
-  return { stop_pass:stopPass, safe_resume_pass:resumePass, blocked, after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true };
+  await svc.entities.OperationalLog.create({ event_type:'emergency_control_drill_completed', message:stopPass && resumePass ? 'PASS':'FAIL', data_json:{ blocked, instantly_remote_pause:remotePause, stop_pass:stopPass, safe_resume_pass:resumePass }, actor_email:actor, created_at:at }).catch(() => null);
+  return { stop_pass:stopPass, safe_resume_pass:resumePass, blocked, instantly_remote_pause:remotePause, after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true };
 }
 
 export async function handleGoLiveControlAdmin(req: Request) {
@@ -170,7 +175,7 @@ export async function handleGoLiveControlAdmin(req: Request) {
       const selectors = [...new Set((Array.isArray(body.dkim_selectors) ? body.dkim_selectors : []).map((value:any) => String(value || '').trim().toLowerCase()).filter(Boolean))].slice(0,10);
       const currentCap = Number(body.current_daily_cap), targetCap = Number(body.target_daily_cap);
       const blockers = [
-        !['resend','outlook'].includes(provider) ? 'supported_provider_required' : '',
+        !['resend','outlook','instantly'].includes(provider) ? 'supported_provider_required' : '',
         !profileKey || !profileKey.startsWith(`${provider}:`) ? 'provider_scoped_profile_key_required' : '',
         !fromAddress.includes('@') || fromAddress.split('@')[1] !== domain ? 'from_address_must_match_domain' : '',
         selectors.length === 0 ? 'explicit_dkim_selectors_required' : '',
@@ -179,7 +184,7 @@ export async function handleGoLiveControlAdmin(req: Request) {
       ].filter(Boolean);
       if (blockers.length) return Response.json({ ok:false, error:'invalid_sending_profile', blockers }, { status:400 });
       const previous = (await svc.entities.OutboundSendingProfile.filter({ profile_key:profileKey }, '-created_date', 2).catch(() => []))[0] || null;
-      const values = { profile_key:profileKey, provider, domain, from_address:fromAddress, dkim_selectors:selectors, status:'paused', current_daily_cap:currentCap, target_daily_cap:targetCap, ramp_step:Math.max(1, Math.min(Number(body.ramp_step || 5), 50)), ramp_min_days:Math.max(3, Math.min(Number(body.ramp_min_days || 3), 30)), bounce_pause_threshold_pct:Math.max(0.1, Math.min(Number(body.bounce_pause_threshold_pct || 3), 10)), complaint_pause_threshold_pct:Math.max(0.01, Math.min(Number(body.complaint_pause_threshold_pct || 0.1), 1)), complaint_slow_threshold_pct:Math.max(0.01, Math.min(Number(body.complaint_slow_threshold_pct || 0.08), 1)), burst_per_minute:Math.max(1, Math.min(Number(body.burst_per_minute || 3), 30)), open_tracking:false, click_tracking:false, notes:String(body.notes || 'Founder-configured; remains paused until GO canary activation.').slice(0,500), last_review_at:new Date().toISOString() };
+      const values = { profile_key:profileKey, provider, domain, from_address:fromAddress, dkim_selectors:selectors, status:'paused', current_daily_cap:currentCap, target_daily_cap:targetCap, ramp_step:Math.max(1, Math.min(Number(body.ramp_step || 5), 50)), ramp_min_days:Math.max(3, Math.min(Number(body.ramp_min_days || 3), 30)), bounce_pause_threshold_pct:Math.max(0.1, Math.min(Number(body.bounce_pause_threshold_pct || 3), 10)), complaint_pause_threshold_pct:Math.max(0.01, Math.min(Number(body.complaint_pause_threshold_pct || 0.1), 1)), complaint_slow_threshold_pct:Math.max(0.01, Math.min(Number(body.complaint_slow_threshold_pct || 0.08), 1)), burst_per_minute:Math.max(1, Math.min(Number(body.burst_per_minute || 3), 30)), open_tracking:false, click_tracking:false, ...(provider==='instantly'?{webhook_status:'NOT_CONFIGURED',provider_config_json:{account_emails:Array.isArray(body.account_emails)?body.account_emails.map((value:any)=>String(value).trim().toLowerCase()).filter(Boolean):[],transport_role_only:true,supersearch_enabled:false}}:{}), notes:String(body.notes || 'Founder-configured; remains paused until GO canary activation.').slice(0,500), last_review_at:new Date().toISOString() };
       const profile = previous ? await svc.entities.OutboundSendingProfile.update(previous.id, values) : await svc.entities.OutboundSendingProfile.create(values);
       await svc.entities.OperationalLog.create({ event_type:'sending_profile_configured', message:profileKey, data_json:{ profile_key:profileKey, provider, domain, dkim_selectors:selectors, current_daily_cap:currentCap, target_daily_cap:targetCap, forced_status:'paused' }, actor_email:actor, created_at:new Date().toISOString() }).catch(() => null);
       return Response.json({ ok:true, profile, note:'Profile is deliberately paused. Verify DNS/runtime, activate a matching CANARY policy, run fresh preflight, then explicitly start canary.' });

@@ -16,7 +16,7 @@ const DEFAULT_BUDGET = {
   },
   estimated_unit_cost_minor_json: { ai: 8, api: 12, enrichment: 20, email: 1 },
 };
-const DEFAULT_PROFILE = { provider:"resend", profile_key:"resend:contact.cambra.global", from_address:"payments@contact.cambra.global", domain:"contact.cambra.global", dkim_selectors:"resend", current_daily_cap:10, target_daily_cap:50 };
+const DEFAULT_PROFILE = { provider:"resend", profile_key:"resend:contact.cambra.global", from_address:"payments@contact.cambra.global", domain:"contact.cambra.global", dkim_selectors:"resend", current_daily_cap:10, target_daily_cap:50, account_emails:"" };
 const DEFAULT_MEETING_POLICY = { mode:"RECOMMEND_ONLY", daily_meeting_cap:2, weekly_meeting_cap:5, minimum_expected_value_minor:250000, minimum_escalation_score:70, minimum_notice_hours:24, default_duration_minutes:20, preferred_start_hour:9, preferred_end_hour:17, timezone:"Europe/Madrid", allowed_meeting_types:["MERCHANT_SALES_CALL","MERCHANT_NEGOTIATION_CALL","PROVIDER_NEGOTIATION_CALL","PARTNERSHIP_CALL","STRATEGIC_RELATIONSHIP_CALL","MIGRATION_CALL","LEGAL_COMMERCIAL_CALL"], allowed_relationship_types:["merchant","provider","partner","agency","accountant","strategic"], auto_book_allowed:false, explicit_request_priority:true, status:"active", policy_key:"founder-meetings" };
 const splitItems = value => String(value || "").split(/\n|;/).map(item => item.trim()).filter(Boolean);
 
@@ -32,6 +32,9 @@ export default function AdminFounderControl() {
   const [notice, setNotice] = useState(null);
   const [preflight, setPreflight] = useState(null);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const [providerScope, setProviderScope] = useState("instantly");
+  const [instantly, setInstantly] = useState(null);
+  const [instantlyWebhookUrl, setInstantlyWebhookUrl] = useState("");
   const [meetings, setMeetings] = useState(null);
   const [meetingPolicy, setMeetingPolicy] = useState(DEFAULT_MEETING_POLICY);
   const [meetingCommand, setMeetingCommand] = useState("");
@@ -47,14 +50,16 @@ export default function AdminFounderControl() {
   const load = useCallback(async () => {
     setBusy("load");
     try {
-      const [status, center, meetingStatus] = await Promise.all([
+      const [status, center, meetingStatus, instantlyStatus] = await Promise.all([
         invoke("outboundControlAdmin", { action: "status", final_sha: finalSha }),
         invoke("getFounderControlCenter", {}).catch(() => null),
         invoke("founderOSCommand", { action: "status" }).catch(() => null),
+        invoke("outboundControlAdmin", { action:"instantly_status" }).catch(error => ({ provider:{ status:"NOT_CONFIGURED", last_error_code:error.message }, profiles:[] })),
       ]);
       setGoLive(status);
       setFounder(center);
       setMeetings(meetingStatus);
+      setInstantly(instantlyStatus);
       if (meetingStatus?.policy) setMeetingPolicy(meetingStatus.policy);
       setNotice(null);
     } catch (error) { setNotice({ type: "error", text: error.message }); }
@@ -71,10 +76,10 @@ export default function AdminFounderControl() {
   };
 
   const runPreflight = () => act("preflight", async () => {
-    const result = await invoke("outboundControlAdmin", { action: "preflight", provider_scope: "all", final_sha: finalSha });
+    const result = await invoke("outboundControlAdmin", { action: "preflight", provider_scope: providerScope, final_sha: finalSha });
     setPreflight(result); return result;
   });
-  const startCanary = () => act("start canary", () => invoke("outboundControlAdmin", { action: "start_all", confirmation: "START_CANARY_OUTBOUND", preflight_hash: preflight?.preflight_hash }));
+  const startCanary = () => act("start canary", () => invoke("outboundControlAdmin", { action: providerScope === "instantly" ? "start_instantly" : providerScope === "resend" ? "start_volume" : providerScope === "outlook" ? "start_premium" : "start_all", confirmation: "START_CANARY_OUTBOUND", preflight_hash: preflight?.preflight_hash }));
   const saveMeetingPolicy = () => act("founder meeting policy", async () => {
     const preview = await invoke("founderOSCommand", { action:"configure_policy", policy:meetingPolicy });
     return invoke("founderOSCommand", { action:"configure_policy", policy:meetingPolicy, confirmation:preview.confirmation, command_key:preview.command_key });
@@ -133,6 +138,7 @@ export default function AdminFounderControl() {
             <div className="flex items-center gap-2"><Octagon className="text-rose-400" size={18} /><h2 className="font-black">Global emergency stop</h2></div>
             <p className="text-xs text-muted-foreground mt-2">Stops outbound, negotiation, migration and new billing execution. Safe Analyzer/read-only intelligence remains alive.</p>
             <div className="grid grid-cols-2 gap-2 mt-4">
+              <select aria-label="Canary provider scope" value={providerScope} onChange={event => { setProviderScope(event.target.value); setPreflight(null); }} className="col-span-2 h-9 rounded-xl border border-white/10 bg-slate-950 px-3 text-xs"><option value="instantly">Instantly only</option><option value="resend">Resend only</option><option value="outlook">Outlook only</option><option value="all">All configured providers</option></select>
               <button onClick={() => act("emergency stop", () => invoke("emergencyControlAdmin", { action: "safe_mode_on", confirmation: "ACTIVATE_CAMBRA_SAFE_MODE", reason: "Founder global emergency stop" }))} disabled={!!busy || emergency.safe_mode} className="h-10 rounded-xl bg-rose-500 text-white text-sm font-black disabled:opacity-40">STOP ALL EFFECTS</button>
               <button onClick={() => act("safe resume", () => invoke("emergencyControlAdmin", { action: "safe_mode_off", confirmation: "RESTORE_CAMBRA_AUTONOMY", reason: "Founder reviewed safe resume" }))} disabled={!!busy || !emergency.safe_mode} className="h-10 rounded-xl border border-white/10 text-sm font-bold disabled:opacity-40">Safe resume</button>
             </div>
@@ -146,7 +152,7 @@ export default function AdminFounderControl() {
               <button onClick={runPreflight} disabled={!!busy || !finalSha} className="h-10 rounded-xl border border-cyan-400/30 text-cyan-200 text-sm font-bold disabled:opacity-40">Dry-run preflight</button>
               <button onClick={startCanary} disabled={!!busy || !preflight?.preflight_hash || classification !== "GO_READY_FOR_CANARY"} className="h-10 rounded-xl bg-emerald-400 text-slate-950 text-sm font-black disabled:opacity-35">Start 10–15/day</button>
               <button onClick={() => act("pause outbound", () => invoke("outboundControlAdmin", { action: "pause_all" }))} disabled={!!busy} className="h-10 rounded-xl border border-white/10 text-sm font-bold inline-flex justify-center items-center gap-2"><Pause size={13} />Pause</button>
-              <button onClick={() => act("control exercise", () => invoke("outboundControlAdmin", { action: "exercise_controls", confirmation: "EXERCISE_FOUNDER_CANARY_CONTROL", final_sha: finalSha, provider_scope: "all" }))} disabled={!!busy || !finalSha} className="h-10 rounded-xl border border-white/10 text-sm font-bold">Exercise controls</button>
+              <button onClick={() => act("control exercise", () => invoke("outboundControlAdmin", { action: "exercise_controls", confirmation: "EXERCISE_FOUNDER_CANARY_CONTROL", final_sha: finalSha, provider_scope: providerScope }))} disabled={!!busy || !finalSha} className="h-10 rounded-xl border border-white/10 text-sm font-bold">Exercise controls</button>
             </div>
             {preflight?.blockers?.length > 0 && <p className="mt-3 text-xs text-amber-200/70">{preflight.blockers.slice(0, 6).join(" · ")}</p>}
           </section>
@@ -170,16 +176,24 @@ export default function AdminFounderControl() {
       <section className="rounded-2xl border border-white/10 bg-card/70 p-5">
         <div><h2 className="font-black">Sending profiles and deliverability</h2><p className="text-xs text-muted-foreground mt-1">Configure an exact sender and DKIM selectors. Saving always forces the profile to paused; DNS verification and a fresh GO preflight are still mandatory.</p></div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-          <label className="text-xs text-muted-foreground">Provider<select value={profile.provider} onChange={e => setProfile({...profile,provider:e.target.value})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-slate-950 px-3 text-foreground"><option value="resend">Resend</option><option value="outlook">Outlook</option></select></label>
+          <label className="text-xs text-muted-foreground">Provider<select value={profile.provider} onChange={e => setProfile({...profile,provider:e.target.value,profile_key:`${e.target.value}:`,account_emails:""})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-slate-950 px-3 text-foreground"><option value="resend">Resend</option><option value="outlook">Outlook</option><option value="instantly">Instantly</option></select></label>
           <label className="text-xs text-muted-foreground">Profile key<input value={profile.profile_key} onChange={e => setProfile({...profile,profile_key:e.target.value})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
           <label className="text-xs text-muted-foreground">From address<input type="email" value={profile.from_address} onChange={e => setProfile({...profile,from_address:e.target.value})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
           <label className="text-xs text-muted-foreground">Domain<input value={profile.domain} onChange={e => setProfile({...profile,domain:e.target.value})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
           <label className="text-xs text-muted-foreground sm:col-span-2">DKIM selectors (comma-separated)<input value={profile.dkim_selectors} onChange={e => setProfile({...profile,dkim_selectors:e.target.value})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
           <label className="text-xs text-muted-foreground">Canary daily cap<input type="number" min="1" max="15" value={profile.current_daily_cap} onChange={e => setProfile({...profile,current_daily_cap:Number(e.target.value)})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
           <label className="text-xs text-muted-foreground">Target cap<input type="number" min="1" max="500" value={profile.target_daily_cap} onChange={e => setProfile({...profile,target_daily_cap:Number(e.target.value)})} className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>
+          {profile.provider === "instantly" && <label className="text-xs text-muted-foreground sm:col-span-2 lg:col-span-4">Instantly sender accounts (comma-separated)<input value={profile.account_emails} onChange={e => setProfile({...profile,account_emails:e.target.value})} placeholder="sender@approved-outbound-domain.example" className="mt-1 w-full h-9 rounded-lg border border-white/10 bg-black/20 px-3 text-foreground" /></label>}
         </div>
-        <div className="flex flex-wrap items-center gap-3 mt-4"><button onClick={() => act("sending profile", () => invoke("outboundControlAdmin", { action:"configure_sending_profile", confirmation:"CONFIGURE_OUTBOUND_SENDING_PROFILE", ...profile, dkim_selectors:profile.dkim_selectors.split(",").map(value => value.trim()).filter(Boolean) }))} disabled={!!busy} className="h-9 px-4 rounded-xl bg-cyan-300 text-slate-950 text-xs font-black disabled:opacity-40">Save paused profile</button><span className="text-xs text-muted-foreground">Configured: {goLive?.runtime?.sending_profiles?.length || 0}</span></div>
+        <div className="flex flex-wrap items-center gap-3 mt-4"><button onClick={() => act("sending profile", () => invoke("outboundControlAdmin", { action:"configure_sending_profile", confirmation:"CONFIGURE_OUTBOUND_SENDING_PROFILE", ...profile, account_emails:profile.account_emails.split(",").map(value => value.trim()).filter(Boolean), dkim_selectors:profile.dkim_selectors.split(",").map(value => value.trim()).filter(Boolean) }))} disabled={!!busy} className="h-9 px-4 rounded-xl bg-cyan-300 text-slate-950 text-xs font-black disabled:opacity-40">Save paused profile</button><span className="text-xs text-muted-foreground">Configured: {goLive?.runtime?.sending_profiles?.length || 0}</span></div>
         {(goLive?.runtime?.sending_profiles || []).map(item => <div key={item.id || item.profile_key} className="mt-3 rounded-xl border border-white/[.07] p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><p className="text-sm font-bold">{item.profile_key}</p><p className="text-[11px] text-muted-foreground">{item.from_address} · {item.status} · {item.current_daily_cap}/day</p></div><div className="flex gap-2"><button onClick={() => act("profile warm-up", () => invoke("outboundControlAdmin", { action:"enable_sending_profile_warmup", confirmation:"ENABLE_SENDING_PROFILE_WARMUP", profile_key:item.profile_key, final_sha:finalSha }))} disabled={!!busy || item.status !== "paused" || !finalSha} className="h-8 px-3 rounded-lg border border-emerald-400/30 text-emerald-200 text-xs font-bold disabled:opacity-35">Enable verified warm-up</button><button onClick={() => act("pause profile", () => invoke("outboundControlAdmin", { action:"pause_sending_profile", confirmation:"PAUSE_SENDING_PROFILE", profile_key:item.profile_key }))} disabled={!!busy || item.status === "paused"} className="h-8 px-3 rounded-lg border border-white/10 text-xs font-bold disabled:opacity-35">Pause</button></div></div>)}
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-card/70 p-5">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3"><div><h2 className="font-black">Instantly transport</h2><p className="text-xs text-muted-foreground mt-1">CAMBRA owns strategy and conversation memory. Instantly is transport only; native provider AI replies must remain off.</p></div><div className="text-right"><p className="text-sm font-black">{instantly?.provider?.status || "NOT_CONFIGURED"}</p><p className="text-[10px] text-muted-foreground">Auth {instantly?.provider?.auth_test_pass === true ? "proven" : "not proven"} · outbound {instantly?.control?.instantly_enabled ? "enabled" : "paused"}</p></div></div>
+        <div className="grid md:grid-cols-4 gap-2 mt-4"><button onClick={() => act("controlled commercial dry-run", () => invoke("outboundControlAdmin", { action:"commercial_dry_run", controlled_fixture:true }))} disabled={!!busy} className="h-9 rounded-xl border border-emerald-400/30 text-emerald-200 text-xs font-bold">Run zero-send E2E dry-run</button><button onClick={() => act("Instantly diagnostic", () => invoke("outboundControlAdmin", { action:"instantly_diagnose" }))} disabled={!!busy} className="h-9 rounded-xl border border-white/10 text-xs font-bold">Test official API v2</button><button onClick={() => act("Instantly draft campaign", () => invoke("outboundControlAdmin", { action:"instantly_create_campaign", confirmation:"CREATE_CAMBRA_INSTANTLY_CAMPAIGN", profile_key:profile.profile_key, account_emails:profile.account_emails.split(",").map(value => value.trim()).filter(Boolean), daily_limit:Math.min(15,profile.current_daily_cap) }))} disabled={!!busy || profile.provider !== "instantly"} className="h-9 rounded-xl border border-white/10 text-xs font-bold disabled:opacity-35">Create DRAFT campaign</button><button onClick={() => act("pause Instantly", () => invoke("outboundControlAdmin", { action:"instantly_pause", confirmation:"PAUSE_CAMBRA_INSTANTLY" }))} disabled={!!busy} className="h-9 rounded-xl border border-amber-400/30 text-amber-200 text-xs font-bold">Pause remote campaigns</button></div>
+        <div className="grid md:grid-cols-[1fr_auto] gap-2 mt-3"><input value={instantlyWebhookUrl} onChange={event => setInstantlyWebhookUrl(event.target.value)} placeholder="Exact deployed HTTPS URL for resendInboundWebhook (Instantly-routed)" className="h-9 rounded-xl border border-white/10 bg-black/20 px-3 text-xs"/><button onClick={() => act("Instantly webhook", () => invoke("outboundControlAdmin", { action:"instantly_register_webhook", confirmation:"REGISTER_CAMBRA_INSTANTLY_WEBHOOK", profile_key:profile.profile_key, target_url:instantlyWebhookUrl }))} disabled={!!busy || profile.provider !== "instantly" || !instantlyWebhookUrl.startsWith("https://")} className="h-9 px-4 rounded-xl border border-cyan-400/30 text-cyan-200 text-xs font-bold disabled:opacity-35">Register authenticated webhook</button></div>
+        {(instantly?.profiles || []).map(item => <div key={item.profile_key} className="mt-3 rounded-xl border border-white/[.07] p-3 text-xs"><div className="flex justify-between gap-3"><span className="font-bold">{item.profile_key}</span><span>{item.ready ? "READY" : "BLOCKED"}</span></div><p className="text-muted-foreground mt-1">Campaign {item.external_campaign_id || "not created"} · webhook {item.webhook_status} · profile {item.status}</p></div>)}
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-card/70 p-5">

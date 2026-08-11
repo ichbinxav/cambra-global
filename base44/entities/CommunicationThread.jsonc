@@ -114,6 +114,13 @@
     "external_thread_id": {
       "type": "string"
     },
+    "external_provider": {
+      "type": "string",
+      "description": "Replaceable transport provider. Never used as CAMBRA thread identity."
+    },
+    "external_workspace_id": { "type": "string" },
+    "external_campaign_id": { "type": "string" },
+    "external_lead_id": { "type": "string" },
     "last_message_at": {
       "type": "string",
       "format": "date-time"

@@ -1,0 +1,30 @@
+{
+  "name": "OutboundProviderEvent",
+  "type": "object",
+  "description": "Idempotent raw and normalized inbound-event ledger for replaceable outbound providers. It supports safe replay without making provider IDs CAMBRA business identity.",
+  "properties": {
+    "event_key": { "type": "string" },
+    "provider": { "type": "string" },
+    "event_type": { "type": "string" },
+    "external_workspace_id": { "type": "string" },
+    "external_campaign_id": { "type": "string" },
+    "external_message_id": { "type": "string" },
+    "lead_email": { "type": "string" },
+    "raw_event_json": { "type": "object" },
+    "normalized_event_json": { "type": "object" },
+    "status": { "type": "string", "enum": ["RECEIVED", "PROCESSING", "PROCESSED", "PENDING_RETRY", "DEAD_LETTER", "IGNORED"] },
+    "attempts": { "type": "number", "minimum": 0 },
+    "first_received_at": { "type": "string", "format": "date-time" },
+    "last_attempt_at": { "type": "string", "format": "date-time" },
+    "next_retry_at": { "type": "string", "format": "date-time" },
+    "processed_at": { "type": "string", "format": "date-time" },
+    "last_error_code": { "type": "string" },
+    "related_thread_id": { "type": "string" },
+    "related_message_id": { "type": "string" }
+  },
+  "required": ["event_key", "provider", "event_type", "raw_event_json", "normalized_event_json", "status", "attempts", "first_received_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}
