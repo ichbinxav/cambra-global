@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { deriveBenchmarkCohort, groupBenchmarkContributions } from "../../shared/p4BenchmarkIntelligence.ts";
+import { sha256 } from "../../shared/p3RateIntelligence.ts";
 
 /**
  * M2 — Cohort recomputation.
@@ -12,20 +14,6 @@ import { requireAdminOrInternal } from "../../shared/internalGate.ts";
  *   - on a schedule (automation)
  *   - inline by benchmarkLearningEngine after a new contribution
  */
-
-function quantile(sortedArr, q) {
-  const n = sortedArr.length;
-  if (!n) return null;
-  const pos = (n - 1) * q;
-  const b = Math.floor(pos);
-  const r = pos - b;
-  return sortedArr[b + 1] !== undefined ? sortedArr[b] + r * (sortedArr[b + 1] - sortedArr[b]) : sortedArr[b];
-}
-
-function avg(arr) {
-  if (!arr.length) return null;
-  return arr.reduce((a, b) => a + b, 0) / arr.length;
-}
 
 Deno.serve(async (req) => {
   try {
@@ -95,20 +83,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Group by cohort_key + metric_key + month (unchanged aggregation path)
-    const groups = new Map();
-    for (const c of filteredContributions) {
-      const key = `${c.cohort_key}::${c.metric_key}::${c.month}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(c);
-    }
+    const groups = groupBenchmarkContributions(filteredContributions);
 
     let cohorts_updated = 0;
 
     for (const [groupKey, items] of groups.entries()) {
-      const values = items.map((i) => Number(i.metric_value)).filter((v) => isFinite(v)).sort((a, b) => a - b);
-      const n = values.length;
-      if (n < 1) continue;
+      const derived = deriveBenchmarkCohort(items);
 
       const sample = items[0];
       const cohort_key = sample.cohort_key;
@@ -123,15 +103,26 @@ Deno.serve(async (req) => {
         country: sample.country,
         is_eu: !!sample.is_eu,
         month,
-        n,
-        median: quantile(values, 0.5),
-        p25: quantile(values, 0.25),
-        p75: quantile(values, 0.75),
-        avg: avg(values),
-        best_in_class: quantile(values, 0.1),
+        n: derived.sampleSize,
+        median: derived.median,
+        p25: derived.p25,
+        p75: derived.p75,
+        avg: derived.average,
+        best_in_class: derived.p10,
         engine_version: sample.engine_version || "",
-        is_public: n >= 5,
-        benchmark_version: sample.engine_version || "",
+        is_public: derived.isPublic,
+        benchmark_version: derived.derivationVersion,
+        derivation_version: derived.derivationVersion,
+        minimum_cohort_size: derived.minimumDistinctMerchants,
+        raw_distinct_merchants: derived.rawDistinctMerchants,
+        excluded_outlier_count: derived.excludedOutliers,
+        outlier_policy: derived.outlierPolicy,
+        confidence: derived.confidence,
+        derivation_status: derived.status,
+        insufficient_data_reason: derived.insufficientDataReason,
+        source_count_json: derived.sourceCounts,
+        lineage_hash: await sha256(items.map((item: any) => item.contribution_hash || '').filter(Boolean).sort()),
+        derived_at: new Date().toISOString(),
       };
 
       const existing = await base44.asServiceRole.entities.BenchmarkCohort.filter(

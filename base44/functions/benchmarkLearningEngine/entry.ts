@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
       const peerValues = (cohortPeers || []).map((p: any) => Number(p.metric_value)).filter((v: number) => isFinite(v));
       let flagged = false;
       let flag_reason = "";
-      if (peerValues.length >= 5) {
+      if (peerValues.length >= 10) {
         const z = modifiedZScore(c.metric_value, peerValues);
         if (Math.abs(z) > 3.5) {
           flagged = true;

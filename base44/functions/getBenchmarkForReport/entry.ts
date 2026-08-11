@@ -8,7 +8,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
  *   - source_anon_id
  *   - individual contribution values
  *   - cohort internals beyond aggregates
- *   - cohorts with n < 5 (those have is_public=false)
+ *   - cohorts with fewer than 10 distinct merchants
  *
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
@@ -77,8 +77,8 @@ function metricKeyFor(vertical) {
 
 function confidenceFor(n) {
   if (n >= 40) return "high";
-  if (n >= 15) return "medium";
-  if (n >= 5) return "low";
+  if (n >= 20) return "medium";
+  if (n >= 10) return "low";
   return "static";
 }
 
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
       1
     );
 
-    if (cohorts && cohorts.length > 0) {
+    if (cohorts && cohorts.length > 0 && Number(cohorts[0].n || 0) >= 10) {
       const c = cohorts[0];
       const n = Number(c.n || 0);
       const confidence = confidenceFor(n);
@@ -128,6 +128,9 @@ Deno.serve(async (req) => {
         p25: c.p25 ?? null,
         p75: c.p75 ?? null,
         best_in_class: c.best_in_class ?? null,
+        benchmark_version: c.benchmark_version || c.derivation_version || null,
+        lineage_hash: c.lineage_hash || null,
+        derived_at: c.derived_at || null,
         note,
       });
     }
@@ -144,7 +147,7 @@ Deno.serve(async (req) => {
       best_in_class: null,
       score_engine_version: "1.0.0",
       region: isEU(country) ? "EU" : "non-EU",
-      note: "Benchmark from CAMBRA static reference table (scoreEngine v1.0.0) — network sample too small",
+      note: "Static reference, not a statistical cohort — network sample is below the privacy/sufficiency threshold",
     });
   } catch (error) {
     return Response.json({ error: error?.message || String(error) }, { status: 500 });

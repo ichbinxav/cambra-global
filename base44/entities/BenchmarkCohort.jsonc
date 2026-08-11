@@ -27,7 +27,7 @@
     },
     "n": {
       "type": "number",
-      "description": "Sample size \u2014 number of validated, non-flagged contributions"
+      "description": "Privacy-safe sample size: distinct merchants remaining after validation, per-merchant precedence and outlier handling."
     },
     "median": {
       "type": "number"
@@ -51,10 +51,47 @@
     "is_public": {
       "type": "boolean",
       "default": false,
-      "description": "True only when n >= 5. Frontend should NEVER see is_public=false cohorts."
+      "description": "True only when n >= 10 distinct merchants under the versioned P4 policy. Frontend must never see is_public=false cohorts."
     },
     "benchmark_version": {
       "type": "string"
+    },
+    "derivation_version": {
+      "type": "string"
+    },
+    "minimum_cohort_size": {
+      "type": "number",
+      "minimum": 10
+    },
+    "raw_distinct_merchants": {
+      "type": "number"
+    },
+    "excluded_outlier_count": {
+      "type": "number"
+    },
+    "outlier_policy": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["HIGH", "MEDIUM", "LOW", "INSUFFICIENT"]
+    },
+    "derivation_status": {
+      "type": "string",
+      "enum": ["AVAILABLE", "INSUFFICIENT_DATA"]
+    },
+    "insufficient_data_reason": {
+      "type": "string"
+    },
+    "source_count_json": {
+      "type": "object"
+    },
+    "lineage_hash": {
+      "type": "string"
+    },
+    "derived_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

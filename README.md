@@ -99,9 +99,9 @@ every stored integration; do not rotate without a migration plan.
 │      Stripe analysis (stripeOAuthConnect → stripeDataSync →           │
 │      computeStripeVerifiedGap). Rates come from PaymentsRateTable     │
 │      (public pricing, source-quoted rows).                            │
-│    • Benchmark engine — PaymentsRateTable-derived cohort curves       │
-│      (src/lib/paymentsBenchmark.js); modeled curves are labeled as    │
-│      modeled, never presented as empirical.                           │
+│    • Benchmark intelligence — privacy-safe statistical cohorts use   │
+│      BenchmarkContribution → BenchmarkCohort with k>=10 distinct      │
+│      merchants. Public-pricing curves remain explicitly modeled.     │
 │    • AI orchestrators (backend functions, not declarative agents) —  │
 │      recommendation, spend intelligence, lead discovery, outreach.     │
 │      Buy-side orchestrators require an Approval row before any        │
@@ -236,4 +236,3 @@ Do **not** run `npm audit fix --force` without reviewing breaking changes.
 Contact the Base44 team via the dashboard for platform-level questions.
 <!-- CI activo desde v62.3 -->
 <!-- CI activo desde v62.3.1 -->
-
