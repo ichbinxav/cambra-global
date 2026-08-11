@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1477,
   "sourceArchiveShaExternal": null,
-  "gitSha": "9662d0f5a774d2b1ec9912217c3cd49528fcb8a0",
+  "gitSha": "c4c6ae336dcc4163860b3be536e429f78f4abb8d",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -144,5 +144,5 @@
   "blockingManualRequirements": [],
   "productionSealEligible": false,
   "finalVerdict": "PASS WITH EXTERNAL VALIDATION PENDING",
-  "generatedAt": "2026-08-11T20:02:05.709Z"
+  "generatedAt": "2026-08-11T20:02:20.259Z"
 }
