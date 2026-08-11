@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "version": "p11-threat-model-2026.08.11",
+  "system": "CAMBRA Europe V1",
+  "threats": [
+    {"id":"TM-001","threat":"tenant_escape_idor","severity":"CRITICAL","control_refs":["base44/functions/_tenantGuard/entry.ts","src/lib/tenantGuard.test.js"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-002","threat":"privilege_escalation","severity":"CRITICAL","control_refs":["base44/shared/internalGate.ts","base44/functions/authzScope/entry.ts"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-003","threat":"secret_exposure","severity":"CRITICAL","control_refs":["base44/shared/internalSecret.ts","src/lib/p10CredentialBoundary.static.test.js"],"verification":"AUTOMATED_AND_ROTATION_EVIDENCE_REQUIRED"},
+    {"id":"TM-004","threat":"prompt_injection_document","severity":"HIGH","control_refs":["base44/functions/processUploadedFile/entry.ts","src/lib/documentExtractionV2.test.js"],"verification":"AUTOMATED_AND_GOLDEN_CORPUS_REQUIRED"},
+    {"id":"TM-005","threat":"ssrf_upload_fetch","severity":"CRITICAL","control_refs":["base44/functions/processUploadedFile/entry.ts","src/lib/uploadSsrfBoundary.test.js"],"verification":"AUTOMATED"},
+    {"id":"TM-006","threat":"xss_untrusted_content","severity":"HIGH","control_refs":["base44/shared/commercialAutonomy.ts","src/lib/commercialCommunicationHardening.test.js"],"verification":"AUTOMATED_AND_PEN_TEST_REQUIRED"},
+    {"id":"TM-007","threat":"csrf_replay","severity":"HIGH","control_refs":["base44/shared/internalGate.ts","base44/functions/stripeBillingWebhook/entry.ts"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-008","threat":"injection_query_or_external","severity":"HIGH","control_refs":["base44/functions/apiV1/entry.ts","src/lib/tenantGuard.static.test.js"],"verification":"AUTOMATED_AND_PEN_TEST_REQUIRED"},
+    {"id":"TM-009","threat":"malicious_or_oversized_upload","severity":"HIGH","control_refs":["base44/shared/documentExtraction.ts","base44/functions/createDocument/entry.ts"],"verification":"AUTOMATED"},
+    {"id":"TM-010","threat":"webhook_spoof_or_replay","severity":"CRITICAL","control_refs":["base44/functions/stripeBillingWebhook/entry.ts","src/lib/webhookPublicPayload.test.js"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-011","threat":"oauth_token_leak_or_scope","severity":"CRITICAL","control_refs":["base44/functions/oauthToken/entry.ts","src/lib/p10CredentialBoundary.static.test.js"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-012","threat":"api_model_cost_abuse","severity":"HIGH","control_refs":["base44/shared/agentAuthority.ts","base44/shared/operationalControl.ts"],"verification":"POLICY_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-013","threat":"money_duplicate_or_reconciliation_loss","severity":"CRITICAL","control_refs":["base44/shared/economicExecution.ts","base44/functions/reconcileRecoverBilling/entry.ts"],"verification":"AUTOMATED_AND_RUNTIME_REQUIRED"},
+    {"id":"TM-014","threat":"backup_or_restore_failure","severity":"CRITICAL","control_refs":["src/docs/P11_PRODUCTION_SECURITY_RELIABILITY.md"],"verification":"REAL_RESTORE_EXERCISE_REQUIRED"},
+    {"id":"TM-015","threat":"dependency_supply_chain","severity":"HIGH","control_refs":["base44/functions/dependencySecurityWorker/entry.ts","package-lock.json"],"verification":"REMOTE_ALERT_AND_CI_REQUIRED"}
+  ]
+}

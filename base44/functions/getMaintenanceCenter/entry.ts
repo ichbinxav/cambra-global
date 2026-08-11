@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     if (!u) return Response.json({ ok:false, error:'Unauthorized' }, { status:401 });
     if (u.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const s = b.asServiceRole;
-    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation] = await Promise.all([
+    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation, production] = await Promise.all([
       s.entities.MaintenanceRun.list('-started_at', 50),
       s.entities.AutonomyIncident.filter({ status:'open' }, '-last_seen_at', 500),
       s.entities.Integration.list('-last_sync_at', 2000),
@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
       s.entities.RemediationKnowledge.list('-last_verified_at', 500),
       s.entities.SecurityAudit.list('-created_date', 500),
       s.entities.DocumentationHealthAssessment.list('-calculated_at', 20).catch(() => []),
+      s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch(() => []),
     ]);
     const last = runs[0] || null;
     const doc = documentation[0] || null;
@@ -51,6 +52,7 @@ Deno.serve(async (req) => {
         system_version:doc.system_version || null,
         calculated_at:doc.calculated_at || null,
       } : null,
+      production_readiness: production[0] || null,
       metrics:{
         active_issues:incidents.length,
         critical_incidents:critical.length,
@@ -66,6 +68,8 @@ Deno.serve(async (req) => {
         documentation_health_score:doc?.score ?? null,
         documentation_drift:documentationDrift,
         documentation_critical_drift:Number(doc?.critical_drift_count || 0),
+        production_sealed:production[0]?.sealed === true,
+        production_external_blockers:(production[0]?.external_blockers || []).length,
       },
       last_run:last,
       runs:runs.slice(0,20),

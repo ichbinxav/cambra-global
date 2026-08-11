@@ -27,6 +27,21 @@ Deno.serve(async (req) => {
       } catch {}
       const allowed = (doc.owner_type === 'brand' && doc.owner_id === brandId) || (doc.owner_type === 'provider' && providerIds.includes(doc.owner_id));
       if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
+      let targetAllowed = target_type === 'brand' ? target_id === brandId : target_type === 'provider' ? providerIds.includes(target_id) : false;
+      if (target_type === 'statement_import') {
+        const rows = await base44.entities.StatementImport.filter({ id: target_id }, '-created_date', 1);
+        targetAllowed = Boolean(rows?.[0] && rows[0].brand_id === brandId);
+      } else if (target_type === 'deal_activation') {
+        const rows = await base44.entities.DealActivation.filter({ id: target_id, brand_id: brandId }, '-created_date', 1);
+        targetAllowed = Boolean(rows?.[0]);
+      } else if (target_type === 'monthly_savings_report') {
+        const rows = await base44.entities.MonthlySavingsReport.filter({ id: target_id, brand_id: brandId }, '-created_date', 1);
+        targetAllowed = Boolean(rows?.[0]);
+      } else if (target_type === 'invoice') {
+        const rows = await base44.entities.Invoice.filter({ id: target_id, brand_id: brandId }, '-created_date', 1);
+        targetAllowed = Boolean(rows?.[0]);
+      }
+      if (!targetAllowed) return Response.json({ error: 'Target not found or access denied' }, { status: 403 });
     }
 
     const link = await base44.entities.DocumentLink.create({ document_id, target_type, target_id, is_primary });

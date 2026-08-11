@@ -44,6 +44,21 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+async function readResponseWithLimit(response: Response, maxBytes: number): Promise<Uint8Array> {
+  const declared = Number(response.headers.get('content-length') || 0);
+  if (declared > maxBytes) throw new Error('file_too_large');
+  if (!response.body) throw new Error('stored_file_empty');
+  const reader = response.body.getReader(); const chunks: Uint8Array[] = []; let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      total += value.byteLength; if (total > maxBytes) throw new Error('file_too_large'); chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const bytes = new Uint8Array(total); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return bytes;
+}
+
 const nullableField = (valueSchema: any) => ({
   type: 'object',
   additionalProperties: false,
@@ -218,7 +233,9 @@ Deno.serve(async (req) => {
 
     const fileResponse = await fetch(trusted.url, { redirect: 'error', signal: AbortSignal.timeout(20_000) });
     if (!fileResponse.ok) return Response.json({ error: 'stored_file_unavailable' }, { status: 422 });
-    const bytes = new Uint8Array(await fileResponse.arrayBuffer());
+    let bytes: Uint8Array;
+    try { bytes = await readResponseWithLimit(fileResponse, 15 * 1024 * 1024); }
+    catch (error) { return Response.json({ error: error?.message === 'file_too_large' ? 'file_too_large' : 'stored_file_unavailable' }, { status: error?.message === 'file_too_large' ? 413 : 422 }); }
     const envelope = validateDocumentEnvelope({ fileName, bytes });
     if (envelope.ok === false) return Response.json({ error: envelope.reason }, { status: envelope.reason === 'file_too_large' ? 413 : 400 });
     if (['csv', 'json'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {

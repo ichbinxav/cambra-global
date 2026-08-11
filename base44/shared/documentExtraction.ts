@@ -137,6 +137,8 @@ function normalizeField(raw: unknown, kind: 'money' | 'count') {
   const evidence = cleanText(raw.evidence, 500);
   const confidence = ['high', 'medium', 'low'].includes(String(raw.confidence)) ? String(raw.confidence) : 'unknown';
   const parsed = kind === 'money' ? decimalMajorToMinor(raw.value) : integerCount(raw.value);
+  if (!evidence) return { present: true as const, ok: false as const, reason: 'field_evidence_required', evidence, confidence };
+  if (confidence === 'unknown') return { present: true as const, ok: false as const, reason: 'field_confidence_required', evidence, confidence };
   return parsed.ok === true
     ? { present: true as const, ok: true as const, value: parsed.value, evidence, confidence }
     : { present: true as const, ok: false as const, reason: parsed.reason, evidence, confidence };
@@ -265,10 +267,15 @@ export function buildAnalyzerProjection(canonical: any) {
   if (!canonical || canonical.currency !== 'EUR') return { eligible: false, reason: 'analyzer_requires_eur', aggregates: {} };
   const f = canonical.fields || {};
   if (canonical.documentType === 'payments_statement' && f.gross_amount_minor && f.fees_amount_minor) {
+    if (!canonical.periodStart || !canonical.periodEnd) return { eligible: false, reason: 'monthly_statement_period_required', aggregates: {} };
+    const start = Date.parse(`${canonical.periodStart}T00:00:00Z`);
+    const end = Date.parse(`${canonical.periodEnd}T00:00:00Z`);
+    const inclusiveDays = Number.isFinite(start) && Number.isFinite(end) ? Math.round((end - start) / 86400000) + 1 : 0;
+    if (inclusiveDays < 20 || inclusiveDays > 35) return { eligible: false, reason: 'statement_period_is_not_monthly', aggregates: {} };
     const gross = f.gross_amount_minor.value;
     const fees = f.fees_amount_minor.value;
     if (gross <= 0) return { eligible: false, reason: 'invalid_gross', aggregates: {} };
-    return { eligible: true, reason: null, aggregates: { payments: { total_volume_eur: gross / 100, fee_pct: Number(((fees / gross) * 100).toFixed(4)), provider: canonical.providerSlug } } };
+    return { eligible: true, reason: null, aggregates: { payments: { total_volume_eur: gross / 100, fee_pct: Number(((fees / gross) * 100).toFixed(4)), provider: canonical.providerSlug, period_start: canonical.periodStart, period_end: canonical.periodEnd, period_days: inclusiveDays } } };
   }
   // An invoice total is not automatically a monthly run-rate. Shipping and
   // SaaS are also retired merchant-facing verticals. Keep those documents

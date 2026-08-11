@@ -76,6 +76,15 @@ if (fs.existsSync('docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md')) {
 if (fs.existsSync('base44/shared/documentExtraction.ts')) {
   addRequirement('DOCUMENT EXTRACTION PRODUCTION EVAL REQUIRED: after DPA/retention approval and dual-model configuration, validate the extractor against a redacted multilingual real-document golden corpus and publish field-level precision/recall, false-accept and review-rate evidence before calling statement extraction production-verified.');
 }
+if (fs.existsSync('src/docs/P9_EUROPEAN_LOCALIZATION.md')) {
+  addRequirement('P9 MARKET LOCALIZATION LIMIT: only en-GB, fr-FR and es-ES product locales are implemented; fallback-only markets require native product/legal review and localized URL/SSR architecture before full native launch claims.');
+}
+if (fs.existsSync('src/docs/P10_REGULATORY_CONTROL.md')) {
+  addRequirement('P10 LEGAL EVIDENCE REQUIRED: conservative market/activity coverage is not legal clearance. Qualified review must approve current primary-authority evidence, registrations, passport notifications and/or partner mandates before each production activity is enabled.');
+}
+if (fs.existsSync('src/docs/P11_PRODUCTION_SECURITY_RELIABILITY.md')) {
+  addRequirement('P11 PRODUCTION SEAL EVIDENCE REQUIRED: final-SHA remote CI, Base44 runtime proof, dependency alert proof, real RPO/RTO restore exercise and multilingual real-document extractor corpus evidence remain external gates.');
+}
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
   addRequirement('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
 }

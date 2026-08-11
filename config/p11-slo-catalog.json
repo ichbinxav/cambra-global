@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "version": "p11-slo-2026.08.11",
+  "slos": [
+    {"slo_key":"analyzer_submission","availability_target":0.995,"latency_p95_ms":5000,"window_days":30,"owner":"product_engineering"},
+    {"slo_key":"document_extraction","availability_target":0.99,"latency_p95_ms":90000,"window_days":30,"owner":"data_operations"},
+    {"slo_key":"commercial_send","availability_target":0.995,"latency_p95_ms":10000,"window_days":30,"owner":"commercial_operations"},
+    {"slo_key":"billing_reconciliation","availability_target":0.999,"latency_p95_ms":300000,"window_days":30,"owner":"finance_operations"},
+    {"slo_key":"company_orchestrator","availability_target":0.99,"latency_p95_ms":300000,"window_days":30,"owner":"platform_engineering"}
+  ]
+}

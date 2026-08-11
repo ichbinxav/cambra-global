@@ -142,9 +142,20 @@ describe('document extraction v2 · independent agreement gate', () => {
 
   it('projects only independently accepted EUR evidence', () => {
     const agreed = crossValidateCandidates(normalize(payment(), modelA), normalize(payment(), modelB));
-    expect(buildAnalyzerProjection(agreed.canonical)).toEqual({ eligible: true, reason: null, aggregates: { payments: { total_volume_eur: 10000, fee_pct: 2.9, provider: 'stripe' } } });
+    expect(buildAnalyzerProjection(agreed.canonical)).toEqual({ eligible: true, reason: null, aggregates: { payments: { total_volume_eur: 10000, fee_pct: 2.9, provider: 'stripe', period_start: '2026-07-01', period_end: '2026-07-31', period_days: 31 } } });
     const usd = crossValidateCandidates(normalize(payment({ currency: 'USD' }), modelA), normalize(payment({ currency: 'USD' }), modelB));
     expect(buildAnalyzerProjection(usd.canonical)).toMatchObject({ eligible: false, reason: 'analyzer_requires_eur' });
+  });
+
+  it('does not reinterpret a quarterly statement as monthly Analyzer volume', () => {
+    const quarterly = crossValidateCandidates(normalize(payment({ period_start:'2026-04-01',period_end:'2026-06-30' }), modelA), normalize(payment({ period_start:'2026-04-01',period_end:'2026-06-30' }), modelB));
+    expect(quarterly.accepted).toBe(true);
+    expect(buildAnalyzerProjection(quarterly.canonical)).toMatchObject({ eligible:false,reason:'statement_period_is_not_monthly' });
+  });
+
+  it('requires field-level evidence and confidence from both readers', () => {
+    expect(normalize(payment({ fields:{ fees_amount_major:field('290.00','') } })).problems).toContainEqual({ field:'fees_amount_major',reason:'field_evidence_required' });
+    expect(normalize(payment({ fields:{ fees_amount_major:field('290.00','Total fees','unknown') } })).problems).toContainEqual({ field:'fees_amount_major',reason:'field_confidence_required' });
   });
 });
 
@@ -169,6 +180,12 @@ describe('processUploadedFile v2 · production wiring', () => {
   it('rejects oversized text documents before either independent reader is called', () => {
     expect(source).toContain("['csv', 'json'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES");
     expect(source).toContain("error: 'text_document_too_large_for_independent_review'");
+  });
+
+  it('caps the response stream before buffering an oversized stored object', () => {
+    expect(source).toContain('readResponseWithLimit(fileResponse, 15 * 1024 * 1024)');
+    expect(source).toContain("response.headers.get('content-length')");
+    expect(source).not.toContain('fileResponse.arrayBuffer()');
   });
 
   it('requires independent acceptance before any profile or AnalyzerInput projection', () => {
