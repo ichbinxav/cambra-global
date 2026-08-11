@@ -2,7 +2,9 @@
   "name":"LeadReservoirSnapshot","type":"object","properties":{
     "snapshot_key":{"type":"string"},"captured_at":{"type":"string","format":"date-time"},
     "discovered":{"type":"number"},"enriching":{"type":"number"},"qualified":{"type":"number"},"high_confidence":{"type":"number"},"outreach_ready":{"type":"number"},"queued":{"type":"number"},"waiting_window":{"type":"number"},"waiting_capacity":{"type":"number"},"suppressed":{"type":"number"},"disqualified":{"type":"number"},"stale":{"type":"number"},
-    "safe_daily_send_capacity":{"type":"number"},"coverage_days":{"type":"number"},"target_coverage_days":{"type":"number"},"coverage_status":{"type":"string","enum":["LOW","HEALTHY","EXCESS"]},"discovery_action":{"type":"string"},"cost_guard_json":{"type":"object"},"country_breakdown_json":{"type":"object"},"engine_version":{"type":"string"}
+    "safe_daily_send_capacity":{"type":"number"},"coverage_days":{"type":"number"},"target_coverage_days":{"type":"number"},"coverage_status":{"type":"string","enum":["LOW","HEALTHY","EXCESS"]},"discovery_action":{"type":"string"},"cost_guard_json":{"type":"object"},"country_breakdown_json":{"type":"object"},
+    "vertical_breakdown_json":{"type":"object"},"opportunity_breakdown_json":{"type":"object"},"provider_status_json":{"type":"object"},"harvest_metrics_json":{"type":"object"},
+    "last_successful_run_at":{"type":"string","format":"date-time"},"next_scheduled_run_at":{"type":"string","format":"date-time"},"checkpoint_id":{"type":"string"},"engine_version":{"type":"string"}
   },"required":["snapshot_key","captured_at","engine_version"],
   "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
 }

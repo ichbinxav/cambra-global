@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.94.0 — Ultimate Technical Closure Candidate (durability manifest)",
-  "generatedAt": "2026-08-11T18:20:19.418Z",
+  "generatedAt": "2026-08-11T19:53:51.643Z",
   "packageVersion": "0.94.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -252,8 +252,8 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "sha256": "b8b98c97c749aabbd8d2c2481de574574c9b666e9e347cdade7eb4fb352cbb1d",
-      "bytes": 11358
+      "sha256": "38beb00d33b4471789e1b0e040df225f24cc5594555bfa1af2159cbdaef611fc",
+      "bytes": 17986
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
@@ -357,8 +357,8 @@
     },
     {
       "path": "base44/functions/commercialPolicyAdmin/entry.ts",
-      "sha256": "93cd61c0379c313e0cccdff85dbfbc6550c3a57ba4798c5c8dbb28a65069c7f2",
-      "bytes": 9768
+      "sha256": "c16e1090a7bc10a6d757fbaafcd430958c0084628b59372072a3dbe11393fba7",
+      "bytes": 13836
     },
     {
       "path": "base44/functions/commercialReplyAgent/entry.ts",
@@ -622,13 +622,13 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "sha256": "786ac04e4a8a4630decd31fedcfefd910dc21c33dba052ceb594117618da3dae",
-      "bytes": 7275
+      "sha256": "b350202f9970ec8c5b2b8eed9f987ee8b2e3ddd36b65aca62892b2524958c645",
+      "bytes": 23068
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "sha256": "e3c15105abe362e3b5009ef4a218f8499041a7d33d7920ea0199c5ade880d167",
-      "bytes": 5340
+      "sha256": "50b32df58416ab0cbfa933513349de26dd5facb52e3e5ff544c9aad5158f2a36",
+      "bytes": 12832
     },
     {
       "path": "base44/functions/leadScoringAgent/entry.ts",
@@ -972,8 +972,8 @@
     },
     {
       "path": "base44/shared/commercialIntelligence.ts",
-      "sha256": "269c73d71c8a01c850caa1c192fcb3ebd4d8a2b38242ade4cc339b9fc9c3df06",
-      "bytes": 11948
+      "sha256": "fa88e139d56569caf0fce3b92959e9a69cdfe988711be9ad8132add9d34d4dc1",
+      "bytes": 12013
     },
     {
       "path": "base44/shared/commercialModelRouter.ts",
@@ -992,8 +992,8 @@
     },
     {
       "path": "base44/shared/documentationRegistry.ts",
-      "sha256": "79a2bdffbff419da85f83e2c94758c59b4bbe296710238c1e7bc19ccbfe8e9bc",
-      "bytes": 45554
+      "sha256": "0ea24afc1d0dda6e6650dd87a8f80713faf66a5c5352df81b49d8dad44cf846d",
+      "bytes": 46035
     },
     {
       "path": "base44/shared/eclEconomicGate.ts",
@@ -1187,8 +1187,8 @@
     },
     {
       "path": "scripts/generate-documentation-manifest.mjs",
-      "sha256": "7c54533145a99bf767547023696c065329da1f009e113e4eeaeb228268d1e196",
-      "bytes": 2026
+      "sha256": "556e51e0903c7f2f3c32d4251c6fa64bf57d2ad6ffcc22e8af55f46239ecf34c",
+      "bytes": 2213
     },
     {
       "path": "scripts/generate-durability-manifest.mjs",
@@ -1392,8 +1392,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "7fb5c25780a61a309ad21b3a5d41db0b4d944ebe36aafbe039b6195cb610ff3c",
-      "bytes": 54696
+      "sha256": "7576595b5e9d6d0ca37237a8745c0469306517288dbb5e4c42dee776e86a58a7",
+      "bytes": 54856
     },
     {
       "path": "src/lib/commercialCommunicationHardening.test.js",

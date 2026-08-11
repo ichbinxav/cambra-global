@@ -1,263 +1,58 @@
-import { useState } from "react";
-import { Sparkles, Loader2, Globe, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Activity, AlertTriangle, Building2, CheckCircle2, ChevronDown, ChevronUp, CirclePause, Euro, Loader2, Play, Radar, RefreshCw, Search, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-const CONFIDENCE_COLORS = {
-  high:   { bg: "bg-emerald-50",  text: "text-emerald-700",  border: "border-emerald-200" },
-  medium: { bg: "bg-blue-50",     text: "text-blue-700",     border: "border-blue-200" },
-  low:    { bg: "bg-amber-50",    text: "text-amber-700",    border: "border-amber-200" },
-};
+const number = (value) => Number.isFinite(Number(value)) ? Number(value).toLocaleString() : "—";
+const date = (value) => value ? new Date(value).toLocaleString() : "—";
+const pct = (value) => Number.isFinite(Number(value)) ? `${Math.round(Number(value) * 100)}%` : "—";
+const moneyBand = (min, max) => Number.isFinite(Number(min)) || Number.isFinite(Number(max)) ? `€${number(min)}–€${number(max)}` : "Unknown";
+const COUNTRY_NAME = { FR:"France", ES:"Spain", DE:"Germany", IT:"Italy", PT:"Portugal", BE:"Belgium", NL:"Netherlands", AT:"Austria", IE:"Ireland", GB:"United Kingdom" };
 
-function confidenceBand(score) {
-  if (score >= 0.85) return "high";
-  if (score >= 0.65) return "medium";
-  return "low";
+function Metric({ label, value, detail=null, icon:Icon=null }) {
+  return <div className="rounded-2xl border border-border/60 bg-card p-4"><div className="flex items-center justify-between"><p className="text-[10px] uppercase tracking-[.16em] font-bold text-muted-foreground">{label}</p>{Icon&&<Icon size={14} className="text-muted-foreground"/>}</div><p className="text-2xl font-black tabular-nums mt-2">{value}</p>{detail&&<p className="text-[11px] text-muted-foreground mt-1">{detail}</p>}</div>;
 }
 
-const VERTICAL_LABEL = {
-  payments:        "Payments",
-  shipping:        "Shipping",
-  saas_commerce:   "Commerce platform",
-  saas_marketing:  "Marketing",
-  saas_analytics:  "Analytics",
-  saas_support:    "Support",
-  saas_finance:    "Finance",
-  saas_hr:         "HR",
-  other:           "Other",
-};
+function StatusPill({ status }) {
+  const style=status==="ACTIVE"?"bg-emerald-50 text-emerald-700 border-emerald-200":status==="PAUSED"?"bg-amber-50 text-amber-700 border-amber-200":"bg-rose-50 text-rose-700 border-rose-200";
+  return <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black tracking-wider ${style}`}>{status==="ACTIVE"?<CheckCircle2 size={11}/>:<AlertTriangle size={11}/>} {status||"UNKNOWN"}</span>;
+}
 
 export default function AdminDiscovery() {
-  const [website, setWebsite] = useState("");
-  const [brandId, setBrandId] = useState("");
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState(null);
-  const [result, setResult] = useState(null);
+  const [radar,setRadar]=useState(null),[loading,setLoading]=useState(true),[acting,setActing]=useState(""),[error,setError]=useState(null),[notice,setNotice]=useState(null);
+  const [manualOpen,setManualOpen]=useState(false),[manualDomain,setManualDomain]=useState(""),[manualMarket,setManualMarket]=useState("FR");
+  const [country,setCountry]=useState("all"),[industry,setIndustry]=useState("all"),[contactability,setContactability]=useState("all"),[source,setSource]=useState("all"),[sort,setSort]=useState("opportunity");
 
-  const handleRun = async (e) => {
-    e?.preventDefault();
-    setError(null);
-    setResult(null);
-    if (!website.trim()) { setError("Enter a website URL"); return; }
+  const load=async()=>{setLoading(true);setError(null);try{const response=await base44.functions.invoke("adminSummaries",{action:"discovery_radar"});const data=response?.data||response;if(!data?.ok)throw new Error(data?.error||"Discovery radar unavailable");setRadar(data)}catch(e){setError(e?.message||"Discovery radar unavailable")}finally{setLoading(false)}};
+  useEffect(()=>{load()},[]);
 
-    setRunning(true);
-    try {
-      // If no brand_id given, find / pick a brand for the current admin so the
-      // agent can run without forcing the user to know an internal id.
-      let bid = brandId.trim();
-      if (!bid) {
-        const brands = await base44.entities.Brand.list("-created_date", 1).catch(() => []);
-        if (brands[0]) bid = brands[0].id;
-      }
-      if (!bid) {
-        setError("No brand_id provided and no Brand found. Create a Brand first or paste an id.");
-        setRunning(false);
-        return;
-      }
+  const runAction=async(key,fn)=>{setActing(key);setError(null);setNotice(null);try{const message=await fn();setNotice(message||"Completed");await load()}catch(e){setError(e?.message||"Operation failed")}finally{setActing("")}};
+  const ensurePolicy=async()=>{if(radar?.policy_id)return radar.policy_id;const created=await base44.functions.invoke("commercialPolicyAdmin",{action:"create_draft",engine:"merchant_acquisition",version:`2026.08.11-discovery-harvest-v1`,countries:["FR","ES"],daily_send_limit:10,min_lead_score:70,icp_json:{discovery_enabled:false,verticals:["ecommerce","retail","consumer brands"],titles:["Founder","CEO","CFO","COO","Finance Director","Head of Finance","Head of Payments","Payments Manager","Head of Ecommerce","Ecommerce Director"],seniorities:["owner","founder","c_suite","vp","head","director","manager"],employee_ranges:["10,50","50,200","200,1000"],per_run:100,partitions_per_run:1,enrichment_threshold:45,enrichment_daily_limit:25,enrichment_weekly_limit:125,target_unique_companies:10000,provider_priority:["apollo","public"]}});const data=created?.data||created;if(!data?.policy?.id)throw new Error(data?.error||"Could not create discovery policy");return data.policy.id};
+  const toggleDiscovery=(enabled)=>runAction(enabled?"start":"pause",async()=>{const policyId=await ensurePolicy();const response=await base44.functions.invoke("commercialPolicyAdmin",{action:"configure_discovery",policy_id:policyId,enabled,countries:radar?.configured_markets?.length?radar.configured_markets:["FR","ES"],confirmation:enabled?"START_AUTONOMOUS_DISCOVERY":"PAUSE_AUTONOMOUS_DISCOVERY"});const data=response?.data||response;if(!data?.ok)throw new Error(data?.error||"Policy update failed");if(enabled){await base44.functions.invoke("leadDiscoveryAgent",{action:"diagnose"});await base44.functions.invoke("alwaysOnLeadDiscoveryWorker",{})}return enabled?"Autonomous discovery started. Outbound policy status was not changed.":"Autonomous discovery paused. Existing warehouse data was preserved."});
+  const diagnose=()=>runAction("diagnose",async()=>{const response=await base44.functions.invoke("leadDiscoveryAgent",{action:"diagnose"});const data=response?.data||response;if(!data?.ok)throw new Error(data?.error||"Apollo diagnostic failed");return data.auth?.pass?"Apollo authentication passed; no secret was exposed.":`Apollo diagnostic: ${data.auth?.error_code||data.status}`});
+  const runNow=()=>runAction("run",async()=>{const response=await base44.functions.invoke("alwaysOnLeadDiscoveryWorker",{});const data=response?.data||response;if(!data?.ok)throw new Error(data?.error||"Discovery cycle failed");return data.duplicate_blocked?"A cycle for this scheduler slot already ran; duplicate execution was blocked.":`Discovery cycle completed: ${number(data.harvest_metrics?.unique_companies)} unique companies in the warehouse.`});
+  const investigate=()=>runAction("manual",async()=>{const domain=manualDomain.trim().replace(/^https?:\/\//,"").replace(/^www\./,"").split("/")[0];if(!domain)throw new Error("Enter a company domain");const response=await base44.functions.invoke("leadOrchestrator",{icp:{manual_domain:domain,company_domain:domain,country:COUNTRY_NAME[manualMarket]||manualMarket,country_code:manualMarket,industry:"ecommerce",per_page:25,limit:25}});const data=response?.data||response;if(!data?.ok)throw new Error(data?.error||"Investigation failed");setManualDomain("");return "Company investigation ran through the same canonical discovery, enrichment and scoring chain."});
 
-      const res = await base44.functions.invoke("discoveryTechStackAgent", {
-        website_url: website.trim(),
-        brand_id: bid,
-      });
-      const payload = res?.data || res;
-      if (!payload?.ok) {
-        setError(payload?.error || "Discovery failed");
-      } else {
-        setResult(payload);
-      }
-    } catch (e) {
-      setError(e?.message || "Unexpected error");
-    } finally {
-      setRunning(false);
-    }
-  };
+  const leads=useMemo(()=>{let rows=[...(radar?.prioritized||[])];if(country!=="all")rows=rows.filter(row=>row.country===country);if(industry!=="all")rows=rows.filter(row=>row.industry===industry);if(contactability!=="all")rows=rows.filter(row=>row.contactability===contactability);if(source!=="all")rows=rows.filter(row=>row.source===source);rows.sort((a,b)=>sort==="icp"?(b.icp_score||0)-(a.icp_score||0):sort==="confidence"?(b.confidence||0)-(a.confidence||0):sort==="tpv"?(b.estimated_tpv_max_eur||-1)-(a.estimated_tpv_max_eur||-1):sort==="recent"?Date.parse(b.discovered_at||0)-Date.parse(a.discovered_at||0):(b.opportunity_score||b.icp_score||0)-(a.opportunity_score||a.icp_score||0));return rows},[radar,country,industry,contactability,source,sort]);
+  const options=(key)=>[...new Set((radar?.prioritized||[]).map(row=>row[key]).filter(Boolean))].sort();
 
-  const findings = result?.findings || [];
-  const byVertical = findings.reduce((acc, f) => {
-    const v = f.vertical || "other";
-    if (!acc[v]) acc[v] = [];
-    acc[v].push(f);
-    return acc;
-  }, {});
-  const orderedVerticals = Object.keys(VERTICAL_LABEL).filter(v => byVertical[v]?.length);
+  if(loading&&!radar)return <div className="min-h-[420px] grid place-items-center"><Loader2 className="animate-spin text-muted-foreground"/></div>;
+  const m=radar?.metrics||{},provider=radar?.provider||{},scheduler=radar?.scheduler||{};
+  return <div className="space-y-6">
+    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4"><div><div className="flex items-center gap-2"><Radar size={21}/><h1 className="text-2xl font-black tracking-tight">Autonomous Commercial Radar</h1><StatusPill status={radar?.status}/></div><p className="text-xs text-muted-foreground mt-2 max-w-3xl">CAMBRA continuously discovers, resolves, deduplicates and prioritizes European merchants. Discovery estimates are pre-analysis intelligence, never verified savings.</p></div><div className="flex flex-wrap gap-2"><button onClick={load} disabled={loading||!!acting} className="h-9 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5"><RefreshCw size={12} className={loading?"animate-spin":""}/>Refresh</button><button onClick={diagnose} disabled={!!acting} className="h-9 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5">{acting==="diagnose"?<Loader2 size={12} className="animate-spin"/>:<ShieldCheck size={12}/>}Test Apollo</button><button onClick={runNow} disabled={!!acting||!radar?.discovery_enabled} className="h-9 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5">{acting==="run"?<Loader2 size={12} className="animate-spin"/>:<Activity size={12}/>}Run cycle</button>{radar?.discovery_enabled?<button onClick={()=>toggleDiscovery(false)} disabled={!!acting} className="h-9 px-3 rounded-lg bg-amber-600 text-white text-xs font-bold inline-flex items-center gap-1.5">{acting==="pause"?<Loader2 size={12} className="animate-spin"/>:<CirclePause size={12}/>}Pause radar</button>:<button onClick={()=>toggleDiscovery(true)} disabled={!!acting} className="h-9 px-3 rounded-lg bg-foreground text-background text-xs font-bold inline-flex items-center gap-1.5">{acting==="start"?<Loader2 size={12} className="animate-spin"/>:<Play size={12}/>}Start Discovery</button>}</div></div>
+    {error&&<div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex gap-2"><AlertTriangle size={14}/>{error}</div>}{notice&&<div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-700 flex gap-2"><CheckCircle2 size={14}/>{notice}</div>}
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
-          <Sparkles size={18} /> Discovery · Tech Stack Agent
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          Brain B1 · Deterministic detection first, AI interprets after. Never invents tools.
-        </p>
-      </div>
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3"><Metric label="Unique companies" value={number(m.unique_companies)} icon={Building2}/><Metric label="High-fit prospects" value={number(m.high_fit)} icon={Sparkles}/><Metric label="Verified contacts" value={number(m.usable_verified_contacts)} icon={Users}/><Metric label="Ready for contact" value={number(m.outreach_ready)} detail="Separate policy/compliance gate" icon={ShieldCheck}/><Metric label="Estimated external cost" value={radar?.cost?`€${((radar.cost.estimated_external_cost_minor||0)/100).toFixed(2)}`:"—"} detail="CAMBRA cost ledger" icon={Euro}/></div>
 
-      {/* Run form */}
-      <form
-        onSubmit={handleRun}
-        className="rounded-2xl border border-border/60 bg-card p-5 space-y-3"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_240px_auto] gap-3 items-end">
-          <div>
-            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-1">
-              Website URL
-            </label>
-            <div className="relative">
-              <Globe size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                value={website}
-                onChange={e => setWebsite(e.target.value)}
-                placeholder="e.g. allbirds.com or https://www.gymshark.com"
-                disabled={running}
-                className="w-full h-10 pl-9 pr-3 rounded-lg border border-border/60 bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block mb-1">
-              Brand ID (optional)
-            </label>
-            <input
-              type="text"
-              value={brandId}
-              onChange={e => setBrandId(e.target.value)}
-              placeholder="auto-pick if empty"
-              disabled={running}
-              className="w-full h-10 px-3 rounded-lg border border-border/60 bg-card text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={running || !website.trim()}
-            className="h-10 px-5 rounded-lg bg-foreground text-background text-xs font-bold inline-flex items-center justify-center gap-1.5 hover:opacity-90 disabled:opacity-50"
-          >
-            {running ? <><Loader2 size={12} className="animate-spin" /> Scanning…</> : <>Run discovery</>}
-          </button>
-        </div>
-        <p className="text-[11px] text-muted-foreground">
-          Tip: try a well-known store (e.g. <code className="font-mono">allbirds.com</code>, <code className="font-mono">gymshark.com</code>) to see lots of signals.
-        </p>
-      </form>
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 flex items-start gap-2">
-          <AlertTriangle size={13} className="text-rose-700 mt-0.5 shrink-0" />
-          <p className="text-xs text-rose-700">{error}</p>
-        </div>
-      )}
-
-      {/* Result */}
-      {result && (
-        <div className="space-y-4">
-          {/* Status strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-border/60 bg-card p-3">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Tools detected</p>
-              <p className="text-2xl font-black tabular-nums mt-0.5">{findings.length}</p>
-            </div>
-            <div className="rounded-xl border border-border/60 bg-card p-3">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Verticals covered</p>
-              <p className="text-2xl font-black tabular-nums mt-0.5">{orderedVerticals.length}</p>
-            </div>
-            <div className="rounded-xl border border-border/60 bg-card p-3">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">AI interpretation</p>
-              <p className="text-sm font-bold mt-1 flex items-center gap-1.5">
-                {result.interpretation_status === "ok" ? (
-                  <><CheckCircle2 size={13} className="text-emerald-600" /> active</>
-                ) : result.interpretation_status === "skipped_no_key" ? (
-                  <><AlertTriangle size={13} className="text-amber-600" /> ANTHROPIC_API_KEY not set</>
-                ) : (
-                  <><AlertTriangle size={13} className="text-amber-600" /> {result.interpretation_status}</>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* AI summary */}
-          {result.summary && result.interpretation_status === "ok" && (
-            <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-4">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-blue-700 mb-1">
-                AI summary
-              </p>
-              <p className="text-sm text-foreground leading-relaxed">{result.summary}</p>
-            </div>
-          )}
-
-          {/* Findings grouped by vertical */}
-          {orderedVerticals.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 bg-secondary/20 p-10 text-center">
-              <p className="text-sm font-bold mb-1">No signals detected</p>
-              <p className="text-xs text-muted-foreground">
-                Either the site doesn't expose tools the scanner knows, or fetch was blocked.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {orderedVerticals.map(v => (
-                <div key={v} className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-                  <div className="px-4 py-2.5 border-b border-border/40 bg-secondary/30 flex items-center justify-between">
-                    <span className="text-[11px] uppercase tracking-wider font-bold text-foreground">
-                      {VERTICAL_LABEL[v]}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">({byVertical[v].length})</span>
-                  </div>
-                  <div className="divide-y divide-border/30">
-                    {byVertical[v].map((f, idx) => {
-                      const band = f.ai_confidence || confidenceBand(f.confidence);
-                      const cc = CONFIDENCE_COLORS[band] || CONFIDENCE_COLORS.low;
-                      return (
-                        <div key={`${f.tool}_${idx}`} className="px-4 py-3 space-y-2">
-                          <div className="flex items-center gap-3 flex-wrap">
-                            <p className="text-sm font-bold text-foreground">{f.tool}</p>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-bold ${cc.bg} ${cc.text} ${cc.border}`}>
-                              {band} confidence
-                            </span>
-                            {f.matched_catalog_id && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px] font-bold">
-                                <CheckCircle2 size={10} />
-                                in catalog: {f.matched_catalog_name}
-                              </span>
-                            )}
-                            <span className="text-[10px] text-muted-foreground tabular-nums">
-                              scanner score {Number(f.confidence || 0).toFixed(2)}
-                            </span>
-                          </div>
-                          {f.evidence_type && f.evidence_value && (
-                            <p className="text-[11px] text-muted-foreground">
-                              <span className="font-bold">Evidence ({f.evidence_type}):</span>{" "}
-                              <code className="font-mono bg-secondary/60 px-1.5 py-0.5 rounded">{f.evidence_value}</code>
-                            </p>
-                          )}
-                          {f.ai_reasoning && (
-                            <p className="text-[11px] text-foreground/80 italic">
-                              <span className="font-bold not-italic">AI:</span> {f.ai_reasoning}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Footer: task link */}
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              AgentTask <code className="font-mono">{result.task_id}</code> · Job <code className="font-mono">{result.job_id || "—"}</code>
-            </span>
-            <a
-              href="/admin/activity"
-              className="inline-flex items-center gap-1 hover:text-foreground"
-            >
-              View in Activity Log <ExternalLink size={10} />
-            </a>
-          </div>
-        </div>
-      )}
+    <div className="grid lg:grid-cols-3 gap-3">
+      <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3"><div className="flex items-center justify-between"><p className="text-xs font-black uppercase tracking-wider">Harvest status</p><StatusPill status={radar?.status}/></div><dl className="grid grid-cols-2 gap-2 text-[11px]"><dt className="text-muted-foreground">Last successful run</dt><dd className="text-right font-medium">{date(radar?.last_successful_run_at)}</dd><dt className="text-muted-foreground">Next scheduled run</dt><dd className="text-right font-medium">{date(radar?.next_scheduled_run_at)}</dd><dt className="text-muted-foreground">Scheduler</dt><dd className="text-right font-bold">{scheduler.alive?"ALIVE":"NOT EVIDENCED"}</dd><dt className="text-muted-foreground">Duplicate slots blocked</dt><dd className="text-right">{number(scheduler.duplicate_blocked)}</dd><dt className="text-muted-foreground">Outbound policy</dt><dd className="text-right font-bold">{radar?.outbound_policy_status||"NONE"}</dd></dl></div>
+      <div className="rounded-2xl border border-border/60 bg-card p-4 space-y-3"><div className="flex items-center justify-between"><p className="text-xs font-black uppercase tracking-wider">Apollo sunset adapter</p><span className="text-[10px] font-bold">{provider.status||"UNKNOWN"}</span></div><dl className="grid grid-cols-2 gap-2 text-[11px]"><dt className="text-muted-foreground">Auth test</dt><dd className="text-right font-bold">{provider.auth_test_pass===true?"PASS":provider.auth_test_pass===false?"FAIL":"NOT RUN"}</dd><dt className="text-muted-foreground">Provider expiry</dt><dd className="text-right">{date(provider.expires_at)}</dd><dt className="text-muted-foreground">API calls observed</dt><dd className="text-right">{number(radar?.cost?.api_calls)}</dd><dt className="text-muted-foreground">Credits consumed</dt><dd className="text-right">{number(radar?.cost?.provider_credits_consumed)}</dd><dt className="text-muted-foreground">Enrichment calls</dt><dd className="text-right">{number(radar?.cost?.enrichment_calls)}</dd><dt className="text-muted-foreground">Credits remaining</dt><dd className="text-right">{radar?.cost?.credit_balance??"Unknown"}</dd></dl><p className="text-[10px] text-muted-foreground">Apollo IDs remain provenance only. The warehouse, scoring and market sizing survive provider expiry.</p></div>
+      <div className="rounded-2xl border border-border/60 bg-card p-4"><p className="text-xs font-black uppercase tracking-wider mb-3">Quality per harvest</p><dl className="grid grid-cols-2 gap-2 text-[11px]"><dt className="text-muted-foreground">Candidates scanned</dt><dd className="text-right">{number(m.companies_scanned)}</dd><dt className="text-muted-foreground">Pre-scored</dt><dd className="text-right">{number(m.candidates_pre_scored)}</dd><dt className="text-muted-foreground">Enriched</dt><dd className="text-right">{number(m.candidates_enriched)}</dd><dt className="text-muted-foreground">Duplicates rejected</dt><dd className="text-right">{number(m.duplicates_rejected)}</dd><dt className="text-muted-foreground">Decision makers</dt><dd className="text-right">{number(m.decision_makers_found)}</dd><dt className="text-muted-foreground">Stale</dt><dd className="text-right">{number(m.stale)}</dd></dl></div>
     </div>
-  );
+
+    <div className="rounded-2xl border border-border/60 bg-card overflow-hidden"><button onClick={()=>setManualOpen(v=>!v)} className="w-full px-5 py-4 flex items-center justify-between text-left"><div><p className="text-sm font-black flex items-center gap-2"><Search size={14}/>Investigate a company</p><p className="text-[11px] text-muted-foreground mt-1">Secondary manual entry; uses the same canonical P6 pipeline.</p></div>{manualOpen?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>{manualOpen&&<div className="border-t border-border/40 p-5 grid sm:grid-cols-[1fr_150px_auto] gap-3"><input value={manualDomain} onChange={e=>setManualDomain(e.target.value)} placeholder="example.com" className="h-10 px-3 rounded-lg border border-border bg-background text-sm"/><select value={manualMarket} onChange={e=>setManualMarket(e.target.value)} className="h-10 px-3 rounded-lg border border-border bg-background text-sm"><option value="FR">France</option><option value="ES">Spain</option></select><button onClick={investigate} disabled={!!acting||!manualDomain.trim()} className="h-10 px-5 rounded-lg bg-foreground text-background text-xs font-bold inline-flex items-center justify-center gap-1.5">{acting==="manual"?<Loader2 size={12} className="animate-spin"/>:<Search size={12}/>}Investigate</button></div>}</div>
+
+    <div className="space-y-3"><div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3"><div><h2 className="text-lg font-black">Prioritized merchants</h2><p className="text-[11px] text-muted-foreground">Observed data only · {number(leads.length)} shown after filters</p></div><div className="grid grid-cols-2 md:grid-cols-5 gap-2"><select value={country} onChange={e=>setCountry(e.target.value)} className="h-9 px-2 rounded-lg border bg-card text-xs"><option value="all">All countries</option>{options("country").map(v=><option key={v}>{v}</option>)}</select><select value={industry} onChange={e=>setIndustry(e.target.value)} className="h-9 px-2 rounded-lg border bg-card text-xs"><option value="all">All industries</option>{options("industry").map(v=><option key={v}>{v}</option>)}</select><select value={contactability} onChange={e=>setContactability(e.target.value)} className="h-9 px-2 rounded-lg border bg-card text-xs"><option value="all">All contactability</option>{options("contactability").map(v=><option key={v}>{v}</option>)}</select><select value={source} onChange={e=>setSource(e.target.value)} className="h-9 px-2 rounded-lg border bg-card text-xs"><option value="all">All sources</option>{options("source").map(v=><option key={v}>{v}</option>)}</select><select value={sort} onChange={e=>setSort(e.target.value)} className="h-9 px-2 rounded-lg border bg-card text-xs"><option value="opportunity">Highest opportunity</option><option value="icp">Highest ICP</option><option value="confidence">Highest confidence</option><option value="tpv">Largest estimated TPV</option><option value="recent">Recently discovered</option></select></div></div>
+      {leads.length===0?<div className="rounded-2xl border border-dashed border-border p-12 text-center"><Radar className="mx-auto text-muted-foreground"/><p className="text-sm font-black mt-3">Discovery is building your market intelligence.</p><p className="text-xs text-muted-foreground mt-1">No merchant matches the current filters. CAMBRA does not fabricate placeholder companies.</p></div>:<div className="grid xl:grid-cols-2 gap-3">{leads.slice(0,100).map(row=><div key={row.id} className="rounded-2xl border border-border/60 bg-card p-4 space-y-3"><div className="flex items-start justify-between gap-3"><div><p className="font-black">{row.company_name||row.company_domain||"Unnamed company"}</p><p className="text-[11px] text-muted-foreground">{[row.country,row.industry,row.employee_range].filter(Boolean).join(" · ")||"Observed classification unavailable"}</p></div><div className="text-right"><p className="text-lg font-black tabular-nums">{row.opportunity_score??row.icp_score??"—"}</p><p className="text-[9px] uppercase text-muted-foreground">Opportunity</p></div></div><div className="grid grid-cols-3 gap-2 text-[10px]"><div><p className="text-muted-foreground">ICP</p><p className="font-bold">{row.icp_score??"—"}</p></div><div><p className="text-muted-foreground">Confidence</p><p className="font-bold">{pct(row.confidence)}</p></div><div><p className="text-muted-foreground">Contactability</p><p className="font-bold break-words">{row.contactability}</p></div></div><div className="rounded-xl bg-secondary/40 p-3"><p className="text-[10px] font-black uppercase tracking-wider mb-1.5">Why this prospect?</p>{row.why?.length?<ul className="space-y-1">{row.why.map((reason,index)=><li key={`${reason.label}-${index}`} className="text-[11px] flex justify-between gap-3"><span>{reason.label}</span><span className="text-muted-foreground truncate max-w-[45%]" title={reason.source}>{reason.source}</span></li>)}</ul>:<p className="text-[11px] text-muted-foreground">No traceable prioritization reasons available.</p>}</div><div className="flex flex-wrap gap-1.5 text-[9px]"><span className="rounded-full border px-2 py-1">{row.estimation_status}</span><span className="rounded-full border px-2 py-1">TPV {moneyBand(row.estimated_tpv_min_eur,row.estimated_tpv_max_eur)}</span><span className="rounded-full border px-2 py-1">{row.ecommerce_platform||"Platform unknown"}</span><span className="rounded-full border px-2 py-1">{row.source||"Source unknown"}</span></div></div>)}</div>}
+    </div>
+  </div>;
 }

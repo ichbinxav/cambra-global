@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
         status: 'draft',
         mode: acquisitionEngine(engine) ? 'CANARY' : String(body?.mode || 'STANDARD'),
         countries,
-        icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : engine === 'partner_acquisition' ? (body?.icp_json || { partner_types:['accounting_firm','fractional_cfo','ecommerce_agency','boutique_consultancy'], titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'], per_run:20 }) : {},
+        icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { discovery_enabled:false, industry:'ecommerce', verticals:['ecommerce','retail','consumer brands'], titles:['Founder','CEO','CFO','COO','Finance Director','Head of Finance','Head of Payments','Payments Manager','Head of Ecommerce','Ecommerce Director'], seniorities:['owner','founder','c_suite','vp','head','director','manager'], employee_ranges:['10,50','50,200','200,1000'], per_run:100, partitions_per_run:1, enrichment_threshold:45, enrichment_daily_limit:25, enrichment_weekly_limit:125, target_unique_companies:10000, provider_priority:['apollo','public'] }) : engine === 'partner_acquisition' ? (body?.icp_json || { partner_types:['accounting_firm','fractional_cfo','ecommerce_agency','boutique_consultancy'], titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'], per_run:20 }) : {},
         excluded_domains: Array.isArray(body?.excluded_domains) ? body.excluded_domains.map((x:any)=>String(x).toLowerCase()).slice(0,200) : [],
         languages: Array.isArray(body?.languages) ? body.languages.filter((x:any)=>['en','fr','es'].includes(x)) : ['en','fr','es'],
         daily_send_limit: Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : 0,
@@ -65,6 +65,40 @@ Deno.serve(async (req) => {
     if (!policyId) return Response.json({ ok:false, error:'policy_id_required' }, { status:400 });
     const policy = await svc.entities.CommercialPolicy.get(policyId).catch(() => null);
     if (!policy) return Response.json({ ok:false, error:'not_found' }, { status:404 });
+
+    if (action === 'configure_discovery') {
+      if (policy.engine !== 'merchant_acquisition') return Response.json({ ok:false, error:'merchant_acquisition_policy_required' }, { status:409 });
+      const enabled = body?.enabled === true;
+      const expectedConfirmation = enabled ? 'START_AUTONOMOUS_DISCOVERY' : 'PAUSE_AUTONOMOUS_DISCOVERY';
+      if (body?.confirmation !== expectedConfirmation) return Response.json({ ok:false, error:'confirmation_required', expected_confirmation:expectedConfirmation }, { status:409 });
+      const countries = Array.isArray(body?.countries)
+        ? [...new Set(body.countries.map((value:any) => String(value || '').trim().toUpperCase()).filter(Boolean))].slice(0,33)
+        : Array.isArray(policy.countries) ? policy.countries : [];
+      if (enabled && !countries.length) return Response.json({ ok:false, error:'discovery_markets_required' }, { status:409 });
+      const current = policy.icp_json && typeof policy.icp_json === 'object' ? policy.icp_json : {};
+      const boundedArray = (value:any, fallback:any[], max:number) => Array.isArray(value) ? value.map((item:any)=>String(item||'').trim()).filter(Boolean).slice(0,max) : fallback;
+      const icp = {
+        ...current,
+        discovery_enabled: enabled,
+        provider_expiry_at: '2026-09-07T23:59:59.999Z',
+        provider_priority: boundedArray(body?.provider_priority, current.provider_priority || ['apollo','public'], 10),
+        verticals: boundedArray(body?.verticals, current.verticals || ['ecommerce','retail','consumer brands'], 20),
+        titles: boundedArray(body?.titles, current.titles || ['Founder','CEO','CFO','COO','Finance Director','Head of Finance','Head of Payments','Payments Manager','Head of Ecommerce','Ecommerce Director'], 30),
+        seniorities: boundedArray(body?.seniorities, current.seniorities || ['owner','founder','c_suite','vp','head','director','manager'], 12),
+        employee_ranges: boundedArray(body?.employee_ranges, current.employee_ranges || ['10,50','50,200','200,1000'], 12),
+        per_run: Math.max(1, Math.min(100, Math.floor(Number(body?.per_run ?? current.per_run ?? 100)))),
+        partitions_per_run: Math.max(1, Math.min(4, Math.floor(Number(body?.partitions_per_run ?? current.partitions_per_run ?? 1)))),
+        enrichment_threshold: Math.max(0, Math.min(100, Number(body?.enrichment_threshold ?? current.enrichment_threshold ?? 45))),
+        enrichment_daily_limit: Math.max(0, Math.min(250, Math.floor(Number(body?.enrichment_daily_limit ?? current.enrichment_daily_limit ?? 25)))),
+        enrichment_weekly_limit: Math.max(0, Math.min(1250, Math.floor(Number(body?.enrichment_weekly_limit ?? current.enrichment_weekly_limit ?? 125)))),
+        target_unique_companies: Math.max(100, Math.min(250000, Math.floor(Number(body?.target_unique_companies ?? current.target_unique_companies ?? 10000)))),
+        updated_by: user.email,
+        updated_at: new Date().toISOString(),
+      };
+      const updated = await svc.entities.CommercialPolicy.update(policy.id, { countries, icp_json:icp });
+      await svc.entities.OperationalLog.create({ event_type:enabled?'autonomous_discovery_started':'autonomous_discovery_paused', message:`${policy.policy_key}:${enabled?'ACTIVE':'PAUSED'}`, data_json:{ policy_id:policy.id, countries, icp_json:icp, outbound_policy_status_unchanged:policy.status }, actor_email:user.email, created_at:new Date().toISOString() }).catch(()=>null);
+      return Response.json({ ok:true, policy:updated, discovery_enabled:enabled, outbound_policy_status:policy.status });
+    }
 
     if (action === 'update_draft') {
       if (policy.status !== 'draft') return Response.json({ ok:false, error:'only_draft_policies_are_editable' }, { status:409 });

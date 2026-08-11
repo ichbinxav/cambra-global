@@ -60,6 +60,41 @@
       "type": "string",
       "description": "apollo, clay, manual, etc."
     },
+    "canonical_company_key": {
+      "type": "string",
+      "description": "Provider-independent normalized company key, normally domain:<host>. Used for global company deduplication before paid enrichment."
+    },
+    "external_refs_json": {
+      "type": "object",
+      "description": "Provider identifiers and provenance references only. Provider-specific IDs never become CAMBRA's canonical identity."
+    },
+    "source_evidence_json": {
+      "type": "object",
+      "description": "Observed discovery evidence, source timestamps and estimation boundaries."
+    },
+    "discovered_at": { "type": "string", "format": "date-time" },
+    "last_source_checked_at": { "type": "string", "format": "date-time" },
+    "last_enriched_at": { "type": "string", "format": "date-time" },
+    "employee_range": { "type": "string" },
+    "revenue_range": { "type": "string" },
+    "detected_technologies": { "type": "array", "items": { "type": "string" } },
+    "ecommerce_platform": { "type": "string" },
+    "probable_payment_stack": { "type": "array", "items": { "type": "string" } },
+    "estimated_tpv_min_eur": { "type": "number", "minimum": 0 },
+    "estimated_tpv_max_eur": { "type": "number", "minimum": 0 },
+    "estimated_opportunity_min_eur": { "type": "number", "minimum": 0 },
+    "estimated_opportunity_max_eur": { "type": "number", "minimum": 0 },
+    "estimation_status": {
+      "type": "string",
+      "enum": ["PRE_ANALYSIS_ESTIMATE", "VERIFIED_OPPORTUNITY", "UNKNOWN"],
+      "default": "UNKNOWN"
+    },
+    "pre_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "enrichment_worthy": { "type": "boolean", "default": false },
+    "contactability": { "type": "string", "enum": ["UNKNOWN", "UNAVAILABLE", "UNVERIFIED", "PROFESSIONAL_VERIFIED"] },
+    "email_verification_status": { "type": "string" },
+    "outreach_eligibility": { "type": "string", "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "ELIGIBLE", "BLOCKED"] },
+    "compliance_status": { "type": "string", "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "CLEARED", "BLOCKED"] },
     "enriched": {
       "type": "boolean",
       "default": false

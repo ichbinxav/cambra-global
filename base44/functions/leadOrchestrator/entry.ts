@@ -37,18 +37,34 @@ Deno.serve(async (req) => {
 
     const executed = [];
     let chainLeadIds = [];
+    let enrichmentLeadIds = [];
+    let discoverySummary = { scanned:0, decision_makers_found:0, count:0, rejected_count:0, duplicate_rejected:0, next_page:null, source_credit_cost_documented:null };
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       let childTaskId = null;
       let childStatus = "unknown";
       let stepError = null;
 
+      const idsForStep = step.name === 'leadEnrichmentAgent' ? enrichmentLeadIds : chainLeadIds;
+      if (step.name !== 'leadDiscoveryAgent' && !idsForStep.length) {
+        executed.push({ step:step.name, child_task_id:null, status:'completed', skipped:true, reason:step.name === 'leadEnrichmentAgent' ? 'no_candidate_met_selective_enrichment_threshold' : 'no_new_canonical_leads' });
+        continue;
+      }
+
       try {
         const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-        const payload = { ...step.payload, ...(chainLeadIds.length && step.name !== 'leadDiscoveryAgent' ? { lead_ids: chainLeadIds, limit: chainLeadIds.length } : {}), internal_secret: internal };
+        const payload = { ...step.payload, ...(step.name !== 'leadDiscoveryAgent' ? { lead_ids:idsForStep, limit:idsForStep.length } : {}), internal_secret: internal };
         const res = await base44.functions.invoke(step.name, payload);
         const data = res?.data || res || {};
-        if (step.name === 'leadDiscoveryAgent' && Array.isArray(data.created_ids)) chainLeadIds = data.created_ids.filter(Boolean);
+        if (step.name === 'leadDiscoveryAgent' && Array.isArray(data.created_ids)) {
+          chainLeadIds = data.created_ids.filter(Boolean);
+          enrichmentLeadIds = Array.isArray(data.enrichment_ids) ? data.enrichment_ids.filter((id:any)=>chainLeadIds.includes(id)) : [];
+          discoverySummary = {
+            scanned:Number(data.scanned || 0), decision_makers_found:Number(data.decision_makers_found || 0), count:chainLeadIds.length,
+            rejected_count:Number(data.rejected_count || 0), duplicate_rejected:Number(data.duplicate_rejected || 0), next_page:data.next_page ?? null,
+            source_credit_cost_documented:data.source_credit_cost_documented ?? null,
+          };
+        }
         childTaskId = data.task_id || null;
 
         // Re-read the child AgentTask to know its real status (source of truth)
@@ -64,7 +80,7 @@ Deno.serve(async (req) => {
         stepError = e.message;
       }
 
-      executed.push({ step: step.name, child_task_id: childTaskId, status: childStatus, error: stepError });
+      executed.push({ step: step.name, child_task_id: childTaskId, status: childStatus, error: stepError, ...(step.name === 'leadDiscoveryAgent' ? { result:discoverySummary } : {}) });
 
       const haltStatuses = ["failed", "waiting_approval", "waiting_input"];
       if (haltStatuses.includes(childStatus)) {
@@ -86,17 +102,17 @@ Deno.serve(async (req) => {
           payload_json: { halted_at: step.name, reason: childStatus, error: stepError, executed },
           status: "pending",
         }).catch(() => null);
-        return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: step.name, reason: childStatus, executed });
+        return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: step.name, reason: childStatus, executed, ...discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds });
       }
     }
 
     await base44.asServiceRole.entities.AgentTask.update(parent.id, {
       status: "completed",
       output_summary: `Lead chain completed (${steps.length} steps)`,
-      output_payload_json: { chain: steps.map(s => s.name), steps: executed },
+      output_payload_json: { chain: steps.map(s => s.name), steps: executed, discovery_summary:discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds },
       completed_at: new Date().toISOString(),
     });
-    return Response.json({ ok: true, parent_task_id: parent.id, status: "completed", executed });
+    return Response.json({ ok: true, parent_task_id: parent.id, status: "completed", executed, ...discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds });
   } catch (error) {
     if (parent?.id) {
       try {

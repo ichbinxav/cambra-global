@@ -1,145 +1,289 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import {
+  APOLLO_EXPIRY_AT,
+  APOLLO_MAX_PAGE,
+  DISCOVERY_ENGINE_VERSION,
+  canonicalCompanyKey,
+  cheapDiscoveryPreScore,
+  checkpointBackoff,
+  discoveryPartitionKey,
+  discoveryProviderStatus,
+  normalizeDiscoveryDomain,
+  safeApolloUsageSnapshot,
+} from '../../shared/discoveryRadar.ts';
 
-const AGENT_NAME = "lead_discovery";
-const TASK_TYPE = "discover_leads";
+const AGENT_NAME = 'lead_discovery';
+const TASK_TYPE = 'discover_leads';
 const RISK_LEVEL = 1;
+const APOLLO_BASE = 'https://api.apollo.io/api/v1';
+const now = () => new Date().toISOString();
+const sleep = (milliseconds:number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-// Company-first prefilter: Apollo people search can return founders whose title
-// matches but whose organisation is not a merchant at all. Reject obvious
-// agencies/services/education before persisting or spending enrichment credits.
-// This is intentionally conservative: uncertain companies continue downstream
-// to enrichment/scoring; only high-confidence non-merchant patterns are removed.
+// Company-first filtering is intentionally conservative. Uncertain merchants
+// continue to deterministic pre-scoring; obvious services/education do not.
 const NON_MERCHANT_ORG = /\b(university|universit[eé]|school|college|academy|agence|agency|consulting|consultant|marketing agency|growth agency|logistique|logistics|3pl|freight|software agency|web agency)\b/i;
 const GENERIC_ORG = /^(e-?commerce|commerce|retail|online store|shop)$/i;
-function merchantDiscoveryCandidate(p:any): { ok:true } | { ok:false; reason:string } {
-  const name=String(p?.organization?.name||'').trim();
-  const domain=String(p?.organization?.primary_domain||p?.organization?.website_url||'').trim().toLowerCase();
-  if(!name) return {ok:false,reason:'organization_missing'};
-  if(GENERIC_ORG.test(name)) return {ok:false,reason:'organization_generic'};
-  if(NON_MERCHANT_ORG.test(name)) return {ok:false,reason:'obvious_non_merchant_organization'};
-  if(/\.(edu|edu\.[a-z]{2})\b/i.test(domain)) return {ok:false,reason:'education_domain'};
-  return {ok:true};
+function merchantDiscoveryCandidate(organization:any): { ok:true } | { ok:false; reason:string } {
+  const name = String(organization?.name || '').trim();
+  const domain = normalizeDiscoveryDomain(organization?.primary_domain || organization?.website_url);
+  if (!name) return { ok:false, reason:'organization_missing' };
+  if (GENERIC_ORG.test(name)) return { ok:false, reason:'organization_generic' };
+  if (NON_MERCHANT_ORG.test(name)) return { ok:false, reason:'obvious_non_merchant_organization' };
+  if (/\.(edu|edu\.[a-z]{2})$/i.test(domain)) return { ok:false, reason:'education_domain' };
+  if (!domain) return { ok:false, reason:'canonical_domain_missing' };
+  return { ok:true };
+}
+
+function decisionMakerPriority(person:any) {
+  const title = String(person?.title || '');
+  if (/founder|owner|chief executive|\bceo\b/i.test(title)) return 6;
+  if (/chief financial|\bcfo\b|head of finance|finance director/i.test(title)) return 5;
+  if (/head of payments|payments director|payments manager/i.test(title)) return 4;
+  if (/chief operating|\bcoo\b|head of e-?commerce|e-?commerce director/i.test(title)) return 3;
+  if (/\b(vp|head|director)\b/i.test(title)) return 2;
+  if (/manager/i.test(title)) return 1;
+  return 0;
+}
+
+function safeErrorCode(error:any) {
+  const status = Number(error?.status || 0);
+  if (status === 401) return 'APOLLO_UNAUTHORIZED';
+  if (status === 403) return 'APOLLO_SCOPE_OR_PLAN_FORBIDDEN';
+  if (status === 429) return 'APOLLO_RATE_LIMITED';
+  if (status >= 500) return 'APOLLO_UPSTREAM_UNAVAILABLE';
+  return String(error?.code || 'APOLLO_REQUEST_FAILED').slice(0, 80);
+}
+
+async function apolloRequest(path:string, key:string, options:any = {}) {
+  let lastError:any = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(`${APOLLO_BASE}${path}`, {
+        method: options.method || 'POST',
+        headers: { 'Content-Type':'application/json', 'Cache-Control':'no-cache', 'x-api-key':key },
+        ...(options.body ? { body:JSON.stringify(options.body) } : {}),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (response.ok) return { payload, status:response.status, headers:response.headers };
+      const error:any = new Error(`Apollo HTTP ${response.status}`);
+      error.status = response.status;
+      error.retryAfter = Number(response.headers.get('retry-after') || 0);
+      error.providerMessage = String(payload?.error || payload?.message || '').slice(0, 160);
+      throw error;
+    } catch (error:any) {
+      lastError = error;
+      const retryable = Number(error?.status || 0) === 429 || Number(error?.status || 0) >= 500 || !Number(error?.status || 0);
+      if (!retryable || attempt === 2) break;
+      const wait = error?.retryAfter ? Math.min(5_000, error.retryAfter * 1_000) : 250 * (2 ** attempt);
+      await sleep(wait);
+    }
+  }
+  throw lastError || new Error('Apollo request failed');
+}
+
+function employeeRange(value:any) {
+  const count = Number(value);
+  if (!Number.isFinite(count)) return null;
+  if (count < 10) return '1-9';
+  if (count < 50) return '10-49';
+  if (count < 200) return '50-199';
+  if (count < 1000) return '200-999';
+  return '1000+';
+}
+
+function observedTechnologies(organization:any) {
+  const rows = Array.isArray(organization?.current_technologies) ? organization.current_technologies : Array.isArray(organization?.technologies) ? organization.technologies : [];
+  return [...new Set(rows.map((item:any) => String(item?.name || item?.uid || item || '').trim().toLowerCase()).filter(Boolean))].slice(0, 100);
+}
+
+function detectedStack(technologies:string[]) {
+  const commerce = technologies.find((value) => /shopify|woocommerce|bigcommerce|prestashop|magento|salesforce.commerce|commercetools/.test(value)) || null;
+  const payments = technologies.filter((value) => /stripe|adyen|mollie|paypal|klarna|worldline|checkout.com|sumup|square/.test(value)).slice(0, 10);
+  return { commerce, payments };
+}
+
+async function upsertCheckpoint(svc:any, checkpoint:any, patch:any) {
+  if (checkpoint?.id) return svc.entities.LeadDiscoveryCheckpoint.update(checkpoint.id, patch);
+  return svc.entities.LeadDiscoveryCheckpoint.create(patch);
 }
 
 Deno.serve(async (req) => {
-  let task = null;
+  let task:any = null;
+  let service:any = null;
+  let checkpoint:any = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
-    const country = body?.country || "France";
-    const titles = Array.isArray(body?.titles) && body.titles.length ? body.titles : ["founder", "CEO", "co-founder"];
-    const industry = body?.industry || "ecommerce";
-    const perPage = Math.min(Number(body?.per_page) || 25, 100);
+    service = base44.asServiceRole;
+    const apolloKey = Deno.env.get('APOLLO_API_KEY') || '';
+    const provider = discoveryProviderStatus(Boolean(apolloKey));
 
-    task = await base44.asServiceRole.entities.AgentTask.create({
-      brand_id: "_platform",
-      agent_name: AGENT_NAME,
-      task_type: TASK_TYPE,
-      status: "running",
-      requires_approval: false,
-      risk_level: RISK_LEVEL,
-      input_summary: `Discover ${perPage} ${titles.join("/")} in ${industry} · ${country}`,
-      started_at: new Date().toISOString(),
-    });
-
-    const apolloKey = Deno.env.get("APOLLO_API_KEY");
-    if (!apolloKey) {
-      throw new Error("TOOL_NOT_CONFIGURED: añade APOLLO_API_KEY a Base44 secrets para activar este agente");
-    }
-    const costReservation = await reservePaidOperation(base44.asServiceRole,{ event_key:`api:apollo:lead-discovery:${country}:${titles.join(',')}:${new Date().toISOString().slice(0,13)}`, category:'api', provider:'apollo', source:'leadDiscoveryAgent', related_entity_type:'AgentTask', related_entity_id:task.id });
-
-    // Apollo People Search (api_search endpoint — the v1/mixed_people/search
-    // endpoint was deprecated for API callers in 2026; api_search is the
-    // supported replacement per https://docs.apollo.io/reference/people-api-search)
-    const res = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        "x-api-key": apolloKey,
-      },
-      body: JSON.stringify({
-        person_titles: titles,
-        person_locations: [country],
-        q_keywords: industry,
-        page: 1,
-        per_page: perPage,
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(`Apollo API error: ${data?.error || data?.message || res.statusText}`);
-    await settlePaidOperation(base44.asServiceRole,costReservation,{ ok:true, usage_json:{ people_returned:Array.isArray(data?.people) ? data.people.length : 0 } });
-
-    const people = Array.isArray(data?.people) ? data.people : [];
-    // GDPR Art. 6(1)(f) — every Apollo-sourced lead ships with an explicit
-    // legal basis and an LIA summary, closing the two warnings raised by
-    // gdprAgent (Apollo source without documented base legal + retroactive
-    // audit exposure). Do NOT remove these fields.
-    const LIA_NOTE = `B2B outreach to publicly listed decision-maker (${titles.join("/")}) at a ${industry} brand in ${country}. Contact obtained from Apollo.io under their DPA (SCC/DPF). Legitimate interest documented; opt-out honored in every outreach; no special-category data processed.`;
-    const rejected:any[]=[];
-    const leads = people.flatMap(p => {
-      const quality=merchantDiscoveryCandidate(p);
-      if(!quality.ok){rejected.push({organization:p?.organization?.name||null,reason:quality.reason});return [];}
-      return [{
-        company_name: p?.organization?.name || null,
-        company_domain: p?.organization?.website_url || p?.organization?.primary_domain || null,
-        contact_full_name: p?.name || [p?.first_name, p?.last_name].filter(Boolean).join(" "),
-        contact_email: p?.email || null,
-        contact_title: p?.title || null,
-        linkedin_url: p?.linkedin_url || null,
-        country,
-        industry,
-        source: "apollo",
-        stage: "lead",
-        legal_basis: "legitimate_interest",
-        legal_basis_note: LIA_NOTE,
-        raw_json: p,
-      }];
-    });
-
-    // Persist to OutboundLead (skipped silently if no rows; bulkCreate is faster than per-row create)
-    let created = [];
-    if (leads.length) {
-      try {
-        created = await base44.asServiceRole.entities.OutboundLead.bulkCreate(leads);
-      } catch (e) {
-        // Don't fail the whole task on storage hiccup — return leads in payload so caller still has them
-        // and record the warning in output.
-        created = [{ _error: e.message }];
+    if (body?.action === 'diagnose') {
+      let auth = { pass:false, healthy:false, is_logged_in:false, error_code:provider.reason };
+      let usage:any = { available:false, reason:'not_requested' };
+      if (provider.available) {
+        try {
+          const result = await apolloRequest('/auth/health', apolloKey, { method:'GET' });
+          auth = { pass:result.payload?.healthy === true && result.payload?.is_logged_in === true, healthy:result.payload?.healthy === true, is_logged_in:result.payload?.is_logged_in === true, error_code:null };
+        } catch (error:any) {
+          auth = { pass:false, healthy:false, is_logged_in:false, error_code:safeErrorCode(error) };
+        }
+        if (auth.pass) {
+          try {
+            const result = await apolloRequest('/usage_stats/api_usage_stats', apolloKey);
+            usage = safeApolloUsageSnapshot(result.payload);
+          } catch (error:any) {
+            usage = { available:false, error_code:safeErrorCode(error), observed_at:now(), note:'Usage scope may require a master key; discovery auth is assessed separately.' };
+          }
+        }
       }
+      const key = 'apollo:provider:diagnostic';
+      const rows = await service.entities.LeadDiscoveryCheckpoint.filter({ checkpoint_key:key }, '-updated_date', 1).catch(() => []);
+      checkpoint = await upsertCheckpoint(service, rows[0], {
+        checkpoint_key:key, source_key:'apollo', provider_status:auth.pass ? 'ACTIVE' : provider.status === 'ACTIVE' ? 'DEGRADED' : provider.status,
+        provider_expires_at:APOLLO_EXPIRY_AT, partition_json:{ kind:'provider_diagnostic' }, page:1, maximum_page:APOLLO_MAX_PAGE,
+        last_attempt_at:now(), ...(auth.pass ? { last_success_at:now(), consecutive_failures:0 } : { consecutive_failures:Number(rows[0]?.consecutive_failures || 0) + 1 }),
+        provider_usage_json:{ auth, usage }, last_error_code:auth.error_code || null, engine_version:DISCOVERY_ENGINE_VERSION,
+      });
+      return Response.json({ ok:true, provider:'apollo', configured:Boolean(apolloKey), status:checkpoint.provider_status, auth, usage, expires_at:APOLLO_EXPIRY_AT, secret_exposed:false });
     }
 
-    await base44.asServiceRole.entities.AgentTask.update(task.id, {
-      status: "completed",
-      output_summary: `Discovered ${leads.length} merchant candidates from Apollo; rejected ${rejected.length} obvious non-merchants`,
-      output_payload_json: {
-        count: leads.length,
-        rejected_count: rejected.length,
-        rejected_reasons: rejected.reduce((a:any,x:any)=>{a[x.reason]=(a[x.reason]||0)+1;return a;},{}),
-        stored: Array.isArray(created) ? created.length : 0,
-        sample: leads.slice(0, 5),
-      },
-      completed_at: new Date().toISOString(),
+    if (!provider.available) return Response.json({ ok:false, error:provider.reason, provider_status:provider.status, expires_at:APOLLO_EXPIRY_AT }, { status:409 });
+
+    const country = String(body?.country || 'France').trim();
+    const countryCode = String(body?.country_code || country).trim().toUpperCase();
+    const titles = Array.isArray(body?.titles) && body.titles.length ? body.titles.map((value:any)=>String(value)).slice(0,30) : ['Founder','CEO','CFO','COO','Finance Director','Head of Finance','Head of Payments','Payments Manager','Head of Ecommerce','Ecommerce Director'];
+    const industry = String(body?.industry || body?.vertical || 'ecommerce').trim();
+    const perPage = Math.max(1, Math.min(Number(body?.per_page || body?.limit || 100), 100));
+    const page = Math.max(1, Math.min(Number(body?.page || 1), APOLLO_MAX_PAGE));
+    const manualDomain = normalizeDiscoveryDomain(body?.company_domain || body?.manual_domain || '');
+    const partition = { country:countryCode, vertical:industry, employee_range:String(body?.employee_range || ''), technology:String(body?.technology || ''), manual_domain:manualDomain || null };
+    const checkpointKey = String(body?.checkpoint_key || discoveryPartitionKey('apollo', partition));
+    const existingCheckpoints = body?.checkpoint_id
+      ? [await service.entities.LeadDiscoveryCheckpoint.get(String(body.checkpoint_id)).catch(() => null)].filter(Boolean)
+      : await service.entities.LeadDiscoveryCheckpoint.filter({ checkpoint_key:checkpointKey }, '-updated_date', 1).catch(() => []);
+    checkpoint = existingCheckpoints[0] || null;
+    if (checkpoint?.circuit_open_until && Date.parse(checkpoint.circuit_open_until) > Date.now()) return Response.json({ ok:true, status:'circuit_open', checkpoint_id:checkpoint.id, next_eligible_at:checkpoint.circuit_open_until, created_ids:[] });
+
+    task = await service.entities.AgentTask.create({
+      brand_id:'_platform', agent_name:AGENT_NAME, task_type:TASK_TYPE, status:'running', requires_approval:false, risk_level:RISK_LEVEL,
+      input_summary:`Apollo provider-adapter page ${page}: ${industry} · ${country}; max ${perPage}`, started_at:now(),
+    });
+    checkpoint = await upsertCheckpoint(service, checkpoint, {
+      checkpoint_key:checkpointKey, source_key:'apollo', provider_status:'ACTIVE', provider_expires_at:APOLLO_EXPIRY_AT,
+      partition_json:partition, page, maximum_page:APOLLO_MAX_PAGE, last_attempt_at:now(), consecutive_failures:Number(checkpoint?.consecutive_failures || 0), engine_version:DISCOVERY_ENGINE_VERSION,
+      api_calls:Number(checkpoint?.api_calls || 0), candidates_scanned:Number(checkpoint?.candidates_scanned || 0), unique_companies_created:Number(checkpoint?.unique_companies_created || 0), duplicates_rejected:Number(checkpoint?.duplicates_rejected || 0), quality_rejected:Number(checkpoint?.quality_rejected || 0), enrichment_candidates:Number(checkpoint?.enrichment_candidates || 0),
     });
 
-    const createdIds = Array.isArray(created) ? created.map((r:any)=>r?.id).filter(Boolean) : [];
-    return Response.json({ ok: true, task_id: task.id, count: leads.length, rejected_count: rejected.length, created_ids: createdIds, leads });
-  } catch (error) {
-    if (task?.id) {
-      try {
-        const base44 = createClientFromRequest(req);
-        await base44.asServiceRole.entities.AgentTask.update(task.id, {
-          status: "failed",
-          error: error.message,
-          completed_at: new Date().toISOString(),
-        });
-      } catch (_) { /* swallow */ }
+    // Discover companies before people. Apollo People Search intentionally omits
+    // enough organization detail that using it as the primary warehouse feed can
+    // strand records without a canonical company identity.
+    const costReservation = await reservePaidOperation(service, { event_key:`api:apollo:organization-search:${checkpointKey}:page:${page}`, category:'api', provider:'apollo', source:'leadDiscoveryAgent', related_entity_type:'LeadDiscoveryCheckpoint', related_entity_id:checkpoint.id });
+    const organizationSearchBody:any = { organization_locations:[country], page, per_page:perPage };
+    if (manualDomain) organizationSearchBody.q_organization_domains_list = [manualDomain];
+    else if (industry) organizationSearchBody.q_organization_keyword_tags = [industry];
+    if (body?.employee_range) organizationSearchBody.organization_num_employees_ranges = [String(body.employee_range)];
+    if (body?.technology) organizationSearchBody.currently_using_any_of_technology_uids = [String(body.technology)];
+    const result = await apolloRequest('/mixed_companies/search', apolloKey, { body:organizationSearchBody });
+    const organizations = Array.isArray(result.payload?.organizations)
+      ? result.payload.organizations
+      : Array.isArray(result.payload?.accounts) ? result.payload.accounts : [];
+    const pagination = result.payload?.pagination || {};
+
+    const rejected:any[] = [];
+    const bestByCompany = new Map<string, any>();
+    for (const organization of organizations) {
+      const quality = merchantDiscoveryCandidate(organization);
+      if (!quality.ok) { rejected.push({ reason:quality.reason }); continue; }
+      const domain = normalizeDiscoveryDomain(organization.primary_domain || organization.website_url);
+      const key = canonicalCompanyKey(domain, organization.name);
+      const pre = cheapDiscoveryPreScore({ organization });
+      if (pre.score < 20) { rejected.push({ reason:'low_pre_score' }); continue; }
+      const previous = bestByCompany.get(key);
+      if (!previous || pre.score > previous.pre.score) bestByCompany.set(key, { person:null, organization, domain, key, pre });
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+
+    // Decision-maker discovery is a second, zero-credit search. A missing person
+    // never invalidates a company candidate and never creates an invented contact.
+    const organizationIds = [...bestByCompany.values()]
+      .map((candidate:any) => String(candidate.organization?.id || candidate.organization?.organization_id || ''))
+      .filter(Boolean)
+      .slice(0, 100);
+    let people:any[] = [];
+    if (organizationIds.length) {
+      const peopleResult = await apolloRequest('/mixed_people/api_search', apolloKey, { body:{
+        organization_ids:organizationIds, person_titles:titles,
+        person_seniorities:Array.isArray(body?.seniorities) ? body.seniorities.slice(0,12) : ['owner','founder','c_suite','vp','head','director','manager'],
+        include_similar_titles:true, page:1, per_page:100,
+      }});
+      people = Array.isArray(peopleResult.payload?.people) ? peopleResult.payload.people : [];
+      const candidateByOrganizationId = new Map<string, any>();
+      for (const candidate of bestByCompany.values()) {
+        const organizationId = String(candidate.organization?.id || candidate.organization?.organization_id || '');
+        if (organizationId) candidateByOrganizationId.set(organizationId, candidate);
+      }
+      for (const person of people) {
+        const organizationId = String(person?.organization_id || person?.organization?.id || person?.organization?.organization_id || '');
+        const candidate = candidateByOrganizationId.get(organizationId);
+        if (!candidate) continue;
+        if (!candidate.person || decisionMakerPriority(person) > decisionMakerPriority(candidate.person)) candidate.person = person;
+      }
+      for (const candidate of bestByCompany.values()) candidate.pre = cheapDiscoveryPreScore({ ...candidate.person, organization:candidate.organization });
+    }
+
+    const candidateKeys = [...bestByCompany.keys()];
+    const existingRows = candidateKeys.length
+      ? await service.entities.OutboundLead.filter({ canonical_company_key:{ $in:candidateKeys } }, '-created_date', Math.min(5000, candidateKeys.length * 3)).catch(() => [])
+      : [];
+    const existingKeys = new Set(existingRows.map((lead:any) => String(lead.canonical_company_key || canonicalCompanyKey(lead.company_domain, lead.company_name))).filter(Boolean));
+    const duplicates = candidateKeys.filter((key) => existingKeys.has(key)).length;
+    const timestamp = now();
+    const rows:any[] = [];
+    for (const candidate of bestByCompany.values()) {
+      if (existingKeys.has(candidate.key)) continue;
+      const technologies = observedTechnologies(candidate.organization);
+      const stack = detectedStack(technologies);
+      const person = candidate.person || {};
+      rows.push({
+        company_name:candidate.organization.name || null, company_domain:candidate.domain, canonical_company_key:candidate.key,
+        contact_full_name:person.name || [person.first_name, person.last_name].filter(Boolean).join(' ') || null, contact_email:null, contact_title:person.title || null, linkedin_url:person.linkedin_url || null,
+        country:countryCode, industry:candidate.organization.industry || industry, source:'apollo', stage:'lead', reservoir_state:'discovered', reservoir_updated_at:timestamp,
+        external_refs_json:{ apollo_person_id:person.id || person.person_id || null, apollo_organization_id:candidate.organization.id || candidate.organization.organization_id || null, source_adapter:'apollo' },
+        source_evidence_json:{ source:'apollo', source_endpoint:'mixed_companies/search + mixed_people/api_search', source_observed_at:timestamp, country_source:'apollo:organization_location', technology_source:'apollo:organization_technologies', pre_score_source:'CAMBRA:deterministic_pre_score', pre_score_reasons:candidate.pre.reasons, provider_expiry_at:APOLLO_EXPIRY_AT, estimation_boundary:'Discovery inference is not verified merchant savings.' },
+        discovered_at:timestamp, last_source_checked_at:timestamp, employee_range:employeeRange(candidate.organization.estimated_num_employees || candidate.organization.num_employees),
+        revenue_range:candidate.organization.annual_revenue_printed || null, detected_technologies:technologies, ecommerce_platform:stack.commerce, probable_payment_stack:stack.payments,
+        estimation_status:'UNKNOWN', pre_score:candidate.pre.score, enrichment_worthy:candidate.pre.enrichment_worthy,
+        contactability:'UNAVAILABLE', outreach_eligibility:'NOT_ASSESSED', compliance_status:'REVIEW_REQUIRED',
+        legal_basis:'legitimate_interest', legal_basis_note:`B2B company intelligence for a relevant professional role at a ${industry} merchant in ${country}. Apollo is provenance only; outreach remains separately governed, suppression-aware and subject to jurisdiction review.`,
+        raw_json:{ source_adapter:'apollo', person_id:person.id || person.person_id || null, organization:{ id:candidate.organization.id || null, name:candidate.organization.name || null, primary_domain:candidate.domain, industry:candidate.organization.industry || null, estimated_num_employees:candidate.organization.estimated_num_employees ?? null, annual_revenue:candidate.organization.annual_revenue ?? null } },
+      });
+    }
+    const created = rows.length ? await service.entities.OutboundLead.bulkCreate(rows).catch(async () => { const output=[]; for (const row of rows) { const saved=await service.entities.OutboundLead.create(row).catch(()=>null); if(saved)output.push(saved); } return output; }) : [];
+    const createdIds = created.map((row:any)=>row?.id).filter(Boolean);
+    const enrichmentThreshold=Number(body?.enrichment_threshold || 45);
+    const enrichmentKeys=new Set(rows.filter((row:any)=>row.enrichment_worthy===true||Number(row.pre_score)>=enrichmentThreshold).map((row:any)=>row.canonical_company_key));
+    const enrichmentIds = created.filter((row:any,index:number)=>enrichmentKeys.has(row?.canonical_company_key||rows[index]?.canonical_company_key)).map((row:any)=>row.id).filter(Boolean);
+    const totalPages = Math.max(0, Math.min(APOLLO_MAX_PAGE, Number(pagination?.total_pages || 0)));
+    const nextPage = totalPages && page >= totalPages ? 1 : page >= APOLLO_MAX_PAGE ? 1 : page + 1;
+    checkpoint = await service.entities.LeadDiscoveryCheckpoint.update(checkpoint.id, {
+      provider_status:'ACTIVE', page:nextPage, total_pages_reported:totalPages, last_success_at:timestamp, next_eligible_at:new Date(Date.now()+60_000).toISOString(), consecutive_failures:0, circuit_open_until:null, last_error_code:null,
+      api_calls:Number(checkpoint.api_calls || 0)+(organizationIds.length ? 2 : 1), candidates_scanned:Number(checkpoint.candidates_scanned || 0)+organizations.length,
+      unique_companies_created:Number(checkpoint.unique_companies_created || 0)+createdIds.length, duplicates_rejected:Number(checkpoint.duplicates_rejected || 0)+duplicates,
+      quality_rejected:Number(checkpoint.quality_rejected || 0)+rejected.length, enrichment_candidates:Number(checkpoint.enrichment_candidates || 0)+enrichmentIds.length,
+    });
+    const rejectedByReason = rejected.reduce((counts:Record<string,number>, row:any) => { const reason=String(row.reason || 'unknown'); counts[reason]=(counts[reason]||0)+1; return counts; }, {});
+    await settlePaidOperation(service, costReservation, { ok:true, usage_json:{ endpoint:'mixed_companies/search', provider_credit_cost_documented:1, decision_maker_endpoint:'mixed_people/api_search', decision_maker_credit_cost_documented:0, page, organizations_returned:organizations.length, people_returned:people.length, unique_companies_created:createdIds.length } });
+    await service.entities.AgentTask.update(task.id, { status:'completed', output_summary:`Scanned ${organizations.length} companies; stored ${createdIds.length} unique companies; found ${people.length} decision-maker candidates; rejected ${duplicates} duplicates and ${rejected.length} low-quality candidates`, output_payload_json:{ checkpoint_id:checkpoint.id, page, next_page:nextPage, scanned:organizations.length, decision_makers_found:people.length, created:createdIds.length, enrichment_candidates:enrichmentIds.length, duplicate_rejected:duplicates, quality_rejected:rejected.length, rejected_by_reason:rejectedByReason }, completed_at:timestamp });
+    return Response.json({ ok:true, task_id:task.id, checkpoint_id:checkpoint.id, provider:'apollo', provider_status:'ACTIVE', page, next_page:nextPage, scanned:organizations.length, decision_makers_found:people.length, count:createdIds.length, rejected_count:rejected.length, rejected_by_reason:rejectedByReason, duplicate_rejected:duplicates, created_ids:createdIds, enrichment_ids:enrichmentIds, source_credit_cost_documented:1, decision_maker_credit_cost_documented:0, provider_expires_at:APOLLO_EXPIRY_AT });
+  } catch (error:any) {
+    const code = safeErrorCode(error);
+    const failures = Number(checkpoint?.consecutive_failures || 0) + 1;
+    if (service && checkpoint?.id) await service.entities.LeadDiscoveryCheckpoint.update(checkpoint.id, { provider_status:failures >= 3 ? 'CIRCUIT_OPEN' : 'DEGRADED', consecutive_failures:failures, circuit_open_until:failures >= 3 ? checkpointBackoff(failures) : null, next_eligible_at:checkpointBackoff(failures), last_error_code:code, last_attempt_at:now() }).catch(()=>null);
+    if (service && task?.id) await service.entities.AgentTask.update(task.id, { status:'failed', error:code, output_summary:`Discovery provider failed safely: ${code}`, completed_at:now() }).catch(()=>null);
+    return Response.json({ ok:false, error:code, task_id:task?.id || null, checkpoint_id:checkpoint?.id || null, retryable:['APOLLO_RATE_LIMITED','APOLLO_UPSTREAM_UNAVAILABLE','APOLLO_REQUEST_FAILED'].includes(code), secret_exposed:false }, { status:Number(error?.status || 500) === 429 ? 429 : 500 });
   }
 });

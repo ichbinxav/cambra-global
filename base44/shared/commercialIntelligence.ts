@@ -28,11 +28,11 @@ function countryCode(value: unknown): string {
 }
 
 function providerOf(lead: any): string {
-  return text(lead?.score_breakdown_json?.signals?.payment_provider || lead?.enrichment_json?.payment_provider || lead?.enrichment_json?.psp).toLowerCase() || 'unknown';
+  return text(lead?.score_breakdown_json?.signals?.payment_provider || lead?.enrichment_json?.payment_provider || lead?.enrichment_json?.psp || lead?.probable_payment_stack?.[0]).toLowerCase() || 'unknown';
 }
 
 function platformOf(lead: any): string {
-  return text(lead?.score_breakdown_json?.signals?.commerce_platform || lead?.enrichment_json?.commerce_platform || lead?.enrichment_json?.ecommerce_platform).toLowerCase() || 'unknown';
+  return text(lead?.score_breakdown_json?.signals?.commerce_platform || lead?.enrichment_json?.commerce_platform || lead?.enrichment_json?.ecommerce_platform || lead?.ecommerce_platform).toLowerCase() || 'unknown';
 }
 
 function stageOf(lead: any): string {
