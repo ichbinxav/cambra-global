@@ -5,7 +5,7 @@
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 1323,
   "sourceArchiveShaExternal": null,
-  "gitSha": "f716d0564a4d43c82724321bc66640d9fceb8e76",
+  "gitSha": "de3b0161193883642f4e5e04caa3b402ca975bd9",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -106,5 +106,5 @@
   ],
   "blockingManualRequirements": [],
   "productionSealEligible": false,
-  "generatedAt": "2026-08-11T02:30:02.635Z"
+  "generatedAt": "2026-08-11T02:30:13.856Z"
 }
