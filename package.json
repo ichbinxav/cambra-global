@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.81.0",
-  "releaseName": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation",
+  "version": "0.85.0",
+  "releaseName": "CAMBRA v0.85.0 — P1–P5 Intelligence Foundation",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

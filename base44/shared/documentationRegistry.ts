@@ -1,5 +1,5 @@
 export const DOCUMENTATION_REGISTRY_VERSION='p18-docs-1.1.0';
-export const DOCUMENTATION_SYSTEM_VERSION='0.81.0';
+export const DOCUMENTATION_SYSTEM_VERSION='0.85.0';
 export type Localized={en:string,fr:string,es:string};
 export type DocumentationTopic={key:string;title:string;category:string;implementation_status:'IMPLEMENTED'|'PARTIALLY_IMPLEMENTED'|'PLANNED'|'DEPRECATED'|'MISSING';critical:boolean;owner:string;source_paths:string[];summary:Localized;how_it_works:Localized;founder_action:Localized;truth_boundary:string;controls?:string[]};
 const L=(en:string,fr:string,es:string):Localized=>({en,fr,es});

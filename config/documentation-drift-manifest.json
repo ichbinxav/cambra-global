@@ -1,8 +1,8 @@
 {
   "registryVersion": "p18-docs-1.1.0",
-  "systemVersion": "0.81.0",
-  "packageVersion": "0.81.0",
-  "generatedAt": "2026-08-10T22:54:14.176Z",
+  "systemVersion": "0.85.0",
+  "packageVersion": "0.85.0",
+  "generatedAt": "2026-08-11T01:57:38.955Z",
   "sourcePaths": {
     "base44/entities/CountryProfile.jsonc": "473de444a0cb0ce4551bdcac0d75fcc6dc5c34c5d56165978c59f28e563339eb",
     "base44/entities/DocumentationChangeProposal.jsonc": "7c682f57bb5cb65aae16a84a9b7bda65b1b6b214d1ff84a003e451f1b011d059",
@@ -78,7 +78,7 @@
     "base44/functions/startRecoverAcceptance/entry.ts": "212d7d48ad23b42bfd53d20856595c678ed2894032d317f896f701c07cf328ad",
     "base44/functions/submitCallRequest/entry.ts": "da4d21115d220f03487aedf878fbc4f42899d9255fe7e5e6ef0d7e9c381a4fa7",
     "base44/shared/agentAuthority.ts": "9674c3a2283da1e94fee8ef055bce70f3ea31c463a0da20cad1bffd9f7763a6b",
-    "base44/shared/documentationRegistry.ts": "8a517635a67435bdbc5009bf248029abdd0cd69d2a60b4a45f17d1dac4606cb6",
+    "base44/shared/documentationRegistry.ts": "651bc4ab8c3999af5dfc606c21ba38bb8165cdadecf21e2d9fe777f1b0fc50e3",
     "base44/shared/economicExecution.ts": "b14ca7c1b394579c0ee874e42fe28d65fc9bfefafb41b3e903eb44c8a74daf8e",
     "base44/shared/generated/europeMarkets.ts": "3d1b872b48f00917f8f9d2b7cb714843c3130950720a20f8c46e3c1177751a0e",
     "base44/shared/intelligenceCore.ts": "24041d1e1e595f337a2456010881e0fecb98394083f59df3d51cf3be9d153459",
@@ -87,7 +87,7 @@
     "base44/shared/jurisdictionPolicy.ts": "37eb64a0288ebd9b69ef633d1f3ea8d0a0290f599a7abcf9686a309cebfdd3b3",
     "base44/shared/maintenanceCore.ts": "6b05c2c31ec03aaea08d7a241c86da3f21a3e71191e099b80df9a590292c2d89",
     "base44/shared/marketContext.ts": "03938c756462a9ad2090e818de19795c9df8be824fd2f6f5b787e5bc9b79f80b",
-    "base44/shared/marketMoney.ts": "5f896f4dd29d6cc8433ef358d232b404629a63cb405039d38d029f1eb4c2d083",
+    "base44/shared/marketMoney.ts": "4bcf1c580b5c8a982c21232140557d71b1dadc12725dc4c1bffa369180dadc58",
     "base44/shared/marketPolicyRuntime.ts": "f69198adae59d02e3884158e335f380034b20b522be2c63fcd7392d2c580e877",
     "base44/shared/operationalControl.ts": "3a27ef4d9fc1d01c70e0b4fe143fd401b1ca20fd30088388e04a66dcfbc68cb3",
     "base44/shared/prepareEligibleRecoverInvoice.ts": "8fb959963b4c447bb9b8d606c3d2f0070ed9013c28885c3d57375a3f98cd522f",
@@ -124,7 +124,7 @@
     "src/docs/P18_TROUBLESHOOTING_PLAYBOOKS.md": "7359c90d7ef527b39151f3eb7655580961081bc8327bddef56297ab0d0b3b541",
     "src/docs/P18_INCIDENT_PLAYBOOKS.md": "667fa271f699233684f1816770831e7fbefc4705e7b6739ab93741c59b23fc93",
     "src/docs/P18_EMERGENCY_CONTROLS.md": "118a1777e4999557b6710c3e07414d3bedbc654d1ed88f6bbfb8dfebd937c50d",
-    "src/docs/PRODUCTION_FUNCTIONS.md": "fe7cccf4c8987cfcead97c87f03615416d6e56ab4381c2d59fe50dff46abff59",
+    "src/docs/PRODUCTION_FUNCTIONS.md": "2fc6abc83d234e362aa3dbee02b7661483222be880acb5f92cd74d05a9769aae",
     "src/docs/P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md": "93de5be0609b42a114646183adb72fd0c740a07f650df6079141ebd8cfb46172"
   }
 }

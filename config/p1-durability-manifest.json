@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.81.0 — P1 Europe Country Intelligence Foundation (durability manifest)",
-  "generatedAt": "2026-08-10T22:54:14.376Z",
-  "packageVersion": "0.81.0",
+  "release": "CAMBRA v0.85.0 — P1–P5 Intelligence Foundation (durability manifest)",
+  "generatedAt": "2026-08-11T01:59:45.574Z",
+  "packageVersion": "0.85.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -517,13 +517,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "fba58146a5b8aef3e0644ef2ac01457e15ac8f33f9b74eafbe19e6c71a85d1cf",
+      "sha256": "cbb974b19a782f43ef62eae38683537197c869b1ea1c9cb80caa761e2e9225f9",
       "bytes": 377095
     },
     {
       "path": "package.json",
-      "sha256": "f8b01407ef7cce1b0697eda2d157c9f259c3618fdd30f5fc811de325bc5d154f",
-      "bytes": 6052
+      "sha256": "d8e280457dffa95465367ec6ed72606b8176b7e3cb678fd09b101456aaa97e29",
+      "bytes": 6042
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -632,8 +632,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "fe7cccf4c8987cfcead97c87f03615416d6e56ab4381c2d59fe50dff46abff59",
-      "bytes": 47578
+      "sha256": "2fc6abc83d234e362aa3dbee02b7661483222be880acb5f92cd74d05a9769aae",
+      "bytes": 48137
     },
     {
       "path": "src/lib/commercialModelRouter.test.js",
@@ -792,8 +792,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "8577a3d3300dfc1f74ad8eaafb3cf169a13b9c8df60d19213d677749461db5cd",
-      "bytes": 10521
+      "sha256": "7a892518da781d7730c86ce806dabe6972e93434d511e3ee9ffa4e0af0a12b09",
+      "bytes": 10574
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
