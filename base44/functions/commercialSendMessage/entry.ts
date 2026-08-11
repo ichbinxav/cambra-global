@@ -6,6 +6,7 @@ import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.
 import { authorityForAgent } from '../../shared/agentAuthority.ts';
 import { commercialLegalAction, enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
+import { acquisitionEngine } from '../../shared/commercialActivation.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -80,6 +81,7 @@ Deno.serve(async (req) => {
     const timezone = commercialTimezone(thread, policy);
     if (automatic) {
       if (!policyIsActive(policy)) return Response.json({ ok:false, error:'active_policy_required' }, { status:409 });
+      if(acquisitionEngine(thread.engine)&&(!jurisdiction||!Array.isArray(policy.countries)||!policy.countries.includes(jurisdiction)))return Response.json({ok:false,error:'market_not_enabled_by_commercial_policy',jurisdiction:jurisdiction||null},{status:409});
       const authz = routineActionAllowed(policy, action, classification);
       if (!authz.allowed) return Response.json({ ok:false, error:authz.reason, escalation_required:true }, { status:409 });
       if (thread.automation_paused) return Response.json({ ok:false, error:'thread_automation_paused' }, { status:409 });
@@ -115,6 +117,7 @@ Deno.serve(async (req) => {
     }
     let governor:any={allowed:true,reason:'admin_manual_override'};
     if(automatic){
+      if(sendingProfile&&acquisitionEngine(thread.engine)&&(!Array.isArray(policy?.sending_profile_keys)||!policy.sending_profile_keys.includes(sendingProfile.profile_key)))return Response.json({ok:false,error:'policy_sending_profile_not_allowed'},{status:409});
       if(!sendingProfile)governor=automaticSendGovernorDecision({automatic:true,sendingProfile:null,profileSentToday:0,policy,policySentToday:0});
       else{
         const day=new Date();day.setUTCHours(0,0,0,0);const since=day.toISOString();

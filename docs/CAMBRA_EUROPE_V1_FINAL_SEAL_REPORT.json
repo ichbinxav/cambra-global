@@ -1,6 +1,6 @@
 {
   "report": "CAMBRA EUROPE V1 FINAL AUTONOMY REPORT",
-  "version": "0.90.1",
+  "version": "0.90.2",
   "generated_from_source": true,
   "classification": "CAMBRA_EUROPE_V1_SEALED_WITH_EXTERNAL_BLOCKERS",
   "final_status": "P1–P13 LOCAL TECHNICAL SEAL COMPLETE / EXTERNAL ACTIVATION BLOCKED",
@@ -61,12 +61,17 @@
     "central_daily_send_governor": true,
     "follow_up_run_budget": true,
     "p10_p11_compatible": true,
+    "legacy_profile_backfill": "IMPLEMENTED_NOT_EXECUTED_IN_PRODUCTION",
+    "canary_preflight": "IMPLEMENTED_NOT_EXECUTED_IN_PRODUCTION",
+    "no_implicit_markets": true,
     "first_touch_classifications": [
       "initial_outreach",
       "partner_outreach"
     ],
     "default_follow_up_budget": 25,
-    "admin_max_follow_up_budget": 50
+    "admin_max_follow_up_budget": 50,
+    "initial_canary_daily_limit": 10,
+    "maximum_canary_daily_limit": 15
   },
   "technical_blockers": [],
   "required_authority": [
@@ -91,6 +96,8 @@
     "No registration, passport notification, partner mandate or legal clearance is claimed."
   ],
   "commercial_blockers": [
+    "Production legacy sending-profile backfill has not been executed and reviewed.",
+    "A CANARY policy, valid sending profiles, live credentials and a fresh P10/P11 GO preflight must pass before outbound activation.",
     "Real acquisition, conversion, CAC, retention and revenue performance is not yet proven.",
     "Fallback-only markets require native localization before full launch."
   ],
@@ -113,6 +120,9 @@
     "base44_runtime": "NOT_VERIFIED"
   },
   "external_blockers": [
+    "Production legacy sending-profile backfill + explicit REVIEW_REQUIRED resolution",
+    "Active CANARY policy with evidence-selected markets, valid profile allowlist and live credentials",
+    "Fresh commercial GO dry-run/P10/P11 preflight hash",
     "Final-SHA GitHub remote CI",
     "Base44 deployed entity/function/scheduled-worker proof",
     "Real backup restore exercise meeting RPO/RTO",
@@ -1052,9 +1062,12 @@
     }
   ],
   "recommended_next_actions": [
+    "Deploy the sealed tree with outbound paused.",
+    "Run legacy sending-profile backfill dry-run, apply it idempotently and review every unresolved thread.",
+    "Create/activate a 10/day CANARY policy using only P10/P11 READY markets and explicit profiles.",
+    "Verify credentials and run the commercial GO dry-run; activate only with its fresh matching hash.",
     "Run final-SHA GitHub Actions.",
-    "Sync/deploy the combined tree to Base44 and verify scheduled/runtime records.",
-    "Approve P10/P11 cells only from qualified evidence.",
+    "Verify scheduled/runtime records in Base44.",
     "Run real restore and multilingual extractor corpus exercises.",
     "Collect real commercial cohorts before any P13 scale claim."
   ]

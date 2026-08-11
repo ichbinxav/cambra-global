@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { COMMUNICATION_STYLE_POLICY_VERSION } from '../../shared/commercialAutonomy.ts';
+import { acquisitionEngine, validateCanaryPolicy } from '../../shared/commercialActivation.ts';
 
 const DEFAULT_PROHIBITED = [
   'accept_final_offer','sign_contract','accept_lock_in','accept_minimum_commitment','accept_termination_fee',
@@ -23,6 +24,10 @@ Deno.serve(async (req) => {
     if (action === 'create_draft') {
       const engine = body?.engine === 'provider_negotiation' ? 'provider_negotiation' : body?.engine === 'partner_acquisition' ? 'partner_acquisition' : 'merchant_acquisition';
       const version = String(body?.version || `2026.08.09-${engine}-v1`);
+      const countries = Array.isArray(body?.countries) ? [...new Set(body.countries.map((x:any)=>String(x||'').trim().toUpperCase()).filter(Boolean))].slice(0, 20) : [];
+      const profileKeys = Array.isArray(body?.sending_profile_keys) ? [...new Set(body.sending_profile_keys.map((x:any)=>String(x||'').trim()).filter(Boolean))].slice(0, 20) : [];
+      const requestedDaily = body?.daily_send_limit === undefined ? 10 : Number(body.daily_send_limit);
+      const requestedScore = body?.min_lead_score === undefined ? 70 : Number(body.min_lead_score);
       const allowedDefault = engine === 'merchant_acquisition'
         ? ['initial_outreach','routine_reply','follow_up','meeting_offer']
         : engine === 'partner_acquisition'
@@ -33,12 +38,14 @@ Deno.serve(async (req) => {
         version,
         engine,
         status: 'draft',
-        countries: Array.isArray(body?.countries) ? body.countries.slice(0, 20) : ['FR','ES'],
+        mode: acquisitionEngine(engine) ? 'CANARY' : String(body?.mode || 'STANDARD'),
+        countries,
         icp_json: engine === 'merchant_acquisition' ? (body?.icp_json || { industry:'ecommerce', titles:['founder','CEO','co-founder'], per_run:25 }) : engine === 'partner_acquisition' ? (body?.icp_json || { partner_types:['accounting_firm','fractional_cfo','ecommerce_agency','boutique_consultancy'], titles:['partner','founder','managing director','fractional CFO','ecommerce director','consultant'], per_run:20 }) : {},
         excluded_domains: Array.isArray(body?.excluded_domains) ? body.excluded_domains.map((x:any)=>String(x).toLowerCase()).slice(0,200) : [],
         languages: Array.isArray(body?.languages) ? body.languages.filter((x:any)=>['en','fr','es'].includes(x)) : ['en','fr','es'],
-        daily_send_limit: Math.max(1, Math.min(Number(body?.daily_send_limit) || 30, 500)),
-        min_lead_score: Math.max(0, Math.min(Number(body?.min_lead_score) || 70, 100)),
+        daily_send_limit: Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : 0,
+        sending_profile_keys: profileKeys,
+        min_lead_score: Number.isFinite(requestedScore) ? Math.max(0, Math.min(requestedScore, 100)) : 0,
         business_hours_start: Math.max(0, Math.min(Number(body?.business_hours_start) || 8, 23)),
         business_hours_end: Math.max(1, Math.min(Number(body?.business_hours_end) || 19, 24)),
         fallback_timezone: String(body?.fallback_timezone || 'Europe/Paris'),
@@ -61,13 +68,17 @@ Deno.serve(async (req) => {
 
     if (action === 'activate') {
       if (body?.confirmation !== 'APPROVE_AUTONOMY_POLICY') return Response.json({ ok:false, error:'confirmation_required' }, { status:409 });
+      if (acquisitionEngine(policy.engine)) {
+        const validation=validateCanaryPolicy({...policy,status:'active'});
+        if(!validation.ok)return Response.json({ok:false,error:'canary_policy_not_ready',blockers:validation.blockers},{status:409});
+      }
       const peers = await svc.entities.CommercialPolicy.filter({ engine: policy.engine, status:'active' }, '-created_date', 100).catch(() => []);
       for (const peer of peers) if (peer.id !== policy.id) await svc.entities.CommercialPolicy.update(peer.id, { status:'superseded' });
       const now = new Date().toISOString();
       const snapshot = {
-        engine: policy.engine, version: policy.version, countries: policy.countries || [], languages: policy.languages || [],
+        engine: policy.engine, version: policy.version, mode:policy.mode||null, countries: policy.countries || [], languages: policy.languages || [],
         icp_json: policy.icp_json || {}, excluded_domains: policy.excluded_domains || [],
-        daily_send_limit: policy.daily_send_limit, min_lead_score: policy.min_lead_score,
+        daily_send_limit: policy.daily_send_limit, sending_profile_keys:policy.sending_profile_keys||[], min_lead_score: policy.min_lead_score,
         allowed_routine_actions: policy.allowed_routine_actions || [], prohibited_actions: policy.prohibited_actions || [],
         style_policy_version: policy.style_policy_version, business_hours_start:policy.business_hours_start, business_hours_end:policy.business_hours_end, fallback_timezone:policy.fallback_timezone||'Europe/Paris', minimum_inbound_reply_delay_minutes:25
       };

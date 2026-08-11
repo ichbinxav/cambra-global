@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { followUpRunBudget, isBusinessHour, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { LEGACY_SENDING_PROFILE_RESOLVER_VERSION, SENDING_PROFILE_REVIEW_REASON, sendingProfileIsValid } from '../../shared/commercialActivation.ts';
 
 async function claude(prompt:string){return (await callCambraClaude(prompt,{tier:'standard',maxTokens:1200})).text}
 function parse(t:string){const c=t.replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(c)}catch{}const m=c.match(/\{[\s\S]*\}/);if(m){try{return JSON.parse(m[0])}catch{}}return null}
@@ -14,6 +15,12 @@ Deno.serve(async(req)=>{let task:any=null;try{
    // Stop before policy/history lookup, reply-agent invocation or LLM drafting.
    // Untouched threads keep next_action_at and remain due for a future pass.
    if(sent>=runBudget){deferred=Math.max(0,due.length-examined);break;}examined++;
+   const profileKey=String(thread.sending_profile_key||'').trim();const profileRows=profileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:profileKey},'-created_date',1).catch(()=>[]):[];const sendingProfile=profileRows[0]||null;
+   if(!sendingProfileIsValid(sendingProfile)){
+     const resolutionReason=profileKey?'runtime_profile_invalid_or_missing':'runtime_profile_missing';
+     await svc.entities.CommunicationThread.update(thread.id,{sending_profile_key:profileKey||null,automation_paused:true,pause_reason:SENDING_PROFILE_REVIEW_REASON,sending_profile_resolution_status:'REVIEW_REQUIRED',sending_profile_resolution_reason:resolutionReason,sending_profile_resolver_version:LEGACY_SENDING_PROFILE_RESOLVER_VERSION,sending_profile_resolved_at:new Date().toISOString(),sending_profile_resolved_by:'commercial_followup_worker'}).catch(()=>null);
+     failures.push({thread_id:thread.id,error:SENDING_PROFILE_REVIEW_REASON,reason:resolutionReason});skipped++;continue;
+   }
    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-approved_at',5).catch(()=>[]);const policy=policies.find((p:any)=>p.version===thread.policy_version&&policyIsActive(p))||null;if(!policy||(!manualOverride&&!isBusinessHour(policy,now))){skipped++;continue;}
    const messages=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',30).catch(()=>[]);const lastInbound=messages.find((m:any)=>m.direction==='inbound');const lastOutbound=messages.find((m:any)=>m.direction==='outbound');if(lastInbound&&(!lastOutbound||Date.parse(lastInbound.received_at||lastInbound.created_date||0)>Date.parse(lastOutbound.sent_at||lastOutbound.created_date||0))){const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const rr=await svc.functions.invoke('commercialReplyAgent',{thread_id:thread.id,message_id:lastInbound.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));const rd=rr?.data||rr||{};if(rd.ok===false)failures.push({thread_id:thread.id,error:rd.error||'reply_processing_failed'});else skipped++;continue;}
    const followups=messages.filter((m:any)=>m.direction==='outbound'&&m.raw_event_json?.followup_step).length;const max=Math.max(0,Math.min(Number(policy.max_followups||0),5));

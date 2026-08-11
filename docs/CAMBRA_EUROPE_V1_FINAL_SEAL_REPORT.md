@@ -59,7 +59,7 @@ Runtime metrics are never inferred from source code. Revenue, market performance
 
 ## Commercial hardening patch
 
-**INTEGRATED.** Honest first-touch classifications, one central profile/policy daily governor, a bounded follow-up run budget and non-bypassable P10/P11 compatibility are release-tested.
+**INTEGRATED LOCALLY / PRODUCTION ACTIVATION PENDING.** Honest first-touch classifications, one central profile/policy daily governor, a bounded follow-up run budget, evidence-only legacy profile migration and hash-bound CANARY preflight are release-tested. Production must still execute the backfill, review every unresolved thread, configure profiles/credentials and pass the live P10/P11 dry-run before GO.
 
 ## Document extractor
 
@@ -114,6 +114,9 @@ Runtime metrics are never inferred from source code. Revenue, market performance
 
 ## External blockers
 
+- Production legacy sending-profile backfill + explicit REVIEW_REQUIRED resolution
+- Active CANARY policy with evidence-selected markets, valid profile allowlist and live credentials
+- Fresh commercial GO dry-run/P10/P11 preflight hash
 - Final-SHA GitHub remote CI
 - Base44 deployed entity/function/scheduled-worker proof
 - Real backup restore exercise meeting RPO/RTO
@@ -132,8 +135,11 @@ Runtime metrics are never inferred from source code. Revenue, market performance
 
 ## Next actions
 
+- Deploy the sealed tree with outbound paused.
+- Run legacy sending-profile backfill dry-run, apply it idempotently and review every unresolved thread.
+- Create/activate a 10/day CANARY policy using only P10/P11 READY markets and explicit profiles.
+- Verify credentials and run the commercial GO dry-run; activate only with its fresh matching hash.
 - Run final-SHA GitHub Actions.
-- Sync/deploy the combined tree to Base44 and verify scheduled/runtime records.
-- Approve P10/P11 cells only from qualified evidence.
+- Verify scheduled/runtime records in Base44.
 - Run real restore and multilingual extractor corpus exercises.
 - Collect real commercial cohorts before any P13 scale claim.

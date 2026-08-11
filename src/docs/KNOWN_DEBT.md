@@ -7,6 +7,26 @@ empezando por A2.
 
 ---
 
+## COMMERCIAL_PRE_GO_RUNTIME — Backfill and CANARY evidence not yet executed
+
+**Estado:** blocker operativo externo (código implementado; ejecución pendiente)
+**Detectado:** 2026-08-11 durante cierre v0.90.2
+
+El árbol incluye la migración idempotente `backfillLegacySendingProfiles`, la
+cola explícita `REVIEW_REQUIRED`, una policy CANARY de 1–15 envíos/día sin
+mercados implícitos y `commercialGoLiveReadiness`. El repositorio local no
+demuestra que la migración se haya ejecutado sobre datos productivos, que todos
+los threads irresueltos hayan sido revisados, que existan los perfiles y
+credenciales live ni que los mercados seleccionados estén autorizados por la
+evidencia P10/P11 desplegada.
+
+Outbound debe seguir pausado hasta completar, en orden,
+`src/docs/COMMERCIAL_GO_LIVE_CHECKLIST.md`. Un PASS local o una policy creada no
+son autorización para enviar. El GO requiere un hash de preflight live, fresco
+y recomputado por `outboundControlAdmin`.
+
+---
+
 ## AI_CLIENT_ROUTER_MIGRATION — Consolidate inline Anthropic clients
 
 **Estado:** activa (separada deliberadamente del cierre P11)

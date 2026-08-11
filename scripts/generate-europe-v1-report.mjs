@@ -38,20 +38,21 @@ const report={
   },
   commercial_hardening_patch:{
     status:'INTEGRATED',honest_first_touch:true,central_daily_send_governor:true,follow_up_run_budget:true,p10_p11_compatible:true,
-    first_touch_classifications:['initial_outreach','partner_outreach'],default_follow_up_budget:25,admin_max_follow_up_budget:50,
+    legacy_profile_backfill:'IMPLEMENTED_NOT_EXECUTED_IN_PRODUCTION',canary_preflight:'IMPLEMENTED_NOT_EXECUTED_IN_PRODUCTION',no_implicit_markets:true,
+    first_touch_classifications:['initial_outreach','partner_outreach'],default_follow_up_budget:25,admin_max_follow_up_budget:50,initial_canary_daily_limit:10,maximum_canary_daily_limit:15,
   },
   technical_blockers:[],
   required_authority:['Qualified approval of material contract/provider commitments.','Merchant approval where exact mandate/action policy requires it.','Admin approval for audited manual send override.'],
   required_legal_security:['Qualified P10/P11 review and current primary-source evidence.','Production privacy/DPA and real document-corpus approval.','Final-SHA remote CI, Base44 runtime, restore and security evidence.'],
   unnecessary_friction_removed:['Cold outreach no longer impersonates inbound interest.','All automatic senders share one fail-closed daily governor.','Unknown future senders default to no authority.','Follow-up sweeps stop before avoidable LLM work once budget closes.'],
   regulatory_legal_blockers:['Qualified review and authoritative evidence are required per jurisdiction/activity/action.','Conservative P10/P11 seeds grant zero permission.','No registration, passport notification, partner mandate or legal clearance is claimed.'],
-  commercial_blockers:['Real acquisition, conversion, CAC, retention and revenue performance is not yet proven.','Fallback-only markets require native localization before full launch.'],
+  commercial_blockers:['Production legacy sending-profile backfill has not been executed and reviewed.','A CANARY policy, valid sending profiles, live credentials and a fresh P10/P11 GO preflight must pass before outbound activation.','Real acquisition, conversion, CAC, retention and revenue performance is not yet proven.','Fallback-only markets require native localization before full launch.'],
   document_extractor:{technical_status:'LOCAL_REGRESSION_PASS',controls:['file signature and hash','SSRF boundary','independent extraction agreement','minor-unit normalization','linked audit evidence','payments-statement-only projection'],external_proof:'REDACTED_MULTILINGUAL_REAL_DOCUMENT_GOLDEN_CORPUS_REQUIRED'},
   verification:{local_pipeline:'RELEASE_MANIFEST_EVIDENCE_REQUIRED',security_audit:'RUN_SEPARATELY_AND_REPORTED_IN_FINAL_HANDOFF',remote_ci:'NOT_VERIFIED_FOR_FINAL_SHA',base44_runtime:'NOT_VERIFIED'},
-  external_blockers:['Final-SHA GitHub remote CI','Base44 deployed entity/function/scheduled-worker proof','Real backup restore exercise meeting RPO/RTO','Dependency alert proof','Redacted multilingual real-document extractor golden-corpus evaluation','Qualified legal/regulatory/contract review'],
+  external_blockers:['Production legacy sending-profile backfill + explicit REVIEW_REQUIRED resolution','Active CANARY policy with evidence-selected markets, valid profile allowlist and live credentials','Fresh commercial GO dry-run/P10/P11 preflight hash','Final-SHA GitHub remote CI','Base44 deployed entity/function/scheduled-worker proof','Real backup restore exercise meeting RPO/RTO','Dependency alert proof','Redacted multilingual real-document extractor golden-corpus evaluation','Qualified legal/regulatory/contract review'],
   production_health:'NOT_PROVEN_IN_BASE44_RUNTIME',remote_ci:'NOT_VERIFIED_FOR_FINAL_SHA',base44_runtime:'NOT_VERIFIED',final_commit_sha:'REPORTED_AFTER_LOCAL_COMMIT',
   market_count:matrix.length,market_matrix:matrix,
-  recommended_next_actions:['Run final-SHA GitHub Actions.','Sync/deploy the combined tree to Base44 and verify scheduled/runtime records.','Approve P10/P11 cells only from qualified evidence.','Run real restore and multilingual extractor corpus exercises.','Collect real commercial cohorts before any P13 scale claim.'],
+  recommended_next_actions:['Deploy the sealed tree with outbound paused.','Run legacy sending-profile backfill dry-run, apply it idempotently and review every unresolved thread.','Create/activate a 10/day CANARY policy using only P10/P11 READY markets and explicit profiles.','Verify credentials and run the commercial GO dry-run; activate only with its fresh matching hash.','Run final-SHA GitHub Actions.','Verify scheduled/runtime records in Base44.','Run real restore and multilingual extractor corpus exercises.','Collect real commercial cohorts before any P13 scale claim.'],
 };
 
 fs.mkdirSync('docs',{recursive:true});
@@ -95,7 +96,7 @@ Runtime metrics are never inferred from source code. Revenue, market performance
 
 ## Commercial hardening patch
 
-**INTEGRATED.** Honest first-touch classifications, one central profile/policy daily governor, a bounded follow-up run budget and non-bypassable P10/P11 compatibility are release-tested.
+**INTEGRATED LOCALLY / PRODUCTION ACTIVATION PENDING.** Honest first-touch classifications, one central profile/policy daily governor, a bounded follow-up run budget, evidence-only legacy profile migration and hash-bound CANARY preflight are release-tested. Production must still execute the backfill, review every unresolved thread, configure profiles/credentials and pass the live P10/P11 dry-run before GO.
 
 ## Document extractor
 

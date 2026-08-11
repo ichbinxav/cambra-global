@@ -93,6 +93,32 @@
     "pause_reason": {
       "type": "string"
     },
+    "sending_profile_key": {
+      "type": "string",
+      "description": "Canonical outbound profile resolved server-side. Automatic transport fails closed when absent or invalid."
+    },
+    "sending_profile_resolution_status": {
+      "type": "string",
+      "enum": [
+        "RESOLVED",
+        "REVIEW_REQUIRED",
+        "NOT_APPLICABLE"
+      ],
+      "description": "Pre-launch migration state. REVIEW_REQUIRED threads are explicitly paused rather than assigned an invented profile."
+    },
+    "sending_profile_resolution_reason": {
+      "type": "string"
+    },
+    "sending_profile_resolver_version": {
+      "type": "string"
+    },
+    "sending_profile_resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sending_profile_resolved_by": {
+      "type": "string"
+    },
     "summary": {
       "type": "string"
     },

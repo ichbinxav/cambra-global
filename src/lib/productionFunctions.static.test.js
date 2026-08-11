@@ -42,7 +42,7 @@ const MANIFEST = [
   "canExecuteLegalAction", "manageLegalExecution", "seedP11LegalExecution",
   "productionReadinessWorker", "europeanGrowthIntelligenceWorker", "getEuropeanGrowthCommandCenter",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
-  "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
+  "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "backfillLegacySendingProfiles", "commercialFollowUpWorker", "commercialGoLiveReadiness", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",
   "negotiationMemoryWorker", "onboardingConciergeWorker", "outlookInboundRouter", "outlookMeetingCoordinator", "outboundControlAdmin", "outboundDeliverabilityManager", "outboundVolumeWorker", "outreachExperimentLearningWorker", "postMeetingWorker", "providerContactResolver", "createMerchantInformationRequest", "providerNegotiationAgent", "recoverAutopilotWorker", "resendInboundWebhook", "resolveCommercialApproval", "reviewProviderContract", "startProviderNegotiation",
   // REFERRAL-1 / REFERRAL-2 (2026-08-03) — referral programme surface.

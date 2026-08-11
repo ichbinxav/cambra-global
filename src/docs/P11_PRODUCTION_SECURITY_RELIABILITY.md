@@ -12,6 +12,12 @@ The v2 extractor remains tenant-scoped and dual-model/fail-closed. P11 additiona
 
 Production verification still requires a DPA/retention decision and a redacted real multilingual golden corpus with field precision/recall, false-accept and manual-review rates.
 
+## Commercial outbound pre-GO blocker
+
+Autonomous outbound remains externally inert until the sequence in `COMMERCIAL_GO_LIVE_CHECKLIST.md` passes. The operational seal adds an idempotent legacy-thread profile migration, explicit `REVIEW_REQUIRED` surfacing, CANARY policy validation (1–15/day, score at least 70, evidence-selected markets), live credential/profile checks and a short-lived preflight hash recomputed at activation. No country is enabled by default and no unresolved thread receives a guessed profile.
+
+The release invariant is: no thread eligible for an automatic follow-up may lack a valid sending profile. Missing or invalid policy daily limits continue to mean zero automatic sends.
+
 ## Disaster recovery
 
 RPO target: 24 hours. RTO target: 8 hours for the first production stage. These are targets until a `REAL_RESTORE` exercise records backup identity, restored target, observed RPO/RTO and integrity checks. A tabletop is useful but cannot pass the release gate.

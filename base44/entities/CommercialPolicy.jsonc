@@ -29,6 +29,15 @@
       ],
       "default": "draft"
     },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "CANARY",
+        "STANDARD",
+        "SCALE"
+      ],
+      "description": "Activation mode. Initial acquisition must use CANARY with an explicit 1-15 daily limit."
+    },
     "countries": {
       "type": "array",
       "items": {
@@ -59,6 +68,17 @@
     },
     "daily_send_limit": {
       "type": "number"
+    },
+    "sending_profile_keys": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Explicit allowlist of sending profiles for this policy. Used by legacy backfill and GO preflight; no engine-to-profile guess is permitted."
+    },
+    "activation_readiness_snapshot_json": {
+      "type": "object",
+      "description": "Last immutable-style preflight summary associated with activation. Runtime GO still recomputes readiness before enabling outbound."
     },
     "min_lead_score": {
       "type": "number"

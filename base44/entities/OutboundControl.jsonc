@@ -28,6 +28,39 @@
     "paused_reason": {
       "type": "string"
     },
+    "preflight_status": {
+      "type": "string",
+      "enum": ["PASS", "BLOCKED", "NOT_RUN"]
+    },
+    "preflight_hash": {
+      "type": "string"
+    },
+    "preflight_policy_id": {
+      "type": "string"
+    },
+    "preflight_policy_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "preflight_provider_scope": {
+      "type": "string"
+    },
+    "preflight_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "preflight_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "preflight_json": {
+      "type": "object"
+    },
+    "activation_preflight_hash": {
+      "type": "string"
+    },
     "notes": {
       "type": "string"
     }
