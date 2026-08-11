@@ -1,4 +1,5 @@
 import { reservePaidOperation, settlePaidOperation } from './costGovernance.ts';
+import { extractAnthropicText } from './anthropicResponse.ts';
 
 export type CambraModelTier='standard'|'high_reasoning';
 export const CAMBRA_STANDARD_MODEL='claude-sonnet-5';
@@ -19,5 +20,5 @@ export async function callCambraClaude(prompt:string,opts:{tier?:CambraModelTier
  let out=await invoke(requested,'primary');
  if(!out.r.ok && requested!==standard){ out=await invoke(standard,'fallback'); }
  if(!out.r.ok) throw new Error(`anthropic_failed:${out.r.status}`);
- return {text:String(out.d?.content?.[0]?.text||''),model:out.model};
+ return {text:extractAnthropicText(out.d),model:out.model};
 }

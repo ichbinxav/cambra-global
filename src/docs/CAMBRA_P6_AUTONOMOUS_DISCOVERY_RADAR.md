@@ -12,6 +12,8 @@ The real loop is:
 
 `alwaysOnLeadDiscoveryWorker` → P1 market capability filter → oldest eligible search partition → `leadOrchestrator` → `leadDiscoveryAgent` provider adapter → company deduplication → deterministic pre-score → selective `leadEnrichmentAgent` → `leadScoringAgent` → canonical warehouse → reservoir and commercial-intelligence snapshots.
 
+`leadScoringAgent` is resilient to a missing, partial or malformed model response. It always retains the deterministic evidence path as canonical fallback, records the model state and weights in `score_breakdown_json`, caps a lead without a usable email at 59 and emits `lead_scoring_model_degraded` for operational visibility. The fallback never fabricates signals and never activates outbound. The shared Anthropic boundary consumes all response blocks of type `text` and excludes thinking/tool blocks.
+
 The hourly worker uses `SchedulerRun` slot claims. Each source/country/vertical/employee-band partition remembers its page, counters, failures, backoff and circuit state. It does not restart at page one after every run.
 
 ## Apollo sunset adapter

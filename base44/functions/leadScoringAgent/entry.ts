@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { deterministicMerchantOpportunity } from '../../shared/merchantOpportunity.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { buildResilientLeadScore, validLeadModelRow, type LeadModelStatus } from '../../shared/leadScoringResilience.ts';
 
 const AGENT_NAME = "lead_scoring";
 const TASK_TYPE = "score_leads";
@@ -29,6 +29,7 @@ Deno.serve(async (req) => {
     if (!gate.ok) return gate.response;
     const leadIds = Array.isArray(body?.lead_ids) ? body.lead_ids : null;
     const limit = Math.min(Number(body?.limit) || 25, 50);
+    const deterministicOnly = body?.deterministic_only === true;
 
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id: "_platform",
@@ -93,16 +94,31 @@ Deno.serve(async (req) => {
       "Leads:", JSON.stringify(compact),
     ].join("\n");
 
-    const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
-    const scored = safeParseJSON(text);
-
-    if (!Array.isArray(scored)) {
-      throw new Error(`Claude returned unparseable response: ${text.slice(0, 200)}`);
+    let text='';
+    let parsed:any=null;
+    let modelErrorCode:string|null=null;
+    if(!deterministicOnly){
+      try{
+        text=await callClaude(base44.asServiceRole,prompt,task?.id||crypto.randomUUID());
+        parsed=safeParseJSON(text);
+        if(!Array.isArray(parsed)) modelErrorCode='model_output_unparseable';
+      }catch(error){
+        modelErrorCode=String((error as Error)?.message||'model_call_failed').split(':')[0].slice(0,80);
+      }
     }
+    const validRows=Array.isArray(parsed)?parsed.filter(validLeadModelRow):[];
+    const validById=new Map(validRows.map((row:any)=>[String(row.id),row]));
+    const matchedCount=leads.filter((lead:any)=>validById.has(String(lead.id))).length;
+    const modelStatus:LeadModelStatus=deterministicOnly
+      ?'SKIPPED_DETERMINISTIC_ONLY'
+      :matchedCount===leads.length
+        ?'PARSED'
+        :matchedCount>0?'PARTIAL':'UNAVAILABLE_OR_UNPARSEABLE';
+    const degraded=modelStatus==='PARTIAL'||modelStatus==='UNAVAILABLE_OR_UNPARSEABLE';
 
-    // Apply scores back to OutboundLead
-    const byId = new Map(leads.map((l:any)=>[l.id,l]));
-    const updates = scored.filter(s=>s?.id&&typeof s.score==='number').map(s=>{const lead:any=byId.get(s.id)||{};const det=deterministicMerchantOpportunity(lead);const llm=Math.max(0,Math.min(100,Math.round(s.score)));const final=Math.round(det.opportunity_score*0.7+llm*0.3);return {id:s.id,score:final,score_breakdown_json:{breakdown:det.breakdown,llm_breakdown:s.breakdown,reasoning:s.reasoning,opportunity_score:det.opportunity_score,evidence_confidence:det.evidence_confidence,evidence_count:det.evidence_count,signals:det.signals,scoring_version:'merchant-opportunity-v2',weights:{deterministic:0.7,llm:0.3}},next_action:s.next_action||null,stage:'scored'};});
+    // Every requested lead receives a deterministic result. A missing or malformed
+    // model row can reduce confidence, but it must never strand the whole P6 chain.
+    const updates=leads.map((lead:any)=>buildResilientLeadScore(lead,validById.get(String(lead.id)),modelStatus));
 
     if (updates.length) {
       try {
@@ -115,21 +131,34 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Sort by score desc for the response
-    const ranked = [...scored].sort((a, b) => (b.score || 0) - (a.score || 0));
+    const ranked=updates.map((row:any)=>({id:row.id,score:row.score,reasoning:row.score_breakdown_json.reasoning,next_action:row.next_action,model_status:row.score_breakdown_json.model_status})).sort((a:any,b:any)=>b.score-a.score);
+
+    if(degraded){
+      await base44.asServiceRole.entities.OperationalLog.create({
+        event_type:'lead_scoring_model_degraded',
+        message:modelStatus,
+        data_json:{task_id:task.id,lead_count:leads.length,model_rows_matched:matchedCount,model_error_code:modelErrorCode||'partial_or_missing_rows',deterministic_fallback:true,raw_model_output_persisted:false},
+        actor_email:'lead_scoring_agent',
+        created_at:new Date().toISOString(),
+      }).catch(()=>null);
+    }
 
     await base44.asServiceRole.entities.AgentTask.update(task.id, {
       status: "completed",
-      output_summary: `Scored ${updates.length} of ${leads.length} leads`,
+      output_summary: `Scored ${updates.length} of ${leads.length} leads${degraded?' with deterministic fallback':''}`,
       output_payload_json: {
         count: leads.length,
         scored: updates.length,
+        model_status:modelStatus,
+        degraded,
+        model_error_code:modelErrorCode,
+        deterministic_fallback:modelStatus!=='PARSED',
         top: ranked.slice(0, 10),
       },
       completed_at: new Date().toISOString(),
     });
 
-    return Response.json({ ok: true, task_id: task.id, count: leads.length, scored: updates.length, ranked });
+    return Response.json({ok:true,task_id:task.id,count:leads.length,scored:updates.length,model_status:modelStatus,degraded,model_error_code:modelErrorCode,deterministic_fallback:modelStatus!=='PARSED',ranked});
   } catch (error) {
     if (task?.id) {
       try {

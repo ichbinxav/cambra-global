@@ -7,6 +7,7 @@ import {
   classifyProfessionalEmail,
   discoveryProviderStatus,
 } from '../../base44/shared/discoveryRadar.ts';
+import { buildResilientLeadScore } from '../../base44/shared/leadScoringResilience.ts';
 
 const read = (path) => fs.readFileSync(path, 'utf8');
 
@@ -61,6 +62,18 @@ describe('P6 autonomous discovery radar', () => {
     expect(worker).toContain('decision_makers_found:discoveryResult.decision_makers_found');
     expect(worker).toContain("base44.functions.invoke('leadOrchestrator'");
     expect(worker).not.toContain("service.functions.invoke('leadOrchestrator'");
+  });
+
+  it('degrades model scoring safely without stranding the discovery chain', () => {
+    const lead={id:'lead-1',company_name:'Merchant',company_domain:'merchant.eu',contact_title:'CEO',industry:'ecommerce',raw_json:{organization:{estimated_num_employees:120,technologies:['Shopify','Stripe']}}};
+    const result=buildResilientLeadScore(lead,null,'UNAVAILABLE_OR_UNPARSEABLE');
+    expect(result.id).toBe('lead-1');
+    expect(result.score).toBeLessThanOrEqual(59);
+    expect(result.score_breakdown_json).toMatchObject({model_status:'UNAVAILABLE_OR_UNPARSEABLE',weights:{deterministic:1,llm:0},email_cap_applied:true});
+    const scorer=read('base44/functions/leadScoringAgent/entry.ts');
+    expect(scorer).toContain('lead_scoring_model_degraded');
+    expect(scorer).toContain('raw_model_output_persisted:false');
+    expect(scorer).not.toContain('Claude returned unparseable response');
   });
 
   it('exposes real radar UX and keeps manual investigation secondary', () => {
