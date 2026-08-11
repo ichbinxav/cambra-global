@@ -1,7 +1,7 @@
 {
   "name": "StatementImport",
   "type": "object",
-  "description": "v62.3 ECL P1 (2026-08-06) \u2014 SCHEMA ONLY. The evidence-lifecycle fields below are ADDITIVE and OPTIONAL: no writer sets them yet. processUploadedFile is deliberately untouched and stays frozen; migrating the writer is a later prompt. Nothing in this schema implies a lifecycle engine, a scheduler, a rule set or any billing effect.",
+  "description": "ECL evidence-import record. The optional lifecycle fields remain owned by the canonical ECL engine. As of document-extraction-2.0.0, processUploadedFile writes only parse/extraction provenance and still does not assign lifecycle status, confidence results, billing eligibility or financial truth.",
   "properties": {
     "brand_id": {
       "type": "string"
@@ -32,7 +32,7 @@
         "other"
       ],
       "default": "csv",
-      "description": "How the file was parsed. `pdf`/`image` route through the layered extractor (LLM Layer 1 \u2192 deterministic Layer 2 \u2192 cross-check Layer 3)."
+      "description": "How the file was parsed. New accepted writes support signature-validated PDF/image/CSV/JSON; xls/xlsx/other remain legacy enum values and are rejected by document-extraction-2.0.0 until a verified parser exists."
     },
     "parsed_status": {
       "type": "string",
@@ -67,7 +67,7 @@
         "low",
         "unverified"
       ],
-      "description": "Overall confidence from the layered extractor. `high` = Layer 1 confident AND Layer 2 sanity checks passed AND Layer 3 cross-check agreed. `medium` = Layer 1 + Layer 2 passed but Layer 3 not run or disagreed within tolerance. `low` = at least one field flagged; individual fields keep their own confidence in metadata_json.fields. `unverified` = extractor did not run (e.g. document persisted before LLM was enabled \u2014 the current default while the privacy gate is closed). UNCHANGED by ECL P1: the ECL confidence lives in confidence_result / SavingsEvidence.confidence_level_ecl, never here."
+      "description": "Parse-layer confidence only. For document-extraction-2.0.0, `high` requires normalized agreement between independent Claude and OpenAI reads plus deterministic unit/date/currency/semantic validation. One-reader or disagreement results are `low` and never projected; no-reader is `unverified`. `medium` remains for legacy records. This is distinct from ECL confidence and never authorizes billing."
     },
     "provider_detected": {
       "type": "string",
@@ -75,30 +75,37 @@
     },
     "metadata_json": {
       "type": "object",
-      "description": "Structured record of what was extracted, per field, with per-field confidence + evidence + which layer rejected the value if any. Read/written only by the layered extractor. Never contains raw file bytes.",
+      "description": "Structured, minimized extraction audit. v2 stores file hash/type/size, model identities and availability, deterministic problems/disagreements, accepted canonical minor-unit fields, projection eligibility and aggregates. It stores neither file bytes nor raw model responses.",
       "properties": {
+        "extraction_version": { "type": "string" },
+        "file": { "type": "object" },
+        "model_verdicts": { "type": "object" },
+        "comparison": { "type": "object" },
+        "canonical": { "type": "object" },
+        "projection": { "type": "object" },
+        "aggregates": { "type": "object" },
         "layer1": {
           "type": "object",
-          "description": "Raw LLM extraction output (as returned by Layer 1). Kept for auditability of what the model actually said before any validation."
+          "description": "Legacy metadata shape only. document-extraction-2.0.0 never writes raw model output."
         },
         "layer2": {
           "type": "object",
-          "description": "Layer 2 verdict per field: { passed: bool, reason?: string, checks_run: string[] }. Deterministic \u2014 reproducible from layer1 + document context."
+          "description": "Legacy metadata shape only. v2 writes deterministic problems into comparison instead."
         },
         "layer3": {
           "type": "object",
-          "description": "Layer 3 cross-check verdict: { ran: bool, second_model?: string, agreements: string[], disagreements: string[] }."
+          "description": "Legacy metadata shape only. v2 writes minimized provider verdicts and disagreements without raw responses."
         },
         "fields": {
           "type": "object",
-          "description": "Per-field final result: { <field>: { value: number|null, confidence: 'high'|'medium'|'low'|'rejected', evidence?: string, rejected_by_layer?: 1|2|3 } }. `value: null` means the extractor deliberately refused to fill it \u2014 NEVER a fabricated number."
+          "description": "Legacy metadata shape only. v2 accepted fields live under canonical in integer minor units."
         },
         "format_detected": {
           "type": "string"
         },
         "llm_enabled": {
           "type": "boolean",
-          "description": "Whether the LLM extraction layer was actually invoked for this import. False while the privacy gate is closed \u2014 the file is persisted but no numbers are extracted."
+          "description": "Legacy gate marker. v2 provider availability is represented by minimized model_verdicts."
         }
       }
     },

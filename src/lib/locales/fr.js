@@ -901,7 +901,7 @@ export default {
     su_title_soon:      "Importez vos relevés {provider}",
     su_badge_soon:      "Bientôt disponible",
     su_body_soon:       "L'analyse vérifiée à partir de vos 3 derniers relevés {provider} arrive bientôt. Pour l'instant, votre estimation ci-dessus est instantanée et ne nécessite aucun import.",
-    su_title_beta:      "Importez vos 3 derniers relevés {provider}",
+    su_title_beta:      "Importez un relevé {provider}",
     su_badge_beta:      "",
 
     /* Auth choice (LoginGate) */
@@ -940,12 +940,12 @@ export default {
     sc_setting_up:          "Préparation de votre espace de travail…",
     sc_connect:             "Connecter Stripe",
     sc_readonly:            "OAuth en lecture seule",
-    su_body_beta:       "Déposez un relevé {provider} (PDF ou CSV). Nous lisons vos frais réels et transformons votre estimation en chiffre vérifié.",
+    su_body_beta:       "Importez un relevé {provider} (PDF, image, CSV ou JSON). Deux lecteurs indépendants extraient et comparent les montants ; la vérification financière reste une revue distincte.",
     su_cta:             "Importer un relevé",
     su_reading:         "Lecture…",
-    su_err_unreadable:  "Nous n'avons pas pu lire ce fichier. Essayez le PDF ou le CSV fourni par votre prestataire — une photo ou une capture d'écran ne fonctionne pas.",
+    su_err_unreadable:  "Nous n'avons pas pu accepter ce fichier ou les deux lecteurs ne concordent pas. Essayez le PDF, l'image, le CSV ou le JSON original du prestataire.",
     su_err_upload:      "L'import a échoué. Vérifiez votre connexion et réessayez.",
-    su_received:        "Relevé reçu. Notre équipe vérifie l'extraction avant qu'elle devienne un chiffre vérifié — vous serez prévenu dès que c'est prêt.",
+    su_received:        "Relevé lu : les deux lecteurs concordent et les montants ont passé les contrôles. Il ne s'agit pas encore d'économies vérifiées.",
 
     /* COPY-2A T3 — Vérifié/Estimé expliqué une seule fois, au premier badge. */
     verified_estimated_legend: "Vérifié = à partir de vos données connectées. Estimé = à partir des tarifs publics du secteur.",
@@ -1210,6 +1210,10 @@ export default {
     vlt_status_ph:      "Statut",
     vlt_upload:         "Déposer un fichier",
     vlt_uploading:      "Envoi en cours…",
+    vlt_upload_saved:   "Document enregistré dans le coffre.",
+    vlt_upload_extracted: "Document enregistré et extraction consignée.",
+    vlt_upload_review:  "Document enregistré. L'extraction doit être revue et aucun montant n'a été appliqué.",
+    vlt_upload_failed:  "Le document n'a pas pu être importé.",
     vlt_search_ph:      "Rechercher…",
     vlt_all_categories: "Toutes les catégories",
     vlt_all_statuses:   "Tous les statuts",

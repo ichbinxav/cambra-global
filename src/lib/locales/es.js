@@ -901,7 +901,7 @@ export default {
     su_title_soon:      "Sube tus extractos de {provider}",
     su_badge_soon:      "Próximamente",
     su_body_soon:       "El análisis verificado a partir de tus 3 últimos extractos de {provider} llegará pronto. De momento, tu estimación de arriba es instantánea y no requiere subir nada.",
-    su_title_beta:      "Sube tus 3 últimos extractos de {provider}",
+    su_title_beta:      "Sube un extracto de {provider}",
     su_badge_beta:      "",
 
     /* Auth choice (LoginGate) */
@@ -940,12 +940,12 @@ export default {
     sc_setting_up:          "Preparando tu espacio de trabajo…",
     sc_connect:             "Conectar Stripe",
     sc_readonly:            "OAuth de solo lectura",
-    su_body_beta:       "Sube un extracto de {provider} (PDF o CSV). Leemos las comisiones reales y convertimos tu estimación en un número verificado.",
+    su_body_beta:       "Sube un extracto de {provider} (PDF, imagen, CSV o JSON). Dos lectores independientes extraen y comparan los importes; la verificación financiera sigue siendo una revisión separada.",
     su_cta:             "Subir un extracto",
     su_reading:         "Leyendo…",
-    su_err_unreadable:  "No hemos podido leer ese archivo. Prueba con el PDF o el CSV que te da tu proveedor — una foto o captura no sirve.",
+    su_err_unreadable:  "No hemos podido aceptar ese archivo o los dos lectores no coinciden. Prueba con el PDF, imagen, CSV o JSON original de tu proveedor.",
     su_err_upload:      "La subida ha fallado. Revisa tu conexión e inténtalo de nuevo.",
-    su_received:        "Extracto recibido. Nuestro equipo revisa la extracción antes de convertirla en un número verificado — te avisaremos cuando esté listo.",
+    su_received:        "Extracto leído: los dos lectores coinciden y los importes han pasado las validaciones. Esto aún no constituye ahorro verificado.",
 
     /* COPY-2A T3 — Verificado/Estimado explicado una sola vez, en el primer badge. */
     verified_estimated_legend: "Verificado = con tus datos conectados. Estimado = con tarifas públicas del sector.",
@@ -1210,6 +1210,10 @@ export default {
     vlt_status_ph:      "Estado",
     vlt_upload:         "Subir archivo",
     vlt_uploading:      "Subiendo…",
+    vlt_upload_saved:   "Documento guardado en el Vault.",
+    vlt_upload_extracted: "Documento guardado y extracción registrada.",
+    vlt_upload_review:  "Documento guardado. La extracción necesita revisión y no se ha aplicado ningún importe.",
+    vlt_upload_failed:  "No se pudo subir el documento.",
     vlt_search_ph:      "Buscar…",
     vlt_all_categories: "Todas las categorías",
     vlt_all_statuses:   "Todos los estados",

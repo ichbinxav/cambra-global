@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.85.0 — P1–P5 Intelligence Foundation",
-  "version": "0.85.0",
-  "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
+  "releaseName": "CAMBRA v0.86.0 — P6–P8 Autonomous Company Foundation",
+  "version": "0.86.0",
+  "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1314,
+  "sourceTreeFileCount": 1323,
   "sourceArchiveShaExternal": null,
-  "gitSha": "4aa73bf490ae4812445e36f128f6bc8462b5cf17",
+  "gitSha": "f716d0564a4d43c82724321bc66640d9fceb8e76",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "7356a4023461769b4913507199cd363e88681631e29cf30c92c741f296a42c80",
-  "documentationManifestSha": "0c6e7ce7e22c726172c4671a5772ab5fb427da6622a775c9a327058f48683bbd",
+  "durabilityManifestSha": "4bd9fd221d6a2edb2c823209d786fbdcb023d8362c35436a92377685cd7efd01",
+  "documentationManifestSha": "650a5c7fcdb86a4ad41e7e7e8d4ac06f9c2a38c19b35fba4ba3d936c92015021",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
   ],
@@ -30,13 +30,13 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "cbb974b19a782f43ef62eae38683537197c869b1ea1c9cb80caa761e2e9225f9",
+  "lockfileSha": "cdc35c54ea87ecfebfc9081cda4eecf336d353b5fdad08f543559033e473e75b",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
-    "base44/entities/StatementImport.jsonc": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
+    "base44/entities/StatementImport.jsonc": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
     "base44/entities/SavingsEvidence.jsonc": "21be09e33b376f57e03aef336fc1bc4b06d641ca72d840ad8f671a2ab4af1731",
     "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
-    "base44/functions/processUploadedFile/entry.ts": "0fb1c9b9e5e69cf42b47e61fbae250031a0f9476e7540cc4facb6dde000c6844",
+    "base44/functions/processUploadedFile/entry.ts": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
     "base44/entities/EvidenceAttestation.jsonc": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
     "base44/entities/EvidenceLifecycleEvent.jsonc": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
     "base44/entities/EvidenceStrike.jsonc": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
@@ -44,53 +44,53 @@
   },
   "testEvidence": {
     "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
-    "startedAt": "2026-08-11T02:01:26.946Z",
-    "completedAt": "2026-08-11T02:01:29.573Z",
+    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+    "startedAt": "2026-08-11T02:29:54.854Z",
+    "completedAt": "2026-08-11T02:29:57.610Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 134,
-    "passed": 1976,
+    "testFiles": 137,
+    "passed": 2016,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
-    "startedAt": "2026-08-11T02:01:29.755Z",
-    "completedAt": "2026-08-11T02:01:34.040Z",
+    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+    "startedAt": "2026-08-11T02:29:57.868Z",
+    "completedAt": "2026-08-11T02:30:02.371Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "868b471c2c4d56852a1b524aa8131643aa9aaae8ac4b03c305ff025c1b41a363",
+    "distHash": "0e40db95e1621e58f20b9b5d5e6f1472b578bb416d2bbb25b52a1b90f09d83ae",
     "artifactCount": 73
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
-    "startedAt": "2026-08-11T02:01:18.427Z",
-    "completedAt": "2026-08-11T02:01:21.493Z",
+    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+    "startedAt": "2026-08-11T02:29:45.544Z",
+    "completedAt": "2026-08-11T02:29:48.724Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
-    "startedAt": "2026-08-11T02:01:21.659Z",
-    "completedAt": "2026-08-11T02:01:22.697Z",
+    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+    "startedAt": "2026-08-11T02:29:48.957Z",
+    "completedAt": "2026-08-11T02:29:50.210Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "e75a68faeda7e704a1364540f84b5563699a63147b11c20afc01e5ca34d481bc",
-    "startedAt": "2026-08-11T02:01:22.863Z",
-    "completedAt": "2026-08-11T02:01:26.779Z",
+    "sourceTreeHash": "e76589a7ef8baa4dec074b814eadd979c50912550c1f47f1702b9898a722b1a1",
+    "startedAt": "2026-08-11T02:29:50.462Z",
+    "completedAt": "2026-08-11T02:29:54.623Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "artifactHashes": {
-    "dist": "868b471c2c4d56852a1b524aa8131643aa9aaae8ac4b03c305ff025c1b41a363"
+    "dist": "0e40db95e1621e58f20b9b5d5e6f1472b578bb416d2bbb25b52a1b90f09d83ae"
   },
   "manualRequirements": [
     "CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified",
@@ -100,9 +100,11 @@
     "PRODUCTION VALIDATION REQUIRED: Stripe live integration status is implemented_live_verification_pending; complete a real live-account connect/sync/verification proof before claiming full production seal",
     "REAL-WORLD PILOT VALIDATION REQUIRED: the technical autonomous revenue engine seal does not prove economic autonomy. Complete multiple genuine production merchants end-to-end and populate the first-10 PilotMerchantValidation ledger before claiming real-world autonomous revenue validation.",
     "RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.",
+    "P6-P8 RUNTIME/COVERAGE PROOF REQUIRED: deploy the autonomous company coordinator and CommercialIntelligenceSnapshot, verify scheduled runtime evidence, and license/implement additional discovery adapters before claiming continuous coverage of the European merchant universe.",
+    "DOCUMENT EXTRACTION PRODUCTION EVAL REQUIRED: after DPA/retention approval and dual-model configuration, validate the extractor against a redacted multilingual real-document golden corpus and publish field-level precision/recall, false-accept and review-rate evidence before calling statement extraction production-verified.",
     "P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded."
   ],
   "blockingManualRequirements": [],
   "productionSealEligible": false,
-  "generatedAt": "2026-08-11T02:01:34.220Z"
+  "generatedAt": "2026-08-11T02:30:02.635Z"
 }

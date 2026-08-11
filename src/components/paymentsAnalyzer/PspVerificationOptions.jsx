@@ -18,7 +18,7 @@
 //
 // HONEST COPY (operator condition #1): the Upload card's copy depends on
 // whether the extractor is actually live (getUploadCapability.extraction_live):
-//   • live  → "Verified from statements — in beta" (upload runs the extractor).
+//   • live  → independently checked extraction (upload runs the extractor).
 //   • off   → "Coming soon — get notified"          (upload would be a no-op).
 // NOTHING here promises an immediate verified gap from statements — the
 // multi-invoice assembly engine does not exist yet (deferred to a future

@@ -1,6 +1,6 @@
 // StatementUploadCard — Chunk "Fallback universal de facturas" (FASE B).
 //
-// The Upload-statements verification path for any PSP without a live verified
+// The Upload-statements extraction path for any PSP without a live verified
 // connection. Two honest states, chosen by `extractionLive`:
 //
 //   • extractionLive === true  → upload live. The merchant can drop a statement
@@ -14,8 +14,8 @@
 // text-muted-foreground) — the previous hardcoded light-mode inks rendered
 // black text on dark surfaces (unreadable on mobile /ConnectTools).
 //
-// SCOPE LOCK: this component only calls the EXISTING processUploadedFile
-// (single-document first step) via the SDK. It does NOT assemble a verified
+// SCOPE LOCK: this component only calls processUploadedFile v2
+// (single-document extraction) via the SDK. It does NOT assemble a verified
 // gap, does NOT average invoices, does NOT touch the engine.
 
 import { useRef, useState } from "react";
@@ -84,7 +84,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       // unreadable/unsupported layout comes back as status "format_unknown"
       // with no `error` field. Treat a non-recognized document as an honest
       // failure the merchant can act on.
-      if (body?.error || body?.status === "format_unknown" || body?.detected === "unknown") {
+      if (body?.error || body?.status !== "success" || body?.detected === "unknown" || body?.projection_eligible !== true) {
         setStatus("error");
         setMessage(t("su_err_unreadable"));
         return;
@@ -126,7 +126,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
               <input
                 ref={inputRef}
                 type="file"
-                accept=".pdf,.csv,.png,.jpg,.jpeg,.xlsx"
+                accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"
                 className="hidden"
                 onChange={handleFile}
               />

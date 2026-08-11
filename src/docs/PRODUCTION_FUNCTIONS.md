@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-11 con P1 Europe + P2 Provider Intelligence + P3 European Rate Intelligence + ECL P8/P9 + Final Autonomous Platform Seal) · **Total: 276 funciones desplegadas** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-11 con P1 Europe + P2 Provider Intelligence + P3 European Rate Intelligence + ECL P8/P9 + P6–P8 Autonomous Company Seal) · **Total: 279 funciones desplegadas** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -65,7 +65,7 @@ Todas llevan tag `[QUARANTINE 2026-08-15]` + probe. Regla del barrido: si el pro
 | oauthConnector | me | ✓ | Brand, OAuthState, Integration | ConnectIntegrations |
 | initiateConnection | me | ✓ | Brand, IntegrationCatalog, ConnectionSession +1 | ConnectTools |
 | integrationRegistry | gate parcial / lectura registry | – | – | ConnectIntegrations |
-| processUploadedFile | me (+ ownership brand) | – | Brand, AnalyzerInput, StatementImport +3 | StatementUploadCard |
+| processUploadedFile | me (+ ownership brand) | – | Brand, PaymentsProfile, AnalyzerInput, StatementImport | StatementUploadCard + Vault; v2 signature/hash checks, independent Claude/OpenAI agreement, exact minor units, linked document audit and payments-statement-only fail-closed projection |
 | runContinuousDiscovery | gate | ✓ | Brand, ContinuousDiscoveryRun +4 | LastScanBar |
 | securityAuditLog | me | – | SecurityAudit | ConnectorTile |
 | createDocument / listDocuments / linkDocument / unlinkDocument / updateDocumentMeta | me (+ admin en rutas de escritura sensibles) | – | Document, DocumentLink, Brand, Provider | Vault |
@@ -276,6 +276,7 @@ P15 uses a strict recommendation firewall: merchant suitability/ranking is compu
 | founderOSCommand | B/admin | Approval, FounderCommandAudit, StrategyDirective + existing domain resolvers | Governed `DO IT` gateway: preview → confirmation where required → canonical resolver → audit. Material commercial/aggregate approvals reuse `resolveCommercialApproval`; unknown L4 is not raw-executed. |
 | founderOSSimulation | B/admin | FounderSimulation + measured Founder OS inputs | Simulation only (`production_effect=false`). Missing ARPA/LTV/capacity remains unknown rather than invented. |
 | founderChiefOfStaff | B/admin | Canonical Founder OS snapshot + StrategyDirective | AI narrative/priority layer. Prompt forbids invented metrics/trends/targets/forecasts; evidence snapshot remains authoritative. |
+| autonomousCompanyOrchestrator | C/internal · 6h | P6 commercial intelligence + P7 pipeline/learning + ExecutiveDigest → AgentTask/Event/FounderDecision | Coordination-only nervous system. It invokes no direct send, contract acceptance, migration cutover, spend or charge; material authority remains in existing gates. |
 
 P16 is deliberately a governance layer above autonomous operations. It does not give AI agents approve/sign/spend/charge authority, does not create a second financial ledger and does not turn simulation into production action.
 

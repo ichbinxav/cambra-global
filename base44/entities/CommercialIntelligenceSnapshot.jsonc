@@ -1,0 +1,26 @@
+{
+  "name": "CommercialIntelligenceSnapshot",
+  "type": "object",
+  "description": "P6-P8 immutable commercial-intelligence projection. TAM/SAM/SOM are observed lower bounds unless a licensed source universe exists; null estimates are deliberate.",
+  "properties": {
+    "snapshot_key": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "engine_version": { "type": "string" },
+    "policy_key": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "market_sizing_json": { "type": "object" },
+    "prioritization_json": { "type": "object" },
+    "lead_graph_json": { "type": "object" },
+    "forecast_json": { "type": "object" },
+    "learning_json": { "type": "object" },
+    "data_quality_json": { "type": "object" },
+    "source_coverage_json": { "type": "object" },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "reservoir_snapshot_id": { "type": "string" }
+  },
+  "required": ["snapshot_key", "generated_at", "engine_version", "market_sizing_json", "prioritization_json", "forecast_json"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

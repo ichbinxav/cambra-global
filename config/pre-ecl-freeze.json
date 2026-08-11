@@ -85,7 +85,7 @@
   "entries": [
     {
       "path": "base44/entities/StatementImport.jsonc",
-      "sha256": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
+      "sha256": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
       "freezeReason": "ECL P1 input schema — extended additively in v62.3, frozen at the approved shape",
       "allowedChange": false
     },
@@ -103,7 +103,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "0fb1c9b9e5e69cf42b47e61fbae250031a0f9476e7540cc4facb6dde000c6844",
+      "sha256": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
       "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
       "allowedChange": false
     },

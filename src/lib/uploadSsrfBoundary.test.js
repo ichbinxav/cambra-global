@@ -7,12 +7,14 @@ const src = readFileSync(join(process.cwd(), "base44/functions/processUploadedFi
 describe("upload SSRF boundary", () => {
   it("accepts only HTTPS Base44 media storage URLs", () => {
     expect(src).toContain("TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com'])");
-    expect(src).toContain("u.protocol !== 'https:'");
+    expect(src).toContain("url.protocol !== 'https:'");
+    expect(src).toContain("url.username || url.password");
     expect(src).toContain("untrusted_file_url");
   });
-  it("refuses redirects on backend document fetches", () => {
-    const matches = src.match(/fetch\(fileUrl, \{ redirect: 'error' \}\)/g) || [];
-    expect(matches.length).toBeGreaterThanOrEqual(2);
-    expect(src).not.toMatch(/await fetch\(fileUrl\);/);
+  it("fetches the allowlisted stored file exactly once and refuses redirects", () => {
+    const matches = src.match(/fetch\(trusted\.url/g) || [];
+    expect(matches).toHaveLength(1);
+    expect(src).toContain("redirect: 'error'");
+    expect(src).not.toMatch(/await fetch\(trusted\.url\);/);
   });
 });

@@ -937,7 +937,7 @@ export default {
     su_title_soon:      "Upload your {provider} statements",
     su_badge_soon:      "Coming soon",
     su_body_soon:       "Verified analysis from your last 3 {provider} statements is coming soon. For now, your estimate above is instant and needs no upload.",
-    su_title_beta:      "Upload your last 3 {provider} statements",
+    su_title_beta:      "Upload a {provider} statement",
     su_badge_beta:      "",
 
     /* Auth choice (LoginGate) */
@@ -976,12 +976,12 @@ export default {
     sc_setting_up:          "Setting up your workspace…",
     sc_connect:             "Connect Stripe",
     sc_readonly:            "Read-only OAuth",
-    su_body_beta:       "Drop a {provider} statement (PDF or CSV). We read your real fees and turn your estimate into a verified number.",
+    su_body_beta:       "Upload a {provider} statement (PDF, image, CSV or JSON). Two independent readers extract and compare the figures; financial verification remains a separate review.",
     su_cta:             "Upload a statement",
     su_reading:         "Reading…",
-    su_err_unreadable:  "We couldn't read that file. Try the PDF or CSV your provider gives you — a photo or screenshot won't work.",
+    su_err_unreadable:  "We couldn't accept that file or the two readers did not agree. Try the original PDF, image, CSV or JSON from your provider.",
     su_err_upload:      "Upload failed. Please check your connection and try again.",
-    su_received:        "Statement received. Our team reviews the extraction before it becomes a verified number — you'll be notified when it's ready.",
+    su_received:        "Statement read: both readers agree and the figures passed validation. This is not yet verified savings.",
 
     /* COPY-2A T3 — Verified/Estimated explained once per page, at the first badge. */
     verified_estimated_legend: "Verified = from your connected data. Estimated = from public industry rates.",
@@ -1256,6 +1256,10 @@ export default {
     vlt_status_ph:      "Status",
     vlt_upload:         "Upload file",
     vlt_uploading:      "Uploading…",
+    vlt_upload_saved:   "Document saved in the Vault.",
+    vlt_upload_extracted: "Document saved and extraction recorded.",
+    vlt_upload_review:  "Document saved. Extraction needs review and no amount was applied.",
+    vlt_upload_failed:  "The document could not be uploaded.",
     vlt_search_ph:      "Search…",
     vlt_all_categories: "All categories",
     vlt_all_statuses:   "All statuses",

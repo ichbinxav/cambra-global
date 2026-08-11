@@ -14,16 +14,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
  *   • EXTRACTION_LLM_ENABLED  — Layer 1 (Anthropic). When ≠ 'true', NO bytes
  *                               are extracted; the upload persists but produces
  *                               nothing.
- *   • EXTRACTION_L3_ENABLED   — Layer 3 (OpenAI cross-check). Informational
- *                               here (L1+L2 still run without it).
+ *   • EXTRACTION_L3_ENABLED   — independent OpenAI cross-check. Required by
+ *                               v2 before any extracted amount can be used.
  *
  * The UI uses `extraction_live` to pick copy:
- *   • true  → "Verified from statements — in beta" (upload does something)
- *   • false → "Coming soon / Notify me"            (upload would be a no-op)
+ *   • true  → independently checked extraction is available
+ *   • false → "Coming soon" (one or both readers are unavailable)
  *
  * SCOPE LOCK (operator conditions #3 + #4): this function does NOT run the
  * extractor, does NOT touch the engine, computeStripeVerifiedGap, the estimated
- * path, or any Stripe path. It only reads two env flags and returns booleans.
+ * path, or any Stripe path. It only reads feature/provider readiness and returns booleans.
  * No secrets are ever echoed — only whether each flag equals 'true'.
  */
 Deno.serve(async (req) => {
@@ -41,16 +41,21 @@ Deno.serve(async (req) => {
 
     const llmEnabled = Deno.env.get('EXTRACTION_LLM_ENABLED') === 'true';
     const l3Enabled = Deno.env.get('EXTRACTION_L3_ENABLED') === 'true';
+    const primaryConfigured = !!Deno.env.get('ANTHROPIC_API_KEY');
+    const secondaryConfigured = !!Deno.env.get('OPENAI_API_KEY');
 
     return Response.json({
       ok: true,
-      // The single flag the UI branches on. Upload only "does something" when
-      // Layer 1 is enabled — Layer 3 is a cross-check on top, not required.
-      extraction_live: llmEnabled,
+      // v2 is fail-closed: one model may create an auditable needs-review row,
+      // but only two enabled independent readers can produce accepted output.
+      extraction_live: llmEnabled && l3Enabled && primaryConfigured && secondaryConfigured,
+      extraction_version: 'document-extraction-2.0.0',
+      independent_verification_required: true,
       // Exposed for admin diagnostics / future UI nuance. Never the secret
       // values themselves — only their on/off state.
       layer1_enabled: llmEnabled,
       layer3_enabled: l3Enabled,
+      providers_configured: primaryConfigured && secondaryConfigured,
       authenticated: !!user,
     });
   } catch (error) {

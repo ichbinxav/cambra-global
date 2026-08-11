@@ -654,6 +654,33 @@
       "oldHash": "b13daa2209e67aeb9650da8ad1d2a94ed8722254c3f54158c58d07ec2f844389",
       "newHash": "0fb1c9b9e5e69cf42b47e61fbae250031a0f9476e7540cc4facb6dde000c6844",
       "reason": "Payments V1 final seal security fix: close documented high-severity file_url SSRF with HTTPS media.base44.com allowlist, redirect refusal and generic client errors; extraction/economic semantics unchanged"
+    },
+    {
+      "date": "2026-08-11T02:24:55.712Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "0fb1c9b9e5e69cf42b47e61fbae250031a0f9476e7540cc4facb6dde000c6844",
+      "newHash": "a4d28e5eeb02c1c6d4972d2dd61ab5ff0f46dd469aeac78109688be0450b1a3f",
+      "reason": "P6-P8 sanctioned document-extraction-2.0.0 migration: dual independent readers, deterministic fail-closed validation, no ECL lifecycle writes"
+    },
+    {
+      "date": "2026-08-11T02:24:55.738Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/entities/StatementImport.jsonc",
+      "oldHash": "9a4a30ce906419ca6bf7a9cbe0d4efb084dfc6a3e74ed2ff69e64e9e49bd0ccf",
+      "newHash": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
+      "reason": "P6-P8 sanctioned StatementImport audit metadata migration for document-extraction-2.0.0; ECL lifecycle schema and authority remain unchanged"
+    },
+    {
+      "date": "2026-08-11T02:28:55.880Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "a4d28e5eeb02c1c6d4972d2dd61ab5ff0f46dd469aeac78109688be0450b1a3f",
+      "newHash": "e6159dc2c51d84fbfb4eb8337bd0c5a50e1fb59b0463e553a943f999fd2f7831",
+      "reason": "P6-P8 extraction v2 contract correction: documented OpenAI input_file shape, JSON as untrusted text and preflight text-size cap"
     }
   ]
 }

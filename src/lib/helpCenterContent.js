@@ -840,9 +840,9 @@ export const FAQ_CONTENT = [
           es: "¿Puedo cargar extractos?",
         },
         a: {
-          en: "Yes. Upload monthly statements from your payment provider — PSP (Stripe, PayPal, Adyen, Mollie, Shopify Payments...) or in-store TPV (SumUp, Stripe Terminal, Zettle, traditional bank acquirer) — and CAMBRA extracts the relevant fields (total fees, volume, transaction count, fixed fees, terminal rental) automatically using AI.",
-          fr: "Oui. Importez les relevés mensuels de votre fournisseur de paiement — PSP (Stripe, PayPal, Adyen, Mollie, Shopify Payments…) ou TPE en point de vente (SumUp, Stripe Terminal, Zettle, banque acquéreur traditionnelle) — et CAMBRA extrait automatiquement les champs pertinents (frais totaux, volume, nombre de transactions, frais fixes, location de terminal) à l'aide de l'IA.",
-          es: "Sí. Carga los extractos mensuales de tu proveedor de pago — PSP (Stripe, PayPal, Adyen, Mollie, Shopify Payments…) o TPV en tienda (SumUp, Stripe Terminal, Zettle, banco adquirente tradicional) — y CAMBRA extrae automáticamente los campos relevantes (comisiones totales, volumen, número de transacciones, comisiones fijas, alquiler de terminal) con IA.",
+          en: "When document extraction is enabled, you can upload a payment-provider statement. Two independent readers extract volume, fees and transaction count, then deterministic checks compare them. A disagreement is held for review and no amount is applied.",
+          fr: "Lorsque l'extraction documentaire est activée, vous pouvez importer un relevé de prestataire de paiement. Deux lecteurs indépendants extraient le volume, les frais et le nombre de transactions, puis des contrôles déterministes les comparent. En cas de désaccord, le document est mis en revue et aucun montant n'est appliqué.",
+          es: "Cuando la extracción documental está activada, puedes subir un extracto del proveedor de pagos. Dos lectores independientes extraen volumen, comisiones y número de transacciones, y después unas reglas deterministas los comparan. Si no coinciden, queda en revisión y no se aplica ningún importe.",
         },
       },
       {
@@ -852,9 +852,9 @@ export const FAQ_CONTENT = [
           es: "¿Qué formatos de archivo están soportados?",
         },
         a: {
-          en: "PDF, CSV, Excel (.xls / .xlsx), and image formats (PNG, JPG). Maximum file size is 20MB per document.",
-          fr: "PDF, CSV, Excel (.xls / .xlsx) et formats d'image (PNG, JPG). Taille maximale de 20 Mo par document.",
-          es: "PDF, CSV, Excel (.xls / .xlsx) y formatos de imagen (PNG, JPG). Tamaño máximo de 20 MB por documento.",
+          en: "PDF, CSV, JSON and image formats (PNG, JPG/JPEG, WebP, GIF), up to 15MB. XLS/XLSX are rejected until a verified workbook parser is available.",
+          fr: "PDF, CSV, JSON et formats d'image (PNG, JPG/JPEG, WebP, GIF), jusqu'à 15 Mo. XLS/XLSX sont refusés tant qu'un analyseur de classeur vérifié n'est pas disponible.",
+          es: "PDF, CSV, JSON y formatos de imagen (PNG, JPG/JPEG, WebP, GIF), hasta 15 MB. XLS/XLSX se rechazan hasta disponer de un parser de hojas de cálculo verificado.",
         },
       },
       {
@@ -864,9 +864,9 @@ export const FAQ_CONTENT = [
           es: "¿Cómo funciona el análisis de extractos?",
         },
         a: {
-          en: "Uploaded statements are parsed for effective rates, processed volume, transaction counts, and any separately listed fixed fees or terminal rental. Extracted data feeds directly into your Analyzer, replacing form estimates with real measured numbers.",
-          fr: "Les relevés importés sont analysés pour en extraire les taux effectifs, le volume traité, le nombre de transactions et d'éventuels frais fixes ou location de terminal listés séparément. Les données extraites alimentent directement votre Analyzer, remplaçant les estimations du formulaire par des chiffres réels mesurés.",
-          es: "Los extractos cargados se analizan para extraer las tasas efectivas, el volumen procesado, el número de transacciones y posibles comisiones fijas o alquiler de terminal listados aparte. Los datos extraídos alimentan directamente tu Analyzer, sustituyendo las estimaciones del formulario por cifras reales medidas.",
+          en: "The file is signature-checked, hashed and read independently twice. Only an agreed EUR payment statement can populate Analyzer inputs. Extraction success is not verified savings and does not authorize billing.",
+          fr: "Le fichier est contrôlé par signature, haché et lu deux fois indépendamment. Seul un relevé de paiement en EUR concordant peut alimenter l'Analyzer. Une extraction réussie ne constitue pas des économies vérifiées et n'autorise aucune facturation.",
+          es: "El archivo se valida por firma, se calcula su hash y se lee dos veces de forma independiente. Solo un extracto de pagos en EUR coincidente puede alimentar el Analyzer. Una extracción correcta no equivale a ahorro verificado ni autoriza facturación.",
         },
       },
       {
@@ -876,9 +876,9 @@ export const FAQ_CONTENT = [
           es: "¿Puedo combinar cargas con entradas manuales?",
         },
         a: {
-          en: "Yes. CAMBRA handles any combination of a connected Stripe account, uploaded statements from other providers, and form inputs — merging them into a single per-channel analysis.",
-          fr: "Oui. CAMBRA gère toute combinaison d'un compte Stripe connecté, de relevés importés d'autres fournisseurs et de saisies de formulaire — en les fusionnant en une seule analyse par canal.",
-          es: "Sí. CAMBRA gestiona cualquier combinación de una cuenta Stripe conectada, extractos cargados de otros proveedores y entradas del formulario — fusionándolos en un único análisis por canal.",
+          en: "You can keep manual inputs and upload a statement. Accepted statement fields update the corresponding Analyzer inputs, while connected Stripe verification remains a separate evidence path.",
+          fr: "Vous pouvez conserver les saisies manuelles et importer un relevé. Les champs acceptés mettent à jour les entrées correspondantes de l'Analyzer, tandis que la vérification Stripe connectée reste un parcours de preuve distinct.",
+          es: "Puedes mantener las entradas manuales y subir un extracto. Los campos aceptados actualizan las entradas correspondientes del Analyzer, mientras que la verificación conectada de Stripe sigue siendo una vía de evidencia separada.",
         },
       },
     ],
@@ -894,9 +894,9 @@ export const FAQ_CONTENT = [
           es: "¿Mis datos están seguros?",
         },
         a: {
-          en: "Yes. All data is encrypted in transit (TLS 1.3) and at rest (AES-256). Access is strictly role-scoped, audited, and never shared with third parties.",
-          fr: "Oui. Toutes les données sont chiffrées en transit (TLS 1.3) et au repos (AES-256). L'accès est strictement limité par rôle, audité et jamais partagé avec des tiers.",
-          es: "Sí. Todos los datos se cifran en tránsito (TLS 1.3) y en reposo (AES-256). El acceso está estrictamente limitado por rol, auditado y nunca se comparte con terceros.",
+          en: "Access is role-scoped and audited. When optional document extraction is enabled, the uploaded document is processed by the configured AI providers under CAMBRA's processor/privacy terms; the feature stays off until those terms and retention settings are approved.",
+          fr: "L'accès est limité par rôle et audité. Lorsque l'extraction documentaire facultative est activée, le document importé est traité par les fournisseurs d'IA configurés selon les conditions de sous-traitance et de confidentialité de CAMBRA ; la fonction reste désactivée tant que ces conditions et la conservation ne sont pas approuvées.",
+          es: "El acceso está limitado por rol y auditado. Cuando se activa la extracción documental opcional, el documento subido es procesado por los proveedores de IA configurados conforme a las condiciones de encargado y privacidad de CAMBRA; la función permanece desactivada hasta aprobar esas condiciones y la retención.",
         },
       },
       {

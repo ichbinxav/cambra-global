@@ -1,6 +1,6 @@
 {
-  "release": "0.72.0",
-  "comment": "CAMBRA v0.72.0 \u2014 P12 Intelligence & Proprietary Moat Layer. Additive intelligence architecture over the active ECL P8 authority boundary: immutable evidence, bitemporal pricing, knowledge claims/conflicts, snapshots, outcome learning, moat/gap metrics, admin command center and supervised maintenance. Product/ECL/billing/L4 authority remains unchanged.",
+  "release": "0.86.0",
+  "comment": "CAMBRA v0.86.0 — P6–P8 Autonomous Company Foundation plus document-extraction-2.0.0. Adds observed-only commercial intelligence, governed company coordination, dual-reader invoice/document extraction, Vault audit links and fail-closed payments-statement projection. ECL/billing/L4 authority remains unchanged.",
   "files": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",
@@ -153,6 +153,32 @@
     "base44/functions/intelligenceBackfill/function.jsonc",
     "base44/functions/getIntelligenceCommandCenter/function.jsonc",
     "base44/functions/competitorMonitorAgent/entry.ts",
-    "base44/functions/providerContactResolver/entry.ts"
+    "base44/functions/providerContactResolver/entry.ts",
+    "base44/shared/documentExtraction.ts",
+    "base44/functions/processUploadedFile/entry.ts",
+    "base44/functions/getUploadCapability/entry.ts",
+    "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
+    "src/components/paymentsAnalyzer/AnalyzerEntryCards.jsx",
+    "src/components/paymentsAnalyzer/PspVerificationOptions.jsx",
+    "src/pages/Vault.jsx",
+    "src/lib/locales/es.js",
+    "src/lib/locales/en.js",
+    "src/lib/locales/fr.js",
+    "src/lib/helpCenterContent.js",
+    "base44/shared/documentationRegistry.ts",
+    "src/lib/documentExtractionV2.test.js",
+    "base44/shared/commercialIntelligence.ts",
+    "base44/entities/CommercialIntelligenceSnapshot.jsonc",
+    "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
+    "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
+    "base44/shared/founderOSData.ts",
+    "base44/functions/autonomousCompanyOrchestrator/entry.ts",
+    "base44/functions/autonomousCompanyOrchestrator/function.jsonc",
+    "src/lib/commercialIntelligenceP6P8.test.js",
+    "src/lib/p6p8AutonomousCompany.test.js",
+    "src/lib/todayAuditHardening.test.js",
+    "src/lib/uploadSsrfBoundary.test.js",
+    "docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md",
+    "docs/P19_ALWAYS_ON_LEAD_DISCOVERY.md"
   ]
 }

@@ -1,14 +1,157 @@
-import{createClientFromRequest}from'npm:@base44/sdk@0.8.41';
-import{requireAdminOrInternal}from'../../shared/internalGate.ts';
-const VERSION='always-on-lead-discovery-1.0.0';
-const normDomain=(x:any)=>String(x||'').toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].trim();
-const now=()=>new Date().toISOString();
-Deno.serve(async req=>{try{const b=createClientFromRequest(req),body=await req.json().catch(()=>({})),g=await requireAdminOrInternal(req,b,body);if(!g.ok)return g.response;const s=b.asServiceRole,internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
- const policies=await s.entities.CommercialPolicy.filter({engine:'merchant_acquisition',status:'active'},'-approved_at',10).catch(()=>[]);const p=policies[0]||null;if(!p)return Response.json({ok:true,status:'waiting_policy',engine_version:VERSION});
- const leads=await s.entities.OutboundLead.list('-created_date',5000).catch(()=>[]),profiles=await s.entities.OutboundSendingProfile.filter({profile_key:'resend:contact.cambra.global'},'-created_date',1).catch(()=>[]),profile=profiles[0]||null;
- const cap=Math.max(0,Number(profile?.current_daily_cap||p.daily_send_limit||0));const target=Math.max(.5,Math.min(30,Number(p?.icp_json?.pipeline_coverage_days||3)));
- const ready=leads.filter((l:any)=>l.stage==='scored'&&Number(l.score||0)>=Number(p.min_lead_score||70)&&Number(l.score_breakdown_json?.evidence_confidence||0)>=.55&&l.contact_email&&l.legal_basis).length;const coverage=cap>0?ready/cap:ready>0?999:0;
- const monthlyBudget=Math.max(0,Number(p?.icp_json?.discovery_monthly_budget||0)),perRun=Math.max(1,Math.min(100,Number(p?.icp_json?.per_run||25)));let action='quality_refresh',discoverN=0;if(coverage<target){action='increase_discovery';discoverN=perRun}else if(coverage>target*2){action='reservoir_healthy_reduce_discovery'}
- const countries=(p.countries||['FR','ES']).slice(0,4);const runs:any[]=[];if(discoverN>0&&p?.icp_json?.enabled!==false){const each=Math.max(1,Math.ceil(discoverN/Math.max(1,countries.length)));for(const cc of countries){const country=String(cc).toUpperCase()==='FR'?'France':String(cc).toUpperCase()==='ES'?'Spain':String(cc);const r=await s.functions.invoke('leadOrchestrator',{icp:{industry:p.icp_json?.industry||'ecommerce',titles:p.icp_json?.titles||['founder','CEO','co-founder','CFO','Head of Ecommerce','Head of Payments'],country,per_page:each,limit:each},internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));runs.push({country,result:r?.data||r})}}
- const fresh=await s.entities.OutboundLead.list('-created_date',5000).catch(()=>[]),seen=new Map<string,string>();let deduped=0,suppressed=0,qualified=0,high=0,readyCount=0,stale=0;const cutoff=Date.now()-30*86400000;for(const l of fresh){const d=normDomain(l.company_domain),email=String(l.contact_email||'').toLowerCase();if(d&&seen.has(d)&&!['contacted','meeting','won'].includes(l.stage)){await s.entities.OutboundLead.update(l.id,{reservoir_state:'disqualified',suppression_reason:`duplicate_company:${seen.get(d)}`,reservoir_updated_at:now()}).catch(()=>null);deduped++;continue}if(d)seen.set(d,l.id);const sup=email?await s.entities.ContactSuppression.filter({email,active:true},'-created_date',1).catch(()=>[]):[];if(sup.length){await s.entities.OutboundLead.update(l.id,{reservoir_state:'suppressed',suppression_reason:'contact_suppression',reservoir_updated_at:now()}).catch(()=>null);suppressed++;continue}const score=Number(l.score||0),conf=Number(l.score_breakdown_json?.evidence_confidence||0),isQ=l.stage==='scored'&&score>=Number(p.min_lead_score||70);if(isQ)qualified++;if(isQ&&conf>=.75)high++;const isReady=isQ&&conf>=.55&&!!l.contact_email&&!!l.legal_basis;if(isReady){readyCount++;await s.entities.OutboundLead.update(l.id,{reservoir_state:'ready',revenue_stage:'outreach_ready',outreach_ready_at:l.outreach_ready_at||now(),last_verified_at:now(),reservoir_updated_at:now()}).catch(()=>null)}else if(['lead','enriched','scored'].includes(l.stage)){await s.entities.OutboundLead.update(l.id,{reservoir_state:l.stage==='lead'?'discovered':l.stage==='enriched'?'enriching':'qualified',reservoir_updated_at:now()}).catch(()=>null)}if(Date.parse(l.last_verified_at||l.updated_date||l.created_date||'')<cutoff)stale++}
- const byCountry:any={};for(const l of fresh){const c=String(l.country||'unknown');byCountry[c]=(byCountry[c]||0)+1}const cov=cap>0?Number((readyCount/cap).toFixed(2)):readyCount>0?999:0,status=cov<target?'LOW':cov>target*2?'EXCESS':'HEALTHY';const snap=await s.entities.LeadReservoirSnapshot.create({snapshot_key:`reservoir:${Date.now()}`,captured_at:now(),discovered:fresh.filter((x:any)=>x.stage==='lead').length,enriching:fresh.filter((x:any)=>x.stage==='enriched').length,qualified,high_confidence:high,outreach_ready:readyCount,queued:0,waiting_window:0,waiting_capacity:Math.max(0,readyCount-cap),suppressed,disqualified:deduped,stale,safe_daily_send_capacity:cap,coverage_days:cov,target_coverage_days:target,coverage_status:status,discovery_action:action,cost_guard_json:{monthly_budget:monthlyBudget,note:'24/7 availability does not imply continuous paid API calls; discovery throttles when coverage is healthy.'},country_breakdown_json:byCountry,engine_version:VERSION});return Response.json({ok:true,engine_version:VERSION,snapshot_id:snap.id,coverage_days:cov,target_coverage_days:target,coverage_status:status,outreach_ready:readyCount,safe_daily_send_capacity:cap,discovery_action:action,discovery_runs:runs.length,deduplicated:deduped,suppressed})}catch(e){console.error(e);return Response.json({ok:false,error:'always_on_lead_discovery_failed',message:String((e as Error)?.message||e).slice(0,300)},{status:500})}});
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { buildCommercialIntelligence, COMMERCIAL_INTELLIGENCE_VERSION, normalizeCompanyDomain } from '../../shared/commercialIntelligence.ts';
+import { emergencyState } from '../../shared/operationalControl.ts';
+
+const VERSION = 'always-on-lead-discovery-2.0.0';
+const now = () => new Date().toISOString();
+const COUNTRY_NAMES: Record<string, string> = { FR: 'France', ES: 'Spain', DE: 'Germany', IT: 'Italy', PT: 'Portugal', BE: 'Belgium', AT: 'Austria', NL: 'Netherlands', IE: 'Ireland', GB: 'United Kingdom', LU: 'Luxembourg', DK: 'Denmark', SE: 'Sweden', FI: 'Finland', NO: 'Norway', PL: 'Poland', CZ: 'Czechia', GR: 'Greece', RO: 'Romania' };
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
+    const service = base44.asServiceRole;
+    const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+    const policies = await service.entities.CommercialPolicy.filter({ engine: 'merchant_acquisition', status: 'active' }, '-approved_at', 10).catch(() => []);
+    const policy = policies[0] || null;
+    if (!policy) return Response.json({ ok: true, status: 'waiting_policy', engine_version: VERSION });
+
+    const [before, profiles, emergency] = await Promise.all([
+      service.entities.OutboundLead.list('-created_date', 5000).catch(() => []),
+      service.entities.OutboundSendingProfile.filter({ profile_key: 'resend:contact.cambra.global' }, '-created_date', 1).catch(() => []),
+      emergencyState(service),
+    ]);
+    const capacity = Math.max(0, Number(profiles[0]?.current_daily_cap || policy.daily_send_limit || 0));
+    const targetDays = Math.max(0.5, Math.min(30, Number(policy?.icp_json?.pipeline_coverage_days || 3)));
+    const minScore = Number(policy.min_lead_score || 70);
+    const readyBefore = before.filter((lead: any) => lead.stage === 'scored' && Number(lead.score || 0) >= minScore && Number(lead.score_breakdown_json?.evidence_confidence || 0) >= 0.55 && lead.contact_email && lead.legal_basis).length;
+    const coverageBefore = capacity > 0 ? readyBefore / capacity : readyBefore > 0 ? 999 : 0;
+    const perRun = Math.max(1, Math.min(100, Number(policy?.icp_json?.per_run || 25)));
+    const monthlyBudget = Math.max(0, Number(policy?.icp_json?.discovery_monthly_budget || 0));
+    const shouldDiscover = !emergency.safe_mode && coverageBefore < targetDays && policy?.icp_json?.enabled !== false;
+    const discoveryAction = emergency.safe_mode ? 'safe_mode_no_external_discovery' : shouldDiscover ? 'increase_discovery' : coverageBefore > targetDays * 2 ? 'reservoir_healthy_reduce_discovery' : 'quality_refresh';
+
+    const requestedCountries = (Array.isArray(policy.countries) && policy.countries.length ? policy.countries : ['FR', 'ES']).map((value: any) => String(value).toUpperCase());
+    // Bound external credit spend per run. Coverage beyond these countries is
+    // reported as unknown, never as if Apollo had scanned all Europe.
+    const countriesThisRun = requestedCountries.slice(0, Math.min(8, perRun));
+    const discoveryRuns: any[] = [];
+    if (shouldDiscover) {
+      const each = Math.max(1, Math.floor(perRun / Math.max(1, countriesThisRun.length)));
+      for (const countryCode of countriesThisRun) {
+        const country = COUNTRY_NAMES[countryCode] || countryCode;
+        const result = await service.functions.invoke('leadOrchestrator', {
+          icp: {
+            industry: policy.icp_json?.industry || 'ecommerce',
+            titles: policy.icp_json?.titles || ['founder', 'CEO', 'co-founder', 'CFO', 'Head of Ecommerce', 'Head of Payments'],
+            country, per_page: each, limit: each,
+          },
+          internal_secret: internal,
+        }).catch((error: any) => ({ data: { ok: false, error: String(error?.message || error) } }));
+        discoveryRuns.push({ country, result: result?.data || result });
+      }
+    }
+
+    const leads = await service.entities.OutboundLead.list('-created_date', 5000).catch(() => []);
+    const rankedForDedupe = [...leads].sort((a: any, b: any) => Number(b.score || 0) - Number(a.score || 0) || Date.parse(b.updated_date || b.created_date || '') - Date.parse(a.updated_date || a.created_date || ''));
+    const companyWinner = new Map<string, string>();
+    const duplicateLeadIds = new Set<string>();
+    let deduplicated = 0;
+    for (const lead of rankedForDedupe) {
+      const domain = normalizeCompanyDomain(lead.company_domain);
+      if (!domain) continue;
+      if (!companyWinner.has(domain)) { companyWinner.set(domain, lead.id); continue; }
+      if (!['contacted', 'meeting', 'won'].includes(String(lead.stage))) {
+        await service.entities.OutboundLead.update(lead.id, { reservoir_state: 'disqualified', suppression_reason: `duplicate_company:${companyWinner.get(domain)}`, reservoir_updated_at: now() }).catch(() => null);
+        duplicateLeadIds.add(lead.id);
+        deduplicated++;
+      }
+    }
+
+    let suppressed = 0;
+    let qualified = 0;
+    let highConfidence = 0;
+    let outreachReady = 0;
+    let stale = 0;
+    const staleCutoff = Date.now() - 30 * 86400000;
+    for (const lead of leads) {
+      if (duplicateLeadIds.has(lead.id) || lead.reservoir_state === 'disqualified') continue;
+      const email = String(lead.contact_email || '').trim().toLowerCase();
+      const suppression = email ? await service.entities.ContactSuppression.filter({ email, active: true }, '-created_date', 1).catch(() => []) : [];
+      if (suppression.length) {
+        suppressed++;
+        await service.entities.OutboundLead.update(lead.id, { reservoir_state: 'suppressed', suppression_reason: 'contact_suppression', reservoir_updated_at: now() }).catch(() => null);
+        continue;
+      }
+      const score = Number(lead.score || 0);
+      const confidence = Number(lead.score_breakdown_json?.evidence_confidence || 0);
+      const isQualified = lead.stage === 'scored' && score >= minScore;
+      if (isQualified) qualified++;
+      if (isQualified && confidence >= 0.75) highConfidence++;
+      const isReady = isQualified && confidence >= 0.55 && !!email && !!lead.legal_basis;
+      if (isReady) {
+        outreachReady++;
+        await service.entities.OutboundLead.update(lead.id, { reservoir_state: 'ready', revenue_stage: 'outreach_ready', outreach_ready_at: lead.outreach_ready_at || now(), last_verified_at: now(), reservoir_updated_at: now() }).catch(() => null);
+      } else if (['lead', 'enriched', 'scored'].includes(String(lead.stage))) {
+        await service.entities.OutboundLead.update(lead.id, { reservoir_state: lead.stage === 'lead' ? 'discovered' : lead.stage === 'enriched' ? 'enriching' : 'qualified', reservoir_updated_at: now() }).catch(() => null);
+      }
+      const lastVerified = Date.parse(lead.last_verified_at || lead.updated_date || lead.created_date || '');
+      if (!Number.isFinite(lastVerified) || lastVerified < staleCutoff) stale++;
+    }
+
+    const coverage = capacity > 0 ? Number((outreachReady / capacity).toFixed(2)) : outreachReady > 0 ? 999 : 0;
+    const coverageStatus = coverage < targetDays ? 'LOW' : coverage > targetDays * 2 ? 'EXCESS' : 'HEALTHY';
+    const countryBreakdown: Record<string, number> = {};
+    for (const lead of leads) countryBreakdown[String(lead.country || 'unknown')] = (countryBreakdown[String(lead.country || 'unknown')] || 0) + 1;
+    const reservoir = await service.entities.LeadReservoirSnapshot.create({
+      snapshot_key: `reservoir:${Date.now()}`, captured_at: now(),
+      discovered: leads.filter((lead: any) => lead.stage === 'lead').length,
+      enriching: leads.filter((lead: any) => lead.stage === 'enriched').length,
+      qualified, high_confidence: highConfidence, outreach_ready: outreachReady,
+      queued: 0, waiting_window: 0, waiting_capacity: Math.max(0, outreachReady - capacity),
+      suppressed, disqualified: deduplicated, stale,
+      safe_daily_send_capacity: capacity, coverage_days: coverage, target_coverage_days: targetDays,
+      coverage_status: coverageStatus, discovery_action: discoveryAction,
+      cost_guard_json: { monthly_budget: monthlyBudget, per_run_limit: perRun, countries_this_run: countriesThisRun, safe_mode: emergency.safe_mode, note: '24/7 scheduling does not imply unrestricted paid API calls; safe mode disables external discovery.' },
+      country_breakdown_json: countryBreakdown, engine_version: VERSION,
+    });
+
+    const intelligence = buildCommercialIntelligence(leads, policy);
+    const commercialSnapshot = await service.entities.CommercialIntelligenceSnapshot.create({
+      snapshot_key: `commercial:${Date.now()}`,
+      generated_at: intelligence.generated_at,
+      engine_version: intelligence.version,
+      policy_key: policy.policy_key,
+      policy_version: String(policy.version || ''),
+      market_sizing_json: intelligence.market_sizing,
+      prioritization_json: intelligence.prioritization,
+      lead_graph_json: intelligence.lead_graph,
+      forecast_json: intelligence.forecast,
+      learning_json: intelligence.learning,
+      data_quality_json: intelligence.data_quality,
+      source_coverage_json: intelligence.source_coverage,
+      unknowns: intelligence.unknowns,
+      reservoir_snapshot_id: reservoir.id,
+    });
+    await service.entities.Event.create({ brand_id: '_platform', event_type: 'commercial.intelligence.snapshot.created', source: 'always_on_lead_discovery', entity_type: 'CommercialIntelligenceSnapshot', entity_id: commercialSnapshot.id, payload_json: { engine_version: COMMERCIAL_INTELLIGENCE_VERSION, reservoir_snapshot_id: reservoir.id, market_methodology: intelligence.market_sizing.methodology }, status: 'pending' }).catch(() => null);
+
+    return Response.json({
+      ok: true, engine_version: VERSION,
+      reservoir_snapshot_id: reservoir.id,
+      commercial_intelligence_snapshot_id: commercialSnapshot.id,
+      coverage_days: coverage, target_coverage_days: targetDays, coverage_status: coverageStatus,
+      outreach_ready: outreachReady, safe_daily_send_capacity: capacity,
+      discovery_action: discoveryAction, discovery_runs: discoveryRuns.length,
+      safe_mode: emergency.safe_mode,
+      deduplicated, suppressed,
+      market_sizing: intelligence.market_sizing,
+      source_coverage: intelligence.source_coverage,
+    });
+  } catch (error) {
+    console.error(error);
+    return Response.json({ ok: false, error: 'always_on_lead_discovery_failed', message: String((error as Error)?.message || error).slice(0, 300) }, { status: 500 });
+  }
+});

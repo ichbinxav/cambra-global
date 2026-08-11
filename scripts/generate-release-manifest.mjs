@@ -70,6 +70,12 @@ if (fs.existsSync('src/docs/FINAL_AUTONOMOUS_REVENUE_ENGINE_SEAL.md')) {
 if (fs.existsSync('base44/functions/maintenanceEngine/function.jsonc') && fs.existsSync('base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc')) {
   addRequirement('RUNTIME ACTIVATION PROOF REQUIRED AFTER DEPLOYMENT: verify fresh MaintenanceRun, LeadReservoirSnapshot and DocumentationHealthAssessment records within their configured cadence before claiming the latest autonomous workers are active in production. Empty runtime ledgers mean code-ready, not runtime-proven.');
 }
+if (fs.existsSync('docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md')) {
+  addRequirement('P6-P8 RUNTIME/COVERAGE PROOF REQUIRED: deploy the autonomous company coordinator and CommercialIntelligenceSnapshot, verify scheduled runtime evidence, and license/implement additional discovery adapters before claiming continuous coverage of the European merchant universe.');
+}
+if (fs.existsSync('base44/shared/documentExtraction.ts')) {
+  addRequirement('DOCUMENT EXTRACTION PRODUCTION EVAL REQUIRED: after DPA/retention approval and dual-model configuration, validate the extractor against a redacted multilingual real-document golden corpus and publish field-level precision/recall, false-accept and review-rate evidence before calling statement extraction production-verified.');
+}
 if (fs.existsSync('src/docs/P15_PROVIDER_REVENUE_SHARE_ARCHITECTURE.md')) {
   addRequirement('P15 PROVIDER MONETIZATION LEGAL/TAX ACTIVATION GATE: provider-side compensation may be negotiated and modeled, but each production agreement must retain provider_compensation_activation_allowed=false until explicit jurisdiction/vertical/provider legal opinion, disclosure policy, competition-law review where applicable, tax treatment and settlement mode are approved and recorded.');
 }

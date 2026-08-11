@@ -6,6 +6,20 @@
 
 ---
 
+## Release v0.86.0 — P6–P8 Autonomous Company Foundation (2026-08-11)
+
+**Repository implementation complete; deployment/runtime proof pending.** The
+release adds observed-only commercial-intelligence snapshots, company-level
+coordination with reversible FounderDecision proposals, and
+`document-extraction-2.0.0`. The extractor performs signature/hash validation,
+independent Claude/OpenAI reads and deterministic cross-checks; Vault documents
+in supported financial/legal categories link to the resulting StatementImport.
+Only an accepted EUR payments statement may project into the active Analyzer,
+and that projection is still parse evidence—not ECL verification, verified
+savings or billing authority. The sanctioned frozen-file migration is recorded
+in `config/freeze-change-log.json`; the ECL stage and L4 authority are unchanged.
+See `docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md` for the exact static/runtime boundary.
+
 ## Release v0.70.0 — Payments V1 Final Technical Seal (2026-08-09)
 
 **Current stage remains `ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS`.** v0.70.0 is a closure/hardening release, not a new ECL/economic stage. It closes the file-upload SSRF trust boundary, hardens direct-write RLS on contractual/economic derived entities, fixes the Stripe disconnect → active-Recover verification path, removes illustrative testimonials from public product surfaces, makes Admin source-read degradation visible, versions/gates the Recover billing digest, and adds fail-closed release requirements for Recover V2 legal approval and Stripe live validation. Full detail: `PAYMENTS_V1_FINAL_TECHNICAL_SEAL.md`.
@@ -245,9 +259,14 @@ change. See the **Product Policy Registry** section below.
   operational inventory, or internal doc until the manual checklist below
   records PASS on every item. The Help Center integrations FAQ and the
   "Can CAMBRA analyze Stripe directly?" FAQ already use the honest wording.
-- **Upload-supported formats:** PDF, CSV, Excel (.xls/.xlsx), PNG, JPG (max 20MB).
-  Statement upload works for any PSP or TPV provider, including those not on the
-  connected list.
+- **Extraction-supported formats (v2):** PDF, CSV, JSON, PNG, JPG/JPEG, WebP
+  and GIF (max 15MB; CSV/JSON max 1MB on the independent text-reader path).
+  XLS/XLSX are rejected until a verified workbook parser exists. Files are
+  signature-checked, hashed and read independently by Claude and OpenAI; a
+  disagreement creates a review record and applies no amount. Invoice, contract,
+  proposal, tax and bank documents are auditable but do not become Analyzer
+  inputs. Only an accepted EUR payments statement may populate the estimated
+  Analyzer input; it still does not create verified savings or authorize billing.
 - **Code-level connectors (not live / not merchant-presented):** Shopify, WooCommerce,
   BigCommerce (commerce platforms whose data could feed the payments analysis),
   Google Drive, Google Sheets, Gmail, Slack. These remain in code (registry /

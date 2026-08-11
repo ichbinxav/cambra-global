@@ -28,6 +28,16 @@ import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import { useTranslation } from '@/lib/i18n.jsx';
 import VaultDocumentDrawer from '@/components/vault/VaultDocumentDrawer';
 import { DOC_CATEGORIES, DOC_STATUSES, categoryLabel, statusLabel } from '@/components/vault/vaultLabels';
+import { toast } from 'sonner';
+
+const EXTRACTABLE_CATEGORIES = new Set([
+  'invoices',
+  'statements',
+  'provider_proposals',
+  'contracts',
+  'tax_docs',
+  'pricing_docs',
+]);
 
 export default function Vault() {
   const { t } = useTranslation();
@@ -79,8 +89,34 @@ export default function Vault() {
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
-      await base44.functions.invoke('createDocument', { file_url, file_name: f.name, file_size: f.size, category: newCat, visibility: 'brand_and_admin' });
+      const createdResponse = await base44.functions.invoke('createDocument', { file_url, file_name: f.name, file_size: f.size, category: newCat, visibility: 'brand_and_admin' });
+      const created = createdResponse?.data?.document || createdResponse?.document;
+
+      if (EXTRACTABLE_CATEGORIES.has(newCat) && created?.owner_type === 'brand') {
+        try {
+          const extractionResponse = await base44.functions.invoke('processUploadedFile', { file_url, file_name: f.name });
+          const extraction = extractionResponse?.data || extractionResponse;
+          if (extraction?.statement_import_id && created?.id) {
+            await base44.functions.invoke('linkDocument', {
+              document_id: created.id,
+              target_type: 'statement_import',
+              target_id: extraction.statement_import_id,
+              is_primary: true,
+            }).catch(() => null);
+          }
+          if (extraction?.status === 'success') toast.success(t('vlt_upload_extracted'));
+          else toast.warning(t('vlt_upload_review'));
+        } catch {
+          // The Vault write is already durable. Extraction failure must never
+          // delete or hide the merchant's original document.
+          toast.warning(t('vlt_upload_review'));
+        }
+      } else {
+        toast.success(t('vlt_upload_saved'));
+      }
       await load();
+    } catch {
+      toast.error(t('vlt_upload_failed'));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
