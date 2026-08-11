@@ -2,6 +2,9 @@
   "name": "ComplianceIssue",
   "type": "object",
   "properties": {
+    "issue_key": { "type": "string" },
+    "type": { "type": "string" },
+    "status": { "type": "string", "enum": ["open", "reviewing", "resolved", "accepted"] },
     "review_id": {
       "type": "string",
       "description": "The ComplianceReview this issue belongs to"
@@ -26,6 +29,10 @@
     "description": {
       "type": "string"
     },
+    "source_entity_type": { "type": "string" },
+    "source_entity_id": { "type": "string" },
+    "details_json": { "type": "object" },
+    "created_at": { "type": "string", "format": "date-time" },
     "blocking": {
       "type": "boolean",
       "default": true

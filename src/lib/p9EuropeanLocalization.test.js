@@ -52,7 +52,7 @@ describe('P9 European localization and productization', () => {
 
   it('integrates localization status into the existing Europe admin source of truth', () => {
     const source = read('base44/functions/getEuropeMarketsCommandCenter/entry.ts');
-    expect(source).toContain('localizationReadiness(m.iso2)');
+    expect(source).toContain('localizationReadiness(market.iso2)');
     expect(source).toContain('fallback-only markets are not represented as native-localized');
   });
 
