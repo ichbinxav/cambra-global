@@ -7,6 +7,23 @@ empezando por A2.
 
 ---
 
+## AI_CLIENT_ROUTER_MIGRATION — Consolidate inline Anthropic clients
+
+**Estado:** activa (separada deliberadamente del cierre P11)
+**Detectado:** 2026-08-11 durante integración v0.90.1
+
+El árbol conserva varios clientes Anthropic inline históricos, incluido el
+flujo protegido de `processUploadedFile`. P11 no cambia esos modelos ni rompe
+freeze/durability únicamente para uniformar transporte. La migración correcta
+requiere inventario, compatibilidad de prompts/esquemas, fallback, telemetría,
+evaluación del corpus real y despliegue gradual hacia
+`commercialModelRouter`/un router canónico de IA.
+
+No es autoridad para debilitar la extracción dual, cambiar el modelo de
+producción sin evidencia o declarar que los clientes ya están unificados.
+
+---
+
 ## DEUDA A2 — Auto-materialize accumulation
 
 **Estado:** RESUELTA 2026-07-09 (patch dedup upsert + validación e2e en producción)

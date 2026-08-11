@@ -1,6 +1,8 @@
 // P9 admin operation: advance/block/retry a migration task with sequential and
 // go-live/verification invariants. No merchant can mutate orchestration state.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { sha256Canonical } from '../../shared/legalExecution.ts';
+import { enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
 
 const VALID = new Set(['pending','in_progress','blocked','done']);
 const PLAN_VERSION = 'payments-recover-p9-v1';
@@ -73,6 +75,18 @@ export default async function (req: Request): Promise<Response> {
         );
         if (!verified) return Response.json({ error: 'verified_real_savings_report_required' }, { status: 409 });
       }
+    }
+
+    if(nextStatus==='done'&&task.step_name==='go_live'){
+      const materialPayloadHash=await sha256Canonical({task_id:task.id,from:task.status,to:nextStatus,activation_id:activation.id});
+      try{
+        await enforceLegalExecution(svc,{
+          requested_action:'AUTHORIZE_MIGRATION',merchant_id:activation.brand_id,
+          provider_id:activation.provider_id||null,case_id:activation.id,deal_activation_id:activation.id,
+          approval_id:body?.approval_id||null,material_payload_hash:materialPayloadHash,
+          actor:{id:String(me.email||'admin'),type:'HUMAN_ADMIN',tool:'updatePaymentsMigrationTask',allowed_actions:['AUTHORIZE_MIGRATION']},
+        });
+      }catch(error){const response=legalBlockResponse(error);if(response)return response;throw error;}
     }
 
     const now = new Date().toISOString();

@@ -1,0 +1,6 @@
+{
+  "name":"MandateAuthorityGrant","type":"object","description":"P11 least-authority grant. Scope may be narrowed to an exact provider and case.",
+  "properties":{"grant_key":{"type":"string"},"mandate_id":{"type":"string"},"merchant_id":{"type":"string"},"scope":{"type":"string"},"provider_id":{"type":"string"},"case_id":{"type":"string"},"evidence_refs":{"type":"array","items":{"type":"string"}},"effective_from":{"type":"string","format":"date-time"},"effective_to":{"type":"string","format":"date-time"},"active":{"type":"boolean"},"created_by":{"type":"string"}},
+  "required":["grant_key","mandate_id","merchant_id","scope","effective_from","active","created_by"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

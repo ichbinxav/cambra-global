@@ -1,11 +1,12 @@
 // CAMBRA commercial autonomy boundary — deterministic authority, timing and quality gates.
-// v1.1.0 (2026-08-09)
+// v1.2.0 (2026-08-11)
 export const COMMUNICATION_STYLE_POLICY_VERSION = 'cambra-comms-1.1.0';
 export const OFFER_EXTRACTION_VERSION = 'provider-offer-1.0.0';
 export const DEFAULT_COMMERCIAL_TIMEZONE = 'Europe/Paris';
 export const MIN_INBOUND_REPLY_DELAY_MINUTES = 25;
 export const DEFAULT_BUSINESS_HOURS_START = 8;
 export const DEFAULT_BUSINESS_HOURS_END = 19;
+export const MAX_CENTRAL_DAILY_SENDS = 550;
 
 export const CAMBRA_COMMUNICATION_STYLE_POLICY = Object.freeze({
   version: COMMUNICATION_STYLE_POLICY_VERSION,
@@ -21,10 +22,53 @@ export const L4_CLASSIFICATIONS = new Set([
 ]);
 
 export const SAFE_ROUTINE_CLASSIFICATIONS = new Set([
+  // First-touch classifications are explicit facts about the outbound action.
+  // They must never be disguised as an inbound state such as interested or ooo.
+  'initial_outreach', 'partner_outreach',
   'interested', 'question', 'objection', 'wrong_person', 'referral', 'meeting', 'ooo', 'follow_up',
   'acknowledgement', 'information_request', 'document_request', 'clarification',
   'technical_question', 'implementation_question', 'pricing_request'
 ]);
+
+export type AutomaticSendGovernorInput = {
+  automatic: boolean;
+  sendingProfile: any;
+  profileSentToday: number;
+  policy: any;
+  policySentToday: number;
+};
+
+/** Pure fail-closed decision used only by the central commercial sender. */
+export function automaticSendGovernorDecision(input: AutomaticSendGovernorInput) {
+  if (!input.automatic) return { allowed:true, reason:'admin_manual_override' };
+  const profile = input.sendingProfile;
+  if (!profile) return { allowed:false, reason:'sending_profile_required' };
+  if (!['warming','active'].includes(String(profile.status || ''))) return { allowed:false, reason:'sending_profile_paused' };
+  const profileLimit = Number(profile.current_daily_cap);
+  if (!Number.isFinite(profileLimit) || profileLimit <= 0 || profileLimit > MAX_CENTRAL_DAILY_SENDS) return { allowed:false, reason:'sending_profile_daily_cap_invalid' };
+  if (Math.max(0,Number(input.profileSentToday || 0)) >= Math.floor(profileLimit)) {
+    return { allowed:false, reason:'sending_profile_daily_cap_reached', limit:Math.floor(profileLimit) };
+  }
+  const policyLimit = Number(input.policy?.daily_send_limit);
+  if (!Number.isFinite(policyLimit) || policyLimit <= 0 || policyLimit > MAX_CENTRAL_DAILY_SENDS) return { allowed:false, reason:'policy_daily_send_limit_invalid' };
+  if (Math.max(0,Number(input.policySentToday || 0)) >= Math.floor(policyLimit)) {
+    return { allowed:false, reason:'policy_daily_send_limit_reached', limit:Math.floor(policyLimit) };
+  }
+  return {
+    allowed:true,
+    reason:'within_central_daily_limits',
+    profile_remaining:Math.max(0,Math.floor(profileLimit)-Math.max(0,Number(input.profileSentToday || 0))),
+    policy_remaining:Math.max(0,Math.floor(policyLimit)-Math.max(0,Number(input.policySentToday || 0))),
+  };
+}
+
+/** Default 25; only a real admin may request a different value, capped at 50. */
+export function followUpRunBudget(isAdmin: boolean, requested: unknown) {
+  if (!isAdmin || requested === undefined || requested === null || requested === '') return 25;
+  const value = Number(requested);
+  if (!Number.isFinite(value)) return 25;
+  return Math.max(1,Math.min(50,Math.floor(value)));
+}
 
 export function normalizeEmail(value: unknown) { return String(value || '').trim().toLowerCase(); }
 

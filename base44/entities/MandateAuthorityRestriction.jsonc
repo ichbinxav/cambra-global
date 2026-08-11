@@ -1,0 +1,6 @@
+{
+  "name":"MandateAuthorityRestriction","type":"object","description":"P11 explicit authority restriction. Active restrictions dominate otherwise valid grants.",
+  "properties":{"restriction_key":{"type":"string"},"mandate_id":{"type":"string"},"merchant_id":{"type":"string"},"scope":{"type":"string"},"reason":{"type":"string"},"effective_from":{"type":"string","format":"date-time"},"effective_to":{"type":"string","format":"date-time"},"active":{"type":"boolean"},"created_by":{"type":"string"}},
+  "required":["restriction_key","mandate_id","merchant_id","scope","reason","effective_from","active","created_by"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

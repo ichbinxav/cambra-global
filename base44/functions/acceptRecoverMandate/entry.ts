@@ -30,6 +30,7 @@ import { deliveryIdempotencyKey, logContractEvent } from '../../shared/recoverCo
 import { fireAndForget } from '../../shared/invokeInternal.ts';
 import { economicGateDeniedResponse, evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
+import { enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
 import { createRecoverEvidenceAttestation, ensureRecoverSavingsEvidence, projectRecoverEvidenceBinding } from '../../shared/eclRecoverEvidence.ts';
 import { evidenceAttestationTextFor, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import {
@@ -95,6 +96,14 @@ export default async function (req: Request): Promise<Response> {
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, ownerEmail } = owned;
     if(owned.brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand:owned.brand,brand_id:owned.brand.id,capability:'CONTRACT',actor_type:'recover_mandate_accept'})}catch(e:any){return Response.json({error:'market_capability_denied:CONTRACT',decision:e?.decision||null},{status:409})}}
+    try{
+      await enforceLegalExecution(svc,{
+        requested_action:'ACCEPT_RECOVER_MANDATE',merchant_id:activation.brand_id,
+        jurisdiction:owned.brand?.billing_country||owned.brand?.country,
+        case_id:activation.id,deal_activation_id:activation.id,
+        actor:{id:email,type:'HUMAN_MERCHANT',tool:'acceptRecoverMandate',allowed_actions:['ACCEPT_RECOVER_MANDATE']},
+      });
+    }catch(error){const response=legalBlockResponse(error);if(response)return response;throw error;}
 
     // 1 — terms must be identical to what was displayed.
     const month = currentMonth();
@@ -195,6 +204,7 @@ export default async function (req: Request): Promise<Response> {
       signed_by_name: String(signed_by_name).trim(),
       signed_by_email: email,
       signed_by_role: signed_by_role || '',
+      signer_capacity_status: signed_by_role ? 'declared' : 'unverified',
       signed_at: signedAt,
       legal_entity_name: owned.brand?.name || mandate.legal_entity_name || '',
       authenticated_at: evidence.authenticated_at,

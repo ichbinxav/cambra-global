@@ -31,6 +31,7 @@ import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import { appendPaymentEventOnce, claimRecoverInvoiceDraft, recoverExecutionKey } from '../../shared/economicExecution.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
+import { evaluateLegalExecution } from '../../shared/legalExecutionRuntime.ts';
 
 const BATCH = 5;
 
@@ -95,6 +96,7 @@ export default async function (req: Request): Promise<Response> {
 
     for (const report of candidates) {
       const outcome: any = { report_id: report.id, month: report.month };
+      let legalDecision:any=null;
       results.push(outcome);
       try {
         // ── PHASE 1 — load context (reads only) ─────────────────────────
@@ -102,6 +104,15 @@ export default async function (req: Request): Promise<Response> {
         const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
         if(brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand,brand_id:brand.id,capability:'BILL',actor_type:'recover_billing'})}catch(e:any){outcome.ok=false;outcome.error='market_capability_denied:BILL';outcome.decision=e?.decision||null;continue}}
         const mandate = activation ? await resolveRecoverEconomicMandate(svc, activation) : null;
+        const legalPayloadHash=report.calculation_hash||await hashCalculation({report_id:report.id,deal_activation_id:report.deal_activation_id,month:report.month,brand_id:report.brand_id||activation?.brand_id||'',savings:report.savings,currency:report.currency||'EUR'});
+        legalDecision=await evaluateLegalExecution(svc,{
+          requested_action:'AUTHORIZE_CAMBRA_BILLING',merchant_id:activation?.brand_id,
+          jurisdiction:brand?.billing_country||brand?.country,provider_id:activation?.provider_id||null,
+          case_id:report.id,deal_activation_id:activation?.id,approval_id:report.legal_approval_id||body?.approval_id||null,
+          material_payload_hash:legalPayloadHash,
+          actor:{id:gate.isInternal?'recover_billing':String(gate.user?.email||'admin'),type:gate.isInternal?'AUTOMATION':'HUMAN_ADMIN',tool:'createEligibleRecoverInvoices',allowed_actions:['AUTHORIZE_CAMBRA_BILLING']},
+        });
+        if(!legalDecision.allowed){outcome.ok=false;outcome.error='legal_execution_not_authorized';outcome.decision=legalDecision.decision;outcome.reason_codes=legalDecision.reason_codes;outcome.authority_snapshot_id=legalDecision.authority_snapshot_id;continue;}
         // P5: exact report baseline, authoritative read. A persistence outage or
         // missing row must never become baselineLocked=false by a swallowed read.
         const baseline = report.baseline_id
@@ -369,6 +380,7 @@ export default async function (req: Request): Promise<Response> {
             verification_method: eclInvoiceGateFinal.verificationMethod,
             baseline_id: eclInvoiceGateFinal.baselineId,
           },
+          legal_execution: { decision: legalDecision.decision, policy_version: legalDecision.policy_version, regulatory_policy_version: legalDecision.regulatory_policy_version, authority_snapshot_id: legalDecision.authority_snapshot_id, authority_snapshot_hash: legalDecision.authority_snapshot_hash },
           idempotency: prep.idempotencyIdentity,
           tax: { treatment: tax.treatment, rate_bps: tax.tax_rate_bps, mentions: tax.mentions, vies_status: brand.vies_status || 'not_checked', vies_checked_at: brand.vies_checked_at || null },
           supplier: { legal_name: identity.identity.legal_name, vat_id: identity.identity.vat_id, address: identity.identity.registered_address },

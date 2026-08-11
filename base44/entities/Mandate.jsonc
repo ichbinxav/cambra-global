@@ -77,6 +77,23 @@
     "signed_by_role": {
       "type": "string"
     },
+    "signer_capacity_status": {
+      "type": "string",
+      "enum": ["unverified", "declared", "verified"],
+      "default": "unverified",
+      "description": "P11 server-controlled signatory-capacity state. Electronic acceptance records the declared role but does not become verified capacity until qualified evidence is recorded through manageLegalExecution."
+    },
+    "signer_capacity_verified_by": {
+      "type": "string"
+    },
+    "signer_capacity_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "signer_capacity_evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "signed_at": {
       "type": "string",
       "format": "date-time",

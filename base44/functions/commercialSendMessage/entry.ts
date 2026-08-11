@@ -1,8 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { automaticSendGovernorDecision, communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
+import { authorityForAgent } from '../../shared/agentAuthority.ts';
+import { commercialLegalAction, enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
+import { canonicalMarket } from '../../shared/marketContext.ts';
 
 
 const CAMBRA_LOGO='https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png';
@@ -36,7 +39,13 @@ Deno.serve(async (req) => {
 
     const thread = await svc.entities.CommunicationThread.get(threadId).catch(()=>null);
     if (!thread || ['closed','suppressed'].includes(thread.status)) return Response.json({ ok:false, error:'thread_unavailable' }, { status:409 });
-    if(thread.market_policy_rollout==='production'){const cap=['provider_negotiation','aggregate_procurement'].includes(String(thread.engine||''))?'NEGOTIATE':'OUTREACH';let brandId='';if(thread.recover_id){const a=await svc.entities.DealActivation.get(String(thread.recover_id)).catch(()=>null);brandId=String(a?.brand_id||'')}try{await assertMarketCapabilityAllowed(svc,{brand_id:brandId||undefined,jurisdiction:thread.market_jurisdiction||undefined,capability:cap,enforce:true,actor_type:String(body?.agent_name||thread.engine||'commercial_send'),ai_requested_bypass:body?.ai_requested_bypass===true})}catch(e:any){return Response.json({ok:false,error:`market_capability_denied:${cap}`,decision:e?.decision||null},{status:409})}}
+    let brandId='';
+    if(thread.recover_id){const activation=await svc.entities.DealActivation.get(String(thread.recover_id)).catch(()=>null);brandId=String(activation?.brand_id||'')}
+    let jurisdiction=canonicalMarket(thread.market_jurisdiction)?.iso2||'';
+    if(!jurisdiction&&thread.lead_id){const lead=await svc.entities.OutboundLead.get(String(thread.lead_id)).catch(()=>null);jurisdiction=canonicalMarket(lead?.country)?.iso2||'';}
+    if(!jurisdiction&&thread.related_entity_type==='PartnerProspect'){const partner=await svc.entities.PartnerProspect.get(String(thread.related_entity_id||'')).catch(()=>null);jurisdiction=canonicalMarket(partner?.country)?.iso2||'';}
+    if(!jurisdiction&&brandId){const brand=await svc.entities.Brand.get(brandId).catch(()=>null);jurisdiction=canonicalMarket(brand?.billing_country||brand?.country)?.iso2||'';}
+    if(thread.market_policy_rollout==='production'){const cap=['provider_negotiation','aggregate_procurement'].includes(String(thread.engine||''))?'NEGOTIATE':'OUTREACH';try{await assertMarketCapabilityAllowed(svc,{brand_id:brandId||undefined,jurisdiction:jurisdiction||undefined,capability:cap,enforce:true,actor_type:String(body?.agent_name||thread.engine||'commercial_send'),ai_requested_bypass:body?.ai_requested_bypass===true})}catch(e:any){return Response.json({ok:false,error:`market_capability_denied:${cap}`,decision:e?.decision||null},{status:409})}}
     const to = normalizeEmail(body?.to || thread.counterparty_email);
     if (!to) return Response.json({ ok:false, error:'recipient_required' }, { status:400 });
 
@@ -46,11 +55,29 @@ Deno.serve(async (req) => {
       return Response.json({ ok:false, error:'contact_suppressed' }, { status:409 });
     }
 
+    const manualOverrideRequested=body?.manual_override === true;
+    if(manualOverrideRequested&&!gate.isAdmin)return Response.json({ok:false,error:'admin_manual_override_required'},{status:403});
+    const manualOverride=gate.isAdmin && body?.manual_override === true;
+    const automatic=!manualOverride;
+    const agentName=String(body?.agent_name||thread.engine||'commercial_orchestrator').toLowerCase();
+    const authority=authorityForAgent(agentName);
+    const legalAction=commercialLegalAction(thread,action);
+    if(automatic&&!authority.CAN_SEND)return Response.json({ok:false,error:'agent_send_authority_required',agent_name:agentName},{status:403});
+    if(automatic&&legalAction==='NEGOTIATE_PRICING'&&!authority.CAN_NEGOTIATE)return Response.json({ok:false,error:'agent_negotiate_authority_required',agent_name:agentName},{status:403});
+    let legalDecision:any=null;
+    try{
+      legalDecision=await enforceLegalExecution(svc,{
+        requested_action:legalAction,merchant_id:brandId,jurisdiction,
+        provider_id:thread.provider_id||null,case_id:thread.related_entity_id||thread.recover_id||null,
+        deal_activation_id:thread.recover_id||null,approval_id:body?.approval_id||null,
+        actor:{id:manualOverride?String(gate.user?.email||'admin'):agentName,type:manualOverride?'HUMAN_ADMIN':'AUTOMATION',tool:'commercialSendMessage',allowed_actions:[legalAction]},
+        emergency_state:{legal_execution_paused:emergency.safe_mode===true},
+      });
+    }catch(error){const response=legalBlockResponse(error);if(response)return response;throw error;}
+
     const policies = await svc.entities.CommercialPolicy.filter({ policy_key:thread.policy_key, status:'active' }, '-created_date', 5).catch(()=>[]);
     const policy = policies.find((p:any)=>p.version === thread.policy_version) || policies[0] || null;
-    const manualOverride = gate.isAdmin && body?.manual_override === true;
     const timezone = commercialTimezone(thread, policy);
-    const automatic = !manualOverride;
     if (automatic) {
       if (!policyIsActive(policy)) return Response.json({ ok:false, error:'active_policy_required' }, { status:409 });
       const authz = routineActionAllowed(policy, action, classification);
@@ -83,13 +110,28 @@ Deno.serve(async (req) => {
       const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);const control=controls[0]||null;
       if(!control?.acquisition_enabled)return Response.json({ok:false,error:'outbound_master_paused'},{status:409});
       if(!sendingProfile)return Response.json({ok:false,error:'sending_profile_required'},{status:409});
-      if(sendingProfile.status==='paused')return Response.json({ok:false,error:'sending_profile_paused'},{status:409});
       if(sendingProfile.provider==='outlook'&&!control.premium_outlook_enabled)return Response.json({ok:false,error:'premium_outlook_paused'},{status:409});
       if(sendingProfile.provider==='resend'&&!control.volume_resend_enabled)return Response.json({ok:false,error:'volume_resend_paused'},{status:409});
-      const day=new Date();day.setUTCHours(0,0,0,0);const sent=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:day.toISOString()}},'-sent_at',Math.min(Number(sendingProfile.current_daily_cap||1)+5,550)).catch(()=>[]);
-      if(sent.length>=Number(sendingProfile.current_daily_cap||0))return Response.json({ok:false,error:'sending_profile_daily_cap_reached',profile:requestedProfileKey,cap:sendingProfile.current_daily_cap},{status:409});
-    } else if(sendingProfile&&sendingProfile.status==='paused'&&!manualOverride){return Response.json({ok:false,error:'sending_profile_paused'},{status:409});}
-    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null};
+    }
+    let governor:any={allowed:true,reason:'admin_manual_override'};
+    if(automatic){
+      if(!sendingProfile)governor=automaticSendGovernorDecision({automatic:true,sendingProfile:null,profileSentToday:0,policy,policySentToday:0});
+      else{
+        const day=new Date();day.setUTCHours(0,0,0,0);const since=day.toISOString();
+        const [profileSent,policySent]=await Promise.all([
+          svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:since}},'-sent_at',550).catch(()=>[]),
+          svc.entities.CommunicationMessage.filter({direction:'outbound',policy_key:thread.policy_key,sent_at:{$gte:since}},'-sent_at',550).catch(()=>[]),
+        ]);
+        governor=automaticSendGovernorDecision({automatic:true,sendingProfile,profileSentToday:profileSent.length,policy,policySentToday:policySent.length});
+      }
+      if(!governor.allowed){const governorError=String(governor.reason||'sending_profile_daily_cap_reached');return Response.json({ok:false,error:governorError,profile:sendingProfile?.profile_key||null,limit:governor.limit||null},{status:409});}
+    }
+    let manualOverrideAudit:any=null;
+    if(manualOverride){
+      manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Admin override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.0.0'}).catch(()=>null);
+      if(!manualOverrideAudit)return Response.json({ok:false,error:'manual_override_audit_required'},{status:409});
+    }
+    let provider=sendingProfile?.provider==='resend'?'resend':'outlook'; let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_audit_id:manualOverrideAudit?.id||null};
     const outlook = await svc.connectors.getConnection('outlook').catch(()=>({accessToken:null}));
     if (provider==='outlook' && outlook?.accessToken) {
       const meRes=await fetch('https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,displayName',{headers:{Authorization:`Bearer ${outlook.accessToken}`}});const me=await meRes.json().catch(()=>({}));if(!meRes.ok)throw new Error(`outlook_me_failed:${meRes.status}`);fromAddress=normalizeEmail(me.mail||me.userPrincipalName);

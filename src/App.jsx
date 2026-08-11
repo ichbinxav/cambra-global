@@ -10,18 +10,18 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 
 import LoadingScreen from '@/components/shared/LoadingScreen';
-import Landing from '@/pages/Landing';
-import Onboarding from '@/pages/Onboarding.jsx';
+const Landing = lazy(() => import('@/pages/Landing'));
+const Onboarding = lazy(() => import('@/pages/Onboarding.jsx'));
 // Chunk 6 CUTOVER — /Analyzer and /Results now serve the Payments-only
 // components. The legacy multi-vertical Analyzer / Results / AnalyzerTeaser
 // were deleted with the entire wizard + score engine consumer surface.
-import PaymentsAnalyzer from '@/pages/PaymentsAnalyzer';
+const PaymentsAnalyzer = lazy(() => import('@/pages/PaymentsAnalyzer'));
 // FIX 13b — /Results made lazy: it pulls 20+ paymentsResults sub-components
 // into a dedicated chunk instead of the initial bundle. The Suspense +
 // LazyFallback + ErrorBoundary pattern is identical to Dashboard/Reports.
 const PaymentsResults = lazy(() => import('@/pages/PaymentsResults'));
-import LoginGate from '@/pages/LoginGate';
-import HealthCheck from '@/pages/HealthCheck.jsx';
+const LoginGate = lazy(() => import('@/pages/LoginGate'));
+const HealthCheck = lazy(() => import('@/pages/HealthCheck.jsx'));
 import CookieConsent from '@/components/shared/CookieConsent';
 // FIX 13 — Lazy load heavy pages (Dashboard + ConnectTools + heavy admin pages).
 // FIX 13b — /Results now also lazy (PaymentsResults). Its 20+ sub-components
@@ -32,17 +32,17 @@ const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
 const Reports = lazy(() => import('@/pages/Reports'));
 // FASE 1.2 — /Network, /Insights, /InsightDetail deprecated (multi-vertical /
 // pre-pivot collective model). Components kept dormant in src/pages/.
-import Account from '@/pages/Account';
+const Account = lazy(() => import('@/pages/Account'));
 // FASE 1.2 — /UnlockSavings & /RecoveryTracker deprecated with redirect to home.
 // Components kept in src/pages/ (dormant) — imports removed so the pages no
 // longer ship in the bundle. Restore by re-importing when negotiation ships.
-import Privacy from '@/pages/Privacy';
-import Terms from '@/pages/Terms';
-import Cookies from '@/pages/Cookies';
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Cookies = lazy(() => import('@/pages/Cookies'));
 // FASE 1.2 — /StripeAnalyzer deprecated (superseded by /Analyzer + /ConnectTools + /Results).
-import DevExport from '@/pages/DevExport';
-import DashboardLayout from '@/components/dashboard/DashboardLayout';
-import AdminLayout from '@/pages/admin/AdminLayout';
+const DevExport = lazy(() => import('@/pages/DevExport'));
+const DashboardLayout = lazy(() => import('@/components/dashboard/DashboardLayout'));
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
 const AdminOverview   = lazy(() => import('@/pages/admin/AdminOverview'));
 const AdminRevenue    = lazy(() => import('@/pages/admin/AdminRevenue'));
 const AdminBenchmarks = lazy(() => import('@/pages/admin/AdminBenchmarks'));
@@ -85,29 +85,29 @@ const AdminMaintenance = lazy(() => import('@/pages/admin/AdminMaintenance'));
 const AdminDocumentation = lazy(() => import('@/pages/admin/AdminDocumentation'));
 const ReviewQueue = lazy(() => import('@/pages/admin/ReviewQueue'));
 const EclOperations = lazy(() => import('@/pages/admin/EclOperations')); 
-import AuthRedirect from '@/pages/AuthRedirect';
-import Pricing from '@/pages/Pricing.jsx';
+const AuthRedirect = lazy(() => import('@/pages/AuthRedirect'));
+const Pricing = lazy(() => import('@/pages/Pricing.jsx'));
 // FASE 1.2 — /Developers, /Developers/MCP, /Snapshot deprecated.
 // Frontend pages redirect to home; backend mcpServer function untouched.
 // /ForProviders REACTIVADO 2026-07-12 (post-M4) — página viva payments-only
 // (dos niveles Listed/Partner). Ver src/pages/ForProviders.jsx.
-import ForProviders from '@/pages/ForProviders';
-import Partners from '@/pages/Partners';
-import HowItWorks from '@/pages/HowItWorks';
-import Security from '@/pages/Security';
-import Contact from '@/pages/Contact';
-import Help from '@/pages/Help';
-import HelpCategory from '@/pages/HelpCategory';
+const ForProviders = lazy(() => import('@/pages/ForProviders'));
+const Partners = lazy(() => import('@/pages/Partners'));
+const HowItWorks = lazy(() => import('@/pages/HowItWorks'));
+const Security = lazy(() => import('@/pages/Security'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Help = lazy(() => import('@/pages/Help'));
+const HelpCategory = lazy(() => import('@/pages/HelpCategory'));
 import HelpSlugRedirect from '@/components/shared/HelpSlugRedirect';
 const AdminInvoices = lazy(() => import('@/pages/admin/AdminInvoices'));
 const AdminRecoverBilling = lazy(() => import('@/pages/admin/AdminRecoverBilling'));
 const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
-import Invoices from '@/pages/Invoices';
-import Vault from '@/pages/Vault';
-import Referrals from '@/pages/Referrals';
-import ConnectIntegrations from '@/pages/ConnectIntegrations';
-import IntegrationsCallback from '@/pages/IntegrationsCallback';
-import BrandProfile from '@/pages/BrandProfile';
+const Invoices = lazy(() => import('@/pages/Invoices'));
+const Vault = lazy(() => import('@/pages/Vault'));
+const Referrals = lazy(() => import('@/pages/Referrals'));
+const ConnectIntegrations = lazy(() => import('@/pages/ConnectIntegrations'));
+const IntegrationsCallback = lazy(() => import('@/pages/IntegrationsCallback'));
+const BrandProfile = lazy(() => import('@/pages/BrandProfile'));
 import BrandGlyph from '@/components/shared/BrandGlyph';
 import CopilotPanel from '@/components/copilot/CopilotPanel.jsx';
 import ScrollToTop from '@/components/shared/ScrollToTop.jsx';

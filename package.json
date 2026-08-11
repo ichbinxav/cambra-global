@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.90.0",
-  "releaseName": "CAMBRA v0.90.0 — P9–P12 European Operating Architecture",
+  "version": "0.90.1",
+  "releaseName": "CAMBRA v0.90.1 — P1–P13 Europe V1 Autonomy Integration",
   "type": "module",
   "engines": {
     "node": ">=20 <23",

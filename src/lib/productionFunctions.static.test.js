@@ -37,8 +37,10 @@ const MANIFEST = [
   // P1 Europe Country Intelligence Foundation + P3 European Rate Intelligence (2026-08-10/11).
   "seedEuropeMarketFoundation", "seedProviderIntelligenceFoundation", "resolveMerchantMarketContext", "backfillMerchantMarketContexts", "checkMarketCapability", "marketPolicyAdmin", "getEuropeMarketsCommandCenter",
   "rateIntelligenceQuery", "rateIntelligenceWatchWorker", "seedP3RateIntelligence", "projectVerifiedPaymentsToP4", "requestP4Estimate",
-  // P10–P12 regulatory, production-readiness and European growth control plane (2026-08-11).
-  "checkRegulatoryActivity", "regulatoryMonitoringWorker", "seedP10RegulatoryControl", "productionReadinessWorker", "europeanGrowthIntelligenceWorker", "getEuropeanGrowthCommandCenter",
+  // P10–P13 regulatory, legal-execution, production-readiness and European growth control plane (2026-08-11).
+  "checkRegulatoryActivity", "regulatoryMonitoringWorker", "seedP10RegulatoryControl",
+  "canExecuteLegalAction", "manageLegalExecution", "seedP11LegalExecution",
+  "productionReadinessWorker", "europeanGrowthIntelligenceWorker", "getEuropeanGrowthCommandCenter",
   // FINAL AUTONOMOUS PLATFORM SEAL (2026-08-09) — policy-gated commercial loops.
   "acquisitionAttributionWorker", "acquisitionLearningWorker", "autonomousCommercialWorker", "autonomousOperationsSupervisor", "autonomousPartnerWorker", "commercialFollowUpWorker", "commercialPolicyAdmin", "commercialReplyAgent", "commercialSendMessage",
   "getRoutingIntelligenceCommandCenter", "recordRoutingObservation", "routingHistoricalBackfill", "routingPerformanceWorker", "routingReadinessWorker", "routingSimulator", "shadowRoutingEngine",

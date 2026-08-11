@@ -7,6 +7,7 @@ import { requireUserOrInternal } from '../../shared/internalGate.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
+import { enforceLegalExecution, legalBlockResponse } from '../../shared/legalExecutionRuntime.ts';
 
 const PLAN_VERSION = 'payments-recover-p9-v1';
 const PLAN = [
@@ -54,6 +55,18 @@ export default async function (req: Request): Promise<Response> {
 
     const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch(() => []);
     if (!mandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
+    try{
+      await enforceLegalExecution(svc,{
+        requested_action:'COORDINATE_MIGRATION',merchant_id:activation.brand_id,
+        jurisdiction:marketBrand?.billing_country||marketBrand?.country,
+        provider_id:activation.provider_id||null,case_id:activation.id,deal_activation_id:activation.id,
+        actor:{
+          id:gate.isInternal?'recover_migration':String(me?.email||'merchant'),
+          type:gate.isInternal?'AUTOMATION':(me?.role==='admin'?'HUMAN_ADMIN':'HUMAN_MERCHANT'),
+          tool:'startPaymentsMigration',allowed_actions:['COORDINATE_MIGRATION'],
+        },
+      });
+    }catch(error){const response=legalBlockResponse(error);if(response)return response;throw error;}
 
     // Claim authorized → migrating before creating operational work. This is a
     // compare-and-set so a concurrent revocation/pause cannot be overwritten by

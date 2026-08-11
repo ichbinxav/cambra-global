@@ -1,0 +1,6 @@
+{
+  "name":"LegalKillSwitch","type":"object","description":"P11 non-bypassable legal execution stop scoped globally or to jurisdiction/action/merchant/provider.",
+  "properties":{"switch_key":{"type":"string"},"scope_type":{"type":"string","enum":["global","jurisdiction","action","jurisdiction_action","merchant","provider"]},"jurisdiction":{"type":"string"},"requested_action":{"type":"string"},"merchant_id":{"type":"string"},"provider_id":{"type":"string"},"reason":{"type":"string"},"active":{"type":"boolean"},"activated_by":{"type":"string"},"activated_at":{"type":"string","format":"date-time"},"deactivated_by":{"type":"string"},"deactivated_at":{"type":"string","format":"date-time"}},
+  "required":["switch_key","scope_type","reason","active","activated_by","activated_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

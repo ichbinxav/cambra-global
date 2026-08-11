@@ -1,0 +1,1 @@
+{"name":"canExecuteLegalAction","description":"Evaluate and audit canonical P10/P11 execution authority. It never accepts caller-supplied policy decisions.","entry":"entry.ts"}

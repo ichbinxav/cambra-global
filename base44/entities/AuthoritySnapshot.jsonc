@@ -1,0 +1,6 @@
+{
+  "name":"AuthoritySnapshot","type":"object","description":"Immutable canonical P10/P11/contract/mandate/approval/actor snapshot used for an execution decision.",
+  "properties":{"merchant_id":{"type":"string"},"requested_action":{"type":"string"},"snapshot_json":{"type":"object"},"snapshot_hash":{"type":"string"},"decision":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"immutable":{"type":"boolean"}},
+  "required":["merchant_id","requested_action","snapshot_json","snapshot_hash","decision","created_at","immutable"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

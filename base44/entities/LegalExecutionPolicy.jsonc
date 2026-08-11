@@ -1,0 +1,17 @@
+{
+  "name":"LegalExecutionPolicy","type":"object",
+  "description":"P11 versioned jurisdiction × action execution policy. Missing, stale, uncertain or unreviewed policy is never permission.",
+  "properties":{
+    "policy_key":{"type":"string"},"jurisdiction":{"type":"string"},"requested_action":{"type":"string"},
+    "status":{"type":"string","enum":["ALLOW","ALLOW_WITH_CONDITIONS","BLOCK","LEGAL_REVIEW_REQUIRED"]},
+    "confidence":{"type":"string","enum":["VERIFIED_PRIMARY","VERIFIED_MULTIPLE_PRIMARY","COUNSEL_APPROVED","COUNSEL_REQUIRED","UNKNOWN"]},
+    "review_status":{"type":"string","enum":["DRAFT","RESEARCHED","APPROVED_FOR_POLICY","COUNSEL_APPROVED","REJECTED"]},
+    "version":{"type":"string"},"evidence_refs":{"type":"array","items":{"type":"string"}},
+    "conditions":{"type":"array","items":{"type":"string"}},"merchant_approval_required":{"type":"boolean"},
+    "signature_requirement":{"type":"string"},"signer_capacity_requirement":{"type":"string"},"counsel_required":{"type":"boolean"},
+    "effective_from":{"type":"string","format":"date-time"},"effective_to":{"type":"string","format":"date-time"},
+    "next_review_at":{"type":"string","format":"date-time"},"active":{"type":"boolean"},"approved_by":{"type":"string"},"approved_at":{"type":"string","format":"date-time"}
+  },
+  "required":["policy_key","jurisdiction","requested_action","status","confidence","review_status","version","effective_from","active"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}
