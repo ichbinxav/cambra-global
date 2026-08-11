@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.7.0",
   "systemVersion": "0.95.0",
   "packageVersion": "0.95.0",
-  "generatedAt": "2026-08-11T22:31:00.062Z",
+  "generatedAt": "2026-08-11T23:07:48.135Z",
   "sourcePaths": {
     "base44/entities/AuthoritySnapshot.jsonc": "c9e3c2fd0872c31ffb76b6076ec170e5ec383e858e0b6cef70232ce4841484ed",
     "base44/entities/CommunicationMessage.jsonc": "a26697830ba440609e4a7c856c2833103cae64ec4e58fc4e4dc1998637928f2b",
@@ -171,7 +171,7 @@
     "src/docs/CAMBRA_ULTIMATE_TECHNICAL_CLOSURE_2026-08-11.md": "fb2d4deba445b7b5cfbe474b7e173f5b5793d31b09b348c0ff4b8a2cda8ab377",
     "src/docs/COMMERCIAL_GO_LIVE_CHECKLIST.md": "5e1936371105a8c6645892eb5dc081e0f25add6e48b51b7bf1c6a9a5a06c297f",
     "src/docs/FINAL_PRE_LAUNCH_REMEDIATION.md": "b1f73904f73fa962e0eaf673e9f78b440e0ef1137ff92e51bb6be59e31941f6d",
-    "src/docs/OPERATIONS_STATUS.md": "27fee5e65907125e0ef715f392d777a3e8aaf74d0a6e9491f916e4652da169d6",
+    "src/docs/OPERATIONS_STATUS.md": "e7a993ffd29488444dc6b64527b8683e599eba9f0ebd7c79eb0a3b4397147b99",
     "src/docs/P10_REGULATORY_CONTROL.md": "8e0c93dcecc14e9142c5ae731e0d73a8dee219ca0e81f1bcd3e23ef2dc294b60",
     "src/docs/P11_EUROPEAN_LEGAL_EXECUTION.md": "79dad5cd7589f256fa26ff9e905febc9c74f385598f0e1a30d82b3191583960f",
     "src/docs/P11_PRODUCTION_SECURITY_RELIABILITY.md": "62bcd6848c57191af59e58be485bf937ecd0f8711c79abe18038cfe0dfca5573",

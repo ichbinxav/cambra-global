@@ -40,6 +40,12 @@ describe("sourceTreeHash (sha256-tree-v1)", () => {
     expect(isExcluded("RELEASE.json")).toBe(true);
   });
 
+  it("excludes local Base44 app linkage from canonical source and packaging", () => {
+    expect(EXCLUDED_FILES).toContain("base44/.app.jsonc");
+    expect(isExcluded("base44/.app.jsonc")).toBe(true);
+    expect(isExcluded("base44/config.jsonc")).toBe(false);
+  });
+
   it("excludes the documented dirs/patterns and nothing innocent", () => {
     expect(isExcluded("node_modules/x/index.js")).toBe(true);
     expect(isExcluded(".git/HEAD")).toBe(true);

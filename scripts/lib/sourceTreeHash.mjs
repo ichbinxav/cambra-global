@@ -26,6 +26,10 @@ export const EXCLUDED_DIRS = [
 export const EXCLUDED_FILES = [
   "RELEASE.json",
   ".test-results.json",
+  // Local Base44 CLI linkage. This file is intentionally gitignored and is
+  // recreated per developer machine; including it made a live working tree
+  // hash differ from the git-backed release payload by exactly one file.
+  "base44/.app.jsonc",
   // v62.2.1 — REVIEW SCRATCH, not source. The baseline candidate is written
   // INTO the tree by typecheck-baseline-candidate.mjs; if it counted toward
   // the hash, the very act of generating it changed the tree and the approve

@@ -1,6 +1,6 @@
 {
-  "release": "CAMBRA v0.95.0 — P7/P8 Autonomous Commercial Execution (durability manifest)",
-  "generatedAt": "2026-08-11T22:31:45.311Z",
+  "release": "CAMBRA v0.95.0 — Integrated Europe V1 Release (durability manifest)",
+  "generatedAt": "2026-08-11T23:07:35.798Z",
   "packageVersion": "0.95.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1162,8 +1162,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "5798cd5e617cb3c46fd3277d210f23d1dabee1b20e01a9f187dceee6f93dbe02",
-      "bytes": 7305
+      "sha256": "32cd0d6549db9c608b9cf490976e4427c5cdf73530e8461ef03c3425d5967e06",
+      "bytes": 7296
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -1227,8 +1227,8 @@
     },
     {
       "path": "scripts/lib/sourceTreeHash.mjs",
-      "sha256": "5eeece788ec00bb969231e03fe905bc78a28b1e4146ff52be61ffbd4e0b14009",
-      "bytes": 3674
+      "sha256": "2c7b73f3bb78bc5ece8c25e1abb87baf9f5892312c12a1973a8dd9186cda54c6",
+      "bytes": 3923
     },
     {
       "path": "scripts/lib/tscDiagnostics.mjs",
@@ -1367,8 +1367,8 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "27fee5e65907125e0ef715f392d777a3e8aaf74d0a6e9491f916e4652da169d6",
-      "bytes": 48419
+      "sha256": "e7a993ffd29488444dc6b64527b8683e599eba9f0ebd7c79eb0a3b4397147b99",
+      "bytes": 48410
     },
     {
       "path": "src/docs/P11_EUROPEAN_LEGAL_EXECUTION.md",

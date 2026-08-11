@@ -6,7 +6,7 @@
 
 ---
 
-## Release v0.95.0 — P7/P8 Autonomous Commercial Execution (2026-08-11)
+## Release v0.95.0 — Integrated Europe V1 Release (2026-08-11)
 
 **Repository implementation complete; real Instantly validation and any pilot remain blocked.** P7 now persists an evidence-backed `CommercialStrategy` only for canonical P6 leads that are truly READY_FOR_CONTACT. P8 consumes that artifact through a replaceable outbound-provider contract. Instantly API v2 is transport only: CAMBRA retains scoring, policy, message content, thread memory, reply classification, next-best-action, approval and suppression authority. Provider-native reply AI is a hard conflict, not a second brain.
 
