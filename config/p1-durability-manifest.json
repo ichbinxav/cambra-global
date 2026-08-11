@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.90.0 — P9–P12 European Operating Architecture (durability manifest)",
-  "generatedAt": "2026-08-11T03:11:08.696Z",
+  "generatedAt": "2026-08-11T03:12:24.922Z",
   "packageVersion": "0.90.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -712,8 +712,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "eed21b20dffc108a993d32313c6e95ea7d9a431e347bcb1d9f9c5afb5a5f4548",
-      "bytes": 48641
+      "sha256": "c6f663877821ba5000e4ecb1d5c11e9b39ffb0b3f8cd1329e0df9c44f668a96a",
+      "bytes": 51099
     },
     {
       "path": "src/lib/commercialIntelligenceP6P8.test.js",
@@ -907,8 +907,8 @@
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
-      "sha256": "69cd3c5d571a9b2bafa03e097e3d92642274f855d8d51a71c9782de79ed90be2",
-      "bytes": 10607
+      "sha256": "92ded5933a6fe43cdde14390e1bde8983b07447ad6ac356bc31bd6b502405d2b",
+      "bytes": 10889
     },
     {
       "path": "src/lib/todayAuditHardening.test.js",

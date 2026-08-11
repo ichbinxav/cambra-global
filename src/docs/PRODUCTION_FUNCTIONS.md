@@ -1,6 +1,6 @@
 # PRODUCTION_FUNCTIONS.md — Manifiesto de funciones backend (CONSOLIDATE-1 T1)
 
-**Censo:** 2026-07-24 (actualizado 2026-08-11 con P1 Europe + P2 Provider Intelligence + P3 European Rate Intelligence + ECL P8/P9 + P6–P8 Autonomous Company Seal) · **Total: 279 funciones desplegadas** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
+**Censo:** 2026-07-24 (actualizado 2026-08-11 con P1 Europe + P2 Provider Intelligence + P3 European Rate Intelligence + ECL P8/P9 + P6–P12 European Operating Architecture) · **Total: 285 funciones desplegadas** · Generado por análisis estático de `base44/functions/*/entry.ts` + índice de callers en `src/` + automatizaciones registradas en plataforma. **Este documento es SOLO el mapa** — no se borró ni archivó nada. Es la base del segundo barrido PURGE-2 (15-ago).
 
 **Tripwire:** `src/lib/productionFunctions.static.test.js` falla si aparece una función no listada aquí (o si se borra una listada sin actualizar el manifiesto).
 
@@ -21,6 +21,7 @@
 | D (dev/test/seed) | 11 | _tenantGuard, createSelfTestBrand, phase2CleanupLegacyFields, runApiSelfTests, runFlowSelfTests, seedComplianceRules, seedDemoData, seedIntegrationCatalog, seedPaymentsRateTable, sendTestWebhook, verifyRegistrySync |
 | E (QUARANTINE 15-ago) | 16 | ver tabla — probe de invocación activo (OperationalLog `quarantine_probe`) |
 | F (vertical futura) | 1 | inferVendorsFromBankData (banking) |
+| P10–P12 additions | 6 | 2 admin/internal control planes, 3 scheduled evidence/readiness workers and 1 conservative seed |
 
 † engineeringReportAgent y sendMonthlySavingsSummary tienen doble rol (B/A + C); se cuentan en C por su trigger primario.
 
@@ -314,6 +315,19 @@ P18 adds a release-time documentation drift gate over the implementation paths r
 | getEuropeMarketsCommandCenter | admin | Europe/Markets Admin projection |
 
 P1 production-rollout gates are also consumed at external communication, Recover mandate/contract, provider negotiation, migration and Recover billing boundaries. Default legacy/shadow rollout does not silently change existing merchant execution.
+
+## P10–P12 European regulatory, production and growth control plane
+
+| Function | Class / auth | Core data | Boundary |
+|---|---|---|---|
+| checkRegulatoryActivity | B/internal · admin/internal gate | RegulatoryPolicyVersion, RegulatoryRegistration, RegulatoryPartnerMandate, RegulatoryEvidence, ComplianceDecision | Deterministic P10 decision and audit endpoint. Unknown, stale or insufficient authority fails closed; it cannot grant legal clearance. |
+| regulatoryMonitoringWorker | C/internal · daily | RegulatoryPolicyVersion, RegulatoryEvidence, RegulatoryRegistration → ComplianceIssue | Flags policy/evidence review debt and expiring or missing registration dates. It never promotes a legal conclusion or activates a capability. |
+| seedP10RegulatoryControl | D/seed · admin/internal gate | 33 markets × 17 activities → RegulatoryPolicyVersion, Event | Idempotent conservative seed: every new cell starts `LEGAL_REVIEW_REQUIRED`; zero registration, authorization, passport or partner permission claims are created. |
+| productionReadinessWorker | C/internal · daily | ProductionFinding, ReleaseVerification, DisasterRecoveryExercise, ServiceLevelSnapshot → ProductionReadinessSnapshot | Separates local technical completion from final-SHA remote CI, Base44 runtime, real restore, dependency and document-corpus proof. Missing external evidence keeps P11 blocked/not sealed. |
+| europeanGrowthIntelligenceWorker | C/internal · daily | CountryProfile, MarketIntelligenceProfile, OutboundLead, P9/P10/P11 evidence → MarketGrowthSnapshot, FounderGrowthBrief, Event | Builds an evidence-limited 33-market portfolio in `SHADOW_RECOMMEND_ONLY`. It cannot send, spend, launch, contract or bypass P10/P11/emergency controls. |
+| getEuropeanGrowthCommandCenter | B/admin | MarketGrowthSnapshot, GrowthDecision, GrowthDecisionOutcome, GrowthExperiment, GrowthCostLedger, AcquisitionTouch, FounderGrowthBrief | Admin-only read projection. Unknown CAC/cost/attribution and insufficient samples remain explicit; it exposes no market-activation endpoint. |
+
+These six functions are technically implemented but do not prove legal permission, production deployment, final-SHA remote CI or real commercial performance. Their runtime schedules become production evidence only after Base44 sync/deployment is observed.
 
 ## P3 European Rate Intelligence
 
