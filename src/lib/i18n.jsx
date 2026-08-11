@@ -5,6 +5,7 @@ import { useState, useEffect, createContext, useContext, useCallback, useMemo } 
 import en from "@/lib/locales/en";
 import fr from "@/lib/locales/fr";
 import es from "@/lib/locales/es";
+import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime.ts";
 
 /* ──────────────────────────────────────────────────────────────
    CAMBRA i18n — EN / FR / ES with flat-key dictionaries.
@@ -17,9 +18,9 @@ import es from "@/lib/locales/es";
    ────────────────────────────────────────────────────────────── */
 
 export const LANGUAGES = [
-  { code: "en", label: "English", short: "EN" },
-  { code: "fr", label: "Français", short: "FR" },
-  { code: "es", label: "Español", short: "ES" },
+  { code: "en", locale: "en-GB", label: "English", short: "EN" },
+  { code: "fr", locale: "fr-FR", label: "Français", short: "FR" },
+  { code: "es", locale: "es-ES", label: "Español", short: "ES" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
@@ -29,16 +30,12 @@ const LEGACY_KEYS = ["node_lang"];
 const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES" };
 const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES" };
 
-export function formatCurrency(amount, lang = "en") {
-  const locale = CURRENCY_LOCALES[lang] || CURRENCY_LOCALES.en;
+export function formatCurrency(amount, lang = "en", currency = "EUR") {
+  const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
   try {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(Number(amount) || 0);
+    return formatMoneyMajor(Number(amount) || 0, { locale, currency, maximumFractionDigits: 0 });
   } catch {
-    return `€${Math.round(Number(amount) || 0).toLocaleString()}`;
+    return new Intl.NumberFormat(locale).format(Math.round(Number(amount) || 0));
   }
 }
 
@@ -71,6 +68,7 @@ function interpolate(str, params) {
 /**
  * @typedef {{
  *   lang: string,
+ *   locale: string,
  *   setLang: (next: string) => void,
  *   t: (keyOrObj: any, paramsOrLang?: any) => any,
  *   formatCurrency: (amount: any) => string,
@@ -79,6 +77,7 @@ function interpolate(str, params) {
  */
 const LanguageContext = createContext(/** @type {TranslationContextValue} */ ({
   lang: "en",
+  locale: "en-GB",
   setLang: (_next) => {},
   t: (keyOrObj, _paramsOrLang) => keyOrObj,
   formatCurrency: (n) => formatCurrency(n, "en"),
@@ -157,6 +156,7 @@ export function LanguageProvider({ children }) {
 
   const value = useMemo(() => ({
     lang,
+    locale: localeForLanguage(lang),
     setLang,
     t,
     formatCurrency: (n) => formatCurrency(n, lang),

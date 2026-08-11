@@ -1,0 +1,6 @@
+{
+  "name":"TranslationReview","type":"object","description":"P9 review provenance for product, commercial, financial and legal translations. AI output is never legal approval.",
+  "properties":{"review_key":{"type":"string"},"namespace":{"type":"string"},"translation_key":{"type":"string"},"locale":{"type":"string"},"content_hash":{"type":"string"},"status":{"type":"string","enum":["AI_DRAFT","HUMAN_REVIEW_REQUIRED","LINGUIST_REVIEWED","LEGAL_REVIEW_REQUIRED","LEGAL_REVIEWED","REJECTED","SUPERSEDED"]},"risk_class":{"type":"string","enum":["ROUTINE","COMMERCIAL","FINANCIAL","LEGAL"]},"source_locale":{"type":"string"},"model_provenance_json":{"type":"object"},"reviewed_by":{"type":"string"},"reviewed_at":{"type":"string","format":"date-time"},"version":{"type":"string"}},
+  "required":["review_key","namespace","translation_key","locale","status","risk_class","version"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}
