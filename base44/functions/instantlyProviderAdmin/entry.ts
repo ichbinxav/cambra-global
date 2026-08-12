@@ -20,6 +20,7 @@ import {
 
 const CONFIRM_CREATE = "CREATE_CAMBRA_INSTANTLY_CAMPAIGN";
 const CONFIRM_WEBHOOK = "REGISTER_CAMBRA_INSTANTLY_WEBHOOK";
+const CONFIRM_WEBHOOK_TEST = "TEST_CAMBRA_INSTANTLY_WEBHOOK";
 const CONFIRM_PAUSE = "PAUSE_CAMBRA_INSTANTLY";
 const safeAccount = (account: any) => ({
   email: String(account?.email || account?.address || account?.eaccount || ""),
@@ -47,6 +48,10 @@ const safeWebhook = (webhook: any) => ({
   campaign: String(webhook?.campaign || ""),
   status: webhook?.status ?? null,
   timestamp_error: webhook?.timestamp_error ?? null,
+  configured_header_names:
+    webhook?.headers && typeof webhook.headers === "object"
+      ? Object.keys(webhook.headers).sort()
+      : [],
 });
 
 export async function handleInstantlyProviderAdmin(req: Request) {
@@ -320,7 +325,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
     const profileKey = String(body.profile_key || "");
     const profile =
       profiles.find((row: any) => row.profile_key === profileKey) || null;
-    if (["create_campaign", "register_webhook"].includes(action) && !profile)
+    if (["create_campaign", "register_webhook", "test_webhook"].includes(action) && !profile)
       return Response.json(
         { ok: false, error: "instantly_profile_required" },
         { status: 409 },
@@ -375,7 +380,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         ),
       );
       const reservation = await reservePaidOperation(svc, {
-        event_key: `api:instantly:create-campaign:${profile.profile_key}`,
+        event_key: `api:instantly:create-campaign:${profile.profile_key}:${String(body.request_key || INSTANTLY_CAMPAIGN_TEMPLATE_REVISION).replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 80)}`,
         category: "api",
         provider: "instantly",
         source: "instantlyProviderAdmin",
@@ -455,7 +460,18 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           },
           { status: 409 },
         );
-      const webhookSecret = Deno.env.get("INSTANTLY_WEBHOOK_SECRET") || "";
+      const rotationRequested = body.rotate_secret === true;
+      const rotatedSecret = rotationRequested
+        ? String(body.new_webhook_secret || "")
+        : "";
+      if (rotationRequested && !/^[A-Za-z0-9_-]{43,128}$/.test(rotatedSecret))
+        return Response.json(
+          { ok: false, error: "valid_rotated_webhook_secret_required" },
+          { status: 400 },
+        );
+      const webhookSecret = rotationRequested
+        ? rotatedSecret
+        : Deno.env.get("INSTANTLY_WEBHOOK_SECRET") || "";
       if (!webhookSecret)
         return Response.json(
           {
@@ -476,8 +492,14 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           { ok: false, error: "instantly_campaign_required" },
           { status: 409 },
         );
+      const existingWebhookId = String(
+        profile.provider_config_json?.webhook_id || "",
+      );
+      const requestKey = String(body.request_key || "default")
+        .replace(/[^a-zA-Z0-9._-]/g, "")
+        .slice(0, 80);
       const reservation = await reservePaidOperation(svc, {
-        event_key: `api:instantly:webhook:${profile.profile_key}`,
+        event_key: `api:instantly:webhook:${profile.profile_key}:${requestKey}`,
         category: "api",
         provider: "instantly",
         source: "instantlyProviderAdmin",
@@ -485,16 +507,22 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         related_entity_id: profile.id,
       });
       try {
-        const webhook = await provider.createWebhook({
+        const webhookInput = {
           target_url: target,
           name: `CAMBRA ${profile.profile_key}`,
           campaign_id: profile.external_campaign_id,
           webhook_secret: webhookSecret,
-        });
+        };
+        const webhook = existingWebhookId
+          ? await provider.updateWebhook(existingWebhookId, webhookInput)
+          : await provider.createWebhook(webhookInput);
+        const operation = existingWebhookId
+          ? "update_webhook"
+          : "create_webhook";
         await settlePaidOperation(svc, reservation, {
           ok: true,
           usage_json: {
-            operation: "create_webhook",
+            operation,
             webhook_id: webhook?.id || null,
           },
         });
@@ -524,6 +552,8 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         return Response.json({
           ok: true,
           webhook: safeWebhook(webhook),
+          operation,
+          rotation_applied: rotationRequested,
           secret_value_exposed: false,
           outbound_unchanged: true,
         });
@@ -531,7 +561,81 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         await settlePaidOperation(svc, reservation, {
           ok: false,
           usage_json: {
-            operation: "create_webhook",
+            operation: existingWebhookId
+              ? "update_webhook"
+              : "create_webhook",
+            error_code: String(error?.code || "FAILED"),
+          },
+        }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
+        throw error;
+      }
+    }
+    if (action === "test_webhook") {
+      if (body.confirmation !== CONFIRM_WEBHOOK_TEST)
+        return Response.json(
+          {
+            ok: false,
+            error: "confirmation_required",
+            required: CONFIRM_WEBHOOK_TEST,
+          },
+          { status: 409 },
+        );
+      const webhookId = String(profile.provider_config_json?.webhook_id || "");
+      if (!webhookId || profile.webhook_status !== "ACTIVE")
+        return Response.json(
+          { ok: false, error: "active_instantly_webhook_required" },
+          { status: 409 },
+        );
+      const reservation = await reservePaidOperation(svc, {
+        event_key: `api:instantly:webhook-test:${profile.profile_key}:${crypto.randomUUID()}`,
+        category: "api",
+        provider: "instantly",
+        source: "instantlyProviderAdmin",
+        related_entity_type: "OutboundSendingProfile",
+        related_entity_id: profile.id,
+      });
+      try {
+        const result = await provider.testWebhook(webhookId);
+        const passed =
+          result?.success === true && Number(result?.status_code) >= 200 &&
+          Number(result?.status_code) < 300;
+        await settlePaidOperation(svc, reservation, {
+          ok: passed,
+          usage_json: {
+            operation: "test_webhook",
+            status_code: Number(result?.status_code || 0),
+            response_time_ms: Number(result?.response_time_ms || 0),
+          },
+        });
+        await svc.entities.OperationalLog.create({
+          event_type: "instantly_webhook_delivery_test",
+          message: passed
+            ? "Instantly delivered an authenticated provider test to CAMBRA"
+            : "Instantly webhook delivery test failed",
+          data_json: {
+            profile_key: profile.profile_key,
+            webhook_id: webhookId,
+            provider_test: true,
+            success: passed,
+            status_code: Number(result?.status_code || 0),
+            response_time_ms: Number(result?.response_time_ms || 0),
+            outbound_sent: false,
+          },
+          actor_email: gate.user?.email || "founder_admin",
+          created_at: new Date().toISOString(),
+        });
+        return Response.json({
+          ok: passed,
+          provider_test: true,
+          status_code: Number(result?.status_code || 0),
+          response_time_ms: Number(result?.response_time_ms || 0),
+          outbound_unchanged: true,
+        }, { status: passed ? 200 : 502 });
+      } catch (error: any) {
+        await settlePaidOperation(svc, reservation, {
+          ok: false,
+          usage_json: {
+            operation: "test_webhook",
             error_code: String(error?.code || "FAILED"),
           },
         }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
@@ -572,6 +676,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           "diagnose_supersearch",
           "create_campaign",
           "register_webhook",
+          "test_webhook",
           "pause",
         ],
       },
@@ -588,6 +693,10 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         error: String(
           error?.code || error?.message || "instantly_provider_admin_failed",
         ).slice(0, 200),
+        provider_detail:
+          error?.name === "InstantlyApiError"
+            ? String(error?.message || "provider_request_failed").slice(0, 300)
+            : undefined,
       },
       { status: Number(error?.status || 500) },
     );

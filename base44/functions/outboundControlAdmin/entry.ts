@@ -38,6 +38,7 @@ const GO_LIVE_ACTIONS = new Set([
   "cost_kill_switch_drill",
   "emergency_drill",
   "verify_founder_control",
+  "resend_register_webhook",
 ]);
 const INSTANTLY_ADMIN_ACTIONS = new Set([
   "instantly_status",
@@ -45,6 +46,7 @@ const INSTANTLY_ADMIN_ACTIONS = new Set([
   "instantly_diagnose_supersearch",
   "instantly_create_campaign",
   "instantly_register_webhook",
+  "instantly_test_webhook",
   "instantly_pause",
 ]);
 

@@ -1,7 +1,7 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { operationErrorResponse } from '../../shared/publicErrors.ts';
-import { activateCostEmergencyStop, costRuntimeSnapshot, validateCostBudget } from '../../shared/costGovernance.ts';
+import { activateCostEmergencyStop, costRuntimeSnapshot, reservePaidOperation, settlePaidOperation, validateCostBudget } from '../../shared/costGovernance.ts';
 import { collectGoLiveRuntime } from '../../shared/goLiveRuntime.ts';
 import { assertOperationAllowed, emergencyState } from '../../shared/operationalControl.ts';
 import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
@@ -15,6 +15,56 @@ const CONFIRM_PROFILE = 'CONFIGURE_OUTBOUND_SENDING_PROFILE';
 const CONFIRM_PROFILE_WARMUP = 'ENABLE_SENDING_PROFILE_WARMUP';
 const CONFIRM_PROFILE_PAUSE = 'PAUSE_SENDING_PROFILE';
 const CONFIRM_COST_DRILL = 'RUN_COST_KILL_SWITCH_DRILL';
+const CONFIRM_RESEND_WEBHOOK = 'REGISTER_CAMBRA_RESEND_WEBHOOK';
+
+async function createResendWebhook(svc:any, target:string, actor:string) {
+  if (Deno.env.get('RESEND_WEBHOOK_SECRET')) return { ok:true, already_configured:true, signing_secret_one_time:false };
+  const key = Deno.env.get('RESEND_API_KEY') || '';
+  if (!key) throw Object.assign(new Error('resend_api_key_required'), { status:503, code:'resend_api_key_required' });
+  const url = new URL(target);
+  if (url.protocol !== 'https:' || url.hostname !== 'base44.app' || !/^\/api\/apps\/[a-z0-9]+\/functions\/resendInboundWebhook$/i.test(url.pathname)) {
+    throw Object.assign(new Error('canonical_resend_webhook_target_required'), { status:409, code:'canonical_resend_webhook_target_required' });
+  }
+  const reservation = await reservePaidOperation(svc, {
+    event_key:`api:resend:webhook-create:${crypto.randomUUID()}`,
+    category:'api', provider:'resend', source:'goLiveControlAdmin',
+    related_entity_type:'CommercialProviderState', related_entity_id:'resend',
+  });
+  try {
+    const response = await fetch('https://api.resend.com/webhooks', {
+      method:'POST',
+      headers:{ authorization:`Bearer ${key}`, 'content-type':'application/json' },
+      body:JSON.stringify({
+        endpoint:target,
+        events:['email.delivered','email.bounced','email.complained','email.failed','email.suppressed','email.received'],
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const providerMessage = String(data?.message || data?.name || 'invalid_request')
+        .replace(/re_[A-Za-z0-9_-]+/g, 're_[redacted]')
+        .slice(0,240);
+      throw Object.assign(new Error(`resend_webhook_create_failed:${response.status}:${providerMessage}`), { status:502, code:'resend_webhook_create_failed' });
+    }
+    const webhookId = String(data?.id || '');
+    const signingSecret = String(data?.signing_secret || '');
+    if (!webhookId || !signingSecret.startsWith('whsec_')) throw Object.assign(new Error('resend_webhook_response_invalid'), { status:502, code:'resend_webhook_response_invalid' });
+    await settlePaidOperation(svc, reservation, { ok:true, usage_json:{ operation:'create_webhook', webhook_id:webhookId } });
+    await svc.entities.OperationalLog.create({
+      event_type:'resend_webhook_registered',
+      message:'Authenticated Resend webhook registered on the canonical Base44 endpoint',
+      data_json:{ webhook_id:webhookId, endpoint:target, signing_secret_persisted:false, events:6 },
+      actor_email:actor, created_at:new Date().toISOString(),
+    }).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:null,severity:'secondary'}));
+    // Resend returns the signing secret only once. It is returned only to the
+    // authenticated founder so the operator can immediately store it in the
+    // platform secret vault. It is never persisted in entities or logs.
+    return { ok:true, webhook_id:webhookId, signing_secret:signingSecret, signing_secret_one_time:true };
+  } catch (error:any) {
+    await settlePaidOperation(svc, reservation, { ok:false, usage_json:{ operation:'create_webhook', error_code:String(error?.code || 'FAILED') } }).catch((settleError:any)=>safeBestEffort(settleError,{operation:'goLiveControlAdmin',fallback:null,severity:'secondary'}));
+    throw error;
+  }
+}
 
 async function dnsAnswers(name:string, type:'TXT'|'CNAME') {
   const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(name)}&type=${type}`, { headers:{ accept:'application/dns-json' } });
@@ -159,6 +209,10 @@ export async function handleGoLiveControlAdmin(req: Request) {
       await svc.entities.OperationalLog.create({ event_type:'go_live_blockers_inspected', message:'Founder inspected GO-live blockers', data_json:{ final_sha:finalSha || null }, actor_email:actor, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:null,severity:'secondary'}));
       return Response.json({ ok:true, ...(await collectGoLiveRuntime(svc, body)) });
     }
+    if (action === 'resend_register_webhook') {
+      if (body.confirmation !== CONFIRM_RESEND_WEBHOOK) return Response.json({ ok:false, error:'confirmation_required', required:CONFIRM_RESEND_WEBHOOK }, { status:409 });
+      return Response.json(await createResendWebhook(svc, String(body.target_url || '').trim(), actor));
+    }
     if (action === 'verify_runtime') return Response.json({ ok:true, verification:await verifyRuntime(svc, finalSha, actor), go_live:await collectGoLiveRuntime(svc, body) });
     if (action === 'configure_cost_budget') {
       if (body.confirmation !== CONFIRM_BUDGET) return Response.json({ ok:false, error:'confirmation_required', required:CONFIRM_BUDGET }, { status:409 });
@@ -282,7 +336,7 @@ export async function handleGoLiveControlAdmin(req: Request) {
       const evidence = await recordRuntimeGateEvidence(svc, { gate_key:'FOUNDER_CONTROL', git_sha:finalSha, status:pass ? 'PASS':'BLOCKED', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.verify_founder_control', details_json:{ checks, window_from:since }, observed_at:new Date().toISOString(), expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
       return Response.json({ ok:true, pass, checks, evidence_id:evidence.id, go_live:await collectGoLiveRuntime(svc, body) });
     }
-    return Response.json({ ok:false, error:'unsupported_action', actions:['status','verify_runtime','configure_cost_budget','configure_sending_profile','enable_sending_profile_warmup','pause_sending_profile','clear_cost_emergency_stop','cost_kill_switch_drill','emergency_drill','verify_founder_control'] }, { status:400 });
+    return Response.json({ ok:false, error:'unsupported_action', actions:['status','resend_register_webhook','verify_runtime','configure_cost_budget','configure_sending_profile','enable_sending_profile_warmup','pause_sending_profile','clear_cost_emergency_stop','cost_kill_switch_drill','emergency_drill','verify_founder_control'] }, { status:400 });
   } catch (error:any) {
     console.error('goLiveControlAdmin failed', error);
     return operationErrorResponse(error,'goLiveControlAdmin','go_live_control_failed');

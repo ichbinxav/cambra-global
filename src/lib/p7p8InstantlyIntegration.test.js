@@ -35,10 +35,13 @@ describe('P7/P8 provider-agnostic Instantly execution seal',()=>{
   it('builds a paused low-volume campaign whose content comes only from CAMBRA variables',()=>{
     const campaign=instantlyCampaignDefinition({name:'CAMBRA ES CANARY',timezone:'Europe/Madrid',account_emails:['sender@outbound.example'],daily_limit:99});
     expect(campaign.daily_limit).toBe(15);
+    expect(campaign.campaign_schedule.schedules[0].timezone).toBe('Europe/Belgrade');
     expect(campaign.stop_on_reply).toBe(true);
     expect(campaign.stop_on_auto_reply).toBe(true);
     expect(campaign.open_tracking).toBe(false);
     expect(campaign.link_tracking).toBe(false);
+    expect(campaign.campaign_schedule.end_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(campaign.sequences[0].steps[0]).toMatchObject({pre_delay:1,pre_delay_unit:'days'});
     expect(campaign.sequences[0].steps[0].variants[0]).toMatchObject({subject:'{{cambra_subject}}',body:'{{cambra_body}}'});
   });
 
@@ -55,7 +58,10 @@ describe('P7/P8 provider-agnostic Instantly execution seal',()=>{
     const calls=[];const provider=new InstantlyOutboundProvider('secret',async(url,init)=>{calls.push({url,init});return new Response(JSON.stringify({id:'external-1'}),{status:200,headers:{'content-type':'application/json'}})});
     await provider.queueInitial({campaign_id:'campaign-1',to:lead.contact_email,subject:'S',text:'B',thread_id:'thread-1',idempotency_key:'key-1'});
     await provider.sendReply({eaccount:'sender@outbound.example',reply_to_uuid:'external-inbound',subject:'Re: S',text:'B'});
-    expect(calls.map(call=>call.url)).toEqual(['https://api.instantly.ai/api/v2/leads','https://api.instantly.ai/api/v2/emails/reply']);
+    await provider.updateWebhook('webhook-1',{target_url:'https://example.com/hook',name:'CAMBRA hook',campaign_id:'campaign-1',webhook_secret:'signing-secret'});
+    await provider.testWebhook('webhook-1');
+    expect(calls.map(call=>call.url)).toEqual(['https://api.instantly.ai/api/v2/leads','https://api.instantly.ai/api/v2/emails/reply','https://api.instantly.ai/api/v2/webhooks/webhook-1','https://api.instantly.ai/api/v2/webhooks/webhook-1/test']);
+    expect(JSON.parse(calls[2].init.body)).toMatchObject({event_type:'all_events',headers:{'x-cambra-instantly-secret':'signing-secret'}});
   });
 
   it('normalizes nested and aliased webhook payloads and produces deterministic dedupe keys',async()=>{

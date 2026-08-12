@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.97.0 — Final Production Seal (durability manifest)",
-  "generatedAt": "2026-08-12T17:59:44.261Z",
+  "generatedAt": "2026-08-12T18:51:27.191Z",
   "packageVersion": "0.97.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -567,8 +567,8 @@
     },
     {
       "path": "base44/functions/goLiveControlAdmin/entry.ts",
-      "sha256": "3f20f8f4d0825fb7f39ce86925d3f67d248bd026f590a6582b4a7759222ee2ec",
-      "bytes": 38868
+      "sha256": "7a3962118296681bb7078c83d54756d561d8ca092faa2be03e76591cff2ce2ef",
+      "bytes": 42634
     },
     {
       "path": "base44/functions/goLiveControlAdmin/function.jsonc",
@@ -707,8 +707,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "c2214b5a67ef0e82f2044b6af4921e36f683436940a65bc1547327e36f391102",
-      "bytes": 17119
+      "sha256": "2b919a83d71228295116c3d501cb1f6269842ed4b6fdb18897755e4ec89cf8c6",
+      "bytes": 17176
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
@@ -1437,8 +1437,8 @@
     },
     {
       "path": "src/docs/COMMERCIAL_GO_LIVE_CHECKLIST.md",
-      "sha256": "5e1936371105a8c6645892eb5dc081e0f25add6e48b51b7bf1c6a9a5a06c297f",
-      "bytes": 4579
+      "sha256": "f9966ac823ef4ccf10d843c400683b17c0889388f0480b99eb03883ab5bc1cae",
+      "bytes": 5006
     },
     {
       "path": "src/docs/FINAL_LAUNCH_BLOCKERS_2026-08-10.md",
@@ -1482,8 +1482,8 @@
     },
     {
       "path": "src/docs/PRODUCTION_FUNCTIONS.md",
-      "sha256": "66e09c149189265946c08037c201906f0796f0c46570b0b35fc07ea06d0c128f",
-      "bytes": 56930
+      "sha256": "c8777102202b084985ce7c5518740056e4e965ec049c488243e576f3bb20c57a",
+      "bytes": 57267
     },
     {
       "path": "src/lib/analyzerFx.test.js",
