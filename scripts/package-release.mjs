@@ -23,6 +23,9 @@ if (outputFlag >= 0 && !requestedOutput) fail("--output requires a file path");
 const root = process.cwd();
 if (!fs.existsSync(path.join(root, "RELEASE.json"))) fail("RELEASE.json missing; run npm run verify first");
 const release = JSON.parse(fs.readFileSync(path.join(root, "RELEASE.json"), "utf8"));
+if (release.productionSealEligible !== true && requestedOutput && /production[-_ ]sealed/i.test(path.basename(requestedOutput))) {
+  fail("refusing a PRODUCTION-SEALED filename while RELEASE.json says productionSealEligible=false");
+}
 const tree = computeSourceTreeHash(root);
 if (release.sourceTreeHash !== tree.hash || release.sourceTreeFileCount !== tree.fileCount) {
   fail("RELEASE.json does not identify the current source tree");
@@ -99,6 +102,9 @@ const integrity = {
   reextracted_source_tree_file_count: extractedTree.fileCount,
   reextracted_match: true,
   status: "PASS",
+  production_seal_eligible: release.productionSealEligible === true,
+  production_verdict: release.finalVerdict,
+  pending_production_requirements: release.manualRequirements || [],
   generated_at: new Date().toISOString(),
 };
 const integrityPath = `${output}.integrity.json`;

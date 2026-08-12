@@ -17,37 +17,34 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { retentionCutoff,retentionEvidenceComplete,retentionEvidenceStart } from '../../shared/retentionPolicy.ts';
 
-const OUTBOUND_RETENTION_DAYS = 365;
-const LEAD_RETENTION_DAYS = 730;
 const BATCH_SIZE = 200;
 const MAX_BATCHES = 25;
 
 const UNENGAGED_STAGES = ['lead', 'enriched', 'scored'];
 
-function cutoffIso(days: number) {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-}
-
 async function purge(entity: any, query: Record<string, unknown>) {
-  let deleted = 0;
+  let deleted = 0,failed=0,candidates=0;
   let batches = 0;
   let lastSize = -1;
   while (batches < MAX_BATCHES && lastSize !== 0) {
     const stale = await entity.filter(query, 'created_date', BATCH_SIZE);
     lastSize = stale.length;
+    candidates += lastSize;
     if (lastSize === 0) break;
     for (const row of stale) {
       try {
         await entity.delete(row.id);
         deleted += 1;
       } catch (e) {
+        failed += 1;
         console.warn('purgeInactiveLeads delete failed:', row.id, (e as any)?.message);
       }
     }
     batches += 1;
   }
-  return { deleted, batches };
+  return { deleted, failed, candidates, batches };
 }
 
 Deno.serve(async (req) => {
@@ -57,8 +54,18 @@ Deno.serve(async (req) => {
     const gate = await requireAdminOrInternal(req, base44, null);
     if (!gate.ok) return gate.response;
 
-    const outboundCutoff = cutoffIso(OUTBOUND_RETENTION_DAYS);
-    const leadCutoff = cutoffIso(LEAD_RETENTION_DAYS);
+    const outboundPolicy = retentionCutoff('unengaged_outbound_leads');
+    const leadPolicy = retentionCutoff('inbound_leads');
+    if(!outboundPolicy.ok||!leadPolicy.ok)return Response.json({ok:false,error:'retention_policy_unavailable'},{status:503});
+    const outboundCutoff = outboundPolicy.cutoff;
+    const leadCutoff = leadPolicy.cutoff;
+    const now=new Date().toISOString();
+    const outboundStart=retentionEvidenceStart({run_key:`unengaged-outbound:${now}:${crypto.randomUUID()}`,policy_key:'unengaged_outbound_leads',action:'DELETE',cutoff_at:outboundCutoff,scope:'OutboundLead:unengaged'});
+    const inboundStart=retentionEvidenceStart({run_key:`inbound-leads:${now}:${crypto.randomUUID()}`,policy_key:'inbound_leads',action:'DELETE',cutoff_at:leadCutoff,scope:'Lead'});
+    if(!outboundStart.ok||!inboundStart.ok)return Response.json({ok:false,error:'retention_policy_not_executable'},{status:503});
+    const outboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(outboundStart.row).catch(()=>null);
+    const inboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(inboundStart.row).catch(()=>null);
+    if(!outboundEvidence||!inboundEvidence)return Response.json({ok:false,error:'retention_audit_evidence_unavailable'},{status:503});
 
     const outbound = await purge(
       base44.asServiceRole.entities.OutboundLead,
@@ -69,11 +76,14 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.Lead,
       { created_date: { $lt: leadCutoff } },
     );
+    await base44.asServiceRole.entities.RetentionExecutionEvidence.update(outboundEvidence.id,retentionEvidenceComplete(outboundStart,{candidate_count:outbound.candidates,succeeded_count:outbound.deleted,failed_count:outbound.failed,batches_processed:outbound.batches}));
+    await base44.asServiceRole.entities.RetentionExecutionEvidence.update(inboundEvidence.id,retentionEvidenceComplete(inboundStart,{candidate_count:inbound.candidates,succeeded_count:inbound.deleted,failed_count:inbound.failed,batches_processed:inbound.batches}));
 
     const summary = {
       ok: true,
-      outbound_leads: { retention_days: OUTBOUND_RETENTION_DAYS, cutoff: outboundCutoff, ...outbound },
-      inbound_leads: { retention_days: LEAD_RETENTION_DAYS, cutoff: leadCutoff, ...inbound },
+      retention_policy_version: outboundPolicy.policy_version,
+      outbound_leads: { retention_days: outboundPolicy.retention_days, cutoff: outboundCutoff, ...outbound },
+      inbound_leads: { retention_days: leadPolicy.retention_days, cutoff: leadCutoff, ...inbound },
     };
     console.info('purgeInactiveLeads:', JSON.stringify(summary));
     return Response.json(summary);

@@ -48,7 +48,7 @@ export default function OptimizedHero({ engineResult, inputSnapshot, t, onRerun 
             className="text-[9px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full"
             style={{ background: "rgba(168,85,247,0.12)", color: "rgb(216,180,254)", border: "1px solid rgba(168,85,247,0.35)" }}
           >
-            In-store
+            {t("opt_in_store")}
           </span>
         )}
         <span
@@ -62,7 +62,7 @@ export default function OptimizedHero({ engineResult, inputSnapshot, t, onRerun 
           <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          Optimized
+          {t("opt_badge")}
         </span>
       </div>
 
@@ -88,13 +88,13 @@ export default function OptimizedHero({ engineResult, inputSnapshot, t, onRerun 
       {/* Rate strip — same shape as the opportunity hero minus the delta */}
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl p-4" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.30)" }}>
-          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-emerald-300/90 mb-1">You pay today</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-emerald-300/90 mb-1">{t("opt_you_pay")}</p>
           <p className="text-white tabular-nums font-black" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}>
             {pctFromBps(current)}
           </p>
         </div>
         <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.10)" }}>
-          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-white/60 mb-1">Best contractable</p>
+          <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-white/60 mb-1">{t("opt_reference_rate")}</p>
           <p className="text-white tabular-nums font-black" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "26px", letterSpacing: "-0.03em" }}>
             {pctFromBps(achievable)}
           </p>

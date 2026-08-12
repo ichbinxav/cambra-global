@@ -1,0 +1,22 @@
+{
+  "name":"RetentionExecutionEvidence",
+  "type":"object",
+  "description":"Versioned audit evidence for an authorized deletion or irreversible aggregation run. Counts and policy facts only; raw subject identifiers are prohibited.",
+  "properties":{
+    "run_key":{"type":"string"},
+    "policy_key":{"type":"string"},
+    "policy_version":{"type":"string"},
+    "category":{"type":"string"},
+    "action":{"type":"string","enum":["DELETE","ANONYMIZE"]},
+    "status":{"type":"string","enum":["RUNNING","COMPLETED","COMPLETED_WITH_ERRORS","FAILED"]},
+    "cutoff_at":{"type":"string","format":"date-time"},
+    "started_at":{"type":"string","format":"date-time"},
+    "completed_at":{"type":"string","format":"date-time"},
+    "candidate_count":{"type":"number"},
+    "succeeded_count":{"type":"number"},
+    "failed_count":{"type":"number"},
+    "evidence_json":{"type":"object"}
+  },
+  "required":["run_key","policy_key","policy_version","category","action","status","started_at"],
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+}

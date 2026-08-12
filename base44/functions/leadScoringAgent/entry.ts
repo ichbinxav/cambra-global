@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { buildResilientLeadScore, validLeadModelRow, type LeadModelStatus } from '../../shared/leadScoringResilience.ts';
+import { leadOutcomeCalibration } from '../../shared/leadOutcomeCalibration.ts';
 
 const AGENT_NAME = "lead_scoring";
 const TASK_TYPE = "score_leads";
@@ -118,7 +119,9 @@ Deno.serve(async (req) => {
 
     // Every requested lead receives a deterministic result. A missing or malformed
     // model row can reduce confidence, but it must never strand the whole P6 chain.
-    const updates=leads.map((lead:any)=>buildResilientLeadScore(lead,validById.get(String(lead.id)),modelStatus));
+    const outcomeAggregates=await base44.asServiceRole.entities.AnonymizedIntelligenceAggregate.filter({aggregate_type:'verified_outcomes'},'-period',500).catch(()=>[]);
+    const calibrations=new Map(leads.map((lead:any)=>[String(lead.id),leadOutcomeCalibration(lead,outcomeAggregates)]));
+    const updates=leads.map((lead:any)=>buildResilientLeadScore(lead,validById.get(String(lead.id)),modelStatus,calibrations.get(String(lead.id))));
 
     if (updates.length) {
       try {
@@ -153,6 +156,7 @@ Deno.serve(async (req) => {
         degraded,
         model_error_code:modelErrorCode,
         deterministic_fallback:modelStatus!=='PARSED',
+        privacy_safe_outcome_calibrations:Array.from(calibrations.values()).filter((x:any)=>x.applied).length,
         top: ranked.slice(0, 10),
       },
       completed_at: new Date().toISOString(),

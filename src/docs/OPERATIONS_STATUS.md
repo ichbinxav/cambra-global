@@ -6,6 +6,12 @@
 
 ---
 
+## Release v0.97.0 — Final Production Remediation (2026-08-12)
+
+**Repository remediation implemented; production seal still requires real-runtime evidence.** The release pins Node 24.19.0/npm 11.17.0, removes structural test skips, makes commercial acquisition fail closed on real Founder controls, adds evidence-bound Analyzer FX, central retention evidence and privacy-safe outcome calibration, and completes the EN/FR/ES public copy/SEO pass. Public Recover pricing now follows the legally active standard 25%/75%, 24-month policy; tiered V2 wording remains hidden while legal approval is false.
+
+Do not label this release `PRODUCTION SEALED / PASS` until the final Git SHA and source-tree identity are deployed to Base44 and the live Stripe, scheduler, DNS/deliverability, emergency-stop/resume, backup/restore, real-document and controlled-merchant gates are observed. The exact implementation and proof boundary are recorded in `CAMBRA_V097_FINAL_PRODUCTION_REMEDIATION.md`; machine-readable pending gates remain in `RELEASE.json`.
+
 ## Release v0.96.0 — Commercial Operating System (2026-08-12)
 
 **Repository implementation complete; authenticated runtime validation is the next gate.** The founder now has one Commercial OS for target profiles, portable discovery, canonical leads, CSV export, CAMBRA-owned campaigns, domains/mailboxes, conversations and safe agent operations. `AUTO` keeps Apollo until 2026-09-07 and then hands discovery to Instantly SuperSearch only after a real scoped capability check. Campaign creation, message/sequence preparation and capacity preview perform zero sends. Real outbound remains controlled by the existing founder preflight and master switch.

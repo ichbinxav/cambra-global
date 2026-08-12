@@ -2,8 +2,8 @@
 import process from "node:process";
 import { execFileSync } from "node:child_process";
 
-export const REQUIRED_NODE = "20.20.2";
-export const REQUIRED_NPM = "10.8.2";
+export const REQUIRED_NODE = "24.19.0";
+export const REQUIRED_NPM = "11.17.0";
 
 const actualNode = process.versions.node;
 let actualNpm = null;

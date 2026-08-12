@@ -1,0 +1,15 @@
+import { describe,expect,it } from 'vitest';
+import { normalizeAnalyzerStripeRows } from '../../base44/shared/analyzerFx.ts';
+
+const at=Date.parse('2026-08-10T12:00:00Z')/1000;
+const gbp={id:'fx-gbp',base_currency:'GBP',quote_currency:'EUR',rate_kind:'REFERENCE',rate_decimal:'1.15',source:'ECB',source_type:'CENTRAL_BANK',source_url:'https://www.ecb.europa.eu/',effective_at:'2026-08-10T08:00:00Z',status:'CURRENT',version:4};
+
+describe('verified Analyzer FX boundary',()=>{
+  it('preserves EUR identity and originals',()=>{const r=normalizeAnalyzerStripeRows([{id:'bt1',created:at,currency:'eur',amount:10000,fee:300,reporting_category:'charge'}],[]);expect(r).toMatchObject({ok:true,amount_eur_minor:10000,fee_eur_minor:300,currency_normalized:'EUR',original_totals_by_currency:{EUR:{amount_minor:10000,fee_minor:300,rows:1,charge_rows:1}}});expect(r.fx_provenance[0]).toMatchObject({source:'identity',rate:'1'});});
+  it('normalizes supported non-EUR rows with provenance and effective dates',()=>{const r=normalizeAnalyzerStripeRows([{id:'bt2',created:at,currency:'gbp',amount:10000,fee:250,reporting_category:'charge'}],[gbp]);expect(r).toMatchObject({ok:true,amount_eur_minor:11500,fee_eur_minor:288,original_totals_by_currency:{GBP:{amount_minor:10000,fee_minor:250}}});expect(r.fx_provenance[0]).toMatchObject({source:'ECB',source_snapshot_id:'fx-gbp',resolved_effective_at:'2026-08-10T08:00:00.000Z'});});
+  it('normalizes mixed currencies only after preserving currency buckets',()=>{const r=normalizeAnalyzerStripeRows([{id:'eur',created:at,currency:'EUR',amount:10000,fee:300,reporting_category:'charge'},{id:'gbp',created:at,currency:'GBP',amount:10000,fee:250,reporting_category:'charge'}],[gbp]);expect(r).toMatchObject({ok:true,amount_eur_minor:21500,fee_eur_minor:588});expect(Object.keys(r.original_totals_by_currency).sort()).toEqual(['EUR','GBP']);});
+  it('fails closed when FX evidence is missing',()=>expect(normalizeAnalyzerStripeRows([{id:'bt',created:at,currency:'GBP',amount:10000,fee:250,reporting_category:'charge'}],[])).toMatchObject({ok:false,error:'analyzer_fx_evidence_required',blockers:[{currency:'GBP',reason:'fx_rate_missing'}]}));
+  it('rejects stale snapshots',()=>expect(normalizeAnalyzerStripeRows([{id:'bt',created:at,currency:'GBP',amount:10000,fee:250,reporting_category:'charge'}],[{...gbp,status:'STALE'}])).toMatchObject({ok:false,error:'analyzer_fx_evidence_required'}));
+  it('surfaces conflicting equally authoritative rates',()=>expect(normalizeAnalyzerStripeRows([{id:'bt',created:at,currency:'GBP',amount:10000,fee:250,reporting_category:'charge'}],[gbp,{...gbp,id:'fx-gbp-2',rate_decimal:'1.16',source_url:'https://bank.example/'}])).toMatchObject({ok:false,error:'analyzer_fx_evidence_required',blockers:[{reason:'fx_rate_conflict'}]}));
+  it('rejects missing dates and non-integer Stripe minor units',()=>expect(normalizeAnalyzerStripeRows([{id:'bt',currency:'EUR',amount:1.1,fee:1,reporting_category:'charge'}],[])).toMatchObject({ok:false,error:'analyzer_money_observation_invalid'}));
+});

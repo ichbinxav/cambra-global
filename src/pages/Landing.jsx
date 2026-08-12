@@ -194,14 +194,11 @@ function Hero() {
 
 function HowItWorksSection() {
   const { t } = useTranslation();
-  // 4-step story — Tell us → See rate → Connect to confirm → Join to recover.
-  // Copy now flows through the i18n dictionary (how_step*_*) so the section
-  // follows the language toggle. Step 3 is provider-agnostic (des-Stripe).
+  // Three plain-language steps: show us → understand → recover.
   const steps = [
     { n: "01", title: t("how_step1_title"), desc: t("how_step1_desc") },
     { n: "02", title: t("how_step2_title"), desc: t("how_step2_desc") },
-    { n: "03", title: t("how_step3_title"), desc: t("how_step3_desc") },
-    { n: "04", title: t("how_step4_title"), desc: t("how_step4_desc"), cta: true },
+    { n: "03", title: t("how_step3_title"), desc: t("how_step3_desc"), cta: true },
   ];
 
   return (

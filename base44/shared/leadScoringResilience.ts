@@ -22,12 +22,14 @@ export function validLeadModelRow(row:any){
   return Boolean(row?.id&&typeof row?.score==='number'&&Number.isFinite(row.score));
 }
 
-export function buildResilientLeadScore(lead:any,row:any,status:LeadModelStatus){
+export function buildResilientLeadScore(lead:any,row:any,status:LeadModelStatus,outcomeCalibration:any=null){
   const det=deterministicMerchantOpportunity(lead);
   const useModel=(status==='PARSED'||status==='PARTIAL')&&validLeadModelRow(row);
   const llm=useModel?Math.max(0,Math.min(100,Math.round(row.score))):null;
   const weighted=useModel?Math.round(det.opportunity_score*0.7+(llm as number)*0.3):det.opportunity_score;
-  const score=hasUsableEmail(lead?.contact_email)?weighted:Math.min(59,weighted);
+  const calibrationAdjustment=outcomeCalibration?.applied===true?Math.max(-3,Math.min(3,Math.round(Number(outcomeCalibration.adjustment)||0))):0;
+  const calibrated=Math.max(0,Math.min(100,weighted+calibrationAdjustment));
+  const score=hasUsableEmail(lead?.contact_email)?calibrated:Math.min(59,calibrated);
   const evidence=observedEvidence(det.signals);
   const reasoning=useModel&&String(row?.reasoning||'').trim()
     ? String(row.reasoning).trim().slice(0,500)
@@ -48,10 +50,11 @@ export function buildResilientLeadScore(lead:any,row:any,status:LeadModelStatus)
       evidence_confidence:det.evidence_confidence,
       evidence_count:det.evidence_count,
       signals:det.signals,
-      scoring_version:'merchant-opportunity-v2',
+      scoring_version:'merchant-opportunity-v2+privacy-safe-outcomes-v1',
       model_status:useModel?'PARSED':status,
       weights:useModel?{deterministic:0.7,llm:0.3}:{deterministic:1,llm:0},
-      email_cap_applied:!hasUsableEmail(lead?.contact_email)&&weighted>59,
+      outcome_calibration:outcomeCalibration?.applied===true?{version:outcomeCalibration.version,adjustment:calibrationAdjustment,sample_size:outcomeCalibration.sample_size,success_rate_pct:outcomeCalibration.success_rate_pct,aggregate_refs:outcomeCalibration.aggregate_refs,privacy_boundary:'irreversible_k10_aggregate_only'}:{version:outcomeCalibration?.version||null,adjustment:0,reason:outcomeCalibration?.reason||'not_available',aggregate_refs:[]},
+      email_cap_applied:!hasUsableEmail(lead?.contact_email)&&calibrated>59,
     },
     next_action:nextAction,
     stage:'scored',

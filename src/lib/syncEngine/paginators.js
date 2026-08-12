@@ -13,14 +13,12 @@
 // usen cursores devolverán null aquí.
 //
 // IMPORTANTE: este módulo es la FUENTE DE VERDAD lógica. La copia Deno en
-// base44/functions/dataSyncAgent/entry.ts es FUNCIONALMENTE EQUIVALENTE pero
-// NO byte-verbatim — la copia Deno prefija todos los helpers con `_`
+// base44/functions/dataSyncAgent/entry.ts mantiene el mismo cuerpo y solo
+// prefija los helpers con `_`
 // (`_paginatorCursorStripe`, `_engineSyncWithQueryParam`, etc.) para evitar
 // colisiones dentro del archivo gigante; aquí están sin prefijo para que
 // los tests las importen limpiamente. Equivalencia funcional verificada por
-// ejecución contra 17 fixtures (cursor_stripe x4, cursor_hal_body x3,
-// page_number x4, link_header x2, offset_limit x2, null x2) en el cierre de
-// deuda — Parte 2. El test de sincronía la tiene en skip con razón documentada.
+// ejecución contra 17 fixtures y por comparación estructural obligatoria.
 //
 // Estilos hoy implementados (los 3 prioritarios del prompt):
 //   - "cursor_stripe"   → has_more + starting_after=<last_id_in_page>
@@ -60,25 +58,18 @@ function withQueryParams(url, kvPairs) {
 // Stripe-style: has_more + starting_after=<last_id>.
 // raw.data[] must be an array; raw.has_more is boolean. The cursor is the
 // id of the LAST element of the current page.
-function cursorStripe(rawResponse, _headers, currentUrl, _cfg) {
-  const data = Array.isArray(rawResponse?.data) ? rawResponse.data : [];
-  if (!rawResponse?.has_more || data.length === 0) {
-    return { nextUrl: null, nextCursor: null };
-  }
+function cursorStripe(raw, _h, currentUrl) {
+  const data = Array.isArray(raw?.data) ? raw.data : [];
+  if (!raw?.has_more || data.length === 0) return { nextUrl: null, nextCursor: null };
   const lastId = data[data.length - 1]?.id;
   if (!lastId) return { nextUrl: null, nextCursor: null };
-  return {
-    nextUrl: withQueryParam(currentUrl, "starting_after", lastId),
-    nextCursor: lastId,
-  };
+  return { nextUrl: withQueryParam(currentUrl, "starting_after", lastId), nextCursor: lastId };
 }
 
 // Mollie / HAL-style: _links.next.href in the body. Stops when next is null/absent.
-function cursorHalBody(rawResponse, _headers, _currentUrl, _cfg) {
-  const next = rawResponse?._links?.next?.href;
-  if (!next || typeof next !== "string") {
-    return { nextUrl: null, nextCursor: null };
-  }
+function cursorHalBody(raw) {
+  const next = raw?._links?.next?.href;
+  if (!next || typeof next !== "string") return { nextUrl: null, nextCursor: null };
   return { nextUrl: next, nextCursor: next };
 }
 
@@ -87,31 +78,19 @@ function cursorHalBody(rawResponse, _headers, _currentUrl, _cfg) {
 // `page_size` (default 100), `start_page` (default 1), and `array_root` (default null
 // → assumes the response body itself is the array, or .data if that's an array).
 // Stops when the current page returns an empty array OR fewer items than page_size.
-function pageNumber(rawResponse, _headers, currentUrl, cfg) {
+function pageNumber(raw, _h, currentUrl, cfg) {
   const pageParam = cfg?.page_param || "page";
   const sizeParam = cfg?.size_param || "per_page";
   const pageSize = cfg?.page_size || 100;
   const arrayRoot = cfg?.array_root;
 
-  // Extract the array we just read so we can detect end-of-pages.
   let arr;
-  if (arrayRoot && typeof arrayRoot === "string") {
-    arr = rawResponse?.[arrayRoot];
-  } else if (Array.isArray(rawResponse?.data)) {
-    arr = rawResponse.data;
-  } else if (Array.isArray(rawResponse)) {
-    arr = rawResponse;
-  } else {
-    arr = [];
-  }
+  if (arrayRoot && typeof arrayRoot === "string") arr = raw?.[arrayRoot];
+  else if (Array.isArray(raw?.data)) arr = raw.data;
+  else if (Array.isArray(raw)) arr = raw;
+  else arr = [];
   arr = Array.isArray(arr) ? arr : [];
-
-  // Si la página actual viene vacía o incompleta, hemos terminado.
-  if (arr.length === 0 || arr.length < pageSize) {
-    return { nextUrl: null, nextCursor: null };
-  }
-
-  // Avanzar página: leemos la página actual del query, sumamos 1.
+  if (arr.length === 0 || arr.length < pageSize) return { nextUrl: null, nextCursor: null };
   const [, search = ""] = currentUrl.split("?");
   const params = new URLSearchParams(search);
   const currentPage = parseInt(params.get(pageParam) || `${cfg?.start_page || 1}`, 10);
@@ -124,36 +103,32 @@ function pageNumber(rawResponse, _headers, currentUrl, cfg) {
 
 // Link-header style (Shopify, WooCommerce). Reads `Link: <url>; rel="next"`
 // from response headers. Hook only — no provider migrated to it yet.
-function linkHeader(_rawResponse, headers, _currentUrl, _cfg) {
-  const linkHeaderValue = headers?.get?.("Link") || headers?.get?.("link");
-  if (!linkHeaderValue) return { nextUrl: null, nextCursor: null };
-  // Parse RFC 5988 minimally: split by comma, find rel="next".
-  const parts = linkHeaderValue.split(",").map(s => s.trim());
-  for (const p of parts) {
-    const m = p.match(/^<([^>]+)>\s*;\s*rel="?next"?/i);
+function linkHeader(_raw, headers) {
+  const v = headers?.get?.("Link") || headers?.get?.("link");
+  if (!v) return { nextUrl: null, nextCursor: null };
+  for (const part of v.split(",").map(s => s.trim())) {
+    const m = part.match(/^<([^>]+)>\s*;\s*rel="?next"?/i);
     if (m) return { nextUrl: m[1], nextCursor: m[1] };
   }
   return { nextUrl: null, nextCursor: null };
 }
 
 // Offset+limit style (sevDesk, Odoo). Hook only — no provider migrated yet.
-function offsetLimit(rawResponse, _headers, currentUrl, cfg) {
+function offsetLimit(raw, _h, currentUrl, cfg) {
   const offsetParam = cfg?.offset_param || "offset";
   const limitParam = cfg?.limit_param || "limit";
   const pageSize = cfg?.page_size || 100;
   const arrayRoot = cfg?.array_root;
 
   let arr;
-  if (arrayRoot && typeof arrayRoot === "string") arr = rawResponse?.[arrayRoot];
-  else if (Array.isArray(rawResponse?.objects)) arr = rawResponse.objects;
-  else if (Array.isArray(rawResponse?.data)) arr = rawResponse.data;
-  else if (Array.isArray(rawResponse)) arr = rawResponse;
+  if (arrayRoot && typeof arrayRoot === "string") arr = raw?.[arrayRoot];
+  else if (Array.isArray(raw?.objects)) arr = raw.objects;
+  else if (Array.isArray(raw?.data)) arr = raw.data;
+  else if (Array.isArray(raw)) arr = raw;
   else arr = [];
   arr = Array.isArray(arr) ? arr : [];
 
-  if (arr.length === 0 || arr.length < pageSize) {
-    return { nextUrl: null, nextCursor: null };
-  }
+  if (arr.length === 0 || arr.length < pageSize) return { nextUrl: null, nextCursor: null };
   const [, search = ""] = currentUrl.split("?");
   const params = new URLSearchParams(search);
   const currentOffset = parseInt(params.get(offsetParam) || "0", 10);
@@ -167,22 +142,15 @@ function offsetLimit(rawResponse, _headers, currentUrl, cfg) {
 // Null paginator — used when a provider does NOT declare `pagination`.
 // Always returns no-more-pages → single fetch. This is the legacy behavior
 // that every untouched provider continues to follow byte-for-byte.
-function nullPaginator() {
-  return { nextUrl: null, nextCursor: null };
-}
-
-const PAGINATORS = {
-  cursor_stripe: cursorStripe,
-  cursor_hal_body: cursorHalBody,
-  page_number: pageNumber,
-  link_header: linkHeader,
-  offset_limit: offsetLimit,
-};
+function nullPaginator() { return { nextUrl: null, nextCursor: null }; }
 
 export function getPaginator(style) {
-  if (!style) return nullPaginator;
-  const fn = PAGINATORS[style];
-  return fn || nullPaginator;
+  if (style === "cursor_stripe")   return cursorStripe;
+  if (style === "cursor_hal_body") return cursorHalBody;
+  if (style === "page_number")     return pageNumber;
+  if (style === "link_header")     return linkHeader;
+  if (style === "offset_limit")    return offsetLimit;
+  return nullPaginator;
 }
 // SYNC-END: paginators
 

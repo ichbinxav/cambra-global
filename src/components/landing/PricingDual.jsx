@@ -8,22 +8,13 @@ import { getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
- * Pricing — three-tier edition (Addendum R1, 2026-07-12).
+ * Pricing — canonical two-step public model.
  *
- * Three visually distinct cards on one row:
+ * Two visually distinct cards on one row:
  *   1. Analyze      — free, always. Anonymous 60s + verified analysis via Stripe.
- *   2. Monitoring   — €29/mo standard; founding cohort (first 150 brands) locks in
- *                     12 months free, price shown struck-through with badge.
- *   3. Recovery     — 25% of verified savings, 24-month agreement, only if we recover.
- *
- * The two durations live in different columns and read differently — kept
- * separate on purpose so no reader confuses them:
- *   • Monitoring   — "Free for 12 months — founding cohort" (grant duration).
- *   • Recovery     — "24-month agreement" (contract duration for success fee).
- *
- * NO monitoring product yet, NO subscription entities, NO dynamic 150-counter.
- * The founding-cohort promise is TEXTUAL only. The Monitoring CTA points at
- * the analyzer (same as Analyze) — the actual join-monitoring flow ships later.
+ *   2. Recovery     — the currently approved policy terms, only on positive
+ *                     verified savings. Tiered V2 copy is shown only after its
+ *                     legal-approval flag is true.
  */
 // i18n keys — resolved with t() inside the component so the cards follow
 // the active language on both the Landing and the /Pricing page.
@@ -68,11 +59,8 @@ function FeatureRow({ children }) {
 /**
  * Tier — one pricing column.
  *
- * `priceRow` overrides the default single `price` render — used by Monitoring
- * to show the strikethrough €29/mo alongside the "Free for 12 months" claim
- * plus the founding-cohort badge below it, all inside the same block that
- * `price`/`priceSuffix` would normally occupy. Keeps every other tier
- * (Analyze, Recovery) rendering unchanged.
+ * `priceRow` remains available for an explicitly policy-backed future price
+ * layout. The current Analyze and Recovery tiers use `price`/`priceSuffix`.
  */
 function Tier({
   eyebrow,

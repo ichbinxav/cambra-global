@@ -13,8 +13,8 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { retentionCutoff,retentionEvidenceComplete,retentionEvidenceStart } from '../../shared/retentionPolicy.ts';
 
-const RETENTION_DAYS = 90;
 const BATCH_SIZE = 200;
 
 Deno.serve(async (req) => {
@@ -27,9 +27,17 @@ Deno.serve(async (req) => {
     const gate = await requireAdminOrInternal(req, base44, null);
     if (!gate.ok) return gate.response;
 
-    const cutoff = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const policy=retentionCutoff('anonymous_analyzer_sessions');
+    if(!policy.ok)return Response.json({ok:false,error:policy.error},{status:503});
+    const cutoff = policy.cutoff;
+    const evidenceStart=retentionEvidenceStart({run_key:`anonymous-analyzer:${new Date().toISOString()}:${crypto.randomUUID()}`,policy_key:'anonymous_analyzer_sessions',action:'DELETE',cutoff_at:cutoff,scope:'PaymentsAnalysisSession'});
+    if(!evidenceStart.ok)return Response.json({ok:false,error:evidenceStart.error},{status:503});
+    const evidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(evidenceStart.row).catch(()=>null);
+    if(!evidence)return Response.json({ok:false,error:'retention_audit_evidence_unavailable'},{status:503});
 
     let totalDeleted = 0;
+    let totalCandidates = 0;
+    let totalFailed = 0;
     let batchesProcessed = 0;
     let lastBatchSize = -1;
 
@@ -43,6 +51,7 @@ Deno.serve(async (req) => {
         BATCH_SIZE,
       );
       lastBatchSize = stale.length;
+      totalCandidates += lastBatchSize;
       if (lastBatchSize === 0) break;
 
       for (const row of stale) {
@@ -50,6 +59,7 @@ Deno.serve(async (req) => {
           await base44.asServiceRole.entities.PaymentsAnalysisSession.delete(row.id);
           totalDeleted += 1;
         } catch (e) {
+          totalFailed += 1;
           console.warn('purgePaymentsAnalysisSessions delete failed:', row.id, (e as any)?.message);
         }
       }
@@ -58,11 +68,14 @@ Deno.serve(async (req) => {
 
     const summary = {
       ok: true,
-      retention_days: RETENTION_DAYS,
+      retention_days: policy.retention_days,
+      retention_policy_version: policy.policy_version,
       cutoff,
       deleted: totalDeleted,
       batches_processed: batchesProcessed,
     };
+    const complete=retentionEvidenceComplete(evidenceStart,{candidate_count:totalCandidates,succeeded_count:totalDeleted,failed_count:totalFailed,batches_processed:batchesProcessed});
+    await base44.asServiceRole.entities.RetentionExecutionEvidence.update(evidence.id,complete);
     console.info('purgePaymentsAnalysisSessions:', JSON.stringify(summary));
     return Response.json(summary);
   } catch (error) {

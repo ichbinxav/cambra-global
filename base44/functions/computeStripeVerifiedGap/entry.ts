@@ -54,6 +54,7 @@
 // value from Stripe's account object that could contain a key.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { normalizeAnalyzerStripeRows } from '../../shared/analyzerFx.ts';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // See file header for why this is a copy (third consumer of the engine).
@@ -1473,8 +1474,9 @@ async function sha256Hex(input: string): Promise<string> {
 async function fetchAndAggregate(
   headers: Record<string, string>,
   acctCountry: string,
+  fxSnapshots: any[],
 ): Promise<
-  | { ok: false; error: string; status: number }
+  | { ok: false; error: string; status: number; blockers?: any[] }
   | {
       ok: true;
       window: { from: string; to: string; days_covered: number };
@@ -1485,6 +1487,10 @@ async function fetchAndAggregate(
       avg_ticket_eur: number;
       currency: string;
       monthly_gmv_eur: number;
+      original_totals_by_currency: Record<string,any>;
+      fx_provenance: any[];
+      fx_policy_version: string;
+      fx_fingerprint: string;
       intl: { identified: number; intl_charges: number; domestic_charges: number; intl_share_pct: number | null };
       source_charge_ids: string[];   // sorted, canonical
       pagination_capped: boolean;
@@ -1509,33 +1515,30 @@ async function fetchAndAggregate(
 
   // Canonical rows only.
   const canonicalRows = balanceTxns.filter(t => CANONICAL_CATEGORIES.has(t.reporting_category));
-  let numeratorCents = 0;
-  let denominatorCents = 0;
   let countCharge = 0, countRefund = 0, countPartial = 0;
   for (const t of canonicalRows) {
-    numeratorCents += Number(t.fee || 0);
-    denominatorCents += Number(t.amount || 0);
     if (t.reporting_category === 'charge') countCharge++;
     else if (t.reporting_category === 'refund') countRefund++;
     else if (t.reporting_category === 'partial_capture_reversal') countPartial++;
   }
+  const normalized = normalizeAnalyzerStripeRows(canonicalRows,fxSnapshots,'EUR');
+  if (!normalized.ok) return { ok:false,error:normalized.error,status:409,blockers:normalized.blockers||[] };
+  const numeratorCents = normalized.fee_eur_minor;
+  const denominatorCents = normalized.amount_eur_minor;
   const measured_current_bps = denominatorCents > 0
     ? Math.round((numeratorCents / denominatorCents) * 10000)
     : 0;
 
   // Avg ticket = mean charge amount over the CANONICAL charge rows only.
   // Refund/partial rows carry negative amounts and don't reflect a ticket.
-  const chargeAmounts = canonicalRows
-    .filter(t => t.reporting_category === 'charge')
-    .map(t => Number(t.amount || 0));
+  const chargeAmounts = normalized.charge_amounts_eur_minor;
   const avgTicketCents = chargeAmounts.length > 0
     ? chargeAmounts.reduce((s, a) => s + a, 0) / chargeAmounts.length
     : 0;
 
-  // Currency: majority currency of the canonical rows (or default to EUR when
-  // we can't tell). Not FX-converting anything — the engine treats EUR/GBP/USD
-  // as ~1:1 at these magnitudes, same policy as Chunk 3.
-  const currency = String(canonicalRows[0]?.currency || 'eur').toUpperCase();
+  // Every monetary engine input is EUR. Original amounts/currencies and the
+  // exact reference-FX evidence remain attached for re-performance.
+  const currency = normalized.currency_normalized;
 
   // Monthly GMV in major units. We compute over the actual window and scale
   // to a 30-day proxy so the engine's savings math has a "monthly rate" input.
@@ -1594,6 +1597,10 @@ async function fetchAndAggregate(
     avg_ticket_eur: Math.round(avgTicketCents) / MINOR_PER_MAJOR,
     currency,
     monthly_gmv_eur: Math.round(monthly_gmv * 100) / 100,
+    original_totals_by_currency: normalized.original_totals_by_currency,
+    fx_provenance: normalized.fx_provenance,
+    fx_policy_version: normalized.policy_version,
+    fx_fingerprint: normalized.fx_fingerprint,
     intl: { identified, intl_charges: intlCharges, domestic_charges: domesticCharges, intl_share_pct },
     source_charge_ids,
     pagination_capped: chargesRes.capped || btRes.capped,
@@ -1784,17 +1791,18 @@ Deno.serve(async (req) => {
     }
 
     // Fetch + aggregate.
-    const agg = await fetchAndAggregate(auth.headers, auth.acct_country_hint);
+    const fxSnapshots = await base44.asServiceRole.entities.FxSnapshot.list('-effective_at',1000).catch(() => []);
+    const agg = await fetchAndAggregate(auth.headers, auth.acct_country_hint,fxSnapshots);
     if (!agg.ok) {
       // upstream Stripe error — surface the public message, never headers.
-      return Response.json({ ok: false, error: agg.error }, { status: agg.status || 502 });
+      return Response.json({ ok: false, error: agg.error, ...(agg.blockers ? { blockers:agg.blockers } : {}) }, { status: agg.status || 502 });
     }
 
     // Idempotency (contract §6). Compute the source_charges_hash and look for
     // an existing verified row with the exact same (brand_id, integration_id,
     // source_charges_hash). Match → return existing untouched.
     const idsBlob = agg.source_charge_ids.join('\n');
-    const source_charges_hash = await sha256Hex(`v1:${brand_id}:${integration.id}:${idsBlob}`);
+    const source_charges_hash = await sha256Hex(`v2:${brand_id}:${integration.id}:${idsBlob}:${agg.fx_fingerprint}`);
 
     const existing = await base44.asServiceRole.entities.PaymentsAnalysisVerified.filter({
       brand_id,
@@ -1834,6 +1842,9 @@ Deno.serve(async (req) => {
           avg_ticket_eur: agg.avg_ticket_eur,
           intl_pct_of_gmv: agg.intl.intl_share_pct,
           identified_charges_for_intl: agg.intl.identified,
+          original_totals_by_currency: agg.original_totals_by_currency,
+          fx_provenance: agg.fx_provenance,
+          fx_policy_version: agg.fx_policy_version,
           window_days: WINDOW_DAYS,
         },
       });
@@ -1903,6 +1914,9 @@ Deno.serve(async (req) => {
       canonical_rows_90d: agg.counts.charge + agg.counts.refund + agg.counts.partial_capture_reversal,
       raw_counts: agg.raw_counts,
       currency: agg.currency,
+      original_totals_by_currency: agg.original_totals_by_currency,
+      fx_provenance: agg.fx_provenance,
+      fx_policy_version: agg.fx_policy_version,
       pagination_capped: agg.pagination_capped,
       window_days: WINDOW_DAYS,
     };

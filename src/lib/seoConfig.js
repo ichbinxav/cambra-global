@@ -53,7 +53,7 @@ export const HOMEPAGE_SCHEMA = {
   serviceType: "Card payment cost audit and verified savings recovery",
   areaServed: "Europe",
   description:
-    "CAMBRA analyses card payment fees for European businesses, explains possible overpayment and helps recover savings only when the evidence confirms them.",
+    "CAMBRA shows European businesses what card processing costs, identifies supported opportunities to reduce payment fees and helps recover verified margin.",
 };
 
 // Build a WebPage JSON-LD block for a non-homepage public route.
@@ -77,14 +77,14 @@ export const SEO_STATIC = {
     robots: DEFAULT_ROBOTS,
     schema: HOMEPAGE_SCHEMA, // SeoMeta skips writing it (index.html static copy)
     title: {
-      en: "Card payment cost audit for European businesses | CAMBRA",
-      fr: "Audit des frais de paiement par carte en Europe | CAMBRA",
-      es: "Auditoría de costes de pago con tarjeta en Europa | CAMBRA",
+      en: "Reduce card payment fees and recover margin | CAMBRA",
+      fr: "Réduire les frais de paiement par carte | CAMBRA",
+      es: "Reducir comisiones de pago con tarjeta | CAMBRA",
     },
     description: {
-      en: "Find out what your card payments really cost. CAMBRA explains possible overpayment and helps recover verified savings. Free first analysis.",
-      fr: "Découvrez le coût réel de vos paiements par carte. CAMBRA explique les frais et vous aide à récupérer des économies vérifiées. Première analyse gratuite.",
-      es: "Descubre el coste real de tus pagos con tarjeta. CAMBRA explica tus comisiones y te ayuda a recuperar ahorro verificado. Primer análisis gratuito.",
+      en: "See what card processing costs your business, find supported opportunities to reduce payment fees and recover verified margin. Free first analysis.",
+      fr: "Découvrez ce que les paiements par carte coûtent à votre entreprise, réduisez les frais lorsque les chiffres le permettent et récupérez une marge vérifiée.",
+      es: "Descubre cuánto le cuesta a tu negocio cobrar con tarjeta, reduce comisiones cuando los datos lo justifican y recupera margen verificado.",
     },
   },
   "/Analyzer": {
@@ -92,9 +92,9 @@ export const SEO_STATIC = {
     ogType: "website",
     robots: DEFAULT_ROBOTS,
     title: {
-      en: "Free card payment cost analyzer — CAMBRA",
-      fr: "Analyseur gratuit des coûts de paiement par carte — CAMBRA",
-      es: "Analizador gratuito de costes de pago con tarjeta — CAMBRA",
+      en: "Free card processing fee analyzer | CAMBRA",
+      fr: "Analyseur gratuit des frais de paiement par carte | CAMBRA",
+      es: "Analizador gratuito de comisiones de tarjeta | CAMBRA",
     },
     description: {
       en: "Check your card processing fees and effective payment rate by market. Every result explains its evidence and uncertainty.",

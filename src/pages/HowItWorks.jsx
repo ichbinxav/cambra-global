@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Activity, Plug, BarChart3, Sparkles } from "lucide-react";
+import { ArrowRight, Activity, BarChart3, Sparkles } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,7 @@ export default function HowItWorks() {
   const STEPS = [
     { n: "01", eyebrow: t("hiw_s1_eyebrow"), icon: Activity,  title: t("hiw_s1_title"), detail: t("hiw_s1_detail"), cta: { label: t("hiw_s1_cta"), href: "/Analyzer" } },
     { n: "02", eyebrow: t("hiw_s2_eyebrow"), icon: BarChart3, title: t("hiw_s2_title"), detail: t("hiw_s2_detail"), cta: { label: t("hiw_s2_cta"), href: "/Analyzer" } },
-    { n: "03", eyebrow: t("hiw_s3_eyebrow"), icon: Plug,      title: t("hiw_s3_title"), detail: t("hiw_s3_detail"), cta: { label: t("hiw_s3_cta"), href: "/ConnectTools" } },
-    { n: "04", eyebrow: t("hiw_s4_eyebrow"), icon: Sparkles,  title: t("hiw_s4_title"), detail: t("hiw_s4_detail"), cta: { label: t("hiw_s4_cta"), href: "/Pricing" } },
+    { n: "03", eyebrow: t("hiw_s3_eyebrow"), icon: Sparkles,  title: t("hiw_s3_title"), detail: t("hiw_s3_detail"), cta: { label: t("hiw_s3_cta"), href: "/Pricing" } },
   ];
   return (
     <PublicPageShell>

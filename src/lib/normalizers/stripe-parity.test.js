@@ -1,27 +1,9 @@
-// ─── Stripe normalizer parity — behavior-parity + freshness guard
+// ─── Stripe normalizer parity — behavior + freshness guard
 //
 // WHY THIS TEST EXISTS
 //
-// The `stripeNormalizer` pair in __sync_check__.test.js is skipped because
-// the two copies (src/lib/normalizers/stripe.js vs the arrow function inside
-// the `normalizers` object of base44/functions/dataSyncAgent/entry.ts) are
-// structurally different:
-//
-//   • src: `KNOWN_TYPES`, `toNum`, `mapType` are TOP-LEVEL declarations of
-//     the module; `normalizeStripeBalanceTransactions` is a named export
-//     that closes over them.
-//   • Deno: the same 3 helpers live INSIDE the arrow function assigned to
-//     `stripe_transactions:` inside the giant `normalizers` object literal.
-//
-// Extracting the helpers to top-level in Deno collides with 22 sibling
-// normalizers that each redeclare their OWN local `toNum`. Anidar the
-// helpers in src would break testability of `mapType` / `KNOWN_TYPES` from
-// unit tests. Both realignments are net-negative → the pair stays skipped.
-//
-// WHAT THIS TEST DOES INSTEAD
-//
-// Behavior-parity, not structure-parity. We keep a VERBATIM COPY of the
-// Deno arrow function inline (between PARITY-COPY-START/END markers) and:
+// Structural parity is enforced by __sync_check__.test.js. This additional
+// executable guard keeps a verbatim copy of the Deno arrow body and:
 //
 //   1. Run BOTH normalizers over the 7 fixture files that already lock the
 //      src copy's behavior. Outputs must be deep-equal.

@@ -4,14 +4,9 @@
 // Stripe /v1/balance_transactions → CAMBRA spend rows.
 //
 // Why a separate file:
-//   - dataSyncAgent runs on Deno and cannot import local modules; its copy of
-//     this function is FUNCIONALMENTE EQUIVALENTE (verificado por ejecución
-//     contra 7 fixtures reales + edge cases) pero NO BYTE-VERBATIM con
-//     base44/functions/dataSyncAgent/entry.ts: en Deno los helpers
-//     (KNOWN_TYPES, toNum, mapType) viven DENTRO del arrow function como
-//     método de objeto-literal; aquí están a top-level del módulo. La
-//     divergencia es estructural-arquitectural (un archivo Deno gigante vs
-//     un módulo ESM importable), NO un drift accidental.
+//   - dataSyncAgent runs on Deno and cannot import local modules. Its copy is
+//     structurally checked against this source: helpers intentionally live
+//     inside both wrappers so drift can never be skipped.
 //   - This file is the testable source of truth — every behavior is locked by
 //     stripe.test.js with synthetic fixtures.
 //   - If both copies drift in BEHAVIOR, the unit tests catch the regression
@@ -63,35 +58,22 @@
 //       de Stripe, no en balance_transactions. Futuro, fuera de scope.
 
 // SYNC-START: stripeNormalizer
-const KNOWN_TYPES = [
-  "charge",
-  "refund",
-  "dispute",
-  "payout",
-  "transfer",
-  "stripe_fee",
-  "application_fee",
-  "adjustment",
-];
-
-function toNum(v, fallback = 0) {
-  if (v === null || v === undefined || v === "") return fallback;
-  const n = typeof v === "number" ? v : parseFloat(v);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-function mapType(rawType) {
-  // Whitelist semántica. Cualquier valor fuera de la lista → null (NUNCA
-  // inventamos label — consistente con la decisión de square_payments.status).
-  // `application_fee_refund` se colapsa a `application_fee`: mismo concepto,
-  // el signo del `amount` ya indica si es cobro o devolución.
-  if (typeof rawType !== "string") return null;
-  if (rawType === "application_fee_refund") return "application_fee";
-  if (KNOWN_TYPES.includes(rawType)) return rawType;
-  return null;
-}
-
 export function normalizeStripeBalanceTransactions(raw) {
+  const KNOWN_TYPES = [
+    "charge", "refund", "dispute", "payout", "transfer",
+    "stripe_fee", "application_fee", "adjustment",
+  ];
+  const toNum = (v, fallback = 0) => {
+    if (v === null || v === undefined || v === "") return fallback;
+    const n = typeof v === "number" ? v : parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const mapType = (rawType) => {
+    if (typeof rawType !== "string") return null;
+    if (rawType === "application_fee_refund") return "application_fee";
+    if (KNOWN_TYPES.includes(rawType)) return rawType;
+    return null;
+  };
   const rows = Array.isArray(raw?.data) ? raw.data : [];
   const out = [];
   for (const tx of rows) {

@@ -77,6 +77,10 @@ if (fs.existsSync('base44/entities/IncidentAlertDelivery.jsonc')) {
 if (fs.existsSync('base44/entities/CostBudgetControl.jsonc')) {
   addRequirement('POST-DEPLOYMENT COST CONTROL MIGRATION REQUIRED: re-apply the Founder-approved daily/monthly/category budget so the new CAS reservation fields are initialized; until then paid operations intentionally fail closed.');
 }
+addRequirement('BASE44 DEPLOYMENT IDENTITY REQUIRED: deploy the exact final source tree and prove that runtime release_version, Git SHA, sha256-tree-v1 source-tree hash and source-tree file count all match RELEASE.json and the packaged archive.');
+addRequirement('PAYMENTS V1 CONTROLLED GOLDEN PATH REQUIRED: complete one real controlled merchant through live connect, sync, Analyzer, Recover acceptance, verified outcome, billing and Stripe reconciliation without mocks or bypasses.');
+addRequirement('SCHEDULER AND OBSERVABILITY RUNTIME PROOF REQUIRED: observe every required worker at its configured cadence, prove duplicate-execution protection, and confirm the complete deployed loop is alive.');
+addRequirement('BACKUP/RESTORE PROOF REQUIRED: execute a real restore drill and record measured RPO/RTO against the production data boundary.');
 addRequirement('EMAIL DELIVERABILITY PROOF REQUIRED: verify production SPF/DKIM/DMARC plus bounce, complaint, unsubscribe and suppression handling against the real sending domain and provider.');
 addRequirement('FOUNDER CONTROL DRILL REQUIRED: in the real runtime prove start/pause/resume/approve/reject and GLOBAL EMERGENCY STOP, confirm safe Analyzer/read-only availability while stopped, then prove safe resume and complete-loop observability.');
 if (fs.existsSync('docs/P6_P8_AUTONOMOUS_COMPANY_SEAL.md')) {

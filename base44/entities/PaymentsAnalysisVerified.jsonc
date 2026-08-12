@@ -40,11 +40,11 @@
     },
     "sample_metrics": {
       "type": "object",
-      "description": "The raw aggregates the engine consumed, kept for audit: { gmv_eur: number, tx_count: number, avg_ticket_eur: number, intl_pct: number }. Sourced from stripeDataSync's aggregation pass over the measurement_window. Enables re-derivation of measured_current_bps if a future audit needs to inspect the arithmetic."
+      "description": "Auditable aggregates consumed by the engine. EUR-normalized metrics are accompanied by original_totals_by_currency, versioned FX provenance (source, evidence/snapshot anchor and effective date), raw counts and the exact window. Non-EUR input without reliable reference-FX evidence is never persisted."
     },
     "source_charges_hash": {
       "type": "string",
-      "description": "Idempotency key for Chunk 4's materialization. SHA-256 over the sorted list of Stripe charge IDs that entered the aggregation for this measurement_window. Chunk 4 checks this hash before writing \u2014 if the same (brand_id, integration_id, source_charges_hash) already exists, the row is skipped rather than duplicated. Enables safe replay of stripeDataSync without polluting the verified table."
+      "description": "Idempotency key for verified materialization. SHA-256 v2 covers the sorted Stripe charge IDs plus the exact FX evidence fingerprint, brand and integration. A change in historical FX evidence therefore cannot silently reuse a stale analysis."
     }
   },
   "required": [

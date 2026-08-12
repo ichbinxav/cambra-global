@@ -20,35 +20,21 @@
 
 import { Zap, FileUp, Edit3, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/lib/i18n.jsx";
 
-const CARDS = [
+const CARD_DEFINITIONS = [
   {
     id: "connect",
     icon: Zap,
-    title: "Connect your PSP",
-    subtitle: "Verified real data",
-    body: "Stripe OAuth in 20 seconds. We measure your actual fees over 90 days — no estimation.",
-    badge: "Best accuracy",
-    cta: "Connect Stripe",
     featured: true,
   },
   {
     id: "upload",
     icon: FileUp,
-    title: "Upload your statements",
-    subtitle: "Independently extracted — beta",
-    body: "Pick your provider below and upload a statement. We extract the figures with two independent readers; financial verification remains a separate review.",
-    badge: "In beta",
-    cta: "Choose provider",
   },
   {
     id: "manual",
     icon: Edit3,
-    title: "Answer 5 questions",
-    subtitle: "Fastest — no account",
-    body: "We compare you with similar businesses in your region, using public prices. ~2 minutes.",
-    badge: "You're here",
-    cta: "Continue below",
   },
 ];
 
@@ -221,8 +207,18 @@ function StandardCard({ card, isSelected, onSelect }) {
 }
 
 export default function AnalyzerEntryCards({ selected = "manual", onSelect }) {
+  const { t } = useTranslation();
+  const cards = CARD_DEFINITIONS.map((card) => ({
+    ...card,
+    title: t(`az_entry_${card.id}_title`),
+    subtitle: t(`az_entry_${card.id}_subtitle`),
+    body: t(`az_entry_${card.id}_body`),
+    badge: t(`az_entry_${card.id}_badge`),
+    cta: t(`az_entry_${card.id}_cta`),
+  }));
+
   return (
-    <div className="mb-8">
+    <div className="mb-8" role="group" aria-label={t("az_entry_label")}>
       <div className="flex items-center gap-2 mb-3.5">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1"
@@ -233,12 +229,12 @@ export default function AnalyzerEntryCards({ selected = "manual", onSelect }) {
             <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#ffffff" }} />
           </span>
           <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>
-            Choose how to run your audit
+            {t("az_entry_label")}
           </span>
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 items-stretch">
-        {CARDS.map((card, i) => (
+        {cards.map((card, i) => (
           <motion.div
             key={card.id}
             initial={{ opacity: 0, y: 16 }}

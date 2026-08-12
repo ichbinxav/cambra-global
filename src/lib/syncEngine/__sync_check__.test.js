@@ -56,57 +56,16 @@ const DENO_FILE = path.join(REPO_ROOT, "base44/functions/dataSyncAgent/entry.ts"
 // shown if the assertion fails.
 // Each pair declares: a logical key (must match the SYNC-START/END markers
 // in BOTH files), the src/lib/ file holding the testable copy, and an
-// optional `skip` flag with a reason — used for pieces that DO have drift
-// today but whose realignment is parked as a separate decision.
-//
-// DECISIÓN ARQUITECTURAL (documentada, no accionada):
-//
-// De las 7 piezas duplicadas Deno↔src, 5 están en `skip`. Al analizarlas
-// juntas queda claro que NO son drift cosmético — son la CONSECUENCIA
-// ESPERADA de una restricción del entorno:
-//
-//   `base44/functions/dataSyncAgent/entry.ts` es un archivo Deno único
-//   que no puede importar de `src/`. Todo helper que viva en ese archivo
-//   comparte namespace con decenas de otros helpers del mismo archivo.
-//
-// Eso obliga a dos patrones divergentes:
-//
-//   1. Prefijos `_` en helpers genéricos (`_sleep`, `_paginatorCursorStripe`,
-//      `_createRefreshState`) para evitar colisiones en el archivo gigante.
-//   2. Normalizers como propiedades de un objeto `NORMALIZERS` (dispatch
-//      por key) en Deno vs named exports en src (tests por import).
-//
-// Realinear las 5 exige:
-//   - Desprefijar helpers verificando colisiones en un archivo Deno de
-//     miles de líneas que sólo se ejecuta al desplegar (no en tests locales).
-//   - Reescribir el dispatcher de normalizers.
-//
-// Riesgo real: un helper mal desprefijado tapa a otro silenciosamente y
-// `dataSyncAgent` deja de sincronizar bien un subset de integraciones sin
-// que ningún test en src/ lo detecte — porque los tests en src/ no
-// ejecutan el archivo Deno.
-//
-// El test cumple SU FUNCIÓN REAL tal cual está hoy: documenta el drift
-// arquitectural por pieza y se pondrá rojo el día que alguien introduzca
-// un drift FUNCIONAL (no arquitectural) en cualquier pieza no-skip. Las
-// 5 piezas skip permanecen así hasta que se decida migrar `dataSyncAgent`
-// a módulos — que es una decisión mucho más grande que este pase.
+// All pairs are mandatory. Known wrapper names and Deno-only helper prefixes
+// are normalized below; control-flow and statement bodies must match exactly.
 const PAIRS = [
   { key: "mergeStaticHeaders",     src: "src/lib/syncEngine/mergeStaticHeaders.js" },
   { key: "dateRange",              src: "src/lib/syncEngine/dateRange.js" },
   { key: "cursorAdvance",          src: "src/lib/syncEngine/cursorAdvance.js" },
-  {
-    key: "paginators",
-    src: "src/lib/syncEngine/paginators.js",
-    skip: "STRUCTURAL DRIFT — dispatcher shape divergente. src exposes a `PAGINATORS` object literal + `getPaginator()` that indexes into it; Deno uses an explicit `if (style === 'X') return _paginatorX` chain inside `getPaginator()`. The 8 helper renames (`_paginatorCursorStripe` → `cursorStripe`, etc.) ARE fully covered by RENAMES and \\b correctly prevents substring collisions (verified 2026-07-10: `\\b_engineSyncWithQueryParam\\b` does NOT match inside `_engineSyncWithQueryParams`). What this normalizer CANNOT reconcile without producing false greens is the dispatcher itself — collapsing both shapes to a canonical `__DISPATCH__(style)` would silently mask a real divergence in the set of supported styles. Behavior verified 100% equivalent on 17 fixtures (cursor_stripe x4 / cursor_hal_body x3 / page_number x4 / link_header x2 / offset_limit x2 / null x2). SEMANTIC drift (supported style set) is now locked by src/lib/syncEngine/paginators-dispatcher-parity.test.js. Realignment of the dispatcher pending dedicated refactor.",
-  },
+  { key: "paginators",            src: "src/lib/syncEngine/paginators.js" },
   { key: "rateLimit",    src: "src/lib/syncEngine/rateLimit.js" },
   { key: "refreshOn401", src: "src/lib/syncEngine/refreshOn401.js" },
-  {
-    key: "stripeNormalizer",
-    src: "src/lib/normalizers/stripe.js",
-    skip: "STRUCTURAL DRIFT — Deno declares KNOWN_TYPES/toNum/mapType INSIDE the arrow function; src declares them at TOP-LEVEL of the module. Realignment analyzed 2026-07-10: extracting to top-level in Deno collides with 22 sibling normalizers that each redeclare their own local `toNum`; nesting in src breaks unit-test importability of `mapType`. Both routes net-negative. BEHAVIOR parity is now locked by src/lib/normalizers/stripe-parity.test.js — it runs both copies (src import + verbatim inline copy of the Deno arrow) over all 7 fixtures + null/edge cases and asserts deep equality, PLUS a freshness guard that compares the inline PARITY-COPY block against the actual Deno SYNC block (line-normalized) so the copy can never silently rot.",
-  },
+  { key: "stripeNormalizer",      src: "src/lib/normalizers/stripe.js" },
   { key: "bigcommerceNormalizer", src: "src/lib/normalizers/bigcommerce.js" },
   // paymentsGap: pure ES6 engine (src/lib/paymentsGap.js) mirrored verbatim
   // inside TWO Deno consumers (as of M3-Chunk 4):
@@ -404,17 +363,10 @@ describe("Sync-check — duplicated copies (src/lib/ vs base44/functions/dataSyn
   // One test per pair. Each fails INDEPENDENTLY so a single drift doesn't
   // mask the others. Easy to extend: add an entry to PAIRS at the top.
   //
-  // Pairs flagged with `skip` are KNOWN drifts (functionally equivalent,
-  // not byte-verbatim) parked as separate decisions — they run as `it.skip`
-  // so the suite stays green while keeping the drift documented at the
-  // exact location it will fire from once the pair is realigned.
   for (const pair of PAIRS) {
-    const runner = pair.skip ? it.skip : it;
     const displayKey = pair.label || pair.key;
-    const label = pair.skip
-      ? `pair "${displayKey}" — SKIPPED (${pair.skip.split(" — ")[0]})`
-      : `pair "${displayKey}" — Deno copy matches ${path.basename(pair.src)}`;
-    runner(label, () => {
+    const label = `pair "${displayKey}" — Deno copy matches ${path.basename(pair.src)}`;
+    it(label, () => {
       // Each pair may override the primary Deno file target. Defaults to
       // dataSyncAgent (the historical target). Pairs may also declare
       // `extraDenos: [...]` for additional Deno consumers that must ALL

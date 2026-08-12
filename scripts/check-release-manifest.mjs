@@ -33,8 +33,8 @@ if (m.releaseName !== pkg.releaseName) fail(`releaseName mismatch: "${m.releaseN
 if (m.policyVersion !== policy.policyVersion) fail(`policy drift: manifest ${m.policyVersion} vs live ${policy.policyVersion}`);
 if (m.policyFileSha !== sha256("config/product-policy.json")) fail("stale manifest: product policy changed since generation");
 if (m.lockfileSha !== sha256("package-lock.json")) fail("stale manifest: package-lock.json changed since generation");
-if (m.nodeVersion !== "v20.20.2") fail(`unsupported release Node: ${m.nodeVersion}; exact v20.20.2 required`);
-if (m.npmVersion !== "10.8.2") fail(`unsupported release npm: ${m.npmVersion}; exact 10.8.2 required`);
+if (m.nodeVersion !== "v24.19.0") fail(`unsupported release Node: ${m.nodeVersion}; exact v24.19.0 required`);
+if (m.npmVersion !== "11.17.0") fail(`unsupported release npm: ${m.npmVersion}; exact 11.17.0 required`);
 if (m.schedulerInventorySha !== sha256("config/scheduler-inventory.json")) fail("scheduler inventory changed since manifest generation");
 if (m.dataRetentionMatrixSha !== sha256("config/data-retention-matrix.json")) fail("data retention matrix changed since manifest generation");
 if (m.secretScannerSha !== sha256("scripts/check-secrets.mjs")) fail("secret scanner changed since manifest generation");

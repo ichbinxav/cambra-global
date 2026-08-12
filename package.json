@@ -1,13 +1,13 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.96.0",
-  "releaseName": "CAMBRA v0.96.0 — Commercial Operating System",
+  "version": "0.97.0",
+  "releaseName": "CAMBRA v0.97.0 — Final Production Seal",
   "type": "module",
-  "packageManager": "npm@10.8.2",
+  "packageManager": "npm@11.17.0",
   "engines": {
-    "node": ">=20.20.2 <21",
-    "npm": ">=10.8.2 <10.9"
+    "node": ">=24.19.0 <25",
+    "npm": ">=11.17.0 <12"
   },
   "scripts": {
     "dev": "vite",
