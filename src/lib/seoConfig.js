@@ -47,13 +47,13 @@ export const OG_LOCALE = { en: "en_GB", fr: "fr_FR", es: "es_ES" };
 export const HOMEPAGE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "Service",
-  name: "CAMBRA European Infrastructure Intelligence",
+  name: "CAMBRA payment cost audit and recovery",
   url: SEO_ORIGIN,
   provider: { "@type": "Organization", name: "CAMBRA", legalName: "CAMBRA GLOBAL SASU" },
-  serviceType: "European infrastructure intelligence with payment-cost analysis",
+  serviceType: "Card payment cost audit and verified savings recovery",
   areaServed: "Europe",
   description:
-    "CAMBRA turns payment costs, provider terms and market context into evidence-aware infrastructure intelligence for independent European businesses. Payments are the entry point; conclusions and actions depend on market readiness and the available evidence.",
+    "CAMBRA analyses card payment fees for European businesses, explains possible overpayment and helps recover savings only when the evidence confirms them.",
 };
 
 // Build a WebPage JSON-LD block for a non-homepage public route.
@@ -77,14 +77,14 @@ export const SEO_STATIC = {
     robots: DEFAULT_ROBOTS,
     schema: HOMEPAGE_SCHEMA, // SeoMeta skips writing it (index.html static copy)
     title: {
-      en: "CAMBRA — European Infrastructure Intelligence",
-      fr: "CAMBRA — Intelligence d'infrastructure européenne",
-      es: "CAMBRA — Inteligencia de infraestructura europea",
+      en: "Card payment cost audit for European businesses | CAMBRA",
+      fr: "Audit des frais de paiement par carte en Europe | CAMBRA",
+      es: "Auditoría de costes de pago con tarjeta en Europa | CAMBRA",
     },
     description: {
-      en: "Evidence-aware intelligence for payment costs, provider terms and European market context. Start with payments; act only when market policy and evidence support the next step.",
-      fr: "Une intelligence fondée sur les preuves pour les coûts de paiement, les conditions fournisseurs et le contexte des marchés européens. Agissez uniquement lorsque la politique marché et les preuves le permettent.",
-      es: "Inteligencia basada en evidencia para costes de pago, condiciones de proveedores y contexto de mercados europeos. Actúa solo cuando la política de mercado y la evidencia lo permiten.",
+      en: "Find out what your card payments really cost. CAMBRA explains possible overpayment and helps recover verified savings. Free first analysis.",
+      fr: "Découvrez le coût réel de vos paiements par carte. CAMBRA explique les frais et vous aide à récupérer des économies vérifiées. Première analyse gratuite.",
+      es: "Descubre el coste real de tus pagos con tarjeta. CAMBRA explica tus comisiones y te ayuda a recuperar ahorro verificado. Primer análisis gratuito.",
     },
   },
   "/Analyzer": {
@@ -97,9 +97,9 @@ export const SEO_STATIC = {
       es: "Analizador gratuito de costes de pago con tarjeta — CAMBRA",
     },
     description: {
-      en: "Run a market-aware payment-cost analysis. Results identify their evidence state and are withheld when the selected market lacks sufficient support.",
-      fr: "Lancez une analyse des coûts de paiement adaptée au marché. Les résultats indiquent leur niveau de preuve et sont retenus si le marché choisi manque de support.",
-      es: "Ejecuta un análisis de costes de pago adaptado al mercado. Los resultados muestran su estado de evidencia y se retienen si el mercado elegido no tiene soporte suficiente.",
+      en: "Check your card processing fees and effective payment rate by market. Every result explains its evidence and uncertainty.",
+      fr: "Vérifiez vos frais de paiement par carte et votre taux effectif selon votre marché. Chaque résultat explique ses preuves et ses incertitudes.",
+      es: "Comprueba tus comisiones de pago con tarjeta y tu tasa efectiva por mercado. Cada resultado explica su evidencia y sus límites.",
     },
   },
   "/HowItWorks": {

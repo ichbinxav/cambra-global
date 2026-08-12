@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.96.0 — Commercial Operating System (durability manifest)",
-  "generatedAt": "2026-08-12T00:32:00.635Z",
+  "generatedAt": "2026-08-12T00:38:41.963Z",
   "packageVersion": "0.96.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1597,18 +1597,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "4d2cc6ce73cb013dc8960a9b6b0bfdaeb241a5331f7e76d416875953773d5e79",
-      "bytes": 95312
+      "sha256": "3c3338ac94789d859b8add1106f1643545d58fb06c4d152c3d143b0e1494c17a",
+      "bytes": 95256
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "d96dde188186b982f9e8a2a4c55867a16c8a1027302c69472d8f7d1dcc193056",
-      "bytes": 96602
+      "sha256": "43823aad4bda2b6377e7837d67241030b1e2f32631335ecbbd6e18c96c6a8cc6",
+      "bytes": 96512
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "656fe61b897ae6b3f4d40d00d39126ec5322851bb81135f1919e3c81fd643c65",
-      "bytes": 101355
+      "sha256": "edef3c3b90f426caa19846e45b79f968a4f3bbb1f38de156b5a23fbfa3ec1ddb",
+      "bytes": 101311
     },
     {
       "path": "src/lib/normalizedEvidence.js",

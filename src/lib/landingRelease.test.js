@@ -23,7 +23,7 @@ describe("landing truth and release controls", () => {
     const landing = read("src/pages/Landing.jsx");
     expect(landing).not.toContain("LANDING_JSON_LD");
     expect(landing).not.toContain("cambra-landing-jsonld");
-    expect(read("index.html")).toContain("CAMBRA European Infrastructure Intelligence");
+    expect(read("index.html")).toContain("CAMBRA payment cost audit and recovery");
   });
 
   it("defaults optional consent off and exposes accept, reject, manage and withdrawal", () => {

@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.7.0",
   "systemVersion": "0.96.0",
   "packageVersion": "0.96.0",
-  "generatedAt": "2026-08-12T00:32:00.928Z",
+  "generatedAt": "2026-08-12T00:38:42.345Z",
   "sourcePaths": {
     "base44/entities/AuthoritySnapshot.jsonc": "c9e3c2fd0872c31ffb76b6076ec170e5ec383e858e0b6cef70232ce4841484ed",
     "base44/entities/CommunicationMessage.jsonc": "a26697830ba440609e4a7c856c2833103cae64ec4e58fc4e4dc1998637928f2b",
