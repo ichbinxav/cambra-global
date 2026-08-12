@@ -49,6 +49,7 @@ jobs:
         if: always()
         with:
           name: release-evidence
+          include-hidden-files: true
           path: |
             .release-evidence/
             .release-artifacts/

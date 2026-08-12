@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.97.0 — Final Production Seal (durability manifest)",
-  "generatedAt": "2026-08-12T15:51:32.351Z",
+  "generatedAt": "2026-08-12T15:53:35.901Z",
   "packageVersion": "0.97.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -22,8 +22,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "58e9f9e324e47554ce44835f09d808b676f93d5be714620a74ddf78d0ab03e61",
-      "bytes": 1737
+      "sha256": "c74a446feaf26608f510026f1edf8f8e1301e3dde9148cfc7e17cc9fdfcdf9fc",
+      "bytes": 1774
     },
     {
       "path": "base44/entities/AnalyzerResult.jsonc",
@@ -1157,8 +1157,8 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "58e9f9e324e47554ce44835f09d808b676f93d5be714620a74ddf78d0ab03e61",
-      "bytes": 1737
+      "sha256": "c74a446feaf26608f510026f1edf8f8e1301e3dde9148cfc7e17cc9fdfcdf9fc",
+      "bytes": 1774
     },
     {
       "path": "config/data-retention-matrix.json",

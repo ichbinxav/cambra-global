@@ -45,6 +45,7 @@ describe('v0.97 CTO production remediation controls',()=>{
     const workflow=read('.github/workflows/ci.yml');
     expect(workflow).toContain('CAMBRA_RELEASE_GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}');
     expect(workflow).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
+    expect(workflow).toContain('include-hidden-files: true');
     expect(workflow).toContain('npm run release:package');
   });
 
