@@ -51,7 +51,10 @@ describe('v0.97 CTO production remediation controls',()=>{
 
   it('identifies CAMBRA to GitHub for runtime repository and Dependabot checks',()=>{
     expect(read('base44/functions/developerMigrationEngine/entry.ts')).toContain("'User-Agent': 'CAMBRA/0.97.0'");
-    expect(read('base44/functions/dependencySecurityWorker/entry.ts')).toContain("'User-Agent':'CAMBRA/0.97.0'");
+    const monitor=read('base44/functions/dependencySecurityWorker/entry.ts');
+    expect(monitor).toContain('"User-Agent": "CAMBRA/0.97.0"');
+    expect(monitor).toContain('p17:dependency_monitor_failed:');
+    expect(monitor).toContain('isRecoveredMonitorFailure');
   });
 
   it('does not commit a self-referential parent SHA as release identity',()=>{
