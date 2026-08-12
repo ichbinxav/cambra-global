@@ -73,7 +73,11 @@ describe('Base44 quota-safe backend deployment topology', () => {
     for (const name of ['getEuropeMarketsCommandCenter', 'outboundControlAdmin']) {
       const hostSource = source(name);
       expect(hostSource, name).toContain('normalizeRoutedJson');
-      expect(hostSource, name).toContain('Response.json(JSON.parse(text)');
+      expect(hostSource, name).toContain("for (let layer=0; layer<4 && typeof value==='string'; layer++)");
+      expect(hostSource, name).toContain('value=JSON.parse(value)');
     }
+    const clientSource = fs.readFileSync(path.join(root, 'src/api/base44Client.js'), 'utf8');
+    expect(clientSource).toContain('normalizeBase44FunctionResponse');
+    expect(clientSource).toContain('client.functions.invoke = async');
   });
 });
