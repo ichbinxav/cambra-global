@@ -153,7 +153,21 @@ export function instantlyCampaignDefinition(input: any) {
     1,
     Math.min(15, Math.floor(Number(input?.daily_limit) || 10)),
   );
-  const timezone = clean(input?.timezone || "Europe/Paris", 80);
+  const requestedTimezone = clean(input?.timezone || "Europe/Paris", 80);
+  // Instantly accepts a curated timezone enum rather than the full IANA set.
+  // Map CAMBRA's common European zones to provider-supported equivalents with
+  // the same civil-time/DST behavior instead of sending an invalid value.
+  const timezoneAliases: Record<string, string> = {
+    "Europe/Paris": "Europe/Belgrade",
+    "Europe/Madrid": "Europe/Belgrade",
+    "Europe/Brussels": "Europe/Belgrade",
+    "Europe/Amsterdam": "Europe/Belgrade",
+    "Europe/Berlin": "Europe/Belgrade",
+    "Europe/Rome": "Europe/Belgrade",
+    "Europe/London": "Europe/Isle_of_Man",
+    "Europe/Lisbon": "Atlantic/Canary",
+  };
+  const timezone = timezoneAliases[requestedTimezone] || requestedTimezone;
   const accounts = [
     ...new Set(
       (Array.isArray(input?.account_emails) ? input.account_emails : [])
@@ -161,6 +175,9 @@ export function instantlyCampaignDefinition(input: any) {
         .filter(Boolean),
     ),
   ];
+  const startDate = new Date();
+  const endDate = new Date(startDate);
+  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
   return {
     name: clean(input?.name || `CAMBRA ${input?.language || "EN"} CANARY`, 120),
     campaign_schedule: {
@@ -183,7 +200,8 @@ export function instantlyCampaignDefinition(input: any) {
           timezone,
         },
       ],
-      start_date: new Date().toISOString().slice(0, 10),
+      start_date: startDate.toISOString().slice(0, 10),
+      end_date: endDate.toISOString().slice(0, 10),
     },
     sequences: [
       {
@@ -192,6 +210,8 @@ export function instantlyCampaignDefinition(input: any) {
             type: "email",
             delay: 1,
             delay_unit: "days",
+            pre_delay: 1,
+            pre_delay_unit: "days",
             variants: [
               {
                 subject: "{{cambra_subject}}",
@@ -328,6 +348,33 @@ export class InstantlyOutboundProvider implements OutboundProvider {
           },
         },
       },
+      this.fetcher,
+    );
+  }
+  updateWebhook(id: string, input: any) {
+    return instantlyRequest(
+      this.apiKey,
+      `/webhooks/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: {
+          target_hook_url: String(input.target_url),
+          name: clean(input.name || "CAMBRA commercial events", 120),
+          event_type: "all_events",
+          campaign: input.campaign_id || null,
+          headers: {
+            "x-cambra-instantly-secret": String(input.webhook_secret),
+          },
+        },
+      },
+      this.fetcher,
+    );
+  }
+  testWebhook(id: string) {
+    return instantlyRequest(
+      this.apiKey,
+      `/webhooks/${encodeURIComponent(id)}/test`,
+      { method: "POST" },
       this.fetcher,
     );
   }
