@@ -51,4 +51,11 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
     expect(shell).toContain('LanguageSwitcher');
     expect(read('src/components/shared/LanguageSwitcher.jsx')).toContain('language_detected');
   });
+
+  it('bounds the runtime projection below the Base44 response ceiling',()=>{
+    const aggregate=read('base44/shared/commercialOperatingSystem.ts');
+    expect(aggregate).toContain("const compactLeads=(radar.prioritized||[]).slice(0,30)");
+    expect(aggregate).toContain("recent:tasks.slice(0,20)");
+    expect(aggregate).not.toContain('attention,radar,');
+  });
 });
