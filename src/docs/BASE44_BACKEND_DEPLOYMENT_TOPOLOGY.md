@@ -4,9 +4,9 @@
 
 CAMBRA keeps its logical backend modules and contracts while respecting the
 physical-function limit of the linked Base44 application. The canonical source
-contains 301 function directories. The deployment compiler publishes 276
-physical Base44 functions and hosts the remaining 25 logical handlers behind
-compatible, already-deployed entry points.
+contains 300 function directories plus the shared commercial-campaign handler.
+The deployment compiler publishes 276 physical Base44 functions and hosts 25
+logical handlers behind compatible, already-deployed entry points.
 
 This is a packaging and routing boundary only. It does not change commercial
 economics, authorization rules, request/response contracts or fail-closed

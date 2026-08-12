@@ -140,12 +140,17 @@ fs.mkdirSync(outputRoot, { recursive: true });
 
 const sourceDirectories = fs.readdirSync(sourceRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
 for (const [logicalName, route] of Object.entries(logicalRoutes)) {
-  if (!sourceDirectories.includes(logicalName)) throw new Error(`Topology logical source is missing: ${logicalName}`);
+  const logicalDirectoryExists = sourceDirectories.includes(logicalName);
+  const sourceModule = route.source_module ? path.join(repoRoot, route.source_module) : null;
+  if (!logicalDirectoryExists && (!sourceModule || !fs.existsSync(sourceModule))) {
+    throw new Error(`Topology logical source is missing: ${logicalName}`);
+  }
   if (!sourceDirectories.includes(route.host)) throw new Error(`Topology physical host is missing: ${route.host}`);
-  if (logicalNames.has(route.host)) throw new Error(`Logical route ${logicalName} cannot be hosted by logical route ${route.host}`);
+  if (logicalNames.has(route.host) && sourceDirectories.includes(route.host)) throw new Error(`Logical route ${logicalName} cannot be hosted by logical route ${route.host}`);
 }
 
-const physicalNames = sourceDirectories.filter((name) => !logicalNames.has(name));
+const logicalDirectories = new Set([...logicalNames].filter((name) => sourceDirectories.includes(name)));
+const physicalNames = sourceDirectories.filter((name) => !logicalDirectories.has(name));
 if (physicalNames.length !== topology.physical_function_target) throw new Error(`Physical function count ${physicalNames.length} != topology target ${topology.physical_function_target}`);
 
 let copiedModuleCount = 0;

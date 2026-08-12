@@ -8,8 +8,12 @@ const topology = JSON.parse(fs.readFileSync(path.join(root, 'base44', 'deploymen
 const logicalRoutes = topology.logical_routes;
 const logicalNames = Object.keys(logicalRoutes);
 const directories = fs.readdirSync(functionsRoot, { withFileTypes:true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
-const physicalNames = directories.filter((name) => !logicalNames.includes(name));
+const logicalDirectories = logicalNames.filter((name) => directories.includes(name));
+const physicalNames = directories.filter((name) => !logicalDirectories.includes(name));
 const source = (name) => fs.readdirSync(path.join(functionsRoot, name)).filter((file) => file.endsWith('.ts')).map((file) => fs.readFileSync(path.join(functionsRoot, name, file), 'utf8')).join('\n');
+const logicalSource = (name, route) => route.source_module
+  ? fs.readFileSync(path.join(root, route.source_module), 'utf8')
+  : source(name);
 const config = (name) => JSON.parse(fs.readFileSync(path.join(functionsRoot, name, 'function.jsonc'), 'utf8'));
 
 describe('Base44 quota-safe backend deployment topology', () => {
@@ -18,9 +22,10 @@ describe('Base44 quota-safe backend deployment topology', () => {
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {
-      expect(directories).toContain(logicalName);
+      if (route.source_module) expect(fs.existsSync(path.join(root, route.source_module))).toBe(true);
+      else expect(directories).toContain(logicalName);
       expect(physicalNames).toContain(route.host);
-      expect(logicalNames).not.toContain(route.host);
+      expect(logicalDirectories).not.toContain(route.host);
     }
   });
 
@@ -58,7 +63,7 @@ describe('Base44 quota-safe backend deployment topology', () => {
 
   it('preserves explicit route selectors in their physical hosts', () => {
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {
-      const hostSource = `${source(route.host)}\n${source(logicalName)}`;
+      const hostSource = `${source(route.host)}\n${logicalSource(logicalName, route)}`;
       const selectors = Object.values(route.route).flat().filter((value) => typeof value === 'string' && !['meeting', 'go_live'].includes(value));
       for (const selector of selectors) expect(hostSource, `${logicalName} -> ${route.host} is missing selector ${selector}`).toContain(selector);
     }
