@@ -14,13 +14,56 @@ function regulatoryReadiness(policies:any[]) {
   return { status:'EVIDENCE_BACKED_POLICY_AVAILABLE',gate:'CONDITIONS',covered:policies.length,expected:REGULATORY_ACTIVITIES.length };
 }
 
-async function normalizeRoutedJson(response:Response) {
+function compactGrowthPayload(value:any) {
+  if (!value || typeof value !== 'object' || value.ok !== true) return value;
+  const path=value.growth_path || {};
+  return {
+    ok:true,
+    engine_version:value.engine_version,
+    action:value.action,
+    snapshot_id:value.snapshot_id || null,
+    decision_id:value.decision_id || null,
+    growth_path:{
+      engine_version:path.engine_version,
+      current_period_key:path.current_period_key,
+      actuals:path.actuals ? { bookings:path.actuals.bookings,verified_economic_value:path.actuals.verified_economic_value,revenue:path.actuals.revenue,cash:path.actuals.cash,as_of:path.actuals.as_of } : null,
+      target_gaps:(path.target_gaps || []).map((row:any) => ({ period_key:row.period_key,target_key:row.target_key,metric_key:row.metric_key,target:row.target,actual:row.actual,projected:row.projected,projected_gap:row.projected_gap,attainment_pct:row.attainment_pct,target_probability:row.target_probability,confidence:row.confidence })),
+      forecasts:(path.forecasts || []).map((row:any) => ({ period_key:row.period_key,target_key:row.target_key,target_metric:row.target_metric,target_value:row.target_value,currency:row.currency,business_line:row.business_line,confidence:row.confidence,distribution:row.distribution })),
+      binding_constraint:path.binding_constraint ? { type:path.binding_constraint.type,severity:path.binding_constraint.severity,binding:path.binding_constraint.binding,effect:path.binding_constraint.effect } : null,
+      constraints:(path.constraints || []).map((row:any) => ({ type:row.type,severity:row.severity,binding:row.binding,effect:row.effect })),
+      limitations:path.limitations,
+      recommendations:(path.recommendations || []).map((row:any) => ({ recommendation_key:row.recommendation_key,action:row.action,why:row.why,cost_eur:row.cost_eur,expected_impact:row.expected_impact,confidence:row.confidence,authority:row.authority,execute:row.execute })),
+      marginal_allocation:(path.marginal_allocation || []).map((row:any) => ({ option_key:row.option_key,action:row.action,channel:row.channel,cost_eur:row.cost_eur,expected_incremental_contribution_eur:row.expected_incremental_contribution_eur,marginal_return:row.marginal_return,confidence:row.confidence,authority:row.authority,execute:row.execute,status:row.status })),
+      lineage:(path.lineage || []).map((row:any) => ({ metric:row.metric,sources:(row.sources || []).slice(0,20),source_count:(row.sources || []).length })),
+      truth_boundary:path.truth_boundary,
+    },
+    target_registry:(value.target_registry || []).slice(0,50).map((row:any) => ({ id:row.id,target_key:row.target_key,version:row.version,status:row.status,period_key:row.period_key,period_start:row.period_start,period_end:row.period_end,metric_key:row.metric_key,target_value:row.target_value,currency:row.currency,business_line:row.business_line,geography:row.geography,effective_at:row.effective_at })),
+    markets:(value.markets || []).map((row:any) => ({
+      market_code:row.market_code,
+      launch_state:row.launch_state,
+      activation_state:row.activation_state,
+      attractiveness_score:row.attractiveness_score,
+      data_maturity:row.data_maturity,
+      localization_readiness:row.localization_readiness ? { translation_readiness:row.localization_readiness.translation_readiness } : null,
+      regulatory_readiness:row.regulatory_readiness ? { gate:row.regulatory_readiness.gate } : null,
+      production_readiness:row.production_readiness ? { sealed:row.production_readiness.sealed === true } : null,
+      strategy:row.strategy,
+      next_action:row.next_action,
+    })),
+    brief:value.brief ? { generated_at:value.brief.generated_at,attention_json:value.brief.attention_json } : null,
+    metrics:value.metrics,
+    truth_boundary:value.truth_boundary,
+  };
+}
+
+async function normalizeRoutedJson(response:Response, project=(value:any)=>value) {
   const text = await response.text();
   let value:any = text;
   for (let layer=0; layer<4 && typeof value==='string'; layer++) {
     try { value=JSON.parse(value); }
     catch { break; }
   }
+  if (typeof value!=='string') value=project(value);
   return typeof value==='string'
     ? new Response(value, { status:response.status, headers:{ 'content-type':response.headers.get('content-type') || 'text/plain; charset=utf-8' } })
     : new Response(JSON.stringify(value), { status:response.status, headers:{ 'content-type':'application/json' } });
@@ -28,7 +71,7 @@ async function normalizeRoutedJson(response:Response) {
 
 guardedScheduledServe({"worker_key":"getEuropeMarketsCommandCenter","cadence_seconds":21600},createClientFromRequest,async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
-  if (routedBody?.view === 'growth') return normalizeRoutedJson(await handleEuropeanGrowthCommandCenter(req));
+  if (routedBody?.view === 'growth') return normalizeRoutedJson(await handleEuropeanGrowthCommandCenter(req), compactGrowthPayload);
   try {
     const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:null,severity:'secondary'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false,error:'Forbidden' }, { status:403 });
