@@ -42,6 +42,13 @@ describe('v0.97 CTO production remediation controls',()=>{
     expect(source).toContain('status: 410');
   });
 
+  it('can exercise the global stop with policies configured and restores the exact policy set',()=>{
+    const source=read('base44/functions/goLiveControlAdmin/entry.ts');
+    expect(source).not.toContain('outbound?.acquisition_enabled === true || activePolicies.length');
+    expect(source).toContain('activePolicyIdsBefore');
+    expect(source).toContain('active_policy_set_restored:policySetRestored');
+  });
+
   it('does not commit a self-referential parent SHA as release identity',()=>{
     const generator=read('scripts/generate-release-manifest.mjs');
     expect(generator).toContain('CAMBRA_RELEASE_GIT_SHA');

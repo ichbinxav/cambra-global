@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.7.0",
   "systemVersion": "0.97.0",
   "packageVersion": "0.97.0",
-  "generatedAt": "2026-08-12T16:23:07.357Z",
+  "generatedAt": "2026-08-12T16:30:37.623Z",
   "sourcePaths": {
     "base44/entities/AuthoritySnapshot.jsonc": "c9e3c2fd0872c31ffb76b6076ec170e5ec383e858e0b6cef70232ce4841484ed",
     "base44/entities/CommunicationMessage.jsonc": "a26697830ba440609e4a7c856c2833103cae64ec4e58fc4e4dc1998637928f2b",
@@ -69,7 +69,7 @@
     "base44/functions/getIntelligenceCommandCenter/entry.ts": "22a2b47123d3660d22254ca5c18ac0ffa632fc48577dddb4bd8a4ef677d7fcab",
     "base44/functions/getMaintenanceCenter/entry.ts": "bdf2183ab81cedcc01349cfecf13f0c7baa0afb352ddbb62f691bab4d36e8f87",
     "base44/functions/getUploadCapability/entry.ts": "803693108b925d8deebbcab9150465bfb7a1b8136b03999a34986dd14fce201f",
-    "base44/functions/goLiveControlAdmin/entry.ts": "3fbbe486f4519bb1c916fb31872fc1b868c8e3b47987b695edbdd3149bed9826",
+    "base44/functions/goLiveControlAdmin/entry.ts": "b630800b9329ec58122abe2b12f06f691311568d673c3557a49ad363cfa09c16",
     "base44/functions/intelligenceMaintenanceWorker/entry.ts": "f8ea7d01bfbfbf449c09d7ae7056280251e171fa73dd851f0be496125ec62b1c",
     "base44/functions/joinCollective/entry.ts": "7f6ceb52ff1ecd0cd409b1863daffe8928869ad7244989f9e803fc6e549538a8",
     "base44/functions/knowledgeIntegrityWorker/entry.ts": "573dc05f32ad609780f6f8e8c48389a2759198a604e93a5c7060872f9c2363a1",

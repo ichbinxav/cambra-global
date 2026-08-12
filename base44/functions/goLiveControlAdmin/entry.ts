@@ -110,7 +110,8 @@ async function getEmergencyRow(svc:any) {
 async function emergencyDrill(svc:any, finalSha:string, actor:string) {
   const outbound = (await svc.entities.OutboundControl.filter({ control_key:'global' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'})))[0];
   const activePolicies = await svc.entities.CommercialPolicy.filter({ status:'active' }, '-approved_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'}));
-  if (outbound?.acquisition_enabled === true || activePolicies.length) throw Object.assign(new Error('drill_requires_outbound_and_commercial_policies_paused'), { status:409 });
+  if (outbound?.acquisition_enabled === true) throw Object.assign(new Error('drill_requires_outbound_paused'), { status:409, code:'drill_requires_outbound_paused' });
+  const activePolicyIdsBefore = activePolicies.map((row:any) => String(row.id)).sort();
   const row = await getEmergencyRow(svc);
   if (row.safe_mode) throw Object.assign(new Error('safe_mode_already_active'), { status:409 });
   const before = await emergencyState(svc);
@@ -128,13 +129,15 @@ async function emergencyDrill(svc:any, finalSha:string, actor:string) {
   const after = await emergencyState(svc);
   const outboundAfter = (await svc.entities.OutboundControl.filter({ control_key:'global' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'})))[0];
   const policiesAfter = await svc.entities.CommercialPolicy.filter({ status:'active' }, '-approved_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'}));
+  const activePolicyIdsAfter = policiesAfter.map((row:any) => String(row.id)).sort();
+  const policySetRestored = JSON.stringify(activePolicyIdsAfter) === JSON.stringify(activePolicyIdsBefore);
   const stopPass = capabilities.every((capability) => blocked[capability])&&remotePause.ok!==false;
-  const resumePass = !after.safe_mode && safeRead.every(Array.isArray) && outboundAfter?.acquisition_enabled !== true && policiesAfter.length === 0;
+  const resumePass = !after.safe_mode && safeRead.every(Array.isArray) && outboundAfter?.acquisition_enabled !== true && policySetRestored;
   const at = new Date().toISOString();
   await recordRuntimeGateEvidence(svc, { gate_key:'EMERGENCY_STOP', git_sha:finalSha, status:stopPass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ blocked, instantly_remote_pause:remotePause, analyzer_read_only_alive:safeRead.every(Array.isArray), before, after }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
-  await recordRuntimeGateEvidence(svc, { gate_key:'SAFE_RESUME', git_sha:finalSha, status:resumePass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true, active_commercial_policies:policiesAfter.length, analyzer_read_only_alive:safeRead.every(Array.isArray) }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
+  await recordRuntimeGateEvidence(svc, { gate_key:'SAFE_RESUME', git_sha:finalSha, status:resumePass ? 'PASS':'FAIL', evidence_kind:'OPERATOR_EXERCISE', source:'goLiveControlAdmin.emergency_drill', details_json:{ after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true, active_commercial_policies_before:activePolicyIdsBefore.length, active_commercial_policies_after:activePolicyIdsAfter.length, active_policy_set_restored:policySetRestored, analyzer_read_only_alive:safeRead.every(Array.isArray) }, observed_at:at, expires_at:new Date(Date.now()+169*3600000).toISOString(), recorded_by:actor });
   await svc.entities.OperationalLog.create({ event_type:'emergency_control_drill_completed', message:stopPass && resumePass ? 'PASS':'FAIL', data_json:{ blocked, instantly_remote_pause:remotePause, stop_pass:stopPass, safe_resume_pass:resumePass }, actor_email:actor, created_at:at }).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:null,severity:'secondary'}));
-  return { stop_pass:stopPass, safe_resume_pass:resumePass, blocked, instantly_remote_pause:remotePause, after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true };
+  return { stop_pass:stopPass, safe_resume_pass:resumePass, blocked, instantly_remote_pause:remotePause, after, outbound_remains_paused:outboundAfter?.acquisition_enabled !== true, active_policy_set_restored:policySetRestored };
 }
 
 export async function handleGoLiveControlAdmin(req: Request) {
