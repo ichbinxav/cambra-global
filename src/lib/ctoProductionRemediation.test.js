@@ -40,8 +40,12 @@ describe('v0.97 CTO production remediation controls',()=>{
   it('does not commit a self-referential parent SHA as release identity',()=>{
     const generator=read('scripts/generate-release-manifest.mjs');
     expect(generator).toContain('CAMBRA_RELEASE_GIT_SHA');
+    expect(generator.indexOf('process.env.CAMBRA_RELEASE_GIT_SHA')).toBeLessThan(generator.indexOf('process.env.GITHUB_SHA'));
     expect(generator).not.toContain('git rev-parse HEAD');
-    expect(read('.github/workflows/ci.yml')).toContain('npm run release:package');
+    const workflow=read('.github/workflows/ci.yml');
+    expect(workflow).toContain('CAMBRA_RELEASE_GIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}');
+    expect(workflow).toContain('ref: ${{ github.event.pull_request.head.sha || github.sha }}');
+    expect(workflow).toContain('npm run release:package');
   });
 
   it('states the exact frontend and critical-backend typecheck boundaries',()=>{

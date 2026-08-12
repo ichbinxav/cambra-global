@@ -30,7 +30,10 @@ const tvMatch = templates.match(/RECOVER_CONTRACT_TEMPLATE_VERSION\s*=\s*["']([^
 // immutable checked-out SHA, may populate gitSha.  Local manifests deliberately
 // keep it null instead of recording the parent commit and becoming stale as soon
 // as they are committed.
-const gitSha = process.env.GITHUB_SHA || process.env.CAMBRA_RELEASE_GIT_SHA || null;
+// Pull-request workflows expose GITHUB_SHA as a synthetic merge commit.  The
+// workflow sets CAMBRA_RELEASE_GIT_SHA to the immutable source commit that was
+// actually checked out, so the explicit release identity must take precedence.
+const gitSha = process.env.CAMBRA_RELEASE_GIT_SHA || process.env.GITHUB_SHA || null;
 // npm exposes its exact version to lifecycle scripts. Prefer that immutable
 // execution context over spawning another shell (which can lose npx's PATH).
 const npmVersion = String(process.env.npm_config_user_agent || '').match(/\bnpm\/([^\s]+)/)?.[1] || null;
