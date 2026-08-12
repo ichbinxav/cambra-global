@@ -68,6 +68,9 @@ describe('final GO-live hard gates', () => {
     for (const file of ['commercialSendMessage','providerRevenueBillingWorker','billApiUsage','createPaymentLink','updatePaymentsMigrationTask']) expect(source(`base44/functions/${file}/entry.ts`)).toContain('emergency_control_paused');
     expect(source('base44/functions/outboundControlAdmin/entry.ts')).toContain('preflight_json?.go_live?.final_sha');
     expect(source('base44/functions/resendInboundWebhook/entry.ts')).toContain("suppressionReason = hardStop === 'unsubscribe' ? 'opt_out'");
+    expect(admin).toContain("['active','warming'].includes(String(p.status||''))||Boolean(p.external_campaign_id)");
+    expect(admin).toContain('instantly_transport_profile_keys');
+    expect(admin).not.toContain("profiles.filter((p:any)=>p.provider==='instantly').every");
   });
 
   it('guards every known metered provider endpoint with the centralized cost governor', () => {

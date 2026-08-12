@@ -97,9 +97,17 @@ async function verifyDeliverability(svc:any) {
   }
   const resendCredentials=!profiles.some((p:any)=>p.provider==='resend')||(credentials.resend_api_key&&credentials.resend_webhook_secret);
   const outlookCredentials=!profiles.some((p:any)=>p.provider==='outlook')||credentials.outlook_connected;
-  const instantlyCredentials=!profiles.some((p:any)=>p.provider==='instantly')||(credentials.instantly_api_key&&credentials.instantly_webhook_secret&&profiles.filter((p:any)=>p.provider==='instantly').every((p:any)=>p.external_campaign_id&&p.webhook_status==='ACTIVE'));
+  // A paused reserve domain is not an outbound campaign. Requiring every
+  // inventory-only Instantly profile to own a campaign/webhook would strand a
+  // valid one-profile canary. Scope transport credentials to profiles that are
+  // active/warming or have been explicitly prepared with an external campaign;
+  // DNS remains checked for every configured profile above so reserves cannot
+  // be promoted without real SPF/DKIM/DMARC evidence.
+  const instantlyProfiles=profiles.filter((p:any)=>p.provider==='instantly');
+  const instantlyTransportProfiles=instantlyProfiles.filter((p:any)=>['active','warming'].includes(String(p.status||''))||Boolean(p.external_campaign_id));
+  const instantlyCredentials=instantlyProfiles.length===0||(instantlyTransportProfiles.length>0&&credentials.instantly_api_key&&credentials.instantly_webhook_secret&&instantlyTransportProfiles.every((p:any)=>p.external_campaign_id&&p.webhook_status==='ACTIVE'));
   const pass = profiles.length > 0 && rows.every((row) => row.spf_pass && row.dkim_pass && row.dmarc_pass) && resendCredentials && outlookCredentials && instantlyCredentials;
-  return { pass, profiles:rows, credentials, blockers:[...(profiles.length ? [] : ['configured_sending_profile_required']),...(!resendCredentials?['resend_credentials_required']:[]),...(!outlookCredentials?['outlook_connector_required']:[]),...(!instantlyCredentials?['instantly_campaign_webhook_credentials_required']:[]), ...rows.flatMap((row) => [!row.spf_pass ? `${row.profile_key}:spf` : '', !row.dkim_pass ? `${row.profile_key}:dkim` : '', !row.dmarc_pass ? `${row.profile_key}:dmarc` : '']).filter(Boolean)] };
+  return { pass, profiles:rows, credentials, instantly_transport_profile_keys:instantlyTransportProfiles.map((p:any)=>p.profile_key), blockers:[...(profiles.length ? [] : ['configured_sending_profile_required']),...(!resendCredentials?['resend_credentials_required']:[]),...(!outlookCredentials?['outlook_connector_required']:[]),...(!instantlyCredentials?['instantly_campaign_webhook_credentials_required']:[]), ...rows.flatMap((row) => [!row.spf_pass ? `${row.profile_key}:spf` : '', !row.dkim_pass ? `${row.profile_key}:dkim` : '', !row.dmarc_pass ? `${row.profile_key}:dmarc` : '']).filter(Boolean)] };
 }
 
 async function verifyRuntime(svc:any, finalSha:string, actor:string) {
