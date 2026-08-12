@@ -12,6 +12,11 @@ describe('v0.97 CTO production remediation controls',()=>{
     expect(inventory.unguarded_active).toEqual([]);
     expect(inventory.automations.filter((row)=>row.is_active).every((row)=>row.protection_classification==='SLOT_GUARDED')).toBe(true);
     expect(read('scripts/harden-scheduled-functions.mjs')).toContain('scheduled_boundary_unguarded');
+    const entries=fs.readdirSync('base44/functions',{withFileTypes:true})
+      .filter((row)=>row.isDirectory())
+      .map((row)=>`base44/functions/${row.name}/entry.ts`)
+      .filter((path)=>fs.existsSync(path));
+    expect(entries.filter((path)=>/^import \{\nimport /m.test(read(path)))).toEqual([]);
   });
 
   it('keeps unexpected backend diagnostics private and returns correlation ids',()=>{

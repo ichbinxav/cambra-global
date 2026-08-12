@@ -35,8 +35,10 @@ for(const dir of fs.readdirSync(root,{withFileTypes:true}).filter((x)=>x.isDirec
   const literal=JSON.stringify({worker_key:base.worker_key,cadence_seconds:base.cadence_seconds,...(Object.keys(routes).length?{routes}: {})});
   source=source.replace('Deno.serve(',`guardedScheduledServe(${literal},createClientFromRequest,`);
   const importLine="import { guardedScheduledServe } from '../../shared/schedulerRun.ts';\n";
-  const imports=[...source.matchAll(/^import[^\n]+\n/gm)];
-  const at=imports.length ? imports.at(-1).index+imports.at(-1)[0].length : 0;
+  // Always prepend the guard import. Looking only for single-line imports can
+  // split a multiline import declaration and leave code that local copy-only
+  // bundling accepts but the Base44 runtime bundler correctly rejects.
+  const at=0;
   source=source.slice(0,at)+importLine+source.slice(at);
   fs.writeFileSync(entryPath,source);
   changed+=1;
