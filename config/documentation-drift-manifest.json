@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.7.0",
   "systemVersion": "0.97.0",
   "packageVersion": "0.97.0",
-  "generatedAt": "2026-08-12T19:03:16.680Z",
+  "generatedAt": "2026-08-12T19:35:22.612Z",
   "sourcePaths": {
     "base44/entities/AuthoritySnapshot.jsonc": "c9e3c2fd0872c31ffb76b6076ec170e5ec383e858e0b6cef70232ce4841484ed",
     "base44/entities/CommunicationMessage.jsonc": "a26697830ba440609e4a7c856c2833103cae64ec4e58fc4e4dc1998637928f2b",
@@ -214,7 +214,7 @@
     "src/docs/P18_TROUBLESHOOTING_PLAYBOOKS.md": "7359c90d7ef527b39151f3eb7655580961081bc8327bddef56297ab0d0b3b541",
     "src/docs/P18_INCIDENT_PLAYBOOKS.md": "667fa271f699233684f1816770831e7fbefc4705e7b6739ab93741c59b23fc93",
     "src/docs/P18_EMERGENCY_CONTROLS.md": "65001440c8939f8773a593be509eb81c78119a32feb0dae39e1c8abd41611f10",
-    "src/docs/PRODUCTION_FUNCTIONS.md": "3e326c86ac688831c25b187d61db8f8a4c7bae06e6cfcb9bcb4cea657bebf58b",
+    "src/docs/PRODUCTION_FUNCTIONS.md": "8ecad7059912c224d059d7aec7d79680382840ada22e395ea9975d3aa54eac88",
     "src/docs/COMMERCIAL_GO_LIVE_CHECKLIST.md": "a30c5a2f40432de8e7394ca88ec79f180e714d2d64f9060ef2f2a6fd1e729822",
     "src/docs/FINAL_PRE_LAUNCH_REMEDIATION.md": "b1f73904f73fa962e0eaf673e9f78b440e0ef1137ff92e51bb6be59e31941f6d",
     "src/docs/P1_EUROPE_COUNTRY_INTELLIGENCE_FOUNDATION.md": "93de5be0609b42a114646183adb72fd0c740a07f650df6079141ebd8cfb46172",

@@ -104,6 +104,8 @@ describe('P7/P8 provider-agnostic Instantly execution seal',()=>{
     for(const token of ['PENDING_RETRY','DEAD_LETTER','DUPLICATE_EVENT_LEDGER_ROW','commercialReplyAgent','ContactSuppression','lead_out_of_office'])expect(events).toContain(token);
     expect(reconcile).toContain('bounded_email_scan');
     expect(reconcile).toContain('native_ai_conflict');
+    expect(reconcile).toContain('INSTANTLY_RECONCILIATION_COST_FLOOR_MINOR=1');
+    expect(reconcile).toContain('amount_minor:INSTANTLY_RECONCILIATION_COST_FLOOR_MINOR');
     expect(send).toContain('follow_up_cancelled_by_new_reply');
     expect(send).toContain('follow_up_cancelled_by_meeting_or_closed_state');
     expect(emergency).toContain('pauseAllInstantlyCampaigns');
