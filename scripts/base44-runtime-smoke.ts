@@ -3,7 +3,13 @@ type SmokeResult = { name:string; pass:boolean; detail:any };
 async function invoke(name:string, payload:any) {
   try {
     const response = await base44.functions.invoke(name, payload);
-    return { transport_ok:true, data:response?.data ?? response };
+    let data=response?.data ?? response;
+    for(let layer=0;layer<4&&typeof data==='string';layer++){
+      const trimmed=data.trim();
+      if(!trimmed.startsWith('{')&&!trimmed.startsWith('[')&&!trimmed.startsWith('"'))break;
+      try{data=JSON.parse(trimmed);}catch{break;}
+    }
+    return { transport_ok:true, data };
   } catch (error:any) {
     return {
       transport_ok:false,

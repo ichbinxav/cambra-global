@@ -58,11 +58,14 @@ function forwardedRequest(req: Request, body: any) {
 
 async function normalizeRoutedJson(response:Response) {
   const text = await response.text();
-  try {
-    return Response.json(JSON.parse(text), { status:response.status });
-  } catch {
-    return new Response(text, { status:response.status, headers:{ 'content-type':response.headers.get('content-type') || 'text/plain; charset=utf-8' } });
+  let value:any = text;
+  for (let layer=0; layer<4 && typeof value==='string'; layer++) {
+    try { value=JSON.parse(value); }
+    catch { break; }
   }
+  return typeof value==='string'
+    ? new Response(value, { status:response.status, headers:{ 'content-type':response.headers.get('content-type') || 'text/plain; charset=utf-8' } })
+    : new Response(JSON.stringify(value), { status:response.status, headers:{ 'content-type':'application/json' } });
 }
 
 Deno.serve(async (req) => {
