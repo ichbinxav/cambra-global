@@ -68,4 +68,12 @@ describe('Base44 quota-safe backend deployment topology', () => {
       for (const selector of selectors) expect(hostSource, `${logicalName} -> ${route.host} is missing selector ${selector}`).toContain(selector);
     }
   });
+
+  it('normalizes nested Response bodies at hosts affected by Base44 double serialization', () => {
+    for (const name of ['getEuropeMarketsCommandCenter', 'outboundControlAdmin']) {
+      const hostSource = source(name);
+      expect(hostSource, name).toContain('normalizeRoutedJson');
+      expect(hostSource, name).toContain('Response.json(JSON.parse(text)');
+    }
+  });
 });

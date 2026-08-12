@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.97.0 — Final Production Seal (durability manifest)",
-  "generatedAt": "2026-08-12T17:11:19.556Z",
+  "generatedAt": "2026-08-12T17:31:50.186Z",
   "packageVersion": "0.97.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -707,8 +707,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "452c2123481559609b6781a74f23f47e6cddca660fa5c32b7075c885b6e8012a",
-      "bytes": 16406
+      "sha256": "55c6c3c0ef7bb9b78292e65aa3cc9838784d53479d311a6f0abb629aa71480c1",
+      "bytes": 16916
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
