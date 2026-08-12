@@ -53,6 +53,14 @@ Generic routing is limited to handlers with compatible trust boundaries:
 - the autonomous company coordinator uses
   `autonomousOperationsSupervisor`.
 
+The two consolidated Admin status surfaces project their internal results to
+the fields consumed by Founder Control and Growth before returning them. Gate
+decisions still evaluate the complete immutable evidence, while historical
+`details_json`, duplicate diagnostics and unused entity fields are omitted from
+the HTTP response. This keeps responses safely below Base44's runtime payload
+ceiling without weakening a gate or hiding its status, blocker, provenance,
+SHA or observation time.
+
 The complete route-level mapping is deliberately machine-readable in
 `base44/deployment-topology.json` and is protected by
 `src/lib/base44DeploymentTopology.test.js`.

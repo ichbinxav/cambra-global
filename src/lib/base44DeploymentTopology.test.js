@@ -80,4 +80,13 @@ describe('Base44 quota-safe backend deployment topology', () => {
     expect(clientSource).toContain('normalizeBase44FunctionResponse');
     expect(clientSource).toContain('client.functions.invoke = async');
   });
+
+  it('keeps consolidated Admin status payloads below the Base44 response ceiling', () => {
+    expect(source('getEuropeMarketsCommandCenter')).toContain('compactGrowthPayload');
+    const runtimeSource = fs.readFileSync(path.join(root, 'base44/shared/goLiveRuntime.ts'), 'utf8');
+    expect(runtimeSource).toContain('const compactDecision');
+    expect(runtimeSource).toContain('open_incident_count:openIncidents.length');
+    expect(runtimeSource).toContain('pending_approval_count:pendingApprovals.length');
+    expect(runtimeSource).not.toContain('gates:decision.gates,');
+  });
 });
