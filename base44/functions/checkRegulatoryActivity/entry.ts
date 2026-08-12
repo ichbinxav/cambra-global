@@ -3,7 +3,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { REGULATORY_ACTIVITIES } from '../../shared/regulatoryControl.ts';
 import { auditRegulatoryDecision, evaluateRegulatoryActivityRuntime } from '../../shared/regulatoryRuntime.ts';
 
-Deno.serve(async (req) => {
+export async function handleCheckRegulatoryActivity(req: Request) {
   try {
     const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({})); const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
     const jurisdiction = String(body.jurisdiction || '').toUpperCase(); const activity = String(body.activity || '').toUpperCase();
@@ -12,4 +12,4 @@ Deno.serve(async (req) => {
     await auditRegulatoryDecision(base44.asServiceRole, body, decision);
     return Response.json({ ok:true,decision });
   } catch (error) { console.error(error); return Response.json({ ok:false,error:'regulatory_activity_check_failed' }, { status:500 }); }
-});
+}

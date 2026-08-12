@@ -1,10 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 
-Deno.serve(async (req) => {
+export async function handleRegulatoryMonitoringWorker(req: Request) {
+  let svc:any = null;
+  let claim:any = null;
+  let success = true;
   try {
-    const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({})); const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
-    const svc = base44.asServiceRole; const now = new Date(); const horizon = new Date(now.getTime() + 30 * 86400000);
+    const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
+    const gate = await requireAdminOrInternal(req, base44, body);
+    if (!gate.ok) return gate.response;
+    svc = base44.asServiceRole;
+    claim = await claimSchedulerRun(svc, req, { worker_key:'regulatoryMonitoringWorker',cadence_seconds:86400 });
+    if (!claim.allowed) return Response.json({ ok:true,duplicate_blocked:true,run_key:claim.run_key });
+    const now = new Date();
+    const horizon = new Date(now.getTime() + 30 * 86400000);
     const [policies,evidence,registrations] = await Promise.all([
       svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-next_review_at', 5000).catch(() => []),
       svc.entities.RegulatoryEvidence.filter({ active:true }, '-next_review_at', 5000).catch(() => []),
@@ -16,9 +27,18 @@ Deno.serve(async (req) => {
     for (const row of registrations) if (!row.effective_to || Date.parse(row.effective_to) <= horizon.getTime()) findings.push({ key:`registration:${row.id}`,type:'REGISTRATION_EXPIRY_OR_DATE_MISSING',severity:'CRITICAL',jurisdiction:row.jurisdiction,entity_id:row.id });
     let created = 0;
     for (const finding of findings) {
-      const issueKey = `p10:${finding.key}:${now.toISOString().slice(0,10)}`; const old = await svc.entities.ComplianceIssue.filter({ issue_key:issueKey }, '-created_at', 1).catch(() => []); if (old[0]) continue;
-      await svc.entities.ComplianceIssue.create({ issue_key:issueKey,review_id:'p10-continuous-monitoring',rule_id:finding.type,title:`P10 ${finding.type}`,type:finding.type,severity:String(finding.severity).toLowerCase(),status:'open',description:'P10 regulatory freshness control requires human/legal review.',blocking:true,resolved:false,source_entity_type:finding.type.startsWith('POLICY')?'RegulatoryPolicyVersion':finding.type.startsWith('EVIDENCE')?'RegulatoryEvidence':'RegulatoryRegistration',source_entity_id:finding.entity_id,details_json:finding,created_at:now.toISOString() }).catch(() => null); created++;
+      const issueKey = `p10:${finding.key}:${now.toISOString().slice(0,10)}`;
+      const old = await svc.entities.ComplianceIssue.filter({ issue_key:issueKey }, '-created_at', 1).catch(() => []);
+      if (old[0]) continue;
+      await svc.entities.ComplianceIssue.create({ issue_key:issueKey,review_id:'p10-continuous-monitoring',rule_id:finding.type,title:`P10 ${finding.type}`,type:finding.type,severity:String(finding.severity).toLowerCase(),status:'open',description:'P10 regulatory freshness control requires human/legal review.',blocking:true,resolved:false,source_entity_type:finding.type.startsWith('POLICY')?'RegulatoryPolicyVersion':finding.type.startsWith('EVIDENCE')?'RegulatoryEvidence':'RegulatoryRegistration',source_entity_id:finding.entity_id,details_json:finding,created_at:now.toISOString() }).catch(() => null);
+      created++;
     }
     return Response.json({ ok:true,reviewed:{ policies:policies.length,evidence:evidence.length,registrations:registrations.length },findings:findings.length,created,auto_promoted:false,legal_conclusions_changed:false });
-  } catch (error) { console.error(error); return Response.json({ ok:false,error:'regulatory_monitoring_failed' }, { status:500 }); }
-});
+  } catch (error) {
+    success = false;
+    console.error(error);
+    return Response.json({ ok:false,error:'regulatory_monitoring_failed' }, { status:500 });
+  } finally {
+    if (svc && claim) await finishSchedulerRun(svc,claim,{ worker_key:'regulatoryMonitoringWorker' },success);
+  }
+}

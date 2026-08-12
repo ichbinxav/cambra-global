@@ -1,6 +1,6 @@
 {
   "name": "costGovernanceWorker",
-  "entry": "entry.ts",
+  "entry": "serve.ts",
   "automations": [
     {
       "name": "cost-governance-hourly",

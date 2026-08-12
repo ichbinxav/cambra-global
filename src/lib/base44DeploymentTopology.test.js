@@ -1,0 +1,66 @@
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root = process.cwd();
+const functionsRoot = path.join(root, 'base44', 'functions');
+const topology = JSON.parse(fs.readFileSync(path.join(root, 'base44', 'deployment-topology.json'), 'utf8'));
+const logicalRoutes = topology.logical_routes;
+const logicalNames = Object.keys(logicalRoutes);
+const directories = fs.readdirSync(functionsRoot, { withFileTypes:true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+const physicalNames = directories.filter((name) => !logicalNames.includes(name));
+const source = (name) => fs.readdirSync(path.join(functionsRoot, name)).filter((file) => file.endsWith('.ts')).map((file) => fs.readFileSync(path.join(functionsRoot, name, file), 'utf8')).join('\n');
+const config = (name) => JSON.parse(fs.readFileSync(path.join(functionsRoot, name, 'function.jsonc'), 'utf8'));
+
+describe('Base44 quota-safe backend deployment topology', () => {
+  it('consolidates exactly 25 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(25);
+    expect(physicalNames).toHaveLength(topology.physical_function_target);
+    expect(new Set(physicalNames).size).toBe(physicalNames.length);
+    for (const [logicalName, route] of Object.entries(logicalRoutes)) {
+      expect(directories).toContain(logicalName);
+      expect(physicalNames).toContain(route.host);
+      expect(logicalNames).not.toContain(route.host);
+    }
+  });
+
+  it('keeps Stripe and public webhook trust boundaries physical and isolated', () => {
+    const stripeFunctions = physicalNames.filter((name) => name.toLowerCase().includes('stripe'));
+    expect(stripeFunctions.length).toBeGreaterThan(0);
+    expect(logicalNames.filter((name) => name.toLowerCase().includes('stripe'))).toEqual([]);
+    expect(logicalRoutes.instantlyWebhook.host).toBe('resendInboundWebhook');
+    expect(logicalRoutes.instantlyWebhook.boundary).toContain('public_authenticated_webhook_isolated');
+    expect(source('resendInboundWebhook')).toContain("req.headers.get('x-cambra-instantly-secret')");
+  });
+
+  it('routes every newly hosted scheduled worker through an active physical automation', () => {
+    const hosted = [];
+    for (const physicalName of physicalNames) {
+      const configPath = path.join(functionsRoot, physicalName, 'function.jsonc');
+      if (!fs.existsSync(configPath)) continue;
+      for (const automation of config(physicalName).automations || []) {
+        if (automation.is_active !== true) continue;
+        if (automation.function_args?.hosted_worker) hosted.push(automation.function_args.hosted_worker);
+        hosted.push(...(automation.function_args?.hosted_workers || []));
+      }
+    }
+    expect(hosted).toEqual(expect.arrayContaining([
+      'autonomousCompanyOrchestrator',
+      'costGovernanceWorker',
+      'productionReadinessWorker',
+      'regulatoryMonitoringWorker',
+      'instantlyProviderEventRetryWorker',
+      'instantlyReconciliationWorker',
+      'europeanGrowthIntelligenceWorker',
+      'getEuropeanGrowthCommandCenter',
+    ]));
+  });
+
+  it('preserves explicit route selectors in their physical hosts', () => {
+    for (const [logicalName, route] of Object.entries(logicalRoutes)) {
+      const hostSource = `${source(route.host)}\n${source(logicalName)}`;
+      const selectors = Object.values(route.route).flat().filter((value) => typeof value === 'string' && !['meeting', 'go_live'].includes(value));
+      for (const selector of selectors) expect(hostSource, `${logicalName} -> ${route.host} is missing selector ${selector}`).toContain(selector);
+    }
+  });
+});

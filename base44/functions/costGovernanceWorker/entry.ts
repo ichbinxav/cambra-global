@@ -4,7 +4,7 @@ import { activateCostEmergencyStop, COST_CATEGORIES, costRuntimeSnapshot } from 
 import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { recordRuntimeGateEvidence, runtimeGitSha } from '../../shared/runtimeEvidence.ts';
 
-Deno.serve(async (req) => {
+export async function handleCostGovernanceWorker(req: Request) {
   let svc:any = null, claim:any = null;
   try {
     const base44 = createClientFromRequest(req);
@@ -40,4 +40,4 @@ Deno.serve(async (req) => {
     if (svc && claim) await finishSchedulerRun(svc, claim, { error:String((error as Error)?.message || error).slice(0,300) }, false);
     return Response.json({ ok:false, error:'cost_governance_worker_failed' }, { status:500 });
   }
-});
+}

@@ -3,6 +3,8 @@ import{requireAdminOrInternal}from'../../shared/internalGate.ts';
 import{MAINTENANCE_VERSION,healthScore,isAutomatic,learningKey,remediationFor,requiresHuman,type MaintenanceSignal,type MaintenanceAction}from'../../shared/maintenanceCore.ts';
 import{dispatchIncidentAlert,incidentAlertSeverity}from'../../shared/incidentAlerting.ts';
 import{evaluateSchedulerEvidence}from'../../shared/schedulerRun.ts';
+import{handleCostGovernanceWorker}from'../costGovernanceWorker/entry.ts';
+import{handleProductionReadinessWorker}from'../productionReadinessWorker/entry.ts';
 
 const now=()=>new Date().toISOString();
 const DAY=86400000,HOUR=3600000;
@@ -30,7 +32,7 @@ async function safeRepair(s:any,internal:string,signal:MaintenanceSignal,action:
  }catch(e){return{attempted:true,verified:false,error:String((e as Error)?.message||e).slice(0,500)}}
 }
 
-Deno.serve(async req=>{const b=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,b,body);if(!gate.ok)return gate.response;const s=b.asServiceRole,started=now(),run=await s.entities.MaintenanceRun.create({run_key:`maintenance:${started}`,engine_version:MAINTENANCE_VERSION,status:'running',started_at:started});try{
+Deno.serve(async req=>{const routed=await req.clone().json().catch(()=>({}));if(routed.host_action==='cost_governance')return handleCostGovernanceWorker(req);if(routed.host_action==='production_readiness')return handleProductionReadinessWorker(req);const b=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,b,body);if(!gate.ok)return gate.response;const s=b.asServiceRole,started=now(),run=await s.entities.MaintenanceRun.create({run_key:`maintenance:${started}`,engine_version:MAINTENANCE_VERSION,status:'running',started_at:started});try{
  const [integrations,deadLetters,tasks,pricing,invoices,securityAudits,providerStatements,schedulerRuns]=await Promise.all([
   s.entities.Integration.list('-created_date',2000),s.entities.WebhookDeadLetter.list('-created_date',1000),s.entities.AgentTask.list('-created_date',3000),s.entities.ProviderPricingVersion.list('-observed_at',2000),s.entities.Invoice.list('-created_date',3000),s.entities.SecurityAudit.list('-created_date',1000),s.entities.ProviderRevenueStatement.list('-received_at',1000),s.entities.SchedulerRun.list('-started_at',5000).catch(()=>[])
  ]);

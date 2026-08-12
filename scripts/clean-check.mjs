@@ -50,6 +50,7 @@ const walk = (dir) => {
     if (["node_modules", ".git", "dist", "coverage", ".release-evidence"].includes(e.name)) continue;
     const p = path.join(dir, e.name);
     const rel = normalizePath(p);
+    if (rel === "base44/.deploy") continue;
     // Exact files remain the authority. A matching directory name is permitted
     // only when it is an ancestor of at least one exact allowlisted file; this
     // lets `base44/functions/eclLifecycleScheduler/entry.ts` exist without

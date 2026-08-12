@@ -3,7 +3,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { EUROPE_MARKETS } from '../../shared/generated/europeMarkets.ts';
 import { conservativePolicy, REGULATORY_ACTIVITIES, REGULATORY_CONTROL_VERSION } from '../../shared/regulatoryControl.ts';
 
-Deno.serve(async (req) => {
+export async function handleSeedP10RegulatoryControl(req: Request) {
   try {
     const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
@@ -17,4 +17,4 @@ Deno.serve(async (req) => {
     await svc.entities.Event.create({ brand_id:'_platform',event_type:'REGULATORY_POLICY_MATRIX_SEEDED',source:'p10_conservative_seed',entity_type:'RegulatoryPolicyVersion',entity_id:'europe-33',payload_json:{ markets:EUROPE_MARKETS.length,activities:REGULATORY_ACTIVITIES.length,created,existing,policy_version:REGULATORY_CONTROL_VERSION,permission_claims_created:0 },status:'processed',processed_at:now }).catch(() => null);
     return Response.json({ ok:true,markets:EUROPE_MARKETS.length,activities:REGULATORY_ACTIVITIES.length,expected_policies:EUROPE_MARKETS.length * REGULATORY_ACTIVITIES.length,created,existing,status:'LEGAL_REVIEW_REQUIRED',note:'Coverage is complete; legal clearance is not claimed.' });
   } catch (error) { console.error(error); return Response.json({ ok:false,error:'p10_regulatory_seed_failed' }, { status:500 }); }
-});
+}

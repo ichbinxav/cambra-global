@@ -5,6 +5,8 @@ import { handleGoLiveControlAdmin } from "../goLiveControlAdmin/entry.ts";
 import { handleInstantlyProviderAdmin } from "../instantlyProviderAdmin/entry.ts";
 import { handleCommercialExecutionDryRun } from "../commercialExecutionDryRun/entry.ts";
 import { handleCommercialStrategyAgent } from "../commercialStrategyAgent/entry.ts";
+import { handleBackfillLegacySendingProfiles } from "../backfillLegacySendingProfiles/entry.ts";
+import { handleCommercialGoLiveReadiness } from "../commercialGoLiveReadiness/entry.ts";
 import {
   InstantlyOutboundProvider,
   instantlyProfileReady,
@@ -67,6 +69,10 @@ Deno.serve(async (req) => {
     return handleCommercialExecutionDryRun(forwardedRequest(req, routedBody));
   if (routedAction === "commercial_strategy")
     return handleCommercialStrategyAgent(forwardedRequest(req, routedBody));
+  if (routedAction === "backfill_legacy_sending_profiles")
+    return handleBackfillLegacySendingProfiles(forwardedRequest(req, routedBody));
+  if (routedAction === "commercial_go_live_readiness")
+    return handleCommercialGoLiveReadiness(forwardedRequest(req, routedBody));
   if (GO_LIVE_ACTIONS.has(routedAction)) return handleGoLiveControlAdmin(req);
   try {
     const base44 = createClientFromRequest(req);

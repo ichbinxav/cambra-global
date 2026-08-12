@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { ACTION_POLICIES, EUROPE_33, LEGAL_EXECUTION_VERSION } from '../../shared/legalExecution.ts';
 
-Deno.serve(async(req)=>{
+export async function handleSeedP11LegalExecution(req: Request) {
   try{
     const base44=createClientFromRequest(req);
     const user=await base44.auth.me().catch(()=>null);
@@ -25,4 +25,4 @@ Deno.serve(async(req)=>{
     }
     return Response.json({ok:true,created,existing,markets:EUROPE_33.length,actions:Object.keys(ACTION_POLICIES).length,permission_granted:0,note:'Conservative seed creates review-required rows only.'});
   }catch(error){console.error('seedP11LegalExecution failed',error);return Response.json({ok:false,error:'p11_seed_failed'},{status:500});}
-});
+}

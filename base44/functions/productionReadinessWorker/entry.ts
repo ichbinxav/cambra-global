@@ -2,7 +2,7 @@ import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { evaluateProductionSeal } from '../../shared/productionReadiness.ts';
-Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
+export async function handleProductionReadinessWorker(req: Request) {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
   try {
     const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({})); const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;__schedulerSvc=svc;__schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'productionReadinessWorker',cadence_seconds:86400});if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key}); const sha = String(body.final_sha || 'UNVERIFIED');
@@ -18,4 +18,4 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const old = await svc.entities.ProductionReadinessSnapshot.filter({ snapshot_key:snapshot.snapshot_key }, '-calculated_at', 1).catch(() => []); if (old[0]) await svc.entities.ProductionReadinessSnapshot.update(old[0].id, snapshot); else await svc.entities.ProductionReadinessSnapshot.create(snapshot);
     return Response.json({ ok:true,snapshot });
   } catch (error) {__schedulerOk=false; console.error(error); return Response.json({ ok:false,error:'production_readiness_failed' }, { status:500 }); }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'productionReadinessWorker'},__schedulerOk)}
-});
+}

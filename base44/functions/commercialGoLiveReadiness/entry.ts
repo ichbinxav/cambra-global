@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { evaluateCommercialGoLiveReadiness } from '../../shared/commercialActivationRuntime.ts';
 
-Deno.serve(async(req)=>{
+export async function handleCommercialGoLiveReadiness(req: Request) {
   try{
     const base44=createClientFromRequest(req);
     const user=await base44.auth.me().catch(()=>null);
@@ -29,4 +29,4 @@ Deno.serve(async(req)=>{
     console.error('commercialGoLiveReadiness failed',error);
     return Response.json({ok:false,error:'commercial_go_live_preflight_failed'},{status:500});
   }
-});
+}

@@ -1,11 +1,11 @@
 {
   "releaseName": "CAMBRA v0.97.0 — Final Production Seal",
   "version": "0.97.0",
-  "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
+  "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1532,
+  "sourceTreeFileCount": 1552,
   "sourceArchiveShaExternal": null,
-  "gitSha": "8d39b39de4982a7e6dd3f73f67766f64d757a587",
+  "gitSha": "4ca23bb5c4340e182fca9e584b68e392f0f7f22a",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,9 +18,9 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "ef8107b9489383ade786d2f0349ff06cb2677f981e612f3a02f235238e826fda",
-  "documentationManifestSha": "69476543d2cb42a6d8d509f9e2a904a73f4abed07f37cdc8e307d2087cf78a06",
-  "schedulerInventorySha": "a6555e1c267eb77380b7e76249037cf46fa134325071b279400dc92a15e8fbe3",
+  "durabilityManifestSha": "fe3c70e120aa47fc599afd8f8aebf90fbca877de7309a73e9957af88cf679703",
+  "documentationManifestSha": "35e976f7e95372ce57811a864a2248753f2435add8270f77c96d59e7e7343628",
+  "schedulerInventorySha": "b7b7e07235dfa2d4cc236dd1dc27aa070d3c99bc3c304b704a7d8bb5c808c17e",
   "dataRetentionMatrixSha": "3a62555a5e26a253d9206ba8935258ecf070dcd4c2db2ef11b7e5d7954e68878",
   "secretScannerSha": "e93f7f2b554d95d0777fb59275706c98ab5f4f70fc84392594ce7056428d56fa",
   "contractTemplateVersions": [
@@ -47,56 +47,56 @@
   },
   "testEvidence": {
     "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:27.291Z",
-    "completedAt": "2026-08-12T11:26:35.183Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:27.904Z",
+    "completedAt": "2026-08-12T13:11:35.548Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 167,
-    "passed": 2219,
+    "testFiles": 168,
+    "passed": 2223,
     "failed": 0,
     "skipped": 0,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:35.360Z",
-    "completedAt": "2026-08-12T11:26:39.253Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:35.723Z",
+    "completedAt": "2026-08-12T13:11:39.511Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "66e1abbd316dd83aaf4c85f852153992895ecd60863cd935faea9c0b3356a7ed",
+    "distHash": "574cf7bf735cf5301a9d983c2350d8151cd26859acbe7dc536b89fbdde93217b",
     "artifactCount": 127
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:18.908Z",
-    "completedAt": "2026-08-12T11:26:22.006Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:19.964Z",
+    "completedAt": "2026-08-12T13:11:22.782Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:22.170Z",
-    "completedAt": "2026-08-12T11:26:23.262Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:22.953Z",
+    "completedAt": "2026-08-12T13:11:23.947Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:23.431Z",
-    "completedAt": "2026-08-12T11:26:27.126Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:24.108Z",
+    "completedAt": "2026-08-12T13:11:27.739Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "dependencyAuditEvidence": {
     "command": "npm audit --json",
-    "sourceTreeHash": "bd4dd723aff04681fbf01fe301f4d33ff287e1304d745bfdaebab039826dcf6a",
-    "startedAt": "2026-08-12T11:26:18.191Z",
-    "completedAt": "2026-08-12T11:26:18.706Z",
+    "sourceTreeHash": "adc5b0e2c155d1d92e26a243d11e06a42841156b181821ca81dac96eb627a8d5",
+    "startedAt": "2026-08-12T13:11:19.195Z",
+    "completedAt": "2026-08-12T13:11:19.773Z",
     "exitCode": 0,
     "ciRunId": null,
     "auditReportVersion": 2,
@@ -119,7 +119,7 @@
     "networkExitCode": 0
   },
   "artifactHashes": {
-    "dist": "66e1abbd316dd83aaf4c85f852153992895ecd60863cd935faea9c0b3356a7ed"
+    "dist": "574cf7bf735cf5301a9d983c2350d8151cd26859acbe7dc536b89fbdde93217b"
   },
   "manualRequirements": [
     "CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified",
@@ -153,5 +153,5 @@
   "blockingManualRequirements": [],
   "productionSealEligible": false,
   "finalVerdict": "PASS WITH EXTERNAL VALIDATION PENDING",
-  "generatedAt": "2026-08-12T11:26:39.461Z"
+  "generatedAt": "2026-08-12T13:11:39.705Z"
 }

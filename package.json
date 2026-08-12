@@ -12,6 +12,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "base44:functions:bundle": "node scripts/build-base44-functions.mjs",
+    "base44:functions:check": "node scripts/build-base44-functions.mjs",
+    "base44:runtime:smoke": "base44 exec --data-env prod < scripts/base44-runtime-smoke.ts",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",

@@ -47,7 +47,7 @@ async function upsertMarketDecision(service: any, snapshot: any) {
   });
 }
 
-Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
+export async function handleAutonomousCompanyOrchestrator(req: Request) {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
   let task: any = null;
   try {
     const base44 = createClientFromRequest(req);
@@ -117,4 +117,4 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     }
     return Response.json({ ok: false, error: 'autonomous_company_orchestration_failed', task_id: task?.id || null }, { status: 500 });
   }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator'},__schedulerOk)}
-});
+}

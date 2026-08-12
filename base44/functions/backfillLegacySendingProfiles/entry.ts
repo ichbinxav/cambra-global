@@ -28,7 +28,7 @@ async function candidates(svc:any){
   };
 }
 
-Deno.serve(async(req)=>{
+export async function handleBackfillLegacySendingProfiles(req: Request) {
   try{
     const base44=createClientFromRequest(req);
     const user=await base44.auth.me().catch(()=>null);
@@ -82,4 +82,4 @@ Deno.serve(async(req)=>{
     console.error('backfillLegacySendingProfiles failed',error);
     return Response.json({ok:false,error:'legacy_sending_profile_backfill_failed'},{status:500});
   }
-});
+}

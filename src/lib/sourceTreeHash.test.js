@@ -55,6 +55,7 @@ describe("sourceTreeHash (sha256-tree-v1)", () => {
     expect(isExcluded("debug.log")).toBe(true);
     expect(isExcluded("CAMBRA-final.zip")).toBe(true);
     expect(isExcluded(".release-artifacts/CAMBRA-final.zip")).toBe(true);
+    expect(isExcluded("base44/.deploy/functions/example/entry.ts")).toBe(true);
     expect(isExcluded("src/pages/Landing.jsx")).toBe(false);
     expect(isExcluded("base44/entities/Baseline.jsonc")).toBe(false);
   });

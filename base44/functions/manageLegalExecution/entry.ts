@@ -7,7 +7,7 @@ const APPROVED_CONFIDENCE=new Set(['VERIFIED_PRIMARY','VERIFIED_MULTIPLE_PRIMARY
 const AUTHORITY_SCOPES=new Set(Object.values(ACTION_POLICIES).map((x:any)=>x.authority_scope).filter(Boolean));
 const KILL_SWITCH_SCOPES=new Set(['global','jurisdiction','action','jurisdiction_action','merchant','provider']);
 
-Deno.serve(async(req)=>{
+export async function handleManageLegalExecution(req: Request) {
   try{
     const base44=createClientFromRequest(req);const user=await base44.auth.me().catch(()=>null);
     if(user?.role!=='admin')return Response.json({ok:false,error:'admin_required'},{status:403});
@@ -39,4 +39,4 @@ Deno.serve(async(req)=>{
     }
     return Response.json({ok:false,error:'unsupported_action',actions:['publish_policy','activate_kill_switch','deactivate_kill_switch','verify_signer_capacity','grant_authority','restrict_authority']},{status:400});
   }catch(error){console.error('manageLegalExecution failed',error);return Response.json({ok:false,error:'manage_legal_execution_failed'},{status:500});}
-});
+}

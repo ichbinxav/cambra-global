@@ -3,7 +3,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { authorityForAgent } from '../../shared/agentAuthority.ts';
 import { evaluateLegalExecution } from '../../shared/legalExecutionRuntime.ts';
 
-Deno.serve(async(req)=>{
+export async function handleCanExecuteLegalAction(req: Request) {
   try{
     const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));
     const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
@@ -17,4 +17,4 @@ Deno.serve(async(req)=>{
     const result=await evaluateLegalExecution(base44.asServiceRole,{...body,actor:{id:gate.isAdmin?String(gate.user?.email||'admin'):agentName,type:gate.isAdmin?'HUMAN_ADMIN':'AUTOMATION',tool:'canExecuteLegalAction',allowed_actions:[...new Set(allowedActions)]}});
     return Response.json({ok:true,result});
   }catch(error){console.error('canExecuteLegalAction failed',error);return Response.json({ok:false,error:'legal_execution_evaluation_failed'},{status:500});}
-});
+}

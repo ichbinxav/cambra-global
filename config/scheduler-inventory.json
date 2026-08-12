@@ -1,10 +1,10 @@
 {
-  "schema_version": "cambra-scheduler-inventory-v1",
-  "generated_from": "base44/functions/*/function.jsonc",
-  "truth_boundary": "UNKNOWN means the repository does not prove the property. Base44 triggers are treated as at-least-once; exactly-once execution is not claimed.",
-  "scheduled_automation_count": 71,
-  "active_count": 69,
-  "guarded_count": 16,
+  "schema_version": "cambra-scheduler-inventory-v2",
+  "generated_from": "physical Base44 function configs after deployment-topology consolidation",
+  "truth_boundary": "Logical worker names may be hosted by an existing physical function. UNKNOWN means the repository does not prove the property. Base44 triggers are treated as at-least-once; exactly-once execution is not claimed.",
+  "scheduled_automation_count": 68,
+  "active_count": 66,
+  "guarded_count": 15,
   "unguarded_active": [
     "acquisitionAttributionWorker",
     "acquisitionLearningWorker",
@@ -21,7 +21,6 @@
     "developerSignalWorker",
     "documentationMaintenanceWorker",
     "eclProductionHealth",
-    "europeanGrowthIntelligenceWorker",
     "executiveDigestWorker",
     "intelligenceMaintenanceWorker",
     "knowledgeIntegrityWorker",
@@ -48,7 +47,6 @@
     "realWorldValidationWorker",
     "recoverAutopilotWorker",
     "recoverBillingDigest",
-    "regulatoryMonitoringWorker",
     "retryPendingRecoverContracts",
     "revenueGoldenPathSelfTest",
     "revenueLifecycleWorker",
@@ -63,6 +61,7 @@
   "automations": [
     {
       "worker_key": "acquisitionAttributionWorker",
+      "hosted_workers": [],
       "function_directory": "acquisitionAttributionWorker",
       "automation_index": 0,
       "name": "Acquisition Attribution — hourly",
@@ -90,6 +89,7 @@
     },
     {
       "worker_key": "acquisitionLearningWorker",
+      "hosted_workers": [],
       "function_directory": "acquisitionLearningWorker",
       "automation_index": 0,
       "name": "Acquisition Learning — daily",
@@ -117,6 +117,7 @@
     },
     {
       "worker_key": "agentPerformanceWorker",
+      "hosted_workers": [],
       "function_directory": "agentPerformanceWorker",
       "automation_index": 0,
       "name": "Agent performance telemetry",
@@ -144,6 +145,7 @@
     },
     {
       "worker_key": "aggregateAgreementWorker",
+      "hosted_workers": [],
       "function_directory": "aggregateAgreementWorker",
       "automation_index": 0,
       "name": "Dynamic Aggregate Agreements — 6h",
@@ -171,6 +173,7 @@
     },
     {
       "worker_key": "aggregateDemandWorker",
+      "hosted_workers": [],
       "function_directory": "aggregateDemandWorker",
       "automation_index": 0,
       "name": "Aggregate Demand Refresh — 6h",
@@ -198,6 +201,7 @@
     },
     {
       "worker_key": "aggregateEligibilityWorker",
+      "hosted_workers": [],
       "function_directory": "aggregateEligibilityWorker",
       "automation_index": 0,
       "name": "Aggregate Merchant Eligibility — 6h",
@@ -225,6 +229,7 @@
     },
     {
       "worker_key": "aggregateProcurementWorker",
+      "hosted_workers": [],
       "function_directory": "aggregateProcurementWorker",
       "automation_index": 0,
       "name": "Aggregate Procurement — daily",
@@ -252,6 +257,7 @@
     },
     {
       "worker_key": "alwaysOnLeadDiscoveryWorker",
+      "hosted_workers": [],
       "function_directory": "alwaysOnLeadDiscoveryWorker",
       "automation_index": 0,
       "name": "Always-On Lead Discovery — hourly",
@@ -279,6 +285,7 @@
     },
     {
       "worker_key": "autonomousCommercialWorker",
+      "hosted_workers": [],
       "function_directory": "autonomousCommercialWorker",
       "automation_index": 0,
       "name": "Merchant Acquisition Loop — hourly",
@@ -305,38 +312,12 @@
       "config_path": "base44/functions/autonomousCommercialWorker/function.jsonc"
     },
     {
-      "worker_key": "autonomousCompanyOrchestrator",
-      "function_directory": "autonomousCompanyOrchestrator",
-      "automation_index": 0,
-      "name": "P8 Autonomous Company Coordination — 6h",
-      "responsibility": "Coordinates P6 market intelligence, P7 pipeline/learning and the executive digest. It never sends outreach, signs, spends, charges or executes a material contract.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "hours",
-        "repeat_interval": 6,
-        "cadence_seconds": 21600,
-        "start_time": "2026-08-11T06:00:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
-      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
-      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
-      "tenant_scope": "UNKNOWN",
-      "authority": "INTERNAL_SECRET",
-      "config_path": "base44/functions/autonomousCompanyOrchestrator/function.jsonc"
-    },
-    {
       "worker_key": "autonomousOperationsSupervisor",
+      "hosted_workers": [],
       "function_directory": "autonomousOperationsSupervisor",
       "automation_index": 0,
       "name": "Autonomous Operations Supervisor — 15 min",
-      "responsibility": "Cross-loop supervisor for stale tasks, due communications, provider negotiation follow-up repair, blocked migrations and missing verification evidence. Safe recoveries only; never changes money or L4 authority.",
+      "responsibility": "Cross-loop supervisor for stale tasks and bounded safe recoveries; never changes money or L4 authority.",
       "owner_system": "Base44",
       "trigger": "scheduled",
       "is_active": true,
@@ -359,7 +340,38 @@
       "config_path": "base44/functions/autonomousOperationsSupervisor/function.jsonc"
     },
     {
+      "worker_key": "autonomousCompanyOrchestrator",
+      "hosted_workers": [
+        "autonomousCompanyOrchestrator"
+      ],
+      "function_directory": "autonomousOperationsSupervisor",
+      "automation_index": 1,
+      "name": "P8 Autonomous Company Coordination — 6h (consolidated)",
+      "responsibility": "Runs the original autonomousCompanyOrchestrator handler inside the existing internal supervisor boundary.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "hours",
+        "repeat_interval": 6,
+        "cadence_seconds": 21600,
+        "start_time": "2026-08-11T03:00:00.000Z"
+      },
+      "timeout_seconds": "UNKNOWN",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/autonomousOperationsSupervisor/function.jsonc"
+    },
+    {
       "worker_key": "autonomousPartnerWorker",
+      "hosted_workers": [],
       "function_directory": "autonomousPartnerWorker",
       "automation_index": 0,
       "name": "Partner Acquisition Loop — hourly",
@@ -387,6 +399,7 @@
     },
     {
       "worker_key": "billApiUsage",
+      "hosted_workers": [],
       "function_directory": "billApiUsage",
       "automation_index": 0,
       "name": "Bill API Usage (Monthly Overage)",
@@ -414,6 +427,7 @@
     },
     {
       "worker_key": "collectionOperationsWorker",
+      "hosted_workers": [],
       "function_directory": "collectionOperationsWorker",
       "automation_index": 0,
       "name": "Collection operations",
@@ -441,6 +455,7 @@
     },
     {
       "worker_key": "commercialFollowUpWorker",
+      "hosted_workers": [],
       "function_directory": "commercialFollowUpWorker",
       "automation_index": 0,
       "name": "Commercial Follow-up Loop — hourly",
@@ -467,34 +482,8 @@
       "config_path": "base44/functions/commercialFollowUpWorker/function.jsonc"
     },
     {
-      "worker_key": "costGovernanceWorker",
-      "function_directory": "costGovernanceWorker",
-      "automation_index": 0,
-      "name": "cost-governance-hourly",
-      "responsibility": "Validates founder-approved paid-operation budgets, records runtime evidence and activates the cost kill-switch at the hard threshold.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "hours",
-        "repeat_interval": 1,
-        "cadence_seconds": 3600,
-        "start_time": "2026-08-11T00:00:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
-      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
-      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
-      "tenant_scope": "UNKNOWN",
-      "authority": "INTERNAL_SECRET",
-      "config_path": "base44/functions/costGovernanceWorker/function.jsonc"
-    },
-    {
       "worker_key": "customerSuccessWorker",
+      "hosted_workers": [],
       "function_directory": "customerSuccessWorker",
       "automation_index": 0,
       "name": "Customer success retention expansion sweep",
@@ -522,6 +511,7 @@
     },
     {
       "worker_key": "dependencySecurityWorker",
+      "hosted_workers": [],
       "function_directory": "dependencySecurityWorker",
       "automation_index": 0,
       "name": "Dependency Security Watch — 6h",
@@ -549,6 +539,7 @@
     },
     {
       "worker_key": "developerSignalWorker",
+      "hosted_workers": [],
       "function_directory": "developerSignalWorker",
       "automation_index": 0,
       "name": "Developer incident signal bridge",
@@ -576,6 +567,7 @@
     },
     {
       "worker_key": "documentationMaintenanceWorker",
+      "hosted_workers": [],
       "function_directory": "documentationMaintenanceWorker",
       "automation_index": 0,
       "name": "Living Documentation Maintenance — daily",
@@ -603,6 +595,7 @@
     },
     {
       "worker_key": "eclLifecycleScheduler",
+      "hosted_workers": [],
       "function_directory": "eclLifecycleScheduler",
       "automation_index": 0,
       "name": "ECL Lifecycle Sweep",
@@ -630,6 +623,7 @@
     },
     {
       "worker_key": "eclProductionHealth",
+      "hosted_workers": [],
       "function_directory": "eclProductionHealth",
       "automation_index": 0,
       "name": "ECL Production Health — 10 min",
@@ -656,34 +650,8 @@
       "config_path": "base44/functions/eclProductionHealth/function.jsonc"
     },
     {
-      "worker_key": "europeanGrowthIntelligenceWorker",
-      "function_directory": "europeanGrowthIntelligenceWorker",
-      "automation_index": 0,
-      "name": "P12 European growth intelligence — daily",
-      "responsibility": "Builds the 33-market explainable launch portfolio in shadow/recommend-only mode. P10/P11 hard gates cannot be bypassed.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "days",
-        "repeat_interval": 1,
-        "cadence_seconds": 86400,
-        "start_time": "2026-08-11T05:30:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_NO_PROVEN_SLOT_GUARD",
-      "idempotency": "UNKNOWN",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "UNKNOWN",
-      "side_effects": "READ_ONLY_OR_UNKNOWN",
-      "tenant_scope": "UNKNOWN",
-      "authority": "UNKNOWN",
-      "config_path": "base44/functions/europeanGrowthIntelligenceWorker/function.jsonc"
-    },
-    {
       "worker_key": "executiveDigestWorker",
+      "hosted_workers": [],
       "function_directory": "executiveDigestWorker",
       "automation_index": 0,
       "name": "Daily executive digest",
@@ -711,6 +679,10 @@
     },
     {
       "worker_key": "getEuropeMarketsCommandCenter",
+      "hosted_workers": [
+        "europeanGrowthIntelligenceWorker",
+        "getEuropeanGrowthCommandCenter"
+      ],
       "function_directory": "getEuropeMarketsCommandCenter",
       "automation_index": 0,
       "name": "Growth Path + Europe-33 recompute — 6h",
@@ -737,61 +709,8 @@
       "config_path": "base44/functions/getEuropeMarketsCommandCenter/function.jsonc"
     },
     {
-      "worker_key": "instantlyProviderEventRetryWorker",
-      "function_directory": "instantlyProviderEventRetryWorker",
-      "automation_index": 0,
-      "name": "Instantly inbound event recovery — every 5 minutes",
-      "responsibility": "Replays authenticated provider events that failed canonical conversation processing. Duplicate scheduler slots are rejected and exhausted events become explicit dead letters.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "minutes",
-        "repeat_interval": 5,
-        "cadence_seconds": 300,
-        "start_time": "2026-08-11T00:00:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
-      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "UNKNOWN",
-      "side_effects": "READ_ONLY_OR_UNKNOWN",
-      "tenant_scope": "UNKNOWN",
-      "authority": "UNKNOWN",
-      "config_path": "base44/functions/instantlyProviderEventRetryWorker/function.jsonc"
-    },
-    {
-      "worker_key": "instantlyReconciliationWorker",
-      "function_directory": "instantlyReconciliationWorker",
-      "automation_index": 0,
-      "name": "Instantly state reconciliation — every 15 minutes",
-      "responsibility": "Bounded official-API reconciliation for provider health, sender warm-up, campaign/webhook state and missed message events. It never overwrites CAMBRA canonical intelligence.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "minutes",
-        "repeat_interval": 15,
-        "cadence_seconds": 900,
-        "start_time": "2026-08-11T00:00:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
-      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "UNKNOWN",
-      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
-      "tenant_scope": "UNKNOWN",
-      "authority": "UNKNOWN",
-      "config_path": "base44/functions/instantlyReconciliationWorker/function.jsonc"
-    },
-    {
       "worker_key": "intelligenceMaintenanceWorker",
+      "hosted_workers": [],
       "function_directory": "intelligenceMaintenanceWorker",
       "automation_index": 0,
       "name": "Provider Intelligence Maintenance — daily",
@@ -819,6 +738,7 @@
     },
     {
       "worker_key": "knowledgeIntegrityWorker",
+      "hosted_workers": [],
       "function_directory": "knowledgeIntegrityWorker",
       "automation_index": 0,
       "name": "Knowledge Integrity — 6h",
@@ -846,10 +766,11 @@
     },
     {
       "worker_key": "maintenanceEngine",
+      "hosted_workers": [],
       "function_directory": "maintenanceEngine",
       "automation_index": 0,
       "name": "CAMBRA Autonomous Maintenance — 10 min",
-      "responsibility": "P17 governed maintenance sweep: detect, diagnose, perform allowlisted reversible recovery, verify, record incident learning and escalate material failures. Never auto-approves money/security/contracts/permissions/code deployment.",
+      "responsibility": "P17 governed maintenance sweep. Material financial, security, contract, permission and deployment actions remain human-gated.",
       "owner_system": "Base44",
       "trigger": "scheduled",
       "is_active": true,
@@ -872,7 +793,98 @@
       "config_path": "base44/functions/maintenanceEngine/function.jsonc"
     },
     {
+      "worker_key": "costGovernanceWorker",
+      "hosted_workers": [
+        "costGovernanceWorker"
+      ],
+      "function_directory": "maintenanceEngine",
+      "automation_index": 1,
+      "name": "Cost governance — hourly (consolidated)",
+      "responsibility": "Runs the original costGovernanceWorker handler through the existing maintenanceEngine trust boundary.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "hours",
+        "repeat_interval": 1,
+        "cadence_seconds": 3600,
+        "start_time": "2026-08-11T00:15:00.000Z"
+      },
+      "timeout_seconds": "UNKNOWN",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/maintenanceEngine/function.jsonc"
+    },
+    {
+      "worker_key": "productionReadinessWorker",
+      "hosted_workers": [
+        "productionReadinessWorker"
+      ],
+      "function_directory": "maintenanceEngine",
+      "automation_index": 2,
+      "name": "Production readiness — daily (consolidated)",
+      "responsibility": "Runs the original fail-closed productionReadinessWorker handler through maintenanceEngine.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "days",
+        "repeat_interval": 1,
+        "cadence_seconds": 86400,
+        "start_time": "2026-08-11T05:00:00.000Z"
+      },
+      "timeout_seconds": "UNKNOWN",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/maintenanceEngine/function.jsonc"
+    },
+    {
+      "worker_key": "regulatoryMonitoringWorker",
+      "hosted_workers": [
+        "regulatoryMonitoringWorker"
+      ],
+      "function_directory": "marketPolicyAdmin",
+      "automation_index": 0,
+      "name": "P10 Regulatory freshness monitor — daily (consolidated)",
+      "responsibility": "Runs the original regulatoryMonitoringWorker handler within the market-policy trust boundary.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "days",
+        "repeat_interval": 1,
+        "cadence_seconds": 86400,
+        "start_time": "2026-08-11T04:30:00.000Z"
+      },
+      "timeout_seconds": "UNKNOWN",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "UNKNOWN",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/marketPolicyAdmin/function.jsonc"
+    },
+    {
       "worker_key": "missingInformationWorker",
+      "hosted_workers": [],
       "function_directory": "missingInformationWorker",
       "automation_index": 0,
       "name": "Missing Information Resolution — hourly",
@@ -900,6 +912,7 @@
     },
     {
       "worker_key": "moatCuratorWorker",
+      "hosted_workers": [],
       "function_directory": "moatCuratorWorker",
       "automation_index": 0,
       "name": "Moat Curator — daily",
@@ -927,6 +940,7 @@
     },
     {
       "worker_key": "negotiationMemoryWorker",
+      "hosted_workers": [],
       "function_directory": "negotiationMemoryWorker",
       "automation_index": 0,
       "name": "Negotiation Memory — daily",
@@ -954,6 +968,7 @@
     },
     {
       "worker_key": "onboardingConciergeWorker",
+      "hosted_workers": [],
       "function_directory": "onboardingConciergeWorker",
       "automation_index": 0,
       "name": "Onboarding Concierge — hourly",
@@ -981,6 +996,7 @@
     },
     {
       "worker_key": "operatingHealthWorker",
+      "hosted_workers": [],
       "function_directory": "operatingHealthWorker",
       "automation_index": 0,
       "name": "Operating health assessment",
@@ -1008,6 +1024,7 @@
     },
     {
       "worker_key": "outboundDeliverabilityManager",
+      "hosted_workers": [],
       "function_directory": "outboundDeliverabilityManager",
       "automation_index": 0,
       "name": "Outbound Deliverability Manager — hourly",
@@ -1035,6 +1052,7 @@
     },
     {
       "worker_key": "outboundVolumeWorker",
+      "hosted_workers": [],
       "function_directory": "outboundVolumeWorker",
       "automation_index": 0,
       "name": "Outbound Volume Pool — hourly",
@@ -1062,6 +1080,7 @@
     },
     {
       "worker_key": "outcomeLearningWorker",
+      "hosted_workers": [],
       "function_directory": "outcomeLearningWorker",
       "automation_index": 0,
       "name": "Outcome Learning — daily",
@@ -1089,6 +1108,7 @@
     },
     {
       "worker_key": "outlookInboundRouter",
+      "hosted_workers": [],
       "function_directory": "outlookInboundRouter",
       "automation_index": 0,
       "name": "Outlook Commercial Inbound — every 5 minutes",
@@ -1116,6 +1136,7 @@
     },
     {
       "worker_key": "outreachExperimentLearningWorker",
+      "hosted_workers": [],
       "function_directory": "outreachExperimentLearningWorker",
       "automation_index": 0,
       "name": "Outreach Experiment Learning — daily",
@@ -1143,6 +1164,7 @@
     },
     {
       "worker_key": "postMeetingWorker",
+      "hosted_workers": [],
       "function_directory": "postMeetingWorker",
       "automation_index": 0,
       "name": "Post-meeting Continuation — hourly",
@@ -1170,6 +1192,7 @@
     },
     {
       "worker_key": "privacySafeIntelligenceWorker",
+      "hosted_workers": [],
       "function_directory": "privacySafeIntelligenceWorker",
       "automation_index": 0,
       "name": "Privacy-safe Intelligence — daily",
@@ -1197,6 +1220,10 @@
     },
     {
       "worker_key": "processWebhookDeadLetters",
+      "hosted_workers": [
+        "instantlyProviderEventRetryWorker",
+        "instantlyReconciliationWorker"
+      ],
       "function_directory": "processWebhookDeadLetters",
       "automation_index": 0,
       "name": "Webhook Dead Letter Retry",
@@ -1223,34 +1250,8 @@
       "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc"
     },
     {
-      "worker_key": "productionReadinessWorker",
-      "function_directory": "productionReadinessWorker",
-      "automation_index": 0,
-      "name": "P11 production readiness — daily",
-      "responsibility": "Evaluates security findings, SLO evidence, remote verification, restore evidence and extractor evaluation without inventing a production seal.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "days",
-        "repeat_interval": 1,
-        "cadence_seconds": 86400,
-        "start_time": "2026-08-11T05:00:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
-      "idempotency": "SCHEDULER_RUN_KEY; HANDLER GUARANTEE REQUIRES SOURCE REVIEW",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "UNKNOWN",
-      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
-      "tenant_scope": "UNKNOWN",
-      "authority": "UNKNOWN",
-      "config_path": "base44/functions/productionReadinessWorker/function.jsonc"
-    },
-    {
       "worker_key": "providerEconomicsAssessmentWorker",
+      "hosted_workers": [],
       "function_directory": "providerEconomicsAssessmentWorker",
       "automation_index": 0,
       "name": "Provider economics assessment",
@@ -1278,6 +1279,7 @@
     },
     {
       "worker_key": "providerEconomicsIntelligenceWorker",
+      "hosted_workers": [],
       "function_directory": "providerEconomicsIntelligenceWorker",
       "automation_index": 0,
       "name": "Provider economics intelligence",
@@ -1305,6 +1307,7 @@
     },
     {
       "worker_key": "providerMonitorAgent",
+      "hosted_workers": [],
       "function_directory": "providerMonitorAgent",
       "automation_index": 0,
       "name": "Provider & Market Intelligence — daily",
@@ -1332,6 +1335,7 @@
     },
     {
       "worker_key": "providerRevenueAttributionWorker",
+      "hosted_workers": [],
       "function_directory": "providerRevenueAttributionWorker",
       "automation_index": 0,
       "name": "Provider revenue attribution",
@@ -1359,6 +1363,7 @@
     },
     {
       "worker_key": "providerRevenueBillingWorker",
+      "hosted_workers": [],
       "function_directory": "providerRevenueBillingWorker",
       "automation_index": 0,
       "name": "Provider revenue billing preparation",
@@ -1386,6 +1391,7 @@
     },
     {
       "worker_key": "providerRevenueLifecycleWorker",
+      "hosted_workers": [],
       "function_directory": "providerRevenueLifecycleWorker",
       "automation_index": 0,
       "name": "Provider revenue lifecycle",
@@ -1413,6 +1419,7 @@
     },
     {
       "worker_key": "providerRevenueReconciliationWorker",
+      "hosted_workers": [],
       "function_directory": "providerRevenueReconciliationWorker",
       "automation_index": 0,
       "name": "Provider revenue reconciliation",
@@ -1440,6 +1447,7 @@
     },
     {
       "worker_key": "providerRevenueTierWorker",
+      "hosted_workers": [],
       "function_directory": "providerRevenueTierWorker",
       "automation_index": 0,
       "name": "Provider revenue tiers",
@@ -1467,6 +1475,7 @@
     },
     {
       "worker_key": "purgeInactiveLeads",
+      "hosted_workers": [],
       "function_directory": "purgeInactiveLeads",
       "automation_index": 0,
       "name": "Lead retention purge",
@@ -1494,6 +1503,7 @@
     },
     {
       "worker_key": "purgePaymentsAnalysisSessions",
+      "hosted_workers": [],
       "function_directory": "purgePaymentsAnalysisSessions",
       "automation_index": 0,
       "name": "Payments analysis retention purge",
@@ -1521,6 +1531,7 @@
     },
     {
       "worker_key": "rateIntelligenceWatchWorker",
+      "hosted_workers": [],
       "function_directory": "rateIntelligenceWatchWorker",
       "automation_index": 0,
       "name": "P3 Rate Intelligence Watch — every 6h",
@@ -1548,6 +1559,7 @@
     },
     {
       "worker_key": "realWorldValidationWorker",
+      "hosted_workers": [],
       "function_directory": "realWorldValidationWorker",
       "automation_index": 0,
       "name": "Real-world pilot validation",
@@ -1575,6 +1587,7 @@
     },
     {
       "worker_key": "reconcileRecoverBilling",
+      "hosted_workers": [],
       "function_directory": "reconcileRecoverBilling",
       "automation_index": 0,
       "name": "Recover Billing Reconciliation — 15 min",
@@ -1602,6 +1615,7 @@
     },
     {
       "worker_key": "recoverAutopilotWorker",
+      "hosted_workers": [],
       "function_directory": "recoverAutopilotWorker",
       "automation_index": 0,
       "name": "Recover Verification & Billing Autopilot — daily",
@@ -1629,6 +1643,7 @@
     },
     {
       "worker_key": "recoverBillingDigest",
+      "hosted_workers": [],
       "function_directory": "recoverBillingDigest",
       "automation_index": 0,
       "name": "Recover billing weekly digest",
@@ -1655,34 +1670,8 @@
       "config_path": "base44/functions/recoverBillingDigest/function.jsonc"
     },
     {
-      "worker_key": "regulatoryMonitoringWorker",
-      "function_directory": "regulatoryMonitoringWorker",
-      "automation_index": 0,
-      "name": "P10 Regulatory freshness monitor — daily",
-      "responsibility": "Flags stale policies, expiring registrations and evidence review debt without promoting legal conclusions.",
-      "owner_system": "Base44",
-      "trigger": "scheduled",
-      "is_active": true,
-      "schedule": {
-        "mode": "recurring",
-        "type": "simple",
-        "repeat_unit": "days",
-        "repeat_interval": 1,
-        "cadence_seconds": 86400,
-        "start_time": "2026-08-11T04:30:00.000Z"
-      },
-      "timeout_seconds": "UNKNOWN",
-      "concurrency": "AT_LEAST_ONCE_NO_PROVEN_SLOT_GUARD",
-      "idempotency": "UNKNOWN",
-      "retry_backoff": "UNKNOWN",
-      "dlq_escalation": "UNKNOWN",
-      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
-      "tenant_scope": "UNKNOWN",
-      "authority": "UNKNOWN",
-      "config_path": "base44/functions/regulatoryMonitoringWorker/function.jsonc"
-    },
-    {
       "worker_key": "retryPendingRecoverContracts",
+      "hosted_workers": [],
       "function_directory": "retryPendingRecoverContracts",
       "automation_index": 0,
       "name": "Recover contract delivery reconciler",
@@ -1710,6 +1699,7 @@
     },
     {
       "worker_key": "revenueGoldenPathSelfTest",
+      "hosted_workers": [],
       "function_directory": "revenueGoldenPathSelfTest",
       "automation_index": 0,
       "name": "Revenue golden path contract test",
@@ -1737,6 +1727,7 @@
     },
     {
       "worker_key": "revenueLifecycleWorker",
+      "hosted_workers": [],
       "function_directory": "revenueLifecycleWorker",
       "automation_index": 0,
       "name": "Revenue lifecycle reconciliation",
@@ -1764,6 +1755,7 @@
     },
     {
       "worker_key": "routingHistoricalBackfill",
+      "hosted_workers": [],
       "function_directory": "routingHistoricalBackfill",
       "automation_index": 0,
       "name": "Shadow Routing Historical Backfill — daily",
@@ -1791,6 +1783,7 @@
     },
     {
       "worker_key": "routingPerformanceWorker",
+      "hosted_workers": [],
       "function_directory": "routingPerformanceWorker",
       "automation_index": 0,
       "name": "Routing Performance Learning — daily",
@@ -1818,6 +1811,7 @@
     },
     {
       "worker_key": "routingReadinessWorker",
+      "hosted_workers": [],
       "function_directory": "routingReadinessWorker",
       "automation_index": 0,
       "name": "Routing Readiness — daily",
@@ -1845,6 +1839,7 @@
     },
     {
       "worker_key": "salesPipelineWorker",
+      "hosted_workers": [],
       "function_directory": "salesPipelineWorker",
       "automation_index": 0,
       "name": "Sales pipeline projection",
@@ -1872,6 +1867,7 @@
     },
     {
       "worker_key": "scheduledBenchmarkRecompute",
+      "hosted_workers": [],
       "function_directory": "scheduledBenchmarkRecompute",
       "automation_index": 0,
       "name": "Benchmark cohort recompute",
@@ -1899,6 +1895,7 @@
     },
     {
       "worker_key": "seedP3RateIntelligence",
+      "hosted_workers": [],
       "function_directory": "seedP3RateIntelligence",
       "automation_index": 0,
       "name": "P3 Runtime Evidence Bootstrap — temporary",
@@ -1910,8 +1907,8 @@
         "mode": "recurring",
         "type": "simple",
         "repeat_unit": "minutes",
-        "repeat_interval": 1,
-        "cadence_seconds": 60,
+        "repeat_interval": 5,
+        "cadence_seconds": 300,
         "start_time": "2026-08-10T23:00:00.000Z"
       },
       "timeout_seconds": "UNKNOWN",
@@ -1926,6 +1923,7 @@
     },
     {
       "worker_key": "shadowRoutingEngine",
+      "hosted_workers": [],
       "function_directory": "shadowRoutingEngine",
       "automation_index": 0,
       "name": "Shadow Routing Evaluation — daily",
@@ -1953,6 +1951,7 @@
     },
     {
       "worker_key": "unitEconomicsWorker",
+      "hosted_workers": [],
       "function_directory": "unitEconomicsWorker",
       "automation_index": 0,
       "name": "Merchant unit economics",

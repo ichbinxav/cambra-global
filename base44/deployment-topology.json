@@ -1,0 +1,32 @@
+{
+  "schema_version": "cambra-base44-deployment-topology-v1",
+  "physical_function_target": 276,
+  "truth_boundary": "Logical handlers are source modules routed through already-deployed physical entry points. Public webhooks, Stripe, billing and other sensitive boundaries are never routed through the generic admin surface.",
+  "logical_routes": {
+    "adminGlobalSearch": { "host": "adminSummaries", "route": { "action": "global_search" }, "boundary": "strict_admin" },
+    "autonomousCompanyOrchestrator": { "host": "autonomousOperationsSupervisor", "route": { "host_action": "autonomous_company_orchestrator" }, "boundary": "internal_scheduler_or_admin" },
+    "backfillLegacySendingProfiles": { "host": "outboundControlAdmin", "route": { "action": "backfill_legacy_sending_profiles" }, "boundary": "strict_admin_or_internal" },
+    "canExecuteLegalAction": { "host": "checkMarketCapability", "route": { "action": "can_execute_legal_action" }, "boundary": "legal_evaluation_internal_or_admin" },
+    "checkRegulatoryActivity": { "host": "checkMarketCapability", "route": { "action": "check_regulatory_activity" }, "boundary": "regulatory_evaluation_internal_or_admin" },
+    "commercialCampaignAdmin": { "host": "adminSummaries", "route": { "action_prefix": "campaign_" }, "boundary": "strict_admin" },
+    "commercialExecutionDryRun": { "host": "outboundControlAdmin", "route": { "action": "commercial_dry_run" }, "boundary": "commercial_admin_or_internal" },
+    "commercialGoLiveReadiness": { "host": "outboundControlAdmin", "route": { "action": "commercial_go_live_readiness" }, "boundary": "commercial_admin_or_internal_fail_closed" },
+    "commercialStrategyAgent": { "host": "outboundControlAdmin", "route": { "action": "commercial_strategy" }, "boundary": "commercial_admin_or_internal" },
+    "costGovernanceWorker": { "host": "maintenanceEngine", "route": { "host_action": "cost_governance" }, "boundary": "internal_scheduler_or_admin_financial_control" },
+    "europeanGrowthIntelligenceWorker": { "host": "getEuropeMarketsCommandCenter", "route": { "view": "growth", "action": "recompute" }, "boundary": "recommendation_only_internal_or_admin" },
+    "founderMeetingAdmin": { "host": "founderOSCommand", "route": { "action_family": "meeting" }, "boundary": "strict_admin" },
+    "getEuropeanGrowthCommandCenter": { "host": "getEuropeMarketsCommandCenter", "route": { "view": "growth" }, "boundary": "internal_or_admin_read_recommendation" },
+    "goLiveControlAdmin": { "host": "outboundControlAdmin", "route": { "action_family": "go_live" }, "boundary": "strict_admin_or_internal_fail_closed" },
+    "instantlyProviderAdmin": { "host": "outboundControlAdmin", "route": { "action_prefix": "instantly_" }, "boundary": "strict_admin_paid_provider" },
+    "instantlyProviderEventRetryWorker": { "host": "processWebhookDeadLetters", "route": { "provider_maintenance_only": true }, "boundary": "internal_scheduler_provider_event_recovery" },
+    "instantlyReconciliationWorker": { "host": "processWebhookDeadLetters", "route": { "provider_maintenance_only": true }, "boundary": "internal_scheduler_paid_provider" },
+    "instantlyWebhook": { "host": "resendInboundWebhook", "route": { "header": "x-cambra-instantly-secret" }, "boundary": "public_authenticated_webhook_isolated" },
+    "manageLegalExecution": { "host": "marketPolicyAdmin", "route": { "action": "manage_legal_execution" }, "boundary": "strict_admin_legal_authority" },
+    "productionReadinessWorker": { "host": "maintenanceEngine", "route": { "host_action": "production_readiness" }, "boundary": "internal_scheduler_or_admin_readiness" },
+    "projectVerifiedPaymentsToP4": { "host": "rateIntelligenceQuery", "route": { "action": "project_verified_payments_to_p4" }, "boundary": "tenant_safe_internal_or_admin" },
+    "regulatoryMonitoringWorker": { "host": "marketPolicyAdmin", "route": { "action": "regulatory_monitoring" }, "boundary": "internal_scheduler_regulatory" },
+    "requestP4Estimate": { "host": "rateIntelligenceQuery", "route": { "action": "request_p4_estimate" }, "boundary": "tenant_safe_internal_or_admin" },
+    "seedP10RegulatoryControl": { "host": "marketPolicyAdmin", "route": { "action": "seed_p10_regulatory_control" }, "boundary": "admin_or_internal_conservative_seed" },
+    "seedP11LegalExecution": { "host": "marketPolicyAdmin", "route": { "action": "seed_p11_legal_execution" }, "boundary": "strict_admin_conservative_seed" }
+  }
+}

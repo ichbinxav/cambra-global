@@ -1,6 +1,48 @@
 {
-  "name":"maintenanceEngine","entry":"entry.ts","automations":[{
-    "type":"scheduled","name":"CAMBRA Autonomous Maintenance — 10 min","description":"P17 governed maintenance sweep: detect, diagnose, perform allowlisted reversible recovery, verify, record incident learning and escalate material failures. Never auto-approves money/security/contracts/permissions/code deployment.",
-    "function_args":{"internal_secret":"{{INTERNAL_CALL_SECRET}}"},"is_active":true,"schedule_mode":"recurring","schedule_type":"simple","repeat_unit":"minutes","repeat_interval":10,"ends_type":"never","function_name":"maintenanceEngine","starts_at":"2026-08-10T02:00:00.000Z"
-  }]
+  "name": "maintenanceEngine",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "CAMBRA Autonomous Maintenance — 10 min",
+      "description": "P17 governed maintenance sweep. Material financial, security, contract, permission and deployment actions remain human-gated.",
+      "function_args": { "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 10,
+      "ends_type": "never",
+      "function_name": "maintenanceEngine",
+      "starts_at": "2026-08-10T02:00:00.000Z"
+    },
+    {
+      "type": "scheduled",
+      "name": "Cost governance — hourly (consolidated)",
+      "description": "Runs the original costGovernanceWorker handler through the existing maintenanceEngine trust boundary.",
+      "function_args": { "host_action": "cost_governance", "hosted_worker": "costGovernanceWorker", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "hours",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "maintenanceEngine",
+      "starts_at": "2026-08-11T00:15:00.000Z"
+    },
+    {
+      "type": "scheduled",
+      "name": "Production readiness — daily (consolidated)",
+      "description": "Runs the original fail-closed productionReadinessWorker handler through maintenanceEngine.",
+      "function_args": { "host_action": "production_readiness", "hosted_worker": "productionReadinessWorker", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "days",
+      "repeat_interval": 1,
+      "ends_type": "never",
+      "function_name": "maintenanceEngine",
+      "starts_at": "2026-08-11T05:00:00.000Z"
+    }
+  ]
 }

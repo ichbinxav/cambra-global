@@ -5,7 +5,7 @@ import { P4_BRIDGE_VERSION, p4ObservationFromVerifiedPayment, p4Pseudonym } from
 
 async function first(s: any, entity: string, query: any) { return (await s.entities[entity].filter(query, '-created_date', 1).catch(() => []))[0] || null; }
 
-Deno.serve(async req => {
+export async function handleProjectVerifiedPaymentsToP4(req: Request) {
   try {
     const base44 = createClientFromRequest(req); const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
@@ -24,4 +24,4 @@ Deno.serve(async req => {
     const row = await base44.asServiceRole.entities.P4EvidenceProjection.create({ projection_key: projectionKey, source_type: 'PAYMENTS_ANALYSIS_VERIFIED', source_id: verified.id, source_fingerprint: sourceFingerprint, brand_id: verified.brand_id, integration_id: verified.integration_id, observation_json: observation, observed_at: observation.observed_at, known_at: new Date().toISOString(), p3_schema_version: P3_SCHEMA_VERSION, projection_version: P4_BRIDGE_VERSION, status: 'CURRENT' });
     return Response.json({ ok: true, created: true, projection_id: row.id, projection_key: projectionKey, note: 'P4 private evidence projection created; no P3 truth was modified.' });
   } catch (error) { console.error('projectVerifiedPaymentsToP4 failed', error); return Response.json({ ok: false, error: 'p4_projection_failed' }, { status: 400 }); }
-});
+}

@@ -22,6 +22,9 @@ export const EXCLUDED_DIRS = [
   ".vite",
   ".turbo",
   ".release-artifacts",
+  // Generated Base44 deployment staging. Canonical source lives under
+  // base44/functions and is deterministically rebuilt by the bundler.
+  ".deploy",
 ];
 export const EXCLUDED_FILES = [
   "RELEASE.json",
