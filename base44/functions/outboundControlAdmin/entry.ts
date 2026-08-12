@@ -56,25 +56,34 @@ function forwardedRequest(req: Request, body: any) {
   });
 }
 
+async function normalizeRoutedJson(response:Response) {
+  const text = await response.text();
+  try {
+    return Response.json(JSON.parse(text), { status:response.status });
+  } catch {
+    return new Response(text, { status:response.status, headers:{ 'content-type':response.headers.get('content-type') || 'text/plain; charset=utf-8' } });
+  }
+}
+
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   const routedAction = String(routedBody?.action || "");
   if (INSTANTLY_ADMIN_ACTIONS.has(routedAction))
-    return handleInstantlyProviderAdmin(
+    return normalizeRoutedJson(await handleInstantlyProviderAdmin(
       forwardedRequest(req, {
         ...routedBody,
         action: routedAction.replace(/^instantly_/, ""),
       }),
-    );
+    ));
   if (routedAction === "commercial_dry_run")
-    return handleCommercialExecutionDryRun(forwardedRequest(req, routedBody));
+    return normalizeRoutedJson(await handleCommercialExecutionDryRun(forwardedRequest(req, routedBody)));
   if (routedAction === "commercial_strategy")
-    return handleCommercialStrategyAgent(forwardedRequest(req, routedBody));
+    return normalizeRoutedJson(await handleCommercialStrategyAgent(forwardedRequest(req, routedBody)));
   if (routedAction === "backfill_legacy_sending_profiles")
-    return handleBackfillLegacySendingProfiles(forwardedRequest(req, routedBody));
+    return normalizeRoutedJson(await handleBackfillLegacySendingProfiles(forwardedRequest(req, routedBody)));
   if (routedAction === "commercial_go_live_readiness")
-    return handleCommercialGoLiveReadiness(forwardedRequest(req, routedBody));
-  if (GO_LIVE_ACTIONS.has(routedAction)) return handleGoLiveControlAdmin(req);
+    return normalizeRoutedJson(await handleCommercialGoLiveReadiness(forwardedRequest(req, routedBody)));
+  if (GO_LIVE_ACTIONS.has(routedAction)) return normalizeRoutedJson(await handleGoLiveControlAdmin(req));
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));

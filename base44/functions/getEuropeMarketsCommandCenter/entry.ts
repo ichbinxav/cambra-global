@@ -14,9 +14,18 @@ function regulatoryReadiness(policies:any[]) {
   return { status:'EVIDENCE_BACKED_POLICY_AVAILABLE',gate:'CONDITIONS',covered:policies.length,expected:REGULATORY_ACTIVITIES.length };
 }
 
+async function normalizeRoutedJson(response:Response) {
+  const text = await response.text();
+  try {
+    return Response.json(JSON.parse(text), { status:response.status });
+  } catch {
+    return new Response(text, { status:response.status, headers:{ 'content-type':response.headers.get('content-type') || 'text/plain; charset=utf-8' } });
+  }
+}
+
 guardedScheduledServe({"worker_key":"getEuropeMarketsCommandCenter","cadence_seconds":21600},createClientFromRequest,async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
-  if (routedBody?.view === 'growth') return handleEuropeanGrowthCommandCenter(req);
+  if (routedBody?.view === 'growth') return normalizeRoutedJson(await handleEuropeanGrowthCommandCenter(req));
   try {
     const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:null,severity:'secondary'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false,error:'Forbidden' }, { status:403 });
