@@ -90,6 +90,10 @@ if (fs.existsSync('base44/shared/outboundProvider.ts')) {
   addRequirement('P7/P8 RUNTIME LOOP PROOF REQUIRED: after deployment, prove one controlled non-delivering strategy-to-action dry-run plus webhook/reconciliation replay, classification, next-best-action, suppression, approval and global-stop behavior before claiming real commercial pilot readiness. Broad outreach remains prohibited.');
   addRequirement('BASE44 FUNCTION QUOTA: the linked app currently rejects new function names, so v0.95 logical routes are safely hosted in existing deployed functions. Upgrade/raise the quota before deploying the standalone names; do not delete unrelated production functions merely to free slots.');
 }
+if (fs.existsSync('base44/entities/CommercialCampaign.jsonc')) {
+  addRequirement('V0.96 COMMERCIAL OS RUNTIME PROOF REQUIRED: deploy the canonical campaign entity and aggregate route, authenticate the Founder Admin workspace, prove profile→discovery→lead→draft campaign→capacity preview with zero sends, and verify that real outbound remains disabled until the existing explicit pilot preflight is approved.');
+  addRequirement('INSTANTLY SUPERSEARCH HANDOFF PROOF REQUIRED: configure the scoped secret, run the official preview capability test, verify the account plan permits SuperSearch, and prove an AUTO handoff rehearsal without changing canonical ICP, lead, campaign or conversation identities. Paid enrichment remains off until separately budgeted and authorized.');
+}
 if (fs.existsSync('src/docs/P9_EUROPEAN_LOCALIZATION.md')) {
   addRequirement('P9 MARKET LOCALIZATION LIMIT: only en-GB, fr-FR and es-ES product locales are implemented; fallback-only markets require native product/legal review and localized URL/SSR architecture before full native launch claims.');
 }

@@ -1,10 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { handleAdminGlobalSearch } from '../adminGlobalSearch/entry.ts';
 import { buildDiscoveryAdminRadar } from '../../shared/discoveryAdmin.ts';
+import { buildCommercialOperatingSystem } from '../../shared/commercialOperatingSystem.ts';
+import { handleCommercialCampaignAdmin } from '../../shared/commercialCampaignAdmin.ts';
 
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   if (routedBody?.action === 'global_search') return handleAdminGlobalSearch(req);
+  if (String(routedBody?.action||'').startsWith('campaign_')) return handleCommercialCampaignAdmin(new Request(req.url,{method:req.method,headers:req.headers,body:JSON.stringify({...routedBody,action:String(routedBody.action).replace(/^campaign_/, '')})}));
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -12,6 +15,7 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
+    if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 
     // Parallel reads
     const [brands, providers, results, deals, reports, invoices, mandates, rules, baselines] = await Promise.all([

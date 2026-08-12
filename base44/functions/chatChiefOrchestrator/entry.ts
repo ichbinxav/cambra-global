@@ -46,6 +46,7 @@ const READ_ENTITIES = [
   "Brand", "AnalyzerInput", "AnalyzerResult",
   "Integration", "IntegrationCatalog",
   "OutboundLead", "Lead", "ProviderLead",
+  "CommercialCampaign", "CommercialPolicy", "OutboundSendingProfile", "CommunicationThread",
   "BenchmarkContribution", "BenchmarkCohort",
   "StatementImport", "Recommendation",
   "FounderDecision", "FounderSimulation", "StrategyDirective", "FounderCommandAudit",
@@ -83,6 +84,26 @@ const CHAT_TOOLS = [
     function: "systemHealthAgent",
     risk_level: 1,
     input_schema: { type: "object", properties: {} },
+  },
+  {
+    name:"commercial_os_status",
+    description:"READ-ONLY PRIMARY COMMERCIAL TOOL. Returns the real current CAMBRA Commercial OS state: target profiles, canonical lead warehouse, campaigns, ready domains/mailboxes, conversations, providers, blockers and whether outbound is locked. Use for best leads, ready domains, campaign status and what needs attention.",
+    function:"adminSummaries",fixed_input:{action:"commercial_os"},risk_level:1,input_schema:{type:"object",properties:{}},
+  },
+  {
+    name:"run_commercial_discovery",
+    description:"Runs one governed discovery cycle through the currently selected target profile and AUTO/APOLLO/INSTANTLY provider policy. It may consume cost-governed provider API capacity but NEVER sends outbound.",
+    function:"alwaysOnLeadDiscoveryWorker",risk_level:1,input_schema:{type:"object",properties:{}},
+  },
+  {
+    name:"pause_outbound",
+    description:"Immediately pauses all real acquisition outbound transports. This is a safe stop action and does not disable Analyzer or read-only intelligence.",
+    function:"outboundControlAdmin",fixed_input:{action:"pause_all"},risk_level:1,input_schema:{type:"object",properties:{}},
+  },
+  {
+    name:"verify_instantly_supersearch",
+    description:"Runs the official Instantly SuperSearch preview capability check. It verifies API scope without enriching, persisting or sending a lead. Cost budget gates remain active.",
+    function:"outboundControlAdmin",fixed_input:{action:"instantly_diagnose_supersearch"},risk_level:1,input_schema:{type:"object",properties:{}},
   },
   {
     name: "command_center_pulse",
@@ -503,7 +524,11 @@ const READ_SAFE_FIELDS: Record<string, string[]> = {
   AnalyzerResult: ['id','brand_id','infra_score','total_savings','payment_savings','created_date'],
   Integration: ['id','brand_id','provider','category','status','scopes','connected_at','last_sync_at','last_sync_status','provider_account_id'],
   IntegrationCatalog: ['id','provider','category','name','status','created_date'],
-  OutboundLead: ['id','company_name','country','status','fit_score','created_date'],
+  OutboundLead: ['id','company_name','company_domain','country','industry','stage','score','pre_score','revenue_opportunity_score','revenue_confidence','employee_range','revenue_range','ecommerce_platform','probable_payment_stack','estimated_tpv_min_eur','estimated_tpv_max_eur','estimation_status','contactability','outreach_eligibility','compliance_status','source','created_date'],
+  CommercialCampaign:['id','campaign_key','name','status','target_profile_id','policy_key','policy_version','provider_mode','lead_ids','sending_profile_keys','capacity_preview_json','blockers','metrics_json','created_at','updated_at'],
+  CommercialPolicy:['id','policy_key','version','engine','status','mode','countries','icp_json','excluded_domains','daily_send_limit','min_lead_score','min_opportunity_score','min_confidence','sending_profile_keys','created_date','updated_date'],
+  OutboundSendingProfile:['id','profile_key','provider','domain','from_address','status','current_daily_cap','target_daily_cap','bounce_rate_pct','complaint_rate_pct','webhook_status','last_provider_health_at'],
+  CommunicationThread:['id','thread_key','engine','lead_id','company_name','status','conversation_state','last_message_at','next_action_at','automation_paused','pause_reason','sending_profile_key','sending_profile_resolution_status'],
   Lead: ['id','company','country','status','source','created_date'],
   ProviderLead: ['id','provider_name','category','country','status','created_date'],
   BenchmarkContribution: ['id','brand_id','cohort_key','vertical','created_date'],
@@ -557,7 +582,8 @@ Strict rules:
 6. Simulations are SIMULATION ONLY and never modify production.
 7. Pick AT MOST one tool per turn. Maintain conversational context, but retrieve current state rather than relying on chat memory for company facts.
 8. If a request is genuinely ambiguous and cannot be resolved from context, ask one concise clarification. Otherwise act on the best grounded interpretation.
-9. Bulk operations require explicit scope/impact confirmation before execution.`;
+9. Bulk operations require explicit scope/impact confirmation before execution.
+10. Use commercial_os_status for commercial state, best leads, target profiles, campaigns, domains/mailboxes and attention. Use run_commercial_discovery for "run discovery"; use pause_outbound for any stop/pause request. Those tools act through the real governed system and never imply outbound was enabled.`;
 
 async function callClaude(svc, messages, tools, eventKey) {
   const res = await paidProviderFetch(svc, { event_key:`ai:chat-chief:${eventKey}`, category:'ai', provider:'anthropic', source:'chatChiefOrchestrator' }, "https://api.anthropic.com/v1/messages", {
@@ -752,7 +778,7 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
   // GATE 1 — risk forcing: anything L2+ is FORCED into draft mode.
   // Even if the input tries mode:"execute", we override.
   const forcedDraft = tool.risk_level >= 2;
-  const effectiveInput = { ...toolInput };
+  const effectiveInput = { ...(tool.fixed_input || {}), ...toolInput };
   if (forcedDraft) {
     effectiveInput.mode = "draft";   // structural override
     effectiveInput.brand_id = brand_id || effectiveInput.brand_id || null;
@@ -798,6 +824,15 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
     reply = `Intenté lanzar ${tool.name}, pero falló: ${invokeError}`;
   } else if (tool.function === 'founderOSQuery' || tool.function === 'founderChiefOfStaff' || tool.function === 'founderOSSimulation') {
     reply = invokeResult?.brief?.headline || invokeResult?.summary || (tool.function === 'founderOSSimulation' ? 'Simulación completada. No se ha modificado producción.' : 'He consultado CAMBRA con evidencia actual.');
+  } else if (tool.name === 'commercial_os_status') {
+    const summary=invokeResult?.summary||{};const attention=Array.isArray(invokeResult?.attention)?invokeResult.attention:[];
+    reply=`Commercial OS: ${summary.total_leads||0} leads, ${summary.high_fit||0} high-fit, ${summary.ready_senders||0} ready senders, ${summary.open_conversations||0} open conversations. Real outbound is ${invokeResult?.safety?.outbound_locked===false?'ON for an authorized pilot':'OFF'}.${attention.length?` ${attention.length} item(s) need attention.`:''}`;
+  } else if (tool.name === 'run_commercial_discovery') {
+    reply=invokeResult?.duplicate_blocked?'The governed discovery slot already ran; duplicate execution was blocked.':`Discovery completed through ${invokeResult?.provider_status?.selected||'the governed provider'}. The canonical warehouse now contains ${invokeResult?.harvest_metrics?.unique_companies||0} unique companies. No outbound was sent.`;
+  } else if (tool.name === 'pause_outbound') {
+    reply='All real acquisition outbound is paused. Analyzer and read-only intelligence remain available.';
+  } else if (tool.name === 'verify_instantly_supersearch') {
+    reply=invokeResult?.supersearch_permission_verified===true?'Instantly SuperSearch access is verified. The check did not enrich, persist or send any lead.':`Instantly SuperSearch is not ready: ${invokeResult?.error||'permission not verified'}.`;
   } else if (tool.function === 'founderOSCommand') {
     reply = invokeResult?.status === 'executed' ? 'He ejecutado la acción gobernada y la he registrado en el audit trail.' : 'La acción ha pasado por Founder OS.';
   } else if (forcedDraft) {

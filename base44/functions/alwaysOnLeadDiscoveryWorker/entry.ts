@@ -4,6 +4,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { buildCommercialIntelligence, COMMERCIAL_INTELLIGENCE_VERSION, normalizeCompanyDomain } from '../../shared/commercialIntelligence.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { APOLLO_EXPIRY_AT, DISCOVERY_ENGINE_VERSION, discoveryPartitionKey, discoveryProviderStatus, selectDiscoveryPolicy } from '../../shared/discoveryRadar.ts';
+import { selectLeadIntelligenceProvider } from '../../shared/leadIntelligenceProvider.ts';
 
 const VERSION = `${DISCOVERY_ENGINE_VERSION}:worker-1.0.0`;
 const now = () => new Date().toISOString();
@@ -32,7 +33,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const policy = selectDiscoveryPolicy(policies);
     if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, note:'Discovery requires an explicitly enabled ICP configuration but does not require outbound activation.' });
 
-    const [before, profiles, emergency, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls] = await Promise.all([
+    const [before, profiles, emergency, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
       service.entities.OutboundLead.list('-created_date',5000).catch(()=>[]),
       service.entities.OutboundSendingProfile.list('-created_date',100).catch(()=>[]),
       emergencyState(service),
@@ -40,7 +41,8 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       service.entities.MarketIntelligenceProfile.list('-updated_at',500).catch(()=>[]),
       service.entities.LeadDiscoveryCheckpoint.list('last_attempt_at',1000).catch(()=>[]),
       service.entities.LeadDiscoveryCheckpoint.filter({ checkpoint_key:'apollo:provider:diagnostic' }, '-updated_date',1).catch(()=>[]),
-      service.entities.OutboundControl.filter({ engine:'merchant_acquisition' }, '-updated_at',1).catch(()=>[]),
+      service.entities.OutboundControl.filter({ control_key:'global' }, '-created_date',1).catch(()=>[]),
+      service.entities.CommercialProviderState.list('-last_checked_at',100).catch(()=>[]),
     ]);
     const activeProfiles=profiles.filter((profile:any)=>profile?.active===true||profile?.status==='active');
     const configuredCapacity=activeProfiles.reduce((sum:number,profile:any)=>sum+Math.max(0,Number(profile.current_daily_cap||0)),0);
@@ -50,9 +52,12 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const uniqueCompaniesBefore=new Set(before.map((lead:any)=>String(lead.canonical_company_key||normalizeCompanyDomain(lead.company_domain))).filter(Boolean)).size;
     const provider=discoveryProviderStatus(Boolean(Deno.env.get('APOLLO_API_KEY')));
     const providerDiagnostic=diagnosticRows[0]?.provider_usage_json||null;
-    const providerOperational=provider.available&&providerDiagnostic?.auth?.pass!==false;
+    const instantlyState=providerStates.find((row:any)=>row.provider_key==='instantly_supersearch'&&row.role==='lead_intelligence')||null;
+    const providerSelection=selectLeadIntelligenceProvider({mode:policy?.icp_json?.provider_mode||'AUTO',apolloConfigured:Boolean(Deno.env.get('APOLLO_API_KEY')),instantlyConfigured:Boolean(Deno.env.get('INSTANTLY_API_KEY')),instantlySuperSearchPermission:instantlyState?.metrics_json?.supersearch_permission_verified===true});
+    const selectedProvider=providerSelection.selected;
+    const providerOperational=selectedProvider==='apollo'?provider.available&&providerDiagnostic?.auth?.pass!==false:selectedProvider==='instantly_supersearch'&&instantlyState?.metrics_json?.supersearch_permission_verified===true;
     const shouldDiscover=!emergency.safe_mode&&providerOperational&&uniqueCompaniesBefore<targetUnique;
-    const discoveryAction=emergency.safe_mode?'safe_mode_no_external_discovery':!provider.available?'provider_expired_or_unavailable':uniqueCompaniesBefore>=targetUnique?'warehouse_target_reached':shouldDiscover?'continue_controlled_harvest':'provider_degraded';
+    const discoveryAction=emergency.safe_mode?'safe_mode_no_external_discovery':!selectedProvider?providerSelection.reason:uniqueCompaniesBefore>=targetUnique?'warehouse_target_reached':shouldDiscover?'continue_controlled_harvest':'provider_degraded';
 
     const blockedMarkets=new Set(capabilityControls.filter((row:any)=>row.blocked===true&&(!row.effective_to||Date.parse(row.effective_to)>Date.now())).map((row:any)=>String(row.jurisdiction||'').toUpperCase()));
     const marketPriority=new Map<string,number>(marketProfiles.map((row:any)=>[String(row.jurisdiction||'').toUpperCase(),/READY|HIGH|PRIORITY/i.test(String(row.commercial_priority_status||''))?0:1] as [string,number]));
@@ -63,7 +68,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const partitions:any[]=[];
     for(const country of requestedCountries)for(const vertical of verticals)for(const employee_range of employeeRanges){
       const partition={country,vertical,employee_range,technology:''};
-      const key=discoveryPartitionKey('apollo',partition);
+      const key=discoveryPartitionKey(selectedProvider||'unavailable',partition);
       const checkpoint=checkpointByKey.get(key);
       partitions.push({key,partition,checkpoint,last_attempt_at:checkpoint?.last_attempt_at||null,next_eligible_at:checkpoint?.next_eligible_at||null});
     }
@@ -76,7 +81,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       for(const selected of selectedPartitions){
         const countryCode=selected.partition.country;
         const result=await base44.functions.invoke('leadOrchestrator',{icp:{
-          industry:selected.partition.vertical,vertical:selected.partition.vertical,titles:policy.icp_json?.titles||[],seniorities:policy.icp_json?.seniorities||[],
+          provider:selectedProvider,industry:selected.partition.vertical,vertical:selected.partition.vertical,titles:policy.icp_json?.titles||[],seniorities:policy.icp_json?.seniorities||[],
           country:COUNTRY_NAMES[countryCode]||countryCode,country_code:countryCode,employee_range:selected.partition.employee_range,per_page:perRun,limit:perRun,
           page:Number(selected.checkpoint?.page||1),checkpoint_id:selected.checkpoint?.id||undefined,checkpoint_key:selected.key,enrichment_threshold:Number(policy?.icp_json?.enrichment_threshold||45),
         },internal_secret:internal}).catch((error:any)=>({data:{ok:false,error:String(error?.message||error).slice(0,160)}}));
@@ -129,7 +134,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       companies_scanned:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.candidates_scanned||0),0),unique_companies:uniqueCompanies,
       duplicates_rejected:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.duplicates_rejected||0),0)+deduplicated,quality_rejected:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.quality_rejected||0),0),
       enrichment_candidates:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.enrichment_candidates||0),0),contactable,high_fit:qualified,outreach_ready:outreachReady,
-      partitions_total:partitions.length,partitions_touched:latestCheckpoints.filter((row:any)=>row.source_key==='apollo'&&row.partition_json?.kind!=='provider_diagnostic').length,
+      partitions_total:partitions.length,partitions_touched:latestCheckpoints.filter((row:any)=>row.source_key===selectedProvider&&row.partition_json?.kind!=='provider_diagnostic').length,
     };
     const latestSuccess=latestCheckpoints.map((row:any)=>row.last_success_at).filter(Boolean).sort().at(-1)||null;
     const nextScheduled=new Date(Date.now()+3600000).toISOString();
@@ -137,16 +142,16 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       snapshot_key:`reservoir:${Date.now()}`,captured_at:now(),discovered:leads.filter((lead:any)=>lead.stage==='lead').length,enriching:leads.filter((lead:any)=>lead.stage==='enriched').length,
       qualified,high_confidence:highConfidence,outreach_ready:outreachReady,queued:0,waiting_window:0,waiting_capacity:Math.max(0,outreachReady-capacity),suppressed,disqualified:deduplicated,stale,
       safe_daily_send_capacity:capacity,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,discovery_action:discoveryAction,
-      cost_guard_json:{per_run_limit:perRun,partitions_per_run:partitionsPerRun,enrichment_daily_limit:Number(policy?.icp_json?.enrichment_daily_limit||25),enrichment_weekly_limit:Number(policy?.icp_json?.enrichment_weekly_limit||125),target_unique_companies:targetUnique,countries_this_run:selectedPartitions.map((item)=>item.partition.country),safe_mode:emergency.safe_mode,note:'Organization Search is budgeted at its documented one-credit-per-page rate; decision-maker People Search is zero credits and enrichment remains selective under CAMBRA cost reservations.'},
+      cost_guard_json:{per_run_limit:perRun,partitions_per_run:partitionsPerRun,enrichment_daily_limit:Number(policy?.icp_json?.enrichment_daily_limit||25),enrichment_weekly_limit:Number(policy?.icp_json?.enrichment_weekly_limit||125),target_unique_companies:targetUnique,countries_this_run:selectedPartitions.map((item)=>item.partition.country),safe_mode:emergency.safe_mode,selected_provider:selectedProvider,note:selectedProvider==='apollo'?'Apollo Organization Search remains cost-reserved and enrichment selective.':'Instantly SuperSearch begins with its official preview endpoint; paid enrichment remains separately cost-gated.'},
       country_breakdown_json:countryBreakdown,vertical_breakdown_json:verticalBreakdown,opportunity_breakdown_json:opportunityBreakdown,
-      provider_status_json:{apollo:{...provider,status:providerDiagnostic?.auth?.pass===false?'DEGRADED':provider.status,auth_test_pass:providerDiagnostic?.auth?.pass??null,usage:providerDiagnostic?.usage||null,expires_at:APOLLO_EXPIRY_AT}},
+      provider_status_json:{selected:selectedProvider,selection_reason:providerSelection.reason,apollo:{...provider,status:providerDiagnostic?.auth?.pass===false?'DEGRADED':provider.status,auth_test_pass:providerDiagnostic?.auth?.pass??null,usage:providerDiagnostic?.usage||null,expires_at:APOLLO_EXPIRY_AT},instantly_supersearch:{status:instantlyState?.status||'NOT_CONFIGURED',auth_test_pass:instantlyState?.auth_test_pass===true,permission_verified:instantlyState?.metrics_json?.supersearch_permission_verified===true}},
       harvest_metrics_json:harvestMetrics,last_successful_run_at:latestSuccess,next_scheduled_run_at:nextScheduled,checkpoint_id:selectedPartitions[0]?.checkpoint?.id||null,engine_version:VERSION,
     });
 
     const intelligence=buildCommercialIntelligence(leads, policy);
-    const commercialSnapshot=await service.entities.CommercialIntelligenceSnapshot.create({snapshot_key:`commercial:${Date.now()}`,generated_at:intelligence.generated_at,engine_version:intelligence.version,policy_key:policy.policy_key,policy_version:String(policy.version||''),market_sizing_json:intelligence.market_sizing,prioritization_json:intelligence.prioritization,lead_graph_json:intelligence.lead_graph,forecast_json:intelligence.forecast,learning_json:intelligence.learning,data_quality_json:intelligence.data_quality,source_coverage_json:{...intelligence.source_coverage,provider_status:{apollo:provider.status},configured_markets:requestedCountries,blocked_markets:[...blockedMarkets]},unknowns:intelligence.unknowns,reservoir_snapshot_id:reservoir.id});
+    const commercialSnapshot=await service.entities.CommercialIntelligenceSnapshot.create({snapshot_key:`commercial:${Date.now()}`,generated_at:intelligence.generated_at,engine_version:intelligence.version,policy_key:policy.policy_key,policy_version:String(policy.version||''),market_sizing_json:intelligence.market_sizing,prioritization_json:intelligence.prioritization,lead_graph_json:intelligence.lead_graph,forecast_json:intelligence.forecast,learning_json:intelligence.learning,data_quality_json:intelligence.data_quality,source_coverage_json:{...intelligence.source_coverage,provider_status:{selected:selectedProvider,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},configured_markets:requestedCountries,blocked_markets:[...blockedMarkets]},unknowns:intelligence.unknowns,reservoir_snapshot_id:reservoir.id});
     await service.entities.Event.create({brand_id:'_platform',event_type:'commercial.intelligence.snapshot.created',source:'always_on_lead_discovery',entity_type:'CommercialIntelligenceSnapshot',entity_id:commercialSnapshot.id,payload_json:{engine_version:COMMERCIAL_INTELLIGENCE_VERSION,reservoir_snapshot_id:reservoir.id,market_methodology:intelligence.market_sizing.methodology},status:'pending'}).catch(()=>null);
-    return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{apollo:provider.status},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
+    return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{selected:selectedProvider,reason:providerSelection.reason,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
   }catch(error){__schedulerOk=false;console.error('alwaysOnLeadDiscoveryWorker failed',String((error as Error)?.message||error).slice(0,200));return Response.json({ok:false,error:'always_on_lead_discovery_failed'},{status:500})}
   finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}
 });

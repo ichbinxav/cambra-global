@@ -74,6 +74,7 @@ const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
 const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
 const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 const AdminCommercialAutonomy = lazy(() => import('@/pages/admin/AdminCommercialAutonomy'));
+const AdminCommercialOS = lazy(() => import('@/pages/admin/AdminCommercialOS'));
 const AdminIntelligence = lazy(() => import('@/pages/admin/AdminIntelligence'));
 const AdminMarkets = lazy(() => import('@/pages/admin/AdminMarkets'));
 const AdminGrowth = lazy(() => import('@/pages/admin/AdminGrowth'));
@@ -332,6 +333,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
           <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
           <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
+          <Route path="/admin/commercial" element={withBoundary(<AdminCommercialOS />)} />
           <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligence />)} />
           <Route path="/admin/markets" element={withBoundary(<AdminMarkets />)} />
           <Route path="/admin/growth" element={withBoundary(<AdminGrowth />)} />

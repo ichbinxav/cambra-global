@@ -1,11 +1,11 @@
 {
-  "releaseName": "CAMBRA v0.95.0 — P7/P8 Autonomous Commercial Execution",
-  "version": "0.95.0",
-  "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
+  "releaseName": "CAMBRA v0.96.0 — Commercial Operating System",
+  "version": "0.96.0",
+  "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1515,
+  "sourceTreeFileCount": 1522,
   "sourceArchiveShaExternal": null,
-  "gitSha": "b888750194d7aa45d1c6c3b05cc8a3a0a9725c6d",
+  "gitSha": "0b6220bab3385ee1170b99e7c8d55423fc7eea12",
   "releaseBuild": false,
   "ciEvidence": null,
   "policyVersion": "2026.08.09-recover-v2",
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "c58d84fc9dec6431c4047156df10f8cca5e1d27ca57b88c39d23b1e6e9cf3ae0",
-  "documentationManifestSha": "bc8ce53434b02e688ed9252b78a31e8b85d1dbaabb3fa41eef34f9657ba0d2e7",
+  "durabilityManifestSha": "56e48200ee20ab4ccd3e462acd985f7b4a4cadb845532f3dd0e67e2d4f2ebfcf",
+  "documentationManifestSha": "d641291dd53b0313be7e6b9500e10da02373f5dc23b86efc4e32f45a9b326f0b",
   "schedulerInventorySha": "a6555e1c267eb77380b7e76249037cf46fa134325071b279400dc92a15e8fbe3",
   "dataRetentionMatrixSha": "63b898d5a718a35237f08447bb1f3ed6765e17746eaafe9e4a3fa670194b186a",
   "secretScannerSha": "e93f7f2b554d95d0777fb59275706c98ab5f4f70fc84392594ce7056428d56fa",
@@ -33,7 +33,7 @@
   "canonicalSdkVersion": "^0.8.41",
   "nodeVersion": "v20.20.2",
   "npmVersion": "10.8.2",
-  "lockfileSha": "1b596987d7d2da10242702322c1b635a4b5a405607e4f457a813165f7933fe75",
+  "lockfileSha": "4ee79567dba5fb3a4375795976c640cebc2c2426f203d17a9478f2bb5bd6ce6d",
   "policyFileSha": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
   "frozenFiles": {
     "base44/entities/StatementImport.jsonc": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
@@ -46,57 +46,57 @@
     "base44/entities/ReviewCase.jsonc": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1"
   },
   "testEvidence": {
-    "command": "npx vitest run --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:32:05.199Z",
-    "completedAt": "2026-08-11T22:32:08.635Z",
+    "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:25.778Z",
+    "completedAt": "2026-08-12T00:32:43.787Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 161,
-    "passed": 2177,
+    "testFiles": 163,
+    "passed": 2194,
     "failed": 0,
     "skipped": 2,
     "frameworkVersion": "^4.1.10"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:32:08.820Z",
-    "completedAt": "2026-08-11T22:32:13.483Z",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:44.336Z",
+    "completedAt": "2026-08-12T00:32:55.100Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "24a4a41bdbaeab44e3d6b3d2f5c465024c4befdfb4acc72ba733e9e9b01e1021",
-    "artifactCount": 124
+    "distHash": "ec2b29fd7106330075e12e693e40837740d13578bbebf6ac47205d98d1cdaa35",
+    "artifactCount": 127
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:31:55.279Z",
-    "completedAt": "2026-08-11T22:31:58.707Z",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:06.498Z",
+    "completedAt": "2026-08-12T00:32:12.427Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:31:58.892Z",
-    "completedAt": "2026-08-11T22:32:00.611Z",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:12.853Z",
+    "completedAt": "2026-08-12T00:32:16.088Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:32:00.788Z",
-    "completedAt": "2026-08-11T22:32:05.019Z",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:16.532Z",
+    "completedAt": "2026-08-12T00:32:25.309Z",
     "exitCode": 0,
     "ciRunId": null
   },
   "dependencyAuditEvidence": {
     "command": "npm audit --json",
-    "sourceTreeHash": "5d9a0f201dfb1ed6ea6a8ece826a440d18e7683f19c976aba6c2412f341bb0ca",
-    "startedAt": "2026-08-11T22:31:54.613Z",
-    "completedAt": "2026-08-11T22:31:55.075Z",
+    "sourceTreeHash": "ba8f5447c675a28c37b65dbad654de4014c535758bd5af103a73b6a5192ff838",
+    "startedAt": "2026-08-12T00:32:05.438Z",
+    "completedAt": "2026-08-12T00:32:06.043Z",
     "exitCode": 0,
     "ciRunId": null,
     "auditReportVersion": 2,
@@ -119,7 +119,7 @@
     "networkExitCode": 0
   },
   "artifactHashes": {
-    "dist": "24a4a41bdbaeab44e3d6b3d2f5c465024c4befdfb4acc72ba733e9e9b01e1021"
+    "dist": "ec2b29fd7106330075e12e693e40837740d13578bbebf6ac47205d98d1cdaa35"
   },
   "manualRequirements": [
     "CI EVIDENCE REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the final release SHA before calling remote CI verified",
@@ -138,6 +138,8 @@
     "INSTANTLY PRODUCTION VALIDATION REQUIRED: configure the scoped API v2 secret and authenticated webhook secret in Base44, prove real provider auth/capabilities, verify mapped sender warm-up and domain health, then complete a founder-authorized zero-send rehearsal before any bounded pilot. Missing or unverified provider state intentionally keeps Instantly NOT_CONFIGURED and effective outbound capacity at 0.",
     "P7/P8 RUNTIME LOOP PROOF REQUIRED: after deployment, prove one controlled non-delivering strategy-to-action dry-run plus webhook/reconciliation replay, classification, next-best-action, suppression, approval and global-stop behavior before claiming real commercial pilot readiness. Broad outreach remains prohibited.",
     "BASE44 FUNCTION QUOTA: the linked app currently rejects new function names, so v0.95 logical routes are safely hosted in existing deployed functions. Upgrade/raise the quota before deploying the standalone names; do not delete unrelated production functions merely to free slots.",
+    "V0.96 COMMERCIAL OS RUNTIME PROOF REQUIRED: deploy the canonical campaign entity and aggregate route, authenticate the Founder Admin workspace, prove profile→discovery→lead→draft campaign→capacity preview with zero sends, and verify that real outbound remains disabled until the existing explicit pilot preflight is approved.",
+    "INSTANTLY SUPERSEARCH HANDOFF PROOF REQUIRED: configure the scoped secret, run the official preview capability test, verify the account plan permits SuperSearch, and prove an AUTO handoff rehearsal without changing canonical ICP, lead, campaign or conversation identities. Paid enrichment remains off until separately budgeted and authorized.",
     "P9 MARKET LOCALIZATION LIMIT: only en-GB, fr-FR and es-ES product locales are implemented; fallback-only markets require native product/legal review and localized URL/SSR architecture before full native launch claims.",
     "P10 LEGAL EVIDENCE REQUIRED: conservative market/activity coverage is not legal clearance. Qualified review must approve current primary-authority evidence, registrations, passport notifications and/or partner mandates before each production activity is enabled.",
     "P11 PRODUCTION SEAL EVIDENCE REQUIRED: final-SHA remote CI, Base44 runtime proof, dependency alert proof, real RPO/RTO restore exercise and multilingual real-document extractor corpus evidence remain external gates.",
@@ -147,5 +149,5 @@
   "blockingManualRequirements": [],
   "productionSealEligible": false,
   "finalVerdict": "PASS WITH EXTERNAL VALIDATION PENDING",
-  "generatedAt": "2026-08-11T22:32:13.684Z"
+  "generatedAt": "2026-08-12T00:32:55.821Z"
 }

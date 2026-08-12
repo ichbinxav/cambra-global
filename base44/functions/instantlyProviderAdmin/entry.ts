@@ -5,7 +5,9 @@ import {
   INSTANTLY_CAMPAIGN_TEMPLATE_REVISION,
   instantlyProfileReady,
   instantlyProviderStatus,
+  instantlyRequest,
 } from "../../shared/outboundProvider.ts";
+import { instantlySuperSearchPayload } from "../../shared/leadIntelligenceProvider.ts";
 import {
   pauseAllInstantlyCampaigns,
   upsertInstantlyProviderState,
@@ -124,6 +126,24 @@ export async function handleInstantlyProviderAdmin(req: Request) {
       );
     }
     const provider = new InstantlyOutboundProvider(key);
+    if (action === "diagnose_supersearch") {
+      const eventKey=`api:instantly:supersearch-capability:${crypto.randomUUID()}`;
+      const reservation=await reservePaidOperation(svc,{event_key:eventKey,category:"api",provider:"instantly",source:"instantlyProviderAdmin",related_entity_type:"CommercialProviderState",related_entity_id:"instantly_supersearch"});
+      const leadStates=await svc.entities.CommercialProviderState.filter({provider_key:"instantly_supersearch",role:"lead_intelligence"},"-last_checked_at",1).catch(()=>[]);
+      try{
+        const capabilityPayload=instantlySuperSearchPayload({domains:["cambra.ai"],limit:1,one_lead_per_company:true});
+        const preview=await instantlyRequest(key,"/supersearch-enrichment/preview-leads-from-supersearch",{method:"POST",body:{search_filters:capabilityPayload.search_filters}});
+        const patch={provider_key:"instantly_supersearch",role:"lead_intelligence",status:"AUTHENTICATED",api_version:"v2",secret_present:true,auth_test_pass:true,last_checked_at:new Date().toISOString(),last_success_at:new Date().toISOString(),metrics_json:{supersearch_permission_verified:true,last_preview_count:Number(preview?.number_of_leads||0)},configuration_json:{official_preview_endpoint:true,official_count_endpoint:true,official_enrichment_endpoint:true,automatic_enrichment_enabled:false},last_error_code:""};
+        const state=leadStates[0]?await svc.entities.CommercialProviderState.update(leadStates[0].id,patch):await svc.entities.CommercialProviderState.create(patch);
+        await settlePaidOperation(svc,reservation,{ok:true,usage_json:{operation:"supersearch_capability_preview",returned:Number(preview?.number_of_leads||0),lead_data_persisted:false}});
+        return Response.json({ok:true,status:"AUTHENTICATED",provider_state:state,supersearch_permission_verified:true,preview_count:Number(preview?.number_of_leads||0),lead_data_persisted:false,secret_value_exposed:false});
+      }catch(error:any){
+        await settlePaidOperation(svc,reservation,{ok:false,usage_json:{operation:"supersearch_capability_preview",error_code:String(error?.code||"INSTANTLY_SUPERSEARCH_FAILED")}}).catch(()=>null);
+        const patch={provider_key:"instantly_supersearch",role:"lead_intelligence",status:error?.code==="INSTANTLY_UNAUTHORIZED"?"ERROR":"DEGRADED",api_version:"v2",secret_present:true,auth_test_pass:false,last_checked_at:new Date().toISOString(),metrics_json:{supersearch_permission_verified:false},configuration_json:{official_preview_endpoint:true,automatic_enrichment_enabled:false},last_error_code:String(error?.code||"INSTANTLY_SUPERSEARCH_FAILED")};
+        const state=leadStates[0]?await svc.entities.CommercialProviderState.update(leadStates[0].id,patch):await svc.entities.CommercialProviderState.create(patch);
+        return Response.json({ok:false,status:state.status,error:patch.last_error_code,supersearch_permission_verified:false,secret_value_exposed:false},{status:Number(error?.status||502)});
+      }
+    }
     if (action === "diagnose") {
       const reservation = await reservePaidOperation(svc, {
         event_key: `api:instantly:diagnose:${crypto.randomUUID()}`,
@@ -548,6 +568,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         actions: [
           "status",
           "diagnose",
+          "diagnose_supersearch",
           "create_campaign",
           "register_webhook",
           "pause",

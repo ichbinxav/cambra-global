@@ -100,10 +100,16 @@ export function safeApolloUsageSnapshot(input: any) {
   };
 }
 
-export function selectDiscoveryPolicy(rows: any[]) {
+export function selectDiscoveryPolicies(rows: any[]) {
   return (Array.isArray(rows) ? rows : [])
     .filter((row) => row?.engine === 'merchant_acquisition' && row?.icp_json?.discovery_enabled === true && Array.isArray(row?.countries) && row.countries.length > 0)
-    .sort((a, b) => Date.parse(b.updated_date || b.created_date || '') - Date.parse(a.updated_date || a.created_date || ''))[0] || null;
+    .sort((a, b) => Number(b?.icp_json?.priority||0)-Number(a?.icp_json?.priority||0)||String(a?.policy_key||a?.id||'').localeCompare(String(b?.policy_key||b?.id||'')));
+}
+
+/** Deterministic hourly rotation prevents one saved ICP from starving its peers. */
+export function selectDiscoveryPolicy(rows: any[], at=new Date()) {
+  const eligible=selectDiscoveryPolicies(rows);if(!eligible.length)return null;
+  return eligible[Math.floor(at.getTime()/3_600_000)%eligible.length];
 }
 
 export function whyThisProspect(lead: any) {

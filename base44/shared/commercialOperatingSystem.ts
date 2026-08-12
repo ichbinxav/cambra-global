@@ -1,0 +1,73 @@
+import { buildDiscoveryAdminRadar } from './discoveryAdmin.ts';
+import { leadProviderRegistry } from './leadIntelligenceProvider.ts';
+
+export const COMMERCIAL_OPERATING_SYSTEM_VERSION = 'commercial-os-runtime-1.0.0';
+const text=(value:unknown)=>String(value??'').trim();
+const score=(lead:any)=>Number(lead?.score??lead?.pre_score??0);
+const confidence=(lead:any)=>Number(lead?.revenue_confidence??lead?.score_breakdown_json?.evidence_confidence??0);
+
+export function commercialSenderReadiness(profile:any){
+  const configured=Boolean(text(profile?.profile_key)&&text(profile?.domain)&&text(profile?.from_address));
+  const senderReady=profile?.provider_config_json?.sender_ready===true;
+  const webhookReady=profile?.provider!=='instantly'||profile?.webhook_status==='ACTIVE';
+  const healthy=Number(profile?.bounce_rate_pct||0)<Number(profile?.bounce_pause_threshold_pct||3)&&Number(profile?.complaint_rate_pct||0)<Number(profile?.complaint_pause_threshold_pct||.3);
+  let status='SETUP_PENDING';
+  if(profile?.status==='paused')status='PAUSED';
+  else if(!configured||(profile?.provider==='instantly'&&!senderReady))status='SETUP_PENDING';
+  else if(!healthy||profile?.webhook_status==='ERROR')status='BROKEN';
+  else if(profile?.status==='warming')status='WARMING';
+  else if(profile?.status==='active'&&senderReady&&webhookReady&&Number(profile?.current_daily_cap||0)>0)status='READY';
+  else if(profile?.status==='active')status='LIMITED';
+  return{status,ready:status==='READY',cap:status==='READY'?Math.max(0,Number(profile?.current_daily_cap||0)):0,configured,sender_ready:senderReady,webhook_ready:webhookReady,healthy};
+}
+
+export async function buildCommercialOperatingSystem(service:any){
+  const [radar,policies,campaigns,profiles,controls,threads,messages,strategies,tasks,approvals,questions,providerStates,schedulerRuns]=await Promise.all([
+    buildDiscoveryAdminRadar(service),
+    service.entities.CommercialPolicy.filter({engine:'merchant_acquisition'},'-updated_date',200).catch(()=>[]),
+    service.entities.CommercialCampaign.list('-updated_at',500).catch(()=>[]),
+    service.entities.OutboundSendingProfile.list('-created_date',500).catch(()=>[]),
+    service.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]),
+    service.entities.CommunicationThread.filter({engine:'merchant_acquisition'},'-last_message_at',1000).catch(()=>[]),
+    service.entities.CommunicationMessage.list('-created_date',2000).catch(()=>[]),
+    service.entities.CommercialStrategy.list('-created_at',2000).catch(()=>[]),
+    service.entities.AgentTask.list('-created_date',1000).catch(()=>[]),
+    service.entities.Approval.filter({status:'pending'},'-created_date',500).catch(()=>[]),
+    service.entities.AgentQuestion.filter({status:'pending'},'-created_date',500).catch(()=>[]),
+    service.entities.CommercialProviderState.list('-last_checked_at',100).catch(()=>[]),
+    service.entities.SchedulerRun.list('-started_at',500).catch(()=>[]),
+  ]);
+  const control=controls[0]||{acquisition_enabled:false,premium_outlook_enabled:false,volume_resend_enabled:false,instantly_enabled:false};
+  const instantlyState=providerStates.find((row:any)=>row.provider_key==='instantly_supersearch'&&row.role==='lead_intelligence')||null;
+  const providers=leadProviderRegistry({
+    apolloConfigured:Boolean(Deno.env.get('APOLLO_API_KEY')),
+    instantlyConfigured:Boolean(Deno.env.get('INSTANTLY_API_KEY')),
+    instantlySuperSearchPermission:instantlyState?.metrics_json?.supersearch_permission_verified===true,
+  });
+  const senders=profiles.map((profile:any)=>({
+    id:profile.id,profile_key:profile.profile_key,provider:profile.provider,domain:profile.domain,from_address:profile.from_address,status:profile.status,current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),bounce_rate_pct:Number(profile.bounce_rate_pct||0),complaint_rate_pct:Number(profile.complaint_rate_pct||0),webhook_status:profile.webhook_status||'NOT_CONFIGURED',external_campaign_id:profile.external_campaign_id||null,readiness:commercialSenderReadiness(profile),
+  }));
+  const domainMap=new Map<string,any>();
+  for(const sender of senders){const key=text(sender.domain).toLowerCase()||'unassigned';const current=domainMap.get(key)||{domain:key,status:'SETUP_PENDING',mailboxes:[],daily_capacity:0};current.mailboxes.push(sender);current.daily_capacity+=sender.readiness.cap;const order=['BROKEN','PAUSED','SETUP_PENDING','WARMING','LIMITED','READY'];if(order.indexOf(sender.readiness.status)<order.indexOf(current.status)||current.mailboxes.length===1)current.status=sender.readiness.status;domainMap.set(key,current);}
+  const latestByAgent:Record<string,any>={};for(const task of tasks)if(task.agent_name&&!latestByAgent[task.agent_name])latestByAgent[task.agent_name]=task;
+  const eligible=(radar.prioritized||[]).filter((lead:any)=>lead.outreach_eligibility==='ELIGIBLE'&&lead.compliance_status==='CLEARED'&&lead.contactability==='PROFESSIONAL_VERIFIED');
+  const openThreads=threads.filter((thread:any)=>!['closed','suppressed'].includes(String(thread.status)));
+  const unresolvedLegacy=threads.filter((thread:any)=>!thread.sending_profile_key&&thread.sending_profile_resolution_status!=='NOT_APPLICABLE');
+  const liveWorkers=['alwaysOnLeadDiscoveryWorker','outboundVolumeWorker','followUpWorker','instantlyReconciliationWorker'].map((worker_key)=>{const run=schedulerRuns.find((row:any)=>row.worker_key===worker_key);return{worker_key,status:run?.status||'NOT_EVIDENCED',last_started_at:run?.started_at||null};});
+  const attention:any[]=[];
+  if(!providers.find((provider:any)=>provider.key==='instantly_supersearch')?.available)attention.push({severity:'info',code:'instantly_supersearch_not_verified',label:'Verify Instantly SuperSearch access after loading the API key.'});
+  if(unresolvedLegacy.length)attention.push({severity:'critical',code:'legacy_sending_profiles_unresolved',count:unresolvedLegacy.length,label:'Legacy threads require an explicit sending profile review.'});
+  if(!senders.some((sender:any)=>sender.readiness.ready))attention.push({severity:'critical',code:'no_ready_sender',label:'No mailbox is fully ready for a pilot.'});
+  if(control.acquisition_enabled!==true)attention.push({severity:'safe',code:'outbound_locked',label:'Real outbound is safely OFF until founder pilot authorization.'});
+  return{
+    ok:true,version:COMMERCIAL_OPERATING_SYSTEM_VERSION,generated_at:new Date().toISOString(),
+    safety:{outbound_locked:control.acquisition_enabled!==true,control,explicit_pilot_required:true,external_send_performed:false},
+    summary:{total_leads:radar.metrics?.companies_discovered||0,unique_companies:radar.metrics?.unique_companies||0,high_fit:radar.metrics?.high_fit||0,verified_contacts:radar.metrics?.usable_verified_contacts||0,outreach_ready:radar.metrics?.outreach_ready||0,active_target_profiles:policies.filter((row:any)=>row.icp_json?.discovery_enabled===true).length,campaigns:campaigns.length,ready_senders:senders.filter((row:any)=>row.readiness.ready).length,open_conversations:openThreads.length,pending_approvals:approvals.length,pending_questions:questions.length},
+    providers,target_profiles:policies.map((policy:any)=>({id:policy.id,policy_key:policy.policy_key,name:policy.icp_json?.profile_name||policy.version,status:policy.status,discovery_enabled:policy.icp_json?.discovery_enabled===true,provider_mode:String(policy.icp_json?.provider_mode||'AUTO').toUpperCase(),countries:policy.countries||[],excluded_domains:policy.excluded_domains||[],daily_send_limit:Number(policy.daily_send_limit||0),min_lead_score:Number(policy.min_lead_score||0),icp_json:policy.icp_json||{},updated_date:policy.updated_date||policy.created_date||null})),
+    leads:radar.prioritized||[],campaigns,senders,domains:[...domainMap.values()],
+    conversations:openThreads.slice(0,300).map((thread:any)=>({id:thread.id,thread_key:thread.thread_key,lead_id:thread.lead_id,company_name:thread.company_name,counterparty_name:thread.counterparty_name,counterparty_email:thread.counterparty_email,status:thread.status,conversation_state:thread.conversation_state,last_message_at:thread.last_message_at,next_action_at:thread.next_action_at,automation_paused:thread.automation_paused===true,sending_profile_key:thread.sending_profile_key||null,resolution_status:thread.sending_profile_resolution_status||null})),
+    communication_metrics:{messages:messages.length,inbound:messages.filter((row:any)=>row.direction==='inbound').length,outbound:messages.filter((row:any)=>row.direction==='outbound').length,bounced:messages.filter((row:any)=>row.send_status==='bounced').length,complained:messages.filter((row:any)=>row.send_status==='complained').length},
+    strategies:{ready:strategies.filter((row:any)=>row.status==='READY').length,review_required:strategies.filter((row:any)=>row.status==='REVIEW_REQUIRED').length,blocked:strategies.filter((row:any)=>row.status==='BLOCKED').length},
+    agents:{latest:latestByAgent,recent:tasks.slice(0,100)},workers:liveWorkers,attention,radar,
+  };
+}

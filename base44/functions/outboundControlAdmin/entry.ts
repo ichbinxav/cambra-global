@@ -39,6 +39,7 @@ const GO_LIVE_ACTIONS = new Set([
 const INSTANTLY_ADMIN_ACTIONS = new Set([
   "instantly_status",
   "instantly_diagnose",
+  "instantly_diagnose_supersearch",
   "instantly_create_campaign",
   "instantly_register_webhook",
   "instantly_pause",

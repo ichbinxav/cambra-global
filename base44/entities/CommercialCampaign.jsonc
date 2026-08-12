@@ -1,0 +1,36 @@
+{
+  "name": "CommercialCampaign",
+  "type": "object",
+  "description": "Canonical CAMBRA campaign. Provider campaign identifiers are replaceable transport references and never own the audience, strategy, policy or conversation state.",
+  "properties": {
+    "campaign_key": { "type": "string" },
+    "name": { "type": "string" },
+    "status": { "type": "string", "enum": ["DRAFT", "READY_FOR_PILOT", "PILOT", "PAUSED", "ACTIVE", "COMPLETED", "ARCHIVED"], "default": "DRAFT" },
+    "target_profile_id": { "type": "string", "description": "CommercialPolicy id whose icp_json defines the portable audience." },
+    "policy_key": { "type": "string" },
+    "policy_version": { "type": "string" },
+    "provider_mode": { "type": "string", "enum": ["AUTO", "APOLLO", "INSTANTLY", "MANUAL"], "default": "AUTO" },
+    "lead_ids": { "type": "array", "items": { "type": "string" } },
+    "audience_snapshot_json": { "type": "object", "description": "Immutable-at-launch summary of filters and canonical lead ids; no provider-only identity." },
+    "strategy_ids": { "type": "array", "items": { "type": "string" } },
+    "message_json": { "type": "object" },
+    "sequence_json": { "type": "object" },
+    "sending_profile_keys": { "type": "array", "items": { "type": "string" } },
+    "capacity_preview_json": { "type": "object" },
+    "external_refs_json": { "type": "object", "description": "Replaceable provider campaign/list references only." },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "pilot_authorized_by": { "type": "string" },
+    "pilot_authorized_at": { "type": "string", "format": "date-time" },
+    "launched_at": { "type": "string", "format": "date-time" },
+    "paused_at": { "type": "string", "format": "date-time" },
+    "metrics_json": { "type": "object" }
+  },
+  "required": ["campaign_key", "name", "status", "provider_mode", "lead_ids", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

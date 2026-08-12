@@ -1,7 +1,7 @@
 {
-  "release": "CAMBRA v0.95.0 — Integrated Europe V1 Release (durability manifest)",
-  "generatedAt": "2026-08-11T23:07:35.798Z",
-  "packageVersion": "0.95.0",
+  "release": "CAMBRA v0.96.0 — Commercial Operating System (durability manifest)",
+  "generatedAt": "2026-08-12T00:32:00.635Z",
+  "packageVersion": "0.96.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeEntryCount": 8,
@@ -237,8 +237,8 @@
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
-      "sha256": "8e273f85e14f5cb15743466ae40e715c9cb6de75f11d060365a78657a0a5df83",
-      "bytes": 2283
+      "sha256": "af51904ab928fbe124900299692c105857e16671716c878f34dc022cad3c946d",
+      "bytes": 3163
     },
     {
       "path": "base44/functions/adminGlobalSearch/entry.ts",
@@ -252,8 +252,8 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "sha256": "38beb00d33b4471789e1b0e040df225f24cc5594555bfa1af2159cbdaef611fc",
-      "bytes": 17986
+      "sha256": "8668346d6c778da42a52e7707a83c13b31b96f99f656150d53c5e14771818e5e",
+      "bytes": 19443
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
@@ -322,8 +322,8 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "sha256": "75f851490cbe75dcfc86b283916bd542da518b7dc51b5ca62fad51ebc3aa5ac0",
-      "bytes": 38715
+      "sha256": "23e9a089df31270632965fef9862eefb8fe88eb04c613aac091900bbd4bc172c",
+      "bytes": 43359
     },
     {
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
@@ -357,8 +357,8 @@
     },
     {
       "path": "base44/functions/commercialPolicyAdmin/entry.ts",
-      "sha256": "a598411cdbc965e3eab2dd70870d0ecdb7ddb58bf66b5209ae1ec7a9c5e0e403",
-      "bytes": 15988
+      "sha256": "edcea1837b2eed04038fef25cd1dc4827736afdce04afc0e6b2d8f55396bf882",
+      "bytes": 16993
     },
     {
       "path": "base44/functions/commercialReplyAgent/entry.ts",
@@ -622,8 +622,8 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "sha256": "f86c0a909771ab60bac9696694f905a42a6732712baee84df9ea7923c69474c1",
-      "bytes": 23216
+      "sha256": "0ca57763fc3e20a3269bca6fca33c35e0d5ab52bdc48a8f69bce313302f01d5e",
+      "bytes": 31526
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
@@ -692,8 +692,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "cf56770989770a8b77b22a3aa296139ea35a239f2b38171c9ee4a9bba9e2f3c2",
-      "bytes": 15010
+      "sha256": "5eca34d6bacd02081b2687c7907bba512f54f5572bb152e6569dd290ef1835ed",
+      "bytes": 15046
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
@@ -992,7 +992,7 @@
     },
     {
       "path": "base44/shared/documentationRegistry.ts",
-      "sha256": "df23e5e1b3c940b3c3702b07aaadbe9703db304cd8dc88db9ce5109c75ea5e1a",
+      "sha256": "d97a28c6e4c8dbf1b39bf4e4ff965a192f58c3d0c269248b088459045f6ace04",
       "bytes": 46035
     },
     {
@@ -1157,13 +1157,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "1b596987d7d2da10242702322c1b635a4b5a405607e4f457a813165f7933fe75",
+      "sha256": "4ee79567dba5fb3a4375795976c640cebc2c2426f203d17a9478f2bb5bd6ce6d",
       "bytes": 399642
     },
     {
       "path": "package.json",
-      "sha256": "32cd0d6549db9c608b9cf490976e4427c5cdf73530e8461ef03c3425d5967e06",
-      "bytes": 7296
+      "sha256": "e67446741c9f5df50f6e9575186ed16322041d4d519e09934d2c968e3fb8c4ba",
+      "bytes": 7295
     },
     {
       "path": "scripts/advance-stage.mjs",
@@ -1187,8 +1187,8 @@
     },
     {
       "path": "scripts/generate-documentation-manifest.mjs",
-      "sha256": "556e51e0903c7f2f3c32d4251c6fa64bf57d2ad6ffcc22e8af55f46239ecf34c",
-      "bytes": 2213
+      "sha256": "7b37f65e7b162f698866529661f4a3a20b5985c09385bd2e82c1625774cd980d",
+      "bytes": 2270
     },
     {
       "path": "scripts/generate-durability-manifest.mjs",
@@ -1207,8 +1207,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "bd1db18ea5a348855dc2474dd0f5f47ffb7cac1cf10d2cfc5cca61946add660d",
-      "bytes": 13866
+      "sha256": "776ee036d2172e50db3d6bc3d32de91df37c1f589c7baf3babe103ed8d713768",
+      "bytes": 14652
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -1237,8 +1237,8 @@
     },
     {
       "path": "scripts/run-with-evidence.mjs",
-      "sha256": "71c1344620a5cd9a7a93dd95022ac8f1bb2e0787de027c472463622014dc6a17",
-      "bytes": 3448
+      "sha256": "8353f69bbdd13af4bcc624b1c382444f3bbab6d6fdbbbbaa0eb926296a7b2faf",
+      "bytes": 3624
     },
     {
       "path": "scripts/typecheck-baseline-approve.mjs",
@@ -1257,8 +1257,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "3acb6c0645f057243853b5d1b90b2f26e9b43ac94fab356c2686e65555a42fb9",
-      "bytes": 24216
+      "sha256": "9e648d5be1326b452bca5b8a0abe9ac405c95d5844fe1a2a9746f4b4593208ff",
+      "bytes": 24388
     },
     {
       "path": "src/components/admin/waitlist/AggregateDemandPanel.jsx",
@@ -1367,8 +1367,8 @@
     },
     {
       "path": "src/docs/OPERATIONS_STATUS.md",
-      "sha256": "e7a993ffd29488444dc6b64527b8683e599eba9f0ebd7c79eb0a3b4397147b99",
-      "bytes": 48410
+      "sha256": "86a6eafcc704a732a008e8194c1fc479a8d45f4ff8f04e40b3916f232fe19901",
+      "bytes": 49361
     },
     {
       "path": "src/docs/P11_EUROPEAN_LEGAL_EXECUTION.md",
@@ -1727,8 +1727,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "9b3962064703f59645b2847c435dae7c345e732901e90967e3bae2f98449de2f",
-      "bytes": 19255
+      "sha256": "96d42ff6e3613f149ee30e1fb9d6fa3b6e1e762a8b2c6a418909ae5215ad8ecc",
+      "bytes": 19501
     },
     {
       "path": "src/pages/admin/AdminWaitlist.jsx",

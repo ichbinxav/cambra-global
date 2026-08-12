@@ -35,7 +35,7 @@ export async function buildDiscoveryAdminRadar(service:any){
   };
   const status=!policy?'PAUSED':providerStatus.status==='CIRCUIT_OPEN'?'ERROR':schedulerAlive?'ACTIVE':'DEGRADED';
   const prioritized=[...leads].sort((a:any,b:any)=>scoreOf(b)-scoreOf(a)||confidenceOf(b)-confidenceOf(a)||Date.parse(b.discovered_at||b.created_date||'')-Date.parse(a.discovered_at||a.created_date||'')).slice(0,500).map((lead:any)=>({
-    id:lead.id,company_name:lead.company_name||null,company_domain:lead.company_domain||null,country:lead.country||null,industry:lead.industry||null,employee_range:lead.employee_range||null,
+    id:lead.id,company_name:lead.company_name||null,company_domain:lead.company_domain||null,contact_full_name:lead.contact_full_name||null,contact_email:lead.contact_email||null,contact_title:lead.contact_title||null,country:lead.country||null,industry:lead.industry||null,employee_range:lead.employee_range||null,revenue_range:lead.revenue_range||null,detected_technologies:Array.isArray(lead.detected_technologies)?lead.detected_technologies:[],
     ecommerce_platform:lead.ecommerce_platform||lead.score_breakdown_json?.signals?.commerce_platform||null,probable_payment_stack:Array.isArray(lead.probable_payment_stack)?lead.probable_payment_stack:[],
     estimated_tpv_min_eur:lead.estimated_tpv_min_eur??null,estimated_tpv_max_eur:lead.estimated_tpv_max_eur??null,estimated_opportunity_min_eur:lead.estimated_opportunity_min_eur??null,estimated_opportunity_max_eur:lead.estimated_opportunity_max_eur??null,
     estimation_status:lead.estimation_status||'UNKNOWN',icp_score:scoreOf(lead)||null,opportunity_score:Number(lead.score_breakdown_json?.opportunity_score??lead.revenue_opportunity_score??0)||null,confidence:confidenceOf(lead)||null,

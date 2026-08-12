@@ -1,8 +1,8 @@
 {
   "name": "base44-app",
   "private": true,
-  "version": "0.95.0",
-  "releaseName": "CAMBRA v0.95.0 — Integrated Europe V1 Release",
+  "version": "0.96.0",
+  "releaseName": "CAMBRA v0.96.0 — Commercial Operating System",
   "type": "module",
   "packageManager": "npm@10.8.2",
   "engines": {

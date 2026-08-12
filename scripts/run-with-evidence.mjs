@@ -25,7 +25,9 @@ writeEnvironmentEvidence(lockfileSha, tree.hash);
 
 const vitestRaw = path.join(EVIDENCE_DIR, "vitest-raw.json");
 if (name === "test" && command.length === 0) {
-  command = ["npx", "vitest", "run", "--reporter=default", "--reporter=json", `--outputFile=${vitestRaw}`];
+  // Keep the release seal deterministic on constrained runners. An unbounded
+  // fork pool can exhaust process slots before slow integration tests finish.
+  command = ["npx", "vitest", "run", "--maxWorkers=2", "--reporter=default", "--reporter=json", `--outputFile=${vitestRaw}`];
 }
 if (command.length === 0) { console.error("no command given"); process.exit(2); }
 

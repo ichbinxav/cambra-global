@@ -6,6 +6,12 @@
 
 ---
 
+## Release v0.96.0 — Commercial Operating System (2026-08-12)
+
+**Repository implementation complete; authenticated runtime validation is the next gate.** The founder now has one Commercial OS for target profiles, portable discovery, canonical leads, CSV export, CAMBRA-owned campaigns, domains/mailboxes, conversations and safe agent operations. `AUTO` keeps Apollo until 2026-09-07 and then hands discovery to Instantly SuperSearch only after a real scoped capability check. Campaign creation, message/sequence preparation and capacity preview perform zero sends. Real outbound remains controlled by the existing founder preflight and master switch.
+
+The observed Base44 runtime still needs `INSTANTLY_API_KEY` and `INSTANTLY_WEBHOOK_SECRET`, SuperSearch/transport authentication, sender/domain/warm-up evidence and a post-deployment runtime drill. See `CAMBRA_V096_COMMERCIAL_OPERATING_SYSTEM.md` for the exact architecture and activation order.
+
 ## Release v0.95.0 — Integrated Europe V1 Release (2026-08-11)
 
 **Repository implementation complete; real Instantly validation and any pilot remain blocked.** P7 now persists an evidence-backed `CommercialStrategy` only for canonical P6 leads that are truly READY_FOR_CONTACT. P8 consumes that artifact through a replaceable outbound-provider contract. Instantly API v2 is transport only: CAMBRA retains scoring, policy, message content, thread memory, reply classification, next-best-action, approval and suppression authority. Provider-native reply AI is a hard conflict, not a second brain.

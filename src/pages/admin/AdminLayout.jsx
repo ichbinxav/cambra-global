@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 
 const NAV = [
   { path: "/admin", label: "Founder OS", icon: LayoutDashboard, exact: true },
@@ -16,6 +17,7 @@ const NAV = [
   { path: "/admin/automations", label: "Automations", icon: Workflow },
   { path: "/admin/chat", label: "Ask CAMBRA", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
+  { path: "/admin/commercial", label: "Commercial OS", icon: Sparkles },
   { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
   { path: "/admin/markets", label: "Europe · Markets", icon: Globe2 },
@@ -55,7 +57,7 @@ function navGroup(path) {
   if (["/admin/founder-control", "/admin/chat", "/admin/copilot"].includes(path)) return "Command";
   if (["/admin/inbox", "/admin/approvals"].includes(path)) return "Inbox";
   if (["/admin/intelligence", "/admin/markets", "/admin/growth", "/admin/routing-intelligence", "/admin/benchmarks", "/admin/recommendations"].includes(path)) return "Intelligence";
-  if (["/admin/discovery", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
+  if (["/admin/discovery", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
   if (["/admin/agents", "/admin/automations", "/admin/developer", "/admin/maintenance", "/admin/evidence-review", "/admin/ecl-operations", "/admin/activity"].includes(path)) return "Operations";
   if (["/admin/users", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
   return "System";
@@ -297,6 +299,7 @@ export default function AdminLayout() {
               {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-muted-foreground">Searching…</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-muted-foreground truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-muted-foreground">No exact matches. Press Enter to ask CAMBRA.</p>}</div>}
             </form>
             <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label="Ask CAMBRA"><MessageSquare size={13}/></button>
+            <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />
             <Link to={`/admin/documentation?topic=${documentationTopic(location.pathname)}`} className="hidden lg:inline-flex h-8 px-3 rounded-lg border border-border/60 text-[11px] font-bold items-center gap-1.5 hover:bg-secondary"><HelpCircle size={12}/>How does this work?</Link>
             <a
               href="/Dashboard"
