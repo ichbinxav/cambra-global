@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "qa_monitor";
 const TASK_TYPE = "qa_monitor";
@@ -44,11 +46,11 @@ Deno.serve(async (req) => {
 
     // Read failed AgentTasks in window
     const recentTasks = await base44.asServiceRole.entities.AgentTask
-      .list("-created_date", 500).catch(() => []);
+      .list("-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'qaMonitorAgent',fallback:[],severity:'secondary'}));
     const tasksInWindow = recentTasks.filter(t => t.created_date >= since);
     const failedTasks = tasksInWindow.filter(t => t.status === "failed");
     const recentEvents = await base44.asServiceRole.entities.Event
-      .list("-created_date", 300).catch(() => []);
+      .list("-created_date", 300).catch((error:any)=>safeBestEffort(error,{operation:'qaMonitorAgent',fallback:[],severity:'secondary'}));
     const failedEvents = recentEvents.filter(e =>
       e.created_date >= since && (e.status === "failed" || (e.event_type || "").includes("error") || (e.event_type || "").includes("failed"))
     );
@@ -123,6 +125,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'qaMonitorAgent');
   }
 });

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { jsPDF } from 'npm:jspdf@4.0.0';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function pad(n, w = 5) { return String(n).padStart(w, '0'); }
 
@@ -110,6 +111,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ url: signed_url, file_uri, invoice_id: inv.id });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'generateInvoicePdf');
   }
 });

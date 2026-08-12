@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { sha256 } from '../../shared/intelligenceCore.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { resolveRecoverEconomicMandate } from '../../shared/recoverEconomicMandate.ts';
@@ -7,6 +8,7 @@ import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralC
 import { resolveContractPolicy } from '../../shared/contractPolicySnapshot.ts';
 import { assertProductionEnabledVertical, ProductScopeError } from '../../shared/productScopeGuard.ts';
 import { ensureRecoverSavingsEvidence } from '../../shared/eclRecoverEvidence.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * generateMonthlySavingsReport
@@ -71,7 +73,7 @@ Deno.serve(async (req) => {
     const svc = base44.asServiceRole;
 
     // Find live DealActivation
-    const allActivations = await svc.entities.DealActivation.filter({ brand_id }).catch(() => []);
+    const allActivations = await svc.entities.DealActivation.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'}));
     const liveActivations = allActivations.filter(a => ACTIVE_DEAL_STATUSES.includes(a.status));
     if (!liveActivations.length) {
       return Response.json({ ok: false, reason: 'No active deal for this brand' });
@@ -96,7 +98,7 @@ Deno.serve(async (req) => {
               data_json: { vertical: deal.vertical, month, blocked_by: 'productScopeGuard' },
               actor_email: gate.user?.email || 'internal',
               created_at: new Date().toISOString(),
-            }).catch(() => null);
+            }).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:null,severity:'secondary'}));
             continue;
           }
           throw e;
@@ -104,7 +106,7 @@ Deno.serve(async (req) => {
 
         // Idempotency check
         const existing = await svc.entities.MonthlySavingsReport
-          .filter({ brand_id, deal_activation_id: deal.id, month }, '-created_date', 5).catch(() => []);
+          .filter({ brand_id, deal_activation_id: deal.id, month }, '-created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'}));
         const liveExisting = existing.find(r => r.status !== 'void');
         if (liveExisting) {
           errors.push({ deal_id: deal.id, reason: 'Report already exists for this month' });
@@ -113,10 +115,10 @@ Deno.serve(async (req) => {
 
         // Find current Baseline for this vertical
         let baselines = await svc.entities.Baseline
-          .filter({ brand_id, vertical: deal.vertical, is_current: true }, '-locked_at', 1).catch(() => []);
+          .filter({ brand_id, vertical: deal.vertical, is_current: true }, '-locked_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'}));
         if (!baselines.length) {
           baselines = await svc.entities.Baseline
-            .filter({ deal_activation_id: deal.id, is_current: true }, '-locked_at', 1).catch(() => []);
+            .filter({ deal_activation_id: deal.id, is_current: true }, '-locked_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'}));
         }
         const baseline = baselines[0];
         if (!baseline) {
@@ -137,14 +139,14 @@ Deno.serve(async (req) => {
         // ── PAYMENTS (the only production-enabled vertical) ───────────
         // Try Stripe first
         let stripe = (await svc.entities.StripeConnection
-          .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
+          .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'})))[0];
 
         // Refresh if stale
         if (stripe && daysSince(stripe.data_as_of) > STRIPE_STALE_DAYS) {
           try {
             await base44.functions.invoke('stripeDataSync', { brand_id });
             stripe = (await svc.entities.StripeConnection
-              .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []))[0];
+              .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'})))[0];
           } catch (_) { /* non-fatal */ }
         }
 
@@ -162,9 +164,9 @@ Deno.serve(async (req) => {
         } else {
           // Fallback to AnalyzerResult
           const latestResult = (await svc.entities.AnalyzerResult
-            .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
+            .filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'})))[0];
           const latestInput = (await svc.entities.AnalyzerInput
-            .filter({ brand_id }, '-created_date', 1).catch(() => []))[0];
+            .filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:[],severity:'secondary'})))[0];
           if (!latestResult || !latestInput) {
             errors.push({ deal_id: deal.id, reason: 'No payment data available for measurement' });
             continue;
@@ -233,7 +235,7 @@ Deno.serve(async (req) => {
 
         const reportSnapshotPayload={deal_activation_id:deal.id,brand_id,provider_id:deal.provider_id||'',vertical:deal.vertical,month,baseline:{id:baseline.id,value:Number(baselineValue.toFixed(2))},measurement:{source:measurementSource,mode:measurementMode,current_value:Number(currentValue.toFixed(2)),volume,confidence},contract:{policy_version:contractResolved.policyVersion||null,snapshot_hash:contractResolved.snapshotHash||null,billing_rule_id:feeRes.rule_id||null,fee_pct:nodeSharePct},supporting_snapshot:snapshot};
         const reportSnapshotHash=await sha256(reportSnapshotPayload);
-        const intelligenceSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`recover-report:${deal.id}:${month}:${reportSnapshotHash.slice(0,16)}`,snapshot_type:'recover_measurement',related_entity_type:'DealActivation',related_entity_id:deal.id,brand_id,vertical:deal.vertical,claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:contractResolved.policyVersion||undefined,calculation_version:'recover-billing',snapshot_json:reportSnapshotPayload,snapshot_hash:reportSnapshotHash,captured_at:new Date().toISOString()}).catch(()=>null);
+        const intelligenceSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`recover-report:${deal.id}:${month}:${reportSnapshotHash.slice(0,16)}`,snapshot_type:'recover_measurement',related_entity_type:'DealActivation',related_entity_id:deal.id,brand_id,vertical:deal.vertical,claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:contractResolved.policyVersion||undefined,calculation_version:'recover-billing',snapshot_json:reportSnapshotPayload,snapshot_hash:reportSnapshotHash,captured_at:new Date().toISOString()}).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:null,severity:'secondary'}));
 
         const report = await svc.entities.MonthlySavingsReport.create({
           brand_id,
@@ -296,7 +298,7 @@ Deno.serve(async (req) => {
               data_json: { report_id: report.id, code: eclEvidence.code || 'unknown' },
               actor_email: gate.user?.email || 'internal',
               created_at: new Date().toISOString(),
-            }).catch(() => null);
+            }).catch((error:any)=>safeBestEffort(error,{operation:'generateMonthlySavingsReport',fallback:null,severity:'secondary'}));
           }
         }
 
@@ -317,6 +319,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, month, reports, errors });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'generateMonthlySavingsReport');
   }
 });

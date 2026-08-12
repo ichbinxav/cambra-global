@@ -1,7 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "crm";
 const TASK_TYPE = "sync_leads_to_crm";
@@ -33,13 +35,13 @@ Deno.serve(async (req) => {
     let leads = [];
     if (leadIds && leadIds.length) {
       leads = await base44.asServiceRole.entities.OutboundLead
-        .filter({ id: { $in: leadIds } }, "-created_date", leadIds.length).catch(() => []);
+        .filter({ id: { $in: leadIds } }, "-created_date", leadIds.length).catch((error:any)=>safeBestEffort(error,{operation:'crmAgent',fallback:[],severity:'secondary'}));
     } else {
       leads = await base44.asServiceRole.entities.OutboundLead
-        .filter({ stage: "scored", attio_record_id: null }, "-score", limit).catch(() => []);
+        .filter({ stage: "scored", attio_record_id: null }, "-score", limit).catch((error:any)=>safeBestEffort(error,{operation:'crmAgent',fallback:[],severity:'secondary'}));
       if (!leads.length) {
         leads = await base44.asServiceRole.entities.OutboundLead
-          .filter({ attio_record_id: null }, "-created_date", limit).catch(() => []);
+          .filter({ attio_record_id: null }, "-created_date", limit).catch((error:any)=>safeBestEffort(error,{operation:'crmAgent',fallback:[],severity:'secondary'}));
       }
     }
 
@@ -112,7 +114,7 @@ Deno.serve(async (req) => {
       } catch (_) {
         for (const u of updates) {
           const { id, ...patch } = u;
-          await base44.asServiceRole.entities.OutboundLead.update(id, patch).catch(() => null);
+          await base44.asServiceRole.entities.OutboundLead.update(id, patch).catch((error:any)=>safeBestEffort(error,{operation:'crmAgent',fallback:null,severity:'secondary'}));
         }
       }
     }
@@ -151,6 +153,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'crmAgent');
   }
 });

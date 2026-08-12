@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
     );
 
     const allReports = await svc.entities.MonthlySavingsReport
-      .filter({ brand_id: brandId }).catch(() => []);
+      .filter({ brand_id: brandId }).catch((error:any)=>safeBestEffort(error,{operation:'getBrandSavings',fallback:[],severity:'secondary'}));
     const liveReports = allReports.filter(r => r.status !== 'void');
 
     const ymSince = ymSinceMonthsAgo(12);
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
 
     // Current baseline (summary only — no brand internals)
     const baselines = await svc.entities.Baseline
-      .filter({ brand_id: brandId, is_current: true }, '-locked_at', 10).catch(() => []);
+      .filter({ brand_id: brandId, is_current: true }, '-locked_at', 10).catch((error:any)=>safeBestEffort(error,{operation:'getBrandSavings',fallback:[],severity:'secondary'}));
     const baseline = baselines[0]
       ? {
           baseline_value: baselines[0].baseline_value,

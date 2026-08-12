@@ -1,6 +1,8 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "blog";
 const TASK_TYPE = "publish_blog";
@@ -24,12 +26,12 @@ Deno.serve(async (req) => {
     if (mode === "execute") {
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required" }, { status: 400 });
-      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch(() => null);
+      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch((error:any)=>safeBestEffort(error,{operation:'blogAgent',fallback:null,severity:'secondary'}));
       if (!ap) return Response.json({ ok: false, error: "Approval not found" }, { status: 404 });
       if (ap.action_type !== ACTION_TYPE) return Response.json({ ok: false, error: `action_type mismatch: ${ap.action_type}` }, { status: 400 });
       if (ap.status !== "approved") return Response.json({ ok: false, error: `Cannot execute: status="${ap.status}"`, gate: "blocked" }, { status: 403 });
 
-      task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch(() => null);
+      task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'blogAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
@@ -165,6 +167,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'blogAgent');
   }
 });

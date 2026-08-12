@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getMyReferralStatus — REFERRAL-1 (2026-08-03).
 //
 // Authenticated read of the caller's OWN referral state for the /Referrals
@@ -19,6 +20,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -28,7 +30,7 @@ export default async function (req: Request): Promise<Response> {
 
     const svc = base44.asServiceRole;
     const row = await findOrCreateReferralLink(svc, user.email);
-    const activations = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 50).catch(() => []);
+    const activations = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 50).catch((error:any)=>safeBestEffort(error,{operation:'getMyReferralStatus',fallback:[],severity:'secondary'}));
     const economic = (activations || []).find((a:any) => a.recovery_economics_version || a.economic_right_status === 'active') || null;
 
     return Response.json({
@@ -39,6 +41,6 @@ export default async function (req: Request): Promise<Response> {
       recovery_economics_version: economic?.recovery_economics_version || 'legacy-v1',
     });
   } catch (error) {
-    return Response.json({ error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'getMyReferralStatus');
   }
 }

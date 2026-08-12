@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeEmail, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { assertOperationAllowed } from '../../shared/operationalControl.ts';
 import { buildFounderMeetingBrief, founderMeetingCapacityDecision, normalizeFounderMeetingPolicy } from '../../shared/founderMeeting.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const SLOT_MS_MINIMUM = 15 * 60 * 1000;
 const roundUp = (ms:number, slotMs:number) => Math.ceil(ms / slotMs) * slotMs;
@@ -24,7 +26,7 @@ function overlaps(start:number, end:number, busy:any[]) {
 }
 
 async function activePolicy(svc:any) {
-  const rows = await svc.entities.FounderMeetingPolicy.filter({ status:'active' }, '-approved_at', 5).catch(() => []);
+  const rows = await svc.entities.FounderMeetingPolicy.filter({ status:'active' }, '-approved_at', 5).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:[],severity:'secondary'}));
   return normalizeFounderMeetingPolicy(rows[0] || {});
 }
 
@@ -47,14 +49,14 @@ Deno.serve(async (req) => {
     let approvedByFounder = false;
     let approval:any = null;
     if (body.mode === 'execute') {
-      approval = await svc.entities.Approval.get(String(body.approval_id || '')).catch(() => null);
+      approval = await svc.entities.Approval.get(String(body.approval_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
       if (!approval || approval.action_type !== 'schedule_founder_meeting' || approval.status !== 'approved') return Response.json({ ok:false, error:'approved_founder_meeting_required' }, { status:403 });
       body = { ...(approval.draft_payload_json || {}), mode:'execute', approval_id:approval.id, selected_slot:body.selected_slot || approval.draft_payload_json?.selected_slot };
       approvedByFounder = true;
-      task = approval.agent_task_id ? await svc.entities.AgentTask.get(approval.agent_task_id).catch(() => null) : null;
+      task = approval.agent_task_id ? await svc.entities.AgentTask.get(approval.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'})) : null;
     }
 
-    const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch(() => null);
+    const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
     if (!thread || !['merchant_acquisition','partner_acquisition','provider_negotiation','aggregate_procurement'].includes(thread.engine)) return Response.json({ ok:false, error:'schedulable_commercial_thread_required' }, { status:400 });
 
     if (body.action === 'cancel') {
@@ -65,7 +67,7 @@ Deno.serve(async (req) => {
       if (!response.ok && response.status !== 404) return Response.json({ ok:false, error:`outlook_event_cancel_failed:${response.status}` }, { status:502 });
       const now = new Date().toISOString();
       await svc.entities.CommunicationThread.update(thread.id, { meeting_status:'cancelled', conversation_state:'AI_RESUMED', automation_paused:false, pause_reason:null, post_meeting_status:'not_applicable' });
-      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_CANCELLED', message:'Founder meeting cancelled', data_json:{ thread_id:thread.id, meeting_event_id:thread.meeting_event_id, reason:sanitizeExternalText(body.reason || 'Founder unavailable', 300) }, created_at:now }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_CANCELLED', message:'Founder meeting cancelled', data_json:{ thread_id:thread.id, meeting_event_id:thread.meeting_event_id, reason:sanitizeExternalText(body.reason || 'Founder unavailable', 300) }, created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
       return Response.json({ ok:true, cancelled:true, thread_id:thread.id });
     }
 
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
     if (!approvedByFounder && !(policy.mode === 'AUTO_BOOK_WITHIN_POLICY' && policy.auto_book_allowed && body.policy_authorized === true)) return Response.json({ ok:false, error:'founder_approval_required', policy_mode:policy.mode }, { status:409 });
     if (!policy.allowed_meeting_types.includes(String(body.meeting_type || 'MERCHANT_SALES_CALL'))) return Response.json({ ok:false, error:'meeting_type_not_allowed' }, { status:409 });
 
-    const meetings = await svc.entities.CommunicationThread.filter({ meeting_start_at:{ $ne:null } }, '-meeting_start_at', 200).catch(() => []);
+    const meetings = await svc.entities.CommunicationThread.filter({ meeting_start_at:{ $ne:null } }, '-meeting_start_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:[],severity:'secondary'}));
     const capacity = founderMeetingCapacityDecision(policy, meetings, new Date());
     if (!capacity.allowed) return Response.json({ ok:false, error:'founder_meeting_capacity_reached', blockers:capacity.blockers, capacity }, { status:409 });
 
@@ -128,16 +130,16 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_cambra', conversation_state:'MEETING_BOOKED', automation_paused:true, pause_reason:'founder_meeting_booked', next_action_at:null, meeting_event_id:event.id || '', meeting_start_at:start.toISOString(), meeting_end_at:end.toISOString(), meeting_status:'booked', meeting_type:meetingType, meeting_mode:policy.mode, meeting_classification:['PROVIDER_NEGOTIATION_CALL','PARTNERSHIP_CALL','STRATEGIC_RELATIONSHIP_CALL','LEGAL_COMMERCIAL_CALL'].includes(meetingType)?'strategic':'commercial', founder_required:true, founder_meeting_policy_version:policy.version, founder_meeting_policy_snapshot_json:{ mode:policy.mode, daily_cap:policy.daily_meeting_cap, weekly_cap:policy.weekly_meeting_cap, minimum_notice_hours:policy.minimum_notice_hours }, meeting_brief_json:brief, post_meeting_status:'pending', summary:`Founder meeting booked ${start.toISOString()} · ${attendee}` });
-    if (thread.engine === 'merchant_acquisition' && thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id, { stage:'meeting', next_action:`Founder meeting booked ${start.toISOString()}` }).catch(() => null);
-    if (thread.engine === 'partner_acquisition' && thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id, { stage:'meeting', next_action_at:null }).catch(() => null);
-    await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_BOOKED', message:`Founder meeting with ${attendee}`, data_json:{ thread_id:thread.id, event_id:event.id || null, start:start.toISOString(), end:end.toISOString(), organizer, attendee, meeting_type:meetingType, policy_version:policy.version, approved_by_founder:approvedByFounder }, created_at:now }).catch(() => null);
+    if (thread.engine === 'merchant_acquisition' && thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id, { stage:'meeting', next_action:`Founder meeting booked ${start.toISOString()}` }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
+    if (thread.engine === 'partner_acquisition' && thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id, { stage:'meeting', next_action_at:null }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
+    await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_BOOKED', message:`Founder meeting with ${attendee}`, data_json:{ thread_id:thread.id, event_id:event.id || null, start:start.toISOString(), end:end.toISOString(), organizer, attendee, meeting_type:meetingType, policy_version:policy.version, approved_by_founder:approvedByFounder }, created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
     await svc.entities.AgentTask.update(task.id, { status:'completed', output_summary:`Founder meeting booked ${start.toISOString()} with ${attendee}`, output_payload_json:{ event_id:event.id || null,start:start.toISOString(),end:end.toISOString(),organizer,attendee,meeting_type:meetingType,policy_version:policy.version }, completed_at:now });
     return Response.json({ ok:true, task_id:task.id, event_id:event.id || null, start:start.toISOString(), end:end.toISOString(), organizer, attendee, meeting_type:meetingType, meeting_brief:brief, policy_version:policy.version });
   } catch (error) {
     console.error('outlookMeetingCoordinator failed', error);
     if (task?.id) {
-      try { const base44=createClientFromRequest(req); await base44.asServiceRole.entities.AgentTask.update(task.id, { status:'failed', error:'outlook_meeting_failed', completed_at:new Date().toISOString() }); } catch {}
+      try { const base44=createClientFromRequest(req); await base44.asServiceRole.entities.AgentTask.update(task.id, { status:'failed', error:'outlook_meeting_failed', completed_at:new Date().toISOString() }); } catch(error){safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'})}
     }
-    return Response.json({ ok:false, error:'outlook_meeting_failed', detail:String(error?.message || error), task_id:task?.id || null }, { status:500 });
+    return internalErrorResponse(error, 'outlookMeetingCoordinator');
   }
 });

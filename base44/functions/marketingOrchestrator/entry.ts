@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const ORCHESTRATOR_NAME = "marketing_orchestrator";
 const TASK_TYPE = "orchestrate";
@@ -63,7 +65,7 @@ Deno.serve(async (req) => {
         stepEntry.child_task_id = data.task_id || null;
         stepEntry.approval_id = data.approval_id || null;
         if (data.task_id) {
-          const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch(() => null);
+          const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch((error:any)=>safeBestEffort(error,{operation:'marketingOrchestrator',fallback:null,severity:'secondary'}));
           stepEntry.status = child?.status || (data.ok === false ? "failed" : "completed");
         } else {
           stepEntry.status = data.ok === false ? "failed" : "completed";
@@ -92,7 +94,7 @@ Deno.serve(async (req) => {
           agent_task_id: parent.id,
           payload_json: { halted_at: step.function, reason: stepEntry.status, approval_id: stepEntry.approval_id, topic, step_index: i },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'marketingOrchestrator',fallback:null,severity:'secondary'}));
         return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: step.function, reason: stepEntry.status, approval_id: stepEntry.approval_id, executed });
       }
     }
@@ -111,6 +113,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(parent.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, parent_task_id: parent?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'marketingOrchestrator');
   }
 });

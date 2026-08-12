@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // Called when the founder answers an AgentQuestion from the Inbox.
 // Strict gate: only the same admin can answer, the question must be pending,
@@ -25,7 +27,7 @@ Deno.serve(async (req) => {
     }
 
     // Gate 1: question exists
-    const q = await base44.asServiceRole.entities.AgentQuestion.get(question_id).catch(() => null);
+    const q = await base44.asServiceRole.entities.AgentQuestion.get(question_id).catch((error:any)=>safeBestEffort(error,{operation:'answerAgentQuestion',fallback:null,severity:'secondary'}));
     if (!q) return Response.json({ ok: false, error: "AgentQuestion not found", gate: "question_not_found" }, { status: 404 });
 
     // Gate 2: question must be pending — can't answer twice
@@ -62,7 +64,7 @@ Deno.serve(async (req) => {
     // 2. Resume the parked task: waiting_input → queued
     //    (we ONLY flip the status if it's still waiting_input — refuse to
     //    silently revive a completed/failed task)
-    const task = await base44.asServiceRole.entities.AgentTask.get(q.agent_task_id).catch(() => null);
+    const task = await base44.asServiceRole.entities.AgentTask.get(q.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'answerAgentQuestion',fallback:null,severity:'secondary'}));
     let taskResumed = false;
     if (task && task.status === "waiting_input") {
       await base44.asServiceRole.entities.AgentTask.update(q.agent_task_id, {
@@ -102,6 +104,6 @@ Deno.serve(async (req) => {
       event_id: ev.id,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'answerAgentQuestion');
   }
 });

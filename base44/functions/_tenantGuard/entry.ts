@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // _tenantGuard — the ONE place in the codebase where "does this user own this
 // brand?" is resolved. Every backend function that reads or writes per-brand
 // data on behalf of an authenticated user MUST call resolveOwnedBrandOrFail
@@ -57,7 +58,7 @@ export function checkOwnership(user: { email?: string } | null, brand: { created
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'_tenantGuard',fallback:null,severity:'secondary'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
     // Admins can always resolve — but we still return the OWNER email of the
     // brand (not the admin's), because that's what needs to be written to
     // owner_email columns so real merchants can read their rows.
-    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch(() => null);
+    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch((error:any)=>safeBestEffort(error,{operation:'_tenantGuard',fallback:null,severity:'secondary'}));
     if (!brand) return Response.json({ error: 'brand_not_found' }, { status: 404 });
 
     if (user.role === 'admin') {

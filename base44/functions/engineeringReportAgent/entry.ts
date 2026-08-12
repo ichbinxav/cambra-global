@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "engineering_report";
 const TASK_TYPE = "engineering_report";
@@ -22,7 +24,7 @@ Deno.serve(async (req) => {
 
     // Window: since the last engineering_report (or 12h fallback)
     const recentReports = await base44.asServiceRole.entities.AgentTask
-      .filter({ agent_name: AGENT_NAME, task_type: TASK_TYPE, status: "completed" }, "-completed_at", 1).catch(() => []);
+      .filter({ agent_name: AGENT_NAME, task_type: TASK_TYPE, status: "completed" }, "-completed_at", 1).catch((error:any)=>safeBestEffort(error,{operation:'engineeringReportAgent',fallback:[],severity:'secondary'}));
     const since = recentReports[0]?.completed_at
       || new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
 
@@ -40,7 +42,7 @@ Deno.serve(async (req) => {
     // Collect findings from the 3 detection agents since `since`
     const sourceAgents = ["code_review", "security", "qa_monitor"];
     const allDetectionTasks = await base44.asServiceRole.entities.AgentTask
-      .filter({ status: "completed" }, "-completed_at", 200).catch(() => []);
+      .filter({ status: "completed" }, "-completed_at", 200).catch((error:any)=>safeBestEffort(error,{operation:'engineeringReportAgent',fallback:[],severity:'secondary'}));
     const relevant = allDetectionTasks.filter(t =>
       sourceAgents.includes(t.agent_name) &&
       (t.completed_at || t.created_date) >= since
@@ -107,7 +109,7 @@ Deno.serve(async (req) => {
         disclaimer: ENG_DISCLAIMER,
       },
       status: "pending",
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'engineeringReportAgent',fallback:null,severity:'secondary'}));
 
     await base44.asServiceRole.entities.AgentTask.update(task.id, {
       status: "completed",
@@ -152,6 +154,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'engineeringReportAgent');
   }
 });

@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "qa";
 const TASK_TYPE = "qa_flow_review";
@@ -35,7 +37,7 @@ Deno.serve(async (req) => {
     const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const recentFailures = await base44.asServiceRole.entities.AgentTask
       .filter({ status: "failed", created_date: { $gte: since7d } }, "-created_date", 50)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'qaAgent',fallback:[],severity:'secondary'}));
 
     const failureSummary = recentFailures.length
       ? recentFailures.slice(0, 10).map(t => `[${t.agent_name}] ${t.task_type}: ${(t.error || "").slice(0, 160)}`).join("\n")
@@ -80,6 +82,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'qaAgent');
   }
 });

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // ─── CAMBRA product knowledge base ────────────────────────────────────────
 //
@@ -238,6 +239,6 @@ ${brandInfo}`;
       return Response.json({ answer: fallbackAnswer, fallback: true });
     }
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'copilotChat');
   }
 });

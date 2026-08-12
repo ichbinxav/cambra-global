@@ -1,6 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { DOCUMENTATION_TOPICS, DOCUMENTATION_REGISTRY_VERSION, DOCUMENTATION_SYSTEM_VERSION } from '../../shared/documentationRegistry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const now = () => new Date().toISOString();
 
@@ -12,7 +15,7 @@ async function hash(value:any) {
 
 async function ensureVersion(s:any, topic:any, version:string, contentHash:string, content:any, at:string) {
   const versionKey = `${topic.key}:${contentHash}`;
-  const existing = await s.entities.DocumentationVersion.filter({ version_key:versionKey }, '-created_at', 1).catch(() => []);
+  const existing = await s.entities.DocumentationVersion.filter({ version_key:versionKey }, '-created_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'}));
   if (existing[0]) return false;
   await s.entities.DocumentationVersion.create({
     version_key:versionKey,
@@ -29,13 +32,13 @@ async function ensureVersion(s:any, topic:any, version:string, contentHash:strin
 }
 
 async function ensureProposal(s:any, input:any) {
-  const old = await s.entities.DocumentationChangeProposal.filter({ proposal_key:input.proposal_key }, '-detected_at', 1).catch(() => []);
+  const old = await s.entities.DocumentationChangeProposal.filter({ proposal_key:input.proposal_key }, '-detected_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'}));
   if (old[0]) return false;
   await s.entities.DocumentationChangeProposal.create(input);
   return true;
 }
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"documentationMaintenanceWorker","cadence_seconds":86400},createClientFromRequest,async (req) => {
   try {
     const b = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -60,7 +63,7 @@ Deno.serve(async (req) => {
       };
       const contentHash = await hash(content);
       const version = `${DOCUMENTATION_REGISTRY_VERSION}:${contentHash.slice(0,12)}`;
-      const old = (await s.entities.DocumentationObject.filter({ doc_key:topic.key }, '-last_verified_at', 1).catch(() => []))[0] || null;
+      const old = (await s.entities.DocumentationObject.filter({ doc_key:topic.key }, '-last_verified_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'})))[0] || null;
       const row = {
         doc_key:topic.key,
         title:topic.title,
@@ -90,7 +93,7 @@ Deno.serve(async (req) => {
     // Real failures feed the living-documentation queue. The worker NEVER invents
     // source-controlled prose automatically; it proposes a bounded documentation
     // impact so a verified code/docs change can close it through release gates.
-    const resolvedCritical = await s.entities.AutonomyIncident.filter({ status:'resolved', severity:'critical' }, '-resolved_at', 100).catch(() => []);
+    const resolvedCritical = await s.entities.AutonomyIncident.filter({ status:'resolved', severity:'critical' }, '-resolved_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'}));
     let proposalsCreated = 0;
     for (const incident of resolvedCritical) {
       if (!incident?.id) continue;
@@ -116,7 +119,7 @@ Deno.serve(async (req) => {
       if (await ensureProposal(s, proposal)) proposalsCreated++;
     }
 
-    const learnedRemediations = await s.entities.RemediationKnowledge.list('-last_verified_at', 100).catch(() => []);
+    const learnedRemediations = await s.entities.RemediationKnowledge.list('-last_verified_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'}));
     for (const item of learnedRemediations.filter((x:any) => Number(x.success_count || 0) + Number(x.failure_count || 0) > 0)) {
       if (!item?.id) continue;
       const proposal = {
@@ -134,7 +137,7 @@ Deno.serve(async (req) => {
       if (await ensureProposal(s, proposal)) proposalsCreated++;
     }
 
-    const pending = await s.entities.DocumentationChangeProposal.filter({ status:'pending' }, '-detected_at', 500).catch(() => []);
+    const pending = await s.entities.DocumentationChangeProposal.filter({ status:'pending' }, '-detected_at', 500).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'}));
     const criticalPending = pending.filter((x:any) => x.trigger_type === 'incident').length;
     const implementation = {
       implemented:DOCUMENTATION_TOPICS.filter(x => x.implementation_status === 'IMPLEMENTED').length,
@@ -167,13 +170,13 @@ Deno.serve(async (req) => {
       },
       calculated_at:at,
     };
-    const previous = (await s.entities.DocumentationHealthAssessment.filter({ assessment_key:assessment.assessment_key }, '-calculated_at', 1).catch(() => []))[0];
+    const previous = (await s.entities.DocumentationHealthAssessment.filter({ assessment_key:assessment.assessment_key }, '-calculated_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'documentationMaintenanceWorker',fallback:[],severity:'secondary'})))[0];
     if (previous) await s.entities.DocumentationHealthAssessment.update(previous.id, assessment);
     else await s.entities.DocumentationHealthAssessment.create(assessment);
 
     return Response.json({ ok:true, topics:DOCUMENTATION_TOPICS.length, changed, created, versions_created:versionsCreated, proposals_created:proposalsCreated, pending_proposals:pending.length, assessment });
   } catch (e) {
     console.error(e);
-    return Response.json({ ok:false, error:'documentation_maintenance_failed', message:String((e as Error)?.message || e).slice(0,300) }, { status:500 });
+    return internalErrorResponse(e, 'documentationMaintenanceWorker');
   }
 });

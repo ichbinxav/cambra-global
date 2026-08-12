@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
@@ -6,7 +7,7 @@ import { processInstantlyProviderEvent } from '../../shared/outboundProviderEven
 export async function handleInstantlyProviderEventRetryWorker(req:Request){let svc:any=null,claim:any=null,success=true;try{
   const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;svc=base44.asServiceRole;
   claim=await claimSchedulerRun(svc,req,{worker_key:'instantlyProviderEventRetryWorker',cadence_seconds:300});if(!claim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:claim.run_key});
-  const due=await svc.entities.OutboundProviderEvent.filter({provider:'instantly',status:'PENDING_RETRY',next_retry_at:{$lte:new Date().toISOString()}},'next_retry_at',50).catch(()=>[]);
+  const due=await svc.entities.OutboundProviderEvent.filter({provider:'instantly',status:'PENDING_RETRY',next_retry_at:{$lte:new Date().toISOString()}},'next_retry_at',50).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderEventRetryWorker',fallback:[],severity:'secondary'}));
   const results=[];for(const row of due)results.push(await processInstantlyProviderEvent(svc,row.raw_event_json,row));
   return Response.json({ok:true,attempted:due.length,recovered:results.filter((row:any)=>row.ok).length,remaining_retry:results.filter((row:any)=>row.queued_retry).length,dead_letter:results.filter((row:any)=>row.dead_letter).length});
 }catch(error){success=false;console.error('instantlyProviderEventRetryWorker failed',error);return Response.json({ok:false,error:'instantly_event_retry_failed'},{status:500});}finally{if(svc&&claim)await finishSchedulerRun(svc,claim,{worker_key:'instantlyProviderEventRetryWorker'},success)}}

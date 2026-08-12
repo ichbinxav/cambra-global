@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function num(v) { const n = Number(v || 0); return isFinite(n) ? n : 0; }
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -31,12 +33,12 @@ async function resolveBrandId(base44, payload){
   }
   // MigrationTask has deal_activation_id
   if (entity === 'MigrationTask' && cur.deal_activation_id){
-    const act = await base44.asServiceRole.entities.DealActivation.get(cur.deal_activation_id).catch(()=>null);
+    const act = await base44.asServiceRole.entities.DealActivation.get(cur.deal_activation_id).catch((error:any)=>safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:null,severity:'secondary'}));
     return act?.brand_id || null;
   }
   // Baseline may only have deal_activation_id
   if (entity === 'Baseline' && cur.deal_activation_id){
-    const act = await base44.asServiceRole.entities.DealActivation.get(cur.deal_activation_id).catch(()=>null);
+    const act = await base44.asServiceRole.entities.DealActivation.get(cur.deal_activation_id).catch((error:any)=>safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:null,severity:'secondary'}));
     return act?.brand_id || null;
   }
   return null;
@@ -46,7 +48,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     let payload = {};
-    try { payload = await req.json(); } catch {}
+    try { payload = await req.json(); } catch(error){safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:null,severity:'secondary'})}
     // SECURITY-2 (2026-07-24) — deny anonymous: authenticated user (owner
     // check below) OR INTERNAL_CALL_SECRET (function→function invocations).
     const gate = await requireUserOrInternal(req, base44, payload);
@@ -78,9 +80,9 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.DealActivation.filter({ brand_id: brandId }),
       base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brandId }, '-month', 200),
       base44.asServiceRole.entities.Baseline.filter({ brand_id: brandId, is_current: true }, '-locked_at', 1),
-      base44.asServiceRole.entities.Mandate.filter({ brand_id: brandId }, '-signed_at', 1).catch(()=>[]),
-      base44.asServiceRole.entities.MigrationTask.filter({ brand_id: brandId }, '-updated_date', 200).catch(()=>[]),
-      base44.asServiceRole.entities.Provider.list().catch(()=>[]),
+      base44.asServiceRole.entities.Mandate.filter({ brand_id: brandId }, '-signed_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.MigrationTask.filter({ brand_id: brandId }, '-updated_date', 200).catch((error:any)=>safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.Provider.list().catch((error:any)=>safeBestEffort(error,{operation:'regenerateRecommendationsForBrand',fallback:[],severity:'secondary'})),
     ]);
 
     const latestBaseline = baselines?.[0] || null;
@@ -299,6 +301,6 @@ Deno.serve(async (req) => {
     const created = await base44.asServiceRole.entities.Recommendation.bulkCreate(recs);
     return Response.json({ ok: true, items: created });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'regenerateRecommendationsForBrand');
   }
 });

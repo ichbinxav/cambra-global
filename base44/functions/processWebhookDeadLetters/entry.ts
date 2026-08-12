@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // processWebhookDeadLetters — CAMBRA v0.66.0 / ECL P7.
 // Scheduled every 5 minutes. Automatic retries remain bounded and claimed before
 // delivery. P7 adds worker telemetry and ONE explicit admin-only replay path for
@@ -48,12 +49,12 @@ export default async function (req: Request): Promise<Response> {
     const requested = Number(body0?.args?.limit ?? body0?.limit ?? MAX_BATCH);
     const limit = Math.max(1, Math.min(MAX_BATCH, Number.isFinite(requested) ? Math.floor(requested) : MAX_BATCH));
     const now = new Date();
-    task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: WORKER_AGENT, task_type: manualReplay ? "p7_manual_dead_letter_replay" : "scheduled_dead_letter_retry", status: "running", requires_approval: false, risk_level: manualReplay ? 3 : 1, input_summary: manualReplay ? `Admin replay ${body0.deadLetterId}` : `Webhook DLQ sweep limit ${limit}`, started_at: now.toISOString() }).catch(() => null);
+    task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: WORKER_AGENT, task_type: manualReplay ? "p7_manual_dead_letter_replay" : "scheduled_dead_letter_retry", status: "running", requires_approval: false, risk_level: manualReplay ? 3 : 1, input_summary: manualReplay ? `Admin replay ${body0.deadLetterId}` : `Webhook DLQ sweep limit ${limit}`, started_at: now.toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
 
     let pending: any[] = [];
     let dueNow: any[] = [];
     if (manualReplay) {
-      const one = await svc.entities.WebhookDeadLetter.get(body0.deadLetterId).catch(() => null);
+      const one = await svc.entities.WebhookDeadLetter.get(body0.deadLetterId).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
       if (!one) return Response.json({ ok: false, error: "dead_letter_not_found" }, { status: 404 });
       if (one.status !== "exhausted") return Response.json({ ok: false, error: "manual_replay_only_for_exhausted" }, { status: 409 });
       pending = [one];
@@ -65,13 +66,13 @@ export default async function (req: Request): Promise<Response> {
 
     const results: any[] = [];
     for (const dl of dueNow) {
-      const fresh = await svc.entities.WebhookDeadLetter.get(dl.id).catch(() => null);
+      const fresh = await svc.entities.WebhookDeadLetter.get(dl.id).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
       const expectedStatus = manualReplay ? "exhausted" : "pending_retry";
       if (!fresh || fresh.status !== expectedStatus) { results.push({ id: dl.id, action: "skipped_status_changed" }); continue; }
       if (fresh.locked_at && (now.getTime() - new Date(fresh.locked_at).getTime()) < LOCK_TTL_MIN * 60 * 1000) { results.push({ id: dl.id, action: "skipped_locked" }); continue; }
       await svc.entities.WebhookDeadLetter.update(dl.id, { locked_at: new Date().toISOString() });
 
-      const endpoint = await svc.entities.WebhookEndpoint.get(dl.webhook_id).catch(() => null);
+      const endpoint = await svc.entities.WebhookEndpoint.get(dl.webhook_id).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
       if (!endpoint || endpoint.status === "disabled") {
         await svc.entities.WebhookDeadLetter.update(dl.id, { status: "abandoned", locked_at: null });
         results.push({ id: dl.id, action: "abandoned_disabled_endpoint" });
@@ -116,12 +117,12 @@ export default async function (req: Request): Promise<Response> {
       instantlyReconciliation=await reconciliationResponse.json().catch(()=>({ok:false,error:'instantly_reconciliation_response_invalid'}));
     }
     const summary = { processed: results.length, pending_total: pending.length, manual_replay: manualReplay, provider_maintenance_only:providerMaintenanceOnly, results, instantly_event_retry:instantlyEventRetry, instantly_reconciliation:instantlyReconciliation, host_worker_fallback:true };
-    if (task?.id) await svc.entities.AgentTask.update(task.id, { status: "completed", output_summary: `Webhook DLQ ${manualReplay ? "manual replay" : "sweep"}: ${results.length} processed`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch(() => null);
+    if (task?.id) await svc.entities.AgentTask.update(task.id, { status: "completed", output_summary: `Webhook DLQ ${manualReplay ? "manual replay" : "sweep"}: ${results.length} processed`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
     return Response.json({ ok: true, ...summary });
   } catch (error) {
     schedulerOk = false;
     const message = String((error as Error)?.message || error || "webhook_dead_letter_worker_failed").slice(0, 500);
-    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: "failed", error: message, completed_at: new Date().toISOString() }).catch(() => null);
+    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: "failed", error: message, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
     return Response.json({ ok: false, error: "webhook_dead_letter_worker_failed", message }, { status: 500 });
   } finally {
     if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:"processWebhookDeadLetters" }, schedulerOk);

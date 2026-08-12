@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
@@ -29,20 +30,20 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'alwaysOnLeadDiscoveryWorker',cadence_seconds:3600});
     if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key});
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-    const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 100).catch(()=>[]);
+    const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'}));
     const policy = selectDiscoveryPolicy(policies);
     if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, note:'Discovery requires an explicitly enabled ICP configuration but does not require outbound activation.' });
 
     const [before, profiles, emergency, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
-      service.entities.OutboundLead.list('-created_date',5000).catch(()=>[]),
-      service.entities.OutboundSendingProfile.list('-created_date',100).catch(()=>[]),
+      service.entities.OutboundLead.list('-created_date',5000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.OutboundSendingProfile.list('-created_date',100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
       emergencyState(service),
-      service.entities.MarketCapabilityControl.filter({ capability:'DISCOVER_LEAD' }, '-updated_at',500).catch(()=>[]),
-      service.entities.MarketIntelligenceProfile.list('-updated_at',500).catch(()=>[]),
-      service.entities.LeadDiscoveryCheckpoint.list('last_attempt_at',1000).catch(()=>[]),
-      service.entities.LeadDiscoveryCheckpoint.filter({ checkpoint_key:'apollo:provider:diagnostic' }, '-updated_date',1).catch(()=>[]),
-      service.entities.OutboundControl.filter({ control_key:'global' }, '-created_date',1).catch(()=>[]),
-      service.entities.CommercialProviderState.list('-last_checked_at',100).catch(()=>[]),
+      service.entities.MarketCapabilityControl.filter({ capability:'DISCOVER_LEAD' }, '-updated_at',500).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.MarketIntelligenceProfile.list('-updated_at',500).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.LeadDiscoveryCheckpoint.list('last_attempt_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.LeadDiscoveryCheckpoint.filter({ checkpoint_key:'apollo:provider:diagnostic' }, '-updated_date',1).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.OutboundControl.filter({ control_key:'global' }, '-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
+      service.entities.CommercialProviderState.list('-last_checked_at',100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
     ]);
     const activeProfiles=profiles.filter((profile:any)=>profile?.active===true||profile?.status==='active');
     const configuredCapacity=activeProfiles.reduce((sum:number,profile:any)=>sum+Math.max(0,Number(profile.current_daily_cap||0)),0);
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       }
     }
 
-    const leads=await service.entities.OutboundLead.list('-created_date',5000).catch(()=>[]);
+    const leads=await service.entities.OutboundLead.list('-created_date',5000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'}));
     const uniqueCompanies=new Set(leads.map((lead:any)=>String(lead.canonical_company_key||normalizeCompanyDomain(lead.company_domain))).filter(Boolean)).size;
     const rankedForDedupe=[...leads].sort((a:any,b:any)=>Number(b.score||b.pre_score||0)-Number(a.score||a.pre_score||0)||Date.parse(b.updated_date||b.created_date||'')-Date.parse(a.updated_date||a.created_date||''));
     const companyWinner=new Map<string,string>();
@@ -101,9 +102,9 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     for(const lead of rankedForDedupe){
       const domain=normalizeCompanyDomain(lead.company_domain);if(!domain)continue;
       const canonicalKey=`domain:${domain}`;
-      if(!lead.canonical_company_key)await service.entities.OutboundLead.update(lead.id,{canonical_company_key:canonicalKey,reservoir_updated_at:now()}).catch(()=>null);
+      if(!lead.canonical_company_key)await service.entities.OutboundLead.update(lead.id,{canonical_company_key:canonicalKey,reservoir_updated_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));
       if(!companyWinner.has(domain)){companyWinner.set(domain,lead.id);continue;}
-      if(!['contacted','meeting','won'].includes(String(lead.stage))){await service.entities.OutboundLead.update(lead.id,{reservoir_state:'disqualified',suppression_reason:`duplicate_company:${companyWinner.get(domain)}`,reservoir_updated_at:now()}).catch(()=>null);duplicateLeadIds.add(lead.id);deduplicated++;}
+      if(!['contacted','meeting','won'].includes(String(lead.stage))){await service.entities.OutboundLead.update(lead.id,{reservoir_state:'disqualified',suppression_reason:`duplicate_company:${companyWinner.get(domain)}`,reservoir_updated_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));duplicateLeadIds.add(lead.id);deduplicated++;}
     }
 
     let suppressed=0,qualified=0,highConfidence=0,outreachReady=0,contactable=0,stale=0;
@@ -111,15 +112,15 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     for(const lead of leads){
       if(duplicateLeadIds.has(lead.id)||lead.reservoir_state==='disqualified')continue;
       const email=String(lead.contact_email||'').trim().toLowerCase();
-      const suppression=email?await service.entities.ContactSuppression.filter({email,active:true},'-created_date',1).catch(()=>[]):[];
-      if(suppression.length){suppressed++;await service.entities.OutboundLead.update(lead.id,{reservoir_state:'suppressed',outreach_eligibility:'BLOCKED',suppression_reason:'contact_suppression',reservoir_updated_at:now()}).catch(()=>null);continue;}
+      const suppression=email?await service.entities.ContactSuppression.filter({email,active:true},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})):[];
+      if(suppression.length){suppressed++;await service.entities.OutboundLead.update(lead.id,{reservoir_state:'suppressed',outreach_eligibility:'BLOCKED',suppression_reason:'contact_suppression',reservoir_updated_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));continue;}
       const score=Number(lead.score||lead.pre_score||0),confidence=Number(lead.score_breakdown_json?.evidence_confidence||0);
       const isQualified=['scored','outreach_ready'].includes(String(lead.stage))&&score>=minScore;if(isQualified)qualified++;
       if(isQualified&&confidence>=.75)highConfidence++;
       if(lead.contactability==='PROFESSIONAL_VERIFIED')contactable++;
       const isReady=isQualified&&confidence>=.55&&lead.contactability==='PROFESSIONAL_VERIFIED'&&lead.compliance_status==='CLEARED'&&lead.outreach_eligibility==='ELIGIBLE';
-      if(isReady){outreachReady++;await service.entities.OutboundLead.update(lead.id,{reservoir_state:'ready',revenue_stage:'outreach_ready',outreach_ready_at:lead.outreach_ready_at||now(),last_verified_at:now(),reservoir_updated_at:now()}).catch(()=>null);}
-      else if(['lead','enriched','scored'].includes(String(lead.stage))){await service.entities.OutboundLead.update(lead.id,{reservoir_state:lead.stage==='lead'?'discovered':lead.stage==='enriched'?'enriching':'qualified',reservoir_updated_at:now()}).catch(()=>null);}
+      if(isReady){outreachReady++;await service.entities.OutboundLead.update(lead.id,{reservoir_state:'ready',revenue_stage:'outreach_ready',outreach_ready_at:lead.outreach_ready_at||now(),last_verified_at:now(),reservoir_updated_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));}
+      else if(['lead','enriched','scored'].includes(String(lead.stage))){await service.entities.OutboundLead.update(lead.id,{reservoir_state:lead.stage==='lead'?'discovered':lead.stage==='enriched'?'enriching':'qualified',reservoir_updated_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));}
       const lastVerified=Date.parse(lead.last_enriched_at||lead.last_verified_at||lead.updated_date||lead.created_date||'');if(!Number.isFinite(lastVerified)||lastVerified<staleCutoff)stale++;
     }
 
@@ -129,7 +130,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const countryBreakdown=countBy(leads,(lead)=>lead.country);
     const verticalBreakdown=countBy(leads,(lead)=>lead.industry);
     const opportunityBreakdown={unknown:leads.filter((lead:any)=>!Number.isFinite(Number(lead.score||lead.pre_score))).length,low:leads.filter((lead:any)=>Number(lead.score||lead.pre_score)<50).length,medium:leads.filter((lead:any)=>Number(lead.score||lead.pre_score)>=50&&Number(lead.score||lead.pre_score)<70).length,high:leads.filter((lead:any)=>Number(lead.score||lead.pre_score)>=70).length};
-    const latestCheckpoints=await service.entities.LeadDiscoveryCheckpoint.list('-last_attempt_at',1000).catch(()=>[]);
+    const latestCheckpoints=await service.entities.LeadDiscoveryCheckpoint.list('-last_attempt_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'}));
     const harvestMetrics={
       companies_scanned:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.candidates_scanned||0),0),unique_companies:uniqueCompanies,
       duplicates_rejected:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.duplicates_rejected||0),0)+deduplicated,quality_rejected:latestCheckpoints.reduce((sum:number,row:any)=>sum+Number(row.quality_rejected||0),0),
@@ -150,7 +151,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
 
     const intelligence=buildCommercialIntelligence(leads, policy);
     const commercialSnapshot=await service.entities.CommercialIntelligenceSnapshot.create({snapshot_key:`commercial:${Date.now()}`,generated_at:intelligence.generated_at,engine_version:intelligence.version,policy_key:policy.policy_key,policy_version:String(policy.version||''),market_sizing_json:intelligence.market_sizing,prioritization_json:intelligence.prioritization,lead_graph_json:intelligence.lead_graph,forecast_json:intelligence.forecast,learning_json:intelligence.learning,data_quality_json:intelligence.data_quality,source_coverage_json:{...intelligence.source_coverage,provider_status:{selected:selectedProvider,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},configured_markets:requestedCountries,blocked_markets:[...blockedMarkets]},unknowns:intelligence.unknowns,reservoir_snapshot_id:reservoir.id});
-    await service.entities.Event.create({brand_id:'_platform',event_type:'commercial.intelligence.snapshot.created',source:'always_on_lead_discovery',entity_type:'CommercialIntelligenceSnapshot',entity_id:commercialSnapshot.id,payload_json:{engine_version:COMMERCIAL_INTELLIGENCE_VERSION,reservoir_snapshot_id:reservoir.id,market_methodology:intelligence.market_sizing.methodology},status:'pending'}).catch(()=>null);
+    await service.entities.Event.create({brand_id:'_platform',event_type:'commercial.intelligence.snapshot.created',source:'always_on_lead_discovery',entity_type:'CommercialIntelligenceSnapshot',entity_id:commercialSnapshot.id,payload_json:{engine_version:COMMERCIAL_INTELLIGENCE_VERSION,reservoir_snapshot_id:reservoir.id,market_methodology:intelligence.market_sizing.methodology},status:'pending'}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));
     return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{selected:selectedProvider,reason:providerSelection.reason,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
   }catch(error){__schedulerOk=false;console.error('alwaysOnLeadDiscoveryWorker failed',String((error as Error)?.message||error).slice(0,200));return Response.json({ok:false,error:'always_on_lead_discovery_failed'},{status:500})}
   finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}

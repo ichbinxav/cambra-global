@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "investor_update";
 const TASK_TYPE = "draft_investor_update";
@@ -38,13 +40,13 @@ Deno.serve(async (req) => {
 
     // Collect metrics
     const [brands, savingsReports, activations, completedTasks] = await Promise.all([
-      base44.asServiceRole.entities.Brand.list("-updated_date", 500).catch(() => []),
+      base44.asServiceRole.entities.Brand.list("-updated_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
       base44.asServiceRole.entities.MonthlySavingsReport
-        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch(() => []),
+        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
       base44.asServiceRole.entities.DealActivation
-        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch(() => []),
+        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
       base44.asServiceRole.entities.AgentTask
-        .filter({ status: "completed", created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch(() => []),
+        .filter({ status: "completed", created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
     ]);
 
     const sum = (arr, key) => arr.reduce((s, x) => s + (Number(x?.[key]) || 0), 0);
@@ -105,6 +107,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'investorUpdateAgent');
   }
 });

@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "compliance";
 const TASK_TYPE = "compliance_review";
@@ -43,10 +45,10 @@ Deno.serve(async (req) => {
 
     // Pull recent AgentTasks and Approvals to check for protocol violations
     const recentTasks = await base44.asServiceRole.entities.AgentTask
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'complianceAgent',fallback:[],severity:'secondary'}));
     const recentInWindow = recentTasks.filter(t => t.created_date >= since);
     const recentApprovals = await base44.asServiceRole.entities.Approval
-      .list("-created_date", 100).catch(() => []);
+      .list("-created_date", 100).catch((error:any)=>safeBestEffort(error,{operation:'complianceAgent',fallback:[],severity:'secondary'}));
     const approvalsInWindow = recentApprovals.filter(a => a.created_date >= since);
 
     // Compute structural integrity signals BEFORE asking Claude
@@ -109,7 +111,7 @@ Deno.serve(async (req) => {
             disclaimer: LEGAL_DISCLAIMER,
           },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'complianceAgent',fallback:null,severity:'secondary'}));
         if (ev) flagsEmitted.push(ev.id);
       }
     }
@@ -136,6 +138,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'complianceAgent');
   }
 });

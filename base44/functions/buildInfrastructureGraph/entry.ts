@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M6 — buildInfrastructureGraph
@@ -46,7 +48,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     // Auth: admin, brand owner, OR service role (no user attached → function-to-function call)
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:null,severity:'secondary'}));
 
     const body = await req.json().catch(() => ({}));
     const { brand_id } = body;
@@ -59,7 +61,7 @@ Deno.serve(async (req) => {
     if (user) {
       const isAdmin = user.role === 'admin';
       if (!isAdmin) {
-        const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+        const owned = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'}));
         if (!owned.length) {
           return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
         }
@@ -71,13 +73,13 @@ Deno.serve(async (req) => {
 
     // Load all signals (service-role to bypass per-row read variance — we already authorized at brand level)
     const [findings, detected, stripeConns, memories, existingNodes, existingEdges, catalog] = await Promise.all([
-      svc.entities.DiscoveryFinding.filter({ brand_id }).catch(() => []),
-      svc.entities.DetectedIntegration.filter({ brand_id }).catch(() => []),
-      svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []),
-      svc.entities.CompanyMemory.filter({ brand_id }, '-created_date', 1).catch(() => []),
-      svc.entities.InfrastructureNode.filter({ brand_id }).catch(() => []),
-      svc.entities.InfrastructureEdge.filter({ brand_id }).catch(() => []),
-      svc.entities.IntegrationCatalog.list('priority', 200).catch(() => []),
+      svc.entities.DiscoveryFinding.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.DetectedIntegration.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.CompanyMemory.filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.InfrastructureNode.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.InfrastructureEdge.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.IntegrationCatalog.list('priority', 200).catch((error:any)=>safeBestEffort(error,{operation:'buildInfrastructureGraph',fallback:[],severity:'secondary'})),
     ]);
 
     const catalogById = new Map(catalog.map(c => [c.integration_id, c]));
@@ -248,7 +250,7 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, nodes_created, nodes_updated, edges_created });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'buildInfrastructureGraph');
   }
 });
 

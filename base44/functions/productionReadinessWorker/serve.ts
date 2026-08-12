@@ -1,3 +1,4 @@
 import { handleProductionReadinessWorker } from './entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(handleProductionReadinessWorker);
+guardedScheduledServe({"worker_key":"productionReadinessWorker","cadence_seconds":86400},handleProductionReadinessWorker);

@@ -20,6 +20,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { assertBillingAccount, expectedAccountId } from '../../shared/stripeBilling.ts';
 import { getWebhookSecret } from '../../shared/stripeWebhookSecret.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -59,6 +60,6 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json(out);
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'stripeBillingKeyCheck');
   }
 }

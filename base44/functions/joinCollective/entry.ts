@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { collectiveJoinEmail } from '../../shared/emails/collectiveJoin.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * joinCollective
@@ -50,7 +52,7 @@ async function checkRateLimit(base44: any, ip: string) {
   const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({
     principal_id: principalId,
     window_start: windowStart,
-  }).catch(() => []);
+  }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:[],severity:'secondary'}));
 
   const counter = matches?.[0];
   if (!counter) {
@@ -60,7 +62,7 @@ async function checkRateLimit(base44: any, ip: string) {
       window_start: windowStart,
       count: 1,
       limit_per_minute: limit,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
     return { ok: true, remaining: limit - 1, limit, reset };
   }
   if ((counter.count || 0) >= limit) {
@@ -68,7 +70,7 @@ async function checkRateLimit(base44: any, ip: string) {
   }
   await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, {
     count: (counter.count || 0) + 1,
-  }).catch(() => null);
+  }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
   return { ok: true, remaining: limit - (counter.count || 0) - 1, limit, reset };
 }
 
@@ -99,7 +101,7 @@ Deno.serve(async (req) => {
     // Prefer the authenticated user's email when present; fall back to the
     // typed email. Anonymous callers may have no session — that's fine.
     let email = String(body?.email || "").trim().toLowerCase();
-    const me = await base44.auth.me().catch(() => null);
+    const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
     if (me?.email) email = String(me.email).trim().toLowerCase();
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -190,6 +192,6 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("joinCollective error:", error);
-    return Response.json({ ok: false, error: (error as any)?.message || "internal_error" }, { status: 500 });
+    return internalErrorResponse(error, 'joinCollective');
   }
 });

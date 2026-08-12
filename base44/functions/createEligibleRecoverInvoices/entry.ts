@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // createEligibleRecoverInvoices — RECOVER-4 (2026-08-04), restructured v61
 // (2026-08-06, audit P0 #1/#2/#3).
 //
@@ -32,6 +33,7 @@ import { appendPaymentEventOnce, claimRecoverInvoiceDraft, recoverExecutionKey }
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { assertMarketCapabilityAllowed } from '../../shared/marketPolicyRuntime.ts';
 import { evaluateLegalExecution } from '../../shared/legalExecutionRuntime.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const BATCH = 5;
 
@@ -86,9 +88,9 @@ export default async function (req: Request): Promise<Response> {
     // Select work: one explicit report, or a bounded scan of eligible ones.
     let candidates: any[] = [];
     if (body?.report_id) {
-      candidates = await svc.entities.MonthlySavingsReport.filter({ id: body.report_id }, '-created_date', 1).catch(() => []);
+      candidates = await svc.entities.MonthlySavingsReport.filter({ id: body.report_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:[],severity:'critical'}));
     } else {
-      candidates = await svc.entities.MonthlySavingsReport.filter({ billing_eligibility_status: 'eligible' }, '-created_date', 50).catch(() => []);
+      candidates = await svc.entities.MonthlySavingsReport.filter({ billing_eligibility_status: 'eligible' }, '-created_date', 50).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:[],severity:'critical'}));
     }
     candidates = (candidates || []).filter(r => r.billing_eligibility_status === 'eligible' && !r.invoice_id).slice(0, BATCH);
 
@@ -100,8 +102,8 @@ export default async function (req: Request): Promise<Response> {
       results.push(outcome);
       try {
         // ── PHASE 1 — load context (reads only) ─────────────────────────
-        const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []))?.[0];
-        const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => []))?.[0] : null;
+        const activation = (await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:[],severity:'critical'})))?.[0];
+        const brand = activation ? (await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:[],severity:'critical'})))?.[0] : null;
         if(brand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand,brand_id:brand.id,capability:'BILL',actor_type:'recover_billing'})}catch(e:any){outcome.ok=false;outcome.error='market_capability_denied:BILL';outcome.decision=e?.decision||null;continue}}
         const mandate = activation ? await resolveRecoverEconomicMandate(svc, activation) : null;
         const legalPayloadHash=report.calculation_hash||await hashCalculation({report_id:report.id,deal_activation_id:report.deal_activation_id,month:report.month,brand_id:report.brand_id||activation?.brand_id||'',savings:report.savings,currency:report.currency||'EUR'});
@@ -119,7 +121,7 @@ export default async function (req: Request): Promise<Response> {
           ? (await svc.entities.Baseline.filter({ id: report.baseline_id }, '-created_date', 1))?.[0] || null
           : null;
         const existing = activation ? (await svc.entities.Invoice
-          .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch(() => [])) : [];
+          .filter({ deal_activation_id: activation.id, month: report.month }, '-created_date', 10).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:[],severity:'critical'}))) : [];
 
         // Fresh tax determination at issuance (§15) — approval preview may be stale.
         // v62.2.2 — the fallback literal IS a valid TaxTreatment; annotating the
@@ -158,7 +160,7 @@ export default async function (req: Request): Promise<Response> {
 
         if (prep.resume?.fully_issued) {
           // Same report already fully issued — repair the report pointer only.
-          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'invoiced', invoice_id: prep.resume.invoice_id, status: 'invoiced', verification_status: 'invoiced' }).catch(() => null);
+          await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'invoiced', invoice_id: prep.resume.invoice_id, status: 'invoiced', verification_status: 'invoiced' }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
           outcome.resumed = true; outcome.invoice_id = prep.resume.invoice_id; outcome.invoice_number = prep.resume.invoice_number;
           continue;
         }
@@ -168,11 +170,11 @@ export default async function (req: Request): Promise<Response> {
           // Bookkeeping writes for specific blockers (pre-existing behavior) —
           // these mark the report blocked; they create no economic obligation.
           if (blocker.startsWith('tax_blocked:')) {
-            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_tax', billing_block_reason: blocker.slice('tax_blocked:'.length) }).catch(() => null);
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_tax', billing_block_reason: blocker.slice('tax_blocked:'.length) }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
           } else if (blocker === 'calculation_mismatch_reapprove' || blocker === 'standard_fee_missing_reapprove' || blocker === 'effective_fee_missing_reapprove') {
-            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch(() => null);
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
           } else if (blocker === 'contract_policy_unresolvable' || blocker === 'policy_version_mismatch' || blocker === 'snapshot_hash_mismatch') {
-            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch(() => null);
+            await svc.entities.MonthlySavingsReport.update(report.id, { billing_eligibility_status: 'blocked_contract', billing_block_reason: blocker }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
           }
           outcome.error = blocker;
           outcome.blockers = prep.blockers;
@@ -341,8 +343,8 @@ export default async function (req: Request): Promise<Response> {
         // hosted invoice/PDF prints the reverse-charge treatment, and attach
         // the customer's VAT id (best-effort — the mention also lives in footer).
         if (tax.treatment === 'ES_EU_REVERSE_CHARGE') {
-          await stripeRequest(mode, 'POST', `customers/${brand.stripe_customer_id}`, { tax_exempt: 'reverse' }).catch(() => null);
-          await stripeRequest(mode, 'POST', `customers/${brand.stripe_customer_id}/tax_ids`, { type: 'eu_vat', value: customerVat }, `r4:taxid:${brand.id}`).catch(() => null);
+          await stripeRequest(mode, 'POST', `customers/${brand.stripe_customer_id}`, { tax_exempt: 'reverse' }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
+          await stripeRequest(mode, 'POST', `customers/${brand.stripe_customer_id}/tax_ids`, { type: 'eu_vat', value: customerVat }, `r4:taxid:${brand.id}`).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
         }
 
         // Finalize — Stripe assigns THE legal number here. This is the LAST
@@ -417,7 +419,7 @@ export default async function (req: Request): Promise<Response> {
           verification_status: 'invoiced',
         });
         if (!activation.first_invoice_issued_at) {
-          await svc.entities.DealActivation.update(activation.id, { first_invoice_issued_at: now() }).catch(() => null);
+          await svc.entities.DealActivation.update(activation.id, { first_invoice_issued_at: now() }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
         }
         await appendPaymentEventOnce(svc, `p6:invoice-issued:${inv.id}:${stripeInvoiceId}`, {
           invoice_id: inv.id,
@@ -438,7 +440,7 @@ export default async function (req: Request): Promise<Response> {
           data_json: { invoice_id: inv.id, stripe_invoice_id: stripeInvoiceId, number: finalized.number || '', total_eur: amounts.total_eur, tax_treatment: tax.treatment, mode, policy_version: prep.policyVersion, policy_source: prep.policySource, ecl_evidence_id: eclInvoiceGateFinal.evidenceId, ecl_confidence_result_hash: eclInvoiceGateFinal.confidenceResultHash, ecl_policy_version: eclInvoiceGateFinal.policyVersion },
           actor_email: gate.user?.email || 'internal',
           created_at: now(),
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'createEligibleRecoverInvoices',fallback:null,severity:'critical'}));
 
         outcome.ok = true;
         outcome.invoice_id = inv.id;
@@ -453,6 +455,6 @@ export default async function (req: Request): Promise<Response> {
 
     return Response.json({ ok: true, mode, scanned: candidates.length, results });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'createEligibleRecoverInvoices');
   }
 }

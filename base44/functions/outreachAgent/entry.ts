@@ -1,7 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "outreach";
 const TASK_TYPE = "send_outreach_email";
@@ -27,7 +29,7 @@ function languageFor(country) {
 async function ensureCanonicalThread(svc, lead) {
   const rows = await svc.entities.CommunicationThread.filter(
     { engine: 'merchant_acquisition', lead_id: lead.id }, '-created_date', 5,
-  ).catch(() => []);
+  ).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:[],severity:'secondary'}));
   const available = rows.find((row) => !['closed', 'suppressed'].includes(String(row.status || '')));
   if (available) return available;
 
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
-      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch(() => null);
+      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
       if (!ap) return Response.json({ ok: false, error: "Approval not found" }, { status: 404 });
       if (ap.action_type !== ACTION_TYPE) {
         return Response.json({ ok: false, error: `Approval action_type mismatch: ${ap.action_type}` }, { status: 400 });
@@ -93,18 +95,18 @@ Deno.serve(async (req) => {
 
       // Resume the AgentTask
       const taskId = ap.agent_task_id;
-      task = await base44.asServiceRole.entities.AgentTask.get(taskId).catch(() => null);
+      task = await base44.asServiceRole.entities.AgentTask.get(taskId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
       const payload = ap.draft_payload_json || {};
       const lead = payload.lead_id
-        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch(() => null)
+        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}))
         : null;
       if (!lead) throw new Error('approved_outreach_lead_missing');
       const preferredThread = payload.communication_thread_id
-        ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id).catch(() => null)
+        ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}))
         : null;
       const thread = preferredThread || await ensureCanonicalThread(base44.asServiceRole, lead);
       if (!thread) throw new Error('approved_outreach_thread_missing');
@@ -130,7 +132,7 @@ Deno.serve(async (req) => {
       if (payload.lead_id) {
         await base44.asServiceRole.entities.OutboundLead.update(payload.lead_id, {
           stage: "contacted",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
       }
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
@@ -147,7 +149,7 @@ Deno.serve(async (req) => {
     const leadId = body?.lead_id;
     if (!leadId) return Response.json({ ok: false, error: "lead_id required for draft mode" }, { status: 400 });
 
-    const lead = await base44.asServiceRole.entities.OutboundLead.get(leadId).catch(() => null);
+    const lead = await base44.asServiceRole.entities.OutboundLead.get(leadId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
     if (!lead) return Response.json({ ok: false, error: "Lead not found" }, { status: 404 });
     if (!lead.contact_email) return Response.json({ ok: false, error: "Lead has no contact_email" }, { status: 400 });
 
@@ -241,6 +243,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'outreachAgent');
   }
 });

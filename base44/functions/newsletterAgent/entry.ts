@@ -1,7 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "newsletter";
 const TASK_TYPE = "send_newsletter";
@@ -27,19 +29,19 @@ Deno.serve(async (req) => {
       if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required" }, { status: 400 });
-      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch(() => null);
+      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch((error:any)=>safeBestEffort(error,{operation:'newsletterAgent',fallback:null,severity:'secondary'}));
       if (!ap) return Response.json({ ok: false, error: "Approval not found" }, { status: 404 });
       if (ap.action_type !== ACTION_TYPE) return Response.json({ ok: false, error: `action_type mismatch: ${ap.action_type}` }, { status: 400 });
       if (ap.status !== "approved") return Response.json({ ok: false, error: `Cannot execute: status="${ap.status}"`, gate: "blocked" }, { status: 403 });
 
-      task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch(() => null);
+      task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'newsletterAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
       await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
 
       const payload = ap.draft_payload_json || {};
       // Subscribers come from the Lead entity (landing opt-ins) with benchmark_opt_in=true and consent=true
       const subscribers = await base44.asServiceRole.entities.Lead
-        .filter({ consent: true, benchmark_opt_in: true }, "-created_date", 1000).catch(() => []);
+        .filter({ consent: true, benchmark_opt_in: true }, "-created_date", 1000).catch((error:any)=>safeBestEffort(error,{operation:'newsletterAgent',fallback:[],severity:'secondary'}));
 
       let sent = 0;
       const errors = [];
@@ -156,6 +158,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'newsletterAgent');
   }
 });

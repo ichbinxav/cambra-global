@@ -1,9 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { P3_SCHEMA_VERSION, sha256 } from '../../shared/p3RateIntelligence.ts';
 import { P4_BRIDGE_VERSION, p4ObservationFromVerifiedPayment, p4Pseudonym } from '../../shared/p4Bridge.ts';
 
-async function first(s: any, entity: string, query: any) { return (await s.entities[entity].filter(query, '-created_date', 1).catch(() => []))[0] || null; }
+async function first(s: any, entity: string, query: any) { return (await s.entities[entity].filter(query, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'projectVerifiedPaymentsToP4',fallback:[],severity:'secondary'})))[0] || null; }
 
 export async function handleProjectVerifiedPaymentsToP4(req: Request) {
   try {
@@ -11,9 +12,9 @@ export async function handleProjectVerifiedPaymentsToP4(req: Request) {
     const gate = await requireAdminOrInternal(req, base44, body); if (!gate.ok) return gate.response;
     const sourceId = String(body.payments_analysis_verified_id || '');
     if (!sourceId) return Response.json({ ok: false, error: 'payments_analysis_verified_id_required' }, { status: 400 });
-    const verified = await base44.asServiceRole.entities.PaymentsAnalysisVerified.get(sourceId).catch(() => null);
+    const verified = await base44.asServiceRole.entities.PaymentsAnalysisVerified.get(sourceId).catch((error:any)=>safeBestEffort(error,{operation:'projectVerifiedPaymentsToP4',fallback:null,severity:'secondary'}));
     if (!verified) return Response.json({ ok: false, error: 'verified_payment_measurement_not_found' }, { status: 404 });
-    const integration = await base44.asServiceRole.entities.Integration.get(verified.integration_id).catch(() => null);
+    const integration = await base44.asServiceRole.entities.Integration.get(verified.integration_id).catch((error:any)=>safeBestEffort(error,{operation:'projectVerifiedPaymentsToP4',fallback:null,severity:'secondary'}));
     if (!integration || integration.brand_id !== verified.brand_id) return Response.json({ ok: false, error: 'integration_provenance_invalid' }, { status: 409 });
     const sourceFingerprint = await sha256({ sourceId: verified.id, sourceChargesHash: verified.source_charges_hash, engineVersion: verified.engine_version, measurementWindow: verified.measurement_window, measuredCurrentBps: verified.measured_current_bps });
     const projectionKey = `p4-projection:${sourceFingerprint}`;

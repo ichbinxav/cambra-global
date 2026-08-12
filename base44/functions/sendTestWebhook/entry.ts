@@ -1,7 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only — sends a test webhook to a registered endpoint.
 // Validates HMAC SHA-256 signing, includes timestamp + event id in signature payload,
 // records a WebhookDelivery row, and never includes secrets or sensitive documents.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 async function sign(secret, payload) {
   const enc = new TextEncoder();
@@ -13,14 +15,14 @@ async function sign(secret, payload) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'sendTestWebhook',fallback:null,severity:'critical'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden" }, { status: 403 });
     }
     const { webhook_id } = await req.json().catch(() => ({}));
     if (!webhook_id) return Response.json({ error: "webhook_id required" }, { status: 400 });
 
-    const webhook = await base44.asServiceRole.entities.WebhookEndpoint.get(webhook_id).catch(() => null);
+    const webhook = await base44.asServiceRole.entities.WebhookEndpoint.get(webhook_id).catch((error:any)=>safeBestEffort(error,{operation:'sendTestWebhook',fallback:null,severity:'critical'}));
     if (!webhook) return Response.json({ error: "not_found" }, { status: 404 });
 
     const event_id = crypto.randomUUID();
@@ -77,7 +79,7 @@ Deno.serve(async (req) => {
       duration_ms,
       attempt: 1,
       error_message,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'sendTestWebhook',fallback:null,severity:'critical'}));
 
     return Response.json({
       ok: status === "success",
@@ -91,6 +93,6 @@ Deno.serve(async (req) => {
       error_message,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'sendTestWebhook');
   }
 });

@@ -5,6 +5,7 @@ import { collectSourceTreeEntries } from "./sourceTreeHash.mjs";
 export const RELEASE_CONTROL_FILES = [
   "RELEASE.json",
   "config/p1-durability-manifest.json",
+  "base44/.deploy/manifest.json",
 ];
 
 function walkFiles(root, relDir) {

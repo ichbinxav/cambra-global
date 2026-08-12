@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * One-shot admin helper — invites a new admin user, or promotes an existing
@@ -32,6 +33,6 @@ Deno.serve(async (req) => {
     const result = await base44.users.inviteUser(email, 'admin');
     return Response.json({ action: 'invited', email, result });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'inviteAdminUser');
   }
 });

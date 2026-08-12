@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // ════════════════════════════════════════════════════════════════════
 // Chief Orchestrator Chat
@@ -643,7 +645,7 @@ Deno.serve(async (req) => {
     // Load recent history for context (last 20 messages of this conversation)
     const history = await base44.asServiceRole.entities.ChatMessage
       .filter({ conversation_id }, "created_date", 20)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'chatChiefOrchestrator',fallback:[],severity:'secondary'}));
 
     const claudeMessages = history
       .filter(m => m.role === "user" || m.role === "assistant")
@@ -706,7 +708,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'chatChiefOrchestrator');
   }
 });
 

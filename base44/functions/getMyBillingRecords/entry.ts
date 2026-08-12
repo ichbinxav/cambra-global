@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getMyBillingRecords — v61 Checkpoint D (2026-08-06).
 //
 // The merchant's OWN billing records (invoices, monthly savings reports, current
@@ -44,8 +45,8 @@ Deno.serve(async (req) => {
     // Both owner pivots Brand's RLS recognizes are queried; ownership is then
     // re-asserted in JS (pickOwnedBrand) so a loose query can never widen scope.
     const [byContact, byCreator] = await Promise.all([
-      svc.entities.Brand.filter({ contact_email: user.email }, '-created_date', 5).catch(() => []),
-      svc.entities.Brand.filter({ created_by: user.email }, '-created_date', 5).catch(() => []),
+      svc.entities.Brand.filter({ contact_email: user.email }, '-created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'getMyBillingRecords',fallback:[],severity:'critical'})),
+      svc.entities.Brand.filter({ created_by: user.email }, '-created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'getMyBillingRecords',fallback:[],severity:'critical'})),
     ]);
     const brand = pickOwnedBrand([...(byContact || []), ...(byCreator || [])], email);
     // No brand yet (pre-onboarding) is a legitimate state, not an error.
@@ -54,9 +55,9 @@ Deno.serve(async (req) => {
     }
 
     const [invoices, reports, baselines] = await Promise.all([
-      svc.entities.Invoice.filter({ brand_id: brand.id }, '-issued_at', 200).catch(() => []),
-      svc.entities.MonthlySavingsReport.filter({ brand_id: brand.id }, '-month', 24).catch(() => []),
-      svc.entities.Baseline.filter({ brand_id: brand.id, is_current: true }, '-locked_at', 1).catch(() => []),
+      svc.entities.Invoice.filter({ brand_id: brand.id }, '-issued_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'getMyBillingRecords',fallback:[],severity:'critical'})),
+      svc.entities.MonthlySavingsReport.filter({ brand_id: brand.id }, '-month', 24).catch((error:any)=>safeBestEffort(error,{operation:'getMyBillingRecords',fallback:[],severity:'critical'})),
+      svc.entities.Baseline.filter({ brand_id: brand.id, is_current: true }, '-locked_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'getMyBillingRecords',fallback:[],severity:'critical'})),
     ]);
 
     return Response.json({

@@ -1,4 +1,4 @@
-# Typecheck — Full repository gate
+# Typecheck — declared frontend surface and critical backend gates
 
 ## Current status
 
@@ -10,7 +10,7 @@ npx tsc -p ./jsconfig.json --pretty false
 
 Expected result: **0 errors**.
 
-The historical baseline debt of 516 errors has been eliminated without disabling `checkJs`, excluding files, adding blanket `@ts-nocheck`, or weakening the critical typecheck. The critical economic/ECL perimeter remains a separate zero-error gate in `tsconfig.critical.json`.
+The historical baseline debt of 516 errors has been eliminated without disabling `checkJs` or adding blanket `@ts-nocheck`. The zero-error `jsconfig.json` surface is explicitly the product frontend under `src/components`, `src/pages`, `src/api` and `src/Layout.jsx`; tests, generated Vite plugins and the Radix wrapper directory are excluded. It is not described as a full-repository check. The critical backend perimeter remains a separate zero-error gate in `tsconfig.critical.json`.
 
 ## What was fixed
 
@@ -26,12 +26,14 @@ The old error volume was not one class of defect. The closure work fixed the und
 
 ## Release rule
 
-`npm run typecheck:noise` is retained only as a compatibility script name. It now runs the same full check and **must stay at 0 errors**. A future error is actionable; it is not accepted as "known noise".
+`npm run typecheck:noise` is retained only as a compatibility script name. It runs the same declared frontend check and **must stay at 0 errors**. A future error is actionable; it is not accepted as "known noise".
 
 The sanctioned release gates are:
 
 - `npm run typecheck:critical` — zero errors on the high-risk economic/ECL/backend perimeter.
-- `npm run typecheck:baseline` — full-repo fingerprint gate. From v0.65.1 its approved error count is 0, so any future TypeScript diagnostic fails the release.
+- `npm run typecheck:baseline` — declared-frontend fingerprint gate. Its approved error count is 0, so any future diagnostic in that exact scope fails the release.
+
+The backend gate is intentionally risk-based rather than pretending every legacy function is strict. It includes financial/ECL, webhooks, outbound, emergency control, scheduler guard, public-error boundary and admin-bootstrap code. `forceConsistentCasingInFileNames`, `noFallthroughCasesInSwitch` and `noImplicitOverride` are enabled in addition to the existing zero-error requirement. Remaining backend functions are linted, built, tested and scanned for unsafe 500 responses; moving them into the strict set remains incremental debt, not hidden coverage.
 - `npm run test` — runtime/unit regression suite.
 - `npm run lint` — ESLint.
 - `npm run build` — Vite production build.

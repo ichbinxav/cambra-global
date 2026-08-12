@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // P9 merchant projection. Deliberately hides internal task mechanics: the client
 // sees one CAMBRA-owned migration, a simple stage, progress and only blockers
 // that genuinely require merchant action.
@@ -21,23 +22,23 @@ function customerStage(tasks:any[], activation:any) {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const me = await base44.auth.me().catch(() => null);
+    const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsMigration',fallback:null,severity:'critical'}));
     if (!me) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const svc = base44.asServiceRole;
     const email = String(me.email || '').toLowerCase();
-    const acts = await svc.entities.DealActivation.filter({ user_email: me.email }, '-created_date', 25).catch(() => []);
+    const acts = await svc.entities.DealActivation.filter({ user_email: me.email }, '-created_date', 25).catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsMigration',fallback:[],severity:'critical'}));
     const activation:any = (acts || []).find((a:any) => a.vertical === 'payments' && ['authorized','migrating','live','monetizing'].includes(a.status));
     if (!activation) return Response.json({ ok: true, migration: null });
     if (String(activation.user_email || '').toLowerCase() !== email) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
-    let allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+    let allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsMigration',fallback:[],severity:'critical'}));
     let tasks = allTasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
     // Backward-compatible bootstrap for Recover mandates accepted before P9 or
     // carrying the legacy migration template.
     if (!tasks.length) {
-      const started = await base44.functions.invoke('startPaymentsMigration', { deal_activation_id: activation.id }).catch(() => null);
+      const started = await base44.functions.invoke('startPaymentsMigration', { deal_activation_id: activation.id }).catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsMigration',fallback:null,severity:'critical'}));
       if (started?.data?.ok) {
-        allTasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+        allTasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsMigration',fallback:[],severity:'critical'}));
         tasks = allTasks.filter(t => t?.metadata_json?.plan_version === 'payments-recover-p9-v1');
       }
     }

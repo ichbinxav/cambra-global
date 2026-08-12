@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // Admin-only diagnostic: verifies STRIPE_SECRET_KEY works against the live API
 // and that STRIPE_PUBLISHABLE_KEY + STRIPE_WEBHOOK_SECRET are present with
@@ -63,6 +64,6 @@ Deno.serve(async (req) => {
 
     return Response.json(result);
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'stripeHealthCheck');
   }
 });

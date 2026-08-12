@@ -1,7 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const AGENT_NAME = "provider_monitor";
 const TASK_TYPE = "provider_monitor";
@@ -38,7 +41,7 @@ function safeParseJSON(text) {
 }
 
 // L1 — weekly cron candidate. Detects pricing/contract changes on providers used by active brands.
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"providerMonitorAgent","cadence_seconds":86400},createClientFromRequest,async (req) => {
   let task = null;
   try {
     const base44 = createClientFromRequest(req);
@@ -50,7 +53,7 @@ Deno.serve(async (req) => {
     // We don't touch M0-M2 entities directly — we read the InfrastructureNode entity
     // built by buildInfrastructureGraph (existing platform function).
     const nodes = await base44.asServiceRole.entities.InfrastructureNode
-      .list("-created_date", 500).catch(() => []);
+      .list("-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'providerMonitorAgent',fallback:[],severity:'secondary'}));
 
     const providerCounts = new Map();
     for (const n of nodes) {
@@ -125,7 +128,7 @@ Deno.serve(async (req) => {
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const candidateEvidenceIds = [];
     for (const change of changes) {
-      const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{source_type:'market_source',source_reference:change.source||source,vertical:'payments',provider_slug:String(change.provider||'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:change.severity==='high'?.65:.5,payload_json:{change,citations,research_source:source}}}).catch(()=>null);
+      const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{source_type:'market_source',source_reference:change.source||source,vertical:'payments',provider_slug:String(change.provider||'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:change.severity==='high'?.65:.5,payload_json:{change,citations,research_source:source}}}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonitorAgent',fallback:null,severity:'secondary'}));
       const eid=er?.data?.id||er?.id;if(eid)candidateEvidenceIds.push(eid);
     }
 
@@ -151,7 +154,7 @@ Deno.serve(async (req) => {
             research_source: source,
           },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'providerMonitorAgent',fallback:null,severity:'secondary'}));
         if (ev) eventsCreated.push(ev.id);
       }
     }
@@ -186,6 +189,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'providerMonitorAgent');
   }
 });

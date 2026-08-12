@@ -23,6 +23,7 @@
 // - No blended-to-AOV numbers ever leave this file
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -1575,6 +1576,6 @@ Deno.serve(async (req) => {
       details: results
     });
   } catch (error) {
-    return Response.json({ error: error.message, stack: error.stack }, { status: 500 });
+    return internalErrorResponse(error, 'seedPaymentsRateTable');
   }
 });

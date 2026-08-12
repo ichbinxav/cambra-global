@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // revokeMandate — legacy (pre-RECOVER), corrected in the RECOVER-4 audit (2026-08-04).
 //
 // THREE REAL DEFECTS FIXED, all of them invisible until Recover Margin shipped:
@@ -30,7 +31,7 @@ function statusAfterRevocation(status:string){
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const me = await base44.auth.me().catch(() => null);
+    const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:null,severity:'secondary'}));
     if (!me) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { mandateId, dealActivationId, reason } = await req.json().catch(() => ({}));
@@ -43,11 +44,11 @@ export default async function (req: Request): Promise<Response> {
 
     let mandate: any = null;
     if (mandateId) {
-      const rows = await svc.entities.Mandate.filter({ id: mandateId }, '-created_date', 1).catch(() => []);
+      const rows = await svc.entities.Mandate.filter({ id: mandateId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'}));
       mandate = rows?.[0] || null;
     } else {
       const rows = await svc.entities.Mandate
-        .filter({ deal_activation_id: dealActivationId, status: 'active' }, '-created_date', 1).catch(() => []);
+        .filter({ deal_activation_id: dealActivationId, status: 'active' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'}));
       mandate = rows?.[0] || null;
     }
     if (!mandate) return Response.json({ error: 'Mandate not found' }, { status: 404 });
@@ -56,12 +57,12 @@ export default async function (req: Request): Promise<Response> {
     }
 
     const acts = await svc.entities.DealActivation
-      .filter({ id: mandate.deal_activation_id }, '-created_date', 1).catch(() => []);
+      .filter({ id: mandate.deal_activation_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'}));
     const activation = acts?.[0];
     if (!activation) return Response.json({ error: 'Activation not found' }, { status: 404 });
 
     const brands = activation.brand_id
-      ? await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch(() => [])
+      ? await svc.entities.Brand.filter({ id: activation.brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'}))
       : [];
     const brand = brands?.[0] || null;
 
@@ -79,7 +80,7 @@ export default async function (req: Request): Promise<Response> {
       { $set: { status: 'revoked', revoked_at: now, revoked_by: email, revocation_reason: reason || 'revoked' } },
     );
     if (!updatedExactlyOne(mandateClaim)) {
-      const freshMandate = (await svc.entities.Mandate.filter({ id: mandate.id }, '-created_date', 1).catch(() => []))?.[0];
+      const freshMandate = (await svc.entities.Mandate.filter({ id: mandate.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'})))?.[0];
       if (freshMandate?.status === 'revoked') return Response.json({ ok: true, already_revoked: true, mandate_id: mandate.id });
       return Response.json({ error: 'mandate_changed_concurrently' }, { status: 409 });
     }
@@ -95,7 +96,7 @@ export default async function (req: Request): Promise<Response> {
         { $set: { status: next, last_updated: now } },
       );
       if (!updatedExactlyOne(changed)) {
-        const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []))?.[0];
+        const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'})))?.[0];
         if (!fresh) return Response.json({ error: 'activation_not_found_after_revocation' }, { status: 409 });
         previousStatus = String(fresh.status || '');
         next = statusAfterRevocation(previousStatus);
@@ -123,7 +124,7 @@ export default async function (req: Request): Promise<Response> {
       },
       actor_email: email,
       created_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:null,severity:'secondary'}));
 
     return Response.json({ ok: true, mandate_id: mandate.id, activation_status: next });
   } catch (error) {

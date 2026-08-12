@@ -1,9 +1,11 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only smoke tests for the CAMBRA External API.
 // Tests run by directly exercising the entity layer and re-using internal helpers,
 // since cross-function HTTP testing inside Deno deploy isolates is fragile.
 // Validates: scope schema sync, tenant binding, OpenAPI spec validity, MCP catalog,
 // idempotency entity, rate-limit entity, OAuth entities, key hashing.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);
@@ -25,7 +27,7 @@ const EXPECTED_SCOPES = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden", message: "Admin only" }, { status: 403 });
     }
@@ -80,7 +82,7 @@ Deno.serve(async (req) => {
       });
       const refetch = await base44.asServiceRole.entities.ApiKey.get(created.id);
       const accepted = (refetch.scopes || []).filter((s) => EXPECTED_SCOPES.includes(s));
-      await base44.asServiceRole.entities.ApiKey.delete(created.id).catch(() => null);
+      await base44.asServiceRole.entities.ApiKey.delete(created.id).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
       if (accepted.length === EXPECTED_SCOPES.length) {
         results.push(pass("scope_schema_sync", { accepted: accepted.length }));
       } else {
@@ -103,7 +105,7 @@ Deno.serve(async (req) => {
         owner_email: user.email,
       });
       const refetch = await base44.asServiceRole.entities.ApiKey.get(created.id);
-      await base44.asServiceRole.entities.ApiKey.delete(created.id).catch(() => null);
+      await base44.asServiceRole.entities.ApiKey.delete(created.id).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
       if (refetch.organization_id === "00000000-0000-0000-0000-000000000000") results.push(pass("tenant_org_field"));
       else results.push(fail("tenant_org_field", "ApiKey did not retain organization_id"));
     } catch (e) { results.push(fail("tenant_org_field", e.message)); }
@@ -118,9 +120,9 @@ Deno.serve(async (req) => {
 
     // ---- 6. Idempotency + rate-limit + DLQ entities present ----
     try {
-      await base44.asServiceRole.entities.IdempotencyKey.list("-created_date", 1).catch(() => []);
-      await base44.asServiceRole.entities.RateLimitCounter.list("-created_date", 1).catch(() => []);
-      await base44.asServiceRole.entities.WebhookDeadLetter.list("-created_date", 1).catch(() => []);
+      await base44.asServiceRole.entities.IdempotencyKey.list("-created_date", 1).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:[],severity:'secondary'}));
+      await base44.asServiceRole.entities.RateLimitCounter.list("-created_date", 1).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:[],severity:'secondary'}));
+      await base44.asServiceRole.entities.WebhookDeadLetter.list("-created_date", 1).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:[],severity:'secondary'}));
       results.push(pass("infra_entities_present"));
     } catch (e) { results.push(fail("infra_entities_present", e.message)); }
 
@@ -130,7 +132,7 @@ Deno.serve(async (req) => {
         endpoint: "/v1/selftest", method: "GET", status: "success",
         status_code: 200, ip_address: "127.0.0.1", duration_ms: 0, request_id: crypto.randomUUID(),
       });
-      await base44.asServiceRole.entities.ApiActivityLog.delete(log.id).catch(() => null);
+      await base44.asServiceRole.entities.ApiActivityLog.delete(log.id).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
       results.push(pass("audit_log_writable"));
     } catch (e) { results.push(fail("audit_log_writable", e.message)); }
 
@@ -150,7 +152,7 @@ Deno.serve(async (req) => {
         period_month: "2099-12",
         request_count: 0, included_quota: 100, overage_count: 0, overage_amount_eur: 0,
       });
-      await base44.asServiceRole.entities.ApiUsageRecord.delete(probe.id).catch(() => null);
+      await base44.asServiceRole.entities.ApiUsageRecord.delete(probe.id).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
       results.push(pass("usage_record_writable"));
     } catch (e) { results.push(fail("usage_record_writable", e.message)); }
 
@@ -166,6 +168,6 @@ Deno.serve(async (req) => {
       note: "These are infrastructure-level smoke tests. End-to-end HTTP tests should be run from a separate environment (Postman / Insomnia / GitHub Actions) against the deployed endpoint.",
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'runApiSelfTests');
   }
 });

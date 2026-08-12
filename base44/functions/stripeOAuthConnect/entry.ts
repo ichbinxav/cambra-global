@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
@@ -44,7 +45,7 @@ Deno.serve(async (req) => {
       // get Stripe linked to the wrong business → a "verified" analysis built on
       // the wrong merchant's data. Now: >1 brand + no explicit brand_id → 400
       // with an actionable error. Single-brand users behave exactly as before.
-      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 2).catch(() => []);
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 2).catch((error:any)=>safeBestEffort(error,{operation:'stripeOAuthConnect',fallback:[],severity:'critical'}));
       if (!brands.length) {
         return Response.json({ ok: false, error: 'No brand found for user' }, { status: 400 });
       }

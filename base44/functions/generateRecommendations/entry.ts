@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function sum(arr){ return (arr||[]).reduce((s,v)=>s+(Number(v)||0),0); }
 function byLatest(arr, key='created_date'){ return (arr||[]).sort((a,b)=> new Date(b[key]) - new Date(a[key])); }
@@ -149,6 +150,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ success: true });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'generateRecommendations');
   }
 });

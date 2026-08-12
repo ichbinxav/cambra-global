@@ -1,7 +1,9 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // Sends the monthly savings summary email to a user (or to all opted-in users when called from scheduler).
 // Payload:
@@ -20,10 +22,10 @@ Deno.serve(async (req) => {
         callerEmail = caller.email;
         isAdminCaller = caller.role === 'admin';
       }
-    } catch {}
+    } catch(error){safeBestEffort(error,{operation:'sendMonthlySavingsSummary',fallback:null,severity:'secondary'})}
 
     let body: any = {};
-    try { body = await req.json(); } catch {}
+    try { body = await req.json(); } catch(error){safeBestEffort(error,{operation:'sendMonthlySavingsSummary',fallback:null,severity:'secondary'})}
     requestedEmail = body?.userEmail || null;
 
     // Authorization rules:
@@ -131,6 +133,6 @@ Deno.serve(async (req) => {
       results,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'sendMonthlySavingsSummary');
   }
 });

@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * getWaitlistAggregate — admin-only.
@@ -61,7 +63,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getWaitlistAggregate',fallback:null,severity:'secondary'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
@@ -107,13 +109,13 @@ Deno.serve(async (req) => {
 
       // Path 1: still anonymous — anon_session_id is present.
       const anon = await base44.asServiceRole.entities.AnalyzerResult
-        .filter({ anon_session_id: sid }, '-created_date', 1).catch(() => []);
+        .filter({ anon_session_id: sid }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getWaitlistAggregate',fallback:[],severity:'secondary'}));
       if (anon.length) result = anon[0];
 
       // Path 2: user claimed after signup → look up by their email.
       if (!result && lead?.email) {
         const claimed = await base44.asServiceRole.entities.AnalyzerResult
-          .filter({ created_by: lead.email }, '-created_date', 1).catch(() => []);
+          .filter({ created_by: lead.email }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getWaitlistAggregate',fallback:[],severity:'secondary'}));
         if (claimed.length) result = claimed[0];
       }
 
@@ -125,7 +127,7 @@ Deno.serve(async (req) => {
     for (const { result } of linkedResults) {
       if (result.input_id && !inputById.has(result.input_id)) {
         const inp = await base44.asServiceRole.entities.AnalyzerInput
-          .get(result.input_id).catch(() => null);
+          .get(result.input_id).catch((error:any)=>safeBestEffort(error,{operation:'getWaitlistAggregate',fallback:null,severity:'secondary'}));
         if (inp) inputById.set(result.input_id, inp);
       }
     }
@@ -209,6 +211,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'getWaitlistAggregate');
   }
 });

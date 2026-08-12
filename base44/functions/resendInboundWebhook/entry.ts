@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { Webhook } from 'npm:svix';
@@ -21,7 +22,7 @@ Deno.serve(async (req) => {
       const instantlySecret=Deno.env.get('INSTANTLY_WEBHOOK_SECRET')||'';
       if(!instantlySecret)return Response.json({ok:false,error:'instantly_webhook_not_configured'},{status:503});
       if(!await providerSecretMatches(instantlySecret,instantlyHeader))return Response.json({ok:false,error:'invalid_webhook_secret'},{status:401});
-      const event=await req.json().catch(()=>null);
+      const event=await req.json().catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       if(!event||typeof event!=='object'||Array.isArray(event))return Response.json({ok:false,error:'invalid_json_payload'},{status:400});
       const base44=createClientFromRequest(req);
       const result=await processInstantlyProviderEvent(base44.asServiceRole,event);
@@ -47,25 +48,25 @@ Deno.serve(async (req) => {
     const type = String(event?.type || '');
     const data = event?.data || {};
     const lifecycleId=String(data?.email_id||'');
-    if(lifecycleId && ['email.delivered','email.bounced','email.complained','email.failed','email.suppressed'].includes(type)){const rows=await svc.entities.CommunicationMessage.filter({provider:'resend',provider_message_id:lifecycleId,direction:'outbound'},'-created_date',1).catch(()=>[]);if(rows.length){const status=type==='email.delivered'?'delivered':type==='email.bounced'?'bounced':type==='email.complained'?'complained':type==='email.suppressed'?'suppressed':'failed';await svc.entities.CommunicationMessage.update(rows[0].id,{send_status:status,raw_event_json:{...(rows[0].raw_event_json||{}),last_resend_event:type,last_resend_event_at:event?.created_at||new Date().toISOString()}}).catch(()=>null);}}
+    if(lifecycleId && ['email.delivered','email.bounced','email.complained','email.failed','email.suppressed'].includes(type)){const rows=await svc.entities.CommunicationMessage.filter({provider:'resend',provider_message_id:lifecycleId,direction:'outbound'},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));if(rows.length){const status=type==='email.delivered'?'delivered':type==='email.bounced'?'bounced':type==='email.complained'?'complained':type==='email.suppressed'?'suppressed':'failed';await svc.entities.CommunicationMessage.update(rows[0].id,{send_status:status,raw_event_json:{...(rows[0].raw_event_json||{}),last_resend_event:type,last_resend_event_at:event?.created_at||new Date().toISOString()}}).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));}}
 
     if (['email.bounced','email.complained','email.suppressed'].includes(type)) {
       const emails = [...(Array.isArray(data?.to) ? data.to : []), data?.email].map(normalizeEmail).filter(Boolean);
       const reason = type === 'email.complained' ? 'complaint' : 'bounce';
       for (const email of new Set(emails)) {
-        const existing = await svc.entities.ContactSuppression.filter({ email, active:true }, '-created_date', 1).catch(()=>[]);
+        const existing = await svc.entities.ContactSuppression.filter({ email, active:true }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
         if (!existing.length) await svc.entities.ContactSuppression.create({ email, reason, source:'resend', source_message_id:String(data?.email_id || ''), active:true, suppressed_at:new Date().toISOString() });
-        const threads = await svc.entities.CommunicationThread.filter({ counterparty_email:email }, '-last_message_at', 50).catch(()=>[]);
-        for (const t of threads) await svc.entities.CommunicationThread.update(t.id, { status:'suppressed', automation_paused:true, pause_reason:reason }).catch(()=>null);
+        const threads = await svc.entities.CommunicationThread.filter({ counterparty_email:email }, '-last_message_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
+        for (const t of threads) await svc.entities.CommunicationThread.update(t.id, { status:'suppressed', automation_paused:true, pause_reason:reason }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       }
-      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:type, data_json:{ provider:'resend', lifecycle_id, event_type:type, suppression_reason:reason, recipient_count:new Set(emails).size, signature_verified:true }, actor_email:'resend_webhook', created_at:new Date().toISOString() }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:type, data_json:{ provider:'resend', lifecycle_id, event_type:type, suppression_reason:reason, recipient_count:new Set(emails).size, signature_verified:true }, actor_email:'resend_webhook', created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, handled:type, suppressed:emails.length });
     }
 
     if (type !== 'email.received') return Response.json({ ok:true, ignored:type });
     const emailId = String(data?.email_id || '');
     if (!emailId) return Response.json({ ok:false, error:'email_id_missing' }, { status:400 });
-    const duplicate = await svc.entities.CommunicationMessage.filter({ provider:'resend', provider_message_id:emailId }, '-created_date', 1).catch(()=>[]);
+    const duplicate = await svc.entities.CommunicationMessage.filter({ provider:'resend', provider_message_id:emailId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
     if (duplicate.length) return Response.json({ ok:true, duplicate:true });
 
     const resendKey = Deno.env.get('RESEND_API_KEY');
@@ -76,15 +77,15 @@ Deno.serve(async (req) => {
 
     const threadId = threadIdFromRecipients(email?.to || data?.to || []);
     if (!threadId) {
-      await svc.entities.OperationalLog.create({ event_type:'commercial_inbound_unroutable', message:'Inbound Resend email had no CAMBRA thread alias', data_json:{ email_id:emailId, from:normalizeEmail(email?.from), to:email?.to || [] }, created_at:new Date().toISOString() }).catch(()=>null);
+      await svc.entities.OperationalLog.create({ event_type:'commercial_inbound_unroutable', message:'Inbound Resend email had no CAMBRA thread alias', data_json:{ email_id:emailId, from:normalizeEmail(email?.from), to:email?.to || [] }, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, routed:false });
     }
-    const thread = await svc.entities.CommunicationThread.get(threadId).catch(()=>null);
+    const thread = await svc.entities.CommunicationThread.get(threadId).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
     if (!thread) return Response.json({ ok:true, routed:false, reason:'thread_not_found' });
 
     const now = new Date().toISOString();
     const receivedAt = String(email?.created_at || data?.created_at || event?.created_at || now);
-    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]);
+    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
     const policy=policies.find((p:any)=>p.version===thread.policy_version&&policyIsActive(p))||policies.find((p:any)=>policyIsActive(p))||null;
     const timing=computeInboundReplySchedule(receivedAt,policy||{},emailId,commercialTimezone(thread,policy));
     const from = normalizeEmail(email?.from || data?.from);
@@ -103,11 +104,11 @@ Deno.serve(async (req) => {
     if (hardStop === 'unsubscribe' || hardStop === 'complaint') {
       const suppressionReason = hardStop === 'unsubscribe' ? 'opt_out' : 'complaint';
       if (from) {
-        const rows = await svc.entities.ContactSuppression.filter({ email:from, active:true }, '-created_date', 1).catch(()=>[]);
+        const rows = await svc.entities.ContactSuppression.filter({ email:from, active:true }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
         if (!rows.length) await svc.entities.ContactSuppression.create({ email:from, reason:suppressionReason, source:'inbound_email', source_message_id:msg.id, active:true, suppressed_at:now });
       }
       await svc.entities.CommunicationThread.update(thread.id, { status:'suppressed', automation_paused:true, pause_reason:hardStop });
-      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:hardStop, data_json:{ provider:'resend', event_type:'email.received', suppression_reason:suppressionReason, thread_id:thread.id, message_id:msg.id, signature_verified:true }, actor_email:'resend_webhook', created_at:now }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:hardStop, data_json:{ provider:'resend', event_type:'email.received', suppression_reason:suppressionReason, thread_id:thread.id, message_id:msg.id, signature_verified:true }, actor_email:'resend_webhook', created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, routed:true, hard_stop:hardStop });
     }
 

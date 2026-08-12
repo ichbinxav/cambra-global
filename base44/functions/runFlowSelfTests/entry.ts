@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only END-TO-END flow tests.
 // Validates the full Brand -> Analyzer -> Result -> Recommendation -> DealActivation
 // -> Mandate -> AuthorizationLog -> MigrationTask -> MonthlySavingsReport -> Invoice flow.
 // Each test creates real records, asserts the link integrity, then cleans up.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function pass(name, details) { return { name, status: "pass", details: details || null }; }
 function fail(name, details) { return { name, status: "fail", details }; }
@@ -10,7 +12,7 @@ function fail(name, details) { return { name, status: "fail", details }; }
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'runFlowSelfTests',fallback:null,severity:'secondary'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden", message: "Admin only" }, { status: 403 });
     }
@@ -204,7 +206,7 @@ Deno.serve(async (req) => {
       // Service role bypasses RLS, but we can validate the rule structure exists
       // by trying to read as user. Since the test runs as admin, we validate the
       // configured RLS via schema presence rather than re-auth.
-      const probe = await base44.entities.Brand.get(brand.id).catch(() => null);
+      const probe = await base44.entities.Brand.get(brand.id).catch((error:any)=>safeBestEffort(error,{operation:'runFlowSelfTests',fallback:null,severity:'secondary'}));
       // Admin reads succeed — that's the expected behavior
       if (probe) results.push(pass("rls_admin_access"));
       else results.push(fail("rls_admin_access", "Admin could not read selftest brand"));
@@ -236,7 +238,7 @@ Deno.serve(async (req) => {
 
     // ---- Cleanup ----
     for (const c of cleanup.reverse()) {
-      await base44.asServiceRole.entities[c.entity].delete(c.id).catch(() => null);
+      await base44.asServiceRole.entities[c.entity].delete(c.id).catch((error:any)=>safeBestEffort(error,{operation:'runFlowSelfTests',fallback:null,severity:'secondary'}));
     }
 
     const passed = results.filter(r => r.status === "pass").length;
@@ -248,6 +250,6 @@ Deno.serve(async (req) => {
       cleanup_count: cleanup.length,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'runFlowSelfTests');
   }
 });

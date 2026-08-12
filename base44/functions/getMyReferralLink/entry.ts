@@ -16,6 +16,7 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -26,6 +27,6 @@ export default async function(req: Request): Promise<Response> {
     const link = await findOrCreateReferralLink(base44.asServiceRole, user.email);
     return Response.json({ ok: true, code: link.code });
   } catch (error) {
-    return Response.json({ error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'getMyReferralLink');
   }
 }

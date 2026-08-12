@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // purgeInactiveLeads — LEGAL-2 (2026-07-31). Scheduled monthly job that
 // deletes lead personal data we no longer have a reason to keep.
 //
@@ -18,6 +19,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { retentionCutoff,retentionEvidenceComplete,retentionEvidenceStart } from '../../shared/retentionPolicy.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const BATCH_SIZE = 200;
 const MAX_BATCHES = 25;
@@ -47,7 +50,7 @@ async function purge(entity: any, query: Record<string, unknown>) {
   return { deleted, failed, candidates, batches };
 }
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"purgeInactiveLeads","cadence_seconds":2592000},createClientFromRequest,async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -63,8 +66,8 @@ Deno.serve(async (req) => {
     const outboundStart=retentionEvidenceStart({run_key:`unengaged-outbound:${now}:${crypto.randomUUID()}`,policy_key:'unengaged_outbound_leads',action:'DELETE',cutoff_at:outboundCutoff,scope:'OutboundLead:unengaged'});
     const inboundStart=retentionEvidenceStart({run_key:`inbound-leads:${now}:${crypto.randomUUID()}`,policy_key:'inbound_leads',action:'DELETE',cutoff_at:leadCutoff,scope:'Lead'});
     if(!outboundStart.ok||!inboundStart.ok)return Response.json({ok:false,error:'retention_policy_not_executable'},{status:503});
-    const outboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(outboundStart.row).catch(()=>null);
-    const inboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(inboundStart.row).catch(()=>null);
+    const outboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(outboundStart.row).catch((error:any)=>safeBestEffort(error,{operation:'purgeInactiveLeads',fallback:null,severity:'secondary'}));
+    const inboundEvidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(inboundStart.row).catch((error:any)=>safeBestEffort(error,{operation:'purgeInactiveLeads',fallback:null,severity:'secondary'}));
     if(!outboundEvidence||!inboundEvidence)return Response.json({ok:false,error:'retention_audit_evidence_unavailable'},{status:503});
 
     const outbound = await purge(
@@ -89,6 +92,6 @@ Deno.serve(async (req) => {
     return Response.json(summary);
   } catch (error) {
     console.error('purgeInactiveLeads:', (error as any)?.message, (error as any)?.stack);
-    return Response.json({ ok: false, error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'purgeInactiveLeads');
   }
 });

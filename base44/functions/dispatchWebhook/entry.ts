@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Dispatches an event to all active WebhookEndpoints subscribed to it.
 // Supports retry with exponential backoff (up to 3 attempts) inline,
 // and falls back to "pending" delivery rows for the scheduled retry job.
@@ -15,6 +16,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { quarantineProbe } from "../../shared/internalGate.ts";
 import { isInternalCaller, redactSecrets } from "../../shared/internalSecret.ts";
 import { buildPublicWebhookPayload } from "../../shared/webhookPublicPayload.ts";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const SUPPORTED_EVENTS = [
   "new_brand_created",
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
     // Allowed callers: (a) authenticated admin, (b) server-to-server callers
     // presenting the shared INTERNAL_CALL_SECRET via the x-internal-secret
     // header or payload.internal_secret. Frontend invocation is not supported.
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'dispatchWebhook',fallback:null,severity:'critical'}));
     const isAdmin = user?.role === "admin";
     // v62 C4 — comparación en tiempo constante vía módulo compartido (ver internalSecret.ts)
     const isInternal = isInternalCaller(req, body);
@@ -160,6 +162,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ dispatched: results.length, supported_events: SUPPORTED_EVENTS, results });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'dispatchWebhook');
   }
 });

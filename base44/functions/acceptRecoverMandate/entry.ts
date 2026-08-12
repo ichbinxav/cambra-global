@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // acceptRecoverMandate — RECOVER-1 (2026-08-03).
 //
 // Records the signature and authorizes the activation. THIS function is where the
@@ -46,7 +47,7 @@ import {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:null,severity:'critical'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const authenticatedAt = new Date().toISOString();
 
@@ -71,8 +72,8 @@ export default async function (req: Request): Promise<Response> {
     const svc = base44.asServiceRole;
     const email = String(user.email || '').toLowerCase();
 
-    // .catch(() => []) — .filter({ id }) throws on an unknown id instead of returning [].
-    const first = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
+    // .catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:[],severity:'critical'})) — .filter({ id }) throws on an unknown id instead of returning [].
+    const first = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:[],severity:'critical'}));
     const mandate = first?.[0];
     if (!mandate) return Response.json({ error: 'mandate not found' }, { status: 404 });
     // RECOVER-4 audit fix (2026-08-04): NO admin bypass here, deliberately.
@@ -170,7 +171,7 @@ export default async function (req: Request): Promise<Response> {
     if (!proposalGate.allowed) return economicGateDeniedResponse(proposalGate);
 
     // 2 — re-read the mandate immediately before writing it.
-    const recheck = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
+    const recheck = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:[],severity:'critical'}));
     const fresh = recheck?.[0];
     if (!fresh) return Response.json({ error: 'mandate not found' }, { status: 404 });
     if (fresh.status === 'active') return Response.json({ ok: true, already_accepted: true, mandate_id: fresh.id });
@@ -219,7 +220,7 @@ export default async function (req: Request): Promise<Response> {
 
     // 5 — re-read the activation, then walk the declared state machine.
     let authorized = false;
-    const actRows = await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []);
+    const actRows = await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:[],severity:'critical'}));
     let current = actRows?.[0];
     if (current && ACCEPTABLE_ACTIVATION_STATES.includes(current.status)) {
       if (current.status === 'activated') {
@@ -227,7 +228,7 @@ export default async function (req: Request): Promise<Response> {
           status: 'awaiting_authorization',
           last_updated: new Date().toISOString(),
         });
-        const midRows = await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []);
+        const midRows = await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:[],severity:'critical'}));
         current = midRows?.[0];
       }
       if (current?.status === 'awaiting_authorization') {
@@ -247,11 +248,11 @@ export default async function (req: Request): Promise<Response> {
         status: 'superseded',
         superseded_at: new Date().toISOString(),
         superseded_by_id: mandate_id,
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:null,severity:'critical'}));
       superseded.push(m.id);
     }
     if (superseded.length) {
-      await svc.entities.Mandate.update(mandate_id, { supersedes_id: superseded[0] }).catch(() => null);
+      await svc.entities.Mandate.update(mandate_id, { supersedes_id: superseded[0] }).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:null,severity:'critical'}));
     }
 
     await svc.entities.AuthorizationLog.create({
@@ -264,7 +265,7 @@ export default async function (req: Request): Promise<Response> {
       approved_at: signedAt,
       source: 'acceptRecoverMandate',
       document_version: mandate.document_version || '',
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:null,severity:'critical'}));
 
     await svc.entities.OperationalLog.create({
       deal_activation_id: activation.id,
@@ -282,7 +283,7 @@ export default async function (req: Request): Promise<Response> {
       },
       actor_email: email,
       created_at: signedAt,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'acceptRecoverMandate',fallback:null,severity:'critical'}));
 
     // RECOVER-3 — queue the contractual PDF WITHOUT blocking this response: the
     // merchant continues straight to the payment-method setup. The document is a

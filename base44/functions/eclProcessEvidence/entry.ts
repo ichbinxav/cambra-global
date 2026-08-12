@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // eclProcessEvidence — v62.6 ECL P3 closure (2026-08-08).
 //
 // THE ONLY I/O boundary of the Evidence Lifecycle Engine. Everything decided
@@ -47,6 +48,7 @@ import {
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 import { badRequest, createOnce, persistLifecycleEvent } from '../../shared/eclPersistence.ts';
 import { isInternalCaller } from '../../shared/internalSecret.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const ENTITY_BY_TYPE = { statement_import: 'StatementImport', savings_evidence: 'SavingsEvidence' };
 const NORMALIZERS = {
@@ -70,7 +72,7 @@ Deno.serve(async (req) => {
       user = null;
     }
 
-    const payload = await req.json().catch(() => null);
+    const payload = await req.json().catch((error:any)=>safeBestEffort(error,{operation:'eclProcessEvidence',fallback:null,severity:'secondary'}));
     if (!payload || typeof payload !== 'object') return badRequest('JSON payload required');
 
     const entityName = ENTITY_BY_TYPE[payload.evidenceEntityType];
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
     if (!payload.evidenceId || typeof payload.evidenceId !== 'string') return badRequest('evidenceId is required');
 
     const svc = base44.asServiceRole;
-    const record = await svc.entities[entityName].get(payload.evidenceId).catch(() => null);
+    const record = await svc.entities[entityName].get(payload.evidenceId).catch((error:any)=>safeBestEffort(error,{operation:'eclProcessEvidence',fallback:null,severity:'secondary'}));
     if (!record) return Response.json({ ok: false, error: 'evidence record not found' }, { status: 404 });
 
     const brandId = record.brand_id;
@@ -350,6 +352,6 @@ Deno.serve(async (req) => {
       persisted,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'eclProcessEvidence');
   }
 });

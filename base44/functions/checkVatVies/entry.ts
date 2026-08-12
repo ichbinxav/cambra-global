@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // checkVatVies — RECOVER-4 (2026-08-04).
 //
 // Validates a customer VAT number against the EU VIES REST service and stores
@@ -14,6 +15,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeVat } from '../../shared/recoverTax.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const VIES_URL = 'https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number';
 const TIMEOUT_MS = 10000;
@@ -29,7 +31,7 @@ export default async function (req: Request): Promise<Response> {
     if (!brand_id) return Response.json({ error: 'brand_id required' }, { status: 400 });
 
     const svc = base44.asServiceRole;
-    const rows = await svc.entities.Brand.filter({ id: brand_id }, '-created_date', 1).catch(() => []);
+    const rows = await svc.entities.Brand.filter({ id: brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'checkVatVies',fallback:[],severity:'secondary'}));
     const brand = rows?.[0];
     if (!brand) return Response.json({ error: 'brand not found' }, { status: 404 });
 
@@ -116,10 +118,10 @@ export default async function (req: Request): Promise<Response> {
       data_json: { vat_country: countryCode, vies_status: status, request_identifier: requestIdentifier || null },
       actor_email: gate.user?.email || 'internal',
       created_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'checkVatVies',fallback:null,severity:'secondary'}));
 
     return Response.json({ ok: true, brand_id: brand.id, vat_number_normalized: vat, vies_status: status, vies_checked_at: now, snapshot });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'checkVatVies');
   }
 }

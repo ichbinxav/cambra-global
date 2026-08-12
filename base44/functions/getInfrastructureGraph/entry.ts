@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M6 — getInfrastructureGraph
@@ -59,7 +61,7 @@ Deno.serve(async (req) => {
     let { brand_id } = body;
 
     if (!brand_id) {
-      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'}));
       brand_id = brands[0]?.id || null;
     }
     if (!brand_id) {
@@ -68,7 +70,7 @@ Deno.serve(async (req) => {
 
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
-      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'}));
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -76,10 +78,10 @@ Deno.serve(async (req) => {
 
     const svc = base44.asServiceRole;
     const [nodes, edges, brand, stripeConns] = await Promise.all([
-      svc.entities.InfrastructureNode.filter({ brand_id }).catch(() => []),
-      svc.entities.InfrastructureEdge.filter({ brand_id }).catch(() => []),
-      svc.entities.Brand.filter({ id: brand_id }).catch(() => []),
-      svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []),
+      svc.entities.InfrastructureNode.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.InfrastructureEdge.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'})),
+      svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'getInfrastructureGraph',fallback:[],severity:'secondary'})),
     ]);
 
     const country = brand[0]?.country || 'unknown';
@@ -177,7 +179,7 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'getInfrastructureGraph');
   }
 });
 

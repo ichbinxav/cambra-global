@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // eclIncidentWorkflow — CAMBRA v0.66.0 / ECL P7.
 // Admin-only incident queue and bounded recovery. Recovery actions are mapped
 // by the pure P7 contract; arbitrary function names/payloads are never accepted.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES } from '../../shared/eclOperationalRecovery.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const LIST_MAX = 200;
 
@@ -26,7 +28,7 @@ function project(row: any) {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'eclIncidentWorkflow',fallback:null,severity:'secondary'}));
     if (!user) return Response.json({ ok: false, error: 'unauthenticated' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ ok: false, error: 'forbidden' }, { status: 403 });
     const body = await req.json().catch(() => ({}));
@@ -50,7 +52,7 @@ export default async function (req: Request): Promise<Response> {
     }
 
     if (typeof body.incidentId !== 'string' || !body.incidentId) return Response.json({ ok: false, error: 'incidentId_required' }, { status: 400 });
-    const incident = await svc.entities.OperationalIncident.get(body.incidentId).catch(() => null);
+    const incident = await svc.entities.OperationalIncident.get(body.incidentId).catch((error:any)=>safeBestEffort(error,{operation:'eclIncidentWorkflow',fallback:null,severity:'secondary'}));
     if (!incident) return Response.json({ ok: false, error: 'incident_not_found' }, { status: 404 });
 
     if (body.action === 'get') return Response.json({ ok: true, action: 'get', incident: project(incident) });
@@ -86,10 +88,10 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ ok: true, action: 'recover', incidentId: incident.id, status: 'acknowledged', recoveryAction: incident.recovery_action, worker: invocation.functionName, result });
     } catch (error) {
       const message = String((error as Error)?.message || error || 'recovery_failed').slice(0, 500);
-      await svc.entities.OperationalIncident.updateMany({ id: incident.id, status: 'recovering' }, { $set: { status: 'acknowledged', acknowledged_at: incident.acknowledged_at || now, acknowledged_by: incident.acknowledged_by || user.email, last_recovery_at: new Date().toISOString(), last_recovery_by: user.email, recovery_attempts: Number(incident.recovery_attempts || 0) + 1, last_recovery_error: message } }).catch(() => null);
+      await svc.entities.OperationalIncident.updateMany({ id: incident.id, status: 'recovering' }, { $set: { status: 'acknowledged', acknowledged_at: incident.acknowledged_at || now, acknowledged_by: incident.acknowledged_by || user.email, last_recovery_at: new Date().toISOString(), last_recovery_by: user.email, recovery_attempts: Number(incident.recovery_attempts || 0) + 1, last_recovery_error: message } }).catch((error:any)=>safeBestEffort(error,{operation:'eclIncidentWorkflow',fallback:null,severity:'secondary'}));
       return Response.json({ ok: false, error: 'recovery_failed_safely', message }, { status: 409 });
     }
   } catch (error) {
-    return Response.json({ ok: false, error: 'incident_workflow_failed', message: String((error as Error)?.message || error) }, { status: 500 });
+    return internalErrorResponse(error, 'eclIncidentWorkflow');
   }
 }

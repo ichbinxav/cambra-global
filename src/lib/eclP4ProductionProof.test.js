@@ -92,7 +92,7 @@ describe("ECL P4 Production Proof closure", () => {
     expect(SCHED_SRC).toMatch(/status: 'completed'/);
     expect(SCHED_SRC).toMatch(/status: 'failed'/);
     expect(SCHED_SRC).toMatch(/observabilityGuarantee: observabilityRecorded \? 'agent_task_recorded' : 'best_effort_unavailable'/);
-    expect(SCHED_SRC).toMatch(/AgentTask\.create\([\s\S]*?\.catch\(\(\) => null\)/);
+    expect(SCHED_SRC).toMatch(/AgentTask\.create\([\s\S]*?\.catch\([\s\S]*?safeBestEffort/);
   });
 
   it("allows an admin to run the lifecycle scheduler once for deployment proof", () => {

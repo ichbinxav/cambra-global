@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * inferVendorsFromBankData
@@ -129,7 +131,7 @@ Deno.serve(async (req) => {
 
     const isAdmin = gate.isAdmin;
     if (!gate.isInternal && !isAdmin) {
-      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'inferVendorsFromBankData',fallback:[],severity:'secondary'}));
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -140,7 +142,7 @@ Deno.serve(async (req) => {
     // ── 1. Load StripeConnection — required ──
     const connections = await svc.entities.StripeConnection
       .filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'inferVendorsFromBankData',fallback:[],severity:'secondary'}));
 
     if (!connections.length) {
       return Response.json({
@@ -248,7 +250,7 @@ Deno.serve(async (req) => {
       try {
         const existingFindings = await svc.entities.DiscoveryFinding
           .filter({ brand_id, category: vendor.category, provider_or_tool: vendor.name }, '-created_date', 1)
-          .catch(() => []);
+          .catch((error:any)=>safeBestEffort(error,{operation:'inferVendorsFromBankData',fallback:[],severity:'secondary'}));
         const findingPatch = {
           brand_id,
           category: vendor.category,
@@ -276,7 +278,7 @@ Deno.serve(async (req) => {
       try {
         const existingNodes = await svc.entities.InfrastructureNode
           .filter({ brand_id, provider_name: vendor.name }, '-created_date', 1)
-          .catch(() => []);
+          .catch((error:any)=>safeBestEffort(error,{operation:'inferVendorsFromBankData',fallback:[],severity:'secondary'}));
 
         const nodePatch = {
           brand_id,
@@ -336,6 +338,6 @@ Deno.serve(async (req) => {
       engine_version: ENGINE_VERSION,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'inferVendorsFromBankData');
   }
 });

@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M5 — initiateConnection
@@ -32,7 +34,7 @@ Deno.serve(async (req) => {
     // Ownership (admin bypass)
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
-      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'initiateConnection',fallback:[],severity:'secondary'}));
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -41,7 +43,7 @@ Deno.serve(async (req) => {
     // Resolve catalog entry
     const catalog = await base44.asServiceRole.entities.IntegrationCatalog
       .filter({ integration_id }, '-created_date', 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'initiateConnection',fallback:[],severity:'secondary'}));
     if (!catalog.length) {
       return Response.json({ ok: false, error: 'Unknown integration' }, { status: 404 });
     }
@@ -80,6 +82,6 @@ Deno.serve(async (req) => {
       tasks: [task],
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'initiateConnection');
   }
 });

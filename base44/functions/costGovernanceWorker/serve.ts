@@ -1,3 +1,4 @@
 import { handleCostGovernanceWorker } from './entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(handleCostGovernanceWorker);
+guardedScheduledServe({"worker_key":"costGovernanceWorker","cadence_seconds":3600},handleCostGovernanceWorker);

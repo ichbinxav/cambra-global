@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // startRecoverAcceptance — RECOVER-1 (2026-08-03).
 //
 // Creates the Mandate row in 'acceptance_started' when the merchant opens the
@@ -31,7 +32,7 @@ import {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'startRecoverAcceptance',fallback:null,severity:'critical'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     // The instant the SERVER validated this session. We cannot know how long ago
     // the user authenticated — accepted platform limitation, documented on the entity.
@@ -101,7 +102,7 @@ export default async function (req: Request): Promise<Response> {
     const idempotency_key = idempotencyKeyFor(activation.id, ownerEmail, snapshot_hash);
 
     // Claim lookup BEFORE any write.
-    const claimed = await svc.entities.Mandate.filter({ idempotency_key }, '-created_date', 5).catch(() => []);
+    const claimed = await svc.entities.Mandate.filter({ idempotency_key }, '-created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'startRecoverAcceptance',fallback:[],severity:'critical'}));
     const reusable = (claimed || []).find((m: any) => m.status === 'acceptance_started');
     if (reusable) {
       return Response.json({ ok: true, reused: true, mandate_id: reusable.id, snapshot_hash, fee_pct: Number(fee.pct), acceptance_snapshot: reusable.acceptance_snapshot_json || snapshot, evidence_preview: (reusable.acceptance_snapshot_json || snapshot).ecl_evidence_binding || evidenceBinding });
@@ -141,10 +142,10 @@ export default async function (req: Request): Promise<Response> {
     });
 
     // Collapse a concurrent double-open: oldest claim wins, ours is dropped.
-    const recheck = await svc.entities.Mandate.filter({ idempotency_key }, 'created_date', 5).catch(() => []);
+    const recheck = await svc.entities.Mandate.filter({ idempotency_key }, 'created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'startRecoverAcceptance',fallback:[],severity:'critical'}));
     const winner = (recheck || []).find((m: any) => m.status === 'acceptance_started') || mandate;
     if (winner.id !== mandate.id) {
-      await svc.entities.Mandate.delete(mandate.id).catch(() => null);
+      await svc.entities.Mandate.delete(mandate.id).catch((error:any)=>safeBestEffort(error,{operation:'startRecoverAcceptance',fallback:null,severity:'critical'}));
     }
 
     return Response.json({

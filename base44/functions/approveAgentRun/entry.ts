@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
@@ -36,7 +37,7 @@ Deno.serve(async (req) => {
 
   const svc = base44.asServiceRole;
 
-  const run = await svc.entities.AgentRun.get(run_id).catch(() => null);
+  const run = await svc.entities.AgentRun.get(run_id).catch((error:any)=>safeBestEffort(error,{operation:'approveAgentRun',fallback:null,severity:'secondary'}));
   if (!run) {
     return Response.json({ ok: false, error: 'AgentRun not found' }, { status: 404 });
   }

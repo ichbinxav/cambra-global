@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * Recommendation Engine Agent — Brain B3
@@ -164,9 +166,9 @@ async function callClaude(svc, prompt, eventKey) { return (await callCambraClaud
 function safeParseJSON(t) {
   if (!t) return null;
   const c = t.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
-  try { return JSON.parse(c); } catch {}
+  try { return JSON.parse(c); } catch(error){safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:null,severity:'secondary'})}
   const m = c.match(/\{[\s\S]*\}/);
-  if (m) { try { return JSON.parse(m[0]); } catch {} }
+  if (m) { try { return JSON.parse(m[0]); } catch(error){safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:null,severity:'secondary'})} }
   return null;
 }
 
@@ -195,13 +197,13 @@ Deno.serve(async (req) => {
     // ── 1. Load B2 output — reuse, do NOT recompute ──────────────────────
     let spendTask = null;
     if (spend_task_id) {
-      const rows = await base44.asServiceRole.entities.AgentTask.filter({ id: spend_task_id }).catch(() => []);
+      const rows = await base44.asServiceRole.entities.AgentTask.filter({ id: spend_task_id }).catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
       spendTask = rows[0] || null;
     }
     if (!spendTask) {
       const rows = await base44.asServiceRole.entities.AgentTask
         .filter({ brand_id, agent_name: "spend_intelligence", status: "completed" }, "-created_date", 1)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
       spendTask = rows[0] || null;
     }
     if (!spendTask) {
@@ -228,7 +230,7 @@ Deno.serve(async (req) => {
 
     // ── 4. Pre-load catalog providers (one query for all verticals) ──────
     const catalog = await base44.asServiceRole.entities.IntegrationCatalog
-      .list("-priority", 500).catch(() => []);
+      .list("-priority", 500).catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
     const catalogByCategory = {};
     for (const c of catalog) {
       (catalogByCategory[c.category] = catalogByCategory[c.category] || []).push(c);
@@ -417,8 +419,8 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, {
           status: "failed", error: error.message, completed_at: new Date().toISOString(),
         });
-      } catch {}
+      } catch(error){safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:null,severity:'secondary'})}
     }
-    return Response.json({ ok:false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'recommendationEngineAgent');
   }
 });

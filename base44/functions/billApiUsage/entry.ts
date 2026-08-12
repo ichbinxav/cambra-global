@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // billApiUsage — invoices each organization's API overage for the previous
 // month. Runs on the 1st of every month at 02:00 via scheduled automation.
 //
@@ -7,13 +8,15 @@
 //   · Double-run protection: each record is CLAIMED with a billing_run_id
 //     BEFORE invoicing; records already claimed by another run are skipped.
 //   · `billed: true` is set ONLY after the Invoice creation is confirmed —
-//     the old `.catch(() => null)` silently swallowed invoice failures while
+//     the old `.catch((error:any)=>safeBestEffort(error,{operation:'billApiUsage',fallback:null,severity:'secondary'}))` silently swallowed invoice failures while
 //     still marking the record billed (revenue silently lost).
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { assertOperationAllowed } from "../../shared/operationalControl.ts";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"billApiUsage","cadence_seconds":300},createClientFromRequest,async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
@@ -39,14 +42,14 @@ Deno.serve(async (req) => {
       // ── Claim before billing (double-execution protection) ──
       // Re-read the record: another concurrent run may have claimed it
       // between our initial filter and now.
-      const fresh = await base44.asServiceRole.entities.ApiUsageRecord.get(rec.id).catch(() => null);
+      const fresh = await base44.asServiceRole.entities.ApiUsageRecord.get(rec.id).catch((error:any)=>safeBestEffort(error,{operation:'billApiUsage',fallback:null,severity:'secondary'}));
       if (!fresh || fresh.billed || (fresh.billing_run_id && fresh.billing_run_id !== runId)) {
         results.push({ id: rec.id, status: "skipped_claimed_elsewhere" });
         continue;
       }
       await base44.asServiceRole.entities.ApiUsageRecord.update(rec.id, { billing_run_id: runId });
 
-      const org = await base44.asServiceRole.entities.Organization.get(rec.organization_id).catch(() => null);
+      const org = await base44.asServiceRole.entities.Organization.get(rec.organization_id).catch((error:any)=>safeBestEffort(error,{operation:'billApiUsage',fallback:null,severity:'secondary'}));
       if (!org) {
         results.push({ id: rec.id, status: "skipped_no_org" });
         continue;
@@ -77,7 +80,7 @@ Deno.serve(async (req) => {
         });
       } catch (invErr) {
         // Release the claim so the next run retries this record.
-        await base44.asServiceRole.entities.ApiUsageRecord.update(rec.id, { billing_run_id: null }).catch(() => null);
+        await base44.asServiceRole.entities.ApiUsageRecord.update(rec.id, { billing_run_id: null }).catch((error:any)=>safeBestEffort(error,{operation:'billApiUsage',fallback:null,severity:'secondary'}));
         errors.push({ id: rec.id, organization: org.name, error: invErr.message });
         results.push({ id: rec.id, status: "invoice_creation_failed", error: invErr.message });
         continue;
@@ -96,6 +99,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ period_month: periodMonth, run_id: runId, invoiced: results.filter(r => r.status === "invoiced").length, failed: errors.length, results });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'billApiUsage');
   }
 });

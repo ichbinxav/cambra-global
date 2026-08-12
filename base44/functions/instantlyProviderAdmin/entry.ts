@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import {
@@ -67,19 +68,19 @@ export async function handleInstantlyProviderAdmin(req: Request) {
       { provider: "instantly" },
       "-created_date",
       100,
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}));
     const states = await svc.entities.CommercialProviderState.filter(
       { provider_key: "instantly", role: "outbound" },
       "-last_checked_at",
       1,
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}));
     const control =
       (
         await svc.entities.OutboundControl.filter(
           { control_key: "global" },
           "-created_date",
           1,
-        ).catch(() => [])
+        ).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}))
       )[0] || null;
     if (action === "status")
       return Response.json({
@@ -114,7 +115,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         auth_test_pass: false,
         last_checked_at: new Date().toISOString(),
         last_error_code: "SECRET_MISSING",
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
       return Response.json(
         {
           ok: false,
@@ -129,7 +130,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
     if (action === "diagnose_supersearch") {
       const eventKey=`api:instantly:supersearch-capability:${crypto.randomUUID()}`;
       const reservation=await reservePaidOperation(svc,{event_key:eventKey,category:"api",provider:"instantly",source:"instantlyProviderAdmin",related_entity_type:"CommercialProviderState",related_entity_id:"instantly_supersearch"});
-      const leadStates=await svc.entities.CommercialProviderState.filter({provider_key:"instantly_supersearch",role:"lead_intelligence"},"-last_checked_at",1).catch(()=>[]);
+      const leadStates=await svc.entities.CommercialProviderState.filter({provider_key:"instantly_supersearch",role:"lead_intelligence"},"-last_checked_at",1).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}));
       try{
         const capabilityPayload=instantlySuperSearchPayload({domains:["cambra.ai"],limit:1,one_lead_per_company:true});
         const preview=await instantlyRequest(key,"/supersearch-enrichment/preview-leads-from-supersearch",{method:"POST",body:{search_filters:capabilityPayload.search_filters}});
@@ -138,7 +139,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         await settlePaidOperation(svc,reservation,{ok:true,usage_json:{operation:"supersearch_capability_preview",returned:Number(preview?.number_of_leads||0),lead_data_persisted:false}});
         return Response.json({ok:true,status:"AUTHENTICATED",provider_state:state,supersearch_permission_verified:true,preview_count:Number(preview?.number_of_leads||0),lead_data_persisted:false,secret_value_exposed:false});
       }catch(error:any){
-        await settlePaidOperation(svc,reservation,{ok:false,usage_json:{operation:"supersearch_capability_preview",error_code:String(error?.code||"INSTANTLY_SUPERSEARCH_FAILED")}}).catch(()=>null);
+        await settlePaidOperation(svc,reservation,{ok:false,usage_json:{operation:"supersearch_capability_preview",error_code:String(error?.code||"INSTANTLY_SUPERSEARCH_FAILED")}}).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         const patch={provider_key:"instantly_supersearch",role:"lead_intelligence",status:error?.code==="INSTANTLY_UNAUTHORIZED"?"ERROR":"DEGRADED",api_version:"v2",secret_present:true,auth_test_pass:false,last_checked_at:new Date().toISOString(),metrics_json:{supersearch_permission_verified:false},configuration_json:{official_preview_endpoint:true,automatic_enrichment_enabled:false},last_error_code:String(error?.code||"INSTANTLY_SUPERSEARCH_FAILED")};
         const state=leadStates[0]?await svc.entities.CommercialProviderState.update(leadStates[0].id,patch):await svc.entities.CommercialProviderState.create(patch);
         return Response.json({ok:false,status:state.status,error:patch.last_error_code,supersearch_permission_verified:false,secret_value_exposed:false},{status:Number(error?.status||502)});
@@ -214,7 +215,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
                     : "Instantly sender readiness/warm-up gate is not yet proven.",
                 }
               : {}),
-          }).catch(() => null);
+          }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         }
         const blocked = profiles.some((profile: any) => {
           const configured = (
@@ -298,14 +299,14 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             operation: "diagnose",
             error_code: String(error?.code || "INSTANTLY_DIAGNOSTIC_FAILED"),
           },
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         await upsertInstantlyProviderState(svc, {
           status:
             error?.code === "INSTANTLY_UNAUTHORIZED" ? "ERROR" : "DEGRADED",
           auth_test_pass: false,
           last_checked_at: new Date().toISOString(),
           last_error_code: String(error?.code || "INSTANTLY_DIAGNOSTIC_FAILED"),
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         return Response.json(
           {
             ok: false,
@@ -440,7 +441,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             operation: "create_campaign",
             error_code: String(error?.code || "FAILED"),
           },
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         throw error;
       }
     }
@@ -533,7 +534,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             operation: "create_webhook",
             error_code: String(error?.code || "FAILED"),
           },
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         throw error;
       }
     }

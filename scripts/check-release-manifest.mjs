@@ -36,6 +36,13 @@ if (m.lockfileSha !== sha256("package-lock.json")) fail("stale manifest: package
 if (m.nodeVersion !== "v24.19.0") fail(`unsupported release Node: ${m.nodeVersion}; exact v24.19.0 required`);
 if (m.npmVersion !== "11.17.0") fail(`unsupported release npm: ${m.npmVersion}; exact 11.17.0 required`);
 if (m.schedulerInventorySha !== sha256("config/scheduler-inventory.json")) fail("scheduler inventory changed since manifest generation");
+if (m.backendDeploymentTopologySha !== sha256('base44/deployment-topology.json')) fail('backend deployment topology changed since manifest generation');
+if (!fs.existsSync('base44/.deploy/manifest.json')) fail('backend deployment bundle evidence missing — run npm run base44:functions:check');
+else {
+  const backend=JSON.parse(fs.readFileSync('base44/.deploy/manifest.json','utf8'));
+  if(m.backendBundleManifestSha!==sha256('base44/.deploy/manifest.json'))fail('backend bundle manifest changed since release generation');
+  if(m.backendBundle?.stagedTreeSha256!==backend.staged_tree_sha256||m.backendBundle?.stagedFileCount!==backend.staged_file_count)fail('backend staged tree identity mismatch');
+}
 if (m.dataRetentionMatrixSha !== sha256("config/data-retention-matrix.json")) fail("data retention matrix changed since manifest generation");
 if (m.secretScannerSha !== sha256("scripts/check-secrets.mjs")) fail("secret scanner changed since manifest generation");
 // v62.6 — the durability manifest is EXCLUDED from sourceTreeHash (it hashes

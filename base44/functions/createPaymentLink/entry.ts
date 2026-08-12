@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import Stripe from 'npm:stripe@14.25.0';
 import { assertOperationAllowed } from '../../shared/operationalControl.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -76,6 +77,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ url: session.url, session_id: session.id, invoice: updated });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'createPaymentLink');
   }
 });

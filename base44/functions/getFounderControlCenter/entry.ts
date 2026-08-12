@@ -1,26 +1,27 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeFounderMeetingPolicy } from '../../shared/founderMeeting.ts';
 import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
 
 Deno.serve(async(req)=>{
   try{
-    const base44=createClientFromRequest(req);const user=await base44.auth.me().catch(()=>null);
+    const base44=createClientFromRequest(req);const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:null,severity:'secondary'}));
     if(!user||user.role!=='admin')return Response.json({ok:false,error:'Forbidden'},{status:403});
     const svc=base44.asServiceRole;
     const [approvals,incidents,meetings,meetingPolicies,health,finance,gaps,digest,agentPerformance,customerSuccess,unitEconomics,incidentAlertDeliveries,schedulerRuns]=await Promise.all([
-      svc.entities.Approval.filter({status:'pending'},'-created_date',200).catch(()=>[]),
-      svc.entities.AutonomyIncident.filter({status:'open'},'-last_seen_at',200).catch(()=>[]),
-      svc.entities.CommunicationThread.filter({meeting_start_at:{$ne:null}},'-meeting_start_at',200).catch(()=>[]),
-      svc.entities.FounderMeetingPolicy.filter({status:'active'},'-approved_at',5).catch(()=>[]),
-      svc.entities.OperatingHealthAssessment.list('-calculated_at',1).catch(()=>[]),
-      svc.entities.RevenueLifecycle.list('-updated_at',1000).catch(()=>[]),
-      svc.entities.RealWorldGapReport.filter({status:{$in:['open','investigating']}},'-created_at',100).catch(()=>[]),
-      svc.entities.ExecutiveDigest.list('-generated_at',1).catch(()=>[]),
-      svc.entities.AgentPerformanceMetric.list('-calculated_at',100).catch(()=>[]),
-      svc.entities.CustomerSuccessSignal.filter({status:'open'},'-updated_at',200).catch(()=>[]),
-      svc.entities.MerchantUnitEconomics.list('-calculated_at',100).catch(()=>[]),
-      svc.entities.IncidentAlertDelivery.list('-updated_at',100).catch(()=>[]),
-      svc.entities.SchedulerRun.list('-started_at',5000).catch(()=>[]),
+      svc.entities.Approval.filter({status:'pending'},'-created_date',200).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.AutonomyIncident.filter({status:'open'},'-last_seen_at',200).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.CommunicationThread.filter({meeting_start_at:{$ne:null}},'-meeting_start_at',200).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.FounderMeetingPolicy.filter({status:'active'},'-approved_at',5).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.OperatingHealthAssessment.list('-calculated_at',1).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.RevenueLifecycle.list('-updated_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.RealWorldGapReport.filter({status:{$in:['open','investigating']}},'-created_at',100).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.ExecutiveDigest.list('-generated_at',1).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.AgentPerformanceMetric.list('-calculated_at',100).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.CustomerSuccessSignal.filter({status:'open'},'-updated_at',200).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.MerchantUnitEconomics.list('-calculated_at',100).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.IncidentAlertDelivery.list('-updated_at',100).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
+      svc.entities.SchedulerRun.list('-started_at',5000).catch((error:any)=>safeBestEffort(error,{operation:'getFounderControlCenter',fallback:[],severity:'secondary'})),
     ]);
     const now=Date.now();const strategic=meetings.filter((item:any)=>Date.parse(item.meeting_start_at||'')>=now-86400000);
     const completed=meetings.filter((item:any)=>item.meeting_status==='completed'||item.meeting_outcome_json);

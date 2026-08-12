@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // computeStripeVerifiedGap — M3-Chunk 4. THE bridge that materializes a
 // VERIFIED payments-gap row from real Stripe data.
 //
@@ -1735,7 +1736,7 @@ Deno.serve(async (req) => {
     // Tenant guard (contract §1). Uses the same rule as _tenantGuard: admins
     // resolve to the brand's REAL owner_email (needed to populate the row
     // correctly), non-owners get 404 (not 403 — never leak existence).
-    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch(() => null);
+    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:null,severity:'critical'}));
     if (!brand) return Response.json({ error: 'brand_not_found' }, { status: 404 });
     const isAdmin = user.role === 'admin';
     let owner_email: string;
@@ -1757,7 +1758,7 @@ Deno.serve(async (req) => {
     // stripe-family integration for the brand.
     let integration: any = null;
     if (body?.integration_id) {
-      integration = await base44.asServiceRole.entities.Integration.get(body.integration_id).catch(() => null);
+      integration = await base44.asServiceRole.entities.Integration.get(body.integration_id).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:null,severity:'critical'}));
       if (!integration || integration.brand_id !== brand_id) {
         return Response.json({ error: 'integration_not_found' }, { status: 404 });
       }
@@ -1766,7 +1767,7 @@ Deno.serve(async (req) => {
         { brand_id, status: 'connected' },
         '-last_sync_at',
         20,
-      ).catch(() => []);
+      ).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:[],severity:'critical'}));
       integration = candidates.find((i: any) =>
         i.provider === 'stripe' || i.provider === 'stripe_self' || i.provider === 'stripe_self_test'
       );
@@ -1791,7 +1792,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch + aggregate.
-    const fxSnapshots = await base44.asServiceRole.entities.FxSnapshot.list('-effective_at',1000).catch(() => []);
+    const fxSnapshots = await base44.asServiceRole.entities.FxSnapshot.list('-effective_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:[],severity:'critical'}));
     const agg = await fetchAndAggregate(auth.headers, auth.acct_country_hint,fxSnapshots);
     if (!agg.ok) {
       // upstream Stripe error — surface the public message, never headers.
@@ -1808,7 +1809,7 @@ Deno.serve(async (req) => {
       brand_id,
       integration_id: integration.id,
       source_charges_hash,
-    }, '-created_date', 1).catch(() => []);
+    }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:[],severity:'critical'}));
     if (Array.isArray(existing) && existing[0]) {
       return Response.json({
         ok: true,

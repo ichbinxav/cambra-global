@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getRecoverContractStatus — RECOVER-3 (2026-08-03).
 //
 // What the merchant's UI is allowed to know about their agreement document.
@@ -18,7 +19,7 @@ import { fireAndForget } from '../../shared/invokeInternal.ts';
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getRecoverContractStatus',fallback:null,severity:'critical'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -26,14 +27,14 @@ export default async function (req: Request): Promise<Response> {
 
     let mandate: any = null;
     if (body?.mandate_id) {
-      const rows = await svc.entities.Mandate.filter({ id: String(body.mandate_id) }, '-created_date', 1).catch(() => []);
+      const rows = await svc.entities.Mandate.filter({ id: String(body.mandate_id) }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverContractStatus',fallback:[],severity:'critical'}));
       mandate = rows?.[0] || null;
     } else {
       const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);
       if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
       const rows = await svc.entities.Mandate
         .filter({ deal_activation_id: owned.activation.id }, '-created_date', 25)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'getRecoverContractStatus',fallback:[],severity:'critical'}));
       mandate = (rows || []).find((m: any) => m.status === 'active')
         || (rows || []).find((m: any) => ['superseded', 'revoked'].includes(m.status))
         || null;

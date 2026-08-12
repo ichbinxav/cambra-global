@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // purgePaymentsAnalysisSessions — scheduled daily job that deletes
 // PaymentsAnalysisSession rows whose created_date is older than 90 days.
 //
@@ -14,10 +15,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { retentionCutoff,retentionEvidenceComplete,retentionEvidenceStart } from '../../shared/retentionPolicy.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const BATCH_SIZE = 200;
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"purgePaymentsAnalysisSessions","cadence_seconds":86400},createClientFromRequest,async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -32,7 +35,7 @@ Deno.serve(async (req) => {
     const cutoff = policy.cutoff;
     const evidenceStart=retentionEvidenceStart({run_key:`anonymous-analyzer:${new Date().toISOString()}:${crypto.randomUUID()}`,policy_key:'anonymous_analyzer_sessions',action:'DELETE',cutoff_at:cutoff,scope:'PaymentsAnalysisSession'});
     if(!evidenceStart.ok)return Response.json({ok:false,error:evidenceStart.error},{status:503});
-    const evidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(evidenceStart.row).catch(()=>null);
+    const evidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(evidenceStart.row).catch((error:any)=>safeBestEffort(error,{operation:'purgePaymentsAnalysisSessions',fallback:null,severity:'secondary'}));
     if(!evidence)return Response.json({ok:false,error:'retention_audit_evidence_unavailable'},{status:503});
 
     let totalDeleted = 0;
@@ -80,6 +83,6 @@ Deno.serve(async (req) => {
     return Response.json(summary);
   } catch (error) {
     console.error('purgePaymentsAnalysisSessions:', (error as any)?.message, (error as any)?.stack);
-    return Response.json({ ok: false, error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'purgePaymentsAnalysisSessions');
   }
 });

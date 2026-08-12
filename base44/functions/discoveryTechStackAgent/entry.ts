@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * Discovery / Tech Stack Agent — Brain B1
@@ -117,13 +119,13 @@ Deno.serve(async (req) => {
     const findingRows = jobId
       ? await base44.asServiceRole.entities.DiscoveryFinding
           .filter({ discovery_job_id: jobId }, "-created_date", 200)
-          .catch(() => [])
+          .catch((error:any)=>safeBestEffort(error,{operation:'discoveryTechStackAgent',fallback:[],severity:'secondary'}))
       : [];
 
     // ── 2. Cross-reference with IntegrationCatalog ────────────────────────
     const catalog = await base44.asServiceRole.entities.IntegrationCatalog
       .list("-priority", 500)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'discoveryTechStackAgent',fallback:[],severity:'secondary'}));
     const catalogIndex = {
       list: catalog.map(c => ({
         id: c.id,
@@ -280,6 +282,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'discoveryTechStackAgent');
   }
 });

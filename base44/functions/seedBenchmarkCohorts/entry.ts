@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * Admin-only, idempotent seeder for BenchmarkCohort rows.
@@ -131,7 +133,7 @@ Deno.serve(async (req) => {
   await quarantineProbe(createClientFromRequest(req), "seedBenchmarkCohorts");
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'seedBenchmarkCohorts',fallback:null,severity:'secondary'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden", message: "Admin only" }, { status: 403 });
     }
@@ -143,7 +145,7 @@ Deno.serve(async (req) => {
     for (const row of rows) {
       const existing = await base44.asServiceRole.entities.BenchmarkCohort
         .filter({ cohort_key: row.cohort_key, metric_key: row.metric_key, month: row.month })
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'seedBenchmarkCohorts',fallback:[],severity:'secondary'}));
 
       if (existing && existing.length > 0) {
         await base44.asServiceRole.entities.BenchmarkCohort.update(existing[0].id, row);
@@ -163,6 +165,6 @@ Deno.serve(async (req) => {
       engine_version: ENGINE_VERSION,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'seedBenchmarkCohorts');
   }
 });

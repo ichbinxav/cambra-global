@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // recordConditionsActivation — RECOVER-4 (2026-08-04).
 //
 // The ONLY writer of DealActivation.conditions_activated_at — the real date the
@@ -12,6 +13,7 @@ import {
   parisMonthOf,
 } from '../../shared/recoverBillingMath.ts';
 import { RECOVERY_ECONOMICS_V2, recoveryTermFromActivation } from '../../shared/recoveryEconomicsV2.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const SOURCES = [
   'provider_confirmation',
@@ -24,7 +26,7 @@ const SOURCES = [
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'recordConditionsActivation',fallback:null,severity:'secondary'}));
     if (user?.role !== 'admin') return Response.json({ error: 'forbidden' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
@@ -37,7 +39,7 @@ export default async function (req: Request): Promise<Response> {
     if (at.getTime() > Date.now()) return Response.json({ error: 'conditions_activated_at cannot be in the future' }, { status: 400 });
 
     const svc = base44.asServiceRole;
-    const rows = await svc.entities.DealActivation.filter({ id: deal_activation_id }, '-created_date', 1).catch(() => []);
+    const rows = await svc.entities.DealActivation.filter({ id: deal_activation_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'recordConditionsActivation',fallback:[],severity:'secondary'}));
     const activation = rows?.[0];
     if (!activation) return Response.json({ error: 'activation not found' }, { status: 404 });
 
@@ -48,7 +50,7 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ error: `activation_not_live: status=${activation.status}` }, { status: 409 });
     }
     // Requires an active mandate — measurement without authorization is meaningless.
-    const mandates = await svc.entities.Mandate.filter({ deal_activation_id, status: 'active' }, '-created_date', 1).catch(() => []);
+    const mandates = await svc.entities.Mandate.filter({ deal_activation_id, status: 'active' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'recordConditionsActivation',fallback:[],severity:'secondary'}));
     if (!mandates?.length) return Response.json({ error: 'no_active_mandate' }, { status: 409 });
 
     if (activation.conditions_activated_at && activation.conditions_activated_at !== at.toISOString()) {
@@ -69,7 +71,7 @@ export default async function (req: Request): Promise<Response> {
     const v2Term = isV2 ? recoveryTermFromActivation(iso) : null;
     const attributionKey = isV2 ? [activation.brand_id || '', activation.vertical || 'payments', activation.provider_id || activation.provider_to || 'provider-scope'].join(':') : null;
     if (isV2) {
-      const siblings = await svc.entities.DealActivation.filter({ brand_id: activation.brand_id, economic_right_status: 'active' }, '-created_date', 100).catch(() => []);
+      const siblings = await svc.entities.DealActivation.filter({ brand_id: activation.brand_id, economic_right_status: 'active' }, '-created_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'recordConditionsActivation',fallback:[],severity:'secondary'}));
       const overlap = (siblings || []).find((a:any) => a.id !== activation.id && String(a.recovery_attribution_key || '') === attributionKey && (!a.recovery_term_end_date || a.recovery_term_end_date > v2Term.start));
       if (overlap) return Response.json({ error: 'overlapping_recovery_attribution_required', conflicting_activation_id: overlap.id }, { status: 409 });
     }
@@ -108,7 +110,7 @@ export default async function (req: Request): Promise<Response> {
       },
       actor_email: user.email,
       created_at: new Date().toISOString(),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'recordConditionsActivation',fallback:null,severity:'secondary'}));
 
     return Response.json({
       ok: true,
@@ -121,6 +123,6 @@ export default async function (req: Request): Promise<Response> {
       ...(isV2 ? { recovery_term_start_date: v2Term.start, recovery_term_year2_start_date: v2Term.year2Start, recovery_term_end_date: v2Term.endExclusive, economic_right_status: 'active', recovery_attribution_key: attributionKey, recovery_mandate_id: activeMandate.id } : {}),
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'recordConditionsActivation');
   }
 }

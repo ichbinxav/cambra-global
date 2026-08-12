@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // P9 admin operation: advance/block/retry a migration task with sequential and
 // go-live/verification invariants. No merchant can mutate orchestration state.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
@@ -19,7 +20,7 @@ const ALLOWED = {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const me = await base44.auth.me().catch(() => null);
+    const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
     if (!me) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (me.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     const body = await req.json().catch(() => ({}));
@@ -40,23 +41,23 @@ export default async function (req: Request): Promise<Response> {
       try { await assertOperationAllowed(svc, 'migrations'); }
       catch (error:any) { return Response.json({ error:error?.message || 'emergency_control_paused:migrations' }, { status:409 }); }
     }
-    const found = await svc.entities.MigrationTask.filter({ id: taskId }, '-created_date', 1).catch(() => []);
+    const found = await svc.entities.MigrationTask.filter({ id: taskId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'}));
     const task:any = found?.[0];
     if (!task) return Response.json({ error: 'task_not_found' }, { status: 404 });
     if (task?.metadata_json?.plan_version !== PLAN_VERSION) return Response.json({ error: 'not_p9_task' }, { status: 409 });
     const allowed = ALLOWED[task.status] || new Set();
     if (!allowed.has(nextStatus)) return Response.json({ error: 'invalid_task_transition', from: task.status, to: nextStatus }, { status: 409 });
     if (nextStatus === 'done' && note.length < 3) return Response.json({ error: 'completion_evidence_note_required' }, { status: 400 });
-    const acts = await svc.entities.DealActivation.filter({ id: task.deal_activation_id }, '-created_date', 1).catch(() => []);
+    const acts = await svc.entities.DealActivation.filter({ id: task.deal_activation_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'}));
     const activation:any = acts?.[0];
     if (!activation || activation.vertical !== 'payments') return Response.json({ error: 'payments_activation_not_found' }, { status: 404 });
     if (!['migrating','live'].includes(activation.status)) {
       return Response.json({ error: 'migration_activation_not_operational', activation_status: activation.status }, { status: 409 });
     }
-    const activeMandates = await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch(() => []);
+    const activeMandates = await svc.entities.Mandate.filter({ deal_activation_id: activation.id, status: 'active' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'}));
     if (!activeMandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
 
-    const allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch(() => []);
+    const allTasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activation.id }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'}));
     const tasks = allTasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
     if (nextStatus === 'in_progress' || nextStatus === 'done') {
       const earlier = tasks.filter(t => Number(t.order || 0) < Number(task.order || 0) && t.status !== 'done');
@@ -70,7 +71,7 @@ export default async function (req: Request): Promise<Response> {
         if (!activation.conditions_activated_at || !activation.first_measurement_month) {
           return Response.json({ error: 'conditions_activation_evidence_required' }, { status: 409 });
         }
-        const reports = await svc.entities.MonthlySavingsReport.filter({ deal_activation_id: activation.id }, '-month', 50).catch(() => []);
+        const reports = await svc.entities.MonthlySavingsReport.filter({ deal_activation_id: activation.id }, '-month', 50).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'}));
         const verified = (reports || []).find(r =>
           String(r.month || '') >= String(activation.first_measurement_month || '') &&
           r.measurement_mode === 'fully_verified' &&
@@ -130,7 +131,7 @@ export default async function (req: Request): Promise<Response> {
           { $set: { status: 'live', last_updated: now } },
         );
         if (!updatedExactlyOne(liveClaim)) {
-          const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch(() => []))?.[0];
+          const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:[],severity:'critical'})))?.[0];
           if (fresh?.status !== 'live') {
             // The task write happened first because Base44 offers no transaction.
             // Compensate only our just-completed task; never overwrite the newer
@@ -141,23 +142,23 @@ export default async function (req: Request): Promise<Response> {
                 status: 'in_progress', completed_at: '', updated_at: new Date().toISOString(),
                 metadata_json: { ...(taskPatch.metadata_json || {}), compensated_after_activation_race: true },
               } },
-            ).catch(() => null);
+            ).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
             await svc.entities.OperationalLog.create({
               deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
               event_type: 'task_update_compensated', message: 'Go-live task compensated after concurrent activation change',
               data_json: { task_id: taskId, expected_activation_status: 'migrating', observed_activation_status: fresh?.status || 'unknown' },
               actor_email: me.email, created_at: new Date().toISOString(),
-            }).catch(() => null);
+            }).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
             return Response.json({ error: 'activation_changed_concurrently', activation_status: fresh?.status || 'unknown' }, { status: 409 });
           }
         }
-        await svc.entities.OperationalLog.create({ deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '', event_type: 'go_live', message: 'Payments migration went live', data_json: { task_id: taskId }, actor_email: me.email, created_at: now }).catch(() => null);
+        await svc.entities.OperationalLog.create({ deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '', event_type: 'go_live', message: 'Payments migration went live', data_json: { task_id: taskId }, actor_email: me.email, created_at: now }).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
       }
       const next = tasks.find(t => Number(t.order || 0) > Number(task.order || 0) && t.status === 'pending');
       if (next) {
         const slaDays = Number(next?.metadata_json?.sla_days || 3);
         const due = new Date(); due.setUTCDate(due.getUTCDate() + slaDays);
-        await svc.entities.MigrationTask.updateMany({ id: next.id, status: 'pending' }, { $set: { status: 'in_progress', updated_at: now, due_date: due.toISOString().slice(0,10) } }).catch(() => null);
+        await svc.entities.MigrationTask.updateMany({ id: next.id, status: 'pending' }, { $set: { status: 'in_progress', updated_at: now, due_date: due.toISOString().slice(0,10) } }).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
       }
     }
 
@@ -165,7 +166,7 @@ export default async function (req: Request): Promise<Response> {
       deal_activation_id: activation.id, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
       event_type: 'task_updated', message: `${task.step_name}: ${task.status} → ${nextStatus}`,
       data_json: { task_id: taskId, from: task.status, to: nextStatus, note: note || null, merchant_required: merchantRequired, merchant_message_locales: merchantRequired ? ['en','fr','es'] : [], retry_count: retryCount }, actor_email: me.email, created_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'updatePaymentsMigrationTask',fallback:null,severity:'critical'}));
 
     return Response.json({ ok: true, task_id: taskId, status: nextStatus });
   } catch (error) {

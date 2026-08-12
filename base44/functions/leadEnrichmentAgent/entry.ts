@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
@@ -65,12 +66,12 @@ Deno.serve(async (req) => {
     if (!gate.ok) return gate.response;
     const service = base44.asServiceRole;
     const leadIds = Array.isArray(body?.lead_ids) ? body.lead_ids.map((value:any)=>String(value)).filter(Boolean).slice(0,100) : null;
-    const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 20).catch(()=>[]);
+    const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 20).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:[],severity:'secondary'}));
     const discoveryPolicy = policies.find((policy:any)=>policy?.icp_json?.discovery_enabled===true) || policies[0] || null;
     const configuredDailyLimit = Math.max(0, Math.min(250, Math.floor(Number(discoveryPolicy?.icp_json?.enrichment_daily_limit ?? 25))));
     const configuredWeeklyLimit = Math.max(0, Math.min(1250, Math.floor(Number(discoveryPolicy?.icp_json?.enrichment_weekly_limit ?? configuredDailyLimit * 5))));
     const today = now().slice(0,10);
-    const recentUsage = await service.entities.CostUsageEvent.filter({ provider:'apollo', source:'leadEnrichmentAgent' }, '-occurred_at', 500).catch(()=>[]);
+    const recentUsage = await service.entities.CostUsageEvent.filter({ provider:'apollo', source:'leadEnrichmentAgent' }, '-occurred_at', 500).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:[],severity:'secondary'}));
     const usedToday = recentUsage.filter((event:any)=>String(event.occurred_at||'').startsWith(today) && !['VOID','FAILED'].includes(String(event.status))).length;
     const rollingWeekCutoff=Date.now()-7*86_400_000;
     const usedThisWeek=recentUsage.filter((event:any)=>Date.parse(event.occurred_at||event.created_date||'')>=rollingWeekCutoff&&!['VOID','FAILED'].includes(String(event.status))).length;
@@ -87,8 +88,8 @@ Deno.serve(async (req) => {
       return Response.json({ok:true,task_id:task.id,count:0,status,daily_limit:configuredDailyLimit,weekly_limit:configuredWeeklyLimit,used_today:usedToday,used_this_week:usedThisWeek});
     }
     let leads:any[] = leadIds?.length
-      ? await service.entities.OutboundLead.filter({ id:{ $in:leadIds } }, '-created_date', leadIds.length).catch(()=>[])
-      : await service.entities.OutboundLead.filter({ enrichment_worthy:true }, '-pre_score', Math.min(100,limit*4)).catch(()=>[]);
+      ? await service.entities.OutboundLead.filter({ id:{ $in:leadIds } }, '-created_date', leadIds.length).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:[],severity:'secondary'}))
+      : await service.entities.OutboundLead.filter({ enrichment_worthy:true }, '-pre_score', Math.min(100,limit*4)).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:[],severity:'secondary'}));
     const freshnessCutoff = Date.now() - Math.max(7, Math.min(180, Number(discoveryPolicy?.icp_json?.enrichment_freshness_days || 30))) * 86_400_000;
     leads = leads.filter((lead:any)=>lead?.enrichment_worthy===true && (!lead?.last_enriched_at || Date.parse(lead.last_enriched_at)<freshnessCutoff) && !['suppressed','disqualified','converted'].includes(String(lead.reservoir_state))).sort((a:any,b:any)=>Number(b.pre_score||0)-Number(a.pre_score||0)).slice(0,limit);
     if (!leads.length) {
@@ -132,14 +133,14 @@ Deno.serve(async (req) => {
         skipped++;
       } catch (error:any) {
         failed++;
-        if(reservation)await settlePaidOperation(service,reservation,{ok:false,usage_json:{error_code:Number(error?.status||0)===429?'RATE_LIMITED':'ENRICHMENT_FAILED'}}).catch(()=>null);
-        await service.entities.OutboundLead.update(lead.id,{source_evidence_json:{...(lead.source_evidence_json||{}),last_enrichment_error:Number(error?.status||0)===429?'RATE_LIMITED':'ENRICHMENT_FAILED',last_enrichment_attempt_at:now()}}).catch(()=>null);
+        if(reservation)await settlePaidOperation(service,reservation,{ok:false,usage_json:{error_code:Number(error?.status||0)===429?'RATE_LIMITED':'ENRICHMENT_FAILED'}}).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:null,severity:'secondary'}));
+        await service.entities.OutboundLead.update(lead.id,{source_evidence_json:{...(lead.source_evidence_json||{}),last_enrichment_error:Number(error?.status||0)===429?'RATE_LIMITED':'ENRICHMENT_FAILED',last_enrichment_attempt_at:now()}}).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:null,severity:'secondary'}));
       }
     }
     await service.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Selectively enriched ${enriched}; skipped ${skipped}; failed safely ${failed}`,output_payload_json:{count:leads.length,enriched,skipped,failed,daily_limit:configuredDailyLimit,weekly_limit:configuredWeeklyLimit,used_today_before:usedToday,used_this_week_before:usedThisWeek,provider_priority:apolloStatus.available?'apollo':'clay_or_none'},completed_at:now()});
     return Response.json({ok:true,task_id:task.id,count:leads.length,enriched,skipped,failed,enriched_ids:enrichedIds,daily_limit:configuredDailyLimit,weekly_limit:configuredWeeklyLimit,remaining_after:Math.max(0,remaining-enriched)});
   } catch(error:any) {
-    if(task?.id){const base44=createClientFromRequest(req);await base44.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'lead_enrichment_failed',completed_at:now()}).catch(()=>null)}
+    if(task?.id){const base44=createClientFromRequest(req);await base44.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'lead_enrichment_failed',completed_at:now()}).catch((error:any)=>safeBestEffort(error,{operation:'leadEnrichmentAgent',fallback:null,severity:'secondary'}))}
     return Response.json({ok:false,error:'lead_enrichment_failed',task_id:task?.id||null},{status:500});
   }
 });

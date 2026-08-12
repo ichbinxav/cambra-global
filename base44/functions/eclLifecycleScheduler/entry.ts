@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // eclLifecycleScheduler — v0.63.0 ECL P4 closure (2026-08-08).
 //
 // Operational runner for BOTH ECL evidence types. Lifecycle semantics remain in
@@ -89,7 +90,7 @@ function lifecyclePatch(record, toStatus: string, nextActionAt = '') {
 
 async function processOne(svc, item, now: string, counters) {
   const target = targetFor(item.entityType);
-  const record = await svc.entities[target.entityName].get(item.id).catch(() => null);
+  const record = await svc.entities[target.entityName].get(item.id).catch((error:any)=>safeBestEffort(error,{operation:'eclLifecycleScheduler',fallback:null,severity:'secondary'}));
   if (!record) throw new PermanentFailure('missing_authoritative_data', 'evidence record not found');
   const brandId = record.brand_id;
   const ownerEmail = record.owner_email || record.created_by;
@@ -212,7 +213,7 @@ async function processOne(svc, item, now: string, counters) {
 
 async function recordFailure(svc, item, now: string, err, counters) {
   const target = targetFor(item.entityType);
-  const record = await svc.entities[target.entityName].get(item.id).catch(() => null);
+  const record = await svc.entities[target.entityName].get(item.id).catch((error:any)=>safeBestEffort(error,{operation:'eclLifecycleScheduler',fallback:null,severity:'secondary'}));
   const brandId = record && record.brand_id;
   const ownerEmail = record && (record.owner_email || record.created_by);
   const code = err instanceof PermanentFailure ? err.code : 'persistence_unavailable';
@@ -306,7 +307,7 @@ Deno.serve(async (req) => {
       risk_level: 1,
       input_summary: `ECL lifecycle sweep · ${trigger} · batch ${limit}`,
       started_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'eclLifecycleScheduler',fallback:null,severity:'secondary'}));
 
     // True server-side due discovery: no future rows are fetched and therefore
     // future/legacy rows cannot starve due work. Each entity is bounded, then
@@ -395,7 +396,7 @@ Deno.serve(async (req) => {
         status: 'failed',
         error: message.slice(0, 500),
         completed_at: new Date().toISOString(),
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'eclLifecycleScheduler',fallback:null,severity:'secondary'}));
     }
     return Response.json({ ok: false, error: 'scheduler_run_failed', message }, { status: 500 });
   } finally {

@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const ORCHESTRATOR_NAME = "outreach_orchestrator";
 const TASK_TYPE = "orchestrate";
@@ -20,14 +22,14 @@ Deno.serve(async (req) => {
 
     // ─── RESUME path: continúa una cadena ya parada en Approval ─────────
     if (resume && parentId) {
-      parent = await base44.asServiceRole.entities.AgentTask.get(parentId).catch(() => null);
+      parent = await base44.asServiceRole.entities.AgentTask.get(parentId).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
       if (!parent) return Response.json({ ok: false, error: "Parent task not found" }, { status: 404 });
       if (parent.agent_name !== ORCHESTRATOR_NAME) return Response.json({ ok: false, error: "Not an outreach chain" }, { status: 400 });
 
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required to resume" }, { status: 400 });
 
-      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch(() => null);
+      const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
       if (!ap) return Response.json({ ok: false, error: "Approval not found" }, { status: 404 });
       if (ap.status !== "approved") return Response.json({ ok: false, error: `Cannot resume: approval status="${ap.status}"`, gate: "blocked" }, { status: 403 });
 
@@ -63,7 +65,7 @@ Deno.serve(async (req) => {
         const data = res?.data || res || {};
         followStep.child_task_id = data.task_id || null;
         if (data.task_id) {
-          const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch(() => null);
+          const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
           followStep.status = child?.status || (data.ok === false ? "failed" : "completed");
         } else {
           followStep.status = data.ok === false ? "failed" : "completed";
@@ -96,7 +98,7 @@ Deno.serve(async (req) => {
           agent_task_id: parent.id,
           payload_json: { halted_at: "followUpAgent", reason: followStep.status, error: followStep.error },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
       }
       return Response.json({ ok: true, parent_task_id: parent.id, status: parentStatus === "completed" ? "completed" : "halted" });
     }
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
     let leadId = body?.lead_id || null;
     if (!leadId) {
       const leads = await base44.asServiceRole.entities.OutboundLead
-        .filter({ stage: "scored" }, "-score", 1).catch(() => []);
+        .filter({ stage: "scored" }, "-score", 1).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:[],severity:'secondary'}));
       leadId = leads[0]?.id || null;
     }
     if (!leadId) return Response.json({ ok: false, error: "No scored OutboundLead found and no lead_id provided" }, { status: 400 });
@@ -129,7 +131,7 @@ Deno.serve(async (req) => {
       draftStep.child_task_id = data.task_id || null;
       draftStep.approval_id = data.approval_id || null;
       if (data.task_id) {
-        const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch(() => null);
+        const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
         draftStep.status = child?.status || (data.ok === false ? "failed" : "waiting_approval");
       } else {
         draftStep.status = data.ok === false ? "failed" : "waiting_approval";
@@ -160,7 +162,7 @@ Deno.serve(async (req) => {
       agent_task_id: parent.id,
       payload_json: { halted_at: "outreachAgent:draft", reason: draftStep.status, approval_id: draftStep.approval_id, lead_id: leadId },
       status: "pending",
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'outreachOrchestrator',fallback:null,severity:'secondary'}));
 
     return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: "outreachAgent:draft", reason: draftStep.status, approval_id: draftStep.approval_id });
   } catch (error) {
@@ -170,6 +172,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(parent.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, parent_task_id: parent?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'outreachOrchestrator');
   }
 });

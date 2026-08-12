@@ -1,15 +1,16 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { evaluateCommercialGoLiveReadiness } from '../../shared/commercialActivationRuntime.ts';
 
 export async function handleCommercialGoLiveReadiness(req: Request) {
   try{
     const base44=createClientFromRequest(req);
-    const user=await base44.auth.me().catch(()=>null);
+    const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'commercialGoLiveReadiness',fallback:null,severity:'critical'}));
     if(!user||user.role!=='admin')return Response.json({ok:false,error:'forbidden'},{status:403});
     const body=await req.json().catch(()=>({}));
     const svc=base44.asServiceRole;
     const readiness=await evaluateCommercialGoLiveReadiness(svc,{policy_id:body?.policy_id,policy_ids:body?.policy_ids,provider_scope:body?.provider_scope,final_sha:body?.final_sha});
-    const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);
+    const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialGoLiveReadiness',fallback:[],severity:'critical'}));
     const control=controls[0]||null;
     if(!control)return Response.json({ok:false,error:'outbound_control_missing',readiness},{status:409});
     const preflight={...readiness,requested_by:String(user.email||user.id||'admin')};
@@ -18,12 +19,12 @@ export async function handleCommercialGoLiveReadiness(req: Request) {
       preflight_policy_id:readiness.policy_id||null,preflight_policy_ids:readiness.policy_ids||[],preflight_provider_scope:readiness.provider_scope,
       preflight_checked_at:readiness.checked_at,preflight_expires_at:readiness.expires_at||null,preflight_json:preflight,
     });
-    for(const policyId of readiness.policy_ids||[])await svc.entities.CommercialPolicy.update(policyId,{activation_readiness_snapshot_json:preflight}).catch(()=>null);
+    for(const policyId of readiness.policy_ids||[])await svc.entities.CommercialPolicy.update(policyId,{activation_readiness_snapshot_json:preflight}).catch((error:any)=>safeBestEffort(error,{operation:'commercialGoLiveReadiness',fallback:null,severity:'critical'}));
     await svc.entities.OperationalLog.create({
       event_type:'commercial_go_live_preflight',message:readiness.allowed?'CANARY preflight passed':'CANARY preflight blocked',
       data_json:{allowed:readiness.allowed,blockers:readiness.blockers,preflight_hash:readiness.preflight_hash||null,policy_ids:readiness.policy_ids||[],provider_scope:readiness.provider_scope},
       actor_email:String(user.email||''),created_at:readiness.checked_at,
-    }).catch(()=>null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'commercialGoLiveReadiness',fallback:null,severity:'critical'}));
     return Response.json({ok:readiness.allowed,dry_run:true,outbound_unchanged:true,...readiness},{status:readiness.allowed?200:409});
   }catch(error){
     console.error('commercialGoLiveReadiness failed',error);

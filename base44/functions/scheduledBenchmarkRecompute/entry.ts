@@ -2,6 +2,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { deriveBenchmarkCohort, groupBenchmarkContributions } from "../../shared/p4BenchmarkIntelligence.ts";
 import { sha256 } from "../../shared/p3RateIntelligence.ts";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 /**
  * M2 — Cohort recomputation.
@@ -15,7 +17,7 @@ import { sha256 } from "../../shared/p3RateIntelligence.ts";
  *   - inline by benchmarkLearningEngine after a new contribution
  */
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"scheduledBenchmarkRecompute","cadence_seconds":604800},createClientFromRequest,async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
@@ -154,6 +156,6 @@ Deno.serve(async (req) => {
       contributions_processed: contributions?.length || 0,
     });
   } catch (error) {
-    return Response.json({ error: error?.message || String(error) }, { status: 500 });
+    return internalErrorResponse(error, 'scheduledBenchmarkRecompute');
   }
 });

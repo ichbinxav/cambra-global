@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * ⚠️ DEPRECATED — 2026-07-12 (BUG-5 fix).
@@ -33,14 +35,14 @@ Deno.serve(async (req) => {
     let { brand_id } = body;
 
     if (!brand_id) {
-      const brands = await base44.entities.Brand.list('-created_date', 1).catch(() => []);
+      const brands = await base44.entities.Brand.list('-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'stripeDisconnect',fallback:[],severity:'critical'}));
       if (!brands.length) return Response.json({ ok: false, error: 'No brand found' }, { status: 400 });
       brand_id = brands[0].id;
     }
 
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
-      const userBrands = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+      const userBrands = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'stripeDisconnect',fallback:[],severity:'critical'}));
       if (!userBrands.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -59,7 +61,7 @@ Deno.serve(async (req) => {
     // Revoke active consents for Stripe
     const consents = await base44.entities.ConsentRecord.filter(
       { brand_id, provider: 'stripe', status: 'active' }
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'stripeDisconnect',fallback:[],severity:'critical'}));
     const now = new Date().toISOString();
     for (const c of consents) {
       await base44.entities.ConsentRecord.update(c.id, {
@@ -70,6 +72,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'stripeDisconnect');
   }
 });

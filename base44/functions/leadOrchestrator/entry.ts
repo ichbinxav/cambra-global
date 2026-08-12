@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const ORCHESTRATOR_NAME = "lead_orchestrator";
 const TASK_TYPE = "orchestrate";
@@ -69,7 +71,7 @@ Deno.serve(async (req) => {
 
         // Re-read the child AgentTask to know its real status (source of truth)
         if (childTaskId) {
-          const child = await base44.asServiceRole.entities.AgentTask.get(childTaskId).catch(() => null);
+          const child = await base44.asServiceRole.entities.AgentTask.get(childTaskId).catch((error:any)=>safeBestEffort(error,{operation:'leadOrchestrator',fallback:null,severity:'secondary'}));
           childStatus = child?.status || (data.ok === false ? "failed" : "completed");
         } else {
           childStatus = data.ok === false ? "failed" : "completed";
@@ -101,7 +103,7 @@ Deno.serve(async (req) => {
           agent_task_id: parent.id,
           payload_json: { halted_at: step.name, reason: childStatus, error: stepError, executed },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'leadOrchestrator',fallback:null,severity:'secondary'}));
         return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: step.name, reason: childStatus, executed, ...discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds });
       }
     }
@@ -120,6 +122,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(parent.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, parent_task_id: parent?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'leadOrchestrator');
   }
 });

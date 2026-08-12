@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // downloadRecoverContract — RECOVER-3 (2026-08-03).
 //
 // Authorized access to the stored contractual PDF.
@@ -19,7 +20,7 @@ const EXPIRES_IN = 120;
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'downloadRecoverContract',fallback:null,severity:'critical'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -30,14 +31,14 @@ export default async function (req: Request): Promise<Response> {
     // just to download their own document.
     let mandate: any = null;
     if (body?.mandate_id) {
-      const rows = await svc.entities.Mandate.filter({ id: String(body.mandate_id) }, '-created_date', 1).catch(() => []);
+      const rows = await svc.entities.Mandate.filter({ id: String(body.mandate_id) }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'downloadRecoverContract',fallback:[],severity:'critical'}));
       mandate = rows?.[0] || null;
     } else {
       const owned = await resolveOwnedActivation(svc, user, body?.deal_activation_id);
       if (!owned.ok) return Response.json({ error: 'not found' }, { status: 404 });
       const rows = await svc.entities.Mandate
         .filter({ deal_activation_id: owned.activation.id }, '-created_date', 25)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'downloadRecoverContract',fallback:[],severity:'critical'}));
       mandate = (rows || []).find((m: any) => m.contract_pdf_status === 'generated' && m.status === 'active')
         || (rows || []).find((m: any) => m.contract_pdf_status === 'generated')
         || null;

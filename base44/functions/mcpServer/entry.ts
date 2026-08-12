@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // =============================================================================
 // CAMBRA MCP Server — Production-grade Model Context Protocol implementation.
 // Spec: https://modelcontextprotocol.io/specification (2024-11-05)
@@ -180,7 +181,7 @@ async function trackUsage(base44, principal) {
   const matches = await base44.asServiceRole.entities.ApiUsageRecord.filter({ organization_id: orgId, period_month: periodMonth });
   const record = matches?.[0];
   if (!record) {
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
     await base44.asServiceRole.entities.ApiUsageRecord.create({
       organization_id: orgId, period_month: periodMonth, request_count: 1,
       included_quota: org?.monthly_api_quota || 10000, overage_count: 0, overage_amount_eur: 0,
@@ -190,7 +191,7 @@ async function trackUsage(base44, principal) {
     const newCount = (record.request_count || 0) + 1;
     const quota = record.included_quota || 10000;
     const overage = Math.max(0, newCount - quota);
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
     const overagePrice = (org?.overage_price_per_1k || 0.5) * (overage / 1000);
     await base44.asServiceRole.entities.ApiUsageRecord.update(record.id, {
       request_count: newCount, overage_count: overage,
@@ -311,7 +312,7 @@ const TOOLS = [
       const limit = Math.min(args.limit || 50, 200);
       // FIX 4 — tenant scope by created_by/org; if brand_id provided, also verify ownership
       if (args.brand_id) {
-        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
         assertTenant(principal, brand);
       }
       const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
@@ -325,7 +326,7 @@ const TOOLS = [
     inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     scope: "read:analyses",
     handler: async (base44, args, principal) => {
-      const a = await base44.asServiceRole.entities.AnalyzerResult.get(args.id).catch(() => null);
+      const a = await base44.asServiceRole.entities.AnalyzerResult.get(args.id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
       return serializeAnalysis(assertTenant(principal, a));
     },
   },
@@ -349,7 +350,7 @@ const TOOLS = [
     scope: "trigger:analysis",
     handler: async (base44, args, principal) => {
       // FIX 4 — verify brand ownership before creating analyzer input
-      const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+      const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
       assertTenant(principal, brand);
       const input = await base44.asServiceRole.entities.AnalyzerInput.create({ ...args });
       return { triggered: true, input_id: input.id, brand_id: args.brand_id, status: "queued" };
@@ -366,7 +367,7 @@ const TOOLS = [
       const limit = Math.min(args.limit || 50, 200);
       // FIX 4 — tenant isolation
       if (args.brand_id) {
-        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
         assertTenant(principal, brand);
       }
       const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
@@ -395,7 +396,7 @@ const TOOLS = [
       const limit = Math.min(args.limit || 50, 200);
       // FIX 4 — tenant isolation
       if (args.brand_id) {
-        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch(() => null);
+        const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
         assertTenant(principal, brand);
       }
       const filter = tenantFilterByCreatedBy(principal, args.brand_id ? { brand_id: args.brand_id } : {});
@@ -464,7 +465,7 @@ const TOOLS = [
       const [brands, analyses, activations] = await Promise.all([
         base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 1000),
         base44.asServiceRole.entities.AnalyzerResult.filter(byCreated, "-created_date", 1000),
-        base44.asServiceRole.entities.DealActivation.filter(byCreated, "-created_date", 1000).catch(() => []),
+        base44.asServiceRole.entities.DealActivation.filter(byCreated, "-created_date", 1000).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:[],severity:'secondary'})),
       ]);
       return {
         brands_count: brands.length,
@@ -487,8 +488,8 @@ const TOOLS = [
       const brandF = tenantFilter(principal, { created_date: { $gte: since } });
       const byCreated = tenantFilterByCreatedBy(principal, { created_date: { $gte: since } });
       const [newAnalyses, newBrands] = await Promise.all([
-        base44.asServiceRole.entities.AnalyzerResult.filter(byCreated, "-created_date", 200).catch(() => []),
-        base44.asServiceRole.entities.Brand.filter(brandF, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.AnalyzerResult.filter(byCreated, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:[],severity:'secondary'})),
+        base44.asServiceRole.entities.Brand.filter(brandF, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:[],severity:'secondary'})),
       ]);
       const total = newAnalyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const briefing = {

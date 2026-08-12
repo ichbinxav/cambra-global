@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getPaymentsAnalysisVerified — authenticated read of a PaymentsAnalysisVerified row.
 //
 // Endpoint classification: AUTH_REQUIRED · TENANT_GUARDED.
@@ -100,12 +101,12 @@ Deno.serve(async (req) => {
     if (pathA) {
       row = await base44.asServiceRole.entities.PaymentsAnalysisVerified
         .get(verified_id!)
-        .catch(() => null);
+        .catch((error:any)=>safeBestEffort(error,{operation:'getPaymentsAnalysisVerified',fallback:null,severity:'secondary'}));
       if (!row) return Response.json({ error: 'not_found' }, { status: 404 });
     } else {
       const rows = await base44.asServiceRole.entities.PaymentsAnalysisVerified
         .filter({ brand_id: brand_id! }, '-created_date', 1)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'getPaymentsAnalysisVerified',fallback:[],severity:'secondary'}));
       if (!rows.length) return Response.json({ error: 'not_found' }, { status: 404 });
       row = rows[0];
     }
@@ -113,7 +114,7 @@ Deno.serve(async (req) => {
     // ── 4. Tenant guard ───────────────────────────────────────────────────
     // The row belongs to a brand; resolve that brand and verify the caller
     // owns it (or is admin). 404 on non-owner — never leak existence.
-    const brand = await base44.asServiceRole.entities.Brand.get(row.brand_id).catch(() => null);
+    const brand = await base44.asServiceRole.entities.Brand.get(row.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'getPaymentsAnalysisVerified',fallback:null,severity:'secondary'}));
     if (!brand) {
       // Row exists but its brand was deleted — treat as not_found to the caller.
       return Response.json({ error: 'not_found' }, { status: 404 });

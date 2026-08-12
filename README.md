@@ -44,8 +44,8 @@ to the linked repo is picked up by the Base44 builder.
 | `npm run preview`         | Serve the production build locally                        |
 | `npm run lint`            | ESLint (errors only)                                      |
 | `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
-| `npm run typecheck`       | TypeScript check against `jsconfig.json` — currently reports ~487 preexisting errors (see `src/docs/TYPECHECK_NOISE.md`); the Vite build does not run this check |
-| `npm run typecheck:noise` | Same check, prefixed with the known-noise warning         |
+| `npm run typecheck`       | TypeScript check of every frontend JS/JSX module under `src/` (except Vite build plugins) |
+| `npm run typecheck:noise` | Compatibility alias for the same zero-error frontend check |
 | `npm test`                | Vitest, single run                                        |
 | `npm run test:watch`      | Vitest, watch mode                                        |
 

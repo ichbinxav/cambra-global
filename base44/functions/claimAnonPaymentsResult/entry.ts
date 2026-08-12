@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // claimAnonPaymentsResult — the payments-only handoff step. SINGLE SOURCE OF
 import { sha256 } from '../../shared/intelligenceCore.ts';
 // TRUTH for the anonymous→authenticated claim (the only claim function; the
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
     // ── IDEMPOTENCY + owner check (condición #3) ──────────────────────────
     const priorClaims = await base44.asServiceRole.entities.AnalyzerResult
       .filter({ anon_session_id }, '-created_date', 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
     if (Array.isArray(priorClaims) && priorClaims[0]) {
       const prior = priorClaims[0];
       const priorOwner = normalizeEmail(prior.created_by);
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
     // ── Read the ownerless anonymous session (service role — condición #2) ─
     const sessions = await base44.asServiceRole.entities.PaymentsAnalysisSession
       .filter({ anon_session_id }, '-created_date', 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
     if (!Array.isArray(sessions) || !sessions[0]) {
       return Response.json({ ok: false, error: 'session_not_found' });
     }
@@ -110,7 +111,7 @@ Deno.serve(async (req) => {
     let brand: any = null;
     const ownedBrands = await base44.entities.Brand
       .filter({ contact_email: userEmail }, '-created_date', 20)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
     if (Array.isArray(ownedBrands) && ownedBrands.length > 0) {
       brand = pickWinner(ownedBrands);
     } else {
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
       });
       const afterCreate = await base44.entities.Brand
         .filter({ contact_email: userEmail }, '-created_date', 20)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
       brand = (Array.isArray(afterCreate) && afterCreate.length > 0)
         ? pickWinner(afterCreate)
         : null;
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
     try {
       const dupes = await base44.asServiceRole.entities.AnalyzerResult
         .filter({ anon_session_id }, '-created_date', 20)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
       if (Array.isArray(dupes) && dupes.length > 1) {
         const winner = pickWinner(dupes);
         winnerId = winner?.id || created.id;
@@ -198,8 +199,8 @@ Deno.serve(async (req) => {
     // P12 — freeze the intelligence context that produced the historical AnalyzerResult.
     const analyzerSnapshotPayload = { engine_version: engineVersion, cohort: engineResult.cohort || null, input_snapshot: { monthly_gmv_eur: snapshot.monthly_gmv_eur ?? null, avg_ticket_eur: snapshot.avg_ticket_eur ?? null, provider_slug: snapshot.provider_slug ?? null, country: snapshot.country ?? null }, assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [], source: 'anonymous_estimated' };
     const analyzerSnapshotHash = await sha256(analyzerSnapshotPayload);
-    const intelSnapshot = await base44.asServiceRole.entities.IntelligenceSnapshot.create({ snapshot_key: `analyzer:${winnerId}:${analyzerSnapshotHash.slice(0,16)}`, snapshot_type: 'analyzer_result', related_entity_type: 'AnalyzerResult', related_entity_id: winnerId, brand_id: brand.id, vertical: 'payments', claim_ids: [], pricing_version_ids: [], benchmark_refs_json: { cohort: engineResult.cohort || null }, calculation_version: engineVersion || undefined, snapshot_json: analyzerSnapshotPayload, snapshot_hash: analyzerSnapshotHash, captured_at: new Date().toISOString() }).catch(() => null);
-    if (intelSnapshot?.id) await base44.asServiceRole.entities.AnalyzerResult.update(winnerId,{ intelligence_snapshot_id: intelSnapshot.id }).catch(() => null);
+    const intelSnapshot = await base44.asServiceRole.entities.IntelligenceSnapshot.create({ snapshot_key: `analyzer:${winnerId}:${analyzerSnapshotHash.slice(0,16)}`, snapshot_type: 'analyzer_result', related_entity_type: 'AnalyzerResult', related_entity_id: winnerId, brand_id: brand.id, vertical: 'payments', claim_ids: [], pricing_version_ids: [], benchmark_refs_json: { cohort: engineResult.cohort || null }, calculation_version: engineVersion || undefined, snapshot_json: analyzerSnapshotPayload, snapshot_hash: analyzerSnapshotHash, captured_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:null,severity:'secondary'}));
+    if (intelSnapshot?.id) await base44.asServiceRole.entities.AnalyzerResult.update(winnerId,{ intelligence_snapshot_id: intelSnapshot.id }).catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:null,severity:'secondary'}));
 
     return Response.json({
       ok: true,

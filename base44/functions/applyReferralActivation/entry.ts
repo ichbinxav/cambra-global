@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // applyReferralActivation — REFERRAL-2 T1 (2026-08-03).
 //
 // Credits a referrer when the business THEY referred reaches verified AND
@@ -22,6 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { applyReferralActivation } from '../../shared/referralActivation.ts';
 import { feeForActivated } from '../../shared/referralProgram.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -40,23 +42,23 @@ Deno.serve(async (req) => {
     if (dry_run) {
       // Resolve the attribution chain WITHOUT writing anything.
       const brand = brand_id
-        ? (await svc.entities.Brand.filter({ id: brand_id }, '-created_date', 1).catch(() => []))?.[0] || null
+        ? (await svc.entities.Brand.filter({ id: brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'applyReferralActivation',fallback:[],severity:'secondary'})))?.[0] || null
         : null;
       const emails = [...new Set([referred_email, brand?.contact_email, brand?.created_by]
         .map((e: any) => String(e || '').trim().toLowerCase()).filter(Boolean))];
       let session = null;
       for (const email of emails) {
         const rows = await svc.entities.PaymentsAnalysisSession
-          .filter({ contact_email: email }, '-created_date', 25).catch(() => []);
+          .filter({ contact_email: email }, '-created_date', 25).catch((error:any)=>safeBestEffort(error,{operation:'applyReferralActivation',fallback:[],severity:'secondary'}));
         session = (rows || []).find((r: any) => r?.referred_by_code) || null;
         if (session) break;
       }
       const link = session?.referred_by_code
-        ? (await svc.entities.ReferralLink.filter({ code: session.referred_by_code }, 'created_date', 1).catch(() => []))?.[0] || null
+        ? (await svc.entities.ReferralLink.filter({ code: session.referred_by_code }, 'created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'applyReferralActivation',fallback:[],severity:'secondary'})))?.[0] || null
         : null;
       const key = brand?.id || emails[0] || null;
       const prior = key
-        ? await svc.entities.ReferralActivation.filter({ referred_key: key }, '-created_date', 1).catch(() => [])
+        ? await svc.entities.ReferralActivation.filter({ referred_key: key }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'applyReferralActivation',fallback:[],severity:'secondary'}))
         : [];
       return Response.json({
         ok: true,
@@ -75,6 +77,6 @@ Deno.serve(async (req) => {
     const result = await applyReferralActivation(svc, { brand_id, referred_email, actor });
     return Response.json(result);
   } catch (error) {
-    return Response.json({ ok: false, error: (error as any)?.message || 'internal_error' }, { status: 500 });
+    return internalErrorResponse(error, 'applyReferralActivation');
   }
 });

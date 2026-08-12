@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * Spend Intelligence Agent — Brain B2
@@ -171,13 +173,13 @@ Deno.serve(async (req) => {
     let discoveryTask = null;
     if (discovery_task_id) {
       const rows = await base44.asServiceRole.entities.AgentTask
-        .filter({ id: discovery_task_id }).catch(() => []);
+        .filter({ id: discovery_task_id }).catch((error:any)=>safeBestEffort(error,{operation:'spendIntelligenceAgent',fallback:[],severity:'secondary'}));
       discoveryTask = rows[0] || null;
     }
     if (!discoveryTask) {
       const rows = await base44.asServiceRole.entities.AgentTask
         .filter({ brand_id, agent_name: "discovery_tech_stack", status: "completed" }, "-created_date", 1)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'spendIntelligenceAgent',fallback:[],severity:'secondary'}));
       discoveryTask = rows[0] || null;
     }
     if (!discoveryTask) {
@@ -409,6 +411,6 @@ Deno.serve(async (req) => {
         });
       } catch { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'spendIntelligenceAgent');
   }
 });

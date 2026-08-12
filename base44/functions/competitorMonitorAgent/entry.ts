@@ -1,6 +1,8 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "competitor_monitor";
 const TASK_TYPE = "competitor_monitor";
@@ -102,7 +104,7 @@ Deno.serve(async (req) => {
       payload_json: { source, competitors, summary_preview: summary.slice(0, 400) },
       status: "processed",
       processed_at: new Date().toISOString(),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'competitorMonitorAgent',fallback:null,severity:'secondary'}));
 
     return Response.json({ ok: true, task_id: task.id, source, summary, citations });
   } catch (error) {
@@ -112,6 +114,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'competitorMonitorAgent');
   }
 });

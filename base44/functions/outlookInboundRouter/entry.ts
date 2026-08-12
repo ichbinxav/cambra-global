@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
   classifyHardStop,
   commercialTimezone,
   computeInboundReplySchedule,
@@ -32,7 +34,7 @@ async function graphJson(url: string, token: string) {
 async function activeThreads(svc: any) {
   const groups = await Promise.all(
     ACTIVE_THREAD_STATUSES.map((status) =>
-      svc.entities.CommunicationThread.filter({ status }, '-last_message_at', 250).catch(() => [])
+      svc.entities.CommunicationThread.filter({ status }, '-last_message_at', 250).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}))
     )
   );
   const unique = new Map<string, any>();
@@ -95,7 +97,7 @@ async function processMessage(
     { provider: 'outlook', provider_message_id: String(msg.id) },
     '-created_date',
     1
-  ).catch(() => []);
+  ).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}));
   if (duplicate.length) return { ok: true, duplicate: true, message_id: String(msg.id) };
 
   let thread: any = threadHint;
@@ -104,7 +106,7 @@ async function processMessage(
       { external_thread_id: String(msg.conversationId) },
       '-last_message_at',
       5
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}));
     thread =
       rows.find((item: any) => !['closed', 'suppressed'].includes(item.status)) ||
       rows[0] ||
@@ -115,7 +117,7 @@ async function processMessage(
       { counterparty_email: from },
       '-last_message_at',
       20
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}));
     thread = rows.find((item: any) => ACTIVE_THREAD_STATUSES.includes(item.status)) || null;
   }
   if (!thread) {
@@ -130,7 +132,7 @@ async function processMessage(
           subject: String(msg.subject || '').slice(0, 200),
         },
         created_at: new Date().toISOString(),
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:null,severity:'secondary'}));
     }
     return { ok: true, routed: false, message_id: String(msg.id) };
   }
@@ -139,7 +141,7 @@ async function processMessage(
     { policy_key: thread.policy_key, status: 'active' },
     '-created_date',
     5
-  ).catch(() => []);
+  ).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}));
   const policy =
     policies.find(
       (item: any) => item.version === thread.policy_version && policyIsActive(item)
@@ -192,7 +194,7 @@ async function processMessage(
       { email: from, active: true },
       '-created_date',
       1
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'outlookInboundRouter',fallback:[],severity:'secondary'}));
     if (!existing.length) {
       await svc.entities.ContactSuppression.create({
         email: from,
@@ -227,7 +229,7 @@ async function processMessage(
   };
 }
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"outlookInboundRouter","cadence_seconds":300},createClientFromRequest,async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const statusToEvent = (status) => {
   switch (status) {
@@ -60,6 +61,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ status: 'ok' });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'onInvoiceStatusEvent');
   }
 });

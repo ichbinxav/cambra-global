@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M2 — Benchmark Learning Engine
@@ -110,7 +112,7 @@ Deno.serve(async (req) => {
 
     let input: any = null;
     if (result.input_id) {
-      input = await base44.asServiceRole.entities.AnalyzerInput.get(result.input_id).catch(() => null);
+      input = await base44.asServiceRole.entities.AnalyzerInput.get(result.input_id).catch((error:any)=>safeBestEffort(error,{operation:'benchmarkLearningEngine',fallback:null,severity:'secondary'}));
     }
     if (!input) return Response.json({ ok: false, reason: "no_input" });
 
@@ -265,6 +267,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, created, skipped, cohorts_touched: affectedCohorts.size });
   } catch (error) {
-    return Response.json({ error: (error as any)?.message || String(error) }, { status: 500 });
+    return internalErrorResponse(error, 'benchmarkLearningEngine');
   }
 });

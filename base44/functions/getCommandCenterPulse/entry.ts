@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // Single endpoint that powers the Command Center top bar + recent activity.
 // Aggregates counts across AgentTask, Approval, Event, AgentQuestion in
@@ -15,10 +17,10 @@ Deno.serve(async (req) => {
 
     // Read in parallel
     const [tasks, pendingApprovals, pendingQuestions, recentEvents] = await Promise.all([
-      base44.asServiceRole.entities.AgentTask.list("-created_date", 300).catch(() => []),
-      base44.asServiceRole.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
-      base44.asServiceRole.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
-      base44.asServiceRole.entities.Event.list("-created_date", 100).catch(() => []),
+      base44.asServiceRole.entities.AgentTask.list("-created_date", 300).catch((error:any)=>safeBestEffort(error,{operation:'getCommandCenterPulse',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'getCommandCenterPulse',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'getCommandCenterPulse',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.Event.list("-created_date", 100).catch((error:any)=>safeBestEffort(error,{operation:'getCommandCenterPulse',fallback:[],severity:'secondary'})),
     ]);
 
     const tasks24h = tasks.filter(t => (t.created_date || "") >= last24h);
@@ -75,6 +77,6 @@ Deno.serve(async (req) => {
       recent_activity: recentActivity,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'getCommandCenterPulse');
   }
 });

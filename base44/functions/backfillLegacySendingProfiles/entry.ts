@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import {
   LEGACY_SENDING_PROFILE_RESOLVER_VERSION, SENDING_PROFILE_REVIEW_REASON,
@@ -17,10 +18,10 @@ function equivalent(thread:any,result:any){
 
 async function candidates(svc:any){
   const [open,counterparty,cambra,approval]=await Promise.all([
-    svc.entities.CommunicationThread.filter({status:'open'},'-created_date',1000).catch(()=>[]),
-    svc.entities.CommunicationThread.filter({status:'awaiting_counterparty'},'-next_action_at',1000).catch(()=>[]),
-    svc.entities.CommunicationThread.filter({status:'awaiting_cambra'},'-next_action_at',1000).catch(()=>[]),
-    svc.entities.CommunicationThread.filter({status:'awaiting_approval'},'-created_date',1000).catch(()=>[]),
+    svc.entities.CommunicationThread.filter({status:'open'},'-created_date',1000).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),
+    svc.entities.CommunicationThread.filter({status:'awaiting_counterparty'},'-next_action_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),
+    svc.entities.CommunicationThread.filter({status:'awaiting_cambra'},'-next_action_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),
+    svc.entities.CommunicationThread.filter({status:'awaiting_approval'},'-created_date',1000).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),
   ]);
   return {
     rows:[...open,...counterparty,...cambra,...approval].filter((thread:any,index:number,rows:any[])=>rows.findIndex((row:any)=>row.id===thread.id)===index),
@@ -31,14 +32,14 @@ async function candidates(svc:any){
 export async function handleBackfillLegacySendingProfiles(req: Request) {
   try{
     const base44=createClientFromRequest(req);
-    const user=await base44.auth.me().catch(()=>null);
+    const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:null,severity:'secondary'}));
     if(!user||user.role!=='admin')return Response.json({ok:false,error:'forbidden'},{status:403});
     const body=await req.json().catch(()=>({}));
     const apply=body?.apply===true;
     if(apply&&body?.confirmation!=='BACKFILL_LEGACY_SENDING_PROFILES')return Response.json({ok:false,error:'confirmation_required'},{status:409});
     const svc=base44.asServiceRole;
     const [scan,profiles,policies]=await Promise.all([
-      candidates(svc),svc.entities.OutboundSendingProfile.list('-created_date',500).catch(()=>[]),svc.entities.CommercialPolicy.list('-created_date',500).catch(()=>[]),
+      candidates(svc),svc.entities.OutboundSendingProfile.list('-created_date',500).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),svc.entities.CommercialPolicy.list('-created_date',500).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'})),
     ]);
     const policyFor=(thread:any)=>policies.find((policy:any)=>policy.policy_key===thread.policy_key&&policy.version===thread.policy_version)||policies.find((policy:any)=>policy.policy_key===thread.policy_key&&policy.status==='active')||null;
     const now=new Date().toISOString();
@@ -47,7 +48,7 @@ export async function handleBackfillLegacySendingProfiles(req: Request) {
     const report:any[]=[];
 
     for(const thread of scan.rows){
-      const messages=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',50).catch(()=>[]);
+      const messages=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',50).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:[],severity:'secondary'}));
       const result=resolveLegacySendingProfile({thread,messages,profiles,policy:policyFor(thread)});
       if(result.status==='RESOLVED')resolved++;else reviewRequired++;
       const same=equivalent(thread,result);
@@ -67,7 +68,7 @@ export async function handleBackfillLegacySendingProfiles(req: Request) {
         event_type:'legacy_sending_profile_backfill',message:`${resolved} resolved, ${reviewRequired} review required`,
         data_json:{resolver_version:LEGACY_SENDING_PROFILE_RESOLVER_VERSION,scanned:scan.rows.length,resolved,review_required:reviewRequired,updated,unchanged,coverage_truncated:postScanTruncated,eligible_after_without_valid_profile:invalidEligible.length},
         actor_email:actor,created_at:now,
-      }).catch(()=>null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'backfillLegacySendingProfiles',fallback:null,severity:'secondary'}));
     }
     const activationReady=apply&&!postScanTruncated&&invalidEligible.length===0;
     return Response.json({

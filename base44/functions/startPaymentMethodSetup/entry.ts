@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // startPaymentMethodSetup — RECOVER-2 (2026-08-03).
 //
 //
@@ -45,7 +46,7 @@ export default async function (req: Request): Promise<Response> {
     // Mandate first — no authorization, no payment method.
     const mandates = await svc.entities.Mandate.filter(
       { deal_activation_id: activation.id, status: 'active' }, '-created_date', 1,
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentMethodSetup',fallback:[],severity:'secondary'}));
     if (!mandates?.length) {
       return Response.json({ error: 'mandate_not_active' }, { status: 409 });
     }

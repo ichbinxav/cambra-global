@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * getWaitlistLeads — admin-only endpoint that returns all Lead records
@@ -33,6 +34,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ leads: waitlist, total: waitlist.length, fresh_24h });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'getWaitlistLeads');
   }
 });

@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -24,7 +26,7 @@ Deno.serve(async (req) => {
         const managed = await base44.entities.Provider.filter({ account_manager: user.email });
         const set = new Set([...(providers||[]).map(p=>p.id), ...(managed||[]).map(p=>p.id)]);
         providerIds = Array.from(set);
-      } catch {}
+      } catch(error){safeBestEffort(error,{operation:'linkDocument',fallback:null,severity:'secondary'})}
       const allowed = (doc.owner_type === 'brand' && doc.owner_id === brandId) || (doc.owner_type === 'provider' && providerIds.includes(doc.owner_id));
       if (!allowed) return Response.json({ error: 'Forbidden' }, { status: 403 });
       let targetAllowed = target_type === 'brand' ? target_id === brandId : target_type === 'provider' ? providerIds.includes(target_id) : false;
@@ -47,6 +49,6 @@ Deno.serve(async (req) => {
     const link = await base44.entities.DocumentLink.create({ document_id, target_type, target_id, is_primary });
     return Response.json({ link });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'linkDocument');
   }
 });

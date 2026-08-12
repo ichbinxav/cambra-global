@@ -1,5 +1,30 @@
 export const SCHEDULER_GUARD_VERSION = 'scheduler-guard-1.0.0';
 
+type ScheduledGuardSpec={worker_key:string;cadence_seconds:number;routes?:Record<string,{worker_key:string;cadence_seconds:number}>};
+
+/** Wraps the actual Deno entry boundary, so every scheduled invocation claims
+ * its cadence slot before the legacy handler can perform side effects. Manual
+ * and authenticated internal invocations preserve their existing contract. */
+export function guardedScheduledServe(spec:ScheduledGuardSpec, clientFactory:(req:Request)=>any, handler:(req:Request)=>Response|Promise<Response>) {
+  Deno.serve(async (req:Request) => {
+    if (invocationKind(req) !== 'SCHEDULED') return handler(req);
+    const payload=await req.clone().json().catch(()=>({} as any));
+    const routed=spec.routes?.[String(payload?.host_action || payload?.hosted_worker || '')];
+    const selected=routed || spec;
+    const svc=clientFactory(req).asServiceRole;
+    const claim=await claimSchedulerRun(svc,req,{worker_key:selected.worker_key,cadence_seconds:selected.cadence_seconds});
+    if(!claim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:claim.run_key});
+    try{
+      const response=await handler(req);
+      await finishSchedulerRun(svc,claim,{http_status:response.status},response.status<500);
+      return response;
+    }catch(error){
+      await finishSchedulerRun(svc,claim,{error_code:'scheduled_handler_failed'},false);
+      throw error;
+    }
+  });
+}
+
 function invocationKind(req:Request) {
   if (String(req.headers.get('base44-scheduled-task') || '').toLowerCase() === 'true') return 'SCHEDULED';
   if (req.headers.get('base44-automation-id')) return 'SCHEDULED';

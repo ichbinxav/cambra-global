@@ -25,9 +25,13 @@ jobs:
       - run: npm run durability:check
       - run: npm run documentation:check
       - run: npm run scheduler:check
+      - run: npm run scheduler:hardening:check
       - run: npm run retention:check
       - run: npm run secrets:check
+      - run: npm run public-errors:check
+      - run: npm run silent-failures:check
       - run: npm run dependency:audit
+      - run: npm run base44:functions:check
       - run: npm run ci:check
       - run: npm run lint:evidence
       - run: npm run typecheck:critical:evidence
@@ -36,8 +40,13 @@ jobs:
       - run: npm run build:evidence
       - run: npm run release:manifest
       - run: npm run release:check:ci
+      - run: npm run release:package
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: release-evidence
-          path: .release-evidence/
+          path: |
+            .release-evidence/
+            .release-artifacts/
+            RELEASE.json
+            base44/.deploy/manifest.json

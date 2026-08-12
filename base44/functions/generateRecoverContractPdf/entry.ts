@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // generateRecoverContractPdf — RECOVER-3 (2026-08-03).
 //
 // Produces the contractual PDF for ONE mandate, stores it privately, verifies the
@@ -53,7 +54,7 @@ export default async function (req: Request): Promise<Response> {
   const mandate_id = String(body?.mandate_id || '');
   if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });
 
-  const rows = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
+  const rows = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'generateRecoverContractPdf',fallback:[],severity:'critical'}));
   const mandate = rows?.[0];
   if (!mandate) return Response.json({ error: 'mandate not found' }, { status: 404 });
 
@@ -65,7 +66,7 @@ export default async function (req: Request): Promise<Response> {
       contract_pdf_status: 'failed_permanent',
       contract_pdf_pending: false,
       contract_pdf_last_error_code: 'mandate_not_acceptable',
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'generateRecoverContractPdf',fallback:null,severity:'critical'}));
     return Response.json({ error: 'mandate_not_acceptable', status: mandate.status }, { status: 409 });
   }
 
@@ -162,7 +163,7 @@ export default async function (req: Request): Promise<Response> {
     const { signed_url } = await svc.integrations.Core.CreateFileSignedUrl({ file_uri, expires_in: 120 }).catch(
       (e: any) => { throw new Error(`storage_unavailable: ${e?.message || 'signing failed'}`); },
     );
-    const verifyRes = await fetch(signed_url).catch(() => null);
+    const verifyRes = await fetch(signed_url).catch((error:any)=>safeBestEffort(error,{operation:'generateRecoverContractPdf',fallback:null,severity:'critical'}));
     if (!verifyRes?.ok) throw new Error('storage_verification_failed');
     const storedBytes = new Uint8Array(await verifyRes.arrayBuffer());
     const storedHash = await sha256Hex(storedBytes);
@@ -219,7 +220,7 @@ export default async function (req: Request): Promise<Response> {
       contract_pdf_pending: !permanent,
       contract_pdf_last_error_code: code,
       contract_pdf_next_retry_at: permanent ? '' : nextRetryAt(attempt),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'generateRecoverContractPdf',fallback:null,severity:'critical'}));
 
     await logContractEvent(svc, 'recover_contract_pdf_generation_failed', mandate, {
       attempt,
@@ -240,7 +241,7 @@ export default async function (req: Request): Promise<Response> {
         approved_at: new Date().toISOString(),
         source: 'generateRecoverContractPdf',
         document_version: mandate.document_version || '',
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'generateRecoverContractPdf',fallback:null,severity:'critical'}));
     }
 
     return Response.json({ error: code, permanent, mandate_id }, { status: permanent ? 422 : 503 });

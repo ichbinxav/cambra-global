@@ -1,6 +1,8 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { commercialExecutionDryRun } from "../../shared/commercialDryRun.ts";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 export async function handleCommercialExecutionDryRun(req: Request) {
   try {
@@ -92,7 +94,7 @@ export async function handleCommercialExecutionDryRun(req: Request) {
             { profile_key: String(body.profile_key) },
             "-created_date",
             1,
-          ).catch(() => [])
+          ).catch((error:any)=>safeBestEffort(error,{operation:'commercialExecutionDryRun',fallback:[],severity:'critical'}))
         )[0]
       : body.profile || null;
     if (!lead || !policy || !profile)
@@ -117,7 +119,7 @@ export async function handleCommercialExecutionDryRun(req: Request) {
           },
           "-created_date",
           1,
-        ).catch(() => [])
+        ).catch((error:any)=>safeBestEffort(error,{operation:'commercialExecutionDryRun',fallback:[],severity:'critical'}))
       )[0] || null;
     const result = commercialExecutionDryRun({
       lead,
@@ -131,18 +133,6 @@ export async function handleCommercialExecutionDryRun(req: Request) {
     });
     return Response.json(result, { status: result.ok ? 200 : 409 });
   } catch (error: any) {
-    return Response.json(
-      {
-        ok: false,
-        dry_run: true,
-        real_provider_call: false,
-        unsolicited_send_count: 0,
-        error: String(error?.message || "commercial_dry_run_failed").slice(
-          0,
-          160,
-        ),
-      },
-      { status: 500 },
-    );
+    return internalErrorResponse(error, 'commercialExecutionDryRun');
   }
 }

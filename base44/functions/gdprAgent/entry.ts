@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "gdpr";
 const TASK_TYPE = "gdpr_review";
@@ -44,7 +46,7 @@ Deno.serve(async (req) => {
 
     // Pull recent events that touched personal data
     const recentEvents = await base44.asServiceRole.entities.Event
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'gdprAgent',fallback:[],severity:'secondary'}));
     const dataTouchingEvents = recentEvents.filter(ev => {
       if (ev.created_date < since) return false;
       const t = ev.event_type || "";
@@ -56,7 +58,7 @@ Deno.serve(async (req) => {
 
     // Also pull recent OutboundLeads to check consent/source basis
     const recentLeads = await base44.asServiceRole.entities.OutboundLead
-      .list("-created_date", 50).catch(() => []);
+      .list("-created_date", 50).catch((error:any)=>safeBestEffort(error,{operation:'gdprAgent',fallback:[],severity:'secondary'}));
     const newLeads = recentLeads.filter(l => l.created_date >= since);
 
     if (dataTouchingEvents.length === 0 && newLeads.length === 0) {
@@ -118,7 +120,7 @@ Deno.serve(async (req) => {
             disclaimer: LEGAL_DISCLAIMER,
           },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'gdprAgent',fallback:null,severity:'secondary'}));
         if (ev) flagsEmitted.push(ev.id);
       }
     }
@@ -146,6 +148,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'gdprAgent');
   }
 });

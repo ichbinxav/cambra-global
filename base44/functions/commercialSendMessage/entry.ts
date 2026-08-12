@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { automaticSendGovernorDecision, communicationQuality, commercialTimezone, isBusinessHour, normalizeEmail, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
@@ -48,28 +49,28 @@ Deno.serve(async (req) => {
     const text = sanitizeExternalText(body?.text, 5000);
     if (!threadId || !subject || !text) return Response.json({ ok:false, error:'thread_subject_text_required' }, { status:400 });
 
-    const thread = await svc.entities.CommunicationThread.get(threadId).catch(()=>null);
+    const thread = await svc.entities.CommunicationThread.get(threadId).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));
     if (!thread || ['closed','suppressed'].includes(thread.status)) return Response.json({ ok:false, error:'thread_unavailable' }, { status:409 });
     let brandId='';
-    if(thread.recover_id){const activation=await svc.entities.DealActivation.get(String(thread.recover_id)).catch(()=>null);brandId=String(activation?.brand_id||'')}
+    if(thread.recover_id){const activation=await svc.entities.DealActivation.get(String(thread.recover_id)).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));brandId=String(activation?.brand_id||'')}
     let jurisdiction=canonicalMarket(thread.market_jurisdiction)?.iso2||'';
-    if(!jurisdiction&&thread.lead_id){const lead=await svc.entities.OutboundLead.get(String(thread.lead_id)).catch(()=>null);jurisdiction=canonicalMarket(lead?.country)?.iso2||'';}
-    if(!jurisdiction&&thread.related_entity_type==='PartnerProspect'){const partner=await svc.entities.PartnerProspect.get(String(thread.related_entity_id||'')).catch(()=>null);jurisdiction=canonicalMarket(partner?.country)?.iso2||'';}
-    if(!jurisdiction&&brandId){const brand=await svc.entities.Brand.get(brandId).catch(()=>null);jurisdiction=canonicalMarket(brand?.billing_country||brand?.country)?.iso2||'';}
+    if(!jurisdiction&&thread.lead_id){const lead=await svc.entities.OutboundLead.get(String(thread.lead_id)).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));jurisdiction=canonicalMarket(lead?.country)?.iso2||'';}
+    if(!jurisdiction&&thread.related_entity_type==='PartnerProspect'){const partner=await svc.entities.PartnerProspect.get(String(thread.related_entity_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));jurisdiction=canonicalMarket(partner?.country)?.iso2||'';}
+    if(!jurisdiction&&brandId){const brand=await svc.entities.Brand.get(brandId).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));jurisdiction=canonicalMarket(brand?.billing_country||brand?.country)?.iso2||'';}
     if(thread.market_policy_rollout==='production'){const cap=['provider_negotiation','aggregate_procurement'].includes(String(thread.engine||''))?'NEGOTIATE':'OUTREACH';try{await assertMarketCapabilityAllowed(svc,{brand_id:brandId||undefined,jurisdiction:jurisdiction||undefined,capability:cap,enforce:true,actor_type:String(body?.agent_name||thread.engine||'commercial_send'),ai_requested_bypass:body?.ai_requested_bypass===true})}catch(e:any){return Response.json({ok:false,error:`market_capability_denied:${cap}`,decision:e?.decision||null},{status:409})}}
     const to = normalizeEmail(body?.to || thread.counterparty_email);
     if (!to) return Response.json({ ok:false, error:'recipient_required' }, { status:400 });
 
-    const suppressions = await svc.entities.ContactSuppression.filter({ email:to, active:true }, '-created_date', 1).catch(()=>[]);
+    const suppressions = await svc.entities.ContactSuppression.filter({ email:to, active:true }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));
     if (suppressions.length) {
-      await svc.entities.CommunicationThread.update(thread.id, { status:'suppressed', automation_paused:true, pause_reason:'contact_suppressed' }).catch(()=>null);
+      await svc.entities.CommunicationThread.update(thread.id, { status:'suppressed', automation_paused:true, pause_reason:'contact_suppressed' }).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));
       return Response.json({ ok:false, error:'contact_suppressed' }, { status:409 });
     }
 
     const manualOverrideRequested=body?.manual_override === true;
     let approvedOverride:any=null;
     if(manualOverrideRequested&&!gate.isAdmin&&gate.isInternal&&body?.approval_id){
-      approvedOverride=await svc.entities.Approval.get(String(body.approval_id)).catch(()=>null);
+      approvedOverride=await svc.entities.Approval.get(String(body.approval_id)).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));
       const expired=approvedOverride?.expires_at&&Date.parse(String(approvedOverride.expires_at))<=Date.now();
       if(approvedOverride?.status!=='approved'||expired||!approvalBoundToThread(approvedOverride,thread))approvedOverride=null;
     }
@@ -92,7 +93,7 @@ Deno.serve(async (req) => {
       });
     }catch(error){const response=legalBlockResponse(error);if(response)return response;throw error;}
 
-    const policies = await svc.entities.CommercialPolicy.filter({ policy_key:thread.policy_key, status:'active' }, '-created_date', 5).catch(()=>[]);
+    const policies = await svc.entities.CommercialPolicy.filter({ policy_key:thread.policy_key, status:'active' }, '-created_date', 5).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));
     const policy = policies.find((p:any)=>p.version === thread.policy_version) || policies[0] || null;
     const timezone = commercialTimezone(thread, policy);
     if (automatic) {
@@ -104,20 +105,20 @@ Deno.serve(async (req) => {
       if (!gate.isInternal) return Response.json({ ok:false, error:'internal_autonomy_proof_required' }, { status:403 });
       if (!isBusinessHour(policy,new Date(),timezone)) return Response.json({ok:false,error:'outside_business_hours'},{status:409});
       const inboundId=String(body?.in_reply_to_message_id||'');
-      if(inboundId){ const inbound=await svc.entities.CommunicationMessage.get(inboundId).catch(()=>null); if(!inbound||inbound.thread_id!==thread.id||inbound.direction!=='inbound')return Response.json({ok:false,error:'invalid_inbound_reply_reference'},{status:409}); const earliest=Date.parse(inbound.earliest_reply_at||''); const scheduled=Date.parse(inbound.scheduled_send_at||''); const nowMs=Date.now(); if(!Number.isFinite(earliest)||nowMs<earliest)return Response.json({ok:false,error:'minimum_reply_delay_not_elapsed',earliest_reply_at:inbound.earliest_reply_at},{status:409}); if(Number.isFinite(scheduled)&&nowMs<scheduled)return Response.json({ok:false,error:'scheduled_send_not_due',scheduled_send_at:inbound.scheduled_send_at},{status:409}); }
+      if(inboundId){ const inbound=await svc.entities.CommunicationMessage.get(inboundId).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'})); if(!inbound||inbound.thread_id!==thread.id||inbound.direction!=='inbound')return Response.json({ok:false,error:'invalid_inbound_reply_reference'},{status:409}); const earliest=Date.parse(inbound.earliest_reply_at||''); const scheduled=Date.parse(inbound.scheduled_send_at||''); const nowMs=Date.now(); if(!Number.isFinite(earliest)||nowMs<earliest)return Response.json({ok:false,error:'minimum_reply_delay_not_elapsed',earliest_reply_at:inbound.earliest_reply_at},{status:409}); if(Number.isFinite(scheduled)&&nowMs<scheduled)return Response.json({ok:false,error:'scheduled_send_not_due',scheduled_send_at:inbound.scheduled_send_at},{status:409}); }
     }
 
-    const previousOut=await svc.entities.CommunicationMessage.filter({thread_id:thread.id,direction:'outbound'},'-created_date',6).catch(()=>[]);
+    const previousOut=await svc.entities.CommunicationMessage.filter({thread_id:thread.id,direction:'outbound'},'-created_date',6).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));
     const quality=communicationQuality(text,{previous_outbound:previousOut.map((m:any)=>String(m.text_body||''))});
     if(!quality.ok)return Response.json({ok:false,error:'communication_quality_gate_failed',quality},{status:422});
 
     const idempotency = String(body?.idempotency_key || `cambra:${thread.id}:${action}:${thread.last_inbound_at || thread.last_message_at || 'start'}`);
-    const existing = await svc.entities.CommunicationMessage.filter({ thread_id:thread.id, direction:'outbound', idempotency_key:idempotency }, '-created_date', 1).catch(()=>[]);
+    const existing = await svc.entities.CommunicationMessage.filter({ thread_id:thread.id, direction:'outbound', idempotency_key:idempotency }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));
     if (existing.length) return Response.json({ ok:true, duplicate:true, message_id:existing[0].id, provider:existing[0].provider || null });
 
     const now = new Date().toISOString();
     const requestedProfileKey=String(body?.sending_profile_key||thread.sending_profile_key||'').trim();
-    const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch(()=>[]):[];
+    const profiles=requestedProfileKey?await svc.entities.OutboundSendingProfile.filter({profile_key:requestedProfileKey},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'})):[];
     const sendingProfile=profiles[0]||null;
     if(requestedProfileKey&&!sendingProfile)return Response.json({ok:false,error:'sending_profile_not_found'},{status:409});
     if(approvedOverride&&['initial_outreach','follow_up','partner_outreach'].includes(action)&&!sendingProfile)return Response.json({ok:false,error:'approved_send_profile_required',review_required:true},{status:409});
@@ -125,10 +126,10 @@ Deno.serve(async (req) => {
     const configuredSignatureEmail=mailboxFromSetting(String(sendingProfile?.from_address||(signatureProvider==='outlook'?Deno.env.get('CAMBRA_OUTLOOK_SIGNATURE_EMAIL'):signatureProvider==='resend'?Deno.env.get('RESEND_FROM'):'')||''));
     const signedText=ensureSignature(text,cambraSignature(signatureProvider,String(thread.engine||''),configuredSignatureEmail));
     const signedHTML=signedHtml(text,signatureProvider,String(thread.engine||''),configuredSignatureEmail);
-    if(sendingProfile&&!manualOverride){const minuteAgo=new Date(Date.now()-60000).toISOString();const recentBurst=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:minuteAgo}},'-sent_at',100).catch(()=>[]);const burst=Math.max(1,Math.min(60,Number(sendingProfile.burst_per_minute|| (sendingProfile.provider==='outlook'?12:30))));if(recentBurst.length>=burst)return Response.json({ok:false,error:'sending_profile_burst_limit',profile:sendingProfile.profile_key,burst_per_minute:burst,retry_after_seconds:60},{status:429});}
+    if(sendingProfile&&!manualOverride){const minuteAgo=new Date(Date.now()-60000).toISOString();const recentBurst=await svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:minuteAgo}},'-sent_at',100).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));const burst=Math.max(1,Math.min(60,Number(sendingProfile.burst_per_minute|| (sendingProfile.provider==='outlook'?12:30))));if(recentBurst.length>=burst)return Response.json({ok:false,error:'sending_profile_burst_limit',profile:sendingProfile.profile_key,burst_per_minute:burst,retry_after_seconds:60},{status:429});}
     const acquisitionAction=['initial_outreach','partner_outreach'].includes(action);
     if(acquisitionAction&&!manualOverride){
-      const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);const control=controls[0]||null;
+      const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));const control=controls[0]||null;
       if(!control?.acquisition_enabled)return Response.json({ok:false,error:'outbound_master_paused'},{status:409});
       if(!sendingProfile)return Response.json({ok:false,error:'sending_profile_required'},{status:409});
       if(sendingProfile.provider==='outlook'&&!control.premium_outlook_enabled)return Response.json({ok:false,error:'premium_outlook_paused'},{status:409});
@@ -142,8 +143,8 @@ Deno.serve(async (req) => {
       else{
         const day=new Date();day.setUTCHours(0,0,0,0);const since=day.toISOString();
         const [profileSent,policySent]=await Promise.all([
-          svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:since}},'-sent_at',550).catch(()=>[]),
-          svc.entities.CommunicationMessage.filter({direction:'outbound',policy_key:thread.policy_key,sent_at:{$gte:since}},'-sent_at',550).catch(()=>[]),
+          svc.entities.CommunicationMessage.filter({direction:'outbound',sending_profile_key:sendingProfile.profile_key,sent_at:{$gte:since}},'-sent_at',550).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'})),
+          svc.entities.CommunicationMessage.filter({direction:'outbound',policy_key:thread.policy_key,sent_at:{$gte:since}},'-sent_at',550).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'})),
         ]);
         governor=automaticSendGovernorDecision({automatic:true,sendingProfile,profileSentToday:profileSent.length,policy,policySentToday:policySent.length});
       }
@@ -151,15 +152,15 @@ Deno.serve(async (req) => {
     }
     let manualOverrideAudit:any=null;
     if(manualOverride){
-      manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Approved override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||approvedOverride?.approved_by||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.1.0'}).catch(()=>null);
+      manualOverrideAudit=await svc.entities.AuthorizationLog.create({action_type:'commercial_send_manual_override',description:`Approved override for ${action} on thread ${thread.id}`,approved_by:String(gate.user?.email||approvedOverride?.approved_by||''),approved_at:new Date().toISOString(),source:'commercialSendMessage',document_version:'commercial-send-governor-1.1.0'}).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));
       if(!manualOverrideAudit)return Response.json({ok:false,error:'manual_override_audit_required'},{status:409});
     }
-    const liveThread=await svc.entities.CommunicationThread.get(thread.id).catch(()=>null);
+    const liveThread=await svc.entities.CommunicationThread.get(thread.id).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));
     if(!liveThread||['closed','suppressed'].includes(liveThread.status)||liveThread.automation_paused===true)return Response.json({ok:false,error:'thread_state_changed_before_send'},{status:409});
-    const liveSuppressions=await svc.entities.ContactSuppression.filter({email:to,active:true},'-created_date',1).catch(()=>[]);if(liveSuppressions.length)return Response.json({ok:false,error:'contact_suppressed_before_send'},{status:409});
+    const liveSuppressions=await svc.entities.ContactSuppression.filter({email:to,active:true},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));if(liveSuppressions.length)return Response.json({ok:false,error:'contact_suppressed_before_send'},{status:409});
     if(action==='follow_up'){
       if(['MEETING_BOOKED','MEETING_COMPLETED','CLOSED_WON','CLOSED_LOST'].includes(String(liveThread.conversation_state||''))||['booked','completed'].includes(String(liveThread.meeting_status||'')))return Response.json({ok:false,error:'follow_up_cancelled_by_meeting_or_closed_state'},{status:409});
-      const latest=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',10).catch(()=>[]);const latestInbound=latest.find((message:any)=>message.direction==='inbound');const latestOutbound=latest.find((message:any)=>message.direction==='outbound');if(latestInbound&&(!latestOutbound||Date.parse(latestInbound.received_at||latestInbound.created_date||0)>=Date.parse(latestOutbound.actual_sent_at||latestOutbound.sent_at||latestOutbound.created_date||0)))return Response.json({ok:false,error:'follow_up_cancelled_by_new_reply'},{status:409});
+      const latest=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',10).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:[],severity:'critical'}));const latestInbound=latest.find((message:any)=>message.direction==='inbound');const latestOutbound=latest.find((message:any)=>message.direction==='outbound');if(latestInbound&&(!latestOutbound||Date.parse(latestInbound.received_at||latestInbound.created_date||0)>=Date.parse(latestOutbound.actual_sent_at||latestOutbound.sent_at||latestOutbound.created_date||0)))return Response.json({ok:false,error:'follow_up_cancelled_by_new_reply'},{status:409});
     }
     let provider=String(sendingProfile?.provider||'outlook'); let providerMessageId:any=null; let fromAddress=''; let externalThreadId=thread.external_thread_id||null; let externalLeadId=thread.external_lead_id||null; let sendStatus='sent'; let actualSentAt:any=now; let raw:any={idempotency_key:idempotency,sending_profile_key:sendingProfile?.profile_key||null,central_governor:governor,legal_execution:{decision:legalDecision?.decision,authority_snapshot_id:legalDecision?.authority_snapshot_id,authority_snapshot_hash:legalDecision?.authority_snapshot_hash},manual_override:manualOverride,manual_override_approval_id:approvedOverride?.id||null,manual_override_audit_id:manualOverrideAudit?.id||null};
     const costReservation=await reservePaidOperation(svc,{event_key:`email:${idempotency}`,category:'email',provider,source:'commercialSendMessage',related_entity_type:'CommunicationThread',related_entity_id:thread.id});
@@ -169,11 +170,11 @@ Deno.serve(async (req) => {
         const instantlyKey=Deno.env.get('INSTANTLY_API_KEY')||'';if(!instantlyKey)throw Object.assign(new Error('instantly_not_configured'),{status:503});
         const transport=new InstantlyOutboundProvider(instantlyKey);fromAddress=mailboxFromSetting(String(sendingProfile.from_address||''));
         if(acquisitionAction){
-          const lead=thread.lead_id?await svc.entities.OutboundLead.get(String(thread.lead_id)).catch(()=>null):null;
+          const lead=thread.lead_id?await svc.entities.OutboundLead.get(String(thread.lead_id)).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'})):null;
           const queued=await transport.queueInitial({campaign_id:sendingProfile.external_campaign_id,to,contact_name:thread.counterparty_name||lead?.contact_full_name||'',contact_title:thread.counterparty_role||lead?.contact_title||'',company_name:thread.company_name||lead?.company_name||'',company_domain:lead?.company_domain||'',personalization:(thread.personalization_json?.facts||[]).slice(0,5).join('; '),subject,text:signedText,thread_id:thread.id,idempotency_key:idempotency});
           externalLeadId=queued.provider_lead_id||externalLeadId;sendStatus='scheduled';actualSentAt=null;raw={...raw,instantly_lead_id:queued.provider_lead_id||null,instantly_campaign_id:queued.campaign_id,queued:true,provider_response:queued.raw};
         }else{
-          const inboundId=String(body?.in_reply_to_message_id||'');const inbound=inboundId?await svc.entities.CommunicationMessage.get(inboundId).catch(()=>null):null;
+          const inboundId=String(body?.in_reply_to_message_id||'');const inbound=inboundId?await svc.entities.CommunicationMessage.get(inboundId).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'})):null;
           if(!inbound?.provider_message_id)throw Object.assign(new Error('instantly_reply_reference_required'),{status:409});
           const sent=await transport.sendReply({eaccount:fromAddress,reply_to_uuid:inbound.provider_message_id,subject,text:signedText,html:signedHTML});
           providerMessageId=sent.provider_message_id||null;externalThreadId=sent.external_thread_id||externalThreadId;raw={...raw,instantly_email_id:providerMessageId,instantly_thread_id:externalThreadId,provider_response:sent.raw};
@@ -188,7 +189,7 @@ Deno.serve(async (req) => {
         const resendIdentity=signatureIdentity('resend',String(thread.engine||''),configuredSignatureEmail);const fromSetting=String(sendingProfile?.from_address||Deno.env.get('RESEND_FROM')||'').trim();if(!fromSetting)throw Object.assign(new Error('resend_from_identity_required'),{status:503});const from=fromSetting.includes('<')?fromSetting:`${resendIdentity.name} <${fromSetting}>`;fromAddress=mailboxFromSetting(fromSetting);const inboundDomain=Deno.env.get('RESEND_INBOUND_DOMAIN')||'contact.cambra.global';const replyTo=`reply+${thread.id}@${inboundDomain}`;
         const res=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${resendKey}`,'Idempotency-Key':idempotency},body:JSON.stringify({from,to:[to],reply_to:replyTo,subject,text:signedText,html:signedHTML,tags:[{name:'thread_id',value:thread.id},{name:'engine',value:thread.engine}]})});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(`resend_send_failed:${res.status}`);providerMessageId=data?.id||null;raw={...raw,resend_id:data?.id||null};
       }else throw Object.assign(new Error('unsupported_outbound_provider'),{status:409});
-    }catch(error:any){await settlePaidOperation(svc,costReservation,{ok:false,usage_json:{thread_id:thread.id,error_code:String(error?.code||error?.message||'transport_failed').slice(0,160)}}).catch(()=>null);throw error;}
+    }catch(error:any){await settlePaidOperation(svc,costReservation,{ok:false,usage_json:{thread_id:thread.id,error_code:String(error?.code||error?.message||'transport_failed').slice(0,160)}}).catch((error:any)=>safeBestEffort(error,{operation:'commercialSendMessage',fallback:null,severity:'critical'}));throw error;}
     const message = await svc.entities.CommunicationMessage.create({
       thread_id:thread.id, direction:'outbound', channel:'email', provider, provider_message_id:String(providerMessageId||''), idempotency_key:idempotency, sending_profile_key:sendingProfile?.profile_key||thread.sending_profile_key||null,
       from_email:fromAddress, to_emails:[to], subject, text_body:signedText, classification, agent_name:String(body?.agent_name || 'commercial_orchestrator'), policy_key:thread.policy_key,

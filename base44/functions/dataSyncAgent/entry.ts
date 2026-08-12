@@ -8,6 +8,7 @@
  */
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // ─── REGISTRY (keep in sync with functions/oauthConnector.js) ──────────────
 const REGISTRY = {
@@ -2084,12 +2085,7 @@ Deno.serve(async (req) => {
     // failures, not plumbing failures).
     console.error(`[dataSyncAgent] pre-task failure at stage="${stage}":`, preTaskErr);
     console.error(preTaskErr?.stack || "(no stack)");
-    return Response.json({
-      ok: false,
-      stage,
-      error: preTaskErr?.message || String(preTaskErr),
-      stack: preTaskErr?.stack || null,
-    }, { status: 500 });
+    return internalErrorResponse(preTaskErr, 'dataSyncAgent');
   }
 
   // From here on, `base44`, `user`, `integ`, `cfg`, `task` are all populated.
@@ -2361,9 +2357,9 @@ Deno.serve(async (req) => {
         last_sync_status: "failed",
         last_error: err.message,
       });
-      return Response.json({ ok: false, error: err.message, agent_task_id: task.id }, { status: 500 });
+      return internalErrorResponse(err, 'dataSyncAgent');
     }
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'dataSyncAgent');
   }
 });

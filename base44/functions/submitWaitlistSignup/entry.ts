@@ -3,6 +3,7 @@ import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { consumeRateLimit } from '../../shared/rateLimit.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * submitWaitlistSignup
@@ -181,6 +182,6 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("submitWaitlistSignup error:", error);
-    return Response.json({ ok: false, error: (error as any)?.message || "internal_error" }, { status: 500 });
+    return internalErrorResponse(error, 'submitWaitlistSignup');
   }
 });

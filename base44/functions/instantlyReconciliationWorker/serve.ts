@@ -1,3 +1,4 @@
 import { handleInstantlyReconciliationWorker } from './entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(handleInstantlyReconciliationWorker);
+guardedScheduledServe({"worker_key":"instantlyReconciliationWorker","cadence_seconds":900},handleInstantlyReconciliationWorker);

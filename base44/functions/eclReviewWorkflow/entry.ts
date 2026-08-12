@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // eclReviewWorkflow — v0.63.0 ECL P4 closure (2026-08-08).
 //
 // Admin-only review queue. Resolution is race-safe through a short-lived
@@ -17,6 +18,7 @@ import {
   rewritePersistedLifecycleStatus,
 } from '../../shared/generated/eclDomain.ts';
 import { badRequest, createOnce } from '../../shared/eclPersistence.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const ENTITY_BY_TYPE = { statement_import: 'StatementImport', savings_evidence: 'SavingsEvidence' };
 const LIST_MAX = 100;
@@ -49,7 +51,7 @@ async function recoverStaleResolutionClaim(svc, rc, nowMs) {
       $set: { status: restoreStatus },
       $unset: { resolution_claim_id: '', resolution_claimed_at: '', resolution_previous_status: '' },
     },
-  ).catch(() => null);
+  ).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'}));
   return await svc.entities.ReviewCase.get(rc.id).catch(() => rc);
 }
 
@@ -82,7 +84,7 @@ async function rollbackResolutionClaim(svc, reviewCaseId, claimId, previousStatu
       $set: { status: previousStatus },
       $unset: { resolution_claim_id: '', resolution_claimed_at: '', resolution_previous_status: '' },
     },
-  ).catch(() => null);
+  ).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'}));
 }
 
 async function finalizeResolutionClaim(svc, reviewCaseId, claimId, update) {
@@ -140,7 +142,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ ok: false, error: 'Unauthorized', code: 'unauthenticated' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ ok: false, error: 'Forbidden', code: 'forbidden' }, { status: 403 });
 
-    const payload = await req.json().catch(() => null);
+    const payload = await req.json().catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'}));
     if (!payload || typeof payload !== 'object') return badRequest('JSON payload required');
     const svc = base44.asServiceRole;
     const now = new Date().toISOString();
@@ -180,11 +182,11 @@ Deno.serve(async (req) => {
 
     if (payload.action === 'get') {
       if (typeof payload.reviewCaseId !== 'string' || !payload.reviewCaseId) return badRequest('reviewCaseId is required');
-      let rc = await svc.entities.ReviewCase.get(payload.reviewCaseId).catch(() => null);
+      let rc = await svc.entities.ReviewCase.get(payload.reviewCaseId).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'}));
       if (!rc) return Response.json({ ok: false, error: 'review case not found', code: 'not_found' }, { status: 404 });
       rc = await recoverStaleResolutionClaim(svc, rc, nowMs);
       const entityName = ENTITY_BY_TYPE[rc.evidence_entity_type];
-      const evidence = entityName && rc.evidence_id ? await svc.entities[entityName].get(rc.evidence_id).catch(() => null) : null;
+      const evidence = entityName && rc.evidence_id ? await svc.entities[entityName].get(rc.evidence_id).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'})) : null;
       return Response.json({
         ok: true,
         action: 'get',
@@ -203,7 +205,7 @@ Deno.serve(async (req) => {
 
     if (payload.action !== 'resolve') return badRequest('action must be "runtime", "list", "get" or "resolve"');
     if (typeof payload.reviewCaseId !== 'string' || !payload.reviewCaseId) return badRequest('reviewCaseId is required');
-    let rc = await svc.entities.ReviewCase.get(payload.reviewCaseId).catch(() => null);
+    let rc = await svc.entities.ReviewCase.get(payload.reviewCaseId).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'}));
     if (!rc) return Response.json({ ok: false, error: 'review case not found', code: 'not_found' }, { status: 404 });
     rc = await recoverStaleResolutionClaim(svc, rc, nowMs);
     if (rc.status === 'resolving') {
@@ -211,7 +213,7 @@ Deno.serve(async (req) => {
     }
 
     const entityName = ENTITY_BY_TYPE[rc.evidence_entity_type];
-    const evidence = entityName && rc.evidence_id ? await svc.entities[entityName].get(rc.evidence_id).catch(() => null) : null;
+    const evidence = entityName && rc.evidence_id ? await svc.entities[entityName].get(rc.evidence_id).catch((error:any)=>safeBestEffort(error,{operation:'eclReviewWorkflow',fallback:null,severity:'secondary'})) : null;
     let evidenceChecksum = null;
     if (evidence) {
       const res = resolveOperationalChecksum(evidence.checksum, payload.expectedChecksum, { required: false });
@@ -302,6 +304,6 @@ Deno.serve(async (req) => {
       eventId,
     });
   } catch (error) {
-    return Response.json({ ok: false, error: 'review_workflow_failed', message: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'eclReviewWorkflow');
   }
 });

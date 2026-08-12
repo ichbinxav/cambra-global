@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getPaymentsGapTeaser — anonymous read of a PaymentsAnalysisSession.
 //
 // Endpoint classification: PUBLIC_OK (session-id-gated). No auth required.
@@ -104,7 +105,7 @@ Deno.serve(async (req) => {
 
     const rows = await base44.asServiceRole.entities.PaymentsAnalysisSession
       .filter({ anon_session_id: session_id }, '-created_date', 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'getPaymentsGapTeaser',fallback:[],severity:'secondary'}));
     if (!rows.length) {
       return Response.json({ ok: false, error: 'not_found' }, { status: 404 });
     }

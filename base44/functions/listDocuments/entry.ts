@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function includesText(s, q) { return (s || '').toLowerCase().includes((q || '').toLowerCase()); }
 
@@ -23,7 +25,7 @@ Deno.serve(async (req) => {
         const managed = await base44.entities.Provider.filter({ account_manager: user.email });
         const set = new Set([...(providers||[]).map(p=>p.id), ...(managed||[]).map(p=>p.id)]);
         providerIds = Array.from(set);
-      } catch {}
+      } catch(error){safeBestEffort(error,{operation:'listDocuments',fallback:null,severity:'secondary'})}
     }
 
     // Pre-filter by ownership for non-admins
@@ -80,6 +82,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ items: docs });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'listDocuments');
   }
 });

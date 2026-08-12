@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 function presence(v){
   if (v === null || v === undefined) return false;
@@ -47,7 +49,7 @@ Deno.serve(async (req) => {
     // SECURITY-2 — a non-admin user may only compute status for a brand they
     // own (user-scoped read: RLS filters to visible brands).
     if (!gate.isAdmin && !gate.isInternal) {
-      const owned = await base44.entities.Brand.filter({ id: brandId }, '-created_date', 1).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ id: brandId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'computeVerticalStatus',fallback:[],severity:'secondary'}));
       if (!owned.length) return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -91,6 +93,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ brandId, statuses });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'computeVerticalStatus');
   }
 });

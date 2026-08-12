@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 /**
  * oauthConnector — Generic OAuth2 engine (Fase 0)
  * =============================================================================
@@ -41,6 +42,7 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { isInternalCaller } from "../../shared/internalGate.ts";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // ─── REGISTRY (keep in sync with functions/dataSyncAgent.js) ───────────────
 // Each entry declares HOW to authenticate (`auth_method`) and HOW to read data
@@ -1094,7 +1096,7 @@ async function modeStart(base44, user, params) {
 
   const existing = await base44.asServiceRole.entities.Integration
     .filter({ brand_id, provider }, "-created_date", 1)
-    .catch(() => []);
+    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
   if (existing[0]) {
     await base44.asServiceRole.entities.Integration.update(existing[0].id, {
       status: "connecting",
@@ -1179,7 +1181,7 @@ async function modeCallback(base44, user, params) {
 
   const rows = await base44.asServiceRole.entities.OAuthState
     .filter({ state }, "-created_date", 1)
-    .catch(() => []);
+    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
   const row = rows[0];
   if (!row) return jsonError(400, "Invalid or unknown state");
   if (row.used_at) return jsonError(400, "State already used");
@@ -1201,7 +1203,7 @@ async function modeCallback(base44, user, params) {
   } catch (err) {
     const existing = await base44.asServiceRole.entities.Integration
       .filter({ brand_id: row.brand_id, provider: row.provider }, "-created_date", 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
     if (existing[0]) {
       await base44.asServiceRole.entities.Integration.update(existing[0].id, {
         status: "error",
@@ -1275,7 +1277,7 @@ async function modeCallback(base44, user, params) {
 
   const existing = await base44.asServiceRole.entities.Integration
     .filter({ brand_id: row.brand_id, provider: row.provider }, "-created_date", 1)
-    .catch(() => []);
+    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
   let integrationId;
   if (existing[0]) {
     await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
@@ -1360,7 +1362,7 @@ async function modeConnectApiKey(base44, user, params) {
 
   const existing = await base44.asServiceRole.entities.Integration
     .filter({ brand_id, provider }, "-created_date", 1)
-    .catch(() => []);
+    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
 
   let integrationId;
   if (existing[0]) {
@@ -1456,7 +1458,7 @@ async function modeConnectBasicAuth(base44, user, params) {
 
   const existing = await base44.asServiceRole.entities.Integration
     .filter({ brand_id, provider }, "-created_date", 1)
-    .catch(() => []);
+    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
 
   let integrationId;
   if (existing[0]) {
@@ -1547,7 +1549,7 @@ Deno.serve(async (req) => {
     // P17 — scheduled maintenance may reuse the existing refresh implementation
     // only after proving internal identity with the canonical secret gate.
     // No other OAuth mode receives internal-only authority.
-    let user = await base44.auth.me().catch(() => null);
+    let user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:null,severity:'secondary'}));
     if (!user && mode === "refresh" && isInternalCaller(req, body)) user = { role: "admin", email: "system:maintenance" };
     if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
@@ -1565,6 +1567,6 @@ Deno.serve(async (req) => {
     }
     return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | connect_api_key | connect_basic_auth | describe`);
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'oauthConnector');
   }
 });

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
 
@@ -38,7 +39,7 @@ Deno.serve(async (req) => {
   const user = gate.user;
   const isAdmin = gate.isAdmin;
   if (!gate.isInternal && !isAdmin) {
-    const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+    const owned = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
     if (!owned.length) {
       return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
     }
@@ -67,13 +68,13 @@ Deno.serve(async (req) => {
   // ── STEP 1: Re-run website discovery ──────────────────────────
   try {
     const memories = await svc.entities.CompanyMemory
-      .filter({ brand_id }, '-created_date', 1).catch(() => []);
+      .filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
     const websiteUrl = memories[0]?.website_url;
 
     if (websiteUrl) {
       // Snapshot existing findings BEFORE discovery, for diffing
       const existingFindings = await svc.entities.DiscoveryFinding
-        .filter({ brand_id }).catch(() => []);
+        .filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
       const existingKeys = new Set(
         existingFindings.map(f => `${f.category}|${(f.provider_or_tool || '').toLowerCase()}`)
       );
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
   // ── STEP 3: Refresh benchmarks ───────────────────────────────
   try {
     const latest = await svc.entities.AnalyzerResult
-      .filter({ brand_id }, '-created_date', 1).catch(() => []);
+      .filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
     const lr = latest[0];
     if (lr) {
       const createdMs = new Date(lr.created_date || 0).getTime();
@@ -146,11 +147,11 @@ Deno.serve(async (req) => {
   try {
     // Previous COMPLETED run (not the one we just created)
     const prevRuns = await svc.entities.ContinuousDiscoveryRun
-      .filter({ brand_id, status: 'completed' }, '-completed_at', 1).catch(() => []);
+      .filter({ brand_id, status: 'completed' }, '-completed_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
     const previousRunAt = prevRuns[0]?.completed_at ? new Date(prevRuns[0].completed_at).getTime() : null;
 
     const currentNodes = await svc.entities.InfrastructureNode
-      .filter({ brand_id }).catch(() => []);
+      .filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'runContinuousDiscovery',fallback:[],severity:'secondary'}));
 
     if (previousRunAt) {
       // New node = first_detected_at after previous run

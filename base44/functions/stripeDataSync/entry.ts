@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M3-1b — Stripe Data Sync (READ-ONLY) — canonical measured rate
@@ -62,14 +64,14 @@ Deno.serve(async (req) => {
 
     // Require explicit brand_id; fall back to user's latest brand only when not provided.
     if (!brand_id) {
-      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'stripeDataSync',fallback:[],severity:'critical'}));
       if (!brands.length) return Response.json({ ok: false, error: 'brand_id is required' }, { status: 400 });
       brand_id = brands[0].id;
     }
 
     // Verify brand ownership (admins bypass).
     if (!isAdmin) {
-      const userBrands = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
+      const userBrands = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'stripeDataSync',fallback:[],severity:'critical'}));
       if (!userBrands.length) {
         return Response.json({ ok: false, error: 'Brand not found or access denied' }, { status: 403 });
       }
@@ -139,7 +141,7 @@ Deno.serve(async (req) => {
       const res = await fetch(`https://api.stripe.com/v1/charges?${params}`, { headers: stripeHeaders });
       const json = await res.json();
       if (!res.ok) {
-        return Response.json({ ok: false, error: json?.error?.message || 'Stripe charges fetch failed' }, { status: 502 });
+        return internalErrorResponse(undefined, 'stripeDataSync');
       }
       const items = json.data || [];
       charges.push(...items);
@@ -159,7 +161,7 @@ Deno.serve(async (req) => {
       const res = await fetch(`https://api.stripe.com/v1/balance_transactions?${params}`, { headers: stripeHeaders });
       const json = await res.json();
       if (!res.ok) {
-        return Response.json({ ok: false, error: json?.error?.message || 'Stripe balance_transactions fetch failed' }, { status: 502 });
+        return internalErrorResponse(undefined, 'stripeDataSync');
       }
       const items = json.data || [];
       balanceTxns.push(...items);
@@ -301,6 +303,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ ok: false, error: (error as any).message }, { status: 500 });
+    return internalErrorResponse(error, 'stripeDataSync');
   }
 });

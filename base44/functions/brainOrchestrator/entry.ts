@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * Brain Orchestrator — chains B1 → B2 → B3.
@@ -105,8 +107,8 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(parent.id, {
           status: "failed", error: error.message, completed_at: new Date().toISOString(),
         });
-      } catch {}
+      } catch(error){safeBestEffort(error,{operation:'brainOrchestrator',fallback:null,severity:'secondary'})}
     }
-    return Response.json({ ok: false, error: error.message, task_id: parent?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'brainOrchestrator');
   }
 });

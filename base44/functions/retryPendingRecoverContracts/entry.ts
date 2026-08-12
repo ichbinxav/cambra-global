@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // retryPendingRecoverContracts — RECOVER-3 (2026-08-03).
 //
 // THE reconciler. Because this platform has no queue and no job runner, an
@@ -22,6 +23,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { leaseExpired } from '../../shared/recoverContractState.ts';
 import { invokeInternal } from '../../shared/invokeInternal.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const BATCH = 10;
 
@@ -41,7 +43,7 @@ export default async function (req: Request): Promise<Response> {
 
   // One scan of recent mandates: filtering in memory keeps this to a single query
   // instead of one per status combination.
-  const rows = await svc.entities.Mandate.filter({ status: 'active' }, '-created_date', 200).catch(() => []);
+  const rows = await svc.entities.Mandate.filter({ status: 'active' }, '-created_date', 200).catch((error:any)=>safeBestEffort(error,{operation:'retryPendingRecoverContracts',fallback:[],severity:'critical'}));
 
   const pdfJobs: any[] = [];
   const emailJobs: any[] = [];
@@ -69,11 +71,11 @@ export default async function (req: Request): Promise<Response> {
   const results: Record<string, unknown>[] = [];
 
   for (const m of pdfJobs.slice(0, BATCH)) {
-    const r = await invokeInternal(base44, 'generateRecoverContractPdf', { mandate_id: m.id }).catch(() => null);
+    const r = await invokeInternal(base44, 'generateRecoverContractPdf', { mandate_id: m.id }).catch((error:any)=>safeBestEffort(error,{operation:'retryPendingRecoverContracts',fallback:null,severity:'critical'}));
     results.push({ mandate_id: m.id, job: 'pdf', ok: Boolean(r?.ok), status: r?.status ?? 0 });
   }
   for (const m of emailJobs.slice(0, BATCH)) {
-    const r = await invokeInternal(base44, 'sendRecoverContractEmail', { mandate_id: m.id }).catch(() => null);
+    const r = await invokeInternal(base44, 'sendRecoverContractEmail', { mandate_id: m.id }).catch((error:any)=>safeBestEffort(error,{operation:'retryPendingRecoverContracts',fallback:null,severity:'critical'}));
     results.push({ mandate_id: m.id, job: 'email', ok: Boolean(r?.ok), status: r?.status ?? 0 });
   }
 

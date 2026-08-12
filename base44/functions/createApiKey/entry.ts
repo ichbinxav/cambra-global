@@ -1,6 +1,8 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Create API key (admin-only). Returns the raw key ONCE — never stored.
 // SHA-256 hashed at rest. Optional organization_id for tenant binding.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const VALID_SCOPES = [
   "read", "write", "admin", "platform",
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
     // Validate organization exists if provided
     let orgId = organization_id || null;
     if (orgId) {
-      const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+      const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'createApiKey',fallback:null,severity:'secondary'}));
       if (!org) return Response.json({ error: "invalid_request", message: "organization_id not found" }, { status: 400 });
     }
 
@@ -86,6 +88,6 @@ Deno.serve(async (req) => {
       warning: "Store this key now. It will never be shown again.",
     });
   } catch (error) {
-    return Response.json({ error: "internal_error", message: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'createApiKey');
   }
 });

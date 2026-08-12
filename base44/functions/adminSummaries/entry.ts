@@ -3,6 +3,7 @@ import { handleAdminGlobalSearch } from '../adminGlobalSearch/entry.ts';
 import { buildDiscoveryAdminRadar } from '../../shared/discoveryAdmin.ts';
 import { buildCommercialOperatingSystem } from '../../shared/commercialOperatingSystem.ts';
 import { handleCommercialCampaignAdmin } from '../../shared/commercialCampaignAdmin.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
@@ -87,6 +88,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, summary });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'adminSummaries');
   }
 });

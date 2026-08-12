@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // OAuth 2.0 — Authorization endpoint (renders consent + issues auth code)
 // =============================================================================
 // GET  /functions/oauthAuthorize?client_id=...&redirect_uri=...&scope=...
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
   try {
     const members = await base44.asServiceRole.entities.OrganizationMember
       .filter({ user_email: user.email, status: "active" }, "-created_date", 1)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'oauthAuthorize',fallback:[],severity:'secondary'}));
     if (members?.[0]?.organization_id) organization_id = members[0].organization_id;
   } catch { /* org lookup is best-effort */ }
 

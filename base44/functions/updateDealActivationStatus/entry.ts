@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 
@@ -9,7 +10,7 @@ import { quarantineProbe } from '../../shared/internalGate.ts';
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   await quarantineProbe(base44, 'updateDealActivationStatus');
-  const me = await base44.auth.me().catch(() => null);
+  const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'updateDealActivationStatus',fallback:null,severity:'secondary'}));
   if (!me) return Response.json({ error: 'unauthorized' }, { status: 401 });
   return Response.json({ error: 'legacy_activation_mutator_retired', use: 'Recover/P9 canonical operations' }, { status: 410 });
 });

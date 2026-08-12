@@ -1,10 +1,11 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { ACTION_POLICIES, EUROPE_33, LEGAL_EXECUTION_VERSION } from '../../shared/legalExecution.ts';
 
 export async function handleSeedP11LegalExecution(req: Request) {
   try{
     const base44=createClientFromRequest(req);
-    const user=await base44.auth.me().catch(()=>null);
+    const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'seedP11LegalExecution',fallback:null,severity:'secondary'}));
     if(user?.role!=='admin')return Response.json({ok:false,error:'admin_required'},{status:403});
     const svc=base44.asServiceRole;
     const now=new Date().toISOString();
@@ -12,7 +13,7 @@ export async function handleSeedP11LegalExecution(req: Request) {
     for(const jurisdiction of EUROPE_33){
       for(const requestedAction of Object.keys(ACTION_POLICIES)){
         const policyKey=`${LEGAL_EXECUTION_VERSION}:${jurisdiction}:${requestedAction}:conservative`;
-        const found=await svc.entities.LegalExecutionPolicy.filter({policy_key:policyKey},'-created_date',1).catch(()=>[]);
+        const found=await svc.entities.LegalExecutionPolicy.filter({policy_key:policyKey},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'seedP11LegalExecution',fallback:[],severity:'secondary'}));
         if(found[0]){existing++;continue;}
         await svc.entities.LegalExecutionPolicy.create({
           policy_key:policyKey,jurisdiction,requested_action:requestedAction,status:'LEGAL_REVIEW_REQUIRED',

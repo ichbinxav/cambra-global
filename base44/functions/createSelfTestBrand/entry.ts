@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * FASE 2 (Opción B) — Creates a fresh self-test brand under the CALLER's identity.
@@ -34,7 +36,7 @@ Deno.serve(async (req) => {
     const existing = await base44.entities.Brand.filter({
       name: 'CAMBRA (self-test)',
       created_by_id: user.id,
-    }, '-created_date', 1).catch(() => []);
+    }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'createSelfTestBrand',fallback:[],severity:'secondary'}));
     if (existing.length > 0) {
       return Response.json({
         ok: true,
@@ -67,6 +69,6 @@ Deno.serve(async (req) => {
       is_demo: newBrand.is_demo,
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'createSelfTestBrand');
   }
 });

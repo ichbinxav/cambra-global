@@ -1,12 +1,14 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only safe demo data seeder. Idempotent — checks for is_demo=true brands first.
 // Creates 3 fake brands, analyzer results, recommendations, deal activations, mandate,
 // monthly savings report, invoice, and 3 providers. All marked is_demo=true where possible.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'seedDemoData',fallback:null,severity:'secondary'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden", message: "Admin only" }, { status: 403 });
     }
@@ -16,14 +18,14 @@ Deno.serve(async (req) => {
 
     // Reset path — delete previous demo records
     if (reset) {
-      const existing = await base44.asServiceRole.entities.Brand.filter({ is_demo: true }).catch(() => []);
+      const existing = await base44.asServiceRole.entities.Brand.filter({ is_demo: true }).catch((error:any)=>safeBestEffort(error,{operation:'seedDemoData',fallback:[],severity:'secondary'}));
       for (const b of existing) {
-        await base44.asServiceRole.entities.Brand.delete(b.id).catch(() => null);
+        await base44.asServiceRole.entities.Brand.delete(b.id).catch((error:any)=>safeBestEffort(error,{operation:'seedDemoData',fallback:null,severity:'secondary'}));
       }
     }
 
     // Skip if already seeded
-    const existing = await base44.asServiceRole.entities.Brand.filter({ is_demo: true }).catch(() => []);
+    const existing = await base44.asServiceRole.entities.Brand.filter({ is_demo: true }).catch((error:any)=>safeBestEffort(error,{operation:'seedDemoData',fallback:[],severity:'secondary'}));
     if (existing.length >= 3) {
       return Response.json({ status: "already_seeded", count: existing.length });
     }
@@ -37,7 +39,7 @@ Deno.serve(async (req) => {
       { name: "[DEMO] CommerceStack SaaS", category: "saas", contact_email: "demo+stack@example.test", revenue_share_pct: 20 },
     ];
     for (const p of providerSeeds) {
-      const prov = await base44.asServiceRole.entities.Provider.create(p).catch(() => null);
+      const prov = await base44.asServiceRole.entities.Provider.create(p).catch((error:any)=>safeBestEffort(error,{operation:'seedDemoData',fallback:null,severity:'secondary'}));
       if (prov) created.providers.push(prov);
     }
 
@@ -195,6 +197,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'seedDemoData');
   }
 });

@@ -1,6 +1,8 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "provider_research";
 const TASK_TYPE = "provider_research";
@@ -112,8 +114,8 @@ Deno.serve(async (req) => {
 
     // P12: research output is immutable candidate evidence; it does NOT update PaymentsRateTable or verified pricing.
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-    const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{source_type:'market_source',source_reference:citations?.[0]||providerName,vertical:category,provider_slug:String(providerName).toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:structured.sources_quality==='verified'?.7:structured.confidence==='high'?.6:.45,payload_json:{provider:providerName,category,country,structured,citations,research_source:researchSource}}}).catch(()=>null);
-    const candidateEvidenceId=er?.data?.id||er?.id||null;if(candidateEvidenceId)await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_observation',observation:{evidence_id:candidateEvidenceId,vertical:category,provider_slug:String(providerName).toLowerCase().replace(/[^a-z0-9]+/g,'_'),observation_type:'provider_research',semantic_key:`provider-research:${String(providerName).toLowerCase()}:${country}`,observed_at:new Date().toISOString(),truth_level:'inferred',confidence:structured.sources_quality==='verified'?.7:structured.confidence==='high'?.6:.45,normalized_json:structured,parser_version:'provider-research-p12-1',status:'candidate'}}).catch(()=>null);
+    const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{source_type:'market_source',source_reference:citations?.[0]||providerName,vertical:category,provider_slug:String(providerName).toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:structured.sources_quality==='verified'?.7:structured.confidence==='high'?.6:.45,payload_json:{provider:providerName,category,country,structured,citations,research_source:researchSource}}}).catch((error:any)=>safeBestEffort(error,{operation:'providerResearchAgent',fallback:null,severity:'secondary'}));
+    const candidateEvidenceId=er?.data?.id||er?.id||null;if(candidateEvidenceId)await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_observation',observation:{evidence_id:candidateEvidenceId,vertical:category,provider_slug:String(providerName).toLowerCase().replace(/[^a-z0-9]+/g,'_'),observation_type:'provider_research',semantic_key:`provider-research:${String(providerName).toLowerCase()}:${country}`,observed_at:new Date().toISOString(),truth_level:'inferred',confidence:structured.sources_quality==='verified'?.7:structured.confidence==='high'?.6:.45,normalized_json:structured,parser_version:'provider-research-p12-1',status:'candidate'}}).catch((error:any)=>safeBestEffort(error,{operation:'providerResearchAgent',fallback:null,severity:'secondary'}));
 
     await base44.asServiceRole.entities.AgentTask.update(task.id, {
       status: "completed",
@@ -139,6 +141,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'providerResearchAgent');
   }
 });

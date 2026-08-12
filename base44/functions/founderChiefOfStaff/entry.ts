@@ -1,23 +1,24 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { buildFounderSnapshot } from '../../shared/founderOSData.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
 function parse(text:string) {
   const clean=text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();
-  try{return JSON.parse(clean);}catch{}
-  const match=clean.match(/\{[\s\S]*\}/);if(match)try{return JSON.parse(match[0]);}catch{}
+  try{return JSON.parse(clean);}catch(error){safeBestEffort(error,{operation:'founderChiefOfStaff',fallback:null,severity:'secondary'})}
+  const match=clean.match(/\{[\s\S]*\}/);if(match)try{return JSON.parse(match[0]);}catch(error){safeBestEffort(error,{operation:'founderChiefOfStaff',fallback:null,severity:'secondary'})}
   return null;
 }
 
 Deno.serve(async(req)=>{
   try{
-    const base44=createClientFromRequest(req);const user=await base44.auth.me().catch(()=>null);
+    const base44=createClientFromRequest(req);const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'founderChiefOfStaff',fallback:null,severity:'secondary'}));
     if(!user||user.role!=='admin')return Response.json({ok:false,error:'Forbidden'},{status:403});
     const svc=base44.asServiceRole;
     const [snapshot,directives,meetings]=await Promise.all([
       buildFounderSnapshot(svc),
-      svc.entities.StrategyDirective.filter({status:'active'},'-priority',50).catch(()=>[]),
-      svc.entities.CommunicationThread.filter({meeting_start_at:{$gte:new Date().toISOString()},meeting_status:'booked'},'meeting_start_at',20).catch(()=>[]),
+      svc.entities.StrategyDirective.filter({status:'active'},'-priority',50).catch((error:any)=>safeBestEffort(error,{operation:'founderChiefOfStaff',fallback:[],severity:'secondary'})),
+      svc.entities.CommunicationThread.filter({meeting_start_at:{$gte:new Date().toISOString()},meeting_status:'booked'},'meeting_start_at',20).catch((error:any)=>safeBestEffort(error,{operation:'founderChiefOfStaff',fallback:[],severity:'secondary'})),
     ]);
     const upcomingMeetings=meetings.map((thread:any)=>({time:thread.meeting_start_at,counterparty:thread.counterparty_name||thread.counterparty_email,company:thread.company_name||'',reason:(thread.founder_escalation_reasons||[]).join(', '),expected_value_minor:Number(thread.founder_expected_value_minor||0),currency:thread.meeting_brief_json?.economics?.currency||'',objective:thread.meeting_brief_json?.objective||'',thread_id:thread.id,brief:thread.meeting_brief_json||{}}));
     const evidence={generated_at:snapshot.generated_at,metrics:snapshot.metrics,attention:snapshot.attention.slice(0,10),opportunities:snapshot.opportunities.slice(0,10),risks:snapshot.risks.slice(0,10),operations:snapshot.operations,ai_workforce:{task_count_7d:snapshot.ai_workforce.task_count_7d,failed_7d:snapshot.ai_workforce.failed_7d},directives:directives.map((item:any)=>({scope:item.scope,directive:item.directive,priority:item.priority})),upcoming_founder_meetings:upcomingMeetings};

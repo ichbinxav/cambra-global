@@ -5,6 +5,7 @@ export const RETENTION_POLICIES=Object.freeze({
   anonymous_analyzer_sessions:Object.freeze({category:'anonymous_analyzer_sessions',action:'DELETE',retention_days:90,cadence:'DAILY',legal_hold_supported:false}),
   unengaged_outbound_leads:Object.freeze({category:'unengaged_outbound_leads',action:'DELETE',retention_days:365,cadence:'MONTHLY',legal_hold_supported:true}),
   inbound_leads:Object.freeze({category:'inbound_leads',action:'DELETE',retention_days:730,cadence:'MONTHLY',legal_hold_supported:true}),
+  scheduler_runs:Object.freeze({category:'scheduler_runs',action:'DELETE',retention_days:90,cadence:'DAILY_BOUNDED',legal_hold_supported:true,terminal_statuses:['COMPLETED','DUPLICATE_BLOCKED']}),
   intelligence_outcomes_aggregate:Object.freeze({category:'intelligence_outcomes_and_aggregates',action:'ANONYMIZE',retention_days:null,cadence:'SCHEDULED',minimum_distinct_merchants:10,raw_identifier_retention:false}),
 });
 

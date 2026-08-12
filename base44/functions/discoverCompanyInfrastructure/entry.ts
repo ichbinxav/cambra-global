@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M4 — discoverCompanyInfrastructure
@@ -144,7 +146,7 @@ Deno.serve(async (req) => {
     // Verify brand ownership (admins bypass)
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
-      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'discoverCompanyInfrastructure',fallback:[],severity:'secondary'}));
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -245,7 +247,7 @@ Deno.serve(async (req) => {
 
     // Upsert CompanyMemory for this brand
     const commercePlatform = findings.find(f => f.category === 'commerce_platform')?.provider_or_tool || null;
-    const existing = await base44.asServiceRole.entities.CompanyMemory.filter({ brand_id }, '-created_date', 1).catch(() => []);
+    const existing = await base44.asServiceRole.entities.CompanyMemory.filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'discoverCompanyInfrastructure',fallback:[],severity:'secondary'}));
     const memoryPatch = {
       brand_id,
       website_url: url,
@@ -279,6 +281,6 @@ Deno.serve(async (req) => {
       })),
     });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'discoverCompanyInfrastructure');
   }
 });

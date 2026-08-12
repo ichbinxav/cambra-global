@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // P9 — Recover Fulfilment & Migration Operations.
 // Idempotently turns an authorized payments Recover into an operational migration.
 // The merchant has already mandated CAMBRA to act: standard tasks are owned by
@@ -41,19 +42,19 @@ export default async function (req: Request): Promise<Response> {
     const svc = base44.asServiceRole;
     const emergency = await emergencyState(svc);
     if (emergency.safe_mode || emergency.migrations_paused) return Response.json({ error: 'emergency_control_paused:migrations', safe_mode: emergency.safe_mode, reason: emergency.reason || null }, { status: 409 });
-    const rows = await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []);
+    const rows = await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}));
     const activation:any = rows?.[0];
     if (!activation) return Response.json({ error: 'activation_not_found' }, { status: 404 });
     const isOwner = !!me && String(activation.user_email || '').toLowerCase() === String(me.email || '').toLowerCase();
     if (!gate.isInternal && !isOwner && me?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
     if (activation.vertical !== 'payments') return Response.json({ error: 'payments_only' }, { status: 409 });
-    const marketBrand=await svc.entities.Brand.get(String(activation.brand_id||'')).catch(()=>null);
+    const marketBrand=await svc.entities.Brand.get(String(activation.brand_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
     if(marketBrand?.market_context_rollout==='production'){try{await assertMarketCapabilityAllowed(svc,{brand:marketBrand,brand_id:marketBrand.id,capability:'MIGRATE',actor_type:'recover_migration'})}catch(e:any){return Response.json({error:'market_capability_denied:MIGRATE',decision:e?.decision||null},{status:409})}}
     if (!['authorized','migrating','live','monetizing'].includes(activation.status)) {
       return Response.json({ error: 'activation_not_ready', status: activation.status }, { status: 409 });
     }
 
-    const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch(() => []);
+    const mandates = await svc.entities.Mandate.filter({ deal_activation_id: activationId, status: 'active' }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}));
     if (!mandates.length) return Response.json({ error: 'active_mandate_required' }, { status: 409 });
     try{
       await enforceLegalExecution(svc,{
@@ -77,24 +78,24 @@ export default async function (req: Request): Promise<Response> {
         { $set: { status: 'migrating', last_updated: new Date().toISOString() } },
       );
       if (!updatedExactlyOne(claimed)) {
-        const fresh = (await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch(() => []))?.[0];
+        const fresh = (await svc.entities.DealActivation.filter({ id: activationId }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'})))?.[0];
         if (fresh?.status !== 'migrating') return Response.json({ error: 'activation_changed_concurrently', status: fresh?.status || 'unknown' }, { status: 409 });
       }
     }
 
-    let tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+    let tasks:any[] = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}));
     let p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
     if (!p9Tasks.length) {
       // Preserve legacy task history but remove it from active operations. P9 is
       // the canonical plan from this point forward; we never silently delete evidence.
       for (const legacy of tasks.filter(t => !['done','canceled'].includes(t.status))) {
-        await svc.entities.MigrationTask.update(legacy.id, { status: 'canceled', updated_at: new Date().toISOString(), metadata_json: { ...(legacy.metadata_json || {}), superseded_by_plan: PLAN_VERSION } }).catch(() => null);
+        await svc.entities.MigrationTask.update(legacy.id, { status: 'canceled', updated_at: new Date().toISOString(), metadata_json: { ...(legacy.metadata_json || {}), superseded_by_plan: PLAN_VERSION } }).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
       }
-      const approvedNegotiation=(await svc.entities.NegotiationCase.filter({recover_id:activationId,status:'approved'},'-closed_at',1).catch(()=>[]))[0]||null;
-      const aggregateEligibility=(await svc.entities.MerchantRateEligibility.filter({brand_id:activation.brand_id,status:{$in:['eligible','potentially_eligible']}},'-evaluated_at',20).catch(()=>[])).map((e:any)=>({id:e.id,agreement_id:e.agreement_id,rate_card_id:e.rate_card_id,provider_id:e.provider_id,status:e.status,provider_underwriting_status:e.provider_underwriting_status,confidence:e.confidence}));
+      const approvedNegotiation=(await svc.entities.NegotiationCase.filter({recover_id:activationId,status:'approved'},'-closed_at',1).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'})))[0]||null;
+      const aggregateEligibility=(await svc.entities.MerchantRateEligibility.filter({brand_id:activation.brand_id,status:{$in:['eligible','potentially_eligible']}},'-evaluated_at',20).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}))).map((e:any)=>({id:e.id,agreement_id:e.agreement_id,rate_card_id:e.rate_card_id,provider_id:e.provider_id,status:e.status,provider_underwriting_status:e.provider_underwriting_status,confidence:e.confidence}));
       const migrationSnapshotPayload={activation_id:activationId,brand_id:activation.brand_id||'',provider_id:activation.provider_id||'',mandate_id:mandates[0]?.id||null,mandate_snapshot_hash:mandates[0]?.acceptance_snapshot_hash||null,approved_negotiation_case_id:approvedNegotiation?.id||null,approved_offer_id:approvedNegotiation?.approved_offer_id||null,aggregate_eligibility:aggregateEligibility,plan_version:PLAN_VERSION};
       const migrationSnapshotHash=await sha256(migrationSnapshotPayload);
-      const migrationSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`migration:${activationId}:${migrationSnapshotHash.slice(0,16)}`,snapshot_type:'payments_migration_start',related_entity_type:'DealActivation',related_entity_id:activationId,brand_id:activation.brand_id||'',vertical:'payments',claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:mandates[0]?.policy_version||undefined,calculation_version:PLAN_VERSION,snapshot_json:migrationSnapshotPayload,snapshot_hash:migrationSnapshotHash,captured_at:new Date().toISOString()}).catch(()=>null);
+      const migrationSnapshot=await svc.entities.IntelligenceSnapshot.create({snapshot_key:`migration:${activationId}:${migrationSnapshotHash.slice(0,16)}`,snapshot_type:'payments_migration_start',related_entity_type:'DealActivation',related_entity_id:activationId,brand_id:activation.brand_id||'',vertical:'payments',claim_ids:[],pricing_version_ids:[],benchmark_refs_json:{},policy_version:mandates[0]?.policy_version||undefined,calculation_version:PLAN_VERSION,snapshot_json:migrationSnapshotPayload,snapshot_hash:migrationSnapshotHash,captured_at:new Date().toISOString()}).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
       await svc.entities.MigrationTask.bulkCreate(PLAN.map((p:any[], idx:number) => ({
         deal_activation_id: activationId,
         intelligence_snapshot_id: migrationSnapshot?.id || undefined,
@@ -111,7 +112,7 @@ export default async function (req: Request): Promise<Response> {
         due_date: idx === 1 ? dueIn(Number(p[5] || 3)) : undefined,
         metadata_json: { plan_version: PLAN_VERSION, customer_stage: p[4], customer_visible: true, sla_days: Number(p[5] || 3), retry_count: 0 },
       })));
-      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}));
       p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION);
       // Base44 has no transaction/unique constraint here. Collapse a concurrent
       // double-start deterministically: earliest task per step wins, later rows
@@ -123,17 +124,17 @@ export default async function (req: Request): Promise<Response> {
             await svc.entities.MigrationTask.update(duplicate.id, {
               status: 'canceled', updated_at: new Date().toISOString(),
               metadata_json: { ...(duplicate.metadata_json || {}), duplicate_of: same[0]?.id || null, duplicate_collapsed: true },
-            }).catch(() => null);
+            }).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
           }
         }
       }
-      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch(() => []);
+      tasks = await svc.entities.MigrationTask.filter({ deal_activation_id: activationId }, 'order', 100).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:[],severity:'critical'}));
       p9Tasks = tasks.filter(t => t?.metadata_json?.plan_version === PLAN_VERSION && t.status !== 'canceled');
       await svc.entities.OperationalLog.create({
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'tasks_generated', message: 'P9 payments migration orchestration started',
         data_json: { plan_version: PLAN_VERSION, task_count: PLAN.length }, actor_email: me?.email || (gate.isInternal ? 'internal' : 'system'), created_at: new Date().toISOString(),
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
     }
 
     if (activation.status === 'authorized') {
@@ -141,7 +142,7 @@ export default async function (req: Request): Promise<Response> {
         deal_activation_id: activationId, brand_id: activation.brand_id || '', provider_id: activation.provider_id || '',
         event_type: 'status_changed', message: 'Recover fulfilment started: authorized → migrating',
         data_json: { from: 'authorized', to: 'migrating', plan_version: PLAN_VERSION }, actor_email: me?.email || (gate.isInternal ? 'internal' : 'system'), created_at: new Date().toISOString(),
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'startPaymentsMigration',fallback:null,severity:'critical'}));
     }
 
     return Response.json({ ok: true, activation_id: activationId, status: activation.status === 'authorized' ? 'migrating' : activation.status, task_count: p9Tasks.length, plan_version: PLAN_VERSION });

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 /**
  * verifyRegistrySync — Detects divergence between the two duplicated REGISTRY
  * objects (oauthConnector + dataSyncAgent).
@@ -40,6 +41,7 @@
  */
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // Fields that MUST match exactly between the two registries. Anything outside
 // this list is metadata (e.g. logo, description) and is ignored on purpose to
@@ -259,7 +261,7 @@ Deno.serve(async (req) => {
         providers_compared: providersCompared,
       },
       status: "pending",
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'verifyRegistrySync',fallback:null,severity:'secondary'}));
 
     return Response.json({
       ok: true,
@@ -281,6 +283,6 @@ Deno.serve(async (req) => {
         });
       } catch { /* non-fatal */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'verifyRegistrySync');
   }
 });

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { activateCostEmergencyStop, COST_CATEGORIES, costRuntimeSnapshot } from '../../shared/costGovernance.ts';
@@ -24,9 +25,9 @@ export async function handleCostGovernanceWorker(req: Request) {
     if (snapshot.validation.ok && hardStopPct > 0 && maximumPct >= hardStopPct) {
       await activateCostEmergencyStop(svc, snapshot.control, 'cost_hard_stop_threshold_reached', { maximum_utilization_pct:maximumPct, utilization:snapshot.utilization });
     } else if (snapshot.validation.ok && warningPct > 0 && maximumPct >= warningPct) {
-      const old = await svc.entities.AutonomyIncident.filter({ dedupe_key:'cost-budget-anomaly-warning', status:'open' }, '-last_seen_at', 1).catch(() => []);
+      const old = await svc.entities.AutonomyIncident.filter({ dedupe_key:'cost-budget-anomaly-warning', status:'open' }, '-last_seen_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'costGovernanceWorker',fallback:[],severity:'secondary'}));
       const incident = { domain:'financial', severity:'warning', status:'open', subject_type:'CostBudgetControl', subject_id:snapshot.control.id, summary:'Cost utilization crossed the founder warning threshold', details_json:{ maximum_utilization_pct:maximumPct, utilization:snapshot.utilization }, first_seen_at:old[0]?.first_seen_at || now, last_seen_at:now, workflow_state:'human_review', owner_type:'founder', automation_eligibility:'human_required', financial_impact_minor:0, customer_impact:'none', legal_risk:'none' };
-      if (old[0]) await svc.entities.AutonomyIncident.update(old[0].id, incident).catch(() => null); else await svc.entities.AutonomyIncident.create({ dedupe_key:'cost-budget-anomaly-warning', ...incident }).catch(() => null);
+      if (old[0]) await svc.entities.AutonomyIncident.update(old[0].id, incident).catch((error:any)=>safeBestEffort(error,{operation:'costGovernanceWorker',fallback:null,severity:'secondary'})); else await svc.entities.AutonomyIncident.create({ dedupe_key:'cost-budget-anomaly-warning', ...incident }).catch((error:any)=>safeBestEffort(error,{operation:'costGovernanceWorker',fallback:null,severity:'secondary'}));
     }
     const gitSha = runtimeGitSha(body);
     await recordRuntimeGateEvidence(svc, { gate_key:'COST_BUDGETS', git_sha:gitSha, status:snapshot.validation.ok && !snapshot.coverage_truncated ? 'PASS':'BLOCKED', evidence_kind:'REAL_RUNTIME', source:'costGovernanceWorker', details_json:{ validation:snapshot.validation, coverage_truncated:snapshot.coverage_truncated, utilization:snapshot.utilization }, observed_at:now, expires_at:new Date(Date.now()+25*3600000).toISOString() });

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
@@ -41,14 +42,14 @@ Deno.serve(async (req) => {
     let { brand_id } = body;
 
     if (!brand_id) {
-      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch(() => []);
+      const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));
       brand_id = brands[0]?.id || null;
     }
 
     // Ownership check (admin bypass)
     const isAdmin = user.role === 'admin';
     if (brand_id && !isAdmin) {
-      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch(() => []);
+      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));
       if (!owned.length) {
         return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
       }
@@ -57,16 +58,16 @@ Deno.serve(async (req) => {
     const svc = base44.asServiceRole;
 
     // Catalog (publicly readable)
-    const catalog = await svc.entities.IntegrationCatalog.list('priority', 100).catch(() => []);
+    const catalog = await svc.entities.IntegrationCatalog.list('priority', 100).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));
 
     // Per-brand signals
     // FASE 1 — Integration is the source of truth for "connected"; StripeConnection is legacy fallback.
     const [detected, sessions, stripeConn, stripeIntegrations, infraNodes] = await Promise.all([
-      brand_id ? svc.entities.DetectedIntegration.filter({ brand_id }).catch(() => []) : [],
-      brand_id ? svc.entities.ConnectionSession.filter({ brand_id }, '-created_date', 200).catch(() => []) : [],
-      brand_id ? svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch(() => []) : [],
-      brand_id ? svc.entities.Integration.filter({ brand_id, status: 'connected' }, '-last_sync_at', 50).catch(() => []) : [],
-      brand_id ? svc.entities.InfrastructureNode.filter({ brand_id }).catch(() => []) : [],
+      brand_id ? svc.entities.DetectedIntegration.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'})) : [],
+      brand_id ? svc.entities.ConnectionSession.filter({ brand_id }, '-created_date', 200).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'})) : [],
+      brand_id ? svc.entities.StripeConnection.filter({ brand_id, connection_status: 'connected' }, '-last_sync_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'})) : [],
+      brand_id ? svc.entities.Integration.filter({ brand_id, status: 'connected' }, '-last_sync_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'})) : [],
+      brand_id ? svc.entities.InfrastructureNode.filter({ brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'})) : [],
     ]);
     const stripeIntegrationRow = stripeIntegrations.find(i =>
       i.provider === 'stripe' || i.provider === 'stripe_self' || i.provider === 'stripe_self_test'

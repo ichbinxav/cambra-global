@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M5 — seedIntegrationCatalog
@@ -175,7 +177,7 @@ Deno.serve(async (req) => {
     for (const entry of CATALOG) {
       const existing = await base44.asServiceRole.entities.IntegrationCatalog
         .filter({ integration_id: entry.integration_id }, '-created_date', 1)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'seedIntegrationCatalog',fallback:[],severity:'secondary'}));
       if (existing.length) {
         await base44.asServiceRole.entities.IntegrationCatalog.update(existing[0].id, entry);
         updated++;
@@ -188,6 +190,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, seeded, created, updated, total: CATALOG.length });
   } catch (error) {
-    return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'seedIntegrationCatalog');
   }
 });

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 
@@ -30,7 +31,7 @@ async function github(token:string, path:string, init:RequestInit={}) {
 }
 
 async function connection(svc:any) {
-  const conn = await svc.connectors.getConnection('github').catch(() => null);
+  const conn = await svc.connectors.getConnection('github').catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
   if (!conn?.accessToken) throw new Error('github_connector_required');
   return conn.accessToken as string;
 }
@@ -39,9 +40,9 @@ async function callClaude(svc:any,prompt:string,maxTokens=7000,eventKey='develop
 
 function parseJson(text:string) {
   const cleaned = String(text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();
-  try { return JSON.parse(cleaned); } catch {}
+  try { return JSON.parse(cleaned); } catch(error){safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})}
   const a = cleaned.indexOf('{'), b = cleaned.lastIndexOf('}');
-  if (a >= 0 && b > a) { try { return JSON.parse(cleaned.slice(a,b+1)); } catch {} }
+  if (a >= 0 && b > a) { try { return JSON.parse(cleaned.slice(a,b+1)); } catch(error){safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})} }
   throw new Error('ai_json_parse_failed');
 }
 
@@ -83,7 +84,7 @@ async function repoContext(token:string, fullName:string, branch:string) {
   let total=0;
   for (const f of candidates) {
     if (total >= MAX_TOTAL_BYTES) break;
-    const raw = await github(token, `/repos/${fullName}/contents/${encodeURIComponent(f.path).replace(/%2F/g,'/')}?ref=${encodeURIComponent(branch)}`).catch(()=>null);
+    const raw = await github(token, `/repos/${fullName}/contents/${encodeURIComponent(f.path).replace(/%2F/g,'/')}?ref=${encodeURIComponent(branch)}`).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
     if (!raw?.content || raw?.encoding !== 'base64') continue;
     const content = b64decode(raw.content);
     const clipped = content.slice(0, Math.min(MAX_FILE_BYTES, Math.max(0, MAX_TOTAL_BYTES-total)));
@@ -94,7 +95,7 @@ async function repoContext(token:string, fullName:string, branch:string) {
 }
 
 async function requireAdmin(base44:any) {
-  const user = await base44.auth.me().catch(()=>null);
+  const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
   if (!user) return { error: json({ok:false,error:'Unauthorized'},401) };
   if (user.role !== 'admin') return { error: json({ok:false,error:'Forbidden'},403) };
   return { user };
@@ -111,9 +112,9 @@ Deno.serve(async (req) => {
 
   try {
     if (action === 'status') {
-      const connected = !!(await svc.connectors.getConnection('github').catch(()=>null))?.accessToken;
-      const workspaces = await svc.entities.DeveloperWorkspace.list('-updated_date',200).catch(()=>[]);
-      const runs = await svc.entities.DeveloperMigrationRun.list('-created_date',200).catch(()=>[]);
+      const connected = !!(await svc.connectors.getConnection('github').catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})))?.accessToken;
+      const workspaces = await svc.entities.DeveloperWorkspace.list('-updated_date',200).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:[],severity:'critical'}));
+      const runs = await svc.entities.DeveloperMigrationRun.list('-created_date',200).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:[],severity:'critical'}));
       return json({ok:true,engine_version:ENGINE_VERSION,github_connected:connected,workspaces,runs});
     }
 
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
       if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(fullName)) return json({ok:false,error:'invalid_repo_full_name'},400);
       const repo = await github(token, `/repos/${fullName}`);
       const brandId = String(body?.brand_id || '_platform');
-      const existing = await svc.entities.DeveloperWorkspace.filter({repo_full_name:fullName,brand_id:brandId},'-created_date',1).catch(()=>[]);
+      const existing = await svc.entities.DeveloperWorkspace.filter({repo_full_name:fullName,brand_id:brandId},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:[],severity:'critical'}));
       if (existing?.[0]) return json({ok:true,workspace:existing[0],reused:true});
       const workspace = await svc.entities.DeveloperWorkspace.create({
         brand_id:brandId, deal_activation_id:String(body?.deal_activation_id||''), provider:'github',
@@ -144,7 +145,7 @@ Deno.serve(async (req) => {
 
     const workspaceId = String(body?.workspace_id || '');
     if (!workspaceId) return json({ok:false,error:'workspace_id_required'},400);
-    const workspace = await svc.entities.DeveloperWorkspace.get(workspaceId).catch(()=>null);
+    const workspace = await svc.entities.DeveloperWorkspace.get(workspaceId).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
     if (!workspace) return json({ok:false,error:'workspace_not_found'},404);
     const fullName = cleanRepo(workspace.repo_full_name);
     const baseBranch = String(workspace.default_branch || 'main');
@@ -169,11 +170,11 @@ Deno.serve(async (req) => {
 
     const runId = String(body?.run_id||'');
     if (!runId) return json({ok:false,error:'run_id_required'},400);
-    const run = await svc.entities.DeveloperMigrationRun.get(runId).catch(()=>null);
+    const run = await svc.entities.DeveloperMigrationRun.get(runId).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
     if (!run || run.workspace_id !== workspaceId) return json({ok:false,error:'run_not_found'},404);
 
     if (action === 'apply_plan') {
-      const approval = run.approval_id ? await svc.entities.Approval.get(run.approval_id).catch(()=>null) : null;
+      const approval = run.approval_id ? await svc.entities.Approval.get(run.approval_id).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})) : null;
       if (approval?.status !== 'approved') return json({ok:false,error:'developer_patch_approval_required',approval_id:run.approval_id||null},409);
       const ctx = await repoContext(token, fullName, baseBranch);
       const expectedBase = run.migration_plan?.base_sha;
@@ -196,7 +197,7 @@ Deno.serve(async (req) => {
       for (const f of outFiles) {
         const path=normalizePatchPath(f?.path);
         if (!path || path.includes('..') || !String(f?.content||'').trim()) throw new Error('unsafe_patch_path_or_content');
-        const current = await github(token, `/repos/${fullName}/contents/${encodeURIComponent(path).replace(/%2F/g,'/')}?ref=${encodeURIComponent(branch)}`).catch(()=>null);
+        const current = await github(token, `/repos/${fullName}/contents/${encodeURIComponent(path).replace(/%2F/g,'/')}?ref=${encodeURIComponent(branch)}`).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'}));
         const payload:any={message:`CAMBRA Developer: migrate ${path}`,content:b64encodeUtf8(String(f.content)),branch};
         if(current?.sha) payload.sha=current.sha;
         await github(token, `/repos/${fullName}/contents/${encodeURIComponent(path).replace(/%2F/g,'/')}`,{method:'PUT',body:JSON.stringify(payload)});
@@ -234,7 +235,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'cutover') {
-      const approval=run.cutover_approval_id?await svc.entities.Approval.get(run.cutover_approval_id).catch(()=>null):null;
+      const approval=run.cutover_approval_id?await svc.entities.Approval.get(run.cutover_approval_id).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})):null;
       if (approval?.status!=='approved') return json({ok:false,error:'l4_cutover_approval_required',approval_id:run.cutover_approval_id||null},409);
       const approvedHead=String(approval?.draft_payload_json?.approved_head_sha||'');if(!approvedHead)return json({ok:false,error:'approved_head_sha_missing'},409);
       const livePr=await github(token, `/repos/${fullName}/pulls/${run.pull_request_number}`);
@@ -275,7 +276,7 @@ Deno.serve(async (req) => {
     if (action === 'rollback') {
       if(run.status!=='failed')return json({ok:false,error:'rollback_only_after_failed_verification'},409);
       if (!run.rollback_sha || !run.migration_plan?.rollback_tree_sha || !run.commit_sha) return json({ok:false,error:'rollback_metadata_missing'},409);
-      const rollbackApprovalId=String(run.verification?.rollback_approval_id||'');const approval=rollbackApprovalId?await svc.entities.Approval.get(rollbackApprovalId).catch(()=>null):null;
+      const rollbackApprovalId=String(run.verification?.rollback_approval_id||'');const approval=rollbackApprovalId?await svc.entities.Approval.get(rollbackApprovalId).catch((error:any)=>safeBestEffort(error,{operation:'developerMigrationEngine',fallback:null,severity:'critical'})):null;
       if (approval?.status!=='approved'||approval?.action_type!=='developer_rollback') return json({ok:false,error:'l4_rollback_approval_required'},409);
       if(String(approval?.draft_payload_json?.expected_head_sha||'')!==String(run.commit_sha||''))return json({ok:false,error:'rollback_approval_stale'},409);
       const currentRef=await github(token,`/repos/${fullName}/git/ref/heads/${encodeURIComponent(baseBranch)}`);

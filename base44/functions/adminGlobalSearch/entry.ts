@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 const SOURCES = [
@@ -14,7 +15,7 @@ const SOURCES = [
 export async function handleAdminGlobalSearch(req: Request) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'adminGlobalSearch',fallback:null,severity:'secondary'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false, error:'admin_required' }, { status:403 });
     const body = await req.json().catch(() => ({}));
     const query = String(body.query || '').trim().toLowerCase();
@@ -22,7 +23,7 @@ export async function handleAdminGlobalSearch(req: Request) {
     const svc = base44.asServiceRole;
     const results:any[] = [];
     await Promise.all(SOURCES.map(async (source) => {
-      const rows = await svc.entities[source.entity].list('-updated_date', 250).catch(() => []);
+      const rows = await svc.entities[source.entity].list('-updated_date', 250).catch((error:any)=>safeBestEffort(error,{operation:'adminGlobalSearch',fallback:[],severity:'secondary'}));
       for (const row of rows) {
         const values = source.fields.map((field) => String(row?.[field] || '')).filter(Boolean);
         const haystack = values.join(' ').toLowerCase();

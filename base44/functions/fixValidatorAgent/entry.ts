@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "fix_validator";
 const TASK_TYPE = "fix_validation";
@@ -21,7 +23,7 @@ function safeParseJSON(text) {
 async function findOriginalFinding(base44, findingId) {
   const sourceAgents = ["code_review", "security", "qa_monitor"];
   const tasks = await base44.asServiceRole.entities.AgentTask
-    .filter({ status: "completed" }, "-completed_at", 300).catch(() => []);
+    .filter({ status: "completed" }, "-completed_at", 300).catch((error:any)=>safeBestEffort(error,{operation:'fixValidatorAgent',fallback:[],severity:'secondary'}));
   for (const t of tasks) {
     if (!sourceAgents.includes(t.agent_name)) continue;
     const findings = t.output_payload_json?.findings;
@@ -118,7 +120,7 @@ Deno.serve(async (req) => {
       const rescanTaskId = rescanData?.task_id;
       let rescanFindings = [];
       if (rescanTaskId) {
-        const rescanTask = await base44.asServiceRole.entities.AgentTask.get(rescanTaskId).catch(() => null);
+        const rescanTask = await base44.asServiceRole.entities.AgentTask.get(rescanTaskId).catch((error:any)=>safeBestEffort(error,{operation:'fixValidatorAgent',fallback:null,severity:'secondary'}));
         rescanFindings = rescanTask?.output_payload_json?.findings || [];
       }
 
@@ -157,7 +159,7 @@ Deno.serve(async (req) => {
           disclaimer: ENG_DISCLAIMER,
         },
         status: "pending",
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'fixValidatorAgent',fallback:null,severity:'secondary'}));
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
@@ -262,7 +264,7 @@ Deno.serve(async (req) => {
           disclaimer: ENG_DISCLAIMER,
         },
         status: "pending",
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'fixValidatorAgent',fallback:null,severity:'secondary'}));
 
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "completed",
@@ -300,6 +302,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'fixValidatorAgent');
   }
 });

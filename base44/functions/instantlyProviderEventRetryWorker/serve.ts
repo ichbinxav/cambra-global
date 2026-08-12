@@ -1,3 +1,4 @@
 import { handleInstantlyProviderEventRetryWorker } from './entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(handleInstantlyProviderEventRetryWorker);
+guardedScheduledServe({"worker_key":"instantlyProviderEventRetryWorker","cadence_seconds":300},handleInstantlyProviderEventRetryWorker);

@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "founder_copilot";
 const TASK_TYPE = "daily_brief";
@@ -32,11 +34,11 @@ Deno.serve(async (req) => {
 
     const [pendingApprovals, failedTasks, activeBrands] = await Promise.all([
       base44.asServiceRole.entities.Approval
-        .filter({ status: "pending" }, "created_date", 100).catch(() => []),
+        .filter({ status: "pending" }, "created_date", 100).catch((error:any)=>safeBestEffort(error,{operation:'founderCopilotAgent',fallback:[],severity:'secondary'})),
       base44.asServiceRole.entities.AgentTask
-        .filter({ status: "failed", created_date: { $gte: since24h } }, "-created_date", 100).catch(() => []),
+        .filter({ status: "failed", created_date: { $gte: since24h } }, "-created_date", 100).catch((error:any)=>safeBestEffort(error,{operation:'founderCopilotAgent',fallback:[],severity:'secondary'})),
       base44.asServiceRole.entities.Brand
-        .list("-updated_date", 50).catch(() => []),
+        .list("-updated_date", 50).catch((error:any)=>safeBestEffort(error,{operation:'founderCopilotAgent',fallback:[],severity:'secondary'})),
     ]);
 
     const approvalsCount = pendingApprovals.length;
@@ -110,6 +112,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'founderCopilotAgent');
   }
 });

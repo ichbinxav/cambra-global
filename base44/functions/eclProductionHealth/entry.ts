@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // eclProductionHealth — CAMBRA v0.66.0 / ECL P7.
 // Authoritative critical-path health sweep. Detects liveness/backlog/drift and
 // materializes idempotent OperationalIncident episodes. It NEVER invokes a
@@ -6,6 +7,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { createOnce } from '../../shared/eclPersistence.ts';
 import { P7_ACTIVE_INCIDENT_STATUSES, P7_WORKERS, buildIncidentRecord, incidentDedupeKey, workerFreshness, type P7IncidentSignal } from '../../shared/eclOperationalRecovery.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const PLATFORM_TENANT = '_platform';
 const HEALTH_AGENT = 'ecl_production_health';
@@ -65,7 +67,7 @@ export default async function (req: Request): Promise<Response> {
     svc = base44.asServiceRole;
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
-    task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: HEALTH_AGENT, task_type: 'ecl_p7_health_sweep', status: 'running', requires_approval: false, risk_level: 1, input_summary: 'P7 authoritative critical production health', started_at: nowIso }).catch(() => null);
+    task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: HEALTH_AGENT, task_type: 'ecl_p7_health_sweep', status: 'running', requires_approval: false, risk_level: 1, input_summary: 'P7 authoritative critical production health', started_at: nowIso }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
 
     const overdueCutoff = new Date(nowMs - ECL_OVERDUE_MIN * 60000).toISOString();
     const dlqCutoff = new Date(nowMs - DLQ_OVERDUE_MIN * 60000).toISOString();
@@ -106,11 +108,11 @@ export default async function (req: Request): Promise<Response> {
     const critical = signals.filter((signal) => signal.severity === 'critical').length;
     const warning = signals.filter((signal) => signal.severity === 'warning').length;
     const summary = { checked_at: nowIso, status: critical ? 'critical' : warning ? 'warning' : 'healthy', signals: signals.length, critical, warning, incidents_materialized: materialized.length, incidents_auto_resolved: autoResolved, worker_contracts: P7_WORKERS, guarantees: { detection: 'authoritative_reads_fail_closed', recovery: 'never_auto_executes', economics: 'no_invoice_payment_or_evidence_mutation' } };
-    if (task?.id) await svc.entities.AgentTask.update(task.id, { status: 'completed', output_summary: `P7 health ${summary.status}: ${critical} critical · ${warning} warning · ${autoResolved} cleared`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch(() => null);
+    if (task?.id) await svc.entities.AgentTask.update(task.id, { status: 'completed', output_summary: `P7 health ${summary.status}: ${critical} critical · ${warning} warning · ${autoResolved} cleared`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
     return Response.json({ ok: true, ...summary, materialized });
   } catch (error) {
     const message = String((error as Error)?.message || error || 'unknown_error');
-    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch(() => null);
+    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
     return Response.json({ ok: false, error: 'p7_health_sweep_failed', message }, { status: 500 });
   }
 }

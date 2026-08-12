@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // recoverBillingDigest — RECOVER-4 (2026-08-04).
 //
 // Weekly reminder, NOT an invoicing job. It never approves a report and never
@@ -37,6 +38,7 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { parisMonthOf } from '../../shared/recoverBillingMath.ts';
 import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const SEND_WINDOW_MS = 6 * 60 * 60 * 1000;
 
@@ -61,7 +63,7 @@ export default async function (req: Request): Promise<Response> {
 
     const last = await svc.entities.OperationalLog.filter(
       { event_type: 'status_changed', message: 'recover_billing_digest_sent' }, '-created_date', 1
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:[],severity:'critical'}));
     const lastAt = last?.[0]?.created_at ? new Date(last[0].created_at).getTime() : 0;
     if (Date.now() - lastAt < SEND_WINDOW_MS) {
       return Response.json({ ok: true, sent: false, reason: 'already_sent_recently' });
@@ -95,9 +97,9 @@ export default async function (req: Request): Promise<Response> {
     // agreement_end_at nothing is measured any more.
     const targetMonth = previousClosedMonth();
     const monthStart = new Date(`${targetMonth}-01T00:00:00.000Z`).getTime();
-    const live = await svc.entities.DealActivation.filter({ status: 'live' }, '-created_date', 250).catch(() => []);
-    const monetizing = await svc.entities.DealActivation.filter({ status: 'monetizing' }, '-created_date', 250).catch(() => []);
-    const paused = await svc.entities.DealActivation.filter({ status: 'paused' }, '-created_date', 250).catch(() => []);
+    const live = await svc.entities.DealActivation.filter({ status: 'live' }, '-created_date', 250).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:[],severity:'critical'}));
+    const monetizing = await svc.entities.DealActivation.filter({ status: 'monetizing' }, '-created_date', 250).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:[],severity:'critical'}));
+    const paused = await svc.entities.DealActivation.filter({ status: 'paused' }, '-created_date', 250).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:[],severity:'critical'}));
     const coverageTruncated = (reports || []).length >= 500 || (live || []).length >= 250 || (monetizing || []).length >= 250 || (paused || []).length >= 250;
     const candidates = [
       ...(live || []).map(a => ({ a, was_paused: false })),
@@ -134,7 +136,7 @@ export default async function (req: Request): Promise<Response> {
     const brandIds = [...new Set([...awaitingApproval, ...approvedNotInvoiced, ...blocked, ...missingReports].map(r => r.brand_id).filter(Boolean))];
     const brandNames = {};
     for (const id of brandIds) {
-      const rows = await svc.entities.Brand.filter({ id }, '-created_date', 1).catch(() => []);
+      const rows = await svc.entities.Brand.filter({ id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:[],severity:'critical'}));
       brandNames[id] = rows?.[0]?.name || id;
     }
     const label = (r) => `${brandNames[r.brand_id] || 'Unknown business'} — ${r.month}`;
@@ -191,7 +193,7 @@ export default async function (req: Request): Promise<Response> {
       },
       actor_email: 'scheduler',
       created_at: new Date().toISOString(),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'recoverBillingDigest',fallback:null,severity:'critical'}));
 
     return Response.json({
       ok: true,

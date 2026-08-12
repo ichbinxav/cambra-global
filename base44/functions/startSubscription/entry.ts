@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal, quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): orphan, but Subscription holds 2 rows — kept with probe.
 Deno.serve(async (req) => {
@@ -38,6 +39,6 @@ Deno.serve(async (req) => {
     // No free seats left — signal checkout required (Stripe to be wired)
     return Response.json({ status: 'requires_checkout', price: 60, currency: 'EUR', interval: 'month' });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'startSubscription');
   }
 });

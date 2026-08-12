@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // sendRecoverContractEmail — RECOVER-3 (2026-08-03).
 //
 // Sends the merchant their copy of the agreement. Internal/admin only.
@@ -49,7 +50,7 @@ export default async function (req: Request): Promise<Response> {
   const isResend = body?.resend === true && gate.isAdmin;
   if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });
 
-  const rows = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch(() => []);
+  const rows = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'sendRecoverContractEmail',fallback:[],severity:'critical'}));
   const mandate = rows?.[0];
   if (!mandate) return Response.json({ error: 'mandate not found' }, { status: 404 });
 
@@ -150,7 +151,7 @@ export default async function (req: Request): Promise<Response> {
       contract_email_status: status,
       contract_email_last_error_code: code,
       contract_email_next_retry_at: permanent ? '' : nextRetryAt(attempt),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'sendRecoverContractEmail',fallback:null,severity:'critical'}));
 
     await logContractEvent(
       svc,

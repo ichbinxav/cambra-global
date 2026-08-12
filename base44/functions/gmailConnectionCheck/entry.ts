@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 Deno.serve(async (req) => {
@@ -25,7 +26,7 @@ Deno.serve(async (req) => {
       const base44c = createClientFromRequest(req);
       const me = await base44c.auth.me();
       if (me) await base44c.entities.SecurityAudit.create({ user_email: me.email, event_type: 'integration_access_check', connector: 'gmail', success: false });
-    } catch {}
+    } catch(error){safeBestEffort(error,{operation:'gmailConnectionCheck',fallback:null,severity:'secondary'})}
     return Response.json({ error: 'Internal error' }, { status: 500 });
   }
 });

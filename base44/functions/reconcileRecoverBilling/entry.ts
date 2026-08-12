@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // reconcileRecoverBilling — CAMBRA v0.65.0 / ECL P6.
 //
 // Read-only against Stripe: GET current invoice state, validate the frozen
@@ -47,7 +48,7 @@ export default async function (req: Request): Promise<Response> {
       risk_level: 1,
       input_summary: `P7-observed P6 Stripe read-only reconciliation · limit ${limit}`,
       started_at: new Date().toISOString(),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'reconcileRecoverBilling',fallback:null,severity:'critical'}));
     const rows = await svc.entities.Invoice.filter({ payment_provider: 'stripe' }, '-created_date', 250);
     const candidates = (rows || [])
       .filter((inv: any) => inv.monthly_savings_report_id && inv.stripe_invoice_id)
@@ -171,12 +172,12 @@ export default async function (req: Request): Promise<Response> {
       output_payload_json: { scanned: candidates.length, matched, corrected, mismatched, errors, guarantee: summary.guarantee },
       ...(errors > 0 ? { error: `${errors} invoice reconciliation error(s)` } : {}),
       completed_at: new Date().toISOString(),
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'reconcileRecoverBilling',fallback:null,severity:'critical'}));
     return Response.json(summary);
   } catch (error) {
     schedulerOk = false;
     const message = String((error as Error)?.message || error || 'reconciliation_failed');
-    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch(() => null);
+    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'reconcileRecoverBilling',fallback:null,severity:'critical'}));
     return Response.json({ ok: false, error: message }, { status: 500 });
   } finally {
     if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:'reconcileRecoverBilling' }, schedulerOk);

@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // approveRecoverReportForInvoicing — RECOVER-4 (2026-08-04).
 //
 // The human gate between "measured" and "invoiceable". Admin only. Runs every
@@ -21,6 +22,7 @@ import { resolveContractPolicy, buildContractEconomicView } from '../../shared/c
 import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import { evaluateRecoverEconomicGate } from '../../shared/eclEconomicGate.ts';
 import { RECOVERY_ECONOMICS_V2, periodEconomicsV2, reportPeriodBounds, referralCountFromYear1EquivalentFee, periodOverlapsTerm, recoveryTermFromActivation } from '../../shared/recoveryEconomicsV2.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // v60.2 — the standard fee comes from the resolved contract policy (the
 // accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
@@ -31,7 +33,7 @@ const STANDARD_FEE_PCT = getSuccessFeePct();
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:null,severity:'critical'}));
     if (user?.role !== 'admin') return Response.json({ error: 'forbidden' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
@@ -39,17 +41,17 @@ export default async function (req: Request): Promise<Response> {
     if (!report_id) return Response.json({ error: 'report_id required' }, { status: 400 });
 
     const svc = base44.asServiceRole;
-    const reports = await svc.entities.MonthlySavingsReport.filter({ id: report_id }, '-created_date', 1).catch(() => []);
+    const reports = await svc.entities.MonthlySavingsReport.filter({ id: report_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:[],severity:'critical'}));
     const report = reports?.[0];
     if (!report) return Response.json({ error: 'report not found' }, { status: 404 });
     if (report.billing_eligibility_status === 'invoiced' || report.invoice_id) {
       return Response.json({ error: 'already_invoiced', invoice_id: report.invoice_id || null }, { status: 409 });
     }
 
-    const activations = await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch(() => []);
+    const activations = await svc.entities.DealActivation.filter({ id: report.deal_activation_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:[],severity:'critical'}));
     const activation = activations?.[0];
     if (!activation) return Response.json({ error: 'activation not found' }, { status: 404 });
-    const brands = await svc.entities.Brand.filter({ id: report.brand_id || activation.brand_id }, '-created_date', 1).catch(() => []);
+    const brands = await svc.entities.Brand.filter({ id: report.brand_id || activation.brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:[],severity:'critical'}));
     const brand = brands?.[0];
     const mandate = await resolveRecoverEconomicMandate(svc, activation);
 
@@ -237,7 +239,7 @@ export default async function (req: Request): Promise<Response> {
         data_json: { report_id: report.id, month: report.month, blockers },
         actor_email: user.email,
         created_at: now,
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:null,severity:'critical'}));
       return Response.json({ ok: false, report_id: report.id, billing_eligibility_status: primary, blockers });
     }
 
@@ -301,7 +303,7 @@ export default async function (req: Request): Promise<Response> {
       data_json: { report_id: report.id, month: report.month, fee_net_eur: amounts.fee_net_eur, effective_fee_pct: effectivePct, calculation_hash: calcHash },
       actor_email: user.email,
       created_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'approveRecoverReportForInvoicing',fallback:null,severity:'critical'}));
 
     // RECOVER-3 admin alert (non-blocking, §2): first invoice with a permanently
     // failed contract PDF deserves a loud warning.
@@ -324,6 +326,6 @@ export default async function (req: Request): Promise<Response> {
       warnings,
     });
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500 });
+    return internalErrorResponse(error, 'approveRecoverReportForInvoicing');
   }
 }

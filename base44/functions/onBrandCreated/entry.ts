@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { welcomeEmail } from '../../shared/emails/welcome.ts';
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
   // exists and its stored creator matches the payload. Kills anonymous
   // curl-with-forged-payload email spam through our sending domain.
   const brand = data.id
-    ? await base44.asServiceRole.entities.Brand.get(data.id).catch(() => null)
+    ? await base44.asServiceRole.entities.Brand.get(data.id).catch((error:any)=>safeBestEffort(error,{operation:'onBrandCreated',fallback:null,severity:'secondary'}))
     : null;
   if (!brand || brand.created_by !== userEmail) {
     return Response.json({ ok: true, skipped: "unverified_payload" });

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -10,6 +11,6 @@ Deno.serve(async (req) => {
     const recs = await base44.entities.Recommendation.list('-generated_at', 200);
     return Response.json({ items: recs||[] });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'getAdminRecommendationQueue');
   }
 });

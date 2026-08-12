@@ -18,6 +18,7 @@
 //     event, out of scope here).
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const MAX_PAYMENT_EUR = 1_000_000;
 
@@ -110,6 +111,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ invoice: updated });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'recordPayment');
   }
 });

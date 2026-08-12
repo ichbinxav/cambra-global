@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "contract_ip";
 const TASK_TYPE = "contract_ip_review";
@@ -39,13 +41,13 @@ Deno.serve(async (req) => {
 
     // Collect providers referenced in the platform
     const providers = await base44.asServiceRole.entities.Provider
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'contractIPAgent',fallback:[],severity:'critical'}));
     const dealActivations = await base44.asServiceRole.entities.DealActivation
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'contractIPAgent',fallback:[],severity:'critical'}));
     const contracts = await base44.asServiceRole.entities.Contract
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'contractIPAgent',fallback:[],severity:'critical'}));
     const mandates = await base44.asServiceRole.entities.Mandate
-      .list("-created_date", 200).catch(() => []);
+      .list("-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'contractIPAgent',fallback:[],severity:'critical'}));
 
     // Deterministic structural signals
     const providersWithoutContract = providers.filter(p => {
@@ -118,7 +120,7 @@ Deno.serve(async (req) => {
             disclaimer: LEGAL_DISCLAIMER,
           },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'contractIPAgent',fallback:null,severity:'critical'}));
         if (ev) flagsEmitted.push(ev.id);
       }
     }
@@ -144,6 +146,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'contractIPAgent');
   }
 });

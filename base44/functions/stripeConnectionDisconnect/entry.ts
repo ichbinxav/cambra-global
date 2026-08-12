@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 /**
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
     // happy path, so an admin only ever sees the 404 when the brand truly
     // does not exist — not when the brand exists under another owner.
     // There is no admin-only 403 branch anywhere in this function.
-    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch(() => null);
+    const brand = await base44.asServiceRole.entities.Brand.get(brand_id).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:null,severity:'critical'}));
     const isAdmin = user.role === 'admin';
     const isOwner = brand &&
       (brand.contact_email === user.email || brand.created_by === user.email);
@@ -99,12 +100,12 @@ Deno.serve(async (req) => {
     let integrationsToClose = [];
     if (integration_id) {
       const one = await base44.asServiceRole.entities.Integration
-        .get(integration_id).catch(() => null);
+        .get(integration_id).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:null,severity:'critical'}));
       if (one && one.brand_id === brand_id) integrationsToClose.push(one);
     } else {
       const list = await base44.asServiceRole.entities.Integration.filter(
         { brand_id, status: 'connected' }
-      ).catch(() => []);
+      ).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:[],severity:'critical'}));
       integrationsToClose = list.filter((i) =>
         i.provider === 'stripe' || i.provider === 'stripe_self' || i.provider === 'stripe_self_test'
       );
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
     // 3b — Legacy StripeConnection cleanup (dual-row).
     const legacy = await base44.asServiceRole.entities.StripeConnection.filter(
       { brand_id, connection_status: 'connected' }
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:[],severity:'critical'}));
     for (const c of legacy) {
       await base44.asServiceRole.entities.StripeConnection.update(c.id, {
         connection_status: 'disconnected',
@@ -143,11 +144,11 @@ Deno.serve(async (req) => {
       }
     } catch { /* consents are optional plumbing — don't fail the disconnect */ }
 
-    const activeRecoveries = await svc.entities.DealActivation.filter({ brand_id, economic_right_status: 'active' }, '-created_date', 100).catch(() => []);
+    const activeRecoveries = await svc.entities.DealActivation.filter({ brand_id, economic_right_status: 'active' }, '-created_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:[],severity:'critical'}));
     for (const recovery of activeRecoveries || []) {
-      await svc.entities.DealActivation.update(recovery.id, { verification_access_status: 'missing' }).catch(() => null);
+      await svc.entities.DealActivation.update(recovery.id, { verification_access_status: 'missing' }).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:null,severity:'critical'}));
     }
-    await svc.entities.OperationalLog.create({ brand_id, event_type: 'status_changed', message: 'recovery_verification_source_disconnected', data_json: { active_recovery_ids: (activeRecoveries || []).map((r:any)=>r.id), billing_effect: 'verification_required_no_estimated_billing' }, actor_email: user.email || '', created_at: now }).catch(() => null);
+    await svc.entities.OperationalLog.create({ brand_id, event_type: 'status_changed', message: 'recovery_verification_source_disconnected', data_json: { active_recovery_ids: (activeRecoveries || []).map((r:any)=>r.id), billing_effect: 'verification_required_no_estimated_billing' }, actor_email: user.email || '', created_at: now }).catch((error:any)=>safeBestEffort(error,{operation:'stripeConnectionDisconnect',fallback:null,severity:'critical'}));
     return Response.json({ ok: true, disconnected: counters });
   } catch (error) {
     console.error('stripeConnectionDisconnect failed', error);

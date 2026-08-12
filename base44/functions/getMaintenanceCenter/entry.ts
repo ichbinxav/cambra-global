@@ -1,10 +1,11 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
 
 Deno.serve(async (req) => {
   try {
     const b = createClientFromRequest(req);
-    const u = await b.auth.me().catch(() => null);
+    const u = await b.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:null,severity:'secondary'}));
     if (!u) return Response.json({ ok:false, error:'Unauthorized' }, { status:401 });
     if (u.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const s = b.asServiceRole;
@@ -16,10 +17,10 @@ Deno.serve(async (req) => {
       s.entities.ProviderPricingVersion.list('-observed_at', 2000),
       s.entities.RemediationKnowledge.list('-last_verified_at', 500),
       s.entities.SecurityAudit.list('-created_date', 500),
-      s.entities.DocumentationHealthAssessment.list('-calculated_at', 20).catch(() => []),
-      s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch(() => []),
-      s.entities.IncidentAlertDelivery.list('-updated_at', 200).catch(() => []),
-      s.entities.SchedulerRun.list('-started_at', 5000).catch(() => []),
+      s.entities.DocumentationHealthAssessment.list('-calculated_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
+      s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
+      s.entities.IncidentAlertDelivery.list('-updated_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
+      s.entities.SchedulerRun.list('-started_at', 5000).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
     ]);
     const last = runs[0] || null;
     const doc = documentation[0] || null;

@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { buildResilientLeadScore, validLeadModelRow, type LeadModelStatus } from '../../shared/leadScoringResilience.ts';
 import { leadOutcomeCalibration } from '../../shared/leadOutcomeCalibration.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "lead_scoring";
 const TASK_TYPE = "score_leads";
@@ -46,14 +48,14 @@ Deno.serve(async (req) => {
     let leads = [];
     if (leadIds && leadIds.length) {
       leads = await base44.asServiceRole.entities.OutboundLead
-        .filter({ id: { $in: leadIds } }, "-created_date", leadIds.length).catch(() => []);
+        .filter({ id: { $in: leadIds } }, "-created_date", leadIds.length).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:[],severity:'secondary'}));
     } else {
       // Prefer enriched, fall back to any unscored
       leads = await base44.asServiceRole.entities.OutboundLead
-        .filter({ score: null }, "-created_date", limit).catch(() => []);
+        .filter({ score: null }, "-created_date", limit).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:[],severity:'secondary'}));
       if (!leads.length) {
         leads = await base44.asServiceRole.entities.OutboundLead
-          .list("-created_date", limit).catch(() => []);
+          .list("-created_date", limit).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:[],severity:'secondary'}));
       }
     }
 
@@ -119,7 +121,7 @@ Deno.serve(async (req) => {
 
     // Every requested lead receives a deterministic result. A missing or malformed
     // model row can reduce confidence, but it must never strand the whole P6 chain.
-    const outcomeAggregates=await base44.asServiceRole.entities.AnonymizedIntelligenceAggregate.filter({aggregate_type:'verified_outcomes'},'-period',500).catch(()=>[]);
+    const outcomeAggregates=await base44.asServiceRole.entities.AnonymizedIntelligenceAggregate.filter({aggregate_type:'verified_outcomes'},'-period',500).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:[],severity:'secondary'}));
     const calibrations=new Map(leads.map((lead:any)=>[String(lead.id),leadOutcomeCalibration(lead,outcomeAggregates)]));
     const updates=leads.map((lead:any)=>buildResilientLeadScore(lead,validById.get(String(lead.id)),modelStatus,calibrations.get(String(lead.id))));
 
@@ -129,7 +131,7 @@ Deno.serve(async (req) => {
       } catch (e) {
         for (const u of updates) {
           const { id, ...patch } = u;
-          await base44.asServiceRole.entities.OutboundLead.update(id, patch).catch(() => null);
+          await base44.asServiceRole.entities.OutboundLead.update(id, patch).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:null,severity:'secondary'}));
         }
       }
     }
@@ -143,7 +145,7 @@ Deno.serve(async (req) => {
         data_json:{task_id:task.id,lead_count:leads.length,model_rows_matched:matchedCount,model_error_code:modelErrorCode||'partial_or_missing_rows',deterministic_fallback:true,raw_model_output_persisted:false},
         actor_email:'lead_scoring_agent',
         created_at:new Date().toISOString(),
-      }).catch(()=>null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'leadScoringAgent',fallback:null,severity:'secondary'}));
     }
 
     await base44.asServiceRole.entities.AgentTask.update(task.id, {
@@ -174,6 +176,6 @@ Deno.serve(async (req) => {
         });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'leadScoringAgent');
   }
 });

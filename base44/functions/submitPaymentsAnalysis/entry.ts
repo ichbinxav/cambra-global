@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // submitPaymentsAnalysis — public anonymous endpoint that runs the payments
 // gap engine for a merchant, without requiring authentication.
 //
@@ -1811,7 +1812,7 @@ Deno.serve(async (req) => {
     if (refRaw && /^[A-Za-z0-9_-]{4,24}$/.test(refRaw)) {
       const links = await base44.asServiceRole.entities.ReferralLink
         .filter({ code: refRaw }, '-created_date', 1)
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'submitPaymentsAnalysis',fallback:[],severity:'secondary'}));
       if (links?.[0]) {
         referred_by_code = refRaw;
         await base44.asServiceRole.entities.ReferralLink

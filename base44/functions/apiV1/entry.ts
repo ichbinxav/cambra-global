@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // CAMBRA External API v1 — production router
 // =============================================================================
 // TENANT ISOLATION: All endpoints must filter by organization_id or created_by.
@@ -143,7 +144,7 @@ async function trackUsage(base44, principal) {
   const matches = await base44.asServiceRole.entities.ApiUsageRecord.filter({ organization_id: orgId, period_month: periodMonth });
   const record = matches?.[0];
   if (!record) {
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
     await base44.asServiceRole.entities.ApiUsageRecord.create({
       organization_id: orgId,
       period_month: periodMonth,
@@ -157,7 +158,7 @@ async function trackUsage(base44, principal) {
     const newCount = (record.request_count || 0) + 1;
     const quota = record.included_quota || 10000;
     const overage = Math.max(0, newCount - quota);
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch(() => null);
+    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
     const overagePrice = (org?.overage_price_per_1k || 0.5) * (overage / 1000);
     await base44.asServiceRole.entities.ApiUsageRecord.update(record.id, {
       request_count: newCount,
@@ -337,7 +338,7 @@ const RESOURCES = {
         const e = new Error("brand_id is required"); e.code = "invalid_request"; e.status = 400; throw e;
       }
       // FIX 3 — assert the caller owns this brand before creating the input
-      const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch(() => null);
+      const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
       assertTenant(principal, brand);
       const input = await base44.asServiceRole.entities.AnalyzerInput.create({
         brand_id: body.brand_id,
@@ -442,13 +443,13 @@ const RESOURCES = {
         // Org-scoped token: org_id must match.
         const filter = { source_type: "report", organization_id: orgId };
         const items = await base44.asServiceRole.entities.Document
-          .filter(filter, "-created_date", limit).catch(() => []);
+          .filter(filter, "-created_date", limit).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'}));
         return { data: items, meta: { count: items.length } };
       }
 
       if (isPlatformPrincipal(principal)) {
         const items = await base44.asServiceRole.entities.Document
-          .filter({ source_type: "report" }, "-created_date", limit).catch(() => []);
+          .filter({ source_type: "report" }, "-created_date", limit).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'}));
         return { data: items, meta: { count: items.length } };
       }
 
@@ -461,10 +462,10 @@ const RESOURCES = {
       const [byCreated, byOwner] = await Promise.all([
         base44.asServiceRole.entities.Document
           .filter({ source_type: "report", created_by: userEmail }, "-created_date", limit)
-          .catch(() => []),
+          .catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'})),
         base44.asServiceRole.entities.Document
           .filter({ source_type: "report", owner_email: userEmail }, "-created_date", limit)
-          .catch(() => []),
+          .catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'})),
       ]);
       // De-duplicate by id, preserve newest-first ordering.
       const seen = new Set();
@@ -522,7 +523,7 @@ const RESOURCES = {
         (Object.keys(createdByFilter).length
           ? base44.asServiceRole.entities.DealActivation.filter(createdByFilter, "-created_date", 1000)
           : base44.asServiceRole.entities.DealActivation.list("-created_date", 1000)
-        ).catch(() => []),
+        ).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'})),
       ]);
       const totalIdentified = analyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const totalActivated = activations.reduce((s, a) => s + (a.activated_savings_yearly || 0), 0);
@@ -604,7 +605,7 @@ const RESOURCES = {
     handler: async (base44, { body, principal }) => {
       // FIX 13 — when caller passes a brand_id, verify it belongs to the principal's tenant
       if (body?.brand_id) {
-        const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch(() => null);
+        const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
         assertTenant(principal, brand);
       }
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -612,8 +613,8 @@ const RESOURCES = {
       const brandFilter = tenantFilter(principal, { created_date: { $gte: since } });
       const createdByFilter = tenantFilterByCreatedBy(principal, { created_date: { $gte: since } });
       const [newAnalyses, newBrands] = await Promise.all([
-        base44.asServiceRole.entities.AnalyzerResult.filter(createdByFilter, "-created_date", 200).catch(() => []),
-        base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 200).catch(() => []),
+        base44.asServiceRole.entities.AnalyzerResult.filter(createdByFilter, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'})),
+        base44.asServiceRole.entities.Brand.filter(brandFilter, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'})),
       ]);
       const savingsThisWeek = newAnalyses.reduce((s, a) => s + (a.total_savings || 0), 0);
       const briefing = {
@@ -796,7 +797,7 @@ Deno.serve(async (req) => {
       const requestHash = await sha256Hex(`${method}:${path}:${JSON.stringify(body || {})}`);
       const cached = await base44.asServiceRole.entities.IdempotencyKey.filter({
         key: idempotencyKey, principal_id: principal.id,
-      }).catch(() => []);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:[],severity:'secondary'}));
       const existing = cached?.[0];
       if (existing) {
         if (existing.request_hash !== requestHash) {
@@ -819,7 +820,7 @@ Deno.serve(async (req) => {
         response_status: 200,
         response_body: responsePayload,
         expires_at: new Date(Date.now() + IDEMPOTENCY_TTL_SECONDS * 1000).toISOString(),
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
       await trackUsage(base44, principal);
       await logActivity(base44, {
         principal, endpoint: path, method, scope: matched.route.scope, status: "success", status_code: 200,

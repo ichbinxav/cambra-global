@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only, idempotent seeder for the two hard compliance rules (M0B skeleton).
 // Does NOT build a Compliance Center, AI review, or any rule beyond these two.
 // Re-running is safe: it upserts by rule_id and never creates duplicates.
@@ -172,7 +173,7 @@ const HARD_RULES = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'seedComplianceRules',fallback:null,severity:'secondary'}));
     if (!user || user.role !== "admin") {
       return Response.json({ error: "forbidden", message: "Admin only" }, { status: 403 });
     }
@@ -182,17 +183,17 @@ Deno.serve(async (req) => {
       // Idempotency: upsert by rule_id, never duplicate.
       const existing = await base44.asServiceRole.entities.ComplianceRule
         .filter({ rule_id: rule.rule_id })
-        .catch(() => []);
+        .catch((error:any)=>safeBestEffort(error,{operation:'seedComplianceRules',fallback:[],severity:'secondary'}));
 
       if (existing && existing.length > 0) {
         await base44.asServiceRole.entities.ComplianceRule
           .update(existing[0].id, rule)
-          .catch(() => null);
+          .catch((error:any)=>safeBestEffort(error,{operation:'seedComplianceRules',fallback:null,severity:'secondary'}));
         results.push({ rule_id: rule.rule_id, action: "updated" });
       } else {
         await base44.asServiceRole.entities.ComplianceRule
           .create(rule)
-          .catch(() => null);
+          .catch((error:any)=>safeBestEffort(error,{operation:'seedComplianceRules',fallback:null,severity:'secondary'}));
         results.push({ rule_id: rule.rule_id, action: "created" });
       }
     }

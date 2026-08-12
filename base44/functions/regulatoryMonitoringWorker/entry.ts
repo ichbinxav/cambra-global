@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
@@ -17,9 +18,9 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
     const now = new Date();
     const horizon = new Date(now.getTime() + 30 * 86400000);
     const [policies,evidence,registrations] = await Promise.all([
-      svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-next_review_at', 5000).catch(() => []),
-      svc.entities.RegulatoryEvidence.filter({ active:true }, '-next_review_at', 5000).catch(() => []),
-      svc.entities.RegulatoryRegistration.filter({ active:true }, '-effective_to', 500).catch(() => []),
+      svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-next_review_at', 5000).catch((error:any)=>safeBestEffort(error,{operation:'regulatoryMonitoringWorker',fallback:[],severity:'secondary'})),
+      svc.entities.RegulatoryEvidence.filter({ active:true }, '-next_review_at', 5000).catch((error:any)=>safeBestEffort(error,{operation:'regulatoryMonitoringWorker',fallback:[],severity:'secondary'})),
+      svc.entities.RegulatoryRegistration.filter({ active:true }, '-effective_to', 500).catch((error:any)=>safeBestEffort(error,{operation:'regulatoryMonitoringWorker',fallback:[],severity:'secondary'})),
     ]);
     const findings:any[] = [];
     for (const row of policies) if (!row.next_review_at || Date.parse(row.next_review_at) <= now.getTime()) findings.push({ key:`policy:${row.id}`,type:'POLICY_REVIEW_DUE',severity:'HIGH',jurisdiction:row.jurisdiction,activity:row.activity,entity_id:row.id });
@@ -28,9 +29,9 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
     let created = 0;
     for (const finding of findings) {
       const issueKey = `p10:${finding.key}:${now.toISOString().slice(0,10)}`;
-      const old = await svc.entities.ComplianceIssue.filter({ issue_key:issueKey }, '-created_at', 1).catch(() => []);
+      const old = await svc.entities.ComplianceIssue.filter({ issue_key:issueKey }, '-created_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'regulatoryMonitoringWorker',fallback:[],severity:'secondary'}));
       if (old[0]) continue;
-      await svc.entities.ComplianceIssue.create({ issue_key:issueKey,review_id:'p10-continuous-monitoring',rule_id:finding.type,title:`P10 ${finding.type}`,type:finding.type,severity:String(finding.severity).toLowerCase(),status:'open',description:'P10 regulatory freshness control requires human/legal review.',blocking:true,resolved:false,source_entity_type:finding.type.startsWith('POLICY')?'RegulatoryPolicyVersion':finding.type.startsWith('EVIDENCE')?'RegulatoryEvidence':'RegulatoryRegistration',source_entity_id:finding.entity_id,details_json:finding,created_at:now.toISOString() }).catch(() => null);
+      await svc.entities.ComplianceIssue.create({ issue_key:issueKey,review_id:'p10-continuous-monitoring',rule_id:finding.type,title:`P10 ${finding.type}`,type:finding.type,severity:String(finding.severity).toLowerCase(),status:'open',description:'P10 regulatory freshness control requires human/legal review.',blocking:true,resolved:false,source_entity_type:finding.type.startsWith('POLICY')?'RegulatoryPolicyVersion':finding.type.startsWith('EVIDENCE')?'RegulatoryEvidence':'RegulatoryRegistration',source_entity_id:finding.entity_id,details_json:finding,created_at:now.toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'regulatoryMonitoringWorker',fallback:null,severity:'secondary'}));
       created++;
     }
     return Response.json({ ok:true,reviewed:{ policies:policies.length,evidence:evidence.length,registrations:registrations.length },findings:findings.length,created,auto_promoted:false,legal_conclusions_changed:false });

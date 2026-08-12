@@ -1,4 +1,6 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * System Health Agent — meta-watcher for the entire agent fleet.
@@ -86,13 +88,13 @@ Deno.serve(async (req) => {
     // ── Snapshot inputs (read-only) ─────────────────────────────────────
     // Cap pulls to recent windows; we don't need full history for a health check.
     const [recentTasks, runningTasks, pendingEvents, pendingApprovals, pendingQuestions, allIntegrations] = await Promise.all([
-      base44.asServiceRole.entities.AgentTask.list("-created_date", 500).catch(() => []),
-      base44.asServiceRole.entities.AgentTask.filter({ status: "running" }, "-created_date", 200).catch(() => []),
-      base44.asServiceRole.entities.Event.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
-      base44.asServiceRole.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
-      base44.asServiceRole.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch(() => []),
+      base44.asServiceRole.entities.AgentTask.list("-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.AgentTask.filter({ status: "running" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.Event.filter({ status: "pending" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
+      base44.asServiceRole.entities.AgentQuestion.filter({ status: "pending" }, "-created_date", 200).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
       // Platform-wide read — same admin pattern as the other dimensions.
-      base44.asServiceRole.entities.Integration.list("-created_date", 500).catch(() => []),
+      base44.asServiceRole.entities.Integration.list("-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:[],severity:'secondary'})),
     ]);
 
     // ── 1. Failing agents (last 5 runs per agent) ───────────────────────
@@ -415,7 +417,7 @@ Deno.serve(async (req) => {
         },
       },
       status: "pending",
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'systemHealthAgent',fallback:null,severity:'secondary'}));
 
     const summary = overall === "green"
       ? `🟢 System healthy. ${KNOWN_AGENTS.length} known agents · ${runningTasks.length} running · 0 issues.`
@@ -442,8 +444,8 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, {
           status: "failed", error: error.message, completed_at: new Date().toISOString(),
         });
-      } catch {}
+      } catch(error){safeBestEffort(error,{operation:'systemHealthAgent',fallback:null,severity:'secondary'})}
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'systemHealthAgent');
   }
 });

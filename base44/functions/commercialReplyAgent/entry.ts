@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { L4_CLASSIFICATIONS, SAFE_ROUTINE_CLASSIFICATIONS, classifyHardStop, communicationQuality, policyIsActive, routineActionAllowed, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
@@ -7,8 +8,8 @@ import { aiSensitiveIdentityReply, evaluateFounderMeetingEscalation } from '../.
 async function callClaude(svc:any,prompt:string,tier:'standard'|'high_reasoning'='standard',eventKey='reply'){return (await callCambraClaude(prompt,{tier,maxTokens:2200,svc,eventKey,source:'commercialReplyAgent'})).text}
 function parseJson(text:string) {
   const clean=text.replace(/```json\s*/gi,'').replace(/```/g,'').trim();
-  try{return JSON.parse(clean)}catch{}
-  const m=clean.match(/\{[\s\S]*\}/); if(m){try{return JSON.parse(m[0])}catch{}}
+  try{return JSON.parse(clean)}catch(error){safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'})}
+  const m=clean.match(/\{[\s\S]*\}/); if(m){try{return JSON.parse(m[0])}catch(error){safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'})}}
   return null;
 }
 
@@ -18,8 +19,8 @@ Deno.serve(async (req)=>{
     const base44=createClientFromRequest(req); const body=await req.json().catch(()=>({}));
     const gate=await requireAdminOrInternal(req,base44,body); if(!gate.ok)return gate.response;
     const svc=base44.asServiceRole;
-    const thread=await svc.entities.CommunicationThread.get(String(body?.thread_id||'')).catch(()=>null);
-    const message=await svc.entities.CommunicationMessage.get(String(body?.message_id||'')).catch(()=>null);
+    const thread=await svc.entities.CommunicationThread.get(String(body?.thread_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
+    const message=await svc.entities.CommunicationMessage.get(String(body?.message_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
     if(!thread||!message||message.thread_id!==thread.id||message.direction!=='inbound')return Response.json({ok:false,error:'thread_message_not_found'},{status:404});
     task=await svc.entities.AgentTask.create({ brand_id:thread.related_entity_type==='Brand'?thread.related_entity_id:'_platform', agent_name:'commercial_reply', task_type:'classify_and_reply', related_entity_type:'CommunicationThread', related_entity_id:thread.id, status:'running', requires_approval:false, risk_level:2, input_summary:`Inbound ${thread.engine} reply from ${message.from_email||'counterparty'}`, started_at:new Date().toISOString() });
 
@@ -28,7 +29,7 @@ Deno.serve(async (req)=>{
     let result:any;
     if(hard){ result={ classification:hard, confidence:1, response_required:false, action:'stop', escalation_reason:hard, reply_subject:'', reply_body:'' }; }
     else{
-      previous=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',20).catch(()=>[]);
+      previous=await svc.entities.CommunicationMessage.filter({thread_id:thread.id},'-created_date',20).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:[],severity:'critical'}));
       const transcript=[...previous].reverse().map((m:any)=>({direction:m.direction,subject:m.subject,text:String(m.text_body||'').slice(0,3000)}));
       const disclosure=aiSensitiveIdentityReply(`${message.subject||''}\n${message.text_body||''}`,thread.language||'en');
       if(disclosure){
@@ -49,12 +50,12 @@ Deno.serve(async (req)=>{
       if(!result||!result.classification)throw new Error('reply_classification_unparseable');
     }
     const classification=String(result.classification||'unknown');
-    if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:classification==='meeting'?'replied':'replied'}).catch(()=>null);
+    if(thread.engine==='partner_acquisition'&&thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id,{stage:classification==='meeting'?'replied':'replied'}).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
     const messageIntent=String(result.message_intent||result.action||'ANSWER').toUpperCase();
     await svc.entities.CommunicationMessage.update(message.id,{ classification, classification_confidence:Math.max(0,Math.min(1,Number(result.confidence)||0)), classification_reason:sanitizeExternalText(result.escalation_reason||'',1000), message_intent:messageIntent, disclosure_policy_json:{ direct_identity_question:result.disclosure_required===true, response_truthful:true, policy_version:'cambra-comms-1.2.0' }, thread_context_snapshot_json:{ thread_id:thread.id, engine:thread.engine, prior_message_count:Math.max(0,previous.length-1), policy_key:thread.policy_key, policy_version:thread.policy_version }, agent_name:'commercial_reply' });
 
     if(['unsubscribe','not_interested'].includes(classification)){
-      if(message.from_email){const e=String(message.from_email).toLowerCase();const ex=await svc.entities.ContactSuppression.filter({email:e,active:true},'-created_date',1).catch(()=>[]);if(!ex.length)await svc.entities.ContactSuppression.create({email:e,reason:'opt_out',source:'reply_classification',source_message_id:message.id,active:true,suppressed_at:new Date().toISOString()});}
+      if(message.from_email){const e=String(message.from_email).toLowerCase();const ex=await svc.entities.ContactSuppression.filter({email:e,active:true},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:[],severity:'critical'}));if(!ex.length)await svc.entities.ContactSuppression.create({email:e,reason:'opt_out',source:'reply_classification',source_message_id:message.id,active:true,suppressed_at:new Date().toISOString()});}
       await svc.entities.CommunicationThread.update(thread.id,{status:'suppressed',automation_paused:true,pause_reason:classification,classification});
       await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Hard stop: ${classification}`,output_payload_json:{classification},completed_at:new Date().toISOString()});
       return Response.json({ok:true,task_id:task.id,classification,stopped:true});
@@ -62,7 +63,7 @@ Deno.serve(async (req)=>{
 
     if(['merchant_acquisition','partner_acquisition','provider_negotiation','aggregate_procurement'].includes(thread.engine)&&classification==='meeting'){
       const due=Date.parse(message.scheduled_send_at||message.earliest_reply_at||''); if(!Number.isFinite(due)||Date.now()<due){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',next_action_at:message.scheduled_send_at||message.earliest_reply_at});await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:'Meeting intent queued behind deterministic reply timing gate',output_payload_json:{classification,earliest_reply_at:message.earliest_reply_at,scheduled_send_at:message.scheduled_send_at},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,classification,automatic:true,queued:true,scheduled_send_at:message.scheduled_send_at});}
-      const policyRows=await svc.entities.FounderMeetingPolicy.filter({status:'active'},'-approved_at',5).catch(()=>[]);
+      const policyRows=await svc.entities.FounderMeetingPolicy.filter({status:'active'},'-approved_at',5).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:[],severity:'critical'}));
       const context=thread.personalization_json||{};
       const meetingType=thread.engine==='partner_acquisition'?'PARTNERSHIP_CALL':['provider_negotiation','aggregate_procurement'].includes(thread.engine)?'PROVIDER_NEGOTIATION_CALL':'MERCHANT_SALES_CALL';
       const escalation=evaluateFounderMeetingEscalation({explicit_request:true,qualified_counterparty:!!message.from_email,relationship_type:thread.engine==='partner_acquisition'?'partner':['provider_negotiation','aggregate_procurement'].includes(thread.engine)?'provider':'merchant',meeting_type:meetingType,expected_value_minor:context.expected_cambra_value_minor||context.expected_value_minor||0,strategic_value:context.strategic_value===true,counterparty_seniority:thread.counterparty_role||context.counterparty_role,substantive_rounds:Math.floor(previous.length/2),blocker_type:result.objection_category||'decision_maker',founder_uplift_likely:true,p10_allowed:context.p10_meeting_status!=='BLOCK',p11_allowed:context.p11_meeting_status!=='BLOCK'},policyRows[0]||{});
@@ -81,12 +82,12 @@ Deno.serve(async (req)=>{
 
     if(['provider_negotiation','aggregate_procurement'].includes(thread.engine)&&classification==='contact_referral'){
       const raw=String(message.text_body||'');const proposed=String(result.referred_email||'').trim().toLowerCase();const escaped=proposed.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const appears=proposed&&new RegExp(`(^|[^A-Z0-9._%+-])${escaped}([^A-Z0-9._%+-]|$)`,'i').test(raw);const valid=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(proposed);if(!valid||!appears){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'unverified_provider_referral'});await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:'Provider referral could not be verified from inbound email',output_payload_json:{classification,proposed_email:proposed},completed_at:new Date().toISOString()});return Response.json({ok:true,automatic:false,escalated:true,error:'unverified_provider_referral'});}
-      const c=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch(()=>null);if(!c)return Response.json({ok:false,error:'negotiation_case_not_found'},{status:404});const now=new Date().toISOString();const existing=await svc.entities.ProviderContact.filter({provider_id:c.provider_id,email:proposed,active:true},'-created_date',1).catch(()=>[]);if(!existing.length)await svc.entities.ProviderContact.create({provider_id:c.provider_id,provider_name:c.provider_name,brand_id:c.brand_id,recover_id:c.recover_id,name:String(result.referred_name||''),email:proposed,title:String(result.referred_title||''),department:'commercial',source:'provider_referral',source_reference:message.id,source_evidence_json:{message_id:message.id,from_email:message.from_email},confidence:'high',merchant_specific:true,validated:true,active:true,last_verified_at:now});await svc.entities.Provider.update(c.provider_id,{contact_email:proposed,account_manager:String(result.referred_name||'')||undefined,contact_resolution_status:'resolved'}).catch(()=>null);await svc.entities.CommunicationThread.update(thread.id,{counterparty_email:proposed,counterparty_name:String(result.referred_name||'')||proposed,status:'open',automation_paused:false,pause_reason:null});const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const rerun=await svc.functions.invoke(thread.engine==='aggregate_procurement'?'collectiveNegotiationAgent':'providerNegotiationAgent',{action:'initial_contact',case_id:c.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Provider redirected CAMBRA to ${proposed}; negotiation continued automatically`,output_payload_json:{classification,referred_email:proposed,rerun:rerun?.data||rerun},completed_at:now});return Response.json({ok:true,automatic:true,classification,referred_email:proposed,continued:true});
+      const c=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));if(!c)return Response.json({ok:false,error:'negotiation_case_not_found'},{status:404});const now=new Date().toISOString();const existing=await svc.entities.ProviderContact.filter({provider_id:c.provider_id,email:proposed,active:true},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:[],severity:'critical'}));if(!existing.length)await svc.entities.ProviderContact.create({provider_id:c.provider_id,provider_name:c.provider_name,brand_id:c.brand_id,recover_id:c.recover_id,name:String(result.referred_name||''),email:proposed,title:String(result.referred_title||''),department:'commercial',source:'provider_referral',source_reference:message.id,source_evidence_json:{message_id:message.id,from_email:message.from_email},confidence:'high',merchant_specific:true,validated:true,active:true,last_verified_at:now});await svc.entities.Provider.update(c.provider_id,{contact_email:proposed,account_manager:String(result.referred_name||'')||undefined,contact_resolution_status:'resolved'}).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));await svc.entities.CommunicationThread.update(thread.id,{counterparty_email:proposed,counterparty_name:String(result.referred_name||'')||proposed,status:'open',automation_paused:false,pause_reason:null});const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';const rerun=await svc.functions.invoke(thread.engine==='aggregate_procurement'?'collectiveNegotiationAgent':'providerNegotiationAgent',{action:'initial_contact',case_id:c.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Provider redirected CAMBRA to ${proposed}; negotiation continued automatically`,output_payload_json:{classification,referred_email:proposed,rerun:rerun?.data||rerun},completed_at:now});return Response.json({ok:true,automatic:true,classification,referred_email:proposed,continued:true});
     }
 
     if(['provider_negotiation','aggregate_procurement'].includes(thread.engine)&&['offer','counteroffer'].includes(classification)){
       const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
-      const currentCase=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch(()=>null);
+      const currentCase=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
       const monetizationReply=thread.engine==='aggregate_procurement'&&currentCase?.next_action==='await_provider_monetization_response';
       const run=await svc.functions.invoke(monetizationReply?'providerMonetizationAgent':thread.engine==='aggregate_procurement'?'collectiveNegotiationAgent':'providerNegotiationAgent',monetizationReply?{action:'process_offer',case_id:thread.related_entity_id,bid_id:currentCase?.aggregate_bid_id,message_id:message.id,internal_secret:internal}:{action:'process_offer',case_id:thread.related_entity_id,message_id:message.id,internal_secret:internal}).catch((e:any)=>({data:{ok:false,error:String(e?.message||e)}}));
       const rd=run?.data||run||{};
@@ -100,8 +101,8 @@ Deno.serve(async (req)=>{
     }
 
     if(['provider_negotiation','aggregate_procurement'].includes(thread.engine)&&classification==='contract'){
-      const c=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch(()=>null);
-      if(c) await svc.entities.NegotiationCase.update(c.id,{status:'contract_received',contract_match_status:'pending_review',next_action:'ingest_and_compare_contract'}).catch(()=>null);
+      const c=await svc.entities.NegotiationCase.get(thread.related_entity_id).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
+      if(c) await svc.entities.NegotiationCase.update(c.id,{status:'contract_received',contract_match_status:'pending_review',next_action:'ingest_and_compare_contract'}).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'}));
     }
 
     const l4=L4_CLASSIFICATIONS.has(classification)||result.material_commitment===true||String(result.action)==='escalate'||classification==='manager_approval';
@@ -116,7 +117,7 @@ Deno.serve(async (req)=>{
     let quality=communicationQuality(String(result.reply_body||''),{previous_outbound:priorOutbound});
     if(result.response_required&& !quality.ok){ const retryPrompt=['Rewrite this CAMBRA reply so it is concise, contextual and natural. Preserve facts, intent and language. No generic opener, no corporate filler, no unnecessary list, no invented identity. Return ONLY JSON {\"reply_subject\":\"...\",\"reply_body\":\"...\"}.',JSON.stringify({subject:result.reply_subject,body:result.reply_body,quality_reasons:quality.reasons})].join('\n'); const retry=parseJson(await callClaude(svc,retryPrompt,commercialNeedsHighReasoning(thread.engine,String(message.text_body||''))?'high_reasoning':'standard',`rewrite:${message.id}`)); if(retry?.reply_body){result.reply_body=retry.reply_body;result.reply_subject=retry.reply_subject||result.reply_subject;quality=communicationQuality(String(result.reply_body||''));} if(!quality.ok){await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:'communication_quality_gate_failed'});await svc.entities.AgentTask.update(task.id,{status:'waiting_input',output_summary:'Reply failed communication quality gate after regeneration',output_payload_json:{classification,quality},completed_at:new Date().toISOString()});return Response.json({ok:true,automatic:false,escalated:true,error:'communication_quality_gate_failed',quality});}}
 
-    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch(()=>[]); const policy=policies.find((p:any)=>p.version===thread.policy_version)||policies[0]||null;
+    const policies=await svc.entities.CommercialPolicy.filter({policy_key:thread.policy_key,status:'active'},'-created_date',5).catch((error:any)=>safeBestEffort(error,{operation:'commercialReplyAgent',fallback:[],severity:'critical'})); const policy=policies.find((p:any)=>p.version===thread.policy_version)||policies[0]||null;
     const action=String(result.action||'routine_reply'); const authz=routineActionAllowed(policy,action,classification);
     if(!policyIsActive(policy)||!SAFE_ROUTINE_CLASSIFICATIONS.has(classification)||!authz.allowed||!result.response_required){
       await svc.entities.CommunicationThread.update(thread.id,{status:'awaiting_cambra',automation_paused:true,pause_reason:authz.reason||'manual_review',classification});
@@ -135,7 +136,7 @@ Deno.serve(async (req)=>{
     return Response.json({ok:true,task_id:task.id,classification,automatic:true});
   }catch(error){
     console.error('commercialReplyAgent failed',error);
-    if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'commercial_reply_failed',completed_at:new Date().toISOString()});}catch{}}
+    if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'commercial_reply_failed',completed_at:new Date().toISOString()});}catch(error){safeBestEffort(error,{operation:'commercialReplyAgent',fallback:null,severity:'critical'})}}
     return Response.json({ok:false,error:'commercial_reply_failed',task_id:task?.id||null},{status:500});
   }
 });

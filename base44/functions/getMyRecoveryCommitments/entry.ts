@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { recoveryTermFromActivation, standardFeeForDate, effectiveFee, referralCountFromYear1EquivalentFee, RECOVERY_ECONOMICS_V2, parisRecoveryDate } from '../../shared/recoveryEconomicsV2.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
@@ -13,11 +14,11 @@ function mask(a:any, currentFee:number|null){
 }
 export default async function(req:Request):Promise<Response>{
  try{
-  const base44=createClientFromRequest(req); const user=await base44.auth.me().catch(()=>null); if(!user)return Response.json({error:'Unauthorized'},{status:401});
+  const base44=createClientFromRequest(req); const user=await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getMyRecoveryCommitments',fallback:null,severity:'critical'})); if(!user)return Response.json({error:'Unauthorized'},{status:401});
   const svc=base44.asServiceRole; const email=String(user.email||'').toLowerCase();
-  const brands=[...(await svc.entities.Brand.filter({contact_email:user.email},'-created_date',5).catch(()=>[])),...(await svc.entities.Brand.filter({created_by:user.email},'-created_date',5).catch(()=>[]))];
+  const brands=[...(await svc.entities.Brand.filter({contact_email:user.email},'-created_date',5).catch((error:any)=>safeBestEffort(error,{operation:'getMyRecoveryCommitments',fallback:[],severity:'critical'}))),...(await svc.entities.Brand.filter({created_by:user.email},'-created_date',5).catch((error:any)=>safeBestEffort(error,{operation:'getMyRecoveryCommitments',fallback:[],severity:'critical'})))];
   const brand=brands.find((b:any)=>String(b.contact_email||b.created_by||'').toLowerCase()===email); if(!brand)return Response.json({ok:true,exists:false,recoveries:[]});
-  const acts=await svc.entities.DealActivation.filter({brand_id:brand.id},'-created_date',100).catch(()=>[]); const today=parisRecoveryDate(new Date()); const month=today.slice(0,7); const out=[];
+  const acts=await svc.entities.DealActivation.filter({brand_id:brand.id},'-created_date',100).catch((error:any)=>safeBestEffort(error,{operation:'getMyRecoveryCommitments',fallback:[],severity:'critical'})); const today=parisRecoveryDate(new Date()); const month=today.slice(0,7); const out=[];
   for(const a of acts){
     let currentFee:null|number=null;
     if(a.recovery_economics_version===RECOVERY_ECONOMICS_V2 && a.conditions_activated_at && a.economic_right_status==='active'){

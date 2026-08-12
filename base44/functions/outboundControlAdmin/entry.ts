@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { evaluateCommercialGoLiveReadiness } from "../../shared/commercialActivationRuntime.ts";
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
       { control_key: "global" },
       "-created_date",
       1,
-    ).catch(() => []);
+    ).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:[],severity:'critical'}));
     const control = rows[0];
     if (!control)
       return Response.json(
@@ -124,7 +125,7 @@ Deno.serve(async (req) => {
       for (const policyId of readiness.policy_ids || [])
         await svc.entities.CommercialPolicy.update(policyId, {
           activation_readiness_snapshot_json: preflight,
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
       await svc.entities.OperationalLog.create({
         event_type: "commercial_go_live_preflight",
         message: readiness.allowed
@@ -139,7 +140,7 @@ Deno.serve(async (req) => {
         },
         actor_email: String(gate.user?.email || ""),
         created_at: readiness.checked_at,
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
       return Response.json(
         {
           ok: readiness.allowed,
@@ -181,7 +182,7 @@ Deno.serve(async (req) => {
         },
         actor_email: String(gate.user?.email || ""),
         created_at: now,
-      }).catch(() => null);
+      }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
       return Response.json({
         ok: true,
         exercise: true,
@@ -271,7 +272,7 @@ Deno.serve(async (req) => {
             { provider: "instantly" },
             "-created_date",
             100,
-          ).catch(() => [])
+          ).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:[],severity:'critical'}))
         ).filter(
           (profile: any) =>
             keys.has(profile.profile_key) && instantlyProfileReady(profile),
@@ -317,7 +318,7 @@ Deno.serve(async (req) => {
                 campaignId,
                 error_code: String(error?.code || "FAILED"),
               },
-            }).catch(() => null);
+            }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
             await pauseAllInstantlyCampaigns(svc, "activation_rollback").catch(
               () => null,
             );
@@ -340,7 +341,7 @@ Deno.serve(async (req) => {
             last_provider_health_at: now,
             notes:
               "Instantly CANARY campaign active after fresh matching GO preflight.",
-          }).catch(() => null);
+          }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
         await upsertInstantlyProviderState(svc, {
           status: "ACTIVE",
           auth_test_pass: true,
@@ -351,7 +352,7 @@ Deno.serve(async (req) => {
             last_activation: activated,
             preflight_hash: requestedHash,
           },
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
       }
       const common = {
         acquisition_enabled: true,
@@ -421,7 +422,7 @@ Deno.serve(async (req) => {
       },
       actor_email: String(gate.user?.email || ""),
       created_at: now,
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'outboundControlAdmin',fallback:null,severity:'critical'}));
     return Response.json({
       ok: remotePause ? remotePause.ok !== false : true,
       action,

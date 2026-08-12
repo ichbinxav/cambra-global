@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getMyPaymentsHistory — server-side, RLS-independent history feed for /Results.
 //
 // SECURITY INVARIANT (non-negotiable, Xavi 2026-07-13):
@@ -57,7 +58,7 @@ Deno.serve(async (req) => {
     // the same robust pattern PaymentsResults already uses.
     const rows = await base44.asServiceRole.entities.AnalyzerResult
       .filter({ created_by: user.email }, '-created_date', 100)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsHistory',fallback:[],severity:'secondary'}));
 
     // Defense-in-depth + shape gate, all in JS (no dependence on nested-path
     // filtering):

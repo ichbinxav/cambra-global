@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { COMMUNICATION_STYLE_POLICY_VERSION } from '../../shared/commercialAutonomy.ts';
 import { acquisitionEngine, validateCanaryPolicy } from '../../shared/commercialActivation.ts';
@@ -10,14 +11,14 @@ const DEFAULT_PROHIBITED = [
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false, error:'forbidden' }, { status:403 });
     const body = await req.json().catch(() => ({}));
     const action = String(body?.action || 'list');
     const svc = base44.asServiceRole;
 
     if (action === 'list') {
-      const rows = await svc.entities.CommercialPolicy.list('-created_date', 100).catch(() => []);
+      const rows = await svc.entities.CommercialPolicy.list('-created_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:[],severity:'critical'}));
       return Response.json({ ok:true, policies: rows });
     }
 
@@ -72,7 +73,7 @@ Deno.serve(async (req) => {
 
     const policyId = String(body?.policy_id || '');
     if (!policyId) return Response.json({ ok:false, error:'policy_id_required' }, { status:400 });
-    const policy = await svc.entities.CommercialPolicy.get(policyId).catch(() => null);
+    const policy = await svc.entities.CommercialPolicy.get(policyId).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
     if (!policy) return Response.json({ ok:false, error:'not_found' }, { status:404 });
 
     if (action === 'configure_discovery') {
@@ -114,7 +115,7 @@ Deno.serve(async (req) => {
         updated_at: new Date().toISOString(),
       };
       const updated = await svc.entities.CommercialPolicy.update(policy.id, { countries, icp_json:icp });
-      await svc.entities.OperationalLog.create({ event_type:enabled?'autonomous_discovery_started':'autonomous_discovery_paused', message:`${policy.policy_key}:${enabled?'ACTIVE':'PAUSED'}`, data_json:{ policy_id:policy.id, countries, icp_json:icp, outbound_policy_status_unchanged:policy.status }, actor_email:user.email, created_at:new Date().toISOString() }).catch(()=>null);
+      await svc.entities.OperationalLog.create({ event_type:enabled?'autonomous_discovery_started':'autonomous_discovery_paused', message:`${policy.policy_key}:${enabled?'ACTIVE':'PAUSED'}`, data_json:{ policy_id:policy.id, countries, icp_json:icp, outbound_policy_status_unchanged:policy.status }, actor_email:user.email, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, policy:updated, discovery_enabled:enabled, outbound_policy_status:policy.status });
     }
 
@@ -137,7 +138,7 @@ Deno.serve(async (req) => {
         if (!validation.ok) return Response.json({ ok:false, error:'canary_policy_not_ready', blockers:validation.blockers }, { status:400 });
       }
       const updated = await svc.entities.CommercialPolicy.update(policy.id, patch);
-      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_draft_updated', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id, ...patch }, actor_email:user.email, created_at:new Date().toISOString() }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_draft_updated', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id, ...patch }, actor_email:user.email, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, policy:updated });
     }
 
@@ -147,7 +148,7 @@ Deno.serve(async (req) => {
         const validation=validateCanaryPolicy({...policy,status:'active'});
         if(!validation.ok)return Response.json({ok:false,error:'canary_policy_not_ready',blockers:validation.blockers},{status:409});
       }
-      const peers = await svc.entities.CommercialPolicy.filter({ engine: policy.engine, status:'active' }, '-created_date', 100).catch(() => []);
+      const peers = await svc.entities.CommercialPolicy.filter({ engine: policy.engine, status:'active' }, '-created_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:[],severity:'critical'}));
       for (const peer of peers) if (peer.id !== policy.id) await svc.entities.CommercialPolicy.update(peer.id, { status:'superseded' });
       const now = new Date().toISOString();
       const snapshot = {
@@ -161,13 +162,13 @@ Deno.serve(async (req) => {
         status:'active', approved_by:user.email, approved_at:now, effective_at:now,
         approval_snapshot_json:snapshot
       });
-      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_activated', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id, approved_by:user.email, snapshot }, actor_email:user.email, created_at:now }).catch(()=>null);
+      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_activated', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id, approved_by:user.email, snapshot }, actor_email:user.email, created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, policy:updated });
     }
 
     if (action === 'pause') {
       const updated = await svc.entities.CommercialPolicy.update(policy.id, { status:'paused' });
-      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_paused', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id }, actor_email:user.email, created_at:new Date().toISOString() }).catch(()=>null);
+      await svc.entities.OperationalLog.create({ event_type:'commercial_policy_paused', message:`${policy.engine}:${policy.version}`, data_json:{ policy_id:policy.id }, actor_email:user.email, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'commercialPolicyAdmin',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, policy:updated });
     }
 

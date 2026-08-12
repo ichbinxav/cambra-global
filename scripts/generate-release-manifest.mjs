@@ -9,7 +9,6 @@
 import fs from "node:fs";
 import crypto from "node:crypto";
 import process from "node:process";
-import { execSync } from "node:child_process";
 import { computeSourceTreeHash, SOURCE_TREE_HASH_ALGORITHM } from "./lib/sourceTreeHash.mjs";
 import { readEvidence, evidenceStatus } from "./lib/evidence.mjs";
 
@@ -26,10 +25,15 @@ const eclPolicyLive = fs.existsSync("config/ecl-policy.json")
 const templates = fs.readFileSync("base44/shared/recoverContractTemplates.ts", "utf8");
 const tvMatch = templates.match(/RECOVER_CONTRACT_TEMPLATE_VERSION\s*=\s*["']([^"']+)["']/);
 
-let gitSha = process.env.GITHUB_SHA || null;
-if (!gitSha) { try { gitSha = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim(); } catch { gitSha = null; } }
-let npmVersion = null;
-try { npmVersion = execSync("npm --version", { encoding: "utf8" }).trim(); } catch { /* null, never invented */ }
+// A committed manifest cannot truthfully contain the SHA of the commit which
+// contains it (that would be a circular identity).  Only CI, which knows the
+// immutable checked-out SHA, may populate gitSha.  Local manifests deliberately
+// keep it null instead of recording the parent commit and becoming stale as soon
+// as they are committed.
+const gitSha = process.env.GITHUB_SHA || process.env.CAMBRA_RELEASE_GIT_SHA || null;
+// npm exposes its exact version to lifecycle scripts. Prefer that immutable
+// execution context over spawning another shell (which can lose npx's PATH).
+const npmVersion = String(process.env.npm_config_user_agent || '').match(/\bnpm\/([^\s]+)/)?.[1] || null;
 
 const tree = computeSourceTreeHash(".");
 const testEvidence = readEvidence("tests");
@@ -38,6 +42,8 @@ const lintEvidence = readEvidence("lint");
 const tcCritical = readEvidence("typecheck-critical");
 const tcBaseline = readEvidence("typecheck-baseline");
 const dependencyAudit = readEvidence("dependency-audit");
+const backendBundle = fs.existsSync('base44/.deploy/manifest.json')
+  ? JSON.parse(fs.readFileSync('base44/.deploy/manifest.json','utf8')) : null;
 
 const manualRequirements = [];
 const blockingManualRequirements = [];
@@ -144,6 +150,14 @@ const manifest = {
     ? sha256("config/documentation-drift-manifest.json") : null,
   schedulerInventorySha: fs.existsSync("config/scheduler-inventory.json")
     ? sha256("config/scheduler-inventory.json") : null,
+  backendDeploymentTopologySha: sha256('base44/deployment-topology.json'),
+  backendBundleManifestSha: backendBundle ? sha256('base44/.deploy/manifest.json') : null,
+  backendBundle: backendBundle ? {
+    physicalFunctionCount:backendBundle.physical_function_count,
+    logicalRouteCount:backendBundle.logical_route_count,
+    stagedFileCount:backendBundle.staged_file_count,
+    stagedTreeSha256:backendBundle.staged_tree_sha256,
+  } : null,
   dataRetentionMatrixSha: fs.existsSync("config/data-retention-matrix.json")
     ? sha256("config/data-retention-matrix.json") : null,
   secretScannerSha: sha256("scripts/check-secrets.mjs"),

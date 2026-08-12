@@ -1,9 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { sha256 } from '../../shared/p3RateIntelligence.ts';
 import { p4Fetch, tenantSafeP4Estimate } from '../../shared/p4Bridge.ts';
 
-async function first(s: any, entity: string, query: any) { return (await s.entities[entity].filter(query, '-created_date', 1).catch(() => []))[0] || null; }
+async function first(s: any, entity: string, query: any) { return (await s.entities[entity].filter(query, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'requestP4Estimate',fallback:[],severity:'secondary'})))[0] || null; }
 
 export async function handleRequestP4Estimate(req: Request) {
   try {

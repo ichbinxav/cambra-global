@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { MAX_DOCUMENT_BYTES } from '../../shared/documentExtraction.ts';
 
@@ -12,7 +13,7 @@ function trustedUpload(raw:any) { try { const u = new URL(String(raw || '')); re
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch(() => null); if (!user) return Response.json({ error:'Unauthorized' }, { status:401 });
+    const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'createDocument',fallback:null,severity:'secondary'})); if (!user) return Response.json({ error:'Unauthorized' }, { status:401 });
     const body = await req.json().catch(() => ({})); const fileUrl = trustedUpload(body.file_url); const fileName = clean(body.file_name, 240); const fileSize = Number(body.file_size); const category = clean(body.category, 60); const extension = clean(body.file_ext || extFromName(fileName), 12).toLowerCase();
     if (!fileUrl) return Response.json({ error:'untrusted_file_url' }, { status:400 });
     if (!CATEGORIES.has(category)) return Response.json({ error:'invalid_category' }, { status:400 });
@@ -22,7 +23,7 @@ Deno.serve(async (req) => {
     if (isAdmin && ['brand','provider','admin'].includes(String(body.owner_type)) && body.owner_id) { owner_type = body.owner_type; owner_id = clean(body.owner_id, 200); }
     else {
       const brands = await base44.entities.Brand.filter({ created_by:user.email }, '-created_date', 1); if (brands?.[0]) owner_id = brands[0].id;
-      else { const providers = await base44.entities.Provider.filter({ contact_email:user.email }).catch(() => []); const managed = await base44.entities.Provider.filter({ account_manager:user.email }).catch(() => []); owner_id = providers?.[0]?.id || managed?.[0]?.id || null; owner_type = 'provider'; }
+      else { const providers = await base44.entities.Provider.filter({ contact_email:user.email }).catch((error:any)=>safeBestEffort(error,{operation:'createDocument',fallback:[],severity:'secondary'})); const managed = await base44.entities.Provider.filter({ account_manager:user.email }).catch((error:any)=>safeBestEffort(error,{operation:'createDocument',fallback:[],severity:'secondary'})); owner_id = providers?.[0]?.id || managed?.[0]?.id || null; owner_type = 'provider'; }
     }
     if (!owner_id) return Response.json({ error:'document_owner_required' }, { status:409 });
     const requestedVisibility = VISIBILITIES.has(String(body.visibility)) ? String(body.visibility) : 'brand_and_admin';

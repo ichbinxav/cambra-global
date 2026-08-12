@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
@@ -21,7 +22,7 @@ async function upsertMarketDecision(service: any, snapshot: any) {
   if (!market || Number(market.observed_companies || 0) < 10 || Number(market.outreach_ready || 0) < 3) return null;
   const day = new Date().toISOString().slice(0, 10);
   const decisionKey = `market-priority:${market.key}:${day}`;
-  const existing = await service.entities.FounderDecision.filter({ decision_key: decisionKey }, '-created_at', 1).catch(() => []);
+  const existing = await service.entities.FounderDecision.filter({ decision_key: decisionKey }, '-created_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'}));
   if (existing[0]) return existing[0];
   return service.entities.FounderDecision.create({
     decision_key: decisionKey,
@@ -74,11 +75,11 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
     steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret));
 
     const [commercialRows, maintenanceRows, criticalIncidents] = await Promise.all([
-      service.entities.CommercialIntelligenceSnapshot.list('-generated_at', 1).catch(() => []),
-      service.entities.MaintenanceRun.list('-started_at', 1).catch(() => []),
-      service.entities.AutonomyIncident.filter({ status: 'open', severity: 'critical' }, '-last_seen_at', 50).catch(() => []),
+      service.entities.CommercialIntelligenceSnapshot.list('-generated_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
+      service.entities.MaintenanceRun.list('-started_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
+      service.entities.AutonomyIncident.filter({ status: 'open', severity: 'critical' }, '-last_seen_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
     ]);
-    const decision = await upsertMarketDecision(service, commercialRows[0] || null).catch(() => null);
+    const decision = await upsertMarketDecision(service, commercialRows[0] || null).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:null,severity:'secondary'}));
     const failedSteps = steps.filter((step) => !step.ok);
     const state = failedSteps.length || criticalIncidents.length ? 'degraded' : emergency.safe_mode ? 'contained' : 'healthy';
     const output = {
@@ -104,7 +105,7 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       brand_id: '_platform', event_type: 'company.coordination.completed', source: 'autonomous_company_orchestrator',
       entity_type: 'AgentTask', entity_id: task.id, agent_task_id: task.id,
       payload_json: { orchestrator_version: VERSION, state, failed_steps: failedSteps.map((step) => step.name), commercial_intelligence_snapshot_id: output.commercial_intelligence_snapshot_id, founder_decision_id: output.founder_decision_id }, status: 'pending',
-    }).catch(() => null);
+    }).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:null,severity:'secondary'}));
     return Response.json({ ok: failedSteps.length === 0, task_id: task.id, ...output }, { status: failedSteps.length ? 207 : 200 });
   } catch (error) {
     __schedulerOk=false;

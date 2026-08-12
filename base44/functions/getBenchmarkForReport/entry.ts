@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 /**
  * M2 — Public-facing benchmark accessor.
@@ -150,6 +151,6 @@ Deno.serve(async (req) => {
       note: "Static reference, not a statistical cohort — network sample is below the privacy/sufficiency threshold",
     });
   } catch (error) {
-    return Response.json({ error: error?.message || String(error) }, { status: 500 });
+    return internalErrorResponse(error, 'getBenchmarkForReport');
   }
 });

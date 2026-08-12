@@ -1,8 +1,10 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { EUROPE_CURRENCIES, EUROPE_MARKETS, EUROPE_MARKET_REGISTRY } from '../../shared/generated/europeMarkets.ts';
 import { localizationReadiness } from '../../shared/localeRuntime.ts';
 import { REGULATORY_ACTIVITIES } from '../../shared/regulatoryControl.ts';
 import { handleEuropeanGrowthCommandCenter } from '../getEuropeanGrowthCommandCenter/entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 function regulatoryReadiness(policies:any[]) {
   if (policies.length !== REGULATORY_ACTIVITIES.length) return { status:'MISSING_POLICY_COVERAGE',gate:'REVIEW',covered:policies.length,expected:REGULATORY_ACTIVITIES.length };
@@ -12,21 +14,21 @@ function regulatoryReadiness(policies:any[]) {
   return { status:'EVIDENCE_BACKED_POLICY_AVAILABLE',gate:'CONDITIONS',covered:policies.length,expected:REGULATORY_ACTIVITIES.length };
 }
 
-Deno.serve(async (req) => {
+guardedScheduledServe({"worker_key":"getEuropeMarketsCommandCenter","cadence_seconds":21600},createClientFromRequest,async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   if (routedBody?.view === 'growth') return handleEuropeanGrowthCommandCenter(req);
   try {
-    const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch(() => null);
+    const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:null,severity:'secondary'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false,error:'Forbidden' }, { status:403 });
     const svc = base44.asServiceRole;
     const [profiles,p1Policies,controls,contexts,intelligence,p10Policies,registrations] = await Promise.all([
-      svc.entities.CountryProfile.list('iso2', 100).catch(() => []),
-      svc.entities.JurisdictionCapabilityPolicy.filter({ active:true }, '-effective_from', 2000).catch(() => []),
-      svc.entities.MarketCapabilityControl.filter({ blocked:true }, '-updated_at', 500).catch(() => []),
-      svc.entities.MerchantMarketContext.list('-last_resolved_at', 500).catch(() => []),
-      svc.entities.MarketIntelligenceProfile.list('jurisdiction', 100).catch(() => []),
-      svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-effective_from', 5000).catch(() => []),
-      svc.entities.RegulatoryRegistration.filter({ active:true }, '-updated_at', 500).catch(() => []),
+      svc.entities.CountryProfile.list('iso2', 100).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.JurisdictionCapabilityPolicy.filter({ active:true }, '-effective_from', 2000).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.MarketCapabilityControl.filter({ blocked:true }, '-updated_at', 500).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.MerchantMarketContext.list('-last_resolved_at', 500).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.MarketIntelligenceProfile.list('jurisdiction', 100).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.RegulatoryPolicyVersion.filter({ active:true }, '-effective_from', 5000).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
+      svc.entities.RegulatoryRegistration.filter({ active:true }, '-updated_at', 500).catch((error:any)=>safeBestEffort(error,{operation:'getEuropeMarketsCommandCenter',fallback:[],severity:'secondary'})),
     ]);
     const profileByMarket = new Map(profiles.map((x:any) => [x.iso2,x])); const intelligenceByMarket = new Map(intelligence.map((x:any) => [x.jurisdiction,x]));
     const rows = (EUROPE_MARKETS as any[]).map((market) => {

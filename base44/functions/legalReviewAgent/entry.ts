@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const AGENT_NAME = "legal_review";
 const TASK_TYPE = "legal_review";
@@ -107,7 +109,7 @@ Deno.serve(async (req) => {
             disclaimer: LEGAL_DISCLAIMER,
           },
           status: "pending",
-        }).catch(() => null);
+        }).catch((error:any)=>safeBestEffort(error,{operation:'legalReviewAgent',fallback:null,severity:'secondary'}));
         if (ev) flagsEmitted.push(ev.id);
       }
     }
@@ -137,6 +139,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
       } catch (_) { /* swallow */ }
     }
-    return Response.json({ ok: false, error: error.message, task_id: task?.id || null }, { status: 500 });
+    return internalErrorResponse(error, 'legalReviewAgent');
   }
 });

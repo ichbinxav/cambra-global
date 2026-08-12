@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 // [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): zero references from src or live functions.
 // Invocation probe below logs any real use to OperationalLog before the second sweep.
@@ -17,17 +19,17 @@ Deno.serve(async (req) => {
     try {
       const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1);
       brandId = brands?.[0]?.id || null;
-    } catch {}
+    } catch(error){safeBestEffort(error,{operation:'authzScope',fallback:null,severity:'secondary'})}
 
     try {
       const providers = await base44.entities.Provider.filter({ contact_email: user.email });
       const managed = await base44.entities.Provider.filter({ account_manager: user.email });
       const set = new Set([...(providers||[]).map(p=>p.id), ...(managed||[]).map(p=>p.id)]);
       providerIds = Array.from(set);
-    } catch {}
+    } catch(error){safeBestEffort(error,{operation:'authzScope',fallback:null,severity:'secondary'})}
 
     return Response.json({ scope: { isAdmin, brandId, providerIds, user_email: user.email } });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'authzScope');
   }
 });

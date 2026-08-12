@@ -1,11 +1,13 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeFounderMeetingPolicy, parseFounderMeetingCommand, normalizeMeetingOutcome } from '../../shared/founderMeeting.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const confirmationFor = (action:string) => action === 'command' ? 'APPLY_FOUNDER_MEETING_COMMAND' : action === 'configure_policy' ? 'APPLY_FOUNDER_MEETING_POLICY' : action === 'record_outcome' ? 'RECORD_FOUNDER_MEETING_OUTCOME' : '';
 const commandKey = () => `founder-meeting:${crypto.randomUUID()}`;
 
 async function latestPolicy(svc:any) {
-  const rows = await svc.entities.FounderMeetingPolicy.filter({ status:'active' }, '-approved_at', 5).catch(() => []);
+  const rows = await svc.entities.FounderMeetingPolicy.filter({ status:'active' }, '-approved_at', 5).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:[],severity:'secondary'}));
   return rows[0] || null;
 }
 
@@ -34,7 +36,7 @@ async function applyPolicy(svc:any, user:any, current:any, patch:any, source:str
 export async function handleFounderMeetingAdmin(req: Request) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
     if (!user || user.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const svc = base44.asServiceRole;
     const body = await req.json().catch(() => ({}));
@@ -44,10 +46,10 @@ export async function handleFounderMeetingAdmin(req: Request) {
     if (action === 'status') {
       const now = new Date().toISOString();
       const [upcoming, outcomes, recommendations, captureRequired] = await Promise.all([
-        svc.entities.CommunicationThread.filter({ meeting_start_at:{ $gte:now }, meeting_status:{ $in:['booked','scheduling','proposed'] } }, 'meeting_start_at', 100).catch(() => []),
-        svc.entities.CommunicationThread.filter({ meeting_status:'completed', post_meeting_status:'pending' }, '-meeting_end_at', 100).catch(() => []),
-        svc.entities.CommunicationThread.filter({ conversation_state:{ $in:['HUMAN_MEETING_RECOMMENDED','MEETING_PROPOSED','WAITING_APPROVAL'] } }, '-last_message_at', 100).catch(() => []),
-        svc.entities.CommunicationThread.filter({ meeting_end_at:{ $lte:now }, meeting_status:'booked' }, '-meeting_end_at', 100).catch(() => []),
+        svc.entities.CommunicationThread.filter({ meeting_start_at:{ $gte:now }, meeting_status:{ $in:['booked','scheduling','proposed'] } }, 'meeting_start_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:[],severity:'secondary'})),
+        svc.entities.CommunicationThread.filter({ meeting_status:'completed', post_meeting_status:'pending' }, '-meeting_end_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:[],severity:'secondary'})),
+        svc.entities.CommunicationThread.filter({ conversation_state:{ $in:['HUMAN_MEETING_RECOMMENDED','MEETING_PROPOSED','WAITING_APPROVAL'] } }, '-last_message_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:[],severity:'secondary'})),
+        svc.entities.CommunicationThread.filter({ meeting_end_at:{ $lte:now }, meeting_status:'booked' }, '-meeting_end_at', 100).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:[],severity:'secondary'})),
       ]);
       return Response.json({ ok:true, policy:normalizeFounderMeetingPolicy(current || {}), policy_persisted:!!current, upcoming, outcomes_pending:outcomes, recommendations, capture_required:captureRequired.filter((item:any)=>!item.meeting_outcome_json) });
     }
@@ -66,13 +68,13 @@ export async function handleFounderMeetingAdmin(req: Request) {
       }
       const created = await applyPolicy(svc, user, current, parsed.patch, action, key);
       await svc.entities.FounderCommandAudit.create({ command_key:key, actor_email:user.email, intent:'founder_meeting_policy', action, scope_json:{ matched:parsed.matched }, risk_level:3, material:false, requires_confirmation:true, confirmed:true, preview_json:preview, status:'executed', result_json:{ policy_id:created.id, version:created.version }, policy_json:{ prior_version:current?.version || null }, created_at:new Date().toISOString() });
-      await svc.entities.OperationalLog.create({ event_type:'founder_meeting_policy_changed', message:`Founder meeting policy ${created.version}`, data_json:{ command_key:key, source:action, matched:parsed.matched, mode:created.mode }, actor_email:user.email, created_at:new Date().toISOString() }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'founder_meeting_policy_changed', message:`Founder meeting policy ${created.version}`, data_json:{ command_key:key, source:action, matched:parsed.matched, mode:created.mode }, actor_email:user.email, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       return Response.json({ ok:true, policy:created, command_key:key });
     }
 
     if (action === 'record_outcome') {
       if (body.confirmation !== confirmationFor(action)) return Response.json({ ok:false, error:'confirmation_required', confirmation:confirmationFor(action) }, { status:400 });
-      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch(() => null);
+      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       if (!thread || !thread.meeting_event_id) return Response.json({ ok:false, error:'booked_meeting_thread_required' }, { status:404 });
       let outcome:any;
       try { outcome = normalizeMeetingOutcome(body.outcome || {}); }
@@ -86,22 +88,22 @@ export async function handleFounderMeetingAdmin(req: Request) {
         await svc.entities.AgentTask.update(task.id, { approval_id:approval.id });
       }
       await svc.entities.CommunicationThread.update(thread.id, { meeting_status:'completed', conversation_state:requiresApproval?'WAITING_APPROVAL':'MEETING_COMPLETED', meeting_outcome_json:outcome, meeting_outcome_captured_at:now, meeting_follow_up_due_at:outcome.follow_up_at || now, post_meeting_status:requiresApproval?'pending':'pending', automation_paused:requiresApproval, pause_reason:requiresApproval?'post_meeting_approval_required':null });
-      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_OUTCOME_CAPTURED', message:`Meeting outcome: ${outcome.outcome}`, data_json:{ thread_id:thread.id, meeting_event_id:thread.meeting_event_id, outcome, approval_id:approval?.id || null }, actor_email:user.email, created_at:now }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_OUTCOME_CAPTURED', message:`Meeting outcome: ${outcome.outcome}`, data_json:{ thread_id:thread.id, meeting_event_id:thread.meeting_event_id, outcome, approval_id:approval?.id || null }, actor_email:user.email, created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       return Response.json({ ok:true, thread_id:thread.id, outcome, approval_id:approval?.id || null, ai_resume_allowed:!requiresApproval });
     }
 
     if (action === 'mark_no_show') {
-      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch(() => null);
+      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       if (!thread?.meeting_event_id) return Response.json({ ok:false, error:'meeting_thread_required' }, { status:404 });
       const count = Number(thread.meeting_no_show_count || 0) + 1;
       const mayReschedule = count < 2;
       await svc.entities.CommunicationThread.update(thread.id, { meeting_status:'no_show', conversation_state:mayReschedule?'NURTURE':'PAUSED', meeting_no_show_count:count, post_meeting_status:mayReschedule?'pending':'not_applicable', automation_paused:!mayReschedule, pause_reason:mayReschedule?null:'repeated_meeting_no_show' });
-      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_NO_SHOW', message:`Counterparty no-show ${count}`, data_json:{ thread_id:thread.id, may_reschedule:mayReschedule }, actor_email:user.email, created_at:new Date().toISOString() }).catch(() => null);
+      await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_NO_SHOW', message:`Counterparty no-show ${count}`, data_json:{ thread_id:thread.id, may_reschedule:mayReschedule }, actor_email:user.email, created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       return Response.json({ ok:true, count, may_reschedule:mayReschedule });
     }
 
     if (action === 'cancel_meeting') {
-      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch(() => null);
+      const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'founderMeetingAdmin',fallback:null,severity:'secondary'}));
       if (!thread?.meeting_event_id) return Response.json({ ok:false, error:'meeting_thread_required' }, { status:404 });
       const result = await base44.functions.invoke('outlookMeetingCoordinator', { action:'cancel', thread_id:thread.id, reason:String(body.reason || 'Founder unavailable') });
       return Response.json(result?.data || result);
@@ -110,6 +112,6 @@ export async function handleFounderMeetingAdmin(req: Request) {
     return Response.json({ ok:false, error:'unsupported_action', actions:['status','configure_policy','command','record_outcome','mark_no_show','cancel_meeting'] }, { status:400 });
   } catch (error) {
     console.error('founderMeetingAdmin failed', error);
-    return Response.json({ ok:false, error:'founder_meeting_admin_failed', detail:String(error?.message || error) }, { status:500 });
+    return internalErrorResponse(error, 'founderMeetingAdmin');
   }
 }

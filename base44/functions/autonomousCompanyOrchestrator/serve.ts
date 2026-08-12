@@ -1,3 +1,4 @@
 import { handleAutonomousCompanyOrchestrator } from './entry.ts';
+import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
-Deno.serve(handleAutonomousCompanyOrchestrator);
+guardedScheduledServe({"worker_key":"autonomousCompanyOrchestrator","cadence_seconds":21600},handleAutonomousCompanyOrchestrator);

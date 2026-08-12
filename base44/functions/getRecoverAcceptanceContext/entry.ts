@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getRecoverAcceptanceContext — RECOVER-1 (2026-08-03). RECOVER-3-FIX (2026-08-04): serves mandate_copy.
 //
 // READ-ONLY. Everything the acceptance popup needs: is this merchant eligible,
@@ -28,7 +29,7 @@ import {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+    const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:null,severity:'critical'}));
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
@@ -40,7 +41,7 @@ export default async function (req: Request): Promise<Response> {
     // ownership proof used for explicit ids.
     let activationId = typeof body?.deal_activation_id === 'string' ? body.deal_activation_id : '';
     if (!activationId) {
-      const mine = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 25).catch(() => []);
+      const mine = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 25).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:[],severity:'critical'}));
       const candidate = (mine || []).find((a: any) => ['activated','awaiting_authorization','authorized'].includes(a.status));
       if (!candidate) return Response.json({ ok: true, exists: false });
       activationId = candidate.id;
@@ -76,7 +77,7 @@ export default async function (req: Request): Promise<Response> {
 
     const existingMandates = await svc.entities.Mandate
       .filter({ deal_activation_id: activation.id }, '-created_date', 25)
-      .catch(() => []);
+      .catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:[],severity:'critical'}));
     const activeMandate = (existingMandates || []).find((m: any) => m.status === 'active') || null;
     const pending = (existingMandates || []).find(
       (m: any) => m.status === 'acceptance_started' && String(m.owner_email || '').toLowerCase() === ownerEmail,
@@ -93,12 +94,12 @@ export default async function (req: Request): Promise<Response> {
     const snapshot = buildAcceptanceSnapshot({ activation, baseline, fee, month, brand });
     const snapshot_hash = await hashSnapshot(snapshot);
     // P14 Aggregate: expose only this merchant's eligibility projection. Potential eligibility is never presented as guaranteed pricing.
-    const aggregateEligibility = await svc.entities.MerchantRateEligibility.filter({ brand_id: activation.brand_id }, '-evaluated_at', 50).catch(() => []);
+    const aggregateEligibility = await svc.entities.MerchantRateEligibility.filter({ brand_id: activation.brand_id }, '-evaluated_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:[],severity:'critical'}));
     const aggregatePrograms:any[] = [];
     for (const e of aggregateEligibility) {
-      const rate = await svc.entities.PrivateRateCard.get(e.rate_card_id).catch(() => null);
+      const rate = await svc.entities.PrivateRateCard.get(e.rate_card_id).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:null,severity:'critical'}));
       if (!rate || rate.status !== 'active') continue;
-      const provider = await svc.entities.Provider.get(e.provider_id).catch(() => null);
+      const provider = await svc.entities.Provider.get(e.provider_id).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:null,severity:'critical'}));
       aggregatePrograms.push({
         eligibility_id: e.id, status: e.status, provider_name: provider?.name || '', provider_id: e.provider_id,
         currency: rate.currency, negotiated_variable_rate_bps: e.status === 'eligible' ? rate.variable_rate_bps : null,

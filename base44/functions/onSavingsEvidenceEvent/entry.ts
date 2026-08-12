@@ -1,5 +1,7 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -19,7 +21,7 @@ Deno.serve(async (req) => {
     // SECURITY-1 — anti-forgery: only log audit rows for evidence records that
     // actually exist server-side (forged payloads = fake audit trail noise).
     const evidence = data.id
-      ? await base44.asServiceRole.entities.SavingsEvidence.get(data.id).catch(() => null)
+      ? await base44.asServiceRole.entities.SavingsEvidence.get(data.id).catch((error:any)=>safeBestEffort(error,{operation:'onSavingsEvidenceEvent',fallback:null,severity:'secondary'}))
       : null;
     if (!evidence) return Response.json({ status: 'skipped', reason: 'unverified_payload' });
 
@@ -58,6 +60,6 @@ Deno.serve(async (req) => {
 
     return Response.json({ status: 'ok' });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return internalErrorResponse(error, 'onSavingsEvidenceEvent');
   }
 });
