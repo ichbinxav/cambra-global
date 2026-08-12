@@ -11,7 +11,7 @@ import { internalErrorResponse } from '../../shared/publicErrors.ts';
 // / HowItWorks / Terms pages. When those pages change, update this block.
 const CAMBRA_KNOWLEDGE = `
 ABOUT CAMBRA
-- CAMBRA GLOBAL (SASU, SIREN 105 452 916, France) — card payment cost intelligence for independent commerce.
+- CAMBRA Global SASU (SIREN 105 452 916, SIRET 105 452 916 00015, VAT FR50105452916, France) — card payment cost intelligence for independent commerce.
 - Mission: recover the margin brands lose on card payment processing — online and in-store.
 
 WHAT USERS GET
@@ -43,7 +43,7 @@ HOW IT WORKS (4 steps)
 DATA & SECURITY
 - Read-only access to connected accounts (Stripe).
 - Encrypted at rest (AES-256-GCM), never shared with third parties.
-- GDPR-compliant, data controller = CAMBRA GLOBAL SASU.
+- GDPR-compliant, data controller = CAMBRA Global SASU.
 
 TPE / IN-STORE TERMINALS
 - The Analyzer also covers physical card terminals (retail, pop-ups, showrooms).

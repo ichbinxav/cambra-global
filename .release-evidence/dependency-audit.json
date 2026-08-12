@@ -1,8 +1,8 @@
 {
   "command": "npm audit --json",
-  "sourceTreeHash": "66aaf51373c7146a291732067d033a362dc99513ba66678b6191664fcf7d2f00",
-  "startedAt": "2026-08-12T15:32:16.428Z",
-  "completedAt": "2026-08-12T15:32:17.204Z",
+  "sourceTreeHash": "ed8ba19c9b22cf217ebdf89bac645362acfcc4366f8be51010a2237046183d11",
+  "startedAt": "2026-08-12T17:11:22.487Z",
+  "completedAt": "2026-08-12T17:11:22.938Z",
   "exitCode": 0,
   "ciRunId": null,
   "auditReportVersion": 2,

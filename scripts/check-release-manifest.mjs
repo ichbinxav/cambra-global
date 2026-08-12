@@ -111,11 +111,22 @@ if (m.buildEvidence) {
 // Manual production/runtime gates are intentionally distinct from technical CI.
 // CI may be green while productionSealEligible=false; the manifest must preserve
 // those gates so no green workflow can be misrepresented as full production readiness.
+const completedProductionRequirements = Array.isArray(m.completedProductionRequirements) ? m.completedProductionRequirements : [];
+const pendingProductionRequirements = Array.isArray(m.pendingProductionRequirements) ? m.pendingProductionRequirements : [];
+const futureActivationRequirements = Array.isArray(m.futureActivationRequirements) ? m.futureActivationRequirements : [];
 const manualRequirements = Array.isArray(m.manualRequirements) ? m.manualRequirements : [];
 const blockingManualRequirements = Array.isArray(m.blockingManualRequirements) ? m.blockingManualRequirements : [];
-if (blockingManualRequirements.some((x) => !manualRequirements.includes(x))) fail("blockingManualRequirements must be a subset of manualRequirements");
-if (m.productionSealEligible !== (manualRequirements.length === 0)) fail("productionSealEligible is inconsistent with manualRequirements");
-const expectedVerdict = manualRequirements.length === 0 ? "PASS" : (blockingManualRequirements.length === 0 ? "PASS WITH EXTERNAL VALIDATION PENDING" : "NOT READY");
+if (completedProductionRequirements.length === 0) fail("completedProductionRequirements must preserve evidence-backed completed requirements");
+if (JSON.stringify(manualRequirements) !== JSON.stringify(pendingProductionRequirements)) fail("manualRequirements legacy alias must equal pendingProductionRequirements");
+if (blockingManualRequirements.some((x) => !pendingProductionRequirements.includes(x))) fail("blockingManualRequirements must be a subset of pendingProductionRequirements");
+const pilotReadyEligible = pendingProductionRequirements.length === 0;
+const realWorldValidatedEligible = pilotReadyEligible && !futureActivationRequirements.some((item) => String(item).startsWith('PAYMENTS V1 REAL-WORLD VALIDATION'));
+if (m.pilotReadyEligible !== pilotReadyEligible) fail("pilotReadyEligible is inconsistent with pendingProductionRequirements");
+if (m.productionSealEligible !== pilotReadyEligible) fail("productionSealEligible is inconsistent with pendingProductionRequirements");
+if (m.realWorldValidatedEligible !== realWorldValidatedEligible) fail("realWorldValidatedEligible is inconsistent with future activation requirements");
+const expectedReadiness = !pilotReadyEligible ? 'NOT_GO_READY' : (realWorldValidatedEligible ? 'REAL_WORLD_VALIDATED' : 'PILOT_READY');
+if (m.readinessLevel !== expectedReadiness) fail(`readinessLevel is inconsistent: expected ${expectedReadiness}`);
+const expectedVerdict = pilotReadyEligible ? "PASS" : "NOT_GO_READY";
 if (m.finalVerdict !== expectedVerdict) fail(`finalVerdict is inconsistent: expected ${expectedVerdict}`);
 
 // Strict CI mode
@@ -127,7 +138,7 @@ if (ciMode) {
     if (ev && ev.ciRunId !== m.ciEvidence?.runId) fail(`[CI] ${n} evidence was not generated in this CI run`);
   }
   if (blockingManualRequirements.length > 0) fail(`[CI] blocking technical release requirements: ${blockingManualRequirements.join("; ")}`);
-  if (manualRequirements.length > 0) console.log(`[CI] technical verification PASS with ${manualRequirements.length} retained production/runtime activation gate(s); productionSealEligible=false.`);
+  if (pendingProductionRequirements.length > 0) console.log(`[CI] technical verification PASS with ${pendingProductionRequirements.length} retained pilot production proof(s); readinessLevel=NOT_GO_READY.`);
 }
 
 if (failed) process.exit(1);

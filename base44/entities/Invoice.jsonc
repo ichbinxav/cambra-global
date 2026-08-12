@@ -151,6 +151,14 @@
     "supplier_vat_number": {
       "type": "string"
     },
+    "supplier_siren": {
+      "type": "string",
+      "description": "Canonical CAMBRA supplier SIREN frozen at issuance."
+    },
+    "supplier_siret": {
+      "type": "string",
+      "description": "Canonical CAMBRA supplier establishment SIRET frozen at issuance."
+    },
     "customer_legal_name": {
       "type": "string"
     },

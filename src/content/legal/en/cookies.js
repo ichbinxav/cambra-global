@@ -61,7 +61,7 @@ export default {
     },
     {
       title: "8. Contact",
-      body: "Questions about how CAMBRA uses cookies and browser storage: privacy@cambra.global. Publisher: CAMBRA GLOBAL SASU, SIREN 105 452 916, 47 rue Vivienne, 75002 Paris, France.",
+      body: "Questions about how CAMBRA uses cookies and browser storage: privacy@cambra.global. Publisher: CAMBRA Global SASU, SIREN 105 452 916, SIRET 105 452 916 00015, EU VAT FR50105452916, 47 rue Vivienne, Chez Vivienne Domiciliation, 75002 Paris, France.",
     },
   ],
 };

@@ -104,7 +104,12 @@ const integrity = {
   status: "PASS",
   production_seal_eligible: release.productionSealEligible === true,
   production_verdict: release.finalVerdict,
-  pending_production_requirements: release.manualRequirements || [],
+  readiness_level: release.readinessLevel,
+  pilot_ready_eligible: release.pilotReadyEligible === true,
+  real_world_validated_eligible: release.realWorldValidatedEligible === true,
+  completed_production_requirements: release.completedProductionRequirements || [],
+  pending_production_requirements: release.pendingProductionRequirements || [],
+  future_activation_requirements: release.futureActivationRequirements || [],
   generated_at: new Date().toISOString(),
 };
 const integrityPath = `${output}.integrity.json`;

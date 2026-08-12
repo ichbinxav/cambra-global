@@ -185,7 +185,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   field(t.client_legal_name, identity.legal_name);
   field(t.provider_legal_form, identity.legal_form);
   field(t.provider_address, identity.registered_address);
-  field(t.provider_registration, identity.registration_number);
+  field(t.provider_registration, `${identity.registration_number} · SIRET ${identity.siret}`);
   field(t.provider_vat, identity.vat_id);
   if (identity.share_capital) field(t.provider_capital, identity.share_capital);
   field(t.provider_representative, `${identity.representative_name} (${identity.representative_role})`);

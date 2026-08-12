@@ -5,9 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-const LEGAL_NAME = 'CAMBRA GLOBAL SASU';
+const LEGAL_NAME = 'CAMBRA Global SASU';
 const SIREN = '105 452 916';
+const SIRET = '105 452 916 00015';
+const VAT = 'FR50105452916';
 const STREET = '47 rue Vivienne';
+const DOMICILIATION = 'Chez Vivienne Domiciliation';
 const POSTCODE = '75002';
 
 const USER_VISIBLE_IDENTITY_FILES = [
@@ -31,6 +34,9 @@ describe('CAMBRA legal identity consistency', () => {
       expect(source, file).toContain(STREET);
       expect(source, file).toContain(POSTCODE);
       expect(source, file).toContain(SIREN);
+      expect(source, file).toContain(SIRET);
+      expect(source, file).toContain(VAT);
+      expect(source, file).toContain(DOMICILIATION);
     }
   });
 
@@ -43,6 +49,14 @@ describe('CAMBRA legal identity consistency', () => {
   it('keeps the canonical legal name on public identity surfaces', () => {
     for (const file of ['src/pages/Landing.jsx','src/components/shared/PublicFooter.jsx','src/content/legal/en/privacy.js']) {
       expect(read(file), file).toContain(LEGAL_NAME);
+    }
+  });
+
+  it('does not publish internal French tax-office ROF identifiers', () => {
+    const internalOnly = ['ROF IS1', 'ROF TVA1', 'ROF CFE1', 'ROF CVAE1', 'ROF RCM1'];
+    for (const file of USER_VISIBLE_IDENTITY_FILES) {
+      const source = read(file);
+      for (const token of internalOnly) expect(source, `${file}: ${token}`).not.toContain(token);
     }
   });
 });
