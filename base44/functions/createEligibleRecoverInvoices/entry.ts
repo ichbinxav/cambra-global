@@ -272,6 +272,8 @@ export default async function (req: Request): Promise<Response> {
             supplier_legal_name: identity.identity.legal_name,
             supplier_address: identity.identity.registered_address,
             supplier_vat_number: identity.identity.vat_id,
+            supplier_siren: identity.identity.siren,
+            supplier_siret: identity.identity.siret,
             customer_legal_name: brand.billing_legal_name || '',
             customer_address: [brand.billing_address_line1, brand.billing_address_line2, `${brand.billing_postal_code || ''} ${brand.billing_city || ''}`.trim()].filter(Boolean).join(', '),
             customer_country: String(brand.billing_country || '').toUpperCase(),
@@ -300,8 +302,8 @@ export default async function (req: Request): Promise<Response> {
         let stripeInvoiceId = inv.stripe_invoice_id || '';
         if (!stripeInvoiceId) {
           const footer = tax.treatment === 'ES_EU_REVERSE_CHARGE'
-            ? `${tax.mentions.join(' — ')} — Supplier VAT: ${identity.identity.vat_id} — Customer VAT: ${customerVat}`
-            : `Supplier VAT: ${identity.identity.vat_id}`;
+            ? `${tax.mentions.join(' — ')} — Supplier SIRET: ${identity.identity.siret} — Supplier VAT: ${identity.identity.vat_id} — Customer VAT: ${customerVat}`
+            : `Supplier SIRET: ${identity.identity.siret} — Supplier VAT: ${identity.identity.vat_id}`;
           const created = await stripeRequest(mode, 'POST', 'invoices', {
             customer: brand.stripe_customer_id,
             collection_method: 'charge_automatically',
@@ -385,7 +387,14 @@ export default async function (req: Request): Promise<Response> {
           legal_execution: { decision: legalDecision.decision, policy_version: legalDecision.policy_version, regulatory_policy_version: legalDecision.regulatory_policy_version, authority_snapshot_id: legalDecision.authority_snapshot_id, authority_snapshot_hash: legalDecision.authority_snapshot_hash },
           idempotency: prep.idempotencyIdentity,
           tax: { treatment: tax.treatment, rate_bps: tax.tax_rate_bps, mentions: tax.mentions, vies_status: brand.vies_status || 'not_checked', vies_checked_at: brand.vies_checked_at || null },
-          supplier: { legal_name: identity.identity.legal_name, vat_id: identity.identity.vat_id, address: identity.identity.registered_address },
+          supplier: {
+            legal_name: identity.identity.legal_name,
+            legal_form: identity.identity.legal_form,
+            siren: identity.identity.siren,
+            siret: identity.identity.siret,
+            vat_id: identity.identity.vat_id,
+            address: identity.identity.registered_address,
+          },
           customer: { legal_name: brand.billing_legal_name, country: brand.billing_country, vat: customerVat },
           period: bounds,
           amounts_minor: { fee_net: amounts.fee_net_minor, tax: amounts.tax_minor, total: amounts.total_minor },

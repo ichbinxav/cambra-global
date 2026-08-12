@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.97.0 — Final Production Seal (durability manifest)",
-  "generatedAt": "2026-08-12T16:41:16.887Z",
+  "generatedAt": "2026-08-12T17:11:19.556Z",
   "packageVersion": "0.97.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -107,8 +107,8 @@
     },
     {
       "path": "base44/entities/Invoice.jsonc",
-      "sha256": "c578f89dbd4448e7abcc41aa783b535c0f44308d2721245f586e15cecf6c6041",
-      "bytes": 9383
+      "sha256": "df33757dd703422452f9173902a4e06852578f6847635f057ecd6aca0228819c",
+      "bytes": 9658
     },
     {
       "path": "base44/entities/KnowledgeClaim.jsonc",
@@ -402,8 +402,8 @@
     },
     {
       "path": "base44/functions/copilotChat/entry.ts",
-      "sha256": "442d98eecd9932961622d20352198f6189213b48b690e1e0da843d2e6a089e74",
-      "bytes": 12939
+      "sha256": "e249ba0e06a4e34688f647b4ef43d035df905fcf4033a17f39f7445f4a376cf8",
+      "bytes": 12982
     },
     {
       "path": "base44/functions/costGovernanceWorker/entry.ts",
@@ -417,8 +417,8 @@
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
-      "sha256": "54f0b5533fc36c4f0f87d50bb227e04ec3bce9afd3ce0e78e46ad01186529dab",
-      "bytes": 29322
+      "sha256": "fdfb8661156e305ad7be767931f2381a4d05418bcd52a3d117cd9f7dfeaae5b1",
+      "bytes": 29711
     },
     {
       "path": "base44/functions/createPaymentLink/entry.ts",
@@ -532,8 +532,8 @@
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
-      "sha256": "bcaa952894d0558e4c01b90234ccb90cc093325e0f9483aedd4d3bdd152a6d03",
-      "bytes": 6692
+      "sha256": "9777fcf79813aba6ff1bf97087924b234866c4a831af60a5724879459ec8494d",
+      "bytes": 7238
     },
     {
       "path": "base44/functions/getFounderControlCenter/entry.ts",
@@ -567,8 +567,8 @@
     },
     {
       "path": "base44/functions/goLiveControlAdmin/entry.ts",
-      "sha256": "b630800b9329ec58122abe2b12f06f691311568d673c3557a49ad363cfa09c16",
-      "bytes": 38496
+      "sha256": "3f20f8f4d0825fb7f39ce86925d3f67d248bd026f590a6582b4a7759222ee2ec",
+      "bytes": 38868
     },
     {
       "path": "base44/functions/goLiveControlAdmin/function.jsonc",
@@ -1127,8 +1127,8 @@
     },
     {
       "path": "base44/shared/recoverContractPdf.ts",
-      "sha256": "a3adda957ae902701d6b32850848d2a7179ea7e4107b6e0e229718e144ee61bb",
-      "bytes": 14661
+      "sha256": "a3ce35a3902900d8dc77c94861316222a858def327164e960e2da90d11164df4",
+      "bytes": 14694
     },
     {
       "path": "base44/shared/recoverMandateCopy.ts",
@@ -1232,8 +1232,8 @@
     },
     {
       "path": "scripts/check-release-manifest.mjs",
-      "sha256": "2b0b3b492a4dca9d956c4de2a03caf9fb2492d8c2574a198f050ee2502cd053d",
-      "bytes": 10112
+      "sha256": "37bc8130c43abe49c1369f3b11618f2ca854e31125e8c8965044eb1057d6125b",
+      "bytes": 11505
     },
     {
       "path": "scripts/check-toolchain.mjs",
@@ -1272,8 +1272,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "ec4bd0ce8223a384003cc21a5554bef0ff9f2352164b4ee83fe107004c83c0c6",
-      "bytes": 16669
+      "sha256": "182c7951539fcaabdc9c49e0df36f1d15f893446a291a65c00fc918adec7a035",
+      "bytes": 13962
     },
     {
       "path": "scripts/install-ci-workflow.mjs",
@@ -1302,8 +1302,8 @@
     },
     {
       "path": "scripts/package-release.mjs",
-      "sha256": "86dc373fac4776c9451b2abae2e047ad7bfa60a5220472de8e10f992363313e3",
-      "bytes": 5969
+      "sha256": "f31392b127a6460faeb290425be787e493417ef6d5b94b7f95776fb13945430a",
+      "bytes": 6324
     },
     {
       "path": "scripts/run-with-evidence.mjs",
@@ -1782,8 +1782,8 @@
     },
     {
       "path": "src/lib/seoConfig.js",
-      "sha256": "33918e1d96d153963f066fbab23edcfe9bf79668dc510870d6d3a2efa362c790",
-      "bytes": 14936
+      "sha256": "3128b691b68616812b9c649f362e9acc7567ba98e840f6d8131ed83d67f228d9",
+      "bytes": 14980
     },
     {
       "path": "src/lib/syncEngine/__sync_check__.test.js",
@@ -1822,8 +1822,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "6905a22a12bd71fbeec9a8103880f546c1bc94209058daedc382f2ddfcd03dbf",
-      "bytes": 19575
+      "sha256": "efbad382fd025303bee25bac680307f252ea708685f177e01a41e76d3bf52440",
+      "bytes": 19652
     },
     {
       "path": "src/pages/Testimonials.jsx",

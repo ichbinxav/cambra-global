@@ -202,7 +202,12 @@ export async function handleGoLiveControlAdmin(req: Request) {
       if (profile.status !== 'paused') return Response.json({ ok:false, error:'sending_profile_must_be_paused_before_warmup', status:profile.status }, { status:409 });
       if (!Number.isInteger(Number(profile.current_daily_cap)) || Number(profile.current_daily_cap) < 1 || Number(profile.current_daily_cap) > 15) return Response.json({ ok:false, error:'canary_daily_cap_must_be_1_to_15' }, { status:409 });
       const nowMs = Date.now();
-      const evidenceRows = await svc.entities.RuntimeGateEvidence.filter({ gate_key:'DELIVERABILITY_DNS', status:'PASS', evidence_kind:'REAL_RUNTIME', git_sha:finalSha }, '-observed_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'}));
+      // The overall deliverability gate may remain BLOCKED because another,
+      // unused/paused profile or provider webhook is not ready. Warm-up is
+      // profile-scoped, so accept a fresh real-runtime row only when THIS
+      // profile's SPF/DKIM/DMARC triple is explicitly proven. This never starts
+      // outbound and does not upgrade the aggregate DELIVERABILITY_DNS gate.
+      const evidenceRows = await svc.entities.RuntimeGateEvidence.filter({ gate_key:'DELIVERABILITY_DNS', evidence_kind:'REAL_RUNTIME', git_sha:finalSha }, '-observed_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'goLiveControlAdmin',fallback:[],severity:'secondary'}));
       const evidence = evidenceRows.find((row:any) => {
         const observed = Date.parse(row.observed_at || row.created_date || '');
         const expires = Date.parse(row.expires_at || '');

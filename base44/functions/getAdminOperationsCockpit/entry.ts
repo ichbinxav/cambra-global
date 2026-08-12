@@ -1,5 +1,6 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { CAMBRA_PUBLIC_LEGAL_IDENTITY, readInternalFiscalProfile } from '../../shared/cambraLegalIdentity.ts';
 
 const PLATFORM = '_platform';
 const ACTIVE_INCIDENTS = ['open', 'acknowledged', 'recovering'];
@@ -71,6 +72,7 @@ Deno.serve(async (req) => {
     : degradedSources.length || attention || workers.some((w) => w.status !== 'healthy')
       ? 'warning'
       : 'healthy';
+  const internalFiscalProfile = readInternalFiscalProfile();
 
   return Response.json({
     ok: true,
@@ -79,6 +81,12 @@ Deno.serve(async (req) => {
     attention_count: attention,
     degraded_sources: degradedSources,
     data_complete: degradedSources.length === 0,
+    company_identity: {
+      ...CAMBRA_PUBLIC_LEGAL_IDENTITY,
+      internal_fiscal_profile_status: internalFiscalProfile.ok ? 'configured' : 'configuration_required',
+      internal_fiscal_profile: internalFiscalProfile.ok ? internalFiscalProfile.profile : null,
+      internal_fiscal_profile_missing: internalFiscalProfile.ok ? [] : internalFiscalProfile.missing,
+    },
     metrics: {
       active_incidents: activeIncidents.length,
       critical_incidents: criticalIncidents.length,

@@ -49,7 +49,7 @@ export const HOMEPAGE_SCHEMA = {
   "@type": "Service",
   name: "CAMBRA payment cost audit and recovery",
   url: SEO_ORIGIN,
-  provider: { "@type": "Organization", name: "CAMBRA", legalName: "CAMBRA GLOBAL SASU" },
+  provider: { "@type": "Organization", name: "CAMBRA", legalName: "CAMBRA Global SASU", vatID: "FR50105452916", taxID: "105452916" },
   serviceType: "Card payment cost audit and verified savings recovery",
   areaServed: "Europe",
   description:
