@@ -74,6 +74,8 @@
     "base44/functions/processWebhookDeadLetters/entry.ts",
     "base44/functions/promoteMeToAdmin/entry.ts",
     "base44/functions/outlookInboundRouter/entry.ts",
+    "base44/functions/developerMigrationEngine/entry.ts",
+    "base44/functions/dependencySecurityWorker/entry.ts",
     "base44/functions/goLiveControlAdmin/entry.ts",
     "base44/shared/maintenanceCore.ts",
     "base44/functions/maintenanceEngine/entry.ts",

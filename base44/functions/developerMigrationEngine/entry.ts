@@ -18,6 +18,7 @@ async function github(token:string, path:string, init:RequestInit={}) {
     headers: {
       'Accept': 'application/vnd.github+json',
       'Authorization': `Bearer ${token}`,
+      'User-Agent': 'CAMBRA/0.97.0',
       'X-GitHub-Api-Version': '2022-11-28',
       'Content-Type': 'application/json',
       ...(init.headers || {}),

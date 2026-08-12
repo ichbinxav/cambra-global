@@ -49,6 +49,11 @@ describe('v0.97 CTO production remediation controls',()=>{
     expect(source).toContain('active_policy_set_restored:policySetRestored');
   });
 
+  it('identifies CAMBRA to GitHub for runtime repository and Dependabot checks',()=>{
+    expect(read('base44/functions/developerMigrationEngine/entry.ts')).toContain("'User-Agent': 'CAMBRA/0.97.0'");
+    expect(read('base44/functions/dependencySecurityWorker/entry.ts')).toContain("'User-Agent':'CAMBRA/0.97.0'");
+  });
+
   it('does not commit a self-referential parent SHA as release identity',()=>{
     const generator=read('scripts/generate-release-manifest.mjs');
     expect(generator).toContain('CAMBRA_RELEASE_GIT_SHA');
