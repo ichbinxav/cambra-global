@@ -1049,6 +1049,17 @@ export default {
     /* COPY-2A T3 — Verified/Estimated explained once per page, at the first badge. */
     verified_estimated_legend: "Verified = from your connected data. Estimated = from public industry rates.",
 
+    /* MASTER T5 — honest anonymous funnel. In `estimated` mode the "current
+       rate" is the PSP's PUBLIC LIST PRICE, not what the merchant actually
+       pays — high-volume merchants almost always negotiated below list.
+       These strings stop presenting that assumption as a measured fact. */
+    gap_overpaying_measured:     "You're overpaying by roughly",
+    gap_overpaying_estimated:    "Against list pricing, you may be overpaying by",
+    gap_you_pay_today_estimated: "{provider} public list price — not your negotiated rate",
+    your_provider:               "your provider",
+    assumption_list_price:       "We assume {provider}'s public list price; your actual invoice may differ.",
+    assumption_card_mix:         "Premium, commercial and Amex card mix is not modelled.",
+
     /* COPY-2A T4 — "Where your fee comes from" block (FeeBreakdownCard).
        Was hardcoded English; now localized and written in plain language. */
     fee_title:              "Where your fee comes from",

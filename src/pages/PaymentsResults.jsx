@@ -756,7 +756,7 @@ export default function PaymentsResults() {
               render the SHAPE, blur the numbers, show a padlock. */}
           <FeeBreakdownCard engineResult={engineResult} locked={!payload?.owned} />
           <PlusAnchorNote engineResult={engineResult} inputSnapshot={inputSnapshot} rateTable={rateTable} />
-          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
+          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} providerSlug={inputSnapshot?.provider_slug || null} />
         </div>
       ) : isCombined ? (
         // COMBINED — full depth. Aggregate view on top (CombinedGapHero =
@@ -797,7 +797,7 @@ export default function PaymentsResults() {
             ))}
           </div>
           )}
-          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
+          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} providerSlug={inputSnapshot?.provider_slug || null} />
         </div>
       ) : (
         // Verified / optimized single-channel — 2-column grid, unchanged.

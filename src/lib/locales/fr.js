@@ -1013,6 +1013,18 @@ export default {
     /* COPY-2A T3 — Vérifié/Estimé expliqué une seule fois, au premier badge. */
     verified_estimated_legend: "Vérifié = à partir de vos données connectées. Estimé = à partir des tarifs publics du secteur.",
 
+    /* MASTER T5 — funnel anonyme honnête. En mode `estimated`, le « taux
+       actuel » est le TARIF PUBLIC du PSP, pas ce que le commerçant paie
+       réellement — le segment à fort volume a presque toujours négocié en
+       dessous. Ces chaînes cessent de présenter cette hypothèse comme un
+       fait mesuré. */
+    gap_overpaying_measured:     "Vous surpayez d'environ",
+    gap_overpaying_estimated:    "Par rapport au tarif public, vous surpayez peut-être de",
+    gap_you_pay_today_estimated: "tarif public de {provider} — pas votre tarif négocié",
+    your_provider:               "votre prestataire",
+    assumption_list_price:       "Nous partons du tarif public de {provider} ; votre facture réelle peut différer.",
+    assumption_card_mix:         "La part des cartes premium, business et Amex n'est pas modélisée.",
+
     /* COPY-2A T4 — bloc « D'où vient ce que vous payez » (FeeBreakdownCard).
        Auparavant en anglais et codé en dur ; désormais localisé et en langage clair. */
     fee_title:              "D'où vient ce que vous payez",

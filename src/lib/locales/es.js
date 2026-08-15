@@ -1013,6 +1013,17 @@ export default {
     /* COPY-2A T3 — Verificado/Estimado explicado una sola vez, en el primer badge. */
     verified_estimated_legend: "Verificado = con tus datos conectados. Estimado = con tarifas públicas del sector.",
 
+    /* MASTER T5 — funnel anónimo honesto. En modo `estimated` la "tarifa
+       actual" es la TARIFA PÚBLICA del PSP, no lo que el comercio paga de
+       verdad — el segmento de volumen alto casi siempre negoció por debajo.
+       Estas cadenas dejan de presentar esa suposición como un hecho medido. */
+    gap_overpaying_measured:     "Estás pagando de más aproximadamente",
+    gap_overpaying_estimated:    "Frente a la tarifa pública, podrías estar pagando de más",
+    gap_you_pay_today_estimated: "tarifa pública de {provider} — no tu tarifa negociada",
+    your_provider:               "tu proveedor",
+    assumption_list_price:       "Asumimos la tarifa pública de {provider}; tu factura real puede ser distinta.",
+    assumption_card_mix:         "La mezcla de tarjetas premium, de empresa y Amex no está modelada.",
+
     /* COPY-2A T4 — bloque "De dónde sale lo que pagas" (FeeBreakdownCard).
        Antes estaba en inglés y hardcodeado; ahora localizado y en lenguaje llano. */
     fee_title:              "De dónde sale lo que pagas",

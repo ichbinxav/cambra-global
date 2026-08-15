@@ -194,8 +194,12 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
           </div>
         )}
 
-        {/* PIEZA B — LIVE FIGURE. */}
-        <p className="text-[13px] mb-2" style={{ color: "#9A9AAB" }}>You're overpaying by roughly</p>
+        {/* PIEZA B — LIVE FIGURE. MASTER T5 — mode-conditional: in `estimated`
+            mode the gap is computed against the PSP's public list price, so
+            "you're overpaying" would state an assumption as a measured fact. */}
+        <p className="text-[13px] mb-2" style={{ color: "#9A9AAB" }}>
+          {isMeasured ? t("gap_overpaying_measured") : t("gap_overpaying_estimated")}
+        </p>
         <div className="flex items-baseline gap-3 flex-wrap">
           <EuroCountUp
             value={isFinite(annual.point) ? annual.point : (annual.lo + annual.hi) / 2}
@@ -254,7 +258,9 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
               <p className="text-[10px] mt-0.5" style={{ color: "#585868" }}>
                 {isMeasured && txCount && daysCovered
                   ? <>Your rate, measured from {txCount} charges over {daysCovered} days</>
-                  : <>what you pay, on {inputSnapshot?.provider_slug || "your provider"}</>}
+                  /* MASTER T5 — this figure is the provider's PUBLIC LIST
+                     PRICE, not what the merchant actually pays. Say so. */
+                  : <>{t("gap_you_pay_today_estimated", { provider: inputSnapshot?.provider_slug || t("your_provider") })}</>}
               </p>
             </div>
             <div className="rounded-xl p-4" style={{ background: "rgba(34,211,238,0.06)", border: "1px solid rgba(34,211,238,0.25)" }}>

@@ -22,8 +22,10 @@
 // FeeBreakdownCard parses these assumptions independently and is untouched.
 
 import { Info, AlertCircle, Lock } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
-export default function AssumptionsFootnote({ engineResult, engineVersion }) {
+export default function AssumptionsFootnote({ engineResult, engineVersion, providerSlug = null }) {
+  const { t } = useTranslation();
   const assumptions = engineResult?.assumptions || [];
   const verified = engineResult?.cohort?.verified === true;
   const cohortKey = engineResult?.cohort?.key;
@@ -123,17 +125,39 @@ export default function AssumptionsFootnote({ engineResult, engineVersion }) {
           </div>
         </div>
       ) : (
-        // Teaser view — one honest, gated line. The user knows there's more,
-        // and where to get it, without being buried in methodology before
-        // they've decided to sign up.
-        <div
-          className="rounded-xl p-4 flex items-center gap-3"
-          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <Lock size={13} className="text-white/40 shrink-0" />
-          <p className="text-[12px] text-white/55 leading-relaxed">
-            The full working — how we spread the fixed fee, which rate we compared against, and how confident we are — appears in your report once you create a free account.
-          </p>
+        // Teaser view. MASTER T5 — the two assumptions that change what the
+        // number MEANS are never gated: the figure is computed against the
+        // provider's public list price, and the card mix is not modelled.
+        // Hiding those two behind the sign-up gate made an assumption look
+        // like a measured fact — precisely for the high-volume segment that
+        // already negotiated below list. The deep methodology stays gated.
+        <div className="space-y-3">
+          <div
+            className="rounded-xl p-4"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Info size={13} className="text-white/50" />
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">Assumptions</p>
+            </div>
+            <ul className="space-y-2">
+              <li className="text-[12px] text-white/65 leading-relaxed pl-3 border-l border-white/10">
+                {t("assumption_list_price", { provider: providerSlug || t("your_provider") })}
+              </li>
+              <li className="text-[12px] text-white/65 leading-relaxed pl-3 border-l border-white/10">
+                {t("assumption_card_mix")}
+              </li>
+            </ul>
+          </div>
+          <div
+            className="rounded-xl p-4 flex items-center gap-3"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <Lock size={13} className="text-white/40 shrink-0" />
+            <p className="text-[12px] text-white/55 leading-relaxed">
+              The full working — how we spread the fixed fee, which rate we compared against, and how confident we are — appears in your report once you create a free account.
+            </p>
+          </div>
         </div>
       )}
     </div>
