@@ -29,7 +29,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | GR | Greece | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | HU | Hungary | HUF | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IE | Ireland | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| IT | Italy | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| IT | Italy | EUR | it-IT | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LV | Latvia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LT | Lithuania | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LU | Luxembourg | EUR | fr-FR | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -45,7 +45,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | NO | Norway | NOK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IS | Iceland | ISK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LI | Liechtenstein | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| CH | Switzerland | CHF | fr-FR | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| CH | Switzerland | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GB | United Kingdom | GBP | en-GB | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | AD | Andorra | EUR | es-ES | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 
@@ -57,6 +57,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | fr-FR | fr | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | es-ES | es | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | de-DE | de | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| it-IT | it | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

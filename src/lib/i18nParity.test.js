@@ -9,12 +9,14 @@ import es from './locales/es.js';
 // three launch locales: the 30-market rollout adds native product languages.
 // Every new dictionary is registered here so ALL parity checks cover it.
 import de from './locales/de.js';
+// aliased: `it` collides with vitest's `it()` in this module's scope.
+import itDict from './locales/it.js';
 
-const dictionaries = { en, fr, es, de };
+const dictionaries = { en, fr, es, de, it: itDict };
 // The supported-language contract, extended deliberately per market rollout —
 // decisions in src/docs/Decision_Log_I18N_30_MERCADOS.md. Order: en first,
 // then launch locales, then 30-market additions in rollout order.
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de'];
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de', 'it'];
 const keys = Object.fromEntries(Object.entries(dictionaries).map(([lang, dict]) => [lang, Object.keys(dict).sort()]));
 const INTENTIONAL_BLANKS = new Set(['ri_sub_post','su_badge_beta']);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');

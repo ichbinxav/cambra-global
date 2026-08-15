@@ -14,7 +14,7 @@ describe('P9 European localization and productization', () => {
     // I18N-30M (2026-08-15) — deliberately widened from the fixed launch
     // trio: the 30-market rollout adds native product locales in rollout
     // order. The list stays EXACT so an unregistered locale still fails.
-    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE']);
+    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT']);
     for (const market of LOCALE_MARKETS) {
       expect(market.market_code).toMatch(/^[A-Z]{2}$/);
       expect(market.currency).toMatch(/^[A-Z]{3}$/);
@@ -30,12 +30,13 @@ describe('P9 European localization and productization', () => {
 
   it('uses market policy before browser and labels non-native fallback honestly', () => {
     expect(resolveLocale({ market_code: 'ES', browser_locales: ['en-US'] })).toMatchObject({ locale: 'es-ES', source: 'market_default', fallback_used: false });
-    // I18N-30M — Germany is now a NATIVE_PRODUCT market: de-DE, no fallback.
+    // I18N-30M — Germany and Italy are now NATIVE_PRODUCT markets.
     expect(resolveLocale({ market_code: 'DE' })).toMatchObject({ locale: 'de-DE', source: 'market_default', fallback_used: false });
+    expect(resolveLocale({ market_code: 'IT' })).toMatchObject({ locale: 'it-IT', source: 'market_default', fallback_used: false });
     // The honest-fallback invariant itself is unchanged — it now bites on a
-    // market whose native language is still pending (Italy until `it` lands).
-    expect(resolveLocale({ market_code: 'IT' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
-    expect(localizationReadiness('IT')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
+    // market whose native language is still pending (Poland until `pl` lands).
+    expect(resolveLocale({ market_code: 'PL' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
+    expect(localizationReadiness('PL')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
   });
 
   it('formats non-EUR market money and locale plurals without string concatenation', () => {
