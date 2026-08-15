@@ -5,6 +5,8 @@ import React, { useState, useEffect, createContext, useContext, useCallback, use
 import en from "@/lib/locales/en";
 import fr from "@/lib/locales/fr";
 import es from "@/lib/locales/es";
+// I18N-30M (2026-08-15) — native product languages for the 30 active markets.
+import de from "@/lib/locales/de";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -21,14 +23,15 @@ export const LANGUAGES = [
   { code: "en", locale: "en-GB", label: "English", short: "EN" },
   { code: "fr", locale: "fr-FR", label: "Français", short: "FR" },
   { code: "es", locale: "es-ES", label: "Español", short: "ES" },
+  { code: "de", locale: "de-DE", label: "Deutsch", short: "DE" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -49,8 +52,8 @@ export function formatDate(date, lang = "en") {
   }
 }
 
-/* ── dictionaries (flat keys) — see src/lib/locales/{en,fr,es}.js ── */
-const DICT = { en, fr, es };
+/* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
+const DICT = { en, fr, es, de };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {

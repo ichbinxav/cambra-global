@@ -15,7 +15,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 
 | Code | Market | Currency | Default locale | Translation | Analyzer | Recovery | Legal applicability |
 |---|---|---:|---|---|---|---|---|
-| AT | Austria | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| AT | Austria | EUR | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | BE | Belgium | EUR | fr-FR | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | BG | Bulgaria | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | HR | Croatia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -25,7 +25,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | EE | Estonia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FI | Finland | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FR | France | EUR | fr-FR | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| DE | Germany | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| DE | Germany | EUR | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GR | Greece | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | HU | Hungary | HUF | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IE | Ireland | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -44,7 +44,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | SE | Sweden | SEK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | NO | Norway | NOK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IS | Iceland | ISK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| LI | Liechtenstein | CHF | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| LI | Liechtenstein | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | CH | Switzerland | CHF | fr-FR | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GB | United Kingdom | GBP | en-GB | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | AD | Andorra | EUR | es-ES | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -56,6 +56,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | en-GB | en | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | fr-FR | fr | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | es-ES | es | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| de-DE | de | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

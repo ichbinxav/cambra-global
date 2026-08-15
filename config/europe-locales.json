@@ -3,44 +3,429 @@
   "registryVersion": "p9-locales-2026.08.11",
   "fallbackLocale": "en-GB",
   "productLocales": [
-    {"locale":"en-GB","language":"en","translation_status":"IMPLEMENTED","quality_status":"AUTOMATED_QA","legal_review_status":"LEGAL_REVIEW_REQUIRED"},
-    {"locale":"fr-FR","language":"fr","translation_status":"IMPLEMENTED","quality_status":"AUTOMATED_QA","legal_review_status":"LEGAL_REVIEW_REQUIRED"},
-    {"locale":"es-ES","language":"es","translation_status":"IMPLEMENTED","quality_status":"AUTOMATED_QA","legal_review_status":"LEGAL_REVIEW_REQUIRED"}
+    {
+      "locale": "en-GB",
+      "language": "en",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "fr-FR",
+      "language": "fr",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "es-ES",
+      "language": "es",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "de-DE",
+      "language": "de",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    }
   ],
-  "legalDocumentLocales": ["en-GB", "fr-FR", "es-ES"],
+  "legalDocumentLocales": [
+    "en-GB",
+    "fr-FR",
+    "es-ES"
+  ],
   "markets": [
-    {"market_code":"AT","native_locales":["de-AT"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"BE","native_locales":["nl-BE","fr-BE","de-BE"],"supported_product_locales":["fr-FR","en-GB"],"default_locale":"fr-FR","translation_readiness":"PARTIAL_NATIVE"},
-    {"market_code":"BG","native_locales":["bg-BG"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"HR","native_locales":["hr-HR"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"CY","native_locales":["el-CY","tr-CY"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"CZ","native_locales":["cs-CZ"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"DK","native_locales":["da-DK"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"EE","native_locales":["et-EE"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"FI","native_locales":["fi-FI","sv-FI"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"FR","native_locales":["fr-FR"],"supported_product_locales":["fr-FR","en-GB"],"default_locale":"fr-FR","translation_readiness":"NATIVE_PRODUCT"},
-    {"market_code":"DE","native_locales":["de-DE"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"GR","native_locales":["el-GR"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"HU","native_locales":["hu-HU"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"IE","native_locales":["en-IE","ga-IE"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"PARTIAL_NATIVE"},
-    {"market_code":"IT","native_locales":["it-IT"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"LV","native_locales":["lv-LV"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"LT","native_locales":["lt-LT"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"LU","native_locales":["lb-LU","fr-LU","de-LU"],"supported_product_locales":["fr-FR","en-GB"],"default_locale":"fr-FR","translation_readiness":"PARTIAL_NATIVE"},
-    {"market_code":"MT","native_locales":["mt-MT","en-MT"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"PARTIAL_NATIVE"},
-    {"market_code":"NL","native_locales":["nl-NL"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"PL","native_locales":["pl-PL"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"PT","native_locales":["pt-PT"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"RO","native_locales":["ro-RO"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"SK","native_locales":["sk-SK"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"SI","native_locales":["sl-SI"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"ES","native_locales":["es-ES"],"supported_product_locales":["es-ES","en-GB"],"default_locale":"es-ES","translation_readiness":"NATIVE_PRODUCT"},
-    {"market_code":"SE","native_locales":["sv-SE"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"NO","native_locales":["nb-NO","nn-NO"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"IS","native_locales":["is-IS"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"LI","native_locales":["de-LI"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"FALLBACK_ONLY"},
-    {"market_code":"CH","native_locales":["de-CH","fr-CH","it-CH"],"supported_product_locales":["fr-FR","en-GB"],"default_locale":"fr-FR","translation_readiness":"PARTIAL_NATIVE"},
-    {"market_code":"GB","native_locales":["en-GB"],"supported_product_locales":["en-GB"],"default_locale":"en-GB","translation_readiness":"NATIVE_PRODUCT"},
-    {"market_code":"AD","native_locales":["ca-AD","es-ES","fr-FR"],"supported_product_locales":["es-ES","fr-FR","en-GB"],"default_locale":"es-ES","translation_readiness":"PARTIAL_NATIVE"}
+    {
+      "market_code": "AT",
+      "native_locales": [
+        "de-AT"
+      ],
+      "supported_product_locales": [
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "BE",
+      "native_locales": [
+        "nl-BE",
+        "fr-BE",
+        "de-BE"
+      ],
+      "supported_product_locales": [
+        "fr-FR",
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE"
+    },
+    {
+      "market_code": "BG",
+      "native_locales": [
+        "bg-BG"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "HR",
+      "native_locales": [
+        "hr-HR"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "CY",
+      "native_locales": [
+        "el-CY",
+        "tr-CY"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "CZ",
+      "native_locales": [
+        "cs-CZ"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "DK",
+      "native_locales": [
+        "da-DK"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "EE",
+      "native_locales": [
+        "et-EE"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "FI",
+      "native_locales": [
+        "fi-FI",
+        "sv-FI"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "FR",
+      "native_locales": [
+        "fr-FR"
+      ],
+      "supported_product_locales": [
+        "fr-FR",
+        "en-GB"
+      ],
+      "default_locale": "fr-FR",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "DE",
+      "native_locales": [
+        "de-DE"
+      ],
+      "supported_product_locales": [
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "GR",
+      "native_locales": [
+        "el-GR"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "HU",
+      "native_locales": [
+        "hu-HU"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "IE",
+      "native_locales": [
+        "en-IE",
+        "ga-IE"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "PARTIAL_NATIVE"
+    },
+    {
+      "market_code": "IT",
+      "native_locales": [
+        "it-IT"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "LV",
+      "native_locales": [
+        "lv-LV"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "LT",
+      "native_locales": [
+        "lt-LT"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "LU",
+      "native_locales": [
+        "lb-LU",
+        "fr-LU",
+        "de-LU"
+      ],
+      "supported_product_locales": [
+        "fr-FR",
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE"
+    },
+    {
+      "market_code": "MT",
+      "native_locales": [
+        "mt-MT",
+        "en-MT"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "PARTIAL_NATIVE"
+    },
+    {
+      "market_code": "NL",
+      "native_locales": [
+        "nl-NL"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "PL",
+      "native_locales": [
+        "pl-PL"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "PT",
+      "native_locales": [
+        "pt-PT"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "RO",
+      "native_locales": [
+        "ro-RO"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "SK",
+      "native_locales": [
+        "sk-SK"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "SI",
+      "native_locales": [
+        "sl-SI"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "ES",
+      "native_locales": [
+        "es-ES"
+      ],
+      "supported_product_locales": [
+        "es-ES",
+        "en-GB"
+      ],
+      "default_locale": "es-ES",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "SE",
+      "native_locales": [
+        "sv-SE"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "NO",
+      "native_locales": [
+        "nb-NO",
+        "nn-NO"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "IS",
+      "native_locales": [
+        "is-IS"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "FALLBACK_ONLY"
+    },
+    {
+      "market_code": "LI",
+      "native_locales": [
+        "de-LI"
+      ],
+      "supported_product_locales": [
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "CH",
+      "native_locales": [
+        "de-CH",
+        "fr-CH",
+        "it-CH"
+      ],
+      "supported_product_locales": [
+        "fr-FR",
+        "en-GB",
+        "de-DE"
+      ],
+      "default_locale": "fr-FR",
+      "translation_readiness": "PARTIAL_NATIVE"
+    },
+    {
+      "market_code": "GB",
+      "native_locales": [
+        "en-GB"
+      ],
+      "supported_product_locales": [
+        "en-GB"
+      ],
+      "default_locale": "en-GB",
+      "translation_readiness": "NATIVE_PRODUCT"
+    },
+    {
+      "market_code": "AD",
+      "native_locales": [
+        "ca-AD",
+        "es-ES",
+        "fr-FR"
+      ],
+      "supported_product_locales": [
+        "es-ES",
+        "fr-FR",
+        "en-GB"
+      ],
+      "default_locale": "es-ES",
+      "translation_readiness": "PARTIAL_NATIVE"
+    }
   ]
 }

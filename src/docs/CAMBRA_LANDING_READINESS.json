@@ -28,6 +28,13 @@
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "de-DE",
+      "language": "de",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "market_rows": [
@@ -35,8 +42,8 @@
       "market_code": "AT",
       "market_name": "Austria",
       "currency": "EUR",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
@@ -155,8 +162,8 @@
       "market_code": "DE",
       "market_name": "Germany",
       "currency": "EUR",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
@@ -383,8 +390,8 @@
       "market_code": "LI",
       "market_name": "Liechtenstein",
       "currency": "CHF",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "de-DE",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
