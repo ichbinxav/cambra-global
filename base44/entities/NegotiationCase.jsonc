@@ -40,6 +40,20 @@
       "type": "number",
       "default": 0
     },
+    "founder_feedback_json": {
+      "type": "array",
+      "description": "Append-only log of CAMBRA decisions on this case. Each entry carries round, decision, reason, decided_at and decided_by. Read back into Block 4 of the negotiation dossier so a rejected position is not repeated. Previously the reason lived only in Approval.rejected_reason and was never read again.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "round": { "type": "number" },
+          "decision": { "type": "string", "enum": ["approved", "rejected"] },
+          "reason": { "type": "string" },
+          "decided_at": { "type": "string", "format": "date-time" },
+          "decided_by": { "type": "string" }
+        }
+      }
+    },
     "launched_by": {
       "type": "string",
       "description": "Email of the human who authorised this negotiation by pressing LAUNCH. Absent means no person originated it, and no automated caller may resume it. Enforced by shared/negotiationLaunchAuthority.ts."
