@@ -1,0 +1,15 @@
+{
+  "comment": "Ratchet for non-defect backend diagnostics (untyped Base44 SDK). May only decrease. Defect-class codes are never baselined.",
+  "defectCodes": [
+    "TS2304",
+    "TS2307",
+    "TS2488",
+    "TS2551",
+    "TS2552",
+    "TS2564",
+    "TS7027"
+  ],
+  "maxNoiseDiagnostics": 201,
+  "functionCount": 300,
+  "capturedWith": "scripts/check-backend-typecheck.mjs --update"
+}

@@ -2,7 +2,7 @@ export const RECOVER_UI_COPY = {
   en: {
     panel: {
       eyebrow: 'Recover margin', authorized: 'Authorization in place', authorize: 'Authorize us to recover your margin',
-      accepted: (fee) => `You've authorized us at a ${fee}% fee on verified savings. We only charge on savings confirmed against your own statements. You can revoke it at any time.`,
+      accepted: (fee) => `You've authorized us at a ${fee}% fee on verified savings. We only charge on savings confirmed against your own statements. We are reviewing your case now and will tell you what happens next before we contact any provider on your behalf. You can revoke this authorization at any time.`,
       pitch: (fee) => `We'll negotiate with your provider, or move you to a better rate, and charge ${fee}% of what we actually recover — verified against your statements. No recovery, no fee.`,
       review: 'Review and authorize', revoke: 'Revoke authorization', revoking: 'Revoking…', revokeConfirm: 'Revoke CAMBRA’s authorization? This stops future migration actions. Savings already verified remain part of the historical record.', revoked: 'Authorization revoked. CAMBRA will not take further migration action under this mandate.', revokeError: 'We could not revoke the authorization safely. Nothing was changed; please try again.', notReady: "This deal isn't at the authorization stage yet — we'll let you know as soon as it is.",
       blockers: {
@@ -33,7 +33,7 @@ export const RECOVER_UI_COPY = {
   fr: {
     panel: {
       eyebrow: 'Recover margin', authorized: 'Autorisation en place', authorize: 'Autorisez-nous à récupérer votre marge',
-      accepted: (fee) => `Vous nous avez autorisés avec une commission de ${fee}% sur les économies vérifiées. Nous facturons uniquement les économies confirmées à partir de vos propres relevés. Vous pouvez révoquer cette autorisation à tout moment.`,
+      accepted: (fee) => `Vous nous avez autorisés avec une commission de ${fee}% sur les économies vérifiées. Nous facturons uniquement les économies confirmées à partir de vos propres relevés. Nous examinons actuellement votre dossier et vous informerons de la suite avant de contacter tout prestataire en votre nom. Vous pouvez révoquer cette autorisation à tout moment.`,
       pitch: (fee) => `Nous négocions avec votre prestataire ou vous faisons passer à de meilleures conditions, puis facturons ${fee}% de ce que nous récupérons réellement — vérifié à partir de vos relevés. Aucun gain, aucune commission.`,
       review: 'Vérifier et autoriser', revoke: 'Révoquer l’autorisation', revoking: 'Révocation…', revokeConfirm: 'Révoquer l’autorisation de CAMBRA ? Cela arrête les futures actions de migration. Les économies déjà vérifiées restent dans l’historique.', revoked: 'Autorisation révoquée. CAMBRA n’effectuera plus d’action de migration au titre de ce mandat.', revokeError: 'Impossible de révoquer l’autorisation de manière sûre. Rien n’a été modifié ; réessayez.', notReady: "Cette opération n'est pas encore à l'étape d'autorisation. Nous vous préviendrons dès qu'elle le sera.",
       blockers: {
@@ -64,7 +64,7 @@ export const RECOVER_UI_COPY = {
   es: {
     panel: {
       eyebrow: 'Recover margin', authorized: 'Autorización activa', authorize: 'Autorízanos a recuperar tu margen',
-      accepted: (fee) => `Nos has autorizado con una comisión del ${fee}% sobre el ahorro verificado. Solo cobramos sobre ahorros confirmados frente a tus propios extractos. Puedes revocar la autorización en cualquier momento.`,
+      accepted: (fee) => `Nos has autorizado con una comisión del ${fee}% sobre el ahorro verificado. Solo cobramos sobre ahorros confirmados frente a tus propios extractos. Estamos revisando tu caso y te diremos cuál es el siguiente paso antes de contactar con ningún proveedor en tu nombre. Puedes revocar la autorización en cualquier momento.`,
       pitch: (fee) => `Negociaremos con tu proveedor o te moveremos a mejores condiciones y cobraremos el ${fee}% de lo que recuperemos de verdad — verificado frente a tus extractos. Sin ahorro, no hay comisión.`,
       review: 'Revisar y autorizar', revoke: 'Revocar autorización', revoking: 'Revocando…', revokeConfirm: '¿Revocar la autorización de CAMBRA? Esto detiene futuras acciones de migración. Los ahorros ya verificados permanecen en el histórico.', revoked: 'Autorización revocada. CAMBRA no realizará más acciones de migración bajo este mandato.', revokeError: 'No hemos podido revocar la autorización de forma segura. No se ha cambiado nada; inténtalo de nuevo.', notReady: 'Esta operación todavía no está en la fase de autorización. Te avisaremos en cuanto lo esté.',
       blockers: {

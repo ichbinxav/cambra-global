@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
         const threads = await svc.entities.CommunicationThread.filter({ counterparty_email:email }, '-last_message_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:[],severity:'critical'}));
         for (const t of threads) await svc.entities.CommunicationThread.update(t.id, { status:'suppressed', automation_paused:true, pause_reason:reason }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       }
-      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:type, data_json:{ provider:'resend', lifecycle_id, event_type:type, suppression_reason:reason, recipient_count:new Set(emails).size, signature_verified:true }, actor_email:'resend_webhook', created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
+      await svc.entities.OperationalLog.create({ event_type:'suppression_lifecycle_event', message:type, data_json:{ provider:'resend', lifecycle_id:lifecycleId, event_type:type, suppression_reason:reason, recipient_count:new Set(emails).size, signature_verified:true }, actor_email:'resend_webhook', created_at:new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'resendInboundWebhook',fallback:null,severity:'critical'}));
       return Response.json({ ok:true, handled:type, suppressed:emails.length });
     }
 
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
     const resendKey = Deno.env.get('RESEND_API_KEY');
     if (!resendKey) return Response.json({ ok:false, error:'resend_api_not_configured' }, { status:503 });
-    const emailRes = await paidProviderFetch(svc, { event_key:`api:resend-receiving:${emailId}`, category:'api', provider:'resend', source:'resendInboundWebhook', related_entity_type:'CommunicationMessage', related_entity_id:emailId }, `https://api.resend.com/emails/receiving/${encodeURIComponent(emailId)}`, { headers:{ Authorization:`Bearer ${resendKey}` } });
+    const emailRes = await paidProviderFetch(svc, { event_key:`api:resend-receiving:${emailId}`, category:'api', provider:'resend', source:'resendInboundWebhook', emergency_effect_mode:'read_only_reconciliation', related_entity_type:'CommunicationMessage', related_entity_id:emailId }, `https://api.resend.com/emails/receiving/${encodeURIComponent(emailId)}`, { headers:{ Authorization:`Bearer ${resendKey}` } });
     const email = await emailRes.json().catch(()=>({}));
     if (!emailRes.ok) throw new Error(`resend_receive_fetch_failed:${emailRes.status}`);
 

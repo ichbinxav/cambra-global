@@ -2,6 +2,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import { requireExactBrandTask, requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
  * Spend Intelligence Agent — Brain B2
@@ -157,6 +159,8 @@ Deno.serve(async (req) => {
     const { brand_id, discovery_task_id } = body;
     if (!brand_id) return Response.json({ ok: false, error: "Missing brand_id" }, { status: 400 });
 
+    const brand = await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+
     // Open AgentTask (L1, no Approval) — visible in Activity Log
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id,
@@ -172,14 +176,21 @@ Deno.serve(async (req) => {
     // ── 1. Load B1 output — reuse, do NOT re-scan ─────────────────────────
     let discoveryTask = null;
     if (discovery_task_id) {
-      const rows = await base44.asServiceRole.entities.AgentTask
-        .filter({ id: discovery_task_id }).catch((error:any)=>safeBestEffort(error,{operation:'spendIntelligenceAgent',fallback:[],severity:'secondary'}));
-      discoveryTask = rows[0] || null;
+      discoveryTask = await requireExactBrandTask(base44.asServiceRole, discovery_task_id, {
+        brandId: brand_id,
+        agentName: 'discovery_tech_stack',
+        status: 'completed',
+      });
     }
     if (!discoveryTask) {
-      const rows = await base44.asServiceRole.entities.AgentTask
-        .filter({ brand_id, agent_name: "discovery_tech_stack", status: "completed" }, "-created_date", 1)
-        .catch((error:any)=>safeBestEffort(error,{operation:'spendIntelligenceAgent',fallback:[],severity:'secondary'}));
+      const rows = await requireCriticalOperation(
+        'spend_intelligence_discovery_task_read',
+        () => base44.asServiceRole.entities.AgentTask
+          .filter({ brand_id, agent_name: "discovery_tech_stack", status: "completed" }, "-created_date", 2),
+      );
+      if (rows.length > 1 && String(rows[0]?.id || '') === String(rows[1]?.id || '')) {
+        throw new Error('discovery_task_authority_ambiguous');
+      }
       discoveryTask = rows[0] || null;
     }
     if (!discoveryTask) {
@@ -214,22 +225,18 @@ Deno.serve(async (req) => {
     // ── 2. Load brand context ─────────────────────────────────────────────
     // Revenue lives on AnalyzerInput (canonical source used by Dashboard/Results).
     // Brand only stores a coarse `annual_revenue` range — used as fallback.
-    let brand = null;
-    try {
-      brand = await base44.asServiceRole.entities.Brand.get(brand_id);
-    } catch { /* brand may not exist; we fall back to defaults */ }
     const country = brand?.country || "";
 
     let monthlyRevenue = 0;
     let revenueSource = "none";
-    try {
-      const inputs = await base44.asServiceRole.entities.AnalyzerInput
-        .filter({ brand_id }, "-created_date", 1);
-      if (inputs?.[0]?.monthly_revenue) {
-        monthlyRevenue = Math.max(0, Number(inputs[0].monthly_revenue) || 0);
-        revenueSource = "AnalyzerInput.monthly_revenue";
-      }
-    } catch { /* no inputs */ }
+    const inputs = await requireCriticalOperation(
+      'spend_intelligence_analyzer_input_read',
+      () => base44.asServiceRole.entities.AnalyzerInput.filter({ brand_id }, "-created_date", 2),
+    );
+    if (inputs?.[0]?.monthly_revenue) {
+      monthlyRevenue = Math.max(0, Number(inputs[0].monthly_revenue) || 0);
+      revenueSource = "AnalyzerInput.monthly_revenue";
+    }
 
     // Fallback: derive a conservative monthly revenue from Brand.annual_revenue range
     if (monthlyRevenue <= 0 && brand?.annual_revenue) {
@@ -261,7 +268,7 @@ Deno.serve(async (req) => {
       .reduce((acc, [, arr]) => acc + arr.length, 0);
 
     const estimates = [];
-    for (const [vertical, items] of Object.entries(byVertical)) {
+    for (const [vertical, items] of Object.entries(byVertical) as [string, any[]][]) {
       for (const f of items) {
         let est = null;
         if (monthlyRevenue <= 0) {
@@ -411,6 +418,8 @@ Deno.serve(async (req) => {
         });
       } catch { /* swallow */ }
     }
+    const tenantError = tenantOwnershipErrorResponse(error);
+    if (tenantError) return tenantError;
     return internalErrorResponse(error, 'spendIntelligenceAgent');
   }
 });

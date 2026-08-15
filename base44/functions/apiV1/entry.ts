@@ -31,7 +31,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Compat: legacy paths (/brands, /kpis, ...) still work — they're rewritten to /v1/*.
 // =============================================================================
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
-import { consumeRateLimit } from '../../shared/rateLimit.ts';
+import { consumeRateLimit, deriveRequestNetworkFingerprints, readTrustedClientAddress } from '../../shared/rateLimit.ts';
+import { recordApiUsage } from '../../shared/apiUsage.ts';
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -138,35 +139,7 @@ function checkIpAllowlist(principal, ip) {
 
 // Track API usage per organization for billing
 async function trackUsage(base44, principal) {
-  const orgId = principal.raw?.organization_id;
-  if (!orgId) return;
-  const periodMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-  const matches = await base44.asServiceRole.entities.ApiUsageRecord.filter({ organization_id: orgId, period_month: periodMonth });
-  const record = matches?.[0];
-  if (!record) {
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
-    await base44.asServiceRole.entities.ApiUsageRecord.create({
-      organization_id: orgId,
-      period_month: periodMonth,
-      request_count: 1,
-      included_quota: org?.monthly_api_quota || 10000,
-      overage_count: 0,
-      overage_amount_eur: 0,
-      last_updated_at: new Date().toISOString(),
-    });
-  } else {
-    const newCount = (record.request_count || 0) + 1;
-    const quota = record.included_quota || 10000;
-    const overage = Math.max(0, newCount - quota);
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
-    const overagePrice = (org?.overage_price_per_1k || 0.5) * (overage / 1000);
-    await base44.asServiceRole.entities.ApiUsageRecord.update(record.id, {
-      request_count: newCount,
-      overage_count: overage,
-      overage_amount_eur: Math.round(overagePrice * 100) / 100,
-      last_updated_at: new Date().toISOString(),
-    });
-  }
+  return recordApiUsage(base44.asServiceRole, principal);
 }
 
 // -----------------------------------------------------------------------------
@@ -192,7 +165,8 @@ async function logActivity(base44, ctx) {
       scope_used: ctx.scope,
       status_code: ctx.status_code,
       status: ctx.status,
-      ip_address: ctx.ip,
+      network_fingerprint: ctx.ip,
+      network_fingerprint_version: String(ctx.ip || '').split(':')[1] || null,
       user_agent: ctx.user_agent,
       duration_ms: ctx.duration_ms,
       request_id: ctx.request_id,
@@ -202,13 +176,15 @@ async function logActivity(base44, ctx) {
     if (ctx.principal?.type === "api_key" && ctx.status === "success") {
       await base44.asServiceRole.entities.ApiKey.update(ctx.principal.id, {
         last_used_at: new Date().toISOString(),
-        last_used_ip: ctx.ip,
+        last_used_network_fingerprint: ctx.ip,
+        network_fingerprint_version: String(ctx.ip || '').split(':')[1] || null,
         usage_count: (ctx.principal.raw.usage_count || 0) + 1,
       });
     } else if (ctx.principal?.type === "oauth_token" && ctx.status === "success") {
       await base44.asServiceRole.entities.OAuthToken.update(ctx.principal.id, {
         last_used_at: new Date().toISOString(),
-        last_used_ip: ctx.ip,
+        last_used_network_fingerprint: ctx.ip,
+        network_fingerprint_version: String(ctx.ip || '').split(':')[1] || null,
       });
     }
   } catch (_) { /* logging never blocks */ }
@@ -626,10 +602,26 @@ const RESOURCES = {
       };
       // Persist as a report if principal has write:reports
       if (principal.scopes.includes("write:reports") || principal.scopes.includes("admin")) {
+        // FIX 3b — persist tenant/user ownership on the created briefing.
+        // Base44 forces created_by to the service account on every
+        // asServiceRole.create(), so declarative RLS by created_by never fires
+        // here. Ownership must be denormalised explicitly or the document is
+        // orphaned: GET /v1/reports filters by created_by/owner_email and would
+        // never return it to the tenant that requested it. Mirrors FIX 3 on
+        // POST /v1/reports.
+        const userEmail = principal.user_email || principal.raw?.user_email;
+        const orgId = principal.raw?.organization_id;
         await base44.asServiceRole.entities.Document.create({
           title: `Weekly briefing · ${new Date().toISOString().slice(0, 10)}`,
           source_type: "report",
-          metadata_json: { briefing, generated_by: principal.name },
+          organization_id: orgId || undefined,
+          owner_email: userEmail || undefined,
+          metadata_json: {
+            briefing,
+            generated_by: principal.name,
+            ...(orgId ? { organization_id: orgId } : {}),
+            ...(userEmail ? { owner_email: userEmail } : {}),
+          },
         });
       }
       return { data: briefing };
@@ -721,7 +713,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS_HEADERS });
 
   const base44 = createClientFromRequest(req);
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  let clientAddress, ip;
+  try {
+    clientAddress = readTrustedClientAddress(req);
+    ip = (await deriveRequestNetworkFingerprints(req, 'api-v1-audit')).current;
+  } catch {
+    return err({ code: 'network_authority_unavailable', message: 'Request network authority is unavailable', status: 503, requestId });
+  }
   const userAgent = req.headers.get("user-agent") || "";
 
   try {
@@ -762,7 +760,7 @@ Deno.serve(async (req) => {
     const principal = authRes.principal;
 
     // IP allowlist check (per-key)
-    if (!checkIpAllowlist(principal, ip)) {
+    if (!checkIpAllowlist(principal, clientAddress)) {
       await logActivity(base44, { principal, endpoint: path, method, status: "forbidden", status_code: 403, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: "ip_not_allowed" });
       return err({ code: "ip_not_allowed", message: "Request IP is not in the key's allowlist", status: 403, requestId });
     }
