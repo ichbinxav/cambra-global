@@ -40,6 +40,15 @@
       "type": "number",
       "default": 0
     },
+    "launched_by": {
+      "type": "string",
+      "description": "Email of the human who authorised this negotiation by pressing LAUNCH. Absent means no person originated it, and no automated caller may resume it. Enforced by shared/negotiationLaunchAuthority.ts."
+    },
+    "launched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the human launch authorisation was recorded."
+    },
     "currency": {
       "type": "string"
     },

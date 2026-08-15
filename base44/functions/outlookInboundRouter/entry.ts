@@ -1,6 +1,7 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
+import { resolveInboundThread } from '../../shared/inboundThreadRouting.ts';
 import {
   classifyHardStop,
   commercialTimezone,
@@ -44,19 +45,42 @@ async function activeThreads(svc: any) {
   return Array.from(unique.values());
 }
 
+// Deterministic routing. The previous implementation fell back to "first
+// thread whose counterparty_email equals the sender", which attaches merchant
+// B's reply to merchant A's thread whenever the same provider contact has two
+// open negotiations — a cross-tenant disclosure, not a routing annoyance.
+// resolveInboundThread refuses to choose when the evidence is ambiguous; the
+// caller then treats the message as unroutable and a human triages it.
+// Behaviour is covered by src/lib/inboundThreadRouting.test.js.
 function matchThread(msg: any, threads: any[]) {
-  const conversationId = String(msg?.conversationId || '').trim();
-  const from = normalizeEmail(msg?.from?.emailAddress?.address);
-  return (
-    threads.find(
-      (thread: any) =>
-        conversationId && String(thread?.external_thread_id || '') === conversationId
-    ) ||
-    threads.find(
-      (thread: any) => from && normalizeEmail(thread?.counterparty_email) === from
-    ) ||
-    null
+  const recipients = [
+    ...(Array.isArray(msg?.toRecipients) ? msg.toRecipients : []),
+    ...(Array.isArray(msg?.ccRecipients) ? msg.ccRecipients : []),
+  ].map((r: any) => String(r?.emailAddress?.address || ''));
+  const decision = resolveInboundThread(
+    {
+      recipients,
+      conversation_id: msg?.conversationId ?? null,
+      in_reply_to: msg?.internetMessageHeaders
+        ? String(
+          (msg.internetMessageHeaders as any[]).find(
+            (h: any) => String(h?.name || '').toLowerCase() === 'in-reply-to',
+          )?.value || '',
+        )
+        : null,
+      references: [],
+      from: msg?.from?.emailAddress?.address ?? null,
+    },
+    (threads || []).map((t: any) => ({
+      id: String(t?.id || ''),
+      external_thread_id: t?.external_thread_id ?? null,
+      counterparty_email: t?.counterparty_email ?? null,
+      status: t?.status ?? null,
+      sent_message_ids: Array.isArray(t?.sent_message_ids) ? t.sent_message_ids : [],
+    })),
   );
+  if (!decision.ok) return null;
+  return threads.find((t: any) => String(t?.id || '') === decision.thread_id) || null;
 }
 
 async function pollRoutableMessages(token: string, threads: any[]) {
