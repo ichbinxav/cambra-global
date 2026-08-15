@@ -38,6 +38,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "pl-PL",
+      "language": "pl",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -483,10 +490,11 @@ export const LOCALE_REGISTRY={
         "pl-PL"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "pl-PL"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "pl-PL",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "PLN",
       "timezone": "Europe/Warsaw",
