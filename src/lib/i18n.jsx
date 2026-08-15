@@ -9,6 +9,7 @@ import es from "@/lib/locales/es";
 import de from "@/lib/locales/de";
 import it from "@/lib/locales/it";
 import pl from "@/lib/locales/pl";
+import pt from "@/lib/locales/pt";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -28,14 +29,15 @@ export const LANGUAGES = [
   { code: "de", locale: "de-DE", label: "Deutsch", short: "DE" },
   { code: "it", locale: "it-IT", label: "Italiano", short: "IT" },
   { code: "pl", locale: "pl-PL", label: "Polski", short: "PL" },
+  { code: "pt", locale: "pt-PT", label: "Português", short: "PT" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -57,7 +59,7 @@ export function formatDate(date, lang = "en") {
 }
 
 /* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl };
+const DICT = { en, fr, es, de, it, pl, pt };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {

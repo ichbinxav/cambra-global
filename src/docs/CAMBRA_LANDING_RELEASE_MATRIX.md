@@ -36,7 +36,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | MT | Malta | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | NL | Netherlands | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | PL | Poland | PLN | pl-PL | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| PT | Portugal | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| PT | Portugal | EUR | pt-PT | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | RO | Romania | RON | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SK | Slovakia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SI | Slovenia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -59,6 +59,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | de-DE | de | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | it-IT | it | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | pl-PL | pl | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| pt-PT | pt | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 
