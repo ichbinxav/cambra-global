@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-16T18:55:03.432Z",
+  "generatedAt": "2026-08-16T18:59:23.263Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -792,8 +792,8 @@
     },
     {
       "path": "base44/functions/getFounderControlCenter/entry.ts",
-      "sha256": "18766fc49ae3634bbfd61e07a23a3f8a5d051495cb3061070c0b1ffb1f7cdd97",
-      "bytes": 1894
+      "sha256": "e52a6363af9b4a1fab798a75983d5c38805f8473ad97b6f50d3fe2e58235fbcb",
+      "bytes": 1211
     },
     {
       "path": "base44/functions/getIntegrationStatus/entry.ts",
@@ -1652,8 +1652,8 @@
     },
     {
       "path": "base44/shared/founderMerchantsV2.ts",
-      "sha256": "822ab5be2660a21003dd22f7896807b867667ec7ea6dcb4c86f7c775a4376175",
-      "bytes": 86760
+      "sha256": "3456129764edc2c8f597eca4ff767627761d4d69253b029c6705a9b3b40272bf",
+      "bytes": 87545
     },
     {
       "path": "base44/shared/founderOSData.ts",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "6b3eab7944d8a51cdbbaa829814fa75ff52595519693a0624b98a5b0e9f7d88d",
+      "sha256": "2a002b2f353dbf52bb3137608be79cec88998022be121508e1ee633958862d9a",
       "bytes": 42987
     },
     {
@@ -2902,8 +2902,8 @@
     },
     {
       "path": "src/lib/adminSettingsV2.test.js",
-      "sha256": "da73285ef071347550c31203fba0aaaa8f03eba87392136c2b666ea5b42904cc",
-      "bytes": 4848
+      "sha256": "9e5c1f6e1ce271c211a755444f7abfa19aa1897096684c61a531a80469b67ba7",
+      "bytes": 5088
     },
     {
       "path": "src/lib/agentRegistry.js",
@@ -3287,8 +3287,8 @@
     },
     {
       "path": "src/lib/founderMerchantsV2.test.js",
-      "sha256": "267fd0184e0f3fb19d4377ec959263b0e64986a807d009fff171b08e6122782c",
-      "bytes": 15037
+      "sha256": "1db041d37d8509e0a5ef7fff70f4bda6170742a5c8f759e366f5a2bcad1178f6",
+      "bytes": 15294
     },
     {
       "path": "src/lib/founderMerchantsV2Ui.test.js",

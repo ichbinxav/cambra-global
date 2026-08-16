@@ -29,7 +29,10 @@ describe('Founder/Admin Settings V2 backend', () => {
   });
 
   it('routes Settings reads through the existing Founder aggregate and keeps locale writes audited', () => {
-    expect(read('base44/functions/getFounderControlCenter/entry.ts')).toContain("body?.view||'').toLowerCase()==='settings'");
+    // FMERC-K: the dispatch lives in the shared core; the entry is a thin
+    // Deno.serve wrapper. Behavior is invoked directly in
+    // src/lib/getFounderControlCenterBehavior.test.js.
+    expect(read('base44/functions/getFounderControlCenter/entry.ts')+read('base44/shared/founderControlCenterCore.ts')).toContain("body?.view||'').toLowerCase()==='settings'");
     const command = read('base44/functions/founderOSCommand/entry.ts');
     expect(command).toMatch(/action\s*===\s*["']save_admin_locale_preference["']/);
     expect(command).toContain('idempotent_replay');

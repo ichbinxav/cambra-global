@@ -220,10 +220,14 @@ describe('Founder/Admin Merchants V2 canonical backend', () => {
   });
 
   it('reuses one physical Founder Control entry and requires server-canonical Ask context', () => {
-    const entry = fs.readFileSync('base44/functions/getFounderControlCenter/entry.ts', 'utf8');
+    // FMERC-K: the dispatch lives in the shared core; the entry is a thin
+    // Deno.serve wrapper that resolves asServiceRole and delegates.
+    const entry = fs.readFileSync('base44/functions/getFounderControlCenter/entry.ts', 'utf8') +
+      fs.readFileSync('base44/shared/founderControlCenterCore.ts', 'utf8');
     const shared = fs.readFileSync('base44/shared/founderMerchantsV2.ts', 'utf8');
     expect(entry).toContain("body?.view||'').toLowerCase()==='merchants'");
-    expect(entry).toContain('collectFounderMerchantsV2(base44.asServiceRole,user,body)');
+    expect(entry).toContain('base44.asServiceRole');
+    expect(entry).toContain('collectFounderMerchantsV2(svc,user,body)');
     expect(shared).toContain('client_context_authoritative: false');
     expect(shared).toContain("max_merchant_ids: 50");
     expect(shared).toContain("one_or_more_selected_merchants_not_found");

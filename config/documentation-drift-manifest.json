@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-16T18:55:03.234Z",
+  "generatedAt": "2026-08-16T18:59:23.070Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -79,7 +79,7 @@
     "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
     "base44/functions/getEuropeMarketsCommandCenter/entry.ts": "baf95ec961f27436298be5619bab5c1402ca35f52f242d161b9502413959f5c6",
     "base44/functions/getEuropeanGrowthCommandCenter/entry.ts": "3452d3532c8ab58931587d612f6bdb424d3219a836818886d4a466d655d18a8e",
-    "base44/functions/getFounderControlCenter/entry.ts": "18766fc49ae3634bbfd61e07a23a3f8a5d051495cb3061070c0b1ffb1f7cdd97",
+    "base44/functions/getFounderControlCenter/entry.ts": "e52a6363af9b4a1fab798a75983d5c38805f8473ad97b6f50d3fe2e58235fbcb",
     "base44/functions/getFounderOSCommandCenter/entry.ts": "430f03ccd3899ccfa52dbcfc49728cd2d3cc046f619382453d7b9628427532c2",
     "base44/functions/getIntelligenceCommandCenter/entry.ts": "b7c5084cca5f2c1b01a8a2f1b57308b1e286bedf651aa09520ea018e8c3843a1",
     "base44/functions/getMaintenanceCenter/entry.ts": "14e9406b5c6e63bb875d3dce74df7535d9afad9c4a3d3b1fcf8d692485517353",
