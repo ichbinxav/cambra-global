@@ -3,6 +3,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { captureEmergencyEpoch, guardedEmergencyEffect } from '../../shared/operationalControl.ts';
+import {
+  beginExternalApprovalEffects,
+  claimExternalApprovalExecution,
+  completeExternalApprovalExecution,
+  externalExecutionHttpStatus,
+  markExternalApprovalReviewRequired,
+  releaseExternalApprovalClaim,
+} from '../../shared/externalApprovalExecution.ts';
 
 const AGENT_NAME = "blog";
 const TASK_TYPE = "publish_blog";
@@ -13,6 +22,7 @@ async function callClaude(svc, prompt, eventKey) { return (await callCambraClaud
 
 Deno.serve(async (req) => {
   let task = null;
+  let execution:any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -24,6 +34,9 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE — publishes as Insight entity ═════════════════════════
     if (mode === "execute") {
+      let communicationEpoch:any;
+      try{communicationEpoch=await captureEmergencyEpoch(base44.asServiceRole,'communications');}
+      catch(error:any){return Response.json({ok:false,error:error?.message||'emergency_control_paused:communications'},{status:409});}
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required" }, { status: 400 });
       const ap = await base44.asServiceRole.entities.Approval.get(approvalId).catch((error:any)=>safeBestEffort(error,{operation:'blogAgent',fallback:null,severity:'secondary'}));
@@ -33,26 +46,39 @@ Deno.serve(async (req) => {
 
       task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'blogAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
-      await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
-
-      const payload = ap.draft_payload_json || {};
-      // Publish as Insight (Insights entity is the platform's content store, used by /Insights page)
-      const insight = await base44.asServiceRole.entities.Insight.create({
-        title: payload.title,
-        excerpt: payload.excerpt || "",
-        content: payload.content,
-        category: payload.category || "infrastructure",
-        read_time: payload.read_time || 5,
-        published: true,
-      });
-
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary: `Blog published as Insight: ${payload.title}`,
-        output_payload_json: { insight_id: insight.id, approval_id: ap.id },
-        completed_at: new Date().toISOString(),
-      });
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, insight_id: insight.id, published: true });
+      try {
+        execution = await claimExternalApprovalExecution(base44.asServiceRole, {
+          approval:ap, task, commandKey:body.execution_command_key, actorEmail:user.email,
+          actionType:ACTION_TYPE, agentName:AGENT_NAME, taskType:TASK_TYPE, riskLevel:RISK_LEVEL,
+        });
+        if (!execution.acquired) {
+          if (execution.state === 'replay') return Response.json({ ...execution.result, ok:true, idempotent_replay:true });
+          return Response.json({ ok:false, error:execution.error || 'external_execution_not_claimed', execution_state:execution.state, review_required:execution.state === 'review_required' }, { status:externalExecutionHttpStatus(execution) });
+        }
+        const payload = ap.draft_payload_json || {};
+        if (!String(payload.title || '').trim() || !String(payload.content || '').trim()) throw new Error('blog_approved_payload_incomplete');
+        await beginExternalApprovalEffects(base44.asServiceRole, execution);
+        // Publish as Insight (Insights entity is the platform's content store, used by /Insights page).
+        const insight = await guardedEmergencyEffect(base44.asServiceRole,{claim:communicationEpoch,effect_key:`publish_insight:${ap.id}`,effect:()=>base44.asServiceRole.entities.Insight.create({
+          title: payload.title,
+          excerpt: payload.excerpt || "",
+          content: payload.content,
+          category: payload.category || "infrastructure",
+          read_time: payload.read_time || 5,
+          published: true,
+        }),contain:(created:any)=>base44.asServiceRole.entities.Insight.update(created.id,{published:false})});
+        const observed = await base44.asServiceRole.entities.Insight.get(insight.id).catch((error:any)=>safeBestEffort(error,{operation:'blogAgent.publish_postcondition_read',fallback:null,severity:'critical'}));
+        if (!observed || observed.published !== true || String(observed.title || '') !== String(payload.title || '')) throw new Error('blog_publish_postcondition_failed');
+        const result = await completeExternalApprovalExecution(base44.asServiceRole, execution, { task_id:task.id, insight_id:insight.id, published:true, execution_receipt_ref:`insight:${insight.id}` }, `Blog published as Insight: ${payload.title}`);
+        return Response.json(result);
+      } catch (error) {
+        const code = String((error as any)?.code || (error as Error)?.message || 'blog_external_execution_failed');
+        if (execution?.acquired) {
+          if (execution.effectsStarted) await markExternalApprovalReviewRequired(base44.asServiceRole, execution, code);
+          else await releaseExternalApprovalClaim(base44.asServiceRole, execution, code);
+        }
+        return Response.json({ ok:false, error:code, review_required:execution?.effectsStarted === true }, { status:execution?.effectsStarted ? 409 : Number((error as any)?.status || 500) });
+      }
     }
 
     // ═══ DRAFT — Surfer brief if available, fallback Claude ═════════════

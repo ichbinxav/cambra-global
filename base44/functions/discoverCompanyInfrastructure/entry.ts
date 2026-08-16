@@ -1,6 +1,8 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import { fetchPublicHttps, normalizePublicHttpsUrl, PublicHttpEgressError } from '../../shared/publicHttpEgress.ts';
+import { requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
  * M4 — discoverCompanyInfrastructure
@@ -115,14 +117,7 @@ const SIGNALS = [
   { tool: 'Aircall', category: 'other', pattern: /aircall\.io/i,                              method: 'script_tag', evidence_type: 'script_tag', score: 0.90 },
 ];
 
-function normalizeUrl(raw) {
-  if (!raw) return null;
-  let u = String(raw).trim();
-  if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
-  try { return new URL(u).toString(); } catch { return null; }
-}
-
-function extractDomain(url) {
+function extractDomain(url: string) {
   try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return null; }
 }
 
@@ -138,19 +133,16 @@ Deno.serve(async (req) => {
     if (!brand_id) {
       return Response.json({ ok: false, error: 'Missing brand_id' }, { status: 400 });
     }
-    const url = normalizeUrl(website_url);
-    if (!url) {
-      return Response.json({ ok: false, error: 'Invalid website_url' }, { status: 400 });
+    let url;
+    try { url = normalizePublicHttpsUrl(website_url).toString(); }
+    catch (error) {
+      if (error instanceof PublicHttpEgressError) {
+        return Response.json({ ok: false, error: error.code }, { status: error.status });
+      }
+      throw error;
     }
 
-    // Verify brand ownership (admins bypass)
-    const isAdmin = user.role === 'admin';
-    if (!isAdmin) {
-      const owned = await base44.entities.Brand.filter({ id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'discoverCompanyInfrastructure',fallback:[],severity:'secondary'}));
-      if (!owned.length) {
-        return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
-      }
-    }
+    await requireOwnedBrand(base44.asServiceRole, user, brand_id);
 
     const domain = extractDomain(url);
     const startedAt = new Date().toISOString();
@@ -168,13 +160,14 @@ Deno.serve(async (req) => {
 
     // Fetch public HTML — non-fatal on failure
     let html = '';
-    let headers = {};
+    let headers: Record<string, string> = {};
     try {
-      const res = await fetch(url, {
-        redirect: 'follow',
+      const fetched = await fetchPublicHttps(url, {
         headers: { 'User-Agent': 'CAMBRA-Discovery/1.0 (+https://cambra.global)' },
         signal: AbortSignal.timeout(8000),
       });
+      const res = fetched.response;
+      url = fetched.finalUrl;
       headers = Object.fromEntries(res.headers.entries());
       // Cap body at 512KB — we only need signal substrings, never full HTML
       const reader = res.body?.getReader();
@@ -190,7 +183,7 @@ Deno.serve(async (req) => {
         }
         try { reader.cancel(); } catch (_) { /* ignore */ }
       }
-    } catch (fetchErr) {
+    } catch (fetchErr: any) {
       await base44.asServiceRole.entities.DiscoveryJob.update(job.id, {
         status: 'failed',
         completed_at: new Date().toISOString(),
@@ -247,7 +240,11 @@ Deno.serve(async (req) => {
 
     // Upsert CompanyMemory for this brand
     const commercePlatform = findings.find(f => f.category === 'commerce_platform')?.provider_or_tool || null;
-    const existing = await base44.asServiceRole.entities.CompanyMemory.filter({ brand_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'discoverCompanyInfrastructure',fallback:[],severity:'secondary'}));
+    const existing = await requireCriticalOperation(
+      'company_memory_read',
+      () => base44.asServiceRole.entities.CompanyMemory.filter({ brand_id }, '-created_date', 2),
+    );
+    if (existing.length > 1) throw new Error('company_memory_authority_ambiguous');
     const memoryPatch = {
       brand_id,
       website_url: url,
@@ -280,7 +277,12 @@ Deno.serve(async (req) => {
         evidence_type: f.evidence_type,
       })),
     });
-  } catch (error) {
+  } catch (error: any) {
+    const tenantError = tenantOwnershipErrorResponse(error);
+    if (tenantError) return tenantError;
+    if (error instanceof PublicHttpEgressError) {
+      return Response.json({ ok: false, error: error.code }, { status: error.status });
+    }
     return internalErrorResponse(error, 'discoverCompanyInfrastructure');
   }
 });

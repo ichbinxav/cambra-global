@@ -43,12 +43,169 @@
       "type": "string",
       "enum": [
         "pending",
+        "resolving",
         "approved",
         "rejected",
         "expired",
         "cancelled"
       ],
       "default": "pending"
+    },
+    "decision_status": {
+      "type": "string",
+      "enum": ["PENDING", "APPROVED", "REJECTED", "EXPIRED"],
+      "default": "PENDING",
+      "description": "Founder authorization decision only. It never implies that a provider or domain effect executed. Legacy rows are projected conservatively from status until decision_status_recorded_at exists."
+    },
+    "decision_status_recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["NOT_STARTED", "CLAIMED", "EFFECTING", "EXECUTED", "FAILED_RETRYABLE", "FAILED_TERMINAL", "REVIEW_REQUIRED"],
+      "default": "NOT_STARTED",
+      "description": "Conservative execution projection. AgentTask/executor fencing remains canonical; EXECUTED is invalid without execution_receipt_ref. Approval alone is never execution evidence."
+    },
+    "execution_status_recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "execution_receipt_ref": {
+      "type": "string",
+      "description": "Immutable provider/domain receipt reference required before execution_status can be represented as EXECUTED."
+    },
+    "resolution_command_key": {
+      "type": "string",
+      "description": "FounderCommandAudit command key that atomically claimed this approval resolution. Prevents concurrent approve/reject effects."
+    },
+    "resolution_authority_hash": {
+      "type": "string",
+      "description": "Canonical digest of the exact draft, task and domain entities bound to the Founder preview. The resolver must revalidate it before effects."
+    },
+    "resolution_content_hash": {
+      "type": "string",
+      "description": "Immutable approval metadata/draft digest used to validate safe saga recovery after domain effects have begun."
+    },
+    "resolution_preview_hash": {
+      "type": "string",
+      "description": "Hash of the exact stored Founder preview consumed by the one-use confirmation."
+    },
+    "resolution_binding_hash": {
+      "type": "string",
+      "description": "approval-confirmation-binding.v1 digest covering payload, policy, authority/intelligence snapshots, economics/legal terms, market scope, EmergencyControl epoch, actor, tenant, subject, expiry and nonce."
+    },
+    "resolution_binding_json": {
+      "type": "object",
+      "description": "Non-secret canonical confirmation envelope whose digest is resolution_binding_hash."
+    },
+    "resolution_policy_key": {
+      "type": "string"
+    },
+    "resolution_policy_version": {
+      "type": "string"
+    },
+    "resolution_authority_snapshot_id": {
+      "type": "string"
+    },
+    "resolution_intelligence_snapshot_id": {
+      "type": "string"
+    },
+    "resolution_intelligence_snapshot_hash": {
+      "type": "string"
+    },
+    "resolution_economic_terms_hash": {
+      "type": "string"
+    },
+    "resolution_legal_terms_hash": {
+      "type": "string"
+    },
+    "resolution_market_scope_version": {
+      "type": "string"
+    },
+    "resolution_emergency_control_id": {
+      "type": "string"
+    },
+    "resolution_emergency_control_revision": {
+      "type": "number"
+    },
+    "resolution_nonce_hash": {
+      "type": "string",
+      "description": "SHA-256 of the server-generated confirmation nonce. The raw nonce is returned once and never persisted."
+    },
+    "resolution_nonce_used_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Durable one-use marker written in the same Approval CAS that claims the decision."
+    },
+    "confirmation_preview_generation": {
+      "type": "number",
+      "description": "Monotonic generation installed by the Founder preview CAS. A released nonce remains consumed; only a newer installed generation can be confirmed."
+    },
+    "confirmation_preview_command_key": {
+      "type": "string"
+    },
+    "confirmation_preview_actor_email": {
+      "type": "string"
+    },
+    "confirmation_preview_hash": {
+      "type": "string"
+    },
+    "confirmation_nonce_hash": {
+      "type": "string",
+      "description": "Hash of the nonce installed for the current preview generation; overwritten only by a fresh service-role preview CAS."
+    },
+    "confirmation_preview_installed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_preview_generation": {
+      "type": "number",
+      "description": "Preview generation atomically consumed by the resolution claim."
+    },
+    "resolution_actor_email": {
+      "type": "string",
+      "description": "Admin actor bound to the preview and resolution saga."
+    },
+    "resolution_decision": {
+      "type": "string",
+      "enum": ["approve", "reject"]
+    },
+    "resolution_reason": {
+      "type": "string"
+    },
+    "resolution_phase": {
+      "type": "string",
+      "enum": ["claimed", "applying", "finalized"],
+      "description": "Durable phase of the approval-resolution saga."
+    },
+    "resolution_phase_revision": {
+      "type": "number",
+      "default": 0
+    },
+    "resolution_attempt_token": {
+      "type": "string"
+    },
+    "resolution_effects_started": {
+      "type": "boolean",
+      "default": false
+    },
+    "resolution_lease_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approval_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "Optimistic-concurrency revision for approval resolution state transitions."
+    },
+    "resolution_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_completed_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "approved_by": {
       "type": "string",
@@ -89,7 +246,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

@@ -142,7 +142,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

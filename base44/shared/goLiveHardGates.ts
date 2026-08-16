@@ -1,8 +1,10 @@
+import { verifyRuntimeGateEvidence } from './runtimeEvidence.ts';
+
 export const GO_LIVE_HARD_GATES_VERSION = 'go-live-hard-gates-1.0.0';
 
 export const GO_LIVE_GATE_REQUIREMENTS = Object.freeze([
   { key:'REMOTE_CI_FINAL_SHA', label:'Remote GitHub CI on final SHA', kinds:['EXTERNAL'], sha_bound:true, max_age_hours:168, category:'release' },
-  { key:'BASE44_RUNTIME_PARITY', label:'Base44 runtime matches final source tree', kinds:['REAL_RUNTIME','EXTERNAL'], sha_bound:true, max_age_hours:24, category:'runtime' },
+  { key:'BASE44_RUNTIME_PARITY', label:'Base44 runtime matches final source tree', kinds:['REAL_RUNTIME'], sha_bound:true, max_age_hours:24, category:'runtime' },
   { key:'DELIVERABILITY_DNS', label:'SPF, DKIM, DMARC and credentials verify for configured sending profiles', kinds:['REAL_RUNTIME'], sha_bound:false, max_age_hours:24, category:'outbound' },
   { key:'SUPPRESSION_LIFECYCLE', label:'Bounce, complaint, unsubscribe and suppression loop verified', kinds:['REAL_RUNTIME','OPERATOR_EXERCISE'], sha_bound:false, max_age_hours:168, category:'outbound' },
   { key:'SCHEDULERS_ACTIVE', label:'All GO-critical schedulers alive at their deployed cadence', kinds:['REAL_RUNTIME'], sha_bound:true, max_age_hours:24, category:'runtime' },
@@ -22,23 +24,39 @@ function newest(rows:any[]) {
   return [...rows].sort((a:any,b:any) => Date.parse(b.observed_at || b.verified_at || b.completed_at || '') - Date.parse(a.observed_at || a.verified_at || a.completed_at || ''))[0] || null;
 }
 
-export function evidenceForGate(rows:any[], requirement:any, input:any) {
+export async function evidenceForGate(rows:any[], requirement:any, input:any) {
   const candidates = (rows || []).filter((row:any) => row.gate_key === requirement.key);
   const row = newest(candidates);
   const blockers:string[] = [];
   if (!row) blockers.push('evidence_missing');
   if (row && row.status !== 'PASS') blockers.push(`evidence_${String(row.status || 'NOT_RUN').toLowerCase()}`);
   if (row && !requirement.kinds.includes(row.evidence_kind)) blockers.push('evidence_kind_not_acceptable');
+  if (row && ['REAL_RUNTIME','OPERATOR_EXERCISE'].includes(String(row.evidence_kind || ''))) {
+    if (row.identity_status !== 'COMPLETE') blockers.push('runtime_identity_incomplete');
+    if (!/^[a-f0-9]{64}$/iu.test(String(row.identity_hash || ''))) blockers.push('runtime_identity_hash_invalid');
+    if (Number(row.physical_function_count) !== 276 || Number(row.logical_route_count) !== 27) blockers.push('runtime_topology_identity_mismatch');
+  }
   if (row && requirement.sha_bound && (!input.final_sha || row.git_sha !== input.final_sha)) blockers.push('evidence_final_sha_mismatch');
   const observed = row ? Date.parse(row.observed_at || row.verified_at || row.completed_at || '') : NaN;
-  if (row && (!Number.isFinite(observed) || input.now_ms - observed > requirement.max_age_hours * 3600000)) blockers.push('evidence_stale');
-  if (row?.expires_at && Date.parse(row.expires_at) <= input.now_ms) blockers.push('evidence_expired');
+  if (row && (!Number.isFinite(observed) || observed > input.now_ms + 5 * 60_000 || input.now_ms - observed > requirement.max_age_hours * 3600000)) blockers.push(observed > input.now_ms + 5 * 60_000 ? 'evidence_from_future':'evidence_stale');
+  if (row?.expires_at && (!Number.isFinite(Date.parse(row.expires_at)) || Date.parse(row.expires_at) <= input.now_ms)) blockers.push(!Number.isFinite(Date.parse(row.expires_at)) ? 'evidence_expiry_invalid':'evidence_expired');
+  if (row) {
+    const integrity=await verifyRuntimeGateEvidence(row,{
+      now_ms:input.now_ms,
+      environment:'production',
+      max_age_hours:requirement.max_age_hours,
+      allow_external:requirement.kinds.includes('EXTERNAL'),
+      sha_bound:requirement.sha_bound,
+      final_sha:input.final_sha,
+    });
+    if(!integrity.ok)blockers.push(...integrity.blockers.map((blocker:string)=>`evidence_integrity:${blocker}`));
+  }
   return { key:requirement.key, label:requirement.label, category:requirement.category, status:blockers.length ? 'BLOCKED':'PASS', blockers, evidence:row, requirement };
 }
 
-export function evaluateGoLiveHardGates(input:any = {}) {
+export async function evaluateGoLiveHardGates(input:any = {}) {
   const nowMs = Number(input.now_ms || Date.now());
-  const rows = GO_LIVE_GATE_REQUIREMENTS.map((requirement) => evidenceForGate(input.evidence || [], requirement, { final_sha:String(input.final_sha || ''), now_ms:nowMs }));
+  const rows = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map((requirement) => evidenceForGate(input.evidence || [], requirement, { final_sha:String(input.final_sha || ''), now_ms:nowMs })));
   const directBlockers = Array.isArray(input.direct_blockers) ? input.direct_blockers.filter(Boolean).map(String) : [];
   const gateBlockers = rows.filter((row) => row.status !== 'PASS').map((row) => `${row.key}:${row.blockers.join(',')}`);
   const blockers = [...new Set([...directBlockers, ...gateBlockers])];

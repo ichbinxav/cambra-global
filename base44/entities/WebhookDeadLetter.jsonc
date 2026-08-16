@@ -37,11 +37,62 @@
     "locked_at": {
       "type": "string",
       "format": "date-time",
-      "description": "SECURITY-2 (2026-07-24) \u2014 atomic-ish claim set by processWebhookDeadLetters BEFORE re-delivery. A row locked less than 10 minutes ago is skipped by concurrent runs (prevents double sends). Cleared on resolution/reschedule. Additive \u2014 historical rows have it absent."
+      "description": "Legacy compatibility mirror of claim_acquired_at. Ownership is determined only by the claim_revision/token/owner CAS fields; this timestamp never grants authority."
     },
+    "effect_key": {
+      "type": "string",
+      "description": "Stable material-effect key. Initial dispatches bind it to the caller idempotency key and endpoint; retries bind it to the durable dead-letter attempt."
+    },
+    "operation_key": {
+      "type": "string",
+      "description": "SHA-256 fingerprint of the caller-supplied operation key; never a request-local random id."
+    },
+    "delivery_id": {
+      "type": "string",
+      "description": "Stable receiver-visible delivery id reused by reconciliation and manual replay."
+    },
+    "payload_hash": {
+      "type": "string",
+      "description": "Canonical SHA-256 binding of event type and allowlisted public payload."
+    },
+    "wire_created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp persisted before transport and reused verbatim if the same operation is replayed."
+    },
+    "claim_state": {
+      "type": "string",
+      "enum": ["IDLE", "RELEASED", "CLAIMED", "DELIVERING", "EFFECT_STARTED", "EXECUTED", "FAILED_PRE_EFFECT", "FAILED_POST_EFFECT", "REVIEW_REQUIRED", "EXPIRED_PRE_EFFECT"],
+      "default": "RELEASED",
+      "description": "Durable material-effect state. IDLE/DELIVERING remain read-compatible legacy values; new writes use the R3 claim vocabulary."
+    },
+    "claim_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "Monotonic compare-and-set fencing revision."
+    },
+    "claim_token": { "type": "string" },
+    "claim_owner": { "type": "string" },
+    "claim_attempt_key": {
+      "type": "string",
+      "description": "Stable logical delivery-attempt key, independent of scheduler invocation."
+    },
+    "claim_wire_created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Stable timestamp used in the signed body for one durable attempt, including a pre-effect reclaim."
+    },
+    "claim_previous_state": { "type": "string" },
+    "claim_acquired_at": { "type": "string", "format": "date-time" },
+    "claim_expires_at": { "type": "string", "format": "date-time" },
+    "claim_effects_started": { "type": "boolean", "default": false },
+    "delivery_started_at": { "type": "string", "format": "date-time" },
+    "claim_terminal_at": { "type": "string", "format": "date-time" },
+    "claim_result_json": { "type": "object" },
     "status": {
       "type": "string",
       "enum": [
+        "dispatch_pending",
         "pending_retry",
         "exhausted",
         "resolved",
@@ -72,7 +123,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

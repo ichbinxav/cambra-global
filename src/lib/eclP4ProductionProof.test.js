@@ -50,7 +50,13 @@ describe("ECL P4 Production Proof closure", () => {
     expect(STAGE_TRANSITIONS[STAGE_ECL_P5]).toContain(STAGE_ECL_P6);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P6]).toContain(STAGE_ECL_P7);
     expect(STAGE_TRANSITIONS[STAGE_ECL_P7]).toContain(STAGE_ECL_P8);
-    expect(freeze.entries).toHaveLength(8);
+    expect(freeze.entries).toHaveLength(12);
+    expect(freeze.entries.slice(-4).map((entry) => entry.path)).toEqual([
+      "base44/functions/stripeBillingWebhook/entry.ts",
+      "base44/functions/processWebhookDeadLetters/entry.ts",
+      "base44/entities/OperationalIncident.jsonc",
+      "base44/functions/eclProductionHealth/entry.ts",
+    ]);
   });
 
   it("mounts Evidence Review only inside the existing admin shell", () => {

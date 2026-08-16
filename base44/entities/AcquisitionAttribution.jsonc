@@ -1,1 +1,66 @@
-{"name":"AcquisitionAttribution","type":"object","description":"Deterministic provenance from an outbound acquisition lead to the merchant Brand it produced. No fuzzy attribution is allowed for economic learning.","properties":{"lead_id":{"type":"string"},"brand_id":{"type":"string"},"thread_id":{"type":"string"},"contact_email":{"type":"string"},"company_domain":{"type":"string"},"attribution_method":{"type":"string","enum":["exact_contact_email"]},"confidence":{"type":"string","enum":["deterministic"]},"attributed_at":{"type":"string","format":"date-time"},"source_event":{"type":"string"}},"required":["lead_id","brand_id","attribution_method","confidence","attributed_at"],"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}}
+{
+  "name": "AcquisitionAttribution",
+  "type": "object",
+  "description": "Versioned acquisition lineage. Commercial progression attribution is distinct from the stricter exact MonthlySavingsReport lineage required for economic learning; ambiguous/unattributed records never grant an economic label.",
+  "properties": {
+    "lead_id": { "type": "string" },
+    "brand_id": { "type": "string" },
+    "thread_id": { "type": "string" },
+    "contact_email": { "type": "string" },
+    "company_domain": { "type": "string" },
+    "attribution_method": {
+      "type": "string",
+      "enum": [
+        "exact_contact_email",
+        "exact_lead_thread_exposure_report_lineage"
+      ]
+    },
+    "attribution_method_version": { "type": "string" },
+    "attribution_state": {
+      "type": "string",
+      "enum": ["EXACT", "AMBIGUOUS", "UNATTRIBUTED"]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["deterministic", "unknown"]
+    },
+    "exposure_at": { "type": "string", "format": "date-time" },
+    "exposure_event_id": { "type": "string" },
+    "source_event": { "type": "string" },
+    "source_event_id": { "type": "string" },
+    "source_run_id": { "type": "string" },
+    "candidate_lineage_json": {
+      "type": "object",
+      "description": "Point-in-time candidate/lead/thread/exposure lineage. No raw message content or inferred causal claim."
+    },
+    "onboarding_observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Durable merchant-record onboarding observation used as a lower temporal bound; never an inferred completion timestamp."
+    },
+    "deal_activation_id": { "type": "string" },
+    "deal_activated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "monthly_savings_report_id": { "type": "string" },
+    "report_observed_at": { "type": "string", "format": "date-time" },
+    "economic_attribution_eligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "attribution_reason": { "type": "string" },
+    "attributed_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "lead_id",
+    "brand_id",
+    "attribution_method",
+    "confidence",
+    "attributed_at"
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

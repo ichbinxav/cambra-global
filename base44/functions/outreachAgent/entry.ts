@@ -1,9 +1,18 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { emergencyState } from '../../shared/operationalControl.ts';
+import { captureEmergencyEpoch } from '../../shared/operationalControl.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireAcceptedCommercialSendResponse } from '../../shared/commercialSendSafety.ts';
+import {
+  beginExternalApprovalEffects,
+  claimExternalApprovalExecution,
+  completeExternalApprovalExecution,
+  externalExecutionHttpStatus,
+  markExternalApprovalReviewRequired,
+  releaseExternalApprovalClaim,
+} from '../../shared/externalApprovalExecution.ts';
 
 const AGENT_NAME = "outreach";
 const TASK_TYPE = "send_outreach_email";
@@ -64,6 +73,7 @@ async function ensureCanonicalThread(svc, lead) {
 Deno.serve(async (req) => {
   let task = null;
   let approval = null;
+  let execution:any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -75,8 +85,9 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE MODE — strict Approval gate ════════════════════════════
     if (mode === "execute") {
-      const emergency = await emergencyState(base44.asServiceRole);
-      if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
+      let communicationEpoch:any;
+      try { communicationEpoch=await captureEmergencyEpoch(base44.asServiceRole,'communications'); }
+      catch (error) { return Response.json({ok:false,error:error?.message||'emergency_control_paused:communications'},{status:409}); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
 
@@ -98,51 +109,33 @@ Deno.serve(async (req) => {
       task = await base44.asServiceRole.entities.AgentTask.get(taskId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
 
-      await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
-
-      const payload = ap.draft_payload_json || {};
-      const lead = payload.lead_id
-        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}))
-        : null;
-      if (!lead) throw new Error('approved_outreach_lead_missing');
-      const preferredThread = payload.communication_thread_id
-        ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}))
-        : null;
-      const thread = preferredThread || await ensureCanonicalThread(base44.asServiceRole, lead);
-      if (!thread) throw new Error('approved_outreach_thread_missing');
-      const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-      const send = await base44.asServiceRole.functions.invoke('commercialSendMessage', {
-        thread_id: thread.id,
-        action: 'initial_outreach',
-        classification: 'initial_outreach',
-        subject: payload.subject,
-        text: payload.body,
-        to: payload.to,
-        approval_id: ap.id,
-        agent_name: 'outreach',
-        idempotency_key: `legacy-outreach-approved:${ap.id}`,
-        sending_profile_key: thread.sending_profile_key || undefined,
-        manual_override: true,
-        internal_secret: internal,
-      }).catch((error) => ({ data: { ok: false, error: String(error?.message || error) } }));
-      const sent = send?.data || send || {};
-      if (sent.ok === false) throw new Error(`central_send_failed:${sent.error || 'unknown'}`);
-
-      // Mark lead as contacted
-      if (payload.lead_id) {
-        await base44.asServiceRole.entities.OutboundLead.update(payload.lead_id, {
-          stage: "contacted",
-        }).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
+      try {
+        execution=await claimExternalApprovalExecution(base44.asServiceRole,{approval:ap,task,commandKey:body.execution_command_key,actorEmail:user.email,actionType:ACTION_TYPE,agentName:AGENT_NAME,taskType:TASK_TYPE,riskLevel:RISK_LEVEL});
+        if(!execution.acquired){
+          if(execution.state==='replay')return Response.json({...execution.result,ok:true,idempotent_replay:true});
+          return Response.json({ok:false,error:execution.error||'external_execution_not_claimed',execution_state:execution.state,review_required:execution.state==='review_required'},{status:externalExecutionHttpStatus(execution)});
+        }
+        const payload = ap.draft_payload_json || {};
+        const lead = payload.lead_id ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id) : null;
+        if (!lead) throw new Error('approved_outreach_lead_missing');
+        const preferredThread = payload.communication_thread_id ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id) : null;
+        const thread = preferredThread || await ensureCanonicalThread(base44.asServiceRole, lead);
+        if (!thread) throw new Error('approved_outreach_thread_missing');
+        const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+        await beginExternalApprovalEffects(base44.asServiceRole,execution);
+        const sent=requireAcceptedCommercialSendResponse(await base44.asServiceRole.functions.invoke('commercialSendMessage', {
+          thread_id: thread.id, action:'initial_outreach', classification:'initial_outreach', subject:payload.subject, text:payload.body, to:payload.to,
+          approval_id:ap.id, agent_name:AGENT_NAME, idempotency_key:`legacy-outreach-approved:${ap.id}`, sending_profile_key:thread.sending_profile_key||undefined,
+          manual_override:true, internal_secret:internal, emergency_epoch_claim:communicationEpoch,
+        }),'outreach_approved_send');
+        if(payload.lead_id)await base44.asServiceRole.entities.OutboundLead.update(payload.lead_id,{stage:'contacted'});
+        const result=await completeExternalApprovalExecution(base44.asServiceRole,execution,{task_id:task.id,approval_id:ap.id,thread_id:thread.id,sent:true,central_send:sent,execution_receipt_ref:`commercial-message:${sent.message_id}`},`Sent outreach email to ${payload.to}`);
+        return Response.json(result);
+      }catch(error){
+        const code=String(error?.code||error?.message||'outreach_external_execution_failed');
+        if(execution?.acquired){if(execution.effectsStarted)await markExternalApprovalReviewRequired(base44.asServiceRole,execution,code);else await releaseExternalApprovalClaim(base44.asServiceRole,execution,code);}
+        return Response.json({ok:false,error:code,review_required:execution?.effectsStarted===true},{status:execution?.effectsStarted?409:Number(error?.status||500)});
       }
-
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary: `Sent outreach email to ${payload.to}`,
-        output_payload_json: { central_send: sent, communication_thread_id: thread.id, approval_id: ap.id },
-        completed_at: new Date().toISOString(),
-      });
-
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, thread_id: thread.id, sent: true });
     }
 
     // ═══ DRAFT MODE — never calls Instantly ═════════════════════════════

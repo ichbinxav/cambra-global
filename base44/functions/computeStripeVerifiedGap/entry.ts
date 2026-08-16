@@ -49,13 +49,19 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // stronger guarantee than "just trust last_sync_at" — see Decision_Log 4b.
 //
 // ─── No token leaks (contract §7) ──────────────────────────────────────────
-// Access tokens live in Integration.access_token (encrypted blob) or in env
+// Access tokens live in server-only IntegrationCredential (encrypted blob) or in env
 // (STRIPE_TEST_SECRET_KEY for the test-mode bridge). This function NEVER
 // returns them in any response field, never logs them, and NEVER echoes any
 // value from Stripe's account object that could contain a key.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeAnalyzerStripeRows } from '../../shared/analyzerFx.ts';
+import {
+  classifyStripeCardGeography,
+  normalizeStripeCountry,
+  STRIPE_COUNTRY_UNKNOWN,
+  stripeCountryToRateRegion,
+} from '../../shared/stripeGeography.ts';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // See file header for why this is a copy (third consumer of the engine).
@@ -1394,21 +1400,6 @@ function checkOwnership(user: { email?: string } | null, brand: { created_by?: s
 // they drift, a merchant would land in a different cohort by connecting vs
 // submitting. Copy is small enough that a SYNC pair is overkill; the shape
 // is fully test-covered by paymentsGap.test.js's region tests.
-const EU_COUNTRIES = new Set([
-  'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT',
-  'LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE',
-  'IS','LI','NO','CH',
-]);
-const UK_COUNTRIES = new Set(['GB']);
-const US_COUNTRIES = new Set(['US']);
-
-function countryToRegion(iso2: string): 'EU' | 'UK' | 'US' | 'RoW' {
-  if (EU_COUNTRIES.has(iso2)) return 'EU';
-  if (UK_COUNTRIES.has(iso2)) return 'UK';
-  if (US_COUNTRIES.has(iso2)) return 'US';
-  return 'RoW';
-}
-
 // ─── Stripe canonical aggregation (contract §3, matches Decision_Log 1b) ───
 // This is the M3 signature computation. Same formula as stripeDataSync, but
 // running in this endpoint's context so we own the raw charge IDs (needed
@@ -1439,6 +1430,12 @@ async function stripeFetch(url: string, headers: Record<string, string>): Promis
     return { ok: false, error: json?.error?.message || `stripe_${status}`, status };
   }
   return { ok: true, data: json, status };
+}
+
+async function fetchStripeAccountCountry(headers: Record<string, string>) {
+  const account = await stripeFetch('https://api.stripe.com/v1/account', headers);
+  if (!account.ok) return STRIPE_COUNTRY_UNKNOWN;
+  return normalizeStripeCountry(account.data?.country);
 }
 
 // Paginate Stripe list endpoints via starting_after. Returns the accumulated
@@ -1492,7 +1489,16 @@ async function fetchAndAggregate(
       fx_provenance: any[];
       fx_policy_version: string;
       fx_fingerprint: string;
-      intl: { identified: number; intl_charges: number; domestic_charges: number; intl_share_pct: number | null };
+      intl: {
+        account_country: string;
+        country_status: 'KNOWN' | 'UNKNOWN';
+        geography_inference_status: 'MEASURED' | 'BLOCKED_COUNTRY_UNKNOWN';
+        identified: number;
+        intl_charges: number;
+        domestic_charges: number;
+        unclassified_charges: number;
+        intl_share_pct: number | null;
+      };
       source_charge_ids: string[];   // sorted, canonical
       pagination_capped: boolean;
       raw_counts: { charges_fetched: number; balance_txns_fetched: number };
@@ -1551,20 +1557,7 @@ async function fetchAndAggregate(
   // EXCLUDED from the denominator, not silently counted as domestic. This
   // is transparent: `identified` = 0 emits null intl_share_pct upstream so
   // the engine treats it as "not measured" (its DEFAULT_INTL_PCT policy).
-  let intlCharges = 0;
-  let domesticCharges = 0;
-  const acctCountryUpper = String(acctCountry || 'US').toUpperCase();
-  for (const c of charges) {
-    if (c.status !== 'succeeded') continue;
-    const cardCountry = c.payment_method_details?.card?.country;
-    if (!cardCountry) continue;
-    if (String(cardCountry).toUpperCase() === acctCountryUpper) domesticCharges++;
-    else intlCharges++;
-  }
-  const identified = intlCharges + domesticCharges;
-  const intl_share_pct = identified > 0
-    ? Math.round((intlCharges / identified) * 10000) / 100
-    : null;
+  const geography = classifyStripeCardGeography(charges, acctCountry);
 
   // ── Source charge IDs for idempotency (contract §6) ─────────────────────
   // The canonical set is what the engine consumed → hash the set of Stripe
@@ -1602,7 +1595,16 @@ async function fetchAndAggregate(
     fx_provenance: normalized.fx_provenance,
     fx_policy_version: normalized.policy_version,
     fx_fingerprint: normalized.fx_fingerprint,
-    intl: { identified, intl_charges: intlCharges, domestic_charges: domesticCharges, intl_share_pct },
+    intl: {
+      account_country: geography.account_country,
+      country_status: geography.country_status,
+      geography_inference_status: geography.geography_inference_status,
+      identified: geography.identified,
+      intl_charges: geography.international_charges,
+      domestic_charges: geography.domestic_charges,
+      unclassified_charges: geography.unclassified_charges,
+      intl_share_pct: geography.international_share_pct,
+    },
     source_charge_ids,
     pagination_capped: chargesRes.capped || btRes.capped,
     raw_counts: { charges_fetched: charges.length, balance_txns_fetched: balanceTxns.length },
@@ -1643,7 +1645,7 @@ function extractFixedFeePerCharge(canonicalCharges: any[]): number | null {
 //   - provider == 'stripe_self' → STRIPE_SECRET_KEY (platform live key, no Stripe-Account)
 //   - provider == 'stripe' → STRIPE_SECRET_KEY + Stripe-Account: <acct_id> (Connect OAuth path)
 //
-// This function does NOT decrypt Integration.access_token — and it never
+// This function does NOT decrypt IntegrationCredential — and it never
 // needs to. For provider=='stripe' (real Connect OAuth, shipped 2026-07-13),
 // the canonical Connect pattern is used: the PLATFORM live key
 // (STRIPE_SECRET_KEY) + a `Stripe-Account: <acct_id>` header, where acct_id
@@ -1654,13 +1656,22 @@ function extractFixedFeePerCharge(canonicalCharges: any[]): number | null {
 // brand against Stripe test-mode), (b) 'stripe_self' → STRIPE_SECRET_KEY
 // (the CAMBRA operational account). All three are additive branches below —
 // the env-key operator modes are untouched by the Connect path.
-async function resolveStripeAuth(integration: any): Promise<
+async function resolveStripeAuth(integration: any, brand: any): Promise<
   | { ok: true; headers: Record<string, string>; is_test: boolean; acct_country_hint: string }
   | { ok: false; error: string; setup_required?: boolean }
 > {
   const liveKey = Deno.env.get('STRIPE_SECRET_KEY');
   const testKey = Deno.env.get('STRIPE_TEST_SECRET_KEY');
   const provider = integration?.provider;
+  const metadataCountry = normalizeStripeCountry(
+    integration?.metadata_json?.country,
+  );
+  const explicitDemoCountry = brand?.is_demo === true
+    ? normalizeStripeCountry(brand?.country)
+    : STRIPE_COUNTRY_UNKNOWN;
+  const countryHint = metadataCountry !== STRIPE_COUNTRY_UNKNOWN
+    ? metadataCountry
+    : explicitDemoCountry;
 
   if (provider === 'stripe_self_test') {
     if (!testKey) return { ok: false, error: 'STRIPE_TEST_SECRET_KEY not configured', setup_required: true };
@@ -1668,7 +1679,7 @@ async function resolveStripeAuth(integration: any): Promise<
       ok: true,
       headers: { 'Authorization': `Bearer ${testKey}` },
       is_test: true,
-      acct_country_hint: (integration?.metadata_json?.country || 'US').toUpperCase(),
+      acct_country_hint: countryHint,
     };
   }
   if (provider === 'stripe_self') {
@@ -1677,7 +1688,7 @@ async function resolveStripeAuth(integration: any): Promise<
       ok: true,
       headers: { 'Authorization': `Bearer ${liveKey}` },
       is_test: false,
-      acct_country_hint: (integration?.metadata_json?.country || 'FR').toUpperCase(),
+      acct_country_hint: countryHint,
     };
   }
   if (provider === 'stripe') {
@@ -1688,7 +1699,7 @@ async function resolveStripeAuth(integration: any): Promise<
       ok: true,
       headers: { 'Authorization': `Bearer ${liveKey}`, 'Stripe-Account': acctId },
       is_test: false,
-      acct_country_hint: (integration?.metadata_json?.country || 'FR').toUpperCase(),
+      acct_country_hint: countryHint,
     };
   }
   return { ok: false, error: `unsupported_stripe_provider:${provider}` };
@@ -1786,14 +1797,33 @@ Deno.serve(async (req) => {
     }
 
     // Resolve Stripe auth headers.
-    const auth = await resolveStripeAuth(integration);
+    const auth = await resolveStripeAuth(integration, brand);
     if (!auth.ok) {
       return Response.json({ ok: false, error: auth.error, ...(auth.setup_required ? { setup_required: true } : {}) }, { status: 400 });
     }
 
+    // Account geography is execution authority for regional benchmarks and
+    // domestic/international classification. Missing metadata may be repaired
+    // from Stripe itself, but is never replaced with a country default.
+    const accountCountry = auth.acct_country_hint !== STRIPE_COUNTRY_UNKNOWN
+      ? auth.acct_country_hint
+      : await fetchStripeAccountCountry(auth.headers);
+    const region = stripeCountryToRateRegion(accountCountry);
+    if (!region) {
+      return Response.json({
+        ok: false,
+        error: 'stripe_account_country_required',
+        country: STRIPE_COUNTRY_UNKNOWN,
+        country_status: 'UNKNOWN',
+        geography_inference_status: 'BLOCKED_COUNTRY_UNKNOWN',
+        blockers: ['STRIPE_ACCOUNT_COUNTRY_UNKNOWN'],
+        retryable: true,
+      }, { status: 409 });
+    }
+
     // Fetch + aggregate.
     const fxSnapshots = await base44.asServiceRole.entities.FxSnapshot.list('-effective_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'computeStripeVerifiedGap',fallback:[],severity:'critical'}));
-    const agg = await fetchAndAggregate(auth.headers, auth.acct_country_hint,fxSnapshots);
+    const agg = await fetchAndAggregate(auth.headers, accountCountry, fxSnapshots);
     if (!agg.ok) {
       // upstream Stripe error — surface the public message, never headers.
       return Response.json({ ok: false, error: agg.error, ...(agg.blockers ? { blockers:agg.blockers } : {}) }, { status: agg.status || 502 });
@@ -1843,6 +1873,10 @@ Deno.serve(async (req) => {
           avg_ticket_eur: agg.avg_ticket_eur,
           intl_pct_of_gmv: agg.intl.intl_share_pct,
           identified_charges_for_intl: agg.intl.identified,
+          account_country: agg.intl.account_country,
+          country_status: agg.intl.country_status,
+          geography_inference_status: agg.intl.geography_inference_status,
+          unclassified_charges_for_geography: agg.intl.unclassified_charges,
           original_totals_by_currency: agg.original_totals_by_currency,
           fx_provenance: agg.fx_provenance,
           fx_policy_version: agg.fx_policy_version,
@@ -1858,10 +1892,9 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'engine_unavailable' }, { status: 503 });
     }
 
-    // Derive the engine input. Region derived from the account country hint
-    // (Integration.metadata_json.country) — same source of truth for both the
-    // Stripe-Account country and the region-cohort lookup.
-    const region = countryToRegion(auth.acct_country_hint);
+    // Derive the engine input. Region is derived only from a demonstrated
+    // account country (integration metadata, explicit demo input, or Stripe's
+    // authenticated account response).
     // provider_slug: 'stripe_self_test' and 'stripe_self' route to the 'stripe'
     // cohort (they ARE Stripe, just via env keys instead of Connect OAuth).
     const provider_slug = 'stripe';
@@ -1882,7 +1915,7 @@ Deno.serve(async (req) => {
       // M5 — the Stripe account country (same source as the region cohort)
       // feeds the engine's country-aware row preference. With no country rows
       // seeded, behavior is identical.
-      country: auth.acct_country_hint,
+      country: accountCountry,
       provider_slug,
       intl_pct: 0, // ignored when measured_intl_pct is passed
       measured_current_bps: agg.measured_current_bps,
@@ -1912,6 +1945,10 @@ Deno.serve(async (req) => {
       avg_ticket_eur: agg.avg_ticket_eur,
       intl_pct_of_gmv: agg.intl.intl_share_pct,
       identified_charges_for_intl: agg.intl.identified,
+      account_country: agg.intl.account_country,
+      country_status: agg.intl.country_status,
+      geography_inference_status: agg.intl.geography_inference_status,
+      unclassified_charges_for_geography: agg.intl.unclassified_charges,
       canonical_rows_90d: agg.counts.charge + agg.counts.refund + agg.counts.partial_capture_reversal,
       raw_counts: agg.raw_counts,
       currency: agg.currency,

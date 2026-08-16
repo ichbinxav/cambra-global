@@ -21,6 +21,9 @@ export default function AdminChat() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  // Founder confirmation nonces deliberately live only in this React session.
+  // Reloading the page requires a fresh preview; raw nonces never enter storage.
+  const [confirmationNonces, setConfirmationNonces] = useState({});
   const scrollRef = useRef(null);
 
   const load = async () => {
@@ -42,26 +45,60 @@ export default function AdminChat() {
     if (!text?.trim() && !opts.pending_tool) return;
     setSending(true); setError(null);
     try {
-      await base44.functions.invoke("chatChiefOrchestrator", {
+      const response = await base44.functions.invoke("chatChiefOrchestrator", {
         conversation_id: conversationId,
         message: text?.trim() || null,
         confirmed: opts.confirmed || false,
         pending_tool: opts.pending_tool || null,
+        confirmation_nonce: opts.confirmation_nonce || undefined,
       });
+      const result = response?.data || response;
+      const commandKey = String(result?.pending_tool?.command_key || "");
+      const confirmationNonce = String(result?.confirmation_nonce || "");
+      if (result?.requires_confirmation && commandKey && confirmationNonce) {
+        setConfirmationNonces(current => ({
+          ...current,
+          [commandKey]: confirmationNonce,
+        }));
+      }
       setInput("");
       await load();
+      return result;
     } catch (e) {
       setError(e?.message || "Could not send message.");
+      return null;
     } finally {
       setSending(false);
     }
   };
 
   const handleConfirm = async (pendingCall) => {
-    await send(`Confirmed: proceed with ${pendingCall.name}`, {
+    const commandKey = String(
+      pendingCall.command_key || pendingCall.input?.command_key || "",
+    );
+    const confirmationNonce = commandKey
+      ? confirmationNonces[commandKey]
+      : "";
+    if (commandKey && !confirmationNonce) {
+      setError("This governed preview is no longer available in memory. Request a fresh preview before confirming.");
+      return;
+    }
+    const result = await send(`Confirmed: proceed with ${pendingCall.name}`, {
       confirmed: true,
-      pending_tool: { name: pendingCall.name, input: pendingCall.input },
+      confirmation_nonce: confirmationNonce || undefined,
+      pending_tool: {
+        name: pendingCall.name,
+        input: pendingCall.input,
+        command_key: commandKey || undefined,
+      },
     });
+    if (result?.ok === true && commandKey) {
+      setConfirmationNonces(current => {
+        const next = { ...current };
+        delete next[commandKey];
+        return next;
+      });
+    }
   };
 
   return (

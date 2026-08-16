@@ -1,96 +1,228 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
+import { attachCanonicalChildTask, createCanonicalAgentTask } from "../../shared/agentTaskEnvelope.ts";
 
 const ORCHESTRATOR_NAME = "lead_orchestrator";
 const TASK_TYPE = "orchestrate";
+const CONTACT_LAST_CHAIN_VERSION = "lead-chain-contact-last-v1.0.0";
 
-// Encadena: leadDiscovery → leadEnrichment → leadScoring → crmAgent
-// Para si cualquier paso queda en failed/waiting_approval/waiting_input.
+type ChainStep = {
+  name: string;
+  phase: string;
+  payload: Record<string, any>;
+};
+
+function chainPlan(body: any, icp: any): {
+  mode: string;
+  steps: ChainStep[];
+} {
+  const legacyRequested = String(body?.chain_mode || "").toUpperCase() ===
+    "LEGACY_ENRICH_FIRST";
+  const legacyEnabled =
+    Deno.env.get("LEAD_ORCHESTRATOR_LEGACY_CHAIN_ENABLED") ===
+      "true";
+  if (legacyRequested && legacyEnabled) {
+    return {
+      mode: "LEGACY_COMPATIBILITY_COMPANY_ONLY",
+      steps: [
+        { name: "leadDiscoveryAgent", phase: "DISCOVERY", payload: { ...icp } },
+        {
+          name: "leadEnrichmentAgent",
+          phase: "COMPANY_ENRICHMENT",
+          payload: { operation: "COMPANY_ENRICHMENT" },
+        },
+        {
+          name: "leadScoringAgent",
+          phase: "COMPANY_SCORING",
+          payload: {},
+        },
+        { name: "crmAgent", phase: "COMPANY_CRM_HANDOFF", payload: {} },
+      ],
+    };
+  }
+  return {
+    mode: "CONTACT_LAST",
+    steps: [
+      { name: "leadDiscoveryAgent", phase: "DISCOVERY", payload: { ...icp } },
+      {
+        name: "leadScoringAgent",
+        phase: "COMPANY_SCORING",
+        payload: {},
+      },
+      {
+        name: "leadEnrichmentAgent",
+        phase: "CONTACT_RESOLUTION",
+        payload: {
+          operation: "CONTACT_RESOLUTION",
+          maximum_contacts: 2,
+        },
+      },
+      { name: "crmAgent", phase: "COMPANY_CRM_HANDOFF", payload: {} },
+    ],
+  };
+}
 
 Deno.serve(async (req) => {
-  let parent = null;
+  let parent: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
-    if (!gate.ok) return gate.response;
+    if (!gate.ok) {
+      return gate.response ||
+        Response.json({ ok: false, error: "forbidden" }, { status: 403 });
+    }
     const icp = body?.icp || {};
+    const plan = chainPlan(body, icp);
+    const internal = Deno.env.get("INTERNAL_CALL_SECRET") || "";
 
-    parent = await base44.asServiceRole.entities.AgentTask.create({
+    parent = await createCanonicalAgentTask(base44.asServiceRole, req, {
       brand_id: "_platform",
       agent_name: ORCHESTRATOR_NAME,
       task_type: TASK_TYPE,
       status: "running",
       requires_approval: false,
       risk_level: 1,
-      input_summary: `Lead chain: discovery → enrichment → scoring → crm`,
-      output_payload_json: { chain: ["leadDiscoveryAgent", "leadEnrichmentAgent", "leadScoringAgent", "crmAgent"], steps: [] },
+      input_summary: plan.mode === "CONTACT_LAST"
+        ? "Lead chain: company discovery → company scoring → gated contact resolution → CRM"
+        : "Legacy compatibility chain: company discovery → company-only enrichment → scoring → CRM",
+      output_payload_json: {
+        chain_version: CONTACT_LAST_CHAIN_VERSION,
+        chain_mode: plan.mode,
+        chain: plan.steps.map((step) => step.phase),
+        steps: [],
+      },
       started_at: new Date().toISOString(),
+    }, {
+      workflowKey:'lead_contact_last_chain', workflowVersion:CONTACT_LAST_CHAIN_VERSION, tenantKey:'_platform',
+      processingPurpose:'commercial_lead_discovery_and_qualification', functionName:'leadOrchestrator',
+      input:{icp,chain_mode:plan.mode,discovery_run_id:body?.discovery_run_id||null}, triggerType:gate.isInternal?'INTERNAL':undefined,
+      sourceRefs:body?.discovery_run_id?[{type:'discovery_run',id:String(body.discovery_run_id)}]:[],
     });
 
-    const steps = [
-      { name: "leadDiscoveryAgent", payload: { ...icp } },
-      { name: "leadEnrichmentAgent", payload: {} },
-      { name: "leadScoringAgent",    payload: {} },
-      { name: "crmAgent",            payload: {} },
-    ];
+    const executed: any[] = [];
+    let chainLeadIds: string[] = [];
+    let enrichmentLeadIds: string[] = [];
+    let discoverySummary: any = {
+      scanned: 0,
+      decision_makers_found: 0,
+      contact_records_acquired: 0,
+      count: 0,
+      rejected_count: 0,
+      duplicate_rejected: 0,
+      next_page: null,
+      source_credit_cost_documented: null,
+    };
 
-    const executed = [];
-    let chainLeadIds = [];
-    let enrichmentLeadIds = [];
-    let discoverySummary = { scanned:0, decision_makers_found:0, count:0, rejected_count:0, duplicate_rejected:0, next_page:null, source_credit_cost_documented:null };
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-      let childTaskId = null;
+    for (let index = 0; index < plan.steps.length; index++) {
+      const step = plan.steps[index];
+      let childTaskId: string | null = null;
       let childStatus = "unknown";
-      let stepError = null;
+      let stepError: string | null = null;
 
-      const idsForStep = step.name === 'leadEnrichmentAgent' ? enrichmentLeadIds : chainLeadIds;
-      if (step.name !== 'leadDiscoveryAgent' && !idsForStep.length) {
-        executed.push({ step:step.name, child_task_id:null, status:'completed', skipped:true, reason:step.name === 'leadEnrichmentAgent' ? 'no_candidate_met_selective_enrichment_threshold' : 'no_new_canonical_leads' });
+      if (step.phase !== "DISCOVERY" && !chainLeadIds.length) {
+        executed.push({
+          step: step.name,
+          phase: step.phase,
+          child_task_id: null,
+          status: "completed",
+          skipped: true,
+          reason: "no_new_canonical_companies",
+        });
         continue;
       }
 
       try {
-        const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-        const payload = { ...step.payload, ...(step.name !== 'leadDiscoveryAgent' ? { lead_ids:idsForStep, limit:idsForStep.length } : {}), internal_secret: internal };
-        const res = await base44.functions.invoke(step.name, payload);
-        const data = res?.data || res || {};
-        if (step.name === 'leadDiscoveryAgent' && Array.isArray(data.created_ids)) {
-          chainLeadIds = data.created_ids.filter(Boolean);
-          enrichmentLeadIds = Array.isArray(data.enrichment_ids) ? data.enrichment_ids.filter((id:any)=>chainLeadIds.includes(id)) : [];
+        const payload = {
+          ...step.payload,
+          ...(step.phase !== "DISCOVERY"
+            ? { lead_ids: chainLeadIds, limit: chainLeadIds.length }
+            : {}),
+          ...(step.phase === "CONTACT_RESOLUTION" && body?.discovery_run_id
+            ? { discovery_run_id: body.discovery_run_id }
+            : {}),
+          internal_secret: internal,
+        };
+        const result = await base44.functions.invoke(step.name, payload);
+        const data = result?.data || result || {};
+        if (step.phase === "DISCOVERY") {
+          chainLeadIds = Array.isArray(data.created_ids)
+            ? data.created_ids.map(String).filter(Boolean)
+            : [];
+          enrichmentLeadIds = Array.isArray(data.enrichment_ids)
+            ? data.enrichment_ids.map(String).filter((id: string) =>
+              chainLeadIds.includes(id)
+            )
+            : [];
           discoverySummary = {
-            scanned:Number(data.scanned || 0), decision_makers_found:Number(data.decision_makers_found || 0), count:chainLeadIds.length,
-            rejected_count:Number(data.rejected_count || 0), duplicate_rejected:Number(data.duplicate_rejected || 0), next_page:data.next_page ?? null,
-            source_credit_cost_documented:data.source_credit_cost_documented ?? null,
+            scanned: Number(data.scanned || 0),
+            decision_makers_found: 0,
+            contact_records_acquired: 0,
+            count: chainLeadIds.length,
+            rejected_count: Number(data.rejected_count || 0),
+            duplicate_rejected: Number(data.duplicate_rejected || 0),
+            next_page: data.next_page ?? null,
+            source_credit_cost_documented: data.source_credit_cost_documented ??
+              null,
           };
         }
         childTaskId = data.task_id || null;
-
-        // Re-read the child AgentTask to know its real status (source of truth)
         if (childTaskId) {
-          const child = await base44.asServiceRole.entities.AgentTask.get(childTaskId).catch((error:any)=>safeBestEffort(error,{operation:'leadOrchestrator',fallback:null,severity:'secondary'}));
-          childStatus = child?.status || (data.ok === false ? "failed" : "completed");
-        } else {
-          childStatus = data.ok === false ? "failed" : "completed";
+          await attachCanonicalChildTask(base44.asServiceRole, childTaskId, parent, {
+            stepKey: step.phase.toLowerCase(),
+            stepIndex: index + 1,
+            input: payload,
+            sourceRefs: [{ type: "function", id: step.name }],
+          });
         }
-        if (data.ok === false) stepError = data.error || "agent reported ok=false";
-      } catch (e) {
+        if (childTaskId) {
+          const child = await base44.asServiceRole.entities.AgentTask.get(
+            childTaskId,
+          ).catch((error: any) =>
+            safeBestEffort(error, {
+              operation: "leadOrchestrator",
+              fallback: null,
+              severity: "secondary",
+            })
+          );
+          childStatus = child?.status ||
+            (data.ok === false ? "failed" : "completed");
+        } else childStatus = data.ok === false ? "failed" : "completed";
+        if (data.ok === false) {
+          stepError = data.error || "agent reported ok=false";
+        }
+      } catch (error: any) {
         childStatus = "failed";
-        stepError = e.message;
+        stepError = String(error?.message || error).slice(0, 200);
       }
 
-      executed.push({ step: step.name, child_task_id: childTaskId, status: childStatus, error: stepError, ...(step.name === 'leadDiscoveryAgent' ? { result:discoverySummary } : {}) });
-
-      const haltStatuses = ["failed", "waiting_approval", "waiting_input"];
-      if (haltStatuses.includes(childStatus)) {
-        const haltSummary = `Chain halted at step ${i + 1}/${steps.length} (${step.name}): ${childStatus}${stepError ? ` — ${stepError}` : ""}`;
+      executed.push({
+        step: step.name,
+        phase: step.phase,
+        child_task_id: childTaskId,
+        status: childStatus,
+        error: stepError,
+        ...(step.phase === "DISCOVERY" ? { result: discoverySummary } : {}),
+      });
+      if (
+        ["failed", "waiting_approval", "waiting_input"].includes(childStatus)
+      ) {
+        const summary = `Chain halted at ${step.phase}: ${childStatus}${
+          stepError ? ` — ${stepError}` : ""
+        }`;
         await base44.asServiceRole.entities.AgentTask.update(parent.id, {
           status: childStatus === "failed" ? "failed" : "waiting_approval",
-          output_summary: haltSummary,
-          output_payload_json: { chain: steps.map(s => s.name), steps: executed, halted_at_step: i, halt_reason: childStatus },
+          output_summary: summary,
+          output_payload_json: {
+            chain_version: CONTACT_LAST_CHAIN_VERSION,
+            chain_mode: plan.mode,
+            chain: plan.steps.map((row) => row.phase),
+            steps: executed,
+            halted_at_step: index,
+            halt_reason: childStatus,
+          },
           error: childStatus === "failed" ? stepError : null,
           completed_at: new Date().toISOString(),
         });
@@ -101,27 +233,77 @@ Deno.serve(async (req) => {
           entity_type: "AgentTask",
           entity_id: parent.id,
           agent_task_id: parent.id,
-          payload_json: { halted_at: step.name, reason: childStatus, error: stepError, executed },
+          payload_json: {
+            chain_version: CONTACT_LAST_CHAIN_VERSION,
+            chain_mode: plan.mode,
+            halted_at: step.phase,
+            reason: childStatus,
+            error: stepError,
+            executed,
+          },
           status: "pending",
-        }).catch((error:any)=>safeBestEffort(error,{operation:'leadOrchestrator',fallback:null,severity:'secondary'}));
-        return Response.json({ ok: true, parent_task_id: parent.id, status: "halted", halted_at: step.name, reason: childStatus, executed, ...discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds });
+        }).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "leadOrchestrator",
+            fallback: null,
+            severity: "secondary",
+          })
+        );
+        return Response.json({
+          ok: true,
+          parent_task_id: parent.id,
+          status: "halted",
+          chain_version: CONTACT_LAST_CHAIN_VERSION,
+          chain_mode: plan.mode,
+          halted_at: step.phase,
+          reason: childStatus,
+          executed,
+          ...discoverySummary,
+          created_ids: chainLeadIds,
+          enrichment_ids: enrichmentLeadIds,
+        });
       }
     }
 
     await base44.asServiceRole.entities.AgentTask.update(parent.id, {
       status: "completed",
-      output_summary: `Lead chain completed (${steps.length} steps)`,
-      output_payload_json: { chain: steps.map(s => s.name), steps: executed, discovery_summary:discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds },
+      output_summary:
+        `Lead chain completed (${plan.mode}; ${plan.steps.length} exclusive steps)`,
+      output_payload_json: {
+        chain_version: CONTACT_LAST_CHAIN_VERSION,
+        chain_mode: plan.mode,
+        chain: plan.steps.map((step) => step.phase),
+        steps: executed,
+        discovery_summary: discoverySummary,
+        created_ids: chainLeadIds,
+        enrichment_ids: enrichmentLeadIds,
+        double_run_prevented: true,
+      },
       completed_at: new Date().toISOString(),
     });
-    return Response.json({ ok: true, parent_task_id: parent.id, status: "completed", executed, ...discoverySummary, created_ids:chainLeadIds, enrichment_ids:enrichmentLeadIds });
-  } catch (error) {
+    return Response.json({
+      ok: true,
+      parent_task_id: parent.id,
+      status: "completed",
+      chain_version: CONTACT_LAST_CHAIN_VERSION,
+      chain_mode: plan.mode,
+      executed,
+      ...discoverySummary,
+      created_ids: chainLeadIds,
+      enrichment_ids: enrichmentLeadIds,
+      double_run_prevented: true,
+    });
+  } catch (error: any) {
     if (parent?.id) {
       try {
         const base44 = createClientFromRequest(req);
-        await base44.asServiceRole.entities.AgentTask.update(parent.id, { status: "failed", error: error.message, completed_at: new Date().toISOString() });
-      } catch (_) { /* swallow */ }
+        await base44.asServiceRole.entities.AgentTask.update(parent.id, {
+          status: "failed",
+          error: String(error?.message || error).slice(0, 200),
+          completed_at: new Date().toISOString(),
+        });
+      } catch (_) { /* fail closed without masking original */ }
     }
-    return internalErrorResponse(error, 'leadOrchestrator');
+    return internalErrorResponse(error, "leadOrchestrator");
   }
 });

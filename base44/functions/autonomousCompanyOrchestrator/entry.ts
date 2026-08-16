@@ -1,18 +1,22 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
+import { attachCanonicalChildTask, createCanonicalAgentTask } from '../../shared/agentTaskEnvelope.ts';
+import { sha256Canonical } from '../../shared/legalExecution.ts';
+import { runtimeDeploymentIdentity, validateRuntimeDeploymentIdentity } from '../../shared/runtimeEvidence.ts';
 
 const VERSION = 'autonomous-company-orchestrator-p8-1.0.0';
 
-async function invokeStep(service: any, name: string, internalSecret: string, payload: any = {}) {
+async function invokeStep(service: any, name: string, internalSecret: string, parent: any, stepIndex: number, payload: any = {}) {
   const startedAt = new Date().toISOString();
   try {
     const result = await service.functions.invoke(name, { ...payload,internal_secret: internalSecret });
     const data = result?.data || result || {};
+    if (data?.task_id) await attachCanonicalChildTask(service, data.task_id, parent, { stepKey:name, stepIndex, input:payload, sourceRefs:[{type:'function',id:name}] });
     return { name, ok: data?.ok !== false, started_at: startedAt, completed_at: new Date().toISOString(), result: data };
-  } catch (error) {
+  } catch (error: any) {
     return { name, ok: false, started_at: startedAt, completed_at: new Date().toISOString(), error: String(error?.message || error).slice(0, 500) };
   }
 }
@@ -48,31 +52,45 @@ async function upsertMarketDecision(service: any, snapshot: any) {
   });
 }
 
-export async function handleAutonomousCompanyOrchestrator(req: Request) {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
+export async function handleAutonomousCompanyOrchestrator(req: Request) {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;let __schedulerRuntime:any=null;
   let task: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
-    if (!gate.ok) return gate.response;
-    const service = base44.asServiceRole;__schedulerSvc=service;__schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'autonomousCompanyOrchestrator',cadence_seconds:21600});if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key});
+    if (!gate.ok) return gate.response as Response;
+    const service = base44.asServiceRole;__schedulerSvc=service;__schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'autonomousCompanyOrchestrator',cadence_seconds:21600});{const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}__schedulerClaim=await markSchedulerEffectStarted(service,__schedulerClaim);{const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
+    const __runtimeIdentity=runtimeDeploymentIdentity(),__runtimeValidation=validateRuntimeDeploymentIdentity(__runtimeIdentity,{environment:'production'});
+    __schedulerRuntime={runtime_identity_hash:await sha256Canonical(__runtimeIdentity),runtime_git_sha:__runtimeIdentity.git_sha,runtime_identity_status:__runtimeValidation.status,runtime_identity_blockers:__runtimeValidation.blockers};
     const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const emergency = await emergencyState(service);
-    task = await service.entities.AgentTask.create({
+    task = await createCanonicalAgentTask(service, req, {
       brand_id: '_platform', agent_name: 'autonomous_company_orchestrator', task_type: 'p8_company_coordination',
       status: 'running', requires_approval: false, risk_level: 1,
       input_summary: 'Coordinate intelligence, commercial projection, learning and executive digest; no direct outreach or material execution',
       started_at: new Date().toISOString(),
+    }, {
+      workflowKey:'autonomous_company_coordination', workflowVersion:VERSION, tenantKey:'_platform',
+      processingPurpose:'company_intelligence_coordination', functionName:'autonomousCompanyOrchestrator',
+      input:{host_action:body?.host_action||null}, triggerType:gate.isInternal?'INTERNAL':undefined,
+      sourceRefs:[
+        {type:'platform_scope',id:'_platform'},
+        {
+          type:'SchedulerRun',
+          id:String(__schedulerClaim.run.id),
+          version:String(__schedulerClaim.run?.details_json?.guard_version||'scheduler-guard-unknown'),
+        },
+      ],
     });
 
     // These steps are deliberately intelligence/projection-only. External
     // sending, contract acceptance, migration cutover, spend and charging stay
     // behind their existing policy/authority gates and are not invoked here.
     const steps = [];
-    steps.push(await invokeStep(service, 'alwaysOnLeadDiscoveryWorker', internalSecret));
-    steps.push(await invokeStep(service, 'salesPipelineWorker', internalSecret));
-    steps.push(await invokeStep(service, 'outreachExperimentLearningWorker', internalSecret));
-    steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret));
+    steps.push(await invokeStep(service, 'alwaysOnLeadDiscoveryWorker', internalSecret, task, 1));
+    steps.push(await invokeStep(service, 'salesPipelineWorker', internalSecret, task, 2));
+    steps.push(await invokeStep(service, 'outreachExperimentLearningWorker', internalSecret, task, 3));
+    steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret, task, 4));
 
     const [commercialRows, maintenanceRows, criticalIncidents] = await Promise.all([
       service.entities.CommercialIntelligenceSnapshot.list('-generated_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
@@ -117,5 +135,5 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       } catch {__schedulerOk=false; /* best effort */ }
     }
     return Response.json({ ok: false, error: 'autonomous_company_orchestration_failed', task_id: task?.id || null }, { status: 500 });
-  }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator'},__schedulerOk)}
+  }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator',...(__schedulerRuntime||{runtime_identity_status:'INCOMPLETE',runtime_identity_blockers:['runtime_binding_not_recorded']})},__schedulerOk)}
 }

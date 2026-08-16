@@ -2,8 +2,16 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
-import { assertOperationAllowed } from '../../shared/operationalControl.ts';
+import { captureEmergencyEpoch } from '../../shared/operationalControl.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import {
+  beginExternalApprovalEffects,
+  claimExternalApprovalExecution,
+  completeExternalApprovalExecution,
+  externalExecutionHttpStatus,
+  markExternalApprovalReviewRequired,
+  releaseExternalApprovalClaim,
+} from '../../shared/externalApprovalExecution.ts';
 
 const AGENT_NAME = "linkedin";
 const TASK_TYPE = "publish_linkedin_post";
@@ -14,6 +22,7 @@ async function callClaude(svc, prompt, eventKey) { return (await callCambraClaud
 
 Deno.serve(async (req) => {
   let task = null;
+  let execution:any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -25,7 +34,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE — strict Approval gate ═════════════════════════════════
     if (mode === "execute") {
-      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      let communicationEpoch:any;
+      try { communicationEpoch=await captureEmergencyEpoch(base44.asServiceRole, 'communications'); }
       catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
@@ -37,27 +47,40 @@ Deno.serve(async (req) => {
 
       task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'linkedinAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
-      await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
-
-      const taplioKey = Deno.env.get("TAPLIO_API_KEY");
-      if (!taplioKey) throw new Error("TOOL_NOT_CONFIGURED: añade TAPLIO_API_KEY a Base44 secrets para publicar en LinkedIn");
-
-      const payload = ap.draft_payload_json || {};
-      const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:taplio:publish:${ap.id}`, category:'api', provider:'taplio', source:'linkedinAgent', related_entity_type:'Approval', related_entity_id:ap.id }, "https://api.taplio.com/v1/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${taplioKey}` },
-        body: JSON.stringify({ content: payload.content, schedule_at: payload.schedule_at || null }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(`Taplio API error: ${data?.error?.message || res.statusText}`);
-
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary: "LinkedIn post published via Taplio",
-        output_payload_json: { taplio_response: data, approval_id: ap.id },
-        completed_at: new Date().toISOString(),
-      });
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, published: true });
+      try {
+        execution = await claimExternalApprovalExecution(base44.asServiceRole, {
+          approval:ap, task, commandKey:body.execution_command_key, actorEmail:user.email,
+          actionType:ACTION_TYPE, agentName:AGENT_NAME, taskType:TASK_TYPE, riskLevel:RISK_LEVEL,
+        });
+        if (!execution.acquired) {
+          if (execution.state === 'replay') return Response.json({ ...execution.result, ok:true, idempotent_replay:true });
+          return Response.json({ ok:false, error:execution.error || 'external_execution_not_claimed', execution_state:execution.state, review_required:execution.state === 'review_required' }, { status:externalExecutionHttpStatus(execution) });
+        }
+        const taplioKey = Deno.env.get("TAPLIO_API_KEY");
+        if (!taplioKey) throw new Error("TOOL_NOT_CONFIGURED:TAPLIO_API_KEY");
+        const payload = ap.draft_payload_json || {};
+        if (!String(payload.content || '').trim()) throw new Error('linkedin_approved_payload_incomplete');
+        await beginExternalApprovalEffects(base44.asServiceRole, execution);
+        const res = await paidProviderFetch(base44.asServiceRole, { event_key:`api:taplio:publish:${ap.id}`, stable_event_key:true, category:'api', provider:'taplio', source:'linkedinAgent', related_entity_type:'Approval', related_entity_id:ap.id, emergency_epoch_claim:communicationEpoch }, "https://api.taplio.com/v1/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${taplioKey}` },
+          body: JSON.stringify({ content: payload.content, schedule_at: payload.schedule_at || null }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(`taplio_publish_failed:${res.status}`);
+        if (!data || typeof data !== 'object') throw new Error('taplio_publish_postcondition_failed');
+        const providerReference=String(data.id||data.post_id||'').trim();
+        if(!providerReference)throw new Error('taplio_provider_receipt_missing');
+        const result = await completeExternalApprovalExecution(base44.asServiceRole, execution, { task_id:task.id, published:true, provider:'taplio', provider_response:data, execution_receipt_ref:`taplio-post:${providerReference}` }, 'LinkedIn post published via Taplio');
+        return Response.json(result);
+      } catch (error) {
+        const code = String((error as any)?.code || (error as Error)?.message || 'linkedin_external_execution_failed');
+        if (execution?.acquired) {
+          if (execution.effectsStarted) await markExternalApprovalReviewRequired(base44.asServiceRole, execution, code);
+          else await releaseExternalApprovalClaim(base44.asServiceRole, execution, code);
+        }
+        return Response.json({ ok:false, error:code, review_required:execution?.effectsStarted === true }, { status:execution?.effectsStarted ? 409 : Number((error as any)?.status || 500) });
+      }
     }
 
     // ═══ DRAFT — Taplio if available, fallback Claude ═══════════════════

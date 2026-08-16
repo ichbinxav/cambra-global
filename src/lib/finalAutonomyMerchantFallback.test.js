@@ -33,9 +33,9 @@ describe('final autonomy — merchant fallback, communication and runtime guards
     const send=r('base44/functions/commercialSendMessage/entry.ts');
     const schema=r('base44/entities/OutboundSendingProfile.jsonc');
     expect(schema).toContain('burst_per_minute');
-    expect(send).toContain('sending_profile_burst_limit');
-    expect(send).toContain("const acquisitionAction=['initial_outreach','partner_outreach'].includes(action)");
-    expect(send.indexOf('sending_profile_burst_limit')).toBeLessThan(send.indexOf('const acquisitionAction='));
+    expect(send).toContain('profile_burst_limit');
+    expect(send).toMatch(/const acquisitionAction\s*=\s*\[\s*["']initial_outreach["'],\s*["']partner_outreach["']\s*\]\.includes/);
+    expect(send).toContain('claimCommercialSendSlot');
   });
 
   it('pushes merchants naturally toward the free Analyzer without inventing savings',()=>{
@@ -53,7 +53,7 @@ describe('final autonomy — merchant fallback, communication and runtime guards
     const agent=r('base44/functions/providerNegotiationAgent/entry.ts');
     expect(start).toContain("negotiationLanguage=['en','fr','es'].includes");
     expect(start).toContain('language:negotiationLanguage');
-    expect(agent).toContain("thread.language||'en'");
+    expect(agent).toMatch(/thread\.language\s*\|\|\s*["']en["']/);
     expect(agent).toContain('human-sounding');
   });
 

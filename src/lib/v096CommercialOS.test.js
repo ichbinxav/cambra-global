@@ -24,9 +24,9 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
     expect(read('src/pages/admin/AdminCommercialOS.jsx')).toContain('No message was sent');
   });
 
-  it('supports provider-portable ICPs and an evidence-gated Apollo sunset',()=>{
+  it('supports provider-portable ICPs and blocks unsafe Apollo sunset handoff',()=>{
     const providers=read('base44/shared/leadIntelligenceProvider.ts');
-    for(const token of ['APOLLO_CONTRACT_EXPIRES_AT','instantlySuperSearchPayload','apollo_active_until_contract_expiry','apollo_unavailable_safe_instantly_handoff'])expect(providers).toContain(token);
+    for(const token of ['APOLLO_CONTRACT_EXPIRES_AT','instantlySuperSearchPayload','apollo_active_until_contract_expiry','contact_person_only_company_search_unsupported','apollo_expired_and_instantly_contact_person_only'])expect(providers).toContain(token);
     const worker=read('base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts');
     expect(worker).toContain('selectLeadIntelligenceProvider');
     expect(worker).toContain('selectedProvider');

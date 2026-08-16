@@ -18,6 +18,20 @@
     "brand_id": {
       "type": "string"
     },
+    "tenant_scope": {
+      "type": "string",
+      "enum": [
+        "global",
+        "tenant"
+      ],
+      "description": "Explicit tenant boundary. Raw outcomes are tenant scoped; global raw outcomes are rejected by the canonical gateway."
+    },
+    "domain": {
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    },
     "provider_id": {
       "type": "string"
     },
@@ -80,11 +94,101 @@
     "is_demo": {
       "type": "boolean",
       "default": false
+    },
+    "quarantined": {
+      "type": "boolean",
+      "default": false
+    },
+    "quarantine_reason": {
+      "type": "string"
+    },
+    "intelligence_use_class": {
+      "type": "string",
+      "enum": [
+        "DESCRIPTIVE",
+        "ADVISORY",
+        "MODEL"
+      ],
+      "description": "Use class for this projection. Descriptive storage is not a training, model or calibration permission."
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exact IntelligenceEvidence row references, if reconstructed."
+    },
+    "observation_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exact IntelligenceObservation row references, if reconstructed."
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exact KnowledgeClaim row references, if reconstructed."
+    },
+    "experience_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exact Event/Universal Experience row references, if reconstructed."
+    },
+    "execution_receipt_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Exact committed execution receipt references; approval alone is insufficient."
+    },
+    "learning_eligibility_status": {
+      "type": "string",
+      "enum": [
+        "INELIGIBLE",
+        "PENDING_PROVENANCE",
+        "PENDING_EXECUTION",
+        "PENDING_OUTCOME",
+        "PENDING_LABEL_MATURITY",
+        "ELIGIBLE_AGGREGATE_ONLY",
+        "ELIGIBLE_EVALUATION_ONLY",
+        "ELIGIBLE_TRAINING",
+        "REVOKED"
+      ],
+      "description": "Projection of an independent, versioned eligibility decision. New outcome writers default to PENDING_PROVENANCE."
+    },
+    "learning_eligibility_policy_version": {
+      "type": "string"
+    },
+    "learning_eligibility_decision_id": {
+      "type": "string",
+      "description": "Immutable Event-ledger eligibility decision reference. Null/absent never means eligible."
+    },
+    "verification_source_validated": {
+      "type": "boolean",
+      "default": false,
+      "description": "True only when the canonical server writer loaded the exact tenant-bound domain source and confirmed its allowed terminal state."
+    },
+    "label_mature": {
+      "type": "boolean",
+      "default": false,
+      "description": "Independent label-contract maturity result; terminal operational state alone never sets this true."
+    },
+    "label_mature_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "training_eligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "model_eligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "calibration_eligible": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
     "outcome_key",
     "operation_type",
+    "tenant_scope",
     "captured_at"
   ],
   "rls": {

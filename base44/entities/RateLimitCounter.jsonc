@@ -4,14 +4,14 @@
   "properties": {
     "principal_id": {
       "type": "string",
-      "description": "API key id or OAuth token id used as the rate-limit subject"
+      "description": "API key/OAuth subject or versioned HMAC network fingerprint. Raw network addresses and proxy headers are forbidden."
     },
     "principal_type": {
       "type": "string",
       "enum": [
         "api_key",
         "oauth_token",
-        "ip"
+        "network_hmac"
       ],
       "default": "api_key"
     },
@@ -36,18 +36,19 @@
   },
   "required": [
     "principal_id",
+    "principal_type",
     "window_start",
     "window_seconds"
   ],
   "rls": {
     "read": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

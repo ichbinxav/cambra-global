@@ -1,7 +1,7 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 
 export async function handleRegulatoryMonitoringWorker(req: Request) {
   let svc:any = null;
@@ -14,7 +14,9 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;
     claim = await claimSchedulerRun(svc, req, { worker_key:'regulatoryMonitoringWorker',cadence_seconds:86400 });
-    if (!claim.allowed) return Response.json({ ok:true,duplicate_blocked:true,run_key:claim.run_key });
+    { const denied = schedulerClaimDeniedResponse(claim); if (denied) return denied; }
+    claim = await markSchedulerEffectStarted(svc, claim);
+    { const denied = schedulerClaimDeniedResponse(claim); if (denied) return denied; }
     const now = new Date();
     const horizon = new Date(now.getTime() + 30 * 86400000);
     const [policies,evidence,registrations] = await Promise.all([
@@ -40,6 +42,6 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
     console.error(error);
     return Response.json({ ok:false,error:'regulatory_monitoring_failed' }, { status:500 });
   } finally {
-    if (svc && claim) await finishSchedulerRun(svc,claim,{ worker_key:'regulatoryMonitoringWorker' },success);
+    if (svc && claim) await finishSchedulerRunOrThrow(svc,claim,{ worker_key:'regulatoryMonitoringWorker' },success);
   }
 }

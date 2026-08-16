@@ -1,9 +1,18 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { assertOperationAllowed } from '../../shared/operationalControl.ts';
+import { captureEmergencyEpoch } from '../../shared/operationalControl.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireAcceptedCommercialSendResponse } from '../../shared/commercialSendSafety.ts';
+import {
+  beginExternalApprovalEffects,
+  claimExternalApprovalExecution,
+  completeExternalApprovalExecution,
+  externalExecutionHttpStatus,
+  markExternalApprovalReviewRequired,
+  releaseExternalApprovalClaim,
+} from '../../shared/externalApprovalExecution.ts';
 
 const AGENT_NAME = "follow_up";
 const TASK_TYPE = "send_follow_up_email";
@@ -64,6 +73,7 @@ async function ensureCanonicalThread(svc, lead, preferredId = '') {
 Deno.serve(async (req) => {
   let task = null;
   let approval = null;
+  let execution:any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -75,7 +85,8 @@ Deno.serve(async (req) => {
 
     // ═══ EXECUTE MODE — strict Approval gate ════════════════════════════
     if (mode === "execute") {
-      try { await assertOperationAllowed(base44.asServiceRole, 'communications'); }
+      let communicationEpoch:any;
+      try { communicationEpoch=await captureEmergencyEpoch(base44.asServiceRole, 'communications'); }
       catch (error) { return Response.json({ ok:false, error:error?.message || 'emergency_control_paused:communications' }, { status:409 }); }
       const approvalId = body?.approval_id;
       if (!approvalId) return Response.json({ ok: false, error: "approval_id required for execute mode" }, { status: 400 });
@@ -96,40 +107,30 @@ Deno.serve(async (req) => {
       task = await base44.asServiceRole.entities.AgentTask.get(ap.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'followUpAgent',fallback:null,severity:'secondary'}));
       if (!task) return Response.json({ ok: false, error: "AgentTask not found" }, { status: 404 });
 
-      await base44.asServiceRole.entities.AgentTask.update(task.id, { status: "running" });
-
-      const payload = ap.draft_payload_json || {};
-      const lead = payload.lead_id
-        ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id).catch((error:any)=>safeBestEffort(error,{operation:'followUpAgent',fallback:null,severity:'secondary'}))
-        : null;
-      if (!lead) throw new Error('approved_follow_up_lead_missing');
-      const thread = await ensureCanonicalThread(base44.asServiceRole, lead, payload.communication_thread_id || '');
-      const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-      const send = await base44.asServiceRole.functions.invoke('commercialSendMessage', {
-        thread_id: thread.id,
-        action: 'follow_up',
-        classification: 'follow_up',
-        subject: payload.subject,
-        text: payload.body,
-        to: payload.to,
-        approval_id: ap.id,
-        agent_name: 'follow_up',
-        idempotency_key: `legacy-follow-up-approved:${ap.id}`,
-        sending_profile_key: thread.sending_profile_key || undefined,
-        manual_override: true,
-        internal_secret: internal,
-      }).catch((error) => ({ data: { ok: false, error: String(error?.message || error) } }));
-      const sent = send?.data || send || {};
-      if (sent.ok === false) throw new Error(`central_send_failed:${sent.error || 'unknown'}`);
-
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary: `Sent follow-up #${payload.step || "?"} to ${payload.to}`,
-        output_payload_json: { central_send: sent, communication_thread_id: thread.id, approval_id: ap.id },
-        completed_at: new Date().toISOString(),
-      });
-
-      return Response.json({ ok: true, task_id: task.id, approval_id: ap.id, thread_id: thread.id, sent: true });
+      try {
+        execution=await claimExternalApprovalExecution(base44.asServiceRole,{approval:ap,task,commandKey:body.execution_command_key,actorEmail:user.email,actionType:ACTION_TYPE,agentName:AGENT_NAME,taskType:TASK_TYPE,riskLevel:RISK_LEVEL});
+        if(!execution.acquired){
+          if(execution.state==='replay')return Response.json({...execution.result,ok:true,idempotent_replay:true});
+          return Response.json({ok:false,error:execution.error||'external_execution_not_claimed',execution_state:execution.state,review_required:execution.state==='review_required'},{status:externalExecutionHttpStatus(execution)});
+        }
+        const payload=ap.draft_payload_json||{};
+        const lead=payload.lead_id?await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id):null;
+        if(!lead)throw new Error('approved_follow_up_lead_missing');
+        const thread=await ensureCanonicalThread(base44.asServiceRole,lead,payload.communication_thread_id||'');
+        const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+        await beginExternalApprovalEffects(base44.asServiceRole,execution);
+        const sent=requireAcceptedCommercialSendResponse(await base44.asServiceRole.functions.invoke('commercialSendMessage',{
+          thread_id:thread.id,action:'follow_up',classification:'follow_up',subject:payload.subject,text:payload.body,to:payload.to,
+          approval_id:ap.id,agent_name:AGENT_NAME,idempotency_key:`legacy-follow-up-approved:${ap.id}`,sending_profile_key:thread.sending_profile_key||undefined,
+          manual_override:true,internal_secret:internal,emergency_epoch_claim:communicationEpoch,
+        }),'follow_up_approved_send');
+        const result=await completeExternalApprovalExecution(base44.asServiceRole,execution,{task_id:task.id,approval_id:ap.id,thread_id:thread.id,sent:true,central_send:sent,execution_receipt_ref:`commercial-message:${sent.message_id}`},`Sent follow-up #${payload.step||'?'} to ${payload.to}`);
+        return Response.json(result);
+      }catch(error){
+        const code=String(error?.code||error?.message||'follow_up_external_execution_failed');
+        if(execution?.acquired){if(execution.effectsStarted)await markExternalApprovalReviewRequired(base44.asServiceRole,execution,code);else await releaseExternalApprovalClaim(base44.asServiceRole,execution,code);}
+        return Response.json({ok:false,error:code,review_required:execution?.effectsStarted===true},{status:execution?.effectsStarted?409:Number(error?.status||500)});
+      }
     }
 
     // ═══ DRAFT MODE — never calls Instantly ═════════════════════════════

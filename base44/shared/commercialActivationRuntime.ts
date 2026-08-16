@@ -6,6 +6,8 @@ import {
   COMMERCIAL_ACTIVATION_VERSION, automaticFollowUpCandidate, commercialActionForEngine,
   sendingProfileIsValid, validateCanaryPolicy,
 } from './commercialActivation.ts';
+import { readSingletonAuthority } from './singletonAuthority.ts';
+import { readRuntimeRows, readRuntimeSource } from './runtimeSourceRead.ts';
 
 function engineProviders(scope:string):Record<string,string[]>{
   if(scope==='resend')return {merchant_acquisition:['resend']};
@@ -16,18 +18,22 @@ function engineProviders(scope:string):Record<string,string[]>{
 
 async function policiesForScope(svc:any,scope:string,input:any){
   const suppliedIds=[...new Set([...(Array.isArray(input?.policy_ids)?input.policy_ids:[]),input?.policy_id].map((id:any)=>String(id||'').trim()).filter(Boolean))];
-  const supplied:any[]=[];
-  for(const id of suppliedIds){const policy=await svc.entities.CommercialPolicy.get(id).catch(()=>null);if(policy)supplied.push(policy);}
+  const supplied:any[]=[];const sourceBlockers:string[]=[];
+  for(const id of suppliedIds){
+    const read=await readRuntimeSource<any>({source:`commercial_policy_${id}`,read:()=>svc.entities.CommercialPolicy.get(id),fallback:null});
+    if(read.status!=='COMPLETE')sourceBlockers.push(...read.blockers);else if(read.value)supplied.push(read.value);
+  }
   const policies:any[]=[];const missing:string[]=[];
   for(const engine of Object.keys(engineProviders(scope))){
     let policy=supplied.find((row:any)=>row.engine===engine)||null;
     if(!policy){
-      const rows=await svc.entities.CommercialPolicy.filter({engine,status:'active'},'-approved_at',20).catch(()=>[]);
-      policy=rows.find((row:any)=>policyIsActive(row))||rows[0]||null;
+      const read=await readRuntimeRows({source:`commercial_active_policy_${engine}`,limit:20,read:()=>svc.entities.CommercialPolicy.filter({engine,status:'active'},'-approved_at',20)});
+      if(read.status!=='COMPLETE')sourceBlockers.push(...read.blockers);
+      policy=read.value.find((row:any)=>policyIsActive(row))||read.value[0]||null;
     }
     if(policy)policies.push(policy);else missing.push(engine);
   }
-  return {policies,missing};
+  return {policies,missing,source_blockers:[...new Set(sourceBlockers)]};
 }
 
 /** Read-only readiness apart from the immutable P10/P11 decision evidence it intentionally creates. */
@@ -36,6 +42,7 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   const providerScope=['resend','outlook','instantly','all'].includes(String(input?.provider_scope||''))?String(input.provider_scope):'all';
   const blockers:string[]=[];
   const policySet=await policiesForScope(svc,providerScope,input);
+  blockers.push(...policySet.source_blockers);
   for(const engine of policySet.missing)blockers.push(`active_acquisition_policy_required:${engine}`);
   if(!policySet.policies.length)return {allowed:false,blockers,checked_at:checkedAt,provider_scope:providerScope,policy_ids:[],version:COMMERCIAL_ACTIVATION_VERSION};
 
@@ -45,7 +52,9 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
     if(!policyIsActive(policy))blockers.push(`${policy.engine}:policy_approval_or_effective_window_invalid`);
   }
 
-  const allProfiles=await svc.entities.OutboundSendingProfile.list('-created_date',500).catch(()=>[]);
+  const profileRead=await readRuntimeRows({source:'commercial_activation_sending_profiles',limit:500,read:()=>svc.entities.OutboundSendingProfile.list('-created_date',500)});
+  if(profileRead.status!=='COMPLETE')blockers.push(...profileRead.blockers);
+  const allProfiles=profileRead.value;
   const profileByKey=new Map<string,any>();
   for(const profile of allProfiles)if(!profileByKey.has(String(profile.profile_key)))profileByKey.set(String(profile.profile_key),profile);
   const selectedKeys=[...new Set(validated.flatMap(({validation}:any)=>validation.sending_profile_keys))];
@@ -62,17 +71,22 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
   const needsOutlook=requiredProviders.includes('outlook');
   const needsInstantly=requiredProviders.includes('instantly');
   const resendConfigured=!needsResend||Boolean(Deno.env.get('RESEND_API_KEY'));
-  const outlook=needsOutlook?await svc.connectors.getConnection('outlook').catch(()=>null):null;
+  const outlookRead=needsOutlook?await readRuntimeSource<any>({source:'commercial_activation_outlook_connection',read:()=>svc.connectors.getConnection('outlook'),fallback:null}):null;
+  if(outlookRead&&outlookRead.status!=='COMPLETE')blockers.push(...outlookRead.blockers);
+  const outlook=outlookRead?.value||null;
   const outlookConfigured=!needsOutlook||Boolean(outlook?.accessToken);
-  const instantlyStates=needsInstantly?await svc.entities.CommercialProviderState.filter({provider_key:'instantly',role:'outbound'},'-last_checked_at',1).catch(()=>[]):[];
+  const instantlyRead=needsInstantly?await readRuntimeRows({source:'commercial_activation_instantly_state',read:()=>svc.entities.CommercialProviderState.filter({provider_key:'instantly',role:'outbound'},'-last_checked_at',2)}):null;
+  if(instantlyRead&&instantlyRead.status!=='COMPLETE')blockers.push(...instantlyRead.blockers);
+  if(instantlyRead?.ok&&instantlyRead.value.length!==1)blockers.push(instantlyRead.value.length?'instantly_provider_state_ambiguous':'instantly_provider_state_missing');
+  const instantlyStates=instantlyRead?.value||[];
   const instantlyConfigured=!needsInstantly||(Boolean(Deno.env.get('INSTANTLY_API_KEY'))&&Boolean(Deno.env.get('INSTANTLY_WEBHOOK_SECRET'))&&['AUTHENTICATED','ACTIVE'].includes(String(instantlyStates[0]?.status||''))&&instantlyStates[0]?.auth_test_pass===true);
   if(!resendConfigured)blockers.push('resend_credentials_required');
   if(!outlookConfigured)blockers.push('outlook_connector_required');
   if(!instantlyConfigured)blockers.push('instantly_authenticated_webhook_configuration_required');
 
-  const controls=await svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',1).catch(()=>[]);
-  const control=controls[0]||null;
-  if(!control)blockers.push('outbound_control_required');
+  const outboundAuthority=await readSingletonAuthority(svc,{entity:'OutboundControl',query:{control_key:'global'},sort:'-created_date',authority:'outbound_control'});
+  const control=outboundAuthority.row;
+  if(!outboundAuthority.ok)blockers.push(outboundAuthority.blocker||'outbound_control_authority_unavailable');
   if(control?.acquisition_enabled===true)blockers.push('outbound_must_remain_paused_during_preflight');
 
   const marketDecisions:any[]=[];
@@ -93,18 +107,22 @@ export async function evaluateCommercialGoLiveReadiness(svc:any,input:any={}){
     }
   }
 
-  const [awaitingCounterparty,awaitingCambra,reviewRows]=await Promise.all([
-    svc.entities.CommunicationThread.filter({status:'awaiting_counterparty',automation_paused:false},'-next_action_at',1000).catch(()=>[]),
-    svc.entities.CommunicationThread.filter({status:'awaiting_cambra',automation_paused:false},'-next_action_at',1000).catch(()=>[]),
-    svc.entities.CommunicationThread.filter({sending_profile_resolution_status:'REVIEW_REQUIRED'},'-created_date',1000).catch(()=>[]),
+  const [counterpartyRead,cambraRead,reviewRead]=await Promise.all([
+    readRuntimeRows({source:'commercial_activation_awaiting_counterparty',limit:1000,read:()=>svc.entities.CommunicationThread.filter({status:'awaiting_counterparty',automation_paused:false},'-next_action_at',1000)}),
+    readRuntimeRows({source:'commercial_activation_awaiting_cambra',limit:1000,read:()=>svc.entities.CommunicationThread.filter({status:'awaiting_cambra',automation_paused:false},'-next_action_at',1000)}),
+    readRuntimeRows({source:'commercial_activation_review_threads',limit:1000,read:()=>svc.entities.CommunicationThread.filter({sending_profile_resolution_status:'REVIEW_REQUIRED'},'-created_date',1000)}),
   ]);
+  for(const read of [counterpartyRead,cambraRead,reviewRead])if(read.status!=='COMPLETE')blockers.push(...read.blockers);
+  const awaitingCounterparty=counterpartyRead.value,awaitingCambra=cambraRead.value,reviewRows=reviewRead.value;
   const candidates=[...awaitingCounterparty,...awaitingCambra].filter((thread:any,index:number,rows:any[])=>rows.findIndex((row:any)=>row.id===thread.id)===index).filter(automaticFollowUpCandidate);
   const invalidCandidates=candidates.filter((thread:any)=>!sendingProfileIsValid(profileByKey.get(String(thread.sending_profile_key||''))));
   const legacyCoverageTruncated=awaitingCounterparty.length>=1000||awaitingCambra.length>=1000||reviewRows.length>=1000;
   if(invalidCandidates.length)blockers.push('eligible_legacy_threads_without_valid_profile');
   if(legacyCoverageTruncated)blockers.push('legacy_thread_coverage_truncated');
 
-  const goLive:any=await collectGoLiveRuntime(svc,input).catch((error:any)=>({allowed:false,classification:'NOT_GO_READY',blockers:[`go_live_runtime_unavailable:${String(error?.message||error).slice(0,120)}`],gates:[],passed:0,total:0,final_sha:String(input?.final_sha||'')}));
+  let goLive:any;
+  try{goLive=await collectGoLiveRuntime(svc,input);}
+  catch(error:any){goLive={allowed:false,classification:'NOT_GO_READY',blockers:[`go_live_runtime_unavailable:${String(error?.message||error).slice(0,120)}`],gates:[],passed:0,total:0,final_sha:String(input?.final_sha||'')};}
   if(goLive.allowed!==true)blockers.push(...(goLive.blockers||['go_live_hard_gates_not_ready']).map((blocker:string)=>`go_live_hard_gate:${blocker}`));
 
   const evidence={

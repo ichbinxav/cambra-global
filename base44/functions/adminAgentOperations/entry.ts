@@ -1,8 +1,8 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 const PLATFORM = '_platform';
-const ALLOWED = new Set(['founderCopilotAgent','investorUpdateAgent','qaAgent','leadDiscoveryAgent','leadEnrichmentAgent','leadScoringAgent','crmAgent','outreachAgent','followUpAgent','meetingAgent','blogAgent','newsletterAgent','linkedinAgent','xTwitterAgent','seoAgent','competitorMonitorAgent','providerResearchAgent','providerMonitorAgent','gdprAgent','complianceAgent','legalReviewAgent','contractIPAgent','codeReviewAgent','securityAgent','qaMonitorAgent','engineeringReportAgent','fixValidatorAgent','discoveryTechStackAgent','spendIntelligenceAgent','recommendationEngineAgent','brainOrchestrator','systemHealthAgent']);
-const SAFE_BATCH=['systemHealthAgent','qaMonitorAgent','providerMonitorAgent','gdprAgent','complianceAgent'];
+const ALLOWED = new Set(['founderCopilotAgent','investorUpdateAgent','qaAgent','leadDiscoveryAgent','leadEnrichmentAgent','leadScoringAgent','crmAgent','outreachAgent','followUpAgent','meetingAgent','blogAgent','newsletterAgent','linkedinAgent','xTwitterAgent','seoAgent','competitorMonitorAgent','providerResearchAgent','providerMonitorAgent','gdprAgent','complianceAgent','legalReviewAgent','contractIPAgent','codeReviewAgent','securityAgent','qaMonitorAgent','engineeringReportAgent','fixValidatorAgent','discoveryTechStackAgent','spendIntelligenceAgent','recommendationEngineAgent','brainOrchestrator']);
+const SAFE_BATCH=['qaMonitorAgent','providerMonitorAgent','gdprAgent','complianceAgent'];
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req); const user = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'adminAgentOperations',fallback:null,severity:'secondary'}));
   if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });

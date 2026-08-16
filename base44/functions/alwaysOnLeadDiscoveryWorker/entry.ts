@@ -1,11 +1,12 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { buildCommercialIntelligence, COMMERCIAL_INTELLIGENCE_VERSION, normalizeCompanyDomain } from '../../shared/commercialIntelligence.ts';
 import { emergencyState } from '../../shared/operationalControl.ts';
 import { APOLLO_EXPIRY_AT, DISCOVERY_ENGINE_VERSION, discoveryPartitionKey, discoveryProviderStatus, selectDiscoveryPolicy } from '../../shared/discoveryRadar.ts';
 import { selectLeadIntelligenceProvider } from '../../shared/leadIntelligenceProvider.ts';
+import { processScheduledDiscoverySearches } from '../../shared/discoveryV2Admin.ts';
 
 const VERSION = `${DISCOVERY_ENGINE_VERSION}:worker-1.0.0`;
 const now = () => new Date().toISOString();
@@ -28,16 +29,21 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const service = base44.asServiceRole;
     __schedulerSvc=service;
     __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'alwaysOnLeadDiscoveryWorker',cadence_seconds:3600});
-    if(!__schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:__schedulerClaim.run_key});
+    {const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
+    __schedulerClaim=await markSchedulerEffectStarted(service,__schedulerClaim);
+    {const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
+    const emergency=await emergencyState(service);
+    const scheduledDiscovery=emergency.safe_mode||emergency.paid_discovery_paused
+      ? {ok:true,action:'GLOBAL_EMERGENCY_SAFE_MODE_BLOCKED',reason:emergency.reason||'global_emergency_stop'}
+      : await processScheduledDiscoverySearches(service).catch((error:any)=>({ok:false,action:'SAFE_FAILURE',error:String(error?.message||error).slice(0,120)}));
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'}));
     const policy = selectDiscoveryPolicy(policies);
-    if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, note:'Discovery requires an explicitly enabled ICP configuration but does not require outbound activation.' });
+    if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, scheduled_discovery:scheduledDiscovery, note:'Autonomous harvest requires an explicitly enabled ICP configuration. Founder-scheduled Discovery V2 uses its own accepted saved-search budget.' });
 
-    const [before, profiles, emergency, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
+    const [before, profiles, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
       service.entities.OutboundLead.list('-created_date',5000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
       service.entities.OutboundSendingProfile.list('-created_date',100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
-      emergencyState(service),
       service.entities.MarketCapabilityControl.filter({ capability:'DISCOVER_LEAD' }, '-updated_at',500).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
       service.entities.MarketIntelligenceProfile.list('-updated_at',500).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
       service.entities.LeadDiscoveryCheckpoint.list('last_attempt_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),
@@ -57,8 +63,8 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const providerSelection=selectLeadIntelligenceProvider({mode:policy?.icp_json?.provider_mode||'AUTO',apolloConfigured:Boolean(Deno.env.get('APOLLO_API_KEY')),instantlyConfigured:Boolean(Deno.env.get('INSTANTLY_API_KEY')),instantlySuperSearchPermission:instantlyState?.metrics_json?.supersearch_permission_verified===true});
     const selectedProvider=providerSelection.selected;
     const providerOperational=selectedProvider==='apollo'?provider.available&&providerDiagnostic?.auth?.pass!==false:selectedProvider==='instantly_supersearch'&&instantlyState?.metrics_json?.supersearch_permission_verified===true;
-    const shouldDiscover=!emergency.safe_mode&&providerOperational&&uniqueCompaniesBefore<targetUnique;
-    const discoveryAction=emergency.safe_mode?'safe_mode_no_external_discovery':!selectedProvider?providerSelection.reason:uniqueCompaniesBefore>=targetUnique?'warehouse_target_reached':shouldDiscover?'continue_controlled_harvest':'provider_degraded';
+    const shouldDiscover=!emergency.safe_mode&&!emergency.paid_discovery_paused&&providerOperational&&uniqueCompaniesBefore<targetUnique;
+    const discoveryAction=emergency.safe_mode||emergency.paid_discovery_paused?'safe_mode_no_external_discovery':!selectedProvider?providerSelection.reason:uniqueCompaniesBefore>=targetUnique?'warehouse_target_reached':shouldDiscover?'continue_controlled_harvest':'provider_degraded';
 
     const blockedMarkets=new Set(capabilityControls.filter((row:any)=>row.blocked===true&&(!row.effective_to||Date.parse(row.effective_to)>Date.now())).map((row:any)=>String(row.jurisdiction||'').toUpperCase()));
     const marketPriority=new Map<string,number>(marketProfiles.map((row:any)=>[String(row.jurisdiction||'').toUpperCase(),/READY|HIGH|PRIORITY/i.test(String(row.commercial_priority_status||''))?0:1] as [string,number]));
@@ -152,7 +158,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     const intelligence=buildCommercialIntelligence(leads, policy);
     const commercialSnapshot=await service.entities.CommercialIntelligenceSnapshot.create({snapshot_key:`commercial:${Date.now()}`,generated_at:intelligence.generated_at,engine_version:intelligence.version,policy_key:policy.policy_key,policy_version:String(policy.version||''),market_sizing_json:intelligence.market_sizing,prioritization_json:intelligence.prioritization,lead_graph_json:intelligence.lead_graph,forecast_json:intelligence.forecast,learning_json:intelligence.learning,data_quality_json:intelligence.data_quality,source_coverage_json:{...intelligence.source_coverage,provider_status:{selected:selectedProvider,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},configured_markets:requestedCountries,blocked_markets:[...blockedMarkets]},unknowns:intelligence.unknowns,reservoir_snapshot_id:reservoir.id});
     await service.entities.Event.create({brand_id:'_platform',event_type:'commercial.intelligence.snapshot.created',source:'always_on_lead_discovery',entity_type:'CommercialIntelligenceSnapshot',entity_id:commercialSnapshot.id,payload_json:{engine_version:COMMERCIAL_INTELLIGENCE_VERSION,reservoir_snapshot_id:reservoir.id,market_methodology:intelligence.market_sizing.methodology},status:'pending'}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));
-    return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{selected:selectedProvider,reason:providerSelection.reason,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
+    return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,scheduled_discovery:scheduledDiscovery,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{selected:selectedProvider,reason:providerSelection.reason,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
   }catch(error){__schedulerOk=false;console.error('alwaysOnLeadDiscoveryWorker failed',String((error as Error)?.message||error).slice(0,200));return Response.json({ok:false,error:'always_on_lead_discovery_failed'},{status:500})}
-  finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRun(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}
+  finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}
 });

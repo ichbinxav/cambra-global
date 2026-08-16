@@ -2,8 +2,8 @@
   "name": "CAMBRA",
   "functionsDir": "./.deploy/functions",
   "site": {
-    "installCommand": "npm install",
-    "buildCommand": "npm run build",
+    "installCommand": "npm ci",
+    "buildCommand": "npm run base44:functions:bundle && npm run build",
     "serveCommand": "npm run dev",
     "outputDirectory": "./dist"
   }

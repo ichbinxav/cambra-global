@@ -1,13 +1,227 @@
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp, Settings2
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n.jsx";
+
+export const ADMIN_LAYOUT_COPY = {
+  en: {
+    "nav.Founder OS": "Founder OS",
+    "nav.Inbox": "Inbox",
+    "nav.AI Operations": "AI Operations",
+    "nav.CAMBRA Developer": "CAMBRA Developer",
+    "nav.Automations": "Automations",
+    "nav.Ask CAMBRA": "Ask CAMBRA",
+    "nav.Discovery": "Discovery",
+    "nav.Commercial OS": "Commercial OS",
+    "nav.Commercial Autonomy": "Commercial Autonomy",
+    "nav.Intelligence": "Intelligence",
+    "nav.Europe · Markets": "Europe · Markets",
+    "nav.Europe · Growth": "Europe · Growth",
+    "nav.Routing Intelligence": "Routing Intelligence",
+    "nav.Aggregate": "Aggregate",
+    "nav.Finance": "Finance",
+    "nav.Provider Economics": "Provider Economics",
+    "nav.Founder Control": "Founder Control",
+    "nav.Settings": "Settings",
+    "nav.Maintenance": "Maintenance",
+    "nav.Operating Bible": "Operating Bible",
+    "nav.Evidence Review": "Evidence Review",
+    "nav.ECL Operations": "ECL Operations",
+    "nav.Overview": "Overview",
+    "nav.Users & Companies": "Users & Companies",
+    "nav.Merchants": "Merchants",
+    "nav.Waitlist": "Waitlist",
+    "nav.Deal Applications": "Deal Applications",
+    "nav.Pipeline": "Pipeline",
+    "nav.Deals": "Deals",
+    "nav.Providers": "Providers",
+    "nav.Revenue": "Revenue",
+    "nav.Recover Billing": "Recover Billing",
+    "nav.Contracts": "Contracts",
+    "nav.Benchmarks": "Benchmarks",
+    "nav.Recommendations": "Recommendations",
+    "nav.Integrations": "Integrations",
+    "nav.API & Webhooks": "API & Webhooks",
+    "nav.Compliance": "Compliance",
+    "nav.Activity Log": "Activity Log",
+    "nav.Approvals": "Approvals",
+    "nav.Founder Copilot": "Founder Copilot",
+    "group.Overview": "Overview",
+    "group.Command": "Command",
+    "group.Inbox": "Inbox",
+    "group.Intelligence": "Intelligence",
+    "group.Commercial": "Commercial",
+    "group.Operations": "Operations",
+    "group.Company": "Company",
+    "group.System": "System",
+    sign_in_required: "Sign-in required",
+    sign_in_help: "Open the login window and return automatically.",
+    sign_in: "Sign in",
+    admin_access_required: "Admin access required",
+    account_role: "Your account role: {role}. Contact support to get admin access.",
+    back_dashboard: "Back to Dashboard",
+    admin_live: "Admin · Live",
+    close_menu: "Close navigation",
+    open_menu: "Open navigation",
+    sign_out: "Sign out",
+    back_to_app: "Back to app",
+    search_or_ask: "Search or ask CAMBRA…",
+    searching: "Searching…",
+    no_matches: "No exact matches. Press Enter to ask CAMBRA.",
+    ask_cambra: "Ask CAMBRA",
+    how_it_works: "How does this work?",
+    admin: "Admin",
+  },
+  fr: {
+    "nav.Founder OS": "OS Fondateur",
+    "nav.Inbox": "Boîte de réception",
+    "nav.AI Operations": "Opérations IA",
+    "nav.CAMBRA Developer": "Développement CAMBRA",
+    "nav.Automations": "Automatisations",
+    "nav.Ask CAMBRA": "Demander à CAMBRA",
+    "nav.Discovery": "Découverte",
+    "nav.Commercial OS": "OS Commercial",
+    "nav.Commercial Autonomy": "Autonomie commerciale",
+    "nav.Intelligence": "Intelligence",
+    "nav.Europe · Markets": "Europe · Marchés",
+    "nav.Europe · Growth": "Europe · Croissance",
+    "nav.Routing Intelligence": "Intelligence de routage",
+    "nav.Aggregate": "Agrégats",
+    "nav.Finance": "Finances",
+    "nav.Provider Economics": "Économie des prestataires",
+    "nav.Founder Control": "Contrôle Fondateur",
+    "nav.Settings": "Paramètres",
+    "nav.Maintenance": "Maintenance",
+    "nav.Operating Bible": "Manuel opérationnel",
+    "nav.Evidence Review": "Revue des preuves",
+    "nav.ECL Operations": "Opérations ECL",
+    "nav.Overview": "Vue d’ensemble",
+    "nav.Users & Companies": "Utilisateurs et entreprises",
+    "nav.Merchants": "Marchands",
+    "nav.Waitlist": "Liste d’attente",
+    "nav.Deal Applications": "Demandes commerciales",
+    "nav.Pipeline": "Pipeline",
+    "nav.Deals": "Opportunités",
+    "nav.Providers": "Prestataires",
+    "nav.Revenue": "Chiffre d’affaires",
+    "nav.Recover Billing": "Facturation Recover",
+    "nav.Contracts": "Contrats",
+    "nav.Benchmarks": "Référentiels",
+    "nav.Recommendations": "Recommandations",
+    "nav.Integrations": "Intégrations",
+    "nav.API & Webhooks": "API et webhooks",
+    "nav.Compliance": "Conformité",
+    "nav.Activity Log": "Journal d’activité",
+    "nav.Approvals": "Approbations",
+    "nav.Founder Copilot": "Copilote Fondateur",
+    "group.Overview": "Vue d’ensemble",
+    "group.Command": "Pilotage",
+    "group.Inbox": "Boîte de réception",
+    "group.Intelligence": "Intelligence",
+    "group.Commercial": "Commercial",
+    "group.Operations": "Opérations",
+    "group.Company": "Entreprise",
+    "group.System": "Système",
+    sign_in_required: "Connexion requise",
+    sign_in_help: "Ouvrez la fenêtre de connexion, puis revenez automatiquement.",
+    sign_in: "Se connecter",
+    admin_access_required: "Accès administrateur requis",
+    account_role: "Rôle de votre compte : {role}. Contactez l’assistance pour obtenir l’accès administrateur.",
+    back_dashboard: "Retour au tableau de bord",
+    admin_live: "Admin · En direct",
+    close_menu: "Fermer la navigation",
+    open_menu: "Ouvrir la navigation",
+    sign_out: "Se déconnecter",
+    back_to_app: "Retour à l’application",
+    search_or_ask: "Rechercher ou demander à CAMBRA…",
+    searching: "Recherche…",
+    no_matches: "Aucun résultat exact. Appuyez sur Entrée pour demander à CAMBRA.",
+    ask_cambra: "Demander à CAMBRA",
+    how_it_works: "Comment cela fonctionne-t-il ?",
+    admin: "Admin",
+  },
+  es: {
+    "nav.Founder OS": "OS del Fundador",
+    "nav.Inbox": "Bandeja de entrada",
+    "nav.AI Operations": "Operaciones de IA",
+    "nav.CAMBRA Developer": "Desarrollo CAMBRA",
+    "nav.Automations": "Automatizaciones",
+    "nav.Ask CAMBRA": "Preguntar a CAMBRA",
+    "nav.Discovery": "Descubrimiento",
+    "nav.Commercial OS": "Sistema Comercial",
+    "nav.Commercial Autonomy": "Autonomía comercial",
+    "nav.Intelligence": "Inteligencia",
+    "nav.Europe · Markets": "Europa · Mercados",
+    "nav.Europe · Growth": "Europa · Crecimiento",
+    "nav.Routing Intelligence": "Inteligencia de enrutamiento",
+    "nav.Aggregate": "Agregados",
+    "nav.Finance": "Finanzas",
+    "nav.Provider Economics": "Economía de proveedores",
+    "nav.Founder Control": "Control del Fundador",
+    "nav.Settings": "Configuración",
+    "nav.Maintenance": "Mantenimiento",
+    "nav.Operating Bible": "Manual operativo",
+    "nav.Evidence Review": "Revisión de evidencias",
+    "nav.ECL Operations": "Operaciones ECL",
+    "nav.Overview": "Resumen",
+    "nav.Users & Companies": "Usuarios y empresas",
+    "nav.Merchants": "Merchants",
+    "nav.Waitlist": "Lista de espera",
+    "nav.Deal Applications": "Solicitudes comerciales",
+    "nav.Pipeline": "Pipeline",
+    "nav.Deals": "Acuerdos",
+    "nav.Providers": "Proveedores",
+    "nav.Revenue": "Ingresos",
+    "nav.Recover Billing": "Facturación Recover",
+    "nav.Contracts": "Contratos",
+    "nav.Benchmarks": "Comparativas",
+    "nav.Recommendations": "Recomendaciones",
+    "nav.Integrations": "Integraciones",
+    "nav.API & Webhooks": "API y webhooks",
+    "nav.Compliance": "Cumplimiento",
+    "nav.Activity Log": "Registro de actividad",
+    "nav.Approvals": "Aprobaciones",
+    "nav.Founder Copilot": "Copiloto del Fundador",
+    "group.Overview": "Resumen",
+    "group.Command": "Control",
+    "group.Inbox": "Bandeja de entrada",
+    "group.Intelligence": "Inteligencia",
+    "group.Commercial": "Comercial",
+    "group.Operations": "Operaciones",
+    "group.Company": "Empresa",
+    "group.System": "Sistema",
+    sign_in_required: "Inicio de sesión obligatorio",
+    sign_in_help: "Abre la ventana de acceso y volverás automáticamente.",
+    sign_in: "Iniciar sesión",
+    admin_access_required: "Se requiere acceso de administrador",
+    account_role: "El rol de tu cuenta es: {role}. Contacta con soporte para obtener acceso de administrador.",
+    back_dashboard: "Volver al panel",
+    admin_live: "Admin · En vivo",
+    close_menu: "Cerrar navegación",
+    open_menu: "Abrir navegación",
+    sign_out: "Cerrar sesión",
+    back_to_app: "Volver a la aplicación",
+    search_or_ask: "Buscar o preguntar a CAMBRA…",
+    searching: "Buscando…",
+    no_matches: "No hay coincidencias exactas. Pulsa Intro para preguntar a CAMBRA.",
+    ask_cambra: "Preguntar a CAMBRA",
+    how_it_works: "¿Cómo funciona?",
+    admin: "Admin",
+  },
+};
+
+export function adminLayoutText(lang, key, params = {}) {
+  const dictionary = ADMIN_LAYOUT_COPY[lang] || ADMIN_LAYOUT_COPY.en;
+  const raw = dictionary[key] ?? ADMIN_LAYOUT_COPY.en[key] ?? key;
+  return String(raw).replace(/\{(\w+)\}/g, (_match, name) => params[name] == null ? `{${name}}` : String(params[name]));
+}
 
 const NAV = [
   { path: "/admin", label: "Founder OS", icon: LayoutDashboard, exact: true },
@@ -27,12 +241,14 @@ const NAV = [
   { path: "/admin/finance", label: "Finance", icon: Landmark },
   { path: "/admin/provider-economics", label: "Provider Economics", icon: Handshake },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
+  { path: "/admin/settings", label: "Settings", icon: Settings2 },
   { path: "/admin/maintenance", label: "Maintenance", icon: Wrench },
   { path: "/admin/documentation", label: "Operating Bible", icon: BookOpen },
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
   { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
   { path: "/admin/overview", label: "Overview", icon: BarChart3 },
   { path: "/admin/users", label: "Users & Companies", icon: Users },
+  { path: "/admin/merchants", label: "Merchants", icon: Building2 },
   { path: "/admin/waitlist", label: "Waitlist", icon: Mail, showWaitlistBadge: true },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
@@ -59,7 +275,7 @@ function navGroup(path) {
   if (["/admin/intelligence", "/admin/markets", "/admin/growth", "/admin/routing-intelligence", "/admin/benchmarks", "/admin/recommendations"].includes(path)) return "Intelligence";
   if (["/admin/discovery", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
   if (["/admin/agents", "/admin/automations", "/admin/developer", "/admin/maintenance", "/admin/evidence-review", "/admin/ecl-operations", "/admin/activity"].includes(path)) return "Operations";
-  if (["/admin/users", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
+  if (["/admin/users", "/admin/merchants", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
   return "System";
 }
 const GROUPED_NAV = [...NAV].sort((a, b) => GROUP_ORDER.indexOf(navGroup(a.path)) - GROUP_ORDER.indexOf(navGroup(b.path)) || NAV.indexOf(a) - NAV.indexOf(b));
@@ -83,6 +299,7 @@ function documentationTopic(path) {
 
 export default function AdminLayout() {
   const { isAuthenticated, isLoadingAuth } = useAuth();
+  const { lang, setLang } = useTranslation();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -94,6 +311,8 @@ export default function AdminLayout() {
   const [quickCommand, setQuickCommand] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const syncedPreferenceFor = useRef("");
+  const copy = (key, params) => adminLayoutText(lang, key, params);
 
   useEffect(() => {
     const query = quickCommand.trim();
@@ -115,6 +334,24 @@ export default function AdminLayout() {
       setLoadingUser(false);
     }
   }, [isAuthenticated, isLoadingAuth]);
+
+  // Apply the canonical Admin preference once per signed-in identity. This is
+  // intentionally non-blocking: a Settings read failure must never strand the
+  // shell, and the ref prevents a setLang/localStorage update from reloading it.
+  useEffect(() => {
+    if (user?.role !== "admin") return;
+    const identity = String(user.id || user.email || "admin");
+    if (syncedPreferenceFor.current === identity) return;
+    syncedPreferenceFor.current = identity;
+    base44.functions.invoke("getFounderControlCenter", { view: "settings", section: "language_region" })
+      .then((response) => {
+        const envelope = response?.data || response || {};
+        const settings = envelope?.data || envelope;
+        const preferred = String(settings?.current?.language || "").toLowerCase();
+        if (["en", "fr", "es"].includes(preferred) && preferred !== lang) setLang(preferred);
+      })
+      .catch(() => {});
+  }, [user, lang, setLang]);
 
   // Poll pending approvals count for sidebar badge (admin-only context)
   useEffect(() => {
@@ -152,14 +389,14 @@ export default function AdminLayout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-sm">
-          <h1 className="text-lg font-bold mb-2">Sign-in required</h1>
-          <p className="text-sm text-muted-foreground mb-4">Open the login window and return automatically.</p>
+          <h1 className="text-lg font-bold mb-2">{copy("sign_in_required")}</h1>
+          <p className="text-sm text-muted-foreground mb-4">{copy("sign_in_help")}</p>
           <a
             href="/auth/start"
             target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-foreground text-background text-sm font-bold"
           >
-            Sign in
+            {copy("sign_in")}
           </a>
         </div>
       </div>
@@ -171,9 +408,9 @@ export default function AdminLayout() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-4xl mb-4">🔒</p>
-          <h1 className="text-xl font-bold mb-2">Admin access required</h1>
-          <p className="text-muted-foreground text-sm mb-6">Your account role: <strong>{user?.role || "user"}</strong>. Contact support to get admin access.</p>
-          <Link to="/Dashboard" className="text-sm font-semibold underline">Back to Dashboard</Link>
+          <h1 className="text-xl font-bold mb-2">{copy("admin_access_required")}</h1>
+          <p className="text-muted-foreground text-sm mb-6">{copy("account_role", { role: user?.role || "user" })}</p>
+          <Link to="/Dashboard" className="text-sm font-semibold underline">{copy("back_dashboard")}</Link>
         </div>
       </div>
     );
@@ -189,11 +426,12 @@ export default function AdminLayout() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-black tracking-tight text-foreground">CAMBRA</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5 tracking-[0.18em] uppercase">Admin · Live</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tracking-[0.18em] uppercase">{copy("admin_live")}</p>
             </div>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); setSidebarOpen(false); }}
+              aria-label={copy("close_menu")}
               className="lg:hidden text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-colors"
               style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
             >
@@ -209,7 +447,7 @@ export default function AdminLayout() {
             const startsGroup = index === 0 || navGroup(GROUPED_NAV[index - 1].path) !== group;
             return (
               <Fragment key={item.path}>
-              {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{group}</p>}
+              {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{copy(`group.${group}`)}</p>}
               <Link
                 key={item.path}
                 to={item.path}
@@ -221,7 +459,7 @@ export default function AdminLayout() {
                 }`}
               >
                 <item.icon size={13} />
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1">{copy(`nav.${item.label}`)}</span>
                 {item.showPendingBadge && pendingApprovals > 0 && (
                   <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-black tabular-nums ${
                     active ? "bg-background text-foreground" : "bg-rose-600 text-white"
@@ -260,10 +498,10 @@ export default function AdminLayout() {
             onClick={() => base44.auth.logout("/Landing")}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
           >
-            <LogOut size={13} /> Sign out
+            <LogOut size={13} /> {copy("sign_out")}
           </button>
           <Link to="/Dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
-            <ChevronRight size={13} /> Back to app
+            <ChevronRight size={13} /> {copy("back_to_app")}
           </Link>
         </div>
       </aside>
@@ -278,36 +516,40 @@ export default function AdminLayout() {
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
+            aria-label={copy("open_menu")}
             className="lg:hidden text-muted-foreground hover:text-foreground p-2 -ml-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer"
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
           >
             <Menu size={20} />
           </button>
           <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-            {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => (
-              <span key={i} className="flex items-center gap-1.5">
+            {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => {
+              const partialPath = `/${arr.slice(0, i + 1).join("/")}`;
+              const item = NAV.find((entry) => entry.path === partialPath);
+              const label = i === 0 ? copy("admin") : item ? copy(`nav.${item.label}`) : seg;
+              return <span key={i} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight size={10} />}
-                <span className={i === arr.length - 1 ? "text-foreground font-semibold" : ""}>{seg}</span>
-              </span>
-            ))}
+                <span className={i === arr.length - 1 ? "text-foreground font-semibold" : ""}>{label}</span>
+              </span>;
+            })}
           </div>
           <div className="ml-auto flex items-center gap-2 min-w-0">
             <form onSubmit={(e)=>{e.preventDefault();const q=quickCommand.trim();if(searchResults[0]){navigate(searchResults[0].route);setQuickCommand("");setSearchResults([])}else if(q){navigate(`/admin/chat?ask=${encodeURIComponent(q)}`);setQuickCommand("")}}} className="relative hidden md:flex items-center h-8 min-w-[220px] lg:min-w-[340px] rounded-lg border border-border/60 bg-background/50 px-2">
               <Search size={12} className="text-muted-foreground shrink-0"/>
-              <input value={quickCommand} onChange={e=>setQuickCommand(e.target.value)} placeholder="Search or ask CAMBRA…" className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"/>
+              <input value={quickCommand} onChange={e=>setQuickCommand(e.target.value)} placeholder={copy("search_or_ask")} aria-label={copy("search_or_ask")} className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"/>
               <span className="text-[9px] text-muted-foreground">↵</span>
-              {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-muted-foreground">Searching…</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-muted-foreground truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-muted-foreground">No exact matches. Press Enter to ask CAMBRA.</p>}</div>}
+              {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-muted-foreground">{copy("searching")}</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-muted-foreground truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-muted-foreground">{copy("no_matches")}</p>}</div>}
             </form>
-            <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label="Ask CAMBRA"><MessageSquare size={13}/></button>
+            <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label={copy("ask_cambra")}><MessageSquare size={13}/></button>
             <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />
-            <Link to={`/admin/documentation?topic=${documentationTopic(location.pathname)}`} className="hidden lg:inline-flex h-8 px-3 rounded-lg border border-border/60 text-[11px] font-bold items-center gap-1.5 hover:bg-secondary"><HelpCircle size={12}/>How does this work?</Link>
+            <Link to={`/admin/documentation?topic=${documentationTopic(location.pathname)}`} className="hidden lg:inline-flex h-8 px-3 rounded-lg border border-border/60 text-[11px] font-bold items-center gap-1.5 hover:bg-secondary"><HelpCircle size={12}/>{copy("how_it_works")}</Link>
             <a
               href="/Dashboard"
               className="h-8 px-3 rounded-lg border border-border/60 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
             >
-              Back to app
+              {copy("back_to_app")}
             </a>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border/60 font-semibold">Admin</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-foreground border border-border/60 font-semibold">{copy("admin")}</span>
           </div>
         </header>
 

@@ -1,1 +1,33 @@
-{"name":"OutreachExperimentStats","type":"object","properties":{"engine":{"type":"string"},"variant_key":{"type":"string"},"sample_size":{"type":"number"},"reply_count":{"type":"number"},"positive_reply_count":{"type":"number"},"meeting_count":{"type":"number"},"won_count":{"type":"number"},"verified_savings_total":{"type":"number"},"performance_score":{"type":"number"},"updated_at":{"type":"string","format":"date-time"}},"required":["engine","variant_key"],"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}}
+{
+  "name": "OutreachExperimentStats",
+  "type": "object",
+  "description": "Bounded descriptive variant advisory over confirmed, outcome-mature exposure only. Not a trained/calibrated model or causal uplift claim.",
+  "properties": {
+    "engine": { "type": "string" },
+    "variant_key": { "type": "string" },
+    "sample_size": { "type": "number" },
+    "eligible_sample_size": { "type": "number" },
+    "exposure_count": { "type": "number" },
+    "negative_count": { "type": "number" },
+    "reply_count": { "type": "number" },
+    "positive_reply_count": { "type": "number" },
+    "meeting_count": { "type": "number" },
+    "won_count": { "type": "number" },
+    "verified_savings_total": { "type": "number" },
+    "performance_score": { "type": "number" },
+    "label_contract_version": { "type": "string" },
+    "methodology_class": {
+      "type": "string",
+      "enum": ["DESCRIPTIVE_SELECTED_POPULATION_ADVISORY"]
+    },
+    "probabilistic_calibration": { "type": "boolean", "default": false },
+    "training_eligible": { "type": "boolean", "default": false },
+    "selected_population_note": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["engine", "variant_key"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

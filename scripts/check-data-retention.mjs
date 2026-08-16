@@ -17,5 +17,5 @@ const names=new Set();for(const [index,row] of rows.entries()){
   if(!fs.existsSync(row.automation_reference))fail(`${row.category} reference missing: ${row.automation_reference}`);
   if(String(row.automation_status).startsWith('AUTOMATED')&&!String(row.central_policy_key||'').trim())fail(`${row.category} automated without central_policy_key`);
 }
-for(const category of ['uploaded_source_documents','commercial_communications','billing_invoices_and_tax_records','security_and_authorization_audits','product_analytics_events','intelligence_outcomes_and_aggregates'])if(!names.has(category))fail(`material category missing: ${category}`);
+for(const category of ['uploaded_source_documents','commercial_communications','billing_invoices_and_tax_records','security_and_authorization_audits','product_analytics_events','intelligence_outcomes_and_aggregates','rate_limit_counters'])if(!names.has(category))fail(`material category missing: ${category}`);
 if(!process.exitCode)console.log(`retention:check PASS — ${rows.length} categories mapped to ${matrix.policy_version}; execution evidence required; non-automated states remain explicit`);

@@ -34,7 +34,25 @@
     },
     "billing_run_id": {
       "type": "string",
-      "description": "SECURITY-2 (2026-07-24) \u2014 claim marker set by billApiUsage BEFORE invoicing. A record claimed by one run is skipped by concurrent/duplicate runs. Released (null) if invoice creation fails so the next run retries. Additive \u2014 historical rows have it absent."
+      "description": "Run that owns or completed the organization+period billing claim. Ambiguous invoice creates retain this claim; they are never blindly released."
+    },
+    "billing_claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp for the renewable billing claim lease."
+    },
+    "billing_claim_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "CAS fence shared by API recording and monthly billing. Both operations increment this revision before changing the period."
+    },
+    "billing_execution_key": {
+      "type": "string",
+      "description": "Deterministic api-overage-invoice:<organization_id>:<period_month> identity."
+    },
+    "invoice_id": {
+      "type": "string",
+      "description": "Local Invoice bound to the aggregated organization+period charge; absent for a closed zero-charge period."
     },
     "stripe_invoice_id": {
       "type": "string"
@@ -56,7 +74,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

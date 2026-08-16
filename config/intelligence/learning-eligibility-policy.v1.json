@@ -1,0 +1,57 @@
+{
+  "schema_version": "learning-eligibility.v1",
+  "status": "POLICY_IMPLEMENTED_RUNTIME_NOT_WIRED",
+  "decision_states": [
+    "INELIGIBLE",
+    "QUARANTINED",
+    "CLEARED"
+  ],
+  "state_semantics": {
+    "INELIGIBLE": "A known policy disqualifier exists. The datum cannot enter the requested learning scope.",
+    "QUARANTINED": "Required identity, evidence, provenance, time, privacy or runtime-gate truth is absent, ambiguous or conflicting.",
+    "CLEARED": "This policy's strict admission contract is satisfied for the returned scopes. It is not a dataset seal, model approval or production promotion."
+  },
+  "mandatory_gate_ids": [
+    "PHASE_0_GLOBAL_RECONCILIATION",
+    "INTELLIGENCE_FOUNDATION_INTEGRATED",
+    "SHARED_PRIVACY_TENANT_GATE",
+    "SHARED_AUTHORITY_GATE"
+  ],
+  "cleared_requires": {
+    "gates": "Every mandatory and domain-specific gate is PASSED and carries non-empty attributable runtime evidence.",
+    "tenant": "Explicit tenant_id, valid tenant_scope, resolved identity and no identity conflict.",
+    "evidence": "Non-empty evidence/source refs, verified provenance, V2+ verification tier and no unresolved contradiction.",
+    "privacy": "Training is explicitly allowed for the requested purpose, legal basis and retention policy exist, and no restriction applies.",
+    "execution": "EXECUTED with execution_id and idempotency key.",
+    "outcome": "VERIFIED or RECONCILED, mature, and linked to independent verification evidence.",
+    "label": "Versioned definition, explicit minimum verification tier, and a source other than CAMBRA_GENERATED_ONLY.",
+    "time": "All canonical timestamps are valid; feature availability and recording precede prediction; outcome maturity precedes evaluation.",
+    "cross_tenant": "Only an irreversible approved aggregate with cohort_size >= 10, no reidentification mapping and explicit cross-tenant permission."
+  },
+  "known_ineligible_reasons": [
+    "DATA_REVOKED",
+    "DEMO_DATA",
+    "SYNTHETIC_DATA",
+    "TEST_DATA",
+    "REPLAY_DATA",
+    "SELF_REFERENTIAL_LABEL",
+    "TRAINING_NOT_ALLOWED",
+    "PURPOSE_NOT_ALLOWED",
+    "PRIVACY_RESTRICTION_ACTIVE",
+    "SPECIAL_CATEGORY_DATA",
+    "CROSS_TENANT_NOT_ALLOWED",
+    "AGGREGATE_K_BELOW_10",
+    "REIDENTIFICATION_MAPPING_PRESENT",
+    "EXECUTION_NOT_CONFIRMED",
+    "OUTCOME_NOT_VERIFIED",
+    "LABEL_NOT_MATURE"
+  ],
+  "implementation_ref": "base44/shared/intelligenceFoundationContracts.ts",
+  "runtime_evidence": [],
+  "blockers": [
+    "MANDATORY_GATES_CURRENTLY_BLOCKED",
+    "NO_RUNTIME_WRITER_EMITS_CLEARED_DECISIONS",
+    "NO_SEALED_DATASET",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

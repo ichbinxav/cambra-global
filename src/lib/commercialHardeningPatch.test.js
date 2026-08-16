@@ -14,7 +14,7 @@ describe('v0.90.1 commercial hardening patch',()=>{
     expect(routineActionAllowed(activePolicy,'initial_outreach','initial_outreach').allowed).toBe(true);
     expect(routineActionAllowed(activePolicy,'partner_outreach','partner_outreach').allowed).toBe(true);
     for(const file of ['base44/functions/outboundVolumeWorker/entry.ts','base44/functions/autonomousCommercialWorker/entry.ts']){
-      const src=read(file);expect(src).toContain("classification:'initial_outreach'");expect(src).not.toMatch(/action(?:\s*:\s*'initial_outreach'|),classification:'interested'/);
+      const src=read(file);expect(src).toMatch(/classification:\s*["']initial_outreach["']/);expect(src).not.toMatch(/action(?:\s*:\s*'initial_outreach'|),classification:'interested'/);
     }
     expect(read('base44/functions/autonomousPartnerWorker/entry.ts')).toContain("classification:'partner_outreach'");
   });
@@ -30,7 +30,8 @@ describe('v0.90.1 commercial hardening patch',()=>{
   it('applies profile and policy caps centrally to follow-ups, replies and future workers',()=>{
     const src=read('base44/functions/commercialSendMessage/entry.ts');
     expect(src).toContain('automaticSendGovernorDecision');
-    expect(src).toContain('policySentToday:policySent.length');
+    expect(src).toMatch(/policySentToday:\s*policySent\.length/);
+    expect(src).toContain('claimCommercialSendSlot');
     expect(src).toContain("agent_send_authority_required");
     expect(src).not.toContain('if(automatic&&policy&&Number(policy.daily_send_limit||0)>0)');
     expect(authorityForAgent('unknown_future_sender').CAN_SEND).toBe(false);
@@ -38,8 +39,8 @@ describe('v0.90.1 commercial hardening patch',()=>{
 
   it('requires an actual admin and durable audit for manual override',()=>{
     const src=read('base44/functions/commercialSendMessage/entry.ts');
-    expect(src).toContain("manualOverrideRequested&&!gate.isAdmin");
-    expect(src).toContain("action_type:'commercial_send_manual_override'");
+    expect(src).toMatch(/manualOverrideRequested\s*&&\s*!gate\.isAdmin/);
+    expect(src).toMatch(/action_type:\s*["']commercial_send_manual_override["']/);
     expect(src).toContain("manual_override_audit_required");
   });
 
@@ -48,14 +49,20 @@ describe('v0.90.1 commercial hardening patch',()=>{
     expect(followUpRunBudget(true,999)).toBe(50);
     expect(followUpRunBudget(true,7)).toBe(7);
     const src=read('base44/functions/commercialFollowUpWorker/entry.ts');
-    expect(src.indexOf('if(sent>=runBudget)')).toBeLessThan(src.indexOf('CommunicationMessage.filter'));
-    expect(src.indexOf('if(sent>=runBudget)')).toBeLessThan(src.indexOf('const prompt='));
-    expect(src).toContain('remain due for a future pass');
+    const budget=src.search(/if\s*\(sent\s*>=\s*runBudget\)/);
+    expect(budget).toBeGreaterThan(0);
+    expect(budget).toBeLessThan(src.indexOf('CommunicationMessage.filter'));
+    expect(budget).toBeLessThan(src.search(/const prompt\s*=/));
+    expect(src).toContain('future pass');
   });
 
   it('checks idempotency before consuming central capacity, so retry cannot send twice',()=>{
     const src=read('base44/functions/commercialSendMessage/entry.ts');
-    expect(src.indexOf('if (existing.length)')).toBeLessThan(src.indexOf('governor=automaticSendGovernorDecision'));
-    expect(src).toContain("'Idempotency-Key':idempotency");
+    const idempotencyRead=src.indexOf('const idempotencyRead = await readCommercialSendIdempotency(');
+    const governorDecision=src.indexOf('automaticSendGovernorDecision({');
+    expect(idempotencyRead).toBeGreaterThan(0);
+    expect(governorDecision).toBeGreaterThan(idempotencyRead);
+    expect(src).toMatch(/resendProviderIdempotencyKey\s*=\s*requireResendIdempotencyKey\(\s*idempotency\s*,?\s*\)/);
+    expect(src).toMatch(/["']Idempotency-Key["']:\s*resendProviderIdempotencyKey/);
   });
 });

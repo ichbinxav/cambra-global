@@ -108,10 +108,19 @@ describe("handler contracts — validation before side effects", () => {
   it("invoice creation validates economics before the first Stripe call", () => {
     const src = fn("createEligibleRecoverInvoices");
     const core = src.indexOf("prepareEligibleRecoverInvoice({");
-    const stripe = src.indexOf("stripeRequest(");
+    const provider = src.indexOf(
+      "return executeRecoverBillingProviderRequest(svc, claim, {",
+      core,
+    );
+    const stripe = src.indexOf(
+      "const created = await claimedStripeRequest(",
+      provider,
+    );
     expect(core).toBeGreaterThan(-1);
-    expect(stripe).toBeGreaterThan(-1);
+    expect(provider).toBeGreaterThan(core);
+    expect(stripe).toBeGreaterThan(provider);
     expect(core).toBeLessThan(stripe);
+    expect(src).not.toMatch(/\bstripeRequest\s*\(/);
   });
 
   it("the monthly report generator enforces the product scope server-side", () => {

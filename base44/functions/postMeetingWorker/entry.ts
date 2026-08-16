@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { communicationQuality, isBusinessHour, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 
 function parse(text:string) {
   const clean=String(text||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();
@@ -25,7 +25,7 @@ Deno.serve(async(req)=>{
   let schedulerSvc:any=null;let schedulerClaim:any=null;let schedulerOk=true;
   try{
     const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
-    const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'postMeetingWorker',cadence_seconds:3600});if(!schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:schedulerClaim.run_key});const now=new Date();
+    const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'postMeetingWorker',cadence_seconds:3600});{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}schedulerClaim=await markSchedulerEffectStarted(svc,schedulerClaim);{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}const now=new Date();
     const rows=await svc.entities.CommunicationThread.filter({post_meeting_status:'pending',meeting_end_at:{$lte:now.toISOString()}},'meeting_end_at',50).catch((error:any)=>safeBestEffort(error,{operation:'postMeetingWorker',fallback:[],severity:'secondary'}));
     let sent=0,skipped=0,waitingOutcome=0;
     for(const thread of rows){
@@ -62,5 +62,5 @@ Deno.serve(async(req)=>{
     }
     return Response.json({ok:true,due:rows.length,sent,skipped,waiting_outcome:waitingOutcome});
   }catch(error){schedulerOk=false;console.error('postMeetingWorker failed',error);return Response.json({ok:false,error:'post_meeting_worker_failed'},{status:500});}
-  finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRun(schedulerSvc,schedulerClaim,{worker_key:'postMeetingWorker'},schedulerOk);}
+  finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRunOrThrow(schedulerSvc,schedulerClaim,{worker_key:'postMeetingWorker'},schedulerOk);}
 });

@@ -7,5 +7,5 @@
     "policy_json":{"type":"object"},"created_at":{"type":"string","format":"date-time"}
   },
   "required":["command_key","actor_email","intent","action","risk_level","material","requires_confirmation","confirmed","status","created_at"],
-  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"__service_role_only__"}}}
 }

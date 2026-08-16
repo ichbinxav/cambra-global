@@ -9,6 +9,12 @@
 
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { assertPublicDns, normalizePublicHttpsUrl } from '../../shared/publicHttpEgress.ts';
+import {
+  isIntegrationCredentialBoundaryError,
+  readIntegrationCredential,
+  resolveOwnedIntegrationForActor,
+} from '../../shared/integrationCredentials.ts';
 
 // ─── REGISTRY (keep in sync with functions/oauthConnector.js) ──────────────
 const REGISTRY = {
@@ -579,12 +585,21 @@ function interpolateShopDomain(url, shop) {
   return url.replaceAll("{shop}", shop);
 }
 
+async function assertCredentialTarget(rawUrl, expectedOrigin) {
+  const url = normalizePublicHttpsUrl(rawUrl);
+  if (expectedOrigin && url.origin !== expectedOrigin) {
+    throw new Error('provider_pagination_origin_mismatch');
+  }
+  await assertPublicDns(url);
+  return url.toString();
+}
+
 // Generic auth header builder. Returns { headers, plaintextToken } so callers
 // can fuse static_headers and interpolate {token} for non-standard headers.
-async function buildAuthHeaders(cfg, integ) {
+async function buildAuthHeaders(cfg, credential) {
   const authMethod = cfg.auth_method || "oauth";
   if (authMethod === "oauth") {
-    const accessToken = await decryptToken(integ.access_token);
+    const accessToken = await decryptToken(credential?.encrypted_access_token);
     if (!accessToken) throw new Error("No access token stored");
     return {
       headers: { "Authorization": `Bearer ${accessToken}` },
@@ -592,7 +607,7 @@ async function buildAuthHeaders(cfg, integ) {
     };
   }
   if (authMethod === "api_key") {
-    const key = await decryptToken(integ.access_token);
+    const key = await decryptToken(credential?.encrypted_access_token);
     if (!key) throw new Error("No API key stored");
     const header = cfg.api_key_header || "Authorization";
     const format = cfg.api_key_format || "{key}";
@@ -603,7 +618,7 @@ async function buildAuthHeaders(cfg, integ) {
   }
   if (authMethod === "basic_auth") {
     // Stored as single AES blob "public:secret" → emit "Basic " + btoa(combined).
-    const combined = await decryptToken(integ.access_token);
+    const combined = await decryptToken(credential?.encrypted_access_token);
     if (!combined || !combined.includes(":")) {
       throw new Error("No valid basic_auth credentials stored");
     }
@@ -614,7 +629,7 @@ async function buildAuthHeaders(cfg, integ) {
   }
   if (authMethod === "static_secret") {
     // Admin-only dogfooding path. Reads the secret directly from Deno.env —
-    // NEVER from the DB (integ.access_token is unused for this auth method).
+    // NEVER from the DB (IntegrationCredential is unused for this auth method).
     // Used for connecting CAMBRA's own accounts as data sources without
     // building the full OAuth Connect flow. Read-only — the sync engine
     // only issues GET requests. See registry entry `stripe_self`.
@@ -1730,15 +1745,6 @@ function demoMockResponse(dataType) {
   return {};
 }
 
-async function assertBrandOwnedByUser(base44, brandId, user) {
-  if (user.role === "admin") return;
-  const brand = await base44.entities.Brand.get(brandId);
-  if (!brand) throw new Error("Brand not found");
-  if (brand.created_by !== user.email && brand.contact_email !== user.email) {
-    throw new Error("This brand does not belong to the current user");
-  }
-}
-
 // ─── Integration Data Quality Score (Opción B, Fase 2) ─────────────────────
 // Reads the static `known_data_gaps` metadata from the provider's REGISTRY
 // entry and projects it into a per-sync-run snapshot stored on Integration.
@@ -2017,7 +2023,7 @@ Deno.serve(async (req) => {
   // Purpose: hunt the "phantom 500" — a failure with no AgentTask row + no
   // legible log, suspected to live in the user-session code path (which
   // service-role tests can't reproduce). Remove once the culprit is caught.
-  let base44, user, body, integration_id, integ, cfg, task;
+  let base44, user, body, integration_id, integ, cfg, credential, task;
   let stage = "handler_start";
   try {
     stage = "create_client";
@@ -2044,11 +2050,10 @@ Deno.serve(async (req) => {
     }
 
     stage = "integration_get";
-    integ = await base44.asServiceRole.entities.Integration.get(integration_id);
-    if (!integ) return Response.json({ ok: false, error: "Integration not found" }, { status: 404 });
-
-    stage = "assert_brand_owned";
-    await assertBrandOwnedByUser(base44, integ.brand_id, user);
+    integ = await resolveOwnedIntegrationForActor(base44.asServiceRole, {
+      integration_id,
+      actor: user,
+    });
 
     if (integ.status !== "connected") {
       return Response.json({ ok: false, error: `Integration is ${integ.status}, not connected` }, { status: 400 });
@@ -2057,6 +2062,14 @@ Deno.serve(async (req) => {
     stage = "get_provider_config";
     cfg = getProviderConfig(integ.provider);
     if (!cfg) return Response.json({ ok: false, error: "Provider not in registry" }, { status: 500 });
+
+    stage = "credential_read";
+    credential = (cfg.auth_method || "oauth") === "static_secret"
+      ? null
+      : await readIntegrationCredential(base44.asServiceRole, {
+        integration_id: integ.id,
+        brand_id: integ.brand_id,
+      });
 
     stage = "agent_task_create";
     task = await base44.asServiceRole.entities.AgentTask.create({
@@ -2074,6 +2087,10 @@ Deno.serve(async (req) => {
 
     stage = "post_task_create";
   } catch (preTaskErr) {
+    if (isIntegrationCredentialBoundaryError(preTaskErr)
+      && preTaskErr.code === 'integration_tenant_resource_not_available') {
+      return Response.json({ ok: false, error: 'integration_not_available' }, { status: 404 });
+    }
     // ─── PRE-TASK CATCH ────────────────────────────────────────────────
     // Anything from handler_start → agent_task_create failing lands here.
     // console.error dumps the stack to function logs so we can trace which
@@ -2083,8 +2100,7 @@ Deno.serve(async (req) => {
     // failed. Integration row is left untouched (last_sync_status not
     // flipped to "failed" for a pre-task blow-up — that's for real sync
     // failures, not plumbing failures).
-    console.error(`[dataSyncAgent] pre-task failure at stage="${stage}":`, preTaskErr);
-    console.error(preTaskErr?.stack || "(no stack)");
+    console.error(`[dataSyncAgent] pre-task failure at stage="${stage}"`);
     return internalErrorResponse(preTaskErr, 'dataSyncAgent');
   }
 
@@ -2119,14 +2135,14 @@ Deno.serve(async (req) => {
     // Refresh-on-401 state is shared across ALL endpoints + ALL pages within
     // this sync run. One refresh per run, total. Eligibility is computed once
     // per integration: a provider needs OAuth + a stored refresh_token to be
-    // eligible. Live mutable reference to `integ` lets the post-refresh
-    // rebuildHeaders() see the new access_token without re-reading from DB
-    // (we update integ in place after a successful refresh).
+    // eligible. Live mutable references keep metadata and the server-only
+    // credential authority aligned after a refresh.
     let liveInteg = integ;
+    let liveCredential = credential;
     const refreshState = _createRefreshState();
     const refreshEligible = !cfg.demo_mode && _isEligibleForRefresh(
       cfg.auth_method || "oauth",
-      !!liveInteg.refresh_token,
+      !!liveCredential?.encrypted_refresh_token,
     );
 
     try {
@@ -2150,7 +2166,7 @@ Deno.serve(async (req) => {
         let finalAuthHeaders = {};
         const buildHeadersFromLiveInteg = async () => {
           if (cfg.demo_mode) { finalAuthHeaders = {}; return; }
-          const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, liveInteg);
+          const { headers: authHeaders, plaintextToken } = await buildAuthHeaders(cfg, liveCredential);
           finalAuthHeaders = mergeStaticHeaders(
             cfg, authHeaders, plaintextToken,
             liveInteg.metadata_json?.shop_domain || null,
@@ -2161,6 +2177,11 @@ Deno.serve(async (req) => {
         // Build the first URL: interpolate {shop}, then inject date-range params.
         let currentUrl = interpolateShopDomain(ep.url, liveInteg.metadata_json?.shop_domain || null);
         currentUrl = applyDateRangeToUrl(currentUrl, cfg.date_range, window);
+        // Demo adapters never transmit credentials or perform network I/O. Their
+        // reserved `.invalid` fixture hosts intentionally do not resolve, so the
+        // public-DNS gate applies only to real credential-bearing requests.
+        if (!cfg.demo_mode) currentUrl = await assertCredentialTarget(currentUrl, null);
+        const credentialOrigin = new URL(currentUrl).origin;
 
         // Paginator + rate state are per-endpoint (each endpoint has its own throttle budget).
         const paginator = getPaginator(cfg.pagination?.style);
@@ -2181,11 +2202,16 @@ Deno.serve(async (req) => {
             // doFetch closure: reads `nextUrl` and `finalAuthHeaders` by
             // closure, so the post-refresh retry automatically picks up
             // the NEW headers (rebuildHeaders mutates finalAuthHeaders).
+            nextUrl = await assertCredentialTarget(nextUrl, credentialOrigin);
             const doFetch = () => fetchWithBackoff(
-              () => fetch(nextUrl, {
+              async () => {
+                nextUrl = await assertCredentialTarget(nextUrl, credentialOrigin);
+                return fetch(nextUrl, {
+                redirect: 'error',
                 method: ep.method || "GET",
                 headers: { ...finalAuthHeaders, "Accept": "application/json" },
-              }),
+                });
+              },
               cfg.rate_limit,
               rateState,
             );
@@ -2202,11 +2228,14 @@ Deno.serve(async (req) => {
                 return !!body?.ok;
               },
               rebuildHeaders: async () => {
-                // Re-read the integration (now carrying the new access_token)
-                // and rebuild auth headers in place. The doFetch closure
-                // captures `finalAuthHeaders` by reference, so the retry
-                // automatically uses the rebuilt value.
+                // Re-read metadata plus the exact brand-bound credential and
+                // rebuild auth headers in place. The doFetch closure captures
+                // `finalAuthHeaders` by reference, so retry uses the rotation.
                 liveInteg = await base44.asServiceRole.entities.Integration.get(liveInteg.id);
+                liveCredential = await readIntegrationCredential(base44.asServiceRole, {
+                  integration_id: liveInteg.id,
+                  brand_id: liveInteg.brand_id,
+                });
                 await buildHeadersFromLiveInteg();
               },
               eligible: refreshEligible,
@@ -2214,8 +2243,8 @@ Deno.serve(async (req) => {
             });
 
             if (!res.ok) {
-              const text = await res.text();
-              throw new Error(`Endpoint ${ep.url} returned ${res.status}: ${text.slice(0, 200)}`);
+              await res.body?.cancel().catch(() => {});
+              throw new Error(`provider_endpoint_failed_${res.status}`);
             }
             raw = await res.json();
             resHeaders = res.headers;
@@ -2227,7 +2256,9 @@ Deno.serve(async (req) => {
           // Decide next page.
           const nextStep = paginator(raw, resHeaders, nextUrl, cfg.pagination || {});
           if (nextStep.nextCursor) lastCursor = nextStep.nextCursor;
-          nextUrl = cfg.demo_mode ? null : nextStep.nextUrl;
+          nextUrl = cfg.demo_mode || !nextStep.nextUrl
+            ? null
+            : await assertCredentialTarget(nextStep.nextUrl, credentialOrigin);
           pageIdx++;
         }
 

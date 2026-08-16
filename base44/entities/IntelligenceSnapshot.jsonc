@@ -18,6 +18,18 @@
     "brand_id": {
       "type": "string"
     },
+    "anonymous_claim_session_id": {
+      "type": "string",
+      "description": "Canonical PaymentsAnalysisSession row authorizing a winner-only anonymous payment snapshot."
+    },
+    "anonymous_claim_token": {
+      "type": "string",
+      "description": "Opaque claim fence binding this snapshot to the single canonical anonymous-session winner."
+    },
+    "anonymous_claim_owner": {
+      "type": "string",
+      "description": "Normalized tenant owner copied from the canonical PaymentsAnalysisSession claim."
+    },
     "vertical": {
       "type": "string"
     },

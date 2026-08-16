@@ -20,11 +20,28 @@
 export { redactSecrets, safeEqual, readPresentedSecret, isInternalCaller } from "./internalSecret.ts";
 import { isInternalCaller } from "./internalSecret.ts";
 
-export async function requireAdminOrInternal(req, base44, body = null) {
-  const user = await base44.auth.me().catch(() => null);
+async function authenticatedUser(base44: any) {
+  try {
+    return { available: true, user: await base44.auth.me() };
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "internal_gate_auth_authority_unavailable",
+      error_name: error instanceof Error ? error.name : typeof error,
+      observed_at: new Date().toISOString(),
+    }));
+    return { available: false, user: null };
+  }
+}
+
+export async function requireAdminOrInternal(req: Request, base44: any, body: any = null) {
+  const auth = await authenticatedUser(base44);
+  const user = auth.user;
   const isAdmin = user?.role === "admin";
   // v62 C4 — header-preferred, constant-time comparison (see internalSecret.ts).
   const isInternal = isInternalCaller(req, body);
+  if (!auth.available && !isInternal) {
+    return { ok: false, user: null, isAdmin: false, isInternal: false, response: Response.json({ error: "auth_authority_unavailable" }, { status: 503 }) };
+  }
   if (!isAdmin && !isInternal) {
     return { ok: false, user, isAdmin: false, isInternal: false, response: Response.json({ error: "forbidden" }, { status: 403 }) };
   }
@@ -33,9 +50,13 @@ export async function requireAdminOrInternal(req, base44, body = null) {
 
 // Variant for user-facing functions: any AUTHENTICATED user passes; anonymous
 // only with the internal secret. Ownership checks remain the caller's job.
-export async function requireUserOrInternal(req, base44, body = null) {
-  const user = await base44.auth.me().catch(() => null);
+export async function requireUserOrInternal(req: Request, base44: any, body: any = null) {
+  const auth = await authenticatedUser(base44);
+  const user = auth.user;
   const isInternal = isInternalCaller(req, body);
+  if (!auth.available && !isInternal) {
+    return { ok: false, user: null, isAdmin: false, isInternal: false, response: Response.json({ error: "auth_authority_unavailable" }, { status: 503 }) };
+  }
   if (!user && !isInternal) {
     return { ok: false, user: null, isAdmin: false, isInternal: false, response: Response.json({ error: "unauthorized" }, { status: 401 }) };
   }
@@ -47,7 +68,7 @@ export async function requireUserOrInternal(req, base44, body = null) {
 // works, anonymous spam can no longer flood the log. Records the actor class
 // (anonymous / user / admin / internal) in data_json for the 2026-08-15 review.
 // NEVER throws — the probe must not break or gate the function by itself.
-export async function quarantineProbe(base44, fnName) {
+export async function quarantineProbe(base44: any, fnName: string) {
   try {
     const message = `quarantined function '${fnName}' was invoked`;
     const last = await base44.asServiceRole.entities.OperationalLog.filter(
@@ -55,8 +76,9 @@ export async function quarantineProbe(base44, fnName) {
     );
     const lastAt = last?.[0]?.created_at ? new Date(last[0].created_at).getTime() : 0;
     if (Date.now() - lastAt < 60 * 60 * 1000) return; // deduped — one per hour
-    const user = await base44.auth.me().catch(() => null);
-    const actor = user ? (user.role === "admin" ? "admin" : `user:${user.email}`) : "anonymous";
+    const auth = await authenticatedUser(base44);
+    const user = auth.user;
+    const actor = !auth.available ? "auth_unavailable" : user ? (user.role === "admin" ? "admin" : `user:${user.email}`) : "anonymous";
     await base44.asServiceRole.entities.OperationalLog.create({
       event_type: "quarantine_probe",
       message,

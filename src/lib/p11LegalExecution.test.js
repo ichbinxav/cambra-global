@@ -38,7 +38,7 @@ describe('P11 legal execution and commercial compatibility',()=>{
   it('places P10/P11 before commercial policy and makes legal evidence part of each send',()=>{
     const src=fs.readFileSync('base44/functions/commercialSendMessage/entry.ts','utf8');
     expect(src.indexOf('await assertMarketCapabilityAllowed')).toBeLessThan(src.indexOf('await enforceLegalExecution'));
-    expect(src.indexOf('await enforceLegalExecution')).toBeLessThan(src.indexOf('CommercialPolicy.filter'));
+    expect(src.indexOf('await enforceLegalExecution')).toBeLessThan(src.indexOf('const policyAuthority = await readExactCommercialPolicy'));
     expect(src).toContain('authority_snapshot_hash');
   });
   it('gates every material Recover execution boundary before its first external or state-changing effect',()=>{
@@ -51,7 +51,13 @@ describe('P11 legal execution and commercial compatibility',()=>{
     expect(startMigration.indexOf("requested_action:'COORDINATE_MIGRATION'")).toBeLessThan(startMigration.indexOf('DealActivation.updateMany'));
     expect(migrationTask.indexOf("requested_action:'AUTHORIZE_MIGRATION'")).toBeLessThan(migrationTask.indexOf('MigrationTask.updateMany'));
     expect(negotiation.indexOf("requested_action:'NEGOTIATE_PRICING'")).toBeLessThan(negotiation.indexOf('NegotiationCase.create'));
-    expect(billing.indexOf("requested_action:'AUTHORIZE_CAMBRA_BILLING'")).toBeLessThan(billing.indexOf("stripeRequest(mode, 'POST'"));
+    const billingAuthority = billing.indexOf('requested_action: "AUTHORIZE_CAMBRA_BILLING"');
+    const billingClaim = billing.indexOf('claimRecoverInvoiceDraft(');
+    const billingProvider = billing.indexOf('return executeRecoverBillingProviderRequest(svc, claim, {');
+    expect(billingAuthority).toBeGreaterThan(-1);
+    expect(billingAuthority).toBeLessThan(billingClaim);
+    expect(billingAuthority).toBeLessThan(billingProvider);
+    expect(billing).not.toMatch(/\bstripeRequest\s*\(/);
     for(const src of [acceptance,startMigration,migrationTask,negotiation,billing])expect(src).toMatch(/enforceLegalExecution|evaluateLegalExecution/);
   });
   it('keeps policy publication, kill switches and authority grants strict-admin and evidence-gated',()=>{

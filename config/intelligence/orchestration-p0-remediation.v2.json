@@ -1,0 +1,1131 @@
+{
+  "schema_version": "orchestration-p0-remediation-ledger.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "source_spec_id": "ORCH",
+  "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+  "status_axes": {
+    "implementation_status": [
+      "NOT_STARTED",
+      "PARTIAL",
+      "IN_PROGRESS",
+      "REPO_REMEDIATED_RUNTIME_PENDING"
+    ],
+    "binary_closure_status": [
+      "NOT_MET",
+      "CLOSED"
+    ],
+    "test_status": [
+      "NOT_RUN",
+      "PASSED_LOCAL",
+      "FAILED_LOCAL"
+    ],
+    "verification_level": [
+      "SOURCE_OBSERVED",
+      "LOCAL_FAILURE_INJECTION",
+      "RUNTIME_VERIFIED"
+    ]
+  },
+  "closure_rule": {
+    "expression": "binary_closure_status == CLOSED AND test_status == PASSED_LOCAL AND verification_level == RUNTIME_VERIFIED",
+    "all_conditions_required": true,
+    "partial_local_tests_can_close": false,
+    "repo_remediated_runtime_pending_definition": "REPO_REMEDIATED_RUNTIME_PENDING: criterio probado con inyección de fallo/concurrencia en repo; el cierre binario requiere drill, receipts o evidencia de runtime desplegado.",
+    "description": "Binary closure is counted only when the row is CLOSED, its local test status is PASSED_LOCAL and runtime verification is present. REPO_REMEDIATED_RUNTIME_PENDING means the repository criterion passed fault/concurrency injection, but final-SHA deployed drills, receipts or runtime evidence are still mandatory; local evidence never closes an OTR by itself."
+  },
+  "local_test_runs": [
+    {
+      "run_id": "R5-LOCAL-VITEST-2026-08-14",
+      "executed_at": "2026-08-14T11:18:49Z",
+      "working_directory": ".",
+      "command": "node_modules/.bin/vitest run src/lib/singletonAuthority.test.js src/lib/criticalSharedFailClosed.test.js src/lib/founderControlV2.test.js src/lib/emergencyEpochBoundary.test.js src/lib/emergencyMaterialBoundaries.test.js src/lib/schedulerLeaseFencing.test.js src/lib/materialEffectContract.test.js src/lib/webhookDeadLetterClaim.test.js src/lib/webhookEgressSafety.test.js src/lib/commercialSendSafety.test.js src/lib/commercialEmailProviderSafety.test.js src/lib/approvalAuthoritySaga.test.js src/lib/externalApprovalExecution.test.js src/lib/founderApprovalRegistry.test.js src/lib/recoverFinancialHardening.test.js src/lib/recoverBillingSaga.test.js src/lib/recoverBillingReconcilerSelection.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/developerMigrationLifecycle.test.js src/lib/paymentsMigrationSaga.test.js src/lib/paymentsMigrationP9.test.js src/lib/remediationR4Artifacts.test.js src/lib/agentTaskEnvelope.test.js src/lib/autonomousSupervisorFailClosed.test.js src/lib/incidentAlerting.test.js src/lib/apiUsageBillingConcurrency.test.js src/lib/p4CostGovernance.test.js src/lib/intelligenceLearningLineage.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/runtimeIdentitySloEvidence.test.js src/lib/agentTaskCanonicalWork.test.js src/lib/effectAuthority.test.js src/lib/operationalPlaneReconciliation.test.js src/lib/remediationR5Artifacts.test.js src/lib/preEclFreeze.test.js src/lib/eclP1Gate.test.js",
+      "runner": "vitest@4.1.10",
+      "status": "PASSED_LOCAL",
+      "local_test_scope": "MIXED_REPOSITORY_AND_PARTIAL_CRITERIA",
+      "test_files": [
+        "src/lib/singletonAuthority.test.js",
+        "src/lib/criticalSharedFailClosed.test.js",
+        "src/lib/founderControlV2.test.js",
+        "src/lib/emergencyEpochBoundary.test.js",
+        "src/lib/emergencyMaterialBoundaries.test.js",
+        "src/lib/schedulerLeaseFencing.test.js",
+        "src/lib/materialEffectContract.test.js",
+        "src/lib/webhookDeadLetterClaim.test.js",
+        "src/lib/webhookEgressSafety.test.js",
+        "src/lib/commercialSendSafety.test.js",
+        "src/lib/commercialEmailProviderSafety.test.js",
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/externalApprovalExecution.test.js",
+        "src/lib/founderApprovalRegistry.test.js",
+        "src/lib/recoverFinancialHardening.test.js",
+        "src/lib/recoverBillingSaga.test.js",
+        "src/lib/recoverBillingReconcilerSelection.test.js",
+        "src/lib/financialEntityServiceRoleRls.test.js",
+        "src/lib/developerMigrationLifecycle.test.js",
+        "src/lib/paymentsMigrationSaga.test.js",
+        "src/lib/paymentsMigrationP9.test.js",
+        "src/lib/remediationR4Artifacts.test.js",
+        "src/lib/agentTaskEnvelope.test.js",
+        "src/lib/autonomousSupervisorFailClosed.test.js",
+        "src/lib/incidentAlerting.test.js",
+        "src/lib/apiUsageBillingConcurrency.test.js",
+        "src/lib/p4CostGovernance.test.js",
+        "src/lib/intelligenceLearningLineage.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js",
+        "src/lib/runtimeIdentitySloEvidence.test.js",
+        "src/lib/agentTaskCanonicalWork.test.js",
+        "src/lib/effectAuthority.test.js",
+        "src/lib/operationalPlaneReconciliation.test.js",
+        "src/lib/remediationR5Artifacts.test.js",
+        "src/lib/preEclFreeze.test.js",
+        "src/lib/eclP1Gate.test.js"
+      ],
+      "observed_result": {
+        "test_files_passed": 36,
+        "test_files_total": 36,
+        "tests_passed": 505,
+        "tests_total": 505
+      },
+      "limitation": "These mapped local tests prove nine repository criteria and partial slices of eleven others. They are not the normative ORCH acceptance catalog, deployed Base44 evidence, provider receipts or binary closure evidence."
+    }
+  ],
+  "counts": {
+    "total": 20,
+    "implementation_partial": 11,
+    "implementation_repo_remediated_runtime_pending": 9,
+    "closed": 0,
+    "not_met": 20,
+    "test_not_run": 0,
+    "test_passed_local": 20,
+    "test_failed_local": 0,
+    "source_observed": 0,
+    "local_failure_injection": 20,
+    "runtime_verified": 0,
+    "local_partial_criterion_only": 11,
+    "local_repository_criterion_complete_runtime_pending": 9
+  },
+  "items": [
+    {
+      "otr_id": "ROOT-OTR-001",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6914",
+      "blocking_condition": "Emergency-state reads fail open.",
+      "required_remediation": "Make external-effect authorization return blocked/unknown when `EmergencyControl` cannot be read.",
+      "binary_closure_criterion": "Every communications, negotiation, migration and billing-issuance commit returns a non-2xx blocked result under injected control-read failure; zero provider/economic effects occur.",
+      "required_closure_evidence": "Failure-injection report; effect-ledger query; source/tree hash; runtime trace IDs.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/singletonAuthority.test.js",
+        "src/lib/criticalSharedFailClosed.test.js",
+        "src/lib/founderControlV2.test.js",
+        "src/lib/emergencyEpochBoundary.test.js",
+        "src/lib/emergencyMaterialBoundaries.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "EmergencyControl singleton/default handling is fail-closed; the versioned material-boundary inventory identifies controlled and remaining partial routes.",
+      "material_effect_covered": "Adapted communication, negotiation, migration, billing and dispatch boundaries deny provider or economic commits when the control read fails.",
+      "local_partial_criterion_verified": "Control-read, inherited-epoch and adapted material-boundary zero-effect failure injections passed locally.",
+      "gap_local": "Some inventory rows remain PARTIAL and have not each received route-level failure injection with asserted provider/economic zero effects.",
+      "gap_runtime": "No deployed failure-injection trace set, effect-ledger zero-effect query or runtime source-tree attestation exists.",
+      "source_evidence_refs": [
+        "base44/entities/EmergencyControl.jsonc",
+        "base44/shared/operationalControl.ts",
+        "config/remediation/material-boundary-registry.v1.json",
+        "base44/functions/dispatchWebhook/entry.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "REMAINING_MATERIAL_EFFECT_BOUNDARIES_NOT_ALL_FAILURE_INJECTED",
+        "DEPLOYED_FAILURE_INJECTION_ZERO_EFFECT_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-002",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6915",
+      "blocking_condition": "Safe mode can be activated after precheck but before commit.",
+      "required_remediation": "Add a monotonic emergency-control epoch/version and revalidate it at the final effect commit.",
+      "binary_closure_criterion": "A run whose captured epoch is stale performs zero external effects.",
+      "required_closure_evidence": "Concurrent drill transcript; before/after control rows; provider receipts proving zero sends/commits.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/singletonAuthority.test.js",
+        "src/lib/emergencyEpochBoundary.test.js",
+        "src/lib/emergencyMaterialBoundaries.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Pre/post emergency epoch guards exist on adapted external effects, including Payments migration, webhook dispatch and negotiated paid-AI calls.",
+      "material_effect_covered": "Adapted boundaries reject a stale epoch before provider execution and quarantine post-response epoch ambiguity rather than retrying blindly.",
+      "local_partial_criterion_verified": "Stale-epoch, inherited-epoch and adapted provider-boundary race cases passed locally.",
+      "gap_local": "The full paid/external adapter inventory remains incomplete; generic paid AI and other R6 adapters are not universally epoch-bound.",
+      "gap_runtime": "No concurrent deployed stale-epoch drill with provider and economic receipts exists.",
+      "source_evidence_refs": [
+        "base44/entities/EmergencyControl.jsonc",
+        "base44/shared/operationalControl.ts",
+        "base44/shared/commercialModelRouter.ts",
+        "base44/functions/startPaymentsMigration/entry.ts",
+        "base44/functions/updatePaymentsMigrationTask/entry.ts",
+        "base44/functions/providerNegotiationAgent/entry.ts",
+        "base44/functions/collectiveNegotiationAgent/entry.ts",
+        "base44/functions/providerMonetizationAgent/entry.ts",
+        "src/docs/EMERGENCY_EPOCH_BOUNDARY.md"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "UNADAPTED_PAID_AI_AND_EXTERNAL_ADAPTER_EPOCH_GUARDS_REMAIN",
+        "CONCURRENT_STALE_EPOCH_RUNTIME_DRILL_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-003",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6916",
+      "blocking_condition": "Remote outbound containment may be partial.",
+      "required_remediation": "Persist explicit containment status and block readiness if any configured provider cannot be paused/verified.",
+      "binary_closure_criterion": "Emergency drill is `PASS` only when every configured outbound transport is locally blocked and remotely verified paused; otherwise status is `CONTAINMENT_INCOMPLETE`.",
+      "required_closure_evidence": "`RuntimeGateEvidence:EMERGENCY_STOP`; provider pause receipts; `AutonomyIncident`; final-SHA binding.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/singletonAuthority.test.js",
+        "src/lib/emergencyEpochBoundary.test.js",
+        "src/lib/emergencyMaterialBoundaries.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "EmergencyControl durably stores per-transport evidence with the exact five-state contract and CAS/readback; Instantly remote receipts remain separate from local blocking.",
+      "material_effect_covered": "Emergency stop blocks each configured local transport, persists Outlook/Resend as LOCALLY_BLOCKED and permits REMOTELY_VERIFIED_PAUSED only with a provider receipt.",
+      "local_partial_criterion_verified": "Transport normalization, persistence/readback, incomplete-result and epoch-boundary cases passed locally.",
+      "gap_local": "Outlook and Resend expose no provider-wide pause receipt in this contract, so configured instances deliberately keep CONTAINMENT_INCOMPLETE.",
+      "gap_runtime": "No authenticated Microsoft/Resend/Instantly containment drill and durable provider receipt bundle exists.",
+      "source_evidence_refs": [
+        "base44/shared/operationalControl.ts",
+        "base44/functions/emergencyControlAdmin/entry.ts",
+        "base44/entities/EmergencyControl.jsonc",
+        "base44/entities/AutonomyIncident.jsonc",
+        "src/docs/EMERGENCY_EPOCH_BOUNDARY.md"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "OUTLOOK_RESEND_REMOTE_PAUSE_RECEIPTS_UNAVAILABLE",
+        "AUTHENTICATED_REMOTE_CONTAINMENT_DRILL_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-004",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6917",
+      "blocking_condition": "Scheduler slot claim is not proven atomic.",
+      "required_remediation": "Introduce a proven conditional claim/lease or retain at-least-once execution with idempotent effects for every scheduled path.",
+      "binary_closure_criterion": "Concurrent same-slot executions produce at most one externally observable effect for every GO-critical worker.",
+      "required_closure_evidence": "Concurrency-run `SchedulerRun` rows; effect keys/receipts; duplicate-blocked evidence; runtime load drill.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/schedulerLeaseFencing.test.js",
+        "src/lib/materialEffectContract.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "SchedulerRun CONTROL and ATTEMPT rows use coherent CAS counters, owner/fence tokens, explicit effect-start and durable operation/effect history.",
+      "material_effect_covered": "Concurrent starts for one worker slot collapse to one owner; stale owners cannot start or settle, and post-effect failure quarantines CONTROL rather than releasing it.",
+      "local_partial_criterion_verified": "CAS contention, contradictory counters, effect-start fencing, terminal ambiguity and durable replay tests passed locally.",
+      "gap_local": "No remaining repository gap is known for the central OTR-004 scheduler-slot criterion; provider-specific downstream guarantees remain tracked by their own boundaries.",
+      "gap_runtime": "No deployed Base44 contention run with authoritative SchedulerRun rows and effect receipts exists.",
+      "source_evidence_refs": [
+        "base44/entities/SchedulerRun.jsonc",
+        "base44/shared/schedulerRun.ts",
+        "base44/shared/materialEffectContract.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_BASE44_CAS_CONTENTION_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-005",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6918",
+      "blocking_condition": "Schedulers have no universal live lease, heartbeat or timeout.",
+      "required_remediation": "Extend `SchedulerRun` with lease, heartbeat, deadline, timeout and safe takeover.",
+      "binary_closure_criterion": "A killed worker becomes terminal/takeover-eligible within its declared bound and cannot remain indefinitely `RUNNING`.",
+      "required_closure_evidence": "Runtime kill drill; scheduler rows; incident and takeover trace.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/schedulerLeaseFencing.test.js",
+        "src/lib/materialEffectContract.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "All 67 active schedules are slot-guarded with a lease/fence; the two inactive schedules are explicitly classified rather than counted as production workers.",
+      "material_effect_covered": "Takeover is allowed only for an expired, linked, pre-effect ATTEMPT; missing/invalid leases, missing linkage and failed supersession persistence block or quarantine.",
+      "local_partial_criterion_verified": "Lease expiry, periodic heartbeat, takeover, stale-fence and superseded-write fault cases passed locally.",
+      "gap_local": "Periodic heartbeat is repository-proven for 57/67 active workers and not proven for 10/67; hard deadline and timeout remain UNKNOWN for all 67.",
+      "gap_runtime": "No deployed worker-kill, lease-expiry, takeover and single-effect drill exists.",
+      "source_evidence_refs": [
+        "base44/entities/SchedulerRun.jsonc",
+        "base44/shared/schedulerRun.ts",
+        "config/scheduler-inventory.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PER_WORKER_TIMEOUT_RETRY_TENANT_AND_DEADLINE_BOUNDS_INCOMPLETE",
+        "DEPLOYED_KILL_TAKEOVER_FENCING_DRILL_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-006",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6919",
+      "blocking_condition": "Manual/internal and scheduled runs can overlap outside the same slot key.",
+      "required_remediation": "Bind all triggers of the same logical operation to a stable operation/effect key.",
+      "binary_closure_criterion": "Scheduled/manual/internal overlap produces one effect and one canonical result.",
+      "required_closure_evidence": "Three-trigger concurrency drill; task/event/effect linkage; provider receipt count.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/schedulerLeaseFencing.test.js",
+        "src/lib/materialEffectContract.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Scheduled, manual and internal triggers normalize an explicit logical operation into one durable operation/effect identity and one SchedulerRun authority.",
+      "material_effect_covered": "Three concurrent trigger kinds produce one owner; durable ATTEMPT history prevents A→B→A replay and enforces one-to-one operation/effect binding.",
+      "local_partial_criterion_verified": "Three-way trigger, durable replay, cross-binding, active-owner and post-effect ambiguity tests passed locally.",
+      "gap_local": "No remaining repository gap is known for the registered scheduler trigger paths; newly introduced direct worker callers remain guarded by the generated inventory check.",
+      "gap_runtime": "No deployed three-way scheduled/manual/internal concurrency drill exists.",
+      "source_evidence_refs": [
+        "base44/entities/SchedulerRun.jsonc",
+        "base44/shared/schedulerRun.ts",
+        "base44/shared/materialEffectContract.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_SCHEDULED_MANUAL_INTERNAL_CONCURRENCY_RECEIPT_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-007",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6920",
+      "blocking_condition": "Email idempotency is read-before-write.",
+      "required_remediation": "Persist or conditionally claim a durable effect intent before provider execution; bind retry and receipt to it.",
+      "binary_closure_criterion": "Provider success followed by local persistence failure and replay produces one delivered/queued provider effect for Resend, Outlook and Instantly paths used in production.",
+      "required_closure_evidence": "Provider sandbox/live controlled receipts; effect-intent history; replay trace.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/commercialSendSafety.test.js",
+        "src/lib/commercialEmailProviderSafety.test.js",
+        "src/lib/incidentAlerting.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Commercial sends share the existing durable send-slot authority; Resend binds a stable Idempotency-Key, Outlook persists an ImmutableId draft before /send, Instantly is conservative at-most-once, and Core email uses stable claims.",
+      "material_effect_covered": "Every adapted sender requires a local message plus typed provider reference before COMMITTED; 202/ACCEPTED is never delivery, and any post-transport ambiguity blocks replay.",
+      "local_partial_criterion_verified": "Provider receipt, Outlook draft-persistence crash, Resend key, Instantly ambiguity, Core email replay and aggregated alert concurrency tests passed locally.",
+      "gap_local": "No remaining repository gap is known for the registered sender boundaries; provider limitations are represented as ACCEPTED/REVIEW_REQUIRED rather than simulated exactly-once.",
+      "gap_runtime": "No three-provider crash-window drill proves one external delivery and one durable receipt.",
+      "source_evidence_refs": [
+        "base44/functions/commercialSendMessage/entry.ts",
+        "base44/shared/commercialSendSafety.ts",
+        "base44/shared/incidentAlerting.ts",
+        "base44/shared/outboundProvider.ts",
+        "base44/entities/CostBudgetControl.jsonc"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_RESEND_OUTLOOK_INSTANTLY_RECEIPTS_AND_RECONCILIATION_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-008",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6921",
+      "blocking_condition": "Webhook DLQ lock is not proven atomic.",
+      "required_remediation": "Replace get-then-update with a conditional claim/lease and owner token.",
+      "binary_closure_criterion": "Two concurrent DLQ workers cannot both deliver the same dead-letter attempt.",
+      "required_closure_evidence": "Concurrent replay evidence; one delivery receipt; lease-owner history; DLQ row.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/webhookDeadLetterClaim.test.js",
+        "src/lib/webhookEgressSafety.test.js",
+        "src/lib/materialEffectContract.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Initial dispatch and DLQ replay use the existing WebhookDeadLetter CAS authority, stable operation/effect identity, tri-state lease validation and an explicit EFFECT_STARTED fence.",
+      "material_effect_covered": "Two claimants cannot both deliver; provider success plus receipt failure becomes REVIEW_REQUIRED, and manual replay reuses the same durable identity without blind resend.",
+      "local_partial_criterion_verified": "Concurrent claimant, token, lease, post-effect terminal, provider-success/receipt-crash, dispatch-intent and manual replay tests passed locally.",
+      "gap_local": "No remaining repository gap is known for the registered webhook claim/replay criterion; arbitrary receivers still provide no universal reconciliation guarantee.",
+      "gap_runtime": "No deployed concurrent replay trace plus provider receipt proves exactly one delivery.",
+      "source_evidence_refs": [
+        "base44/functions/dispatchWebhook/entry.ts",
+        "base44/functions/processWebhookDeadLetters/entry.ts",
+        "base44/shared/webhookDeadLetterClaim.ts",
+        "base44/entities/WebhookDeadLetter.jsonc"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_CONCURRENT_REPLAY_AND_CUSTOM_RECEIVER_RECEIPT_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-009",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6922",
+      "blocking_condition": "Approval confirmation is not hash-bound to a prior preview.",
+      "required_remediation": "Add preview hash, confirmation nonce, expiry and exact context hashes.",
+      "binary_closure_criterion": "Confirmation with changed payload, policy, authority, intelligence, terms, expiry or nonce is rejected and executes nothing.",
+      "required_closure_evidence": "Tamper matrix; approval row; authority/intelligence snapshots; zero-effect evidence.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/externalApprovalExecution.test.js",
+        "src/lib/founderApprovalRegistry.test.js",
+        "src/lib/remediationR4Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "A canonical approval-confirmation envelope binds payload, policy key/version, authority and intelligence IDs/hashes, economic/legal terms, market scope, EmergencyControl ID/revision, actor, tenant, subject, expiry and a one-use nonce hash.",
+      "material_effect_covered": "Coherent CAS plus exact readback consumes one nonce; changed, expired, replayed, duplicate or ambiguous confirmation authority is rejected before a material effect.",
+      "local_partial_criterion_verified": "Independent dimension tamper, nonce replay, two-claimant concurrency, expiry and ambiguous duplicate-read fault cases passed locally.",
+      "gap_local": "No remaining repository gap is known for the registered approval-confirmation criterion; legacy live rows have not been audited or backfilled.",
+      "gap_runtime": "No final-SHA deployed dual-confirmation race or exhaustive authority-dependency/tamper receipt set exists.",
+      "source_evidence_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/FounderCommandAudit.jsonc",
+        "base44/shared/approvalAuthority.ts",
+        "base44/functions/founderOSCommand/entry.ts",
+        "config/remediation/material-transition-saga-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_DUAL_CONFIRMATION_AND_EXHAUSTIVE_TAMPER_RECEIPTS_MISSING",
+        "LIVE_LEGACY_APPROVAL_BACKFILL_NOT_RUN"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-010",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6923",
+      "blocking_condition": "`approved` can be written before execution succeeds.",
+      "required_remediation": "Separate `decision_status` from `execution_status` and use a resumable effect state machine.",
+      "binary_closure_criterion": "Provider/executor failure after human approval leaves `decision=approved`, `execution=failed_or_retryable`, never `executed`.",
+      "required_closure_evidence": "Controlled executor failure; approval/effect/task rows; reconciliation result.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/externalApprovalExecution.test.js",
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/founderApprovalRegistry.test.js",
+        "src/lib/remediationR4Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Approval persists the decision axis while AgentTask persists claim, effect, execution status and immutable receipt for all seven registered external executors; all 16 creators and 20 action types have an explicit resolution mode.",
+      "material_effect_covered": "APPROVED never implies EXECUTED; an external effect requires a fenced AgentTask and EXECUTED requires a receipt, while failures and malformed/post-effect states remain FAILED or REVIEW_REQUIRED without changing the decision.",
+      "local_partial_criterion_verified": "Seven-executor registry, legacy derivation, concurrent claim, expiry, missing lease, provider failure and missing-receipt cases passed locally.",
+      "gap_local": "No remaining repository gap is known for the registered decision/execution criterion; legacy live Approval/AgentTask rows have not been reconciled or backfilled.",
+      "gap_runtime": "No final-SHA deployed seven-executor failure/replay/provider-reconciliation receipt bundle exists.",
+      "source_evidence_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AgentTask.jsonc",
+        "base44/entities/FounderCommandAudit.jsonc",
+        "base44/shared/approvalResolutionSaga.ts",
+        "base44/shared/externalApprovalExecution.ts",
+        "config/remediation/material-transition-saga-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_SEVEN_EXECUTOR_FAILURE_AND_RECONCILIATION_RECEIPTS_MISSING",
+        "LIVE_LEGACY_APPROVAL_AGENTTASK_RECONCILIATION_NOT_RUN"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-011",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6924",
+      "blocking_condition": "Multi-entity material transitions can partially apply.",
+      "required_remediation": "Define compensating/reconciliation steps and immutable transition receipts for each domain executor.",
+      "binary_closure_criterion": "Every injected failure point converges to either fully committed or explicitly blocked/reconciling with no ambiguous active contract/migration/billing state.",
+      "required_closure_evidence": "Domain fault-injection matrix; state diffs; reconciliation tasks/incidents; final outcomes.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/recoverFinancialHardening.test.js",
+        "src/lib/recoverBillingSaga.test.js",
+        "src/lib/recoverBillingReconcilerSelection.test.js",
+        "src/lib/financialEntityServiceRoleRls.test.js",
+        "src/lib/developerMigrationLifecycle.test.js",
+        "src/lib/paymentsMigrationSaga.test.js",
+        "src/lib/paymentsMigrationP9.test.js",
+        "src/lib/remediationR4Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "A generated seven-row transition inventory covers approval, Recover acceptance/contract, billing issuance/collection, Payments migration/go-live and Developer GitHub migration using their existing domain authorities. Recover report creation, approval and every Stripe POST revalidate a cap-two activation/month singleton; Invoice, MonthlySavingsReport and PaymentEvent writes are service-role-only.",
+      "material_effect_covered": "Billing provider steps use account binding, response-bound descriptors, fenced hash-chained receipts, monotonic Invoice/report projection and a fair bounded reconciler; the legacy unsigned Invoice event route is quarantined. Developer/go-live effects retain conservative reconciliation and Recover acceptance retains domain CAS/readbacks.",
+      "local_partial_criterion_verified": "Billing request/crash convergence, activation-month split-brain containment, reconciler fairness, financial RLS, alternative-route guards, approval/external execution, Recover acceptance, Payments go-live and Developer apply/cutover/rollback fault cases passed locally.",
+      "gap_local": "The datastore has no proven unique activation/month constraint, so duplicates fail closed and require reconciliation; legacy non-Recover manual payment/reconcile/PDF paths are not one universal saga. Recover supersession/contract PDF-email and Payments plan/non-go-live steps also lack universal immutable receipts, and no canonical AUTHORIZE_MIGRATION producer supplies ADVANCED_E_SIGNATURE authority.",
+      "gap_runtime": "No deployed Base44 duplicate-report contention/reconciliation, three-domain crash-between-step, Stripe/GitHub receipt and final-outcome convergence drill bundle exists.",
+      "source_evidence_refs": [
+        "base44/shared/recoverAcceptance.ts",
+        "base44/shared/recoverEconomicMandate.ts",
+        "base44/shared/recoverReportAuthority.ts",
+        "base44/shared/economicExecution.ts",
+        "base44/functions/createEligibleRecoverInvoices/entry.ts",
+        "base44/functions/reconcileRecoverBilling/entry.ts",
+        "base44/functions/onInvoiceStatusEvent/entry.ts",
+        "base44/entities/Invoice.jsonc",
+        "base44/entities/MonthlySavingsReport.jsonc",
+        "base44/entities/PaymentEvent.jsonc",
+        "base44/shared/paymentsMigrationSaga.ts",
+        "base44/shared/developerMigrationLifecycle.ts",
+        "config/remediation/material-transition-saga-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "RECOVER_CONTRACT_AND_PAYMENTS_MULTIROW_SAGA_COVERAGE_INCOMPLETE",
+        "RECOVER_REPORT_DATASTORE_UNIQUENESS_AND_DUPLICATE_RECONCILIATION_RUNTIME_PENDING",
+        "LEGACY_NON_RECOVER_FINANCIAL_ROUTES_OUTSIDE_UNIVERSAL_SAGA",
+        "PAYMENTS_GO_LIVE_APPROVAL_PRODUCER_AND_ADVANCED_E_SIGNATURE_MISSING",
+        "DEPLOYED_THREE_DOMAIN_TRANSITION_FAULT_MATRIX_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-012",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6925",
+      "blocking_condition": "Agent authority is not enforced at every effect boundary.",
+      "required_remediation": "Require a versioned authority snapshot and domain policy decision at commit for every effect class.",
+      "binary_closure_criterion": "An unknown or unauthorized actor cannot send, negotiate, schedule material work, execute, approve, sign, spend or charge through any registered route.",
+      "required_closure_evidence": "Route/effect inventory; denial matrix; authority snapshots; no-effect queries.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/effectAuthority.test.js",
+        "src/lib/remediationR5Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "A source-derived registry names ten exact effect classes over all 42 material boundaries and a shared fail-closed effect-authority facade is wired to five representative boundaries.",
+      "material_effect_covered": "The five wired boundaries bind actor, tenant, subject, market scope, policy, Emergency capability/epoch and domain authority immediately before their covered effect.",
+      "local_partial_criterion_verified": "Unknown classes, malformed market scope, capability mismatch, missing authority and last-boundary revalidation denial cases passed with zero covered provider/economic effects.",
+      "gap_local": "Thirty-seven of 42 material boundaries remain SOURCE_OBSERVED_ONLY and do not yet call the common facade, so the universal denial criterion is incomplete.",
+      "gap_runtime": "No deployed cross-effect denial run proves zero provider/economic effects for all ten classes and all registered boundaries.",
+      "source_evidence_refs": [
+        "base44/shared/effectAuthority.ts",
+        "config/remediation/effect-authority-registry.v1.json",
+        "config/remediation/authority-trace-operational-inventory.v1.json",
+        "base44/functions/commercialSendMessage/entry.ts",
+        "base44/functions/startPaymentsMigration/entry.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "37_OF_42_MATERIAL_BOUNDARIES_NOT_WIRED_TO_COMMON_EFFECT_AUTHORITY",
+        "DEPLOYED_UNIVERSAL_EFFECT_DENIAL_RECEIPTS_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-013",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6926",
+      "blocking_condition": "Orchestration has no universal trace/step contract.",
+      "required_remediation": "Extend `AgentTask` and `Event` with the canonical run/step/effect envelope.",
+      "binary_closure_criterion": "Every executed step and effect resolves to one trace, parent run, tenant/subject, input hash, policy/authority/intelligence context, cost record, receipt and terminal result.",
+      "required_closure_evidence": "Trace-completeness report over production-like runs; schema/version evidence; orphan count = 0.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/agentTaskEnvelope.test.js",
+        "src/lib/remediationR5Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "AgentTask has a versioned envelope for trace, parent run, step, tenant/subject, policy/authority/intelligence, cost/effect/receipt and terminal ambiguity; the generator inventories every creator and material route.",
+      "material_effect_covered": "Adapted creator and settlement paths reject contradictory terminal/effect state, tenant/provenance mutation, lost fences and incomplete receipt lineage.",
+      "local_partial_criterion_verified": "Envelope construction, contradictory terminal, immutable provenance, exact CAS/readback and generated drift cases passed locally.",
+      "gap_local": "All 46 material creator files remain incomplete for end-to-end effect/cost/receipt lineage and 111 material route files remain unresolved; root/terminal-only adaptation is not counted as complete.",
+      "gap_runtime": "No deployed trace-completeness report proves every material AgentTask/Event/effect/cost/receipt relationship on final SHA.",
+      "source_evidence_refs": [
+        "base44/entities/AgentTask.jsonc",
+        "base44/shared/agentTaskEnvelope.ts",
+        "config/agenttask-creator-inventory.json",
+        "config/remediation/authority-trace-operational-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "46_MATERIAL_CREATORS_HAVE_NO_COMPLETE_EFFECT_COST_RECEIPT_LINEAGE",
+        "111_MATERIAL_ROUTE_FILES_UNRESOLVED_AND_RUNTIME_TRACE_REPORT_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-014",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6927",
+      "blocking_condition": "Supervisor reads can convert dependency failure into empty healthy state.",
+      "required_remediation": "Distinguish `EMPTY`, `UNKNOWN`, `ERROR` and `OBSERVED`; fail closed for readiness and automated action selection.",
+      "binary_closure_criterion": "Injected failure of any critical supervisor read yields `DEGRADED/UNKNOWN`, a surfaced dependency error and no healthy seal.",
+      "required_closure_evidence": "Failure-injection traces; supervisor task payload; incident; gate result.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/autonomousSupervisorFailClosed.test.js",
+        "src/lib/operationalPlaneReconciliation.test.js",
+        "src/lib/remediationR5Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "A source-derived five-surface inventory distinguishes the sole general supervisor, two non-authoritative projections, one authoritative specialized ECL sweep and one quarantined compatibility endpoint.",
+      "material_effect_covered": "Critical collections use explicit COMPLETE/EMPTY/OBSERVED/UNKNOWN/ERROR semantics; the ECL sweep uses cap-plus-one reads and cannot declare healthy or auto-resolve on failed, malformed, truncated or duplicate authority.",
+      "local_partial_criterion_verified": "Dependency outage, malformed result, truncation, empty baseline, recovery barrier and ECL absence-decision failure injections passed across the declared surfaces.",
+      "gap_local": "No repository P0/P1 gap is known in the inventoried health-plane fail-closed criterion; denominator sufficiency and newly introduced surfaces remain generator-enforced but runtime-unobserved.",
+      "gap_runtime": "No deployed all-surface dependency-outage, denominator and recovery containment drill exists.",
+      "source_evidence_refs": [
+        "base44/functions/autonomousOperationsSupervisor/entry.ts",
+        "base44/functions/eclProductionHealth/entry.ts",
+        "base44/functions/operatingHealthWorker/entry.ts",
+        "base44/functions/productionReadinessWorker/entry.ts",
+        "base44/shared/supervisorObservation.ts",
+        "base44/shared/canonicalIncident.ts",
+        "config/operational-plane-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_ALL_SURFACE_DEPENDENCY_FAILURE_DRILL_MISSING",
+        "REAL_SUPERVISOR_DENOMINATOR_AND_RECOVERY_WINDOWS_UNOBSERVED"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-015",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6928",
+      "blocking_condition": "Incident models overlap.",
+      "required_remediation": "Canonicalize cross-domain incidents through `AutonomyIncident` and a versioned adapter for ECL `OperationalIncident`.",
+      "binary_closure_criterion": "Every active ECL and autonomy incident appears once in the canonical command-center view with stable source linkage; no third incident entity exists.",
+      "required_closure_evidence": "Adapter mapping; parity report; dedupe report; command-center output.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/autonomousSupervisorFailClosed.test.js",
+        "src/lib/operationalPlaneReconciliation.test.js",
+        "src/lib/incidentAlerting.test.js",
+        "src/lib/remediationR5Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "AutonomyIncident is the canonical incident authority, OperationalIncident is the two-writer ECL compatibility ledger and IncidentAlertDelivery is transport-only; all three are service-role-only and no fourth entity exists.",
+      "material_effect_covered": "The versioned adapter merges stable dedupe keys once, preserves both source links, exposes every observed active row without slicing, and marks counts exact only when both source reads are complete.",
+      "local_partial_criterion_verified": "Cross-ledger dedupe, active/resolved coherence, source coverage/truncation, exact writer allowlist, RLS and generated-plane drift cases passed locally.",
+      "gap_local": "No repository P0/P1 gap is known for the canonical read projection; historical ECL rows remain compatibility evidence rather than being rewritten.",
+      "gap_runtime": "No deployed parity/dedupe reconciliation proves one final-SHA active timeline and equivalent relationships across both stores.",
+      "source_evidence_refs": [
+        "base44/entities/AutonomyIncident.jsonc",
+        "base44/entities/OperationalIncident.jsonc",
+        "base44/entities/IncidentAlertDelivery.jsonc",
+        "base44/shared/canonicalIncident.ts",
+        "base44/shared/incidentAlerting.ts",
+        "base44/functions/getAdminOperationsCockpit/entry.ts",
+        "config/operational-plane-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_CANONICAL_INCIDENT_PARITY_AND_DEDUPE_RECONCILIATION_MISSING",
+        "FINAL_SHA_COMMAND_CENTER_COVERAGE_RECEIPT_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-016",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6929",
+      "blocking_condition": "Cost governance lacks universal scoped coverage and exact reconciliation.",
+      "required_remediation": "Extend existing cost entities for run/tenant/workflow/model/provider scopes and immutable settlement adjustments; inventory every paid adapter.",
+      "binary_closure_criterion": "Every paid provider call has a preceding allowed reservation and terminal observed/reconciled/failed/void state; scoped limits cannot be exceeded under concurrency.",
+      "required_closure_evidence": "Static paid-adapter inventory; runtime cost traces; concurrency report; reconciled ledger totals.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/p4CostGovernance.test.js",
+        "src/lib/apiUsageBillingConcurrency.test.js",
+        "src/lib/singletonAuthority.test.js",
+        "src/lib/commercialSendSafety.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Cost governance uses CAS reservation journals, usage events and reconciliation helpers on adapted paths.",
+      "material_effect_covered": "Covered concurrent reservations reject duplicate or over-budget paid execution before commit.",
+      "local_partial_criterion_verified": "Cost CAS, billing concurrency and commercial reservation failure cases passed locally.",
+      "gap_local": "Run, tenant, workflow and model scopes, immutable adjustments and the full paid-adapter inventory are incomplete; raw paid fetch paths remain.",
+      "gap_runtime": "No deployed reservation/actual reconciliation and contention evidence exists across all paid adapters.",
+      "source_evidence_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts",
+        "base44/shared/apiUsageBilling.ts",
+        "base44/shared/commercialModelRouter.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PAID_ADAPTER_SCOPE_AND_IMMUTABLE_ADJUSTMENT_INVENTORY_INCOMPLETE",
+        "DEPLOYED_RESERVATION_RECONCILIATION_CONTENTION_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-017",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6930",
+      "blocking_condition": "P12 claim and outcome APIs accept insufficiently validated lineage.",
+      "required_remediation": "Validate referenced rows, tenant, semantics, temporal state, execution receipt, verification source and maturity before promotion or learning.",
+      "binary_closure_criterion": "Cross-tenant, missing-reference, unexecuted, immature or unverifiable records cannot become active claims or learning-eligible outcomes.",
+      "required_closure_evidence": "Negative-case matrix; eligibility decision rows; lineage queries; zero unauthorized promotions.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/intelligenceLearningLineage.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Exact claim/source lineage gates and quarantined ineligible outcomes exist in intelligence learning helpers.",
+      "material_effect_covered": "Covered weak, missing or immature lineage is denied before eligibility or promotion.",
+      "local_partial_criterion_verified": "Positive and negative lineage, maturity and contract cases passed locally.",
+      "gap_local": "The full service evaluator, execution receipt and independent maturity API are not wired through all production eligibility paths.",
+      "gap_runtime": "No production-eligible rows or deployed negative-lineage/maturity receipt bundle exists.",
+      "source_evidence_refs": [
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "base44/shared/intelligenceLearningLineage.ts",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/intelligenceAdmin/entry.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "FULL_SERVICE_EVALUATOR_EXECUTION_RECEIPT_AND_MATURITY_WIRING_INCOMPLETE",
+        "PRODUCTION_ELIGIBILITY_AND_NEGATIVE_LINEAGE_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-018",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6931",
+      "blocking_condition": "CAMBRA-generated decisions can be mistaken for labels.",
+      "required_remediation": "Add explicit learning eligibility with the mandatory provenance + execution + defensible outcome rule.",
+      "binary_closure_criterion": "No CAMBRA-generated decision enters any dataset unless provenance, execution and outcome checks all pass and the eligibility decision is versioned.",
+      "required_closure_evidence": "Dataset manifest; eligibility ledger; rejected-example sample; lineage back to receipts/outcomes.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/intelligenceLearningLineage.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "Learning policy contracts default ambiguous writers to false or quarantined and expose an eligibility-decision append helper.",
+      "material_effect_covered": "Covered unverified or ambiguous candidates cannot become learning-eligible in local contract tests.",
+      "local_partial_criterion_verified": "Learning-policy denial and lineage quarantine cases passed locally.",
+      "gap_local": "The eligibility-decision append helper has no production callers and no dataset-construction gate consumes only cleared decisions.",
+      "gap_runtime": "No cleared dataset lineage or deployed proof that ineligible research never enters learning exists.",
+      "source_evidence_refs": [
+        "config/intelligence/learning-eligibility-policy.v1.json",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "base44/shared/intelligenceLearningLineage.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "LEARNING_ELIGIBILITY_DECISION_WRITER_AND_DATASET_GATE_NOT_WIRED",
+        "CLEARED_DATASET_LINEAGE_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-019",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6932",
+      "blocking_condition": "Runtime parity and SLO evidence are incomplete.",
+      "required_remediation": "Produce real `ServiceLevelSnapshot` rows and bind runtime parity to Git SHA, source-tree hash, physical bundle hash, topology hash, scheduler inventory hash and file count.",
+      "binary_closure_criterion": "Missing/mismatched/stale identity or insufficient SLO samples makes the corresponding gate `BLOCKED`; all exact identities match for `PASS`.",
+      "required_closure_evidence": "Runtime gate rows; SLO snapshots; release/bundle manifests; parity evaluator output.",
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/runtimeIdentitySloEvidence.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "GAP",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "RuntimeGateEvidence, ServiceLevelSnapshot and fail-closed runtime identity/SLO evaluators exist.",
+      "material_effect_covered": "Covered missing identity or SLO inputs prevent readiness from being reported as verified.",
+      "local_partial_criterion_verified": "Runtime identity and SLO missing/invalid input cases passed locally.",
+      "gap_local": "Runtime identity omits lockfile_hash and release_manifest_hash, and the five canonical SLO denominator/window contracts are incomplete.",
+      "gap_runtime": "No deployed environment identity receipt or authoritative SLO sample windows exist.",
+      "source_evidence_refs": [
+        "base44/entities/RuntimeGateEvidence.jsonc",
+        "base44/entities/ServiceLevelSnapshot.jsonc",
+        "base44/shared/runtimeEvidence.ts",
+        "base44/shared/serviceLevelRuntime.ts",
+        "base44/shared/productionReadiness.ts",
+        "base44/functions/productionReadinessWorker/entry.ts"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "LOCKFILE_AND_RELEASE_MANIFEST_HASHES_MISSING_FROM_RUNTIME_IDENTITY",
+        "DEPLOYED_RUNTIME_IDENTITY_AND_SLO_WINDOW_EVIDENCE_MISSING"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local tests only. PASSED_LOCAL is limited to PARTIAL_CRITERION_ONLY and is not universal OTR closure or runtime evidence."
+    },
+    {
+      "otr_id": "ROOT-OTR-020",
+      "source_spec_hash": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "source_anchor": "line:6933",
+      "blocking_condition": "Legacy duplicate planes and catalog drift remain.",
+      "required_remediation": "Migrate `AgentRun`, overlapping system-health logic and incident duplication; regenerate workforce/orchestrator catalog from source.",
+      "binary_closure_criterion": "Zero new writes to `AgentRun`; one canonical general supervisor; one canonical incident view; generated catalog exactly matches 34 declared agents, 5 declared chain orchestrators and current release version, or reflects an intentionally changed source count.",
+      "required_closure_evidence": "Caller/write inventory; migration report; parity diff = 0; generated catalog hash; compatibility sign-off.",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "REPOSITORY_CRITERION_COMPLETE_RUNTIME_PENDING",
+      "local_test_run_ref": "R5-LOCAL-VITEST-2026-08-14",
+      "local_test_refs": [
+        "src/lib/agentTaskCanonicalWork.test.js",
+        "src/lib/autonomousSupervisorFailClosed.test.js",
+        "src/lib/operationalPlaneReconciliation.test.js",
+        "src/lib/remediationR5Artifacts.test.js"
+      ],
+      "assessment_classification": [
+        "EXISTING",
+        "RUNTIME_ONLY"
+      ],
+      "implementation_existing": "AgentTask is the sole canonical work primitive, AgentRun is service-only legacy history with zero repository writers, systemHealthAgent is HTTP 410/write-free, and the workforce/orchestrator catalog is generated from source plus current package identity.",
+      "material_effect_covered": "The generated operational inventory enforces exactly one active general supervisor while preserving two explicitly non-authoritative projections and one specialized ECL sweep; catalog or plane drift fails the local gate.",
+      "local_partial_criterion_verified": "AgentRun writer scans, quarantine denial, exact workforce/orchestrator counts, release-identity binding, source-derived plane declarations and tampered generated-artifact cases passed locally.",
+      "gap_local": "No repository P0/P1 gap is known for the canonical work/general-supervisor/catalog criterion; compatibility callers and newly added source surfaces remain runtime concerns.",
+      "gap_runtime": "No deployed AgentTask/AgentRun parity, stale-caller quarantine and workforce/health catalog drift report exists.",
+      "source_evidence_refs": [
+        "base44/entities/AgentTask.jsonc",
+        "base44/entities/AgentRun.jsonc",
+        "src/lib/agentRegistry.js",
+        "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md",
+        "base44/functions/autonomousOperationsSupervisor/entry.ts",
+        "base44/functions/systemHealthAgent/entry.ts",
+        "base44/functions/operatingHealthWorker/entry.ts",
+        "config/agent-workforce-catalog.v1.json",
+        "config/operational-plane-inventory.v1.json"
+      ],
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "DEPLOYED_WORKFORCE_CATALOG_AND_AGENTRUN_ZERO_WRITER_PARITY_MISSING",
+        "STALE_LEGACY_CALLER_QUARANTINE_RUNTIME_BEHAVIOR_UNOBSERVED"
+      ],
+      "owner": "CAMBRA Intelligence Orchestration",
+      "seal_impact": [
+        "GOVERNED_EXECUTION_READY",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+        "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY"
+      ],
+      "assessed_at": "2026-08-13T00:00:00Z",
+      "assessment_scope": "Repository source plus mapped local fault/concurrency tests prove this repository criterion. Binary closure still requires final-SHA deployed drills, receipts or runtime evidence."
+    }
+  ]
+}

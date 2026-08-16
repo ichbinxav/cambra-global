@@ -1,0 +1,422 @@
+{
+  "schema_version": "shared-contract-map.v1",
+  "generated_at": "2026-08-13T03:49:26Z",
+  "source_ledger": "config/intelligence/requirement-ledger.v1.json",
+  "required_contracts": [
+    "Identity",
+    "Time",
+    "Evidence",
+    "Decision",
+    "Execution",
+    "Outcome",
+    "Learning",
+    "Model"
+  ],
+  "rule": "One semantic contract may be implemented by adapters over multiple domain authorities; one contract does not require one physical table.",
+  "contracts": [
+    {
+      "contract_id": "CONTRACT.IDENTITY",
+      "name": "Identity",
+      "purpose": "Resolve tenant, company, candidate, provider, person/contact and merge/split lineage without conflating domain meanings.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderContact.jsonc"
+      ],
+      "canonical_keys": [
+        "tenant_id/brand_id",
+        "entity_type",
+        "entity_id",
+        "canonical_company_key",
+        "provider_id",
+        "contact_id when authoritative",
+        "external_refs"
+      ],
+      "adapters": [
+        "Brand→tenant/merchant",
+        "OutboundLead→outbound company candidate",
+        "Provider→operational provider",
+        "ProviderContact→provider-scoped contact"
+      ],
+      "invariants": [
+        "No email-only or display-name-only identity joins",
+        "Lead, OutboundLead and ProviderLead remain semantically distinct",
+        "No third provider master",
+        "Merge/split lineage required before destructive canonicalization"
+      ],
+      "gaps": [
+        "No universal person/contact identity",
+        "Communication tenant linkage is heterogeneous",
+        "Provider↔CanonicalProvider runtime-data decision pending"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.TIME",
+      "name": "Time",
+      "purpose": "Prevent future leakage and preserve bitemporal decision reconstruction.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/ProviderPricingVersion.jsonc",
+        "base44/entities/P4StatisticalEstimate.jsonc"
+      ],
+      "canonical_keys": [
+        "event_time",
+        "effective_at",
+        "observed_at",
+        "ingested_at",
+        "available_at",
+        "decision_time",
+        "training_cutoff",
+        "prediction_time",
+        "outcome_maturity_time"
+      ],
+      "adapters": [
+        "effective_at/observed_at bitemporal adapter",
+        "as_of/known_at/training_cutoff statistical adapter"
+      ],
+      "invariants": [
+        "available_at <= decision_time for prediction features",
+        "training_cutoff < prediction_time",
+        "No historical rewrite",
+        "Unknown timestamps do not default to now"
+      ],
+      "gaps": [
+        "Universal available_at coverage",
+        "Outcome maturity/censoring coverage",
+        "Point-in-time joins across every domain"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.EVIDENCE",
+      "name": "Evidence",
+      "purpose": "Represent source observation, provenance, truth state, contradictions and freshness once.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/KnowledgeConflict.jsonc"
+      ],
+      "canonical_keys": [
+        "evidence_id",
+        "evidence_hash",
+        "source_type",
+        "source_ref",
+        "truth_level",
+        "effective_at",
+        "observed_at",
+        "freshness",
+        "supersession",
+        "tenant_scope"
+      ],
+      "adapters": [
+        "EvidenceAssertion/Attestation→domain verification refs",
+        "P4EvidenceProjection→privacy-safe statistical projection"
+      ],
+      "invariants": [
+        "Observation is not canonical truth",
+        "Inferred evidence cannot self-promote to verified",
+        "Append/version instead of overwrite",
+        "Unknown is not zero"
+      ],
+      "gaps": [
+        "Universal evidence link from each lead research action",
+        "Field-level source usefulness and realized information value",
+        "Runtime tenant/service-role enforcement proof"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.DECISION",
+      "name": "Decision",
+      "purpose": "Capture decision-time inputs, policy/rule/model version, uncertainty and recommendation without granting authority.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/GrowthDecision.jsonc",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "canonical_keys": [
+        "decision_id",
+        "decision_time",
+        "subject_ref",
+        "input_snapshot_id",
+        "policy_version",
+        "rule_or_model_version",
+        "recommendation",
+        "reason_codes",
+        "support_status",
+        "uncertainty"
+      ],
+      "adapters": [
+        "P4 estimate/cohort→cpic-foundation.v0 probabilistic decision context",
+        "Explicit joint scenarios→Expected Value V0",
+        "Research outcomes and acquisition costs→Value of Information V0",
+        "CommercialStrategy→commercial decision projection"
+      ],
+      "invariants": [
+        "Prediction is not authorization",
+        "Predicted value is not billing truth",
+        "Verified data overrides inference",
+        "Missing support can force abstention/review"
+      ],
+      "gaps": [
+        "Universal decision envelope",
+        "Decision→research→redecision runtime lineage",
+        "No registered model or calibration/runtime evidence"
+      ],
+      "test_refs": [
+        "src/lib/p4Integration.static.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.EXECUTION",
+      "name": "Execution",
+      "purpose": "Separate proposal, approval, queueing, execution and external side-effect receipts.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/AgentTask.jsonc",
+        "base44/entities/AgentRun.jsonc",
+        "base44/entities/Approval.jsonc",
+        "base44/entities/IdempotencyKey.jsonc",
+        "base44/entities/CommunicationMessage.jsonc"
+      ],
+      "canonical_keys": [
+        "execution_id",
+        "proposal_id",
+        "approval_id",
+        "status",
+        "idempotency_key",
+        "attempt",
+        "external_receipt",
+        "started_at",
+        "completed_at",
+        "failure_code"
+      ],
+      "adapters": [
+        "AgentTask/Run→work lifecycle",
+        "Approval→material authority",
+        "CommunicationMessage→send receipt"
+      ],
+      "invariants": [
+        "Approved is not executed",
+        "At-most-once external side effects",
+        "Recheck suppression/authority immediately before send",
+        "Failure stays visible and retry-bounded"
+      ],
+      "gaps": [
+        "Uniform receipt schema across all side effects",
+        "Common correlation IDs",
+        "Backend-owned Discovery work-item lifecycle"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.OUTCOME",
+      "name": "Outcome",
+      "purpose": "Reference real, mature, attributable results while preserving each domain source of truth.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/entities/MonthlySavingsReport.jsonc",
+        "base44/entities/PaymentsAnalysisVerified.jsonc",
+        "base44/entities/GrowthDecisionOutcome.jsonc",
+        "base44/entities/AcquisitionAttribution.jsonc"
+      ],
+      "canonical_keys": [
+        "outcome_id",
+        "subject_ref",
+        "decision_id",
+        "execution_id",
+        "outcome_type",
+        "status",
+        "observed_at",
+        "maturity_at",
+        "verification_tier",
+        "value",
+        "currency",
+        "attribution_window"
+      ],
+      "adapters": [
+        "Domain truth→IntelligenceOutcome learning projection",
+        "Acquisition attribution→experience link"
+      ],
+      "invariants": [
+        "Recommendation≠execution",
+        "Execution≠caused outcome",
+        "Silence≠negative",
+        "Estimated≠verified",
+        "Verified Savings remains deterministic"
+      ],
+      "gaps": [
+        "Exposure/propensity/censoring coverage",
+        "False-negative audit linkage",
+        "Complete action→mature outcome attribution"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.LEARNING",
+      "name": "Learning",
+      "purpose": "Admit only point-in-time correct, attributable and privacy-eligible examples to immutable datasets.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/learning-eligibility-policy.v1.json",
+        "config/intelligence/feature-registry.v1.json",
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json"
+      ],
+      "canonical_keys": [
+        "eligibility_decision",
+        "eligibility_reason",
+        "feature_contract_version",
+        "label_contract_version",
+        "dataset_version",
+        "as_of_time",
+        "population_hash",
+        "content_hash",
+        "privacy_scope"
+      ],
+      "adapters": [
+        "Current bounded cohorts→baseline only",
+        "Privacy-safe aggregates→cross-tenant inputs only",
+        "IntelligenceOutcome→strict eligibility input; domain outcome remains authoritative"
+      ],
+      "invariants": [
+        "CAMBRA output is never its own label",
+        "Require provenance, execution certainty and mature outcome",
+        "Frozen temporal/grouped holdout",
+        "Tenant/privacy/deletion constraints survive derivation"
+      ],
+      "gaps": [
+        "No approved feature or label definitions",
+        "Eligibility evaluator is not wired to runtime writers",
+        "No point-in-time dataset builder",
+        "No sealed immutable dataset or frozen holdout",
+        "No revocation/deletion impact runtime proof"
+      ],
+      "test_refs": [
+        "src/lib/privacySafeIntelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "REGISTRY_CONTRACTS_ONLY",
+        "NO_CLEARED_RUNTIME_ROWS",
+        "NO_SEALED_DATASET"
+      ]
+    },
+    {
+      "contract_id": "CONTRACT.MODEL",
+      "name": "Model",
+      "purpose": "Provide one future problem→dataset→train→evaluate→register→shadow→canary→monitor→rollback lifecycle.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "authority_resources": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/AgentPerformanceMetric.jsonc",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/prediction-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json"
+      ],
+      "canonical_keys": [
+        "problem_id",
+        "model_id",
+        "model_version",
+        "dataset_version",
+        "training_cutoff",
+        "artifact_hash",
+        "evaluation_id",
+        "approval_id",
+        "deployment_state",
+        "rollback_ref"
+      ],
+      "adapters": [
+        "P4 model_version_id→future registry reference only",
+        "Current rules/cohorts→mandatory baselines",
+        "CPIC/Lead/Analyzer/Negotiation predictions→one shared future prediction contract",
+        "All domain evaluation metrics→one shared fail-closed Evaluation Harness"
+      ],
+      "invariants": [
+        "Unregistered models cannot serve",
+        "Material challengers start shadow",
+        "No automatic promotion",
+        "A complete contract packet remains evidence-unverified and human-review-required",
+        "Model confidence never expands authority",
+        "No CPIC_MODEL_READY without real dataset/holdout/calibration/shadow/rollback"
+      ],
+      "gaps": [
+        "Problem registry",
+        "Training run",
+        "Artifact store",
+        "Executed evaluation and independent evidence verifier",
+        "Runtime model and prediction records",
+        "Drift/retraining proposal"
+      ],
+      "test_refs": [
+        "src/lib/intelligenceFoundationContracts.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "MODEL_AND_PREDICTION_REGISTRIES_CONTRACT_ONLY",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_DATASET_TRAINING_EXECUTED_EVALUATION_SERVING_OR_ROLLBACK"
+      ]
+    }
+  ]
+}

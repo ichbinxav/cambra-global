@@ -12,6 +12,7 @@
 // would have been ignored entirely.
 
 import { getSuccessFeePct } from './generated/productPolicy.ts';
+import { requireCriticalOperation } from './criticalExecution.ts';
 
 export function monthBounds(month: string): { start: string; end: string } {
   const [y, m] = String(month).split('-').map(Number);
@@ -58,7 +59,10 @@ export async function resolveFeePctForMonth(
   if (brand_id) queries.push({ brand_id });
 
   for (const q of queries) {
-    const rules = await svc.entities.BillingRule.filter(q, '-effective_start_date', 25).catch(() => []);
+    const rules = await requireCriticalOperation(
+      'billing_rule_authority_read',
+      () => svc.entities.BillingRule.filter(q, '-effective_start_date', 25),
+    );
     const applicable = (rules || []).filter((r: any) => appliesTo(r, bounds));
     if (applicable.length) {
       const winner = applicable.reduce((best: any, r: any) =>

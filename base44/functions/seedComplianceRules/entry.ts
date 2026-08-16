@@ -62,13 +62,13 @@ const HARD_RULES = [
   // ── benchmark ──────────────────────────────────────────────────────────────
   {
     rule_id: "benchmark_min_sample_size",
-    title: "Public benchmarks require n ≥ 5",
+    title: "Public benchmarks require k ≥ 10 distinct merchants",
     category: "benchmark",
     severity: "high",
     blocking: true,
     active: true,
     description:
-      "BenchmarkCohort rows must only be exposed to users (is_public=true) when n ≥ 5 validated, non-flagged contributions. Smaller cohorts must fall back to the static reference table.",
+      "BenchmarkCohort rows must only be exposed to users (is_public=true) when n ≥ 10 distinct validated, non-flagged merchants. Smaller cohorts must fall back to the static reference table.",
   },
   {
     rule_id: "benchmark_source_must_be_labeled",

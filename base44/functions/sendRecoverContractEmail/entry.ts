@@ -1,4 +1,4 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
 // sendRecoverContractEmail — RECOVER-3 (2026-08-03).
 //
 // Sends the merchant their copy of the agreement. Internal/admin only.
@@ -14,24 +14,30 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 //
 // A failure here never touches Mandate.status and never blocks the payment-method
 // setup; the document stays downloadable regardless.
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { recoverContractEmail } from '../../shared/emails/recoverContract.ts';
-import { resolveContractPolicy, buildContractEconomicView } from '../../shared/contractPolicySnapshot.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { normalizeLocale } from "../../shared/emailLocale.ts";
+import { recoverContractEmail } from "../../shared/emails/recoverContract.ts";
 import {
-  MAX_ATTEMPTS,
-  PERMANENT_EMAIL_ERRORS,
+  buildContractEconomicView,
+  resolveContractPolicy,
+} from "../../shared/contractPolicySnapshot.ts";
+import {
+  captureEmergencyEpoch,
+  emergencyState,
+} from "../../shared/operationalControl.ts";
+import { sendCostGovernedEmail } from "../../shared/costGovernance.ts";
+import {
   classifyError,
   deliveryIdempotencyKey,
   leaseExpired,
   logContractEvent,
   maskEmail,
+  MAX_ATTEMPTS,
   nextRetryAt,
+  PERMANENT_EMAIL_ERRORS,
   safeReference,
-} from '../../shared/recoverContractState.ts';
+} from "../../shared/recoverContractState.ts";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -39,35 +45,91 @@ export default async function (req: Request): Promise<Response> {
   const base44 = createClientFromRequest(req);
   const body = await req.json().catch(() => ({}));
   const gate = await requireAdminOrInternal(req, base44, body);
-  if (!gate.ok) return gate.response;
+  if (!gate.ok) {
+    return gate.response ||
+      Response.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
 
   const svc = base44.asServiceRole;
   const emergency = await emergencyState(svc);
-  if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
-  const mandate_id = String(body?.mandate_id || '');
+  if (emergency.safe_mode || emergency.communications_paused) {
+    return Response.json({
+      ok: false,
+      error: "emergency_control_paused:communications",
+    }, { status: 409 });
+  }
+  let communicationEpoch: any;
+  try {
+    communicationEpoch = await captureEmergencyEpoch(svc, "communications");
+  } catch (error: any) {
+    return Response.json({
+      ok: false,
+      error: String(
+        error?.message || "emergency_control_paused:communications",
+      ),
+    }, { status: Number(error?.status || 409) });
+  }
+  const mandate_id = String(body?.mandate_id || "");
   // An admin resend is the ONLY way a second copy is ever sent, and it is logged
   // as a distinct event.
   const isResend = body?.resend === true && gate.isAdmin;
-  if (!mandate_id) return Response.json({ error: 'mandate_id required' }, { status: 400 });
+  if (!mandate_id) {
+    return Response.json({ error: "mandate_id required" }, { status: 400 });
+  }
 
-  const rows = await svc.entities.Mandate.filter({ id: mandate_id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'sendRecoverContractEmail',fallback:[],severity:'critical'}));
+  const rows = await svc.entities.Mandate.filter(
+    { id: mandate_id },
+    "-created_date",
+    1,
+  ).catch((error: any) =>
+    safeBestEffort(error, {
+      operation: "sendRecoverContractEmail",
+      fallback: [],
+      severity: "critical",
+    })
+  );
   const mandate = rows?.[0];
-  if (!mandate) return Response.json({ error: 'mandate not found' }, { status: 404 });
+  if (!mandate) {
+    return Response.json({ error: "mandate not found" }, { status: 404 });
+  }
 
   // The email may not exist before the document does.
-  if (mandate.contract_pdf_status !== 'generated' || !mandate.contract_pdf_storage_key || !mandate.contract_pdf_sha256) {
-    return Response.json({ error: 'pdf_not_ready', pdf_status: mandate.contract_pdf_status || 'pending' }, { status: 409 });
+  if (
+    mandate.contract_pdf_status !== "generated" ||
+    !mandate.contract_pdf_storage_key || !mandate.contract_pdf_sha256
+  ) {
+    return Response.json({
+      error: "pdf_not_ready",
+      pdf_status: mandate.contract_pdf_status || "pending",
+    }, { status: 409 });
   }
 
   if (!isResend) {
-    if (mandate.contract_email_status === 'sent' || mandate.contract_email_sent_at || mandate.contract_email_provider_message_id) {
+    if (
+      mandate.contract_email_status === "sent" ||
+      mandate.contract_email_sent_at ||
+      mandate.contract_email_provider_message_id
+    ) {
       return Response.json({ ok: true, already_sent: true, mandate_id });
     }
-    if (['failed_permanent', 'suppressed'].includes(mandate.contract_email_status)) {
-      return Response.json({ ok: true, skipped: mandate.contract_email_status, mandate_id });
+    if (
+      ["failed_permanent", "suppressed"].includes(mandate.contract_email_status)
+    ) {
+      return Response.json({
+        ok: true,
+        skipped: mandate.contract_email_status,
+        mandate_id,
+      });
     }
-    if (mandate.contract_email_status === 'sending' && !leaseExpired(mandate.contract_email_last_attempt_at)) {
-      return Response.json({ ok: true, skipped: 'send_in_progress', mandate_id });
+    if (
+      mandate.contract_email_status === "sending" &&
+      !leaseExpired(mandate.contract_email_last_attempt_at)
+    ) {
+      return Response.json({
+        ok: true,
+        skipped: "send_in_progress",
+        mandate_id,
+      });
     }
   }
 
@@ -77,37 +139,46 @@ export default async function (req: Request): Promise<Response> {
   // policy. (Mandate.status is never touched; the document stays downloadable.)
   const _resolved = resolveContractPolicy({ mandate });
   if (!_resolved.resolvable) {
-    return Response.json({ error: 'contract_unresolvable', mandate_id }, { status: 422 });
+    return Response.json({ error: "contract_unresolvable", mandate_id }, {
+      status: 422,
+    });
   }
-  const econ = buildContractEconomicView({ resolvedContractPolicy: _resolved, mandate });
+  const econ = buildContractEconomicView({
+    resolvedContractPolicy: _resolved,
+    mandate,
+  });
 
-  const recipient = String(mandate.signed_by_email || '').trim();
-  const locale = normalizeLocale(mandate.contract_pdf_language || mandate.language);
+  const recipient = String(mandate.signed_by_email || "").trim();
+  const locale = normalizeLocale(
+    mandate.contract_pdf_language || mandate.language,
+  );
   const attempt = Number(mandate.contract_email_attempt_count || 0) + 1;
   const startedAt = new Date().toISOString();
 
   await svc.entities.Mandate.update(mandate_id, {
-    contract_email_status: 'sending',
+    contract_email_status: "sending",
     contract_email_attempt_count: attempt,
     contract_email_last_attempt_at: startedAt,
     contract_delivery_idempotency_key: deliveryIdempotencyKey({
       mandateId: mandate_id,
       snapshotHash: mandate.contract_pdf_sha256,
-      templateVersion: mandate.contract_pdf_template_version || '',
+      templateVersion: mandate.contract_pdf_template_version || "",
       language: locale,
     }),
   });
 
   try {
-    if (!EMAIL_RE.test(recipient)) throw new Error('recipient_invalid');
+    if (!EMAIL_RE.test(recipient)) throw new Error("recipient_invalid");
 
-    const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
+    const appDomain = Deno.env.get("APP_DOMAIN") || "cambra.global";
     const mail = recoverContractEmail(locale, {
-      firstName: (mandate.signed_by_name || recipient.split('@')[0]).split(' ')[0],
-      acceptanceDate: new Date(mandate.signed_at || Date.now()).toLocaleDateString(
-        { en: 'en-IE', fr: 'fr-FR', es: 'es-ES' }[locale],
-        { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' },
-      ),
+      firstName:
+        (mandate.signed_by_name || recipient.split("@")[0]).split(" ")[0],
+      acceptanceDate: new Date(mandate.signed_at || Date.now())
+        .toLocaleDateString(
+          { en: "en-IE", fr: "fr-FR", es: "es-ES" }[locale],
+          { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" },
+        ),
       reference: safeReference(mandate_id),
       // Authenticated app route — NOT a signed storage URL.
       downloadUrl: `https://${appDomain}/Reports`,
@@ -115,51 +186,98 @@ export default async function (req: Request): Promise<Response> {
       durationMonths: econ.feeDurationMonths,
     });
 
-    const sent = await sendCostGovernedEmail(svc, { event_key:`email:recover-contract:${mandate.id}:${mandate.contract_version || 'current'}`, source:'sendRecoverContractEmail', related_entity_type:'Mandate', related_entity_id:mandate.id }, {
-      from_name: 'CAMBRA',
+    const deliveryEffectKey = isResend
+      ? `email:recover-contract:${mandate.id}:admin-resend:${attempt}`
+      : `email:recover-contract:${mandate.id}:${
+        mandate.contract_version || "current"
+      }`;
+    const sent = await sendCostGovernedEmail(svc, {
+      event_key: deliveryEffectKey,
+      stable_event_key: true,
+      source: "sendRecoverContractEmail",
+      related_entity_type: "Mandate",
+      related_entity_id: mandate.id,
+      emergency_epoch_claim: communicationEpoch,
+    }, {
+      from_name: "CAMBRA",
       to: recipient,
       subject: mail.subject,
       body: mail.html,
-    }).catch((e: any) => { throw new Error(`send_failed: ${e?.message || 'provider error'}`); });
+    });
 
     const sentAt = new Date().toISOString();
     await svc.entities.Mandate.update(mandate_id, {
-      contract_email_status: 'sent',
+      contract_email_status: "sent",
       contract_email_sent_at: sentAt,
       contract_email_recipient: recipient,
-      contract_email_provider_message_id: String(sent?.id || sent?.message_id || ''),
-      contract_email_last_error_code: '',
-      contract_email_next_retry_at: '',
+      contract_email_provider_message_id: String(
+        sent?.id || sent?.message_id || "",
+      ),
+      contract_email_last_error_code: "",
+      contract_email_next_retry_at: "",
     });
 
     await logContractEvent(
       svc,
-      isResend ? 'recover_contract_email_resent_by_admin' : 'recover_contract_email_sent',
+      isResend
+        ? "recover_contract_email_resent_by_admin"
+        : "recover_contract_email_sent",
       mandate,
       { attempt, language: locale, recipient_masked: maskEmail(recipient) },
-      gate.isAdmin ? String(gate.user?.email || 'admin') : 'internal',
+      gate.isAdmin ? String(gate.user?.email || "admin") : "internal",
     );
 
-    return Response.json({ ok: true, mandate_id, recipient_masked: maskEmail(recipient), sent_at: sentAt });
+    return Response.json({
+      ok: true,
+      mandate_id,
+      recipient_masked: maskEmail(recipient),
+      sent_at: sentAt,
+    });
   } catch (error) {
+    const ambiguous = (error as any)?.code === "EMERGENCY_EFFECT_AMBIGUOUS" ||
+      (error as any)?.review_required === true;
     const { code, retryable } = classifyError(error, PERMANENT_EMAIL_ERRORS);
     const exhausted = attempt >= MAX_ATTEMPTS;
-    const permanent = !retryable || exhausted;
-    const status = code === 'recipient_invalid' ? 'suppressed' : permanent ? 'failed_permanent' : 'failed_retryable';
+    // The provider accepted the effect but STOP raced the response. Retrying
+    // could duplicate a contractual email, so quarantine it for manual review.
+    const permanent = ambiguous || !retryable || exhausted;
+    const status = code === "recipient_invalid"
+      ? "suppressed"
+      : permanent
+      ? "failed_permanent"
+      : "failed_retryable";
 
     await svc.entities.Mandate.update(mandate_id, {
       contract_email_status: status,
       contract_email_last_error_code: code,
-      contract_email_next_retry_at: permanent ? '' : nextRetryAt(attempt),
-    }).catch((error:any)=>safeBestEffort(error,{operation:'sendRecoverContractEmail',fallback:null,severity:'critical'}));
+      contract_email_next_retry_at: permanent ? "" : nextRetryAt(attempt),
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: "sendRecoverContractEmail",
+        fallback: null,
+        severity: "critical",
+      })
+    );
 
     await logContractEvent(
       svc,
-      status === 'suppressed' ? 'recover_contract_email_suppressed' : 'recover_contract_email_failed',
+      status === "suppressed"
+        ? "recover_contract_email_suppressed"
+        : "recover_contract_email_failed",
       mandate,
-      { attempt, error_code: code, permanent, recipient_masked: maskEmail(recipient) },
+      {
+        attempt,
+        error_code: code,
+        permanent,
+        recipient_masked: maskEmail(recipient),
+      },
     );
 
-    return Response.json({ error: code, permanent, mandate_id }, { status: permanent ? 422 : 503 });
+    return Response.json({
+      error: code,
+      permanent,
+      mandate_id,
+      review_required: ambiguous,
+    }, { status: ambiguous ? 409 : permanent ? 422 : 503 });
   }
 }

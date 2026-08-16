@@ -106,7 +106,7 @@
     },
     "ip_address": {
       "type": "string",
-      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at). RECOVER-3: when empty, the PDF annex prints a neutral 'server-verified IP evidence unavailable' line \u2014 never 'IP: null'."
+      "description": "Captured when available. Part of the partial-but-real acceptance evidence trail (see authenticated_at). RECOVER-3: when empty, the PDF annex prints a neutral 'server-verified IP evidence unavailable' line — never 'IP: null'."
     },
     "user_agent": {
       "type": "string",
@@ -132,6 +132,10 @@
     "idempotency_key": {
       "type": "string",
       "description": "RECOVER-1 \u2014 persisted claim key. Base44 offers no transactions, so concurrency safety is: claim this key BEFORE any state change, re-read state before every write, and collapse duplicates on re-read (same pattern as shared/referralLink.ts). Replaying an acceptance finds the claim and returns the existing mandate instead of creating a second one."
+    },
+    "acceptance_commit_token": {
+      "type": "string",
+      "description": "RECOVER-1 server-generated CAS token proving which acceptance invocation won the acceptance_started to active transition."
     },
     "status": {
       "type": "string",

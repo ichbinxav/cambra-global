@@ -1,0 +1,4918 @@
+{
+  "schema_version": "intelligence-requirement-ledger.v1",
+  "generated_at": "2026-08-13T03:49:26Z",
+  "source_specs": {
+    "CIV2": {
+      "filename": "CAMBRA_INTELLIGENCE_V2_MASTER_SPEC.md",
+      "sha256": "48f781020c8893a439c84743703152d337e5a917348297dbb015a5bf448905c6",
+      "line_count": 4859,
+      "authority_rank": 5
+    },
+    "ORCH": {
+      "filename": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPEC.md",
+      "sha256": "4cdaa0daded4576eb297fd752f4b09aeb44830db28ebe7ab96a4511c61eafb06",
+      "line_count": 1299,
+      "authority_rank": 6
+    },
+    "CPIC": {
+      "filename": "CAMBRA_CPIC_ULTRA_MASTER_SPEC.md",
+      "sha256": "3d4f178a0092ad798be7a874e15571e1b40352ead9a417ddc4e0c1afa771e086",
+      "line_count": 429,
+      "authority_rank": 7
+    },
+    "ALI": {
+      "filename": "CAMBRA_ADAPTIVE_LEAD_INTELLIGENCE_FUNNEL_MASTER_SPEC.md",
+      "sha256": "78236a93e571ce6aa4ec095294df91e8e1c1a51f43c266cf99ff944823157d4f",
+      "line_count": 5989,
+      "authority_rank": 8
+    }
+  },
+  "audit_baseline": {
+    "status": "DIRTY_STATIC_BASELINE",
+    "git_head": "a52b65949d30635a794d6823564b5c54a89688a7",
+    "source_tree": {
+      "algorithm": "sha256-tree-v1",
+      "hash": "69950239cf6dd1b86ab50fd0b65d96c29fa6468621d52096de0c30f8f4f7f51d",
+      "file_count": 1601
+    },
+    "working_tree": {
+      "clean": false,
+      "modified_or_staged": 81,
+      "untracked": 43,
+      "concurrent_edits_possible": true
+    },
+    "release": {
+      "version": "0.97.0",
+      "final_verdict": "NOT_GO_READY",
+      "production_seal_eligible": false,
+      "release_build": false,
+      "git_sha": null
+    },
+    "runtime_parity": "UNVERIFIED",
+    "production_runtime": "UNVERIFIED",
+    "caveat": "Point-in-time static audit baseline from a dirty, concurrently edited tree. It is not a release identity and cannot support a production seal."
+  },
+  "capability_state_enum": [
+    "EXISTING",
+    "PARTIAL",
+    "TARGET"
+  ],
+  "delivery_status_enum": [
+    "NOT_STARTED",
+    "IN_PROGRESS",
+    "IMPLEMENTED",
+    "VERIFIED",
+    "BLOCKED",
+    "DEFERRED",
+    "SUPERSEDED"
+  ],
+  "verification_rule": "VERIFIED requires attributable runtime evidence from the same immutable source identity; code, tests or documentation alone are insufficient.",
+  "requirement_counts": {
+    "CIV2": 37,
+    "ORCH": 38,
+    "CPIC": 56,
+    "ALI": 46
+  },
+  "requirements": [
+    {
+      "requirement_id": "CIV2.S00",
+      "spec": "CIV2",
+      "section": "S00",
+      "title": "Naturaleza, alcance y fuerza contractual",
+      "requirement_summary": "Track and satisfy Naturaleza, alcance y fuerza contractual without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S01",
+      "spec": "CIV2",
+      "section": "S01",
+      "title": "Contexto permanente de CAMBRA",
+      "requirement_summary": "Track and satisfy Contexto permanente de CAMBRA without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S02",
+      "spec": "CIV2",
+      "section": "S02",
+      "title": "CURRENT REALITY — verdad estática del repositorio",
+      "requirement_summary": "Track and satisfy CURRENT REALITY — verdad estática del repositorio without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Event.jsonc",
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/universal-experience.v1.json",
+        "config/intelligence/experience-event-registry.v1.json"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "DOMAIN_ADAPTERS_NOT_WIRED_END_TO_END",
+        "COMMITTED_EVENT_OUTBOX_NOT_PROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Universal Experience v1 is implemented as a backwards-compatible projection over Event and existing evidence/snapshot/outcome authorities. Domain adapters, committed-event semantics and runtime remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S03",
+      "spec": "CIV2",
+      "section": "S03",
+      "title": "TARGET STATE",
+      "requirement_summary": "Track and satisfy TARGET STATE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S04",
+      "spec": "CIV2",
+      "section": "S04",
+      "title": "NON-GOALS",
+      "requirement_summary": "Track and satisfy NON-GOALS without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S05",
+      "spec": "CIV2",
+      "section": "S05",
+      "title": "PRINCIPIOS E INVARIANTES",
+      "requirement_summary": "Track and satisfy PRINCIPIOS E INVARIANTES without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S06",
+      "spec": "CIV2",
+      "section": "S06",
+      "title": "OPERATIONAL TRUTH Y REMEDIACIÓN DE DISCOVERY",
+      "requirement_summary": "Track and satisfy OPERATIONAL TRUTH Y REMEDIACIÓN DE DISCOVERY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IN_PROGRESS",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [
+        "src/lib/discoveryV2.test.js",
+        "src/lib/p6DiscoveryRadar.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S07",
+      "spec": "CIV2",
+      "section": "S07",
+      "title": "UNIVERSAL EXPERIENCE / DATA CONTRACT",
+      "requirement_summary": "Track and satisfy UNIVERSAL EXPERIENCE / DATA CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S08",
+      "spec": "CIV2",
+      "section": "S08",
+      "title": "CANONICAL IDENTITY CONTRACT",
+      "requirement_summary": "Track and satisfy CANONICAL IDENTITY CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderContact.jsonc"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S09",
+      "spec": "CIV2",
+      "section": "S09",
+      "title": "MEMORY CONTRACT",
+      "requirement_summary": "Track and satisfy MEMORY CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CompanyMemory.jsonc",
+        "base44/entities/CommunicationThread.jsonc",
+        "base44/entities/CommunicationMessage.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/copilotKnowledge.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S10",
+      "spec": "CIV2",
+      "section": "S10",
+      "title": "NEGOTIATION EPISODES",
+      "requirement_summary": "Track and satisfy NEGOTIATION EPISODES without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/NegotiationCase.jsonc",
+        "base44/entities/NegotiationOffer.jsonc",
+        "base44/entities/NegotiationMemoryCohort.jsonc",
+        "base44/shared/negotiationMemory.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S11",
+      "spec": "CIV2",
+      "section": "S11",
+      "title": "RETRIEVAL / RAG CONTRACT",
+      "requirement_summary": "Track and satisfy RETRIEVAL / RAG CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CompanyMemory.jsonc",
+        "base44/entities/CommunicationThread.jsonc",
+        "base44/entities/CommunicationMessage.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/copilotKnowledge.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S12",
+      "spec": "CIV2",
+      "section": "S12",
+      "title": "LEARNING DATA PLATFORM",
+      "requirement_summary": "Track and satisfy LEARNING DATA PLATFORM without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/learning-eligibility-policy.v1.json",
+        "config/intelligence/dataset-registry.v1.json"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "ELIGIBILITY_POLICY_NOT_RUNTIME_WIRED",
+        "NO_SEALED_REPRODUCIBLE_DATASET",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Strict INELIGIBLE/QUARANTINED/CLEARED admission and dataset manifest contracts exist. No runtime writer, eligible corpus, sealed dataset or model-readiness claim exists."
+    },
+    {
+      "requirement_id": "CIV2.S13",
+      "spec": "CIV2",
+      "section": "S13",
+      "title": "FEATURE, LABEL Y DATASET CONTRACTS",
+      "requirement_summary": "Track and satisfy FEATURE, LABEL Y DATASET CONTRACTS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/feature-registry.v1.json",
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json",
+        "config/intelligence/learning-eligibility-policy.v1.json"
+      ],
+      "test_refs": [
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "REGISTRIES_CONTRACT_ONLY",
+        "NO_APPROVED_FEATURE_OR_LABEL_RECORDS",
+        "NO_POINT_IN_TIME_DATASET_BUILDER",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "One shared contract-only registry exists for Feature, Label and Dataset. All registries are empty and blocked; no Feature Store or dataset readiness is claimed."
+    },
+    {
+      "requirement_id": "CIV2.S14",
+      "spec": "CIV2",
+      "section": "S14",
+      "title": "MODEL FACTORY",
+      "requirement_summary": "Track and satisfy MODEL FACTORY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/prediction-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "MODEL_AND_PREDICTION_REGISTRIES_CONTRACT_ONLY",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_TRAINING_EXECUTED_EVALUATION_SERVING_OR_ROLLBACK",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "The single shared model/prediction registry schemas, promotion gates and fail-closed Evaluation Harness contract exist, with zero records. No training or evaluation has executed; Model Factory runtime and every model-readiness gate remain blocked."
+    },
+    {
+      "requirement_id": "CIV2.S15",
+      "spec": "CIV2",
+      "section": "S15",
+      "title": "PROPRIETARY MODEL PORTFOLIO",
+      "requirement_summary": "Track and satisfy PROPRIETARY MODEL PORTFOLIO without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S16",
+      "spec": "CIV2",
+      "section": "S16",
+      "title": "LANGUAGE MODEL STRATEGY",
+      "requirement_summary": "Track and satisfy LANGUAGE MODEL STRATEGY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S17",
+      "spec": "CIV2",
+      "section": "S17",
+      "title": "EVALUATION CONTRACT",
+      "requirement_summary": "Track and satisfy EVALUATION CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts",
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts",
+        "src/docs/CAMBRA_INTELLIGENCE_EVALUATION_HARNESS_CONTRACT.md"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_EXECUTED_EVALUATION_OR_SIGNED_EVIDENCE",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "The single machine-readable evaluation contract and pure fail-closed validator are implemented locally. No evidence ref is independently verified, no evaluation has executed and no candidate can be registered, promoted or served through this contract."
+    },
+    {
+      "requirement_id": "CIV2.S18",
+      "spec": "CIV2",
+      "section": "S18",
+      "title": "CHAMPION / CHALLENGER",
+      "requirement_summary": "Track and satisfy CHAMPION / CHALLENGER without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S19",
+      "spec": "CIV2",
+      "section": "S19",
+      "title": "SHADOW Y CANARY",
+      "requirement_summary": "Track and satisfy SHADOW Y CANARY without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S20",
+      "spec": "CIV2",
+      "section": "S20",
+      "title": "DRIFT, PERFORMANCE DECAY Y RETRAINING",
+      "requirement_summary": "Track and satisfy DRIFT, PERFORMANCE DECAY Y RETRAINING without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S21",
+      "spec": "CIV2",
+      "section": "S21",
+      "title": "PRIVACY, SECURITY Y TENANT ISOLATION",
+      "requirement_summary": "Track and satisfy PRIVACY, SECURITY Y TENANT ISOLATION without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "base44/shared/privacySafeIntelligence.ts",
+        "config/data-retention-matrix.json"
+      ],
+      "test_refs": [
+        "src/lib/privacySafeIntelligence.test.js",
+        "src/lib/tenantGuard.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S22",
+      "spec": "CIV2",
+      "section": "S22",
+      "title": "AUTHORITY Y FAIL-CLOSED",
+      "requirement_summary": "Track and satisfy AUTHORITY Y FAIL-CLOSED without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/entities/MandateAuthorityGrant.jsonc",
+        "base44/shared/agentAuthority.ts",
+        "base44/shared/approvalAuthority.ts"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/p10EconomicAuthority.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S23",
+      "spec": "CIV2",
+      "section": "S23",
+      "title": "OBSERVABILITY",
+      "requirement_summary": "Track and satisfy OBSERVABILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/OperationalLog.jsonc",
+        "base44/entities/AgentRun.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/entities/SchedulerRun.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S24",
+      "spec": "CIV2",
+      "section": "S24",
+      "title": "COST GOVERNANCE",
+      "requirement_summary": "Track and satisfy COST GOVERNANCE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S25",
+      "spec": "CIV2",
+      "section": "S25",
+      "title": "MIGRATION Y BACKWARDS COMPATIBILITY",
+      "requirement_summary": "Track and satisfy MIGRATION Y BACKWARDS COMPATIBILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderContact.jsonc"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CIV2.S26",
+      "spec": "CIV2",
+      "section": "S26",
+      "title": "IMPLEMENTATION PHASES",
+      "requirement_summary": "Track and satisfy IMPLEMENTATION PHASES without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md",
+        "config/intelligence/shared-contract-map.v1.json",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "src/docs/CAMBRA_INTELLIGENCE_PHASE_1_FOUNDATION.md"
+      ],
+      "test_refs": [
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S27",
+      "spec": "CIV2",
+      "section": "S27",
+      "title": "ACCEPTANCE TESTS",
+      "requirement_summary": "Track and satisfy ACCEPTANCE TESTS without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S28",
+      "spec": "CIV2",
+      "section": "S28",
+      "title": "SEAL CRITERIA",
+      "requirement_summary": "Track and satisfy SEAL CRITERIA without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S29",
+      "spec": "CIV2",
+      "section": "S29",
+      "title": "OUTPUTS Y EVIDENCE REQUIRED",
+      "requirement_summary": "Track and satisfy OUTPUTS Y EVIDENCE REQUIRED without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.S30",
+      "spec": "CIV2",
+      "section": "S30",
+      "title": "CONTRACTUAL DEFINITION OF DONE",
+      "requirement_summary": "Track and satisfy CONTRACTUAL DEFINITION OF DONE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S00",
+      "spec": "ORCH",
+      "section": "S00",
+      "title": "MANDATO",
+      "requirement_summary": "Track and satisfy MANDATO without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IN_PROGRESS",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "SHARED_CONTRACT_RUNTIME_ADAPTERS_INCOMPLETE"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S01",
+      "spec": "ORCH",
+      "section": "S01",
+      "title": "REGLA DE PRECEDENCIA",
+      "requirement_summary": "Track and satisfy REGLA DE PRECEDENCIA without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S02",
+      "spec": "ORCH",
+      "section": "S02",
+      "title": "FUENTE DE VERDAD DE REQUISITOS",
+      "requirement_summary": "Track and satisfy FUENTE DE VERDAD DE REQUISITOS without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S03",
+      "spec": "ORCH",
+      "section": "S03",
+      "title": "ARQUITECTURA PADRE",
+      "requirement_summary": "Track and satisfy ARQUITECTURA PADRE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S04",
+      "spec": "ORCH",
+      "section": "S04",
+      "title": "RESPONSABILIDAD DE CADA ESPECIFICACIÓN",
+      "requirement_summary": "Track and satisfy RESPONSABILIDAD DE CADA ESPECIFICACIÓN without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S05",
+      "spec": "ORCH",
+      "section": "S05",
+      "title": "CONTRATOS COMPARTIDOS OBLIGATORIOS",
+      "requirement_summary": "Track and satisfy CONTRATOS COMPARTIDOS OBLIGATORIOS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S06",
+      "spec": "ORCH",
+      "section": "S06",
+      "title": "UNIVERSAL EXPERIENCE AS INTEGRATION BUS",
+      "requirement_summary": "Track and satisfy UNIVERSAL EXPERIENCE AS INTEGRATION BUS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Event.jsonc",
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/universal-experience.v1.json",
+        "config/intelligence/experience-event-registry.v1.json"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "DOMAIN_ADAPTERS_NOT_WIRED_END_TO_END"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S07",
+      "spec": "ORCH",
+      "section": "S07",
+      "title": "NO DUPLICATION RULES",
+      "requirement_summary": "Track and satisfy NO DUPLICATION RULES without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S08",
+      "spec": "ORCH",
+      "section": "S08",
+      "title": "CPIC ↔ ADAPTIVE LEAD INTELLIGENCE CONTRACT",
+      "requirement_summary": "Track and satisfy CPIC ↔ ADAPTIVE LEAD INTELLIGENCE CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S09",
+      "spec": "ORCH",
+      "section": "S09",
+      "title": "CPIC ↔ ANALYZER CONTRACT",
+      "requirement_summary": "Track and satisfy CPIC ↔ ANALYZER CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S10",
+      "spec": "ORCH",
+      "section": "S10",
+      "title": "CPIC ↔ P4/P5 CONTRACT",
+      "requirement_summary": "Track and satisfy CPIC ↔ P4/P5 CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S11",
+      "spec": "ORCH",
+      "section": "S11",
+      "title": "CPIC ↔ NEGOTIATION CONTRACT",
+      "requirement_summary": "Track and satisfy CPIC ↔ NEGOTIATION CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S12",
+      "spec": "ORCH",
+      "section": "S12",
+      "title": "MEMORY ↔ ALL AGENTS CONTRACT",
+      "requirement_summary": "Track and satisfy MEMORY ↔ ALL AGENTS CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CompanyMemory.jsonc",
+        "base44/entities/CommunicationThread.jsonc",
+        "base44/entities/CommunicationMessage.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/copilotKnowledge.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S13",
+      "spec": "ORCH",
+      "section": "S13",
+      "title": "MODEL FACTORY AS SINGLE TRAINING CONTROL PLANE",
+      "requirement_summary": "Track and satisfy MODEL FACTORY AS SINGLE TRAINING CONTROL PLANE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts",
+        "config/intelligence/feature-registry.v1.json",
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/prediction-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceFoundationContracts.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "REGISTRY_SCHEMAS_CONTRACT_ONLY",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_TRAINING_EXECUTED_EVALUATION_SERVING_OR_ROLLBACK",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "A single shared contract family now governs future features, labels, datasets, models, predictions and evaluation. It has zero runtime records, validates only packet completeness and does not constitute an operational Model Factory."
+    },
+    {
+      "requirement_id": "ORCH.S14",
+      "spec": "ORCH",
+      "section": "S14",
+      "title": "SINGLE EVALUATION HARNESS",
+      "requirement_summary": "Track and satisfy SINGLE EVALUATION HARNESS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts",
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts",
+        "src/docs/CAMBRA_INTELLIGENCE_EVALUATION_HARNESS_CONTRACT.md"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_EXECUTED_EVALUATION_OR_SIGNED_EVIDENCE",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "One shared schema and validator now cover deterministic, data, offline, adversarial, segment, calibration, cost, latency, reproducibility, promotion and authority requirements. They deliberately perform no evaluation and grant no promotion or runtime claim."
+    },
+    {
+      "requirement_id": "ORCH.S15",
+      "spec": "ORCH",
+      "section": "S15",
+      "title": "SINGLE COST GOVERNANCE",
+      "requirement_summary": "Track and satisfy SINGLE COST GOVERNANCE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S16",
+      "spec": "ORCH",
+      "section": "S16",
+      "title": "SINGLE AUTHORITY MODEL",
+      "requirement_summary": "Track and satisfy SINGLE AUTHORITY MODEL without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/entities/MandateAuthorityGrant.jsonc",
+        "base44/shared/agentAuthority.ts",
+        "base44/shared/approvalAuthority.ts"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/p10EconomicAuthority.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S17",
+      "spec": "ORCH",
+      "section": "S17",
+      "title": "SINGLE PRIVACY / TENANT MODEL",
+      "requirement_summary": "Track and satisfy SINGLE PRIVACY / TENANT MODEL without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "base44/shared/privacySafeIntelligence.ts",
+        "config/data-retention-matrix.json"
+      ],
+      "test_refs": [
+        "src/lib/privacySafeIntelligence.test.js",
+        "src/lib/tenantGuard.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S18",
+      "spec": "ORCH",
+      "section": "S18",
+      "title": "UNIFIED ADMIN EXPERIENCE",
+      "requirement_summary": "Track and satisfy UNIFIED ADMIN EXPERIENCE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S19",
+      "spec": "ORCH",
+      "section": "S19",
+      "title": "UNIFIED EXPLAINABILITY",
+      "requirement_summary": "Track and satisfy UNIFIED EXPLAINABILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S20",
+      "spec": "ORCH",
+      "section": "S20",
+      "title": "ORDER OF IMPLEMENTATION",
+      "requirement_summary": "Track and satisfy ORDER OF IMPLEMENTATION without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S21",
+      "spec": "ORCH",
+      "section": "S21",
+      "title": "CROSS-SYSTEM ACCEPTANCE TESTS",
+      "requirement_summary": "Track and satisfy CROSS-SYSTEM ACCEPTANCE TESTS without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S22",
+      "spec": "ORCH",
+      "section": "S22",
+      "title": "END-TO-END GOLDEN PATH",
+      "requirement_summary": "Track and satisfy END-TO-END GOLDEN PATH without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S23",
+      "spec": "ORCH",
+      "section": "S23",
+      "title": "ANTI-SILO TEST",
+      "requirement_summary": "Track and satisfy ANTI-SILO TEST without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S24",
+      "spec": "ORCH",
+      "section": "S24",
+      "title": "ANTI-DRIFT BETWEEN SPECS",
+      "requirement_summary": "Track and satisfy ANTI-DRIFT BETWEEN SPECS without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S25",
+      "spec": "ORCH",
+      "section": "S25",
+      "title": "MIGRATION PRINCIPLE",
+      "requirement_summary": "Track and satisfy MIGRATION PRINCIPLE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S26",
+      "spec": "ORCH",
+      "section": "S26",
+      "title": "VERSIONING",
+      "requirement_summary": "Track and satisfy VERSIONING without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S27",
+      "spec": "ORCH",
+      "section": "S27",
+      "title": "OBSERVABILITY",
+      "requirement_summary": "Track and satisfy OBSERVABILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/OperationalLog.jsonc",
+        "base44/entities/AgentRun.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/entities/SchedulerRun.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S28",
+      "spec": "ORCH",
+      "section": "S28",
+      "title": "FAILURE BEHAVIOR",
+      "requirement_summary": "Track and satisfy FAILURE BEHAVIOR without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S29",
+      "spec": "ORCH",
+      "section": "S29",
+      "title": "PERFORMANCE / COST",
+      "requirement_summary": "Track and satisfy PERFORMANCE / COST without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S30",
+      "spec": "ORCH",
+      "section": "S30",
+      "title": "ORCHESTRATION WORKER / SERVICE",
+      "requirement_summary": "Track and satisfy ORCHESTRATION WORKER / SERVICE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S31",
+      "spec": "ORCH",
+      "section": "S31",
+      "title": "AGENT INTEROPERABILITY",
+      "requirement_summary": "Track and satisfy AGENT INTEROPERABILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S32",
+      "spec": "ORCH",
+      "section": "S32",
+      "title": "PROMPT INTEROPERABILITY",
+      "requirement_summary": "Track and satisfy PROMPT INTEROPERABILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S33",
+      "spec": "ORCH",
+      "section": "S33",
+      "title": "REQUIREMENT LEDGER",
+      "requirement_summary": "Track and satisfy REQUIREMENT LEDGER without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S34",
+      "spec": "ORCH",
+      "section": "S34",
+      "title": "INTEGRATION EVIDENCE PACK",
+      "requirement_summary": "Track and satisfy INTEGRATION EVIDENCE PACK without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ORCH.S35",
+      "spec": "ORCH",
+      "section": "S35",
+      "title": "INTEGRATION SEALS",
+      "requirement_summary": "Track and satisfy INTEGRATION SEALS without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S36",
+      "spec": "ORCH",
+      "section": "S36",
+      "title": "FINAL DEFINITION OF DONE",
+      "requirement_summary": "Track and satisfy FINAL DEFINITION OF DONE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ORCH.S37",
+      "spec": "ORCH",
+      "section": "S37",
+      "title": "FINAL INVARIANT",
+      "requirement_summary": "Track and satisfy FINAL INVARIANT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CAMBRA Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S00",
+      "spec": "CPIC",
+      "section": "S00",
+      "title": "Executive mandate",
+      "requirement_summary": "Track and satisfy Executive mandate without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S01",
+      "spec": "CPIC",
+      "section": "S01",
+      "title": "Inspect first",
+      "requirement_summary": "Track and satisfy Inspect first without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S02",
+      "spec": "CPIC",
+      "section": "S02",
+      "title": "Intelligence taxonomy",
+      "requirement_summary": "Track and satisfy Intelligence taxonomy without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S03",
+      "spec": "CPIC",
+      "section": "S03",
+      "title": "Truth states",
+      "requirement_summary": "Track and satisfy Truth states without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S04",
+      "spec": "CPIC",
+      "section": "S04",
+      "title": "Lineage",
+      "requirement_summary": "Track and satisfy Lineage without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S05",
+      "spec": "CPIC",
+      "section": "S05",
+      "title": "Distribution-first intelligence",
+      "requirement_summary": "Track and satisfy Distribution-first intelligence without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts",
+        "base44/shared/p4BenchmarkIntelligence.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js",
+        "src/lib/p4BenchmarkIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S06",
+      "spec": "CPIC",
+      "section": "S06",
+      "title": "Hierarchical partial pooling",
+      "requirement_summary": "Track and satisfy Hierarchical partial pooling without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S07",
+      "spec": "CPIC",
+      "section": "S07",
+      "title": "Bayesian methods",
+      "requirement_summary": "Track and satisfy Bayesian methods without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S08",
+      "spec": "CPIC",
+      "section": "S08",
+      "title": "Method neutrality",
+      "requirement_summary": "Track and satisfy Method neutrality without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S09",
+      "spec": "CPIC",
+      "section": "S09",
+      "title": "Uncertainty decomposition",
+      "requirement_summary": "Track and satisfy Uncertainty decomposition without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "NO_DEFENSIBLE_NUMERIC_UNCERTAINTY_DECOMPOSITION_EVIDENCE"
+      ],
+      "owner": "CPIC",
+      "notes": "Canonical slots keep aleatoric, epistemic, model, data and total uncertainty separate and reject unsupported decomposition claims. No numeric decomposition evidence or seal exists."
+    },
+    {
+      "requirement_id": "CPIC.S10",
+      "spec": "CPIC",
+      "section": "S10",
+      "title": "OOD and support",
+      "requirement_summary": "Track and satisfy OOD and support without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts",
+        "base44/shared/p4BenchmarkIntelligence.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js",
+        "src/lib/p4BenchmarkIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "SUPPORT_CLASSIFICATION_NOT_RUNTIME_VALIDATED"
+      ],
+      "owner": "CPIC",
+      "notes": "A deterministic V0 support/OOD contract and abstention policy exists. Representativeness and runtime behavior remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S11",
+      "spec": "CPIC",
+      "section": "S11",
+      "title": "Calibration",
+      "requirement_summary": "Track and satisfy Calibration without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "NO_CALIBRATION_DATASET_REPORT_OR_RUNTIME_EVIDENCE"
+      ],
+      "owner": "CPIC",
+      "notes": "Calibration evidence has a canonical fail-closed status contract. No model is claimed calibrated and no calibration report exists."
+    },
+    {
+      "requirement_id": "CPIC.S12",
+      "spec": "CPIC",
+      "section": "S12",
+      "title": "Value of Information",
+      "requirement_summary": "Track and satisfy Value of Information without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "VOI_NOT_RUNTIME_INTEGRATED",
+        "PREDICTED_VS_REALIZED_INFORMATION_VALUE_NOT_OBSERVED"
+      ],
+      "owner": "CPIC",
+      "notes": "Deterministic VOI V0 implements explicit EVI, cost, source-success and policy semantics without spending authority. Runtime and realized-information-value evidence are absent."
+    },
+    {
+      "requirement_id": "CPIC.S13",
+      "spec": "CPIC",
+      "section": "S13",
+      "title": "Analyzer 2.0",
+      "requirement_summary": "Track and satisfy Analyzer 2.0 without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnalyzerInput.jsonc",
+        "base44/entities/AnalyzerResult.jsonc",
+        "base44/shared/analyzerFx.ts"
+      ],
+      "test_refs": [
+        "src/lib/analyzerFx.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S14",
+      "spec": "CPIC",
+      "section": "S14",
+      "title": "Uncertainty propagation",
+      "requirement_summary": "Track and satisfy Uncertainty propagation without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S15",
+      "spec": "CPIC",
+      "section": "S15",
+      "title": "Probabilistic Savings",
+      "requirement_summary": "Track and satisfy Probabilistic Savings without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S16",
+      "spec": "CPIC",
+      "section": "S16",
+      "title": "Report Intelligence",
+      "requirement_summary": "Track and satisfy Report Intelligence without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnalyzerInput.jsonc",
+        "base44/entities/AnalyzerResult.jsonc",
+        "base44/shared/analyzerFx.ts"
+      ],
+      "test_refs": [
+        "src/lib/analyzerFx.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S17",
+      "spec": "CPIC",
+      "section": "S17",
+      "title": "Rate Intelligence 2.0",
+      "requirement_summary": "Track and satisfy Rate Intelligence 2.0 without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderPricingVersion.jsonc",
+        "base44/entities/RateComponent.jsonc",
+        "base44/shared/p3RateIntelligence.ts"
+      ],
+      "test_refs": [
+        "src/lib/p3RateIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S18",
+      "spec": "CPIC",
+      "section": "S18",
+      "title": "Temporal intelligence",
+      "requirement_summary": "Track and satisfy Temporal intelligence without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S19",
+      "spec": "CPIC",
+      "section": "S19",
+      "title": "Benchmark Intelligence 2.0",
+      "requirement_summary": "Track and satisfy Benchmark Intelligence 2.0 without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S20",
+      "spec": "CPIC",
+      "section": "S20",
+      "title": "Robust outliers",
+      "requirement_summary": "Track and satisfy Robust outliers without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S21",
+      "spec": "CPIC",
+      "section": "S21",
+      "title": "Opportunity Engine 2.0",
+      "requirement_summary": "Track and satisfy Opportunity Engine 2.0 without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S22",
+      "spec": "CPIC",
+      "section": "S22",
+      "title": "Negotiation Intelligence",
+      "requirement_summary": "Track and satisfy Negotiation Intelligence without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/NegotiationCase.jsonc",
+        "base44/entities/NegotiationOffer.jsonc",
+        "base44/entities/NegotiationMemoryCohort.jsonc",
+        "base44/shared/negotiationMemory.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S23",
+      "spec": "CPIC",
+      "section": "S23",
+      "title": "Discovery and Commercial",
+      "requirement_summary": "Track and satisfy Discovery and Commercial without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S24",
+      "spec": "CPIC",
+      "section": "S24",
+      "title": "Migration risk",
+      "requirement_summary": "Track and satisfy Migration risk without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S25",
+      "spec": "CPIC",
+      "section": "S25",
+      "title": "Evidence reliability",
+      "requirement_summary": "Track and satisfy Evidence reliability without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S26",
+      "spec": "CPIC",
+      "section": "S26",
+      "title": "Anti-circular learning",
+      "requirement_summary": "Track and satisfy Anti-circular learning without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S27",
+      "spec": "CPIC",
+      "section": "S27",
+      "title": "Feature contracts",
+      "requirement_summary": "Track and satisfy Feature contracts without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S28",
+      "spec": "CPIC",
+      "section": "S28",
+      "title": "Label contracts",
+      "requirement_summary": "Track and satisfy Label contracts without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S29",
+      "spec": "CPIC",
+      "section": "S29",
+      "title": "Dataset contracts",
+      "requirement_summary": "Track and satisfy Dataset contracts without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S30",
+      "spec": "CPIC",
+      "section": "S30",
+      "title": "Model Factory",
+      "requirement_summary": "Track and satisfy Model Factory without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S31",
+      "spec": "CPIC",
+      "section": "S31",
+      "title": "Decision theory",
+      "requirement_summary": "Track and satisfy Decision theory without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "UTILITY_POLICIES_NOT_DOMAIN_INTEGRATED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "A deterministic advisory utility boundary exists and never grants authority. Domain utility policies, outcomes and runtime evidence remain unproven."
+    },
+    {
+      "requirement_id": "CPIC.S32",
+      "spec": "CPIC",
+      "section": "S32",
+      "title": "Expected Value Core",
+      "requirement_summary": "Track and satisfy Expected Value Core without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "EXPECTED_VALUE_NOT_DOMAIN_INTEGRATED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Expected Value V0 deterministically ranks explicit joint scenarios and remains SIMULATED/non-billable. Domain integration and empirical probability evidence are absent."
+    },
+    {
+      "requirement_id": "CPIC.S33",
+      "spec": "CPIC",
+      "section": "S33",
+      "title": "Scenario simulation",
+      "requirement_summary": "Track and satisfy Scenario simulation without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S34",
+      "spec": "CPIC",
+      "section": "S34",
+      "title": "Sensitivity analysis",
+      "requirement_summary": "Track and satisfy Sensitivity analysis without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S35",
+      "spec": "CPIC",
+      "section": "S35",
+      "title": "Explainability",
+      "requirement_summary": "Track and satisfy Explainability without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S36",
+      "spec": "CPIC",
+      "section": "S36",
+      "title": "Evaluation",
+      "requirement_summary": "Track and satisfy Evaluation without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S37",
+      "spec": "CPIC",
+      "section": "S37",
+      "title": "Segment evaluation",
+      "requirement_summary": "Track and satisfy Segment evaluation without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S38",
+      "spec": "CPIC",
+      "section": "S38",
+      "title": "Statistical discipline",
+      "requirement_summary": "Track and satisfy Statistical discipline without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S39",
+      "spec": "CPIC",
+      "section": "S39",
+      "title": "Shadow and Canary",
+      "requirement_summary": "Track and satisfy Shadow and Canary without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S40",
+      "spec": "CPIC",
+      "section": "S40",
+      "title": "Drift",
+      "requirement_summary": "Track and satisfy Drift without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S41",
+      "spec": "CPIC",
+      "section": "S41",
+      "title": "Retraining",
+      "requirement_summary": "Track and satisfy Retraining without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S42",
+      "spec": "CPIC",
+      "section": "S42",
+      "title": "Privacy and tenant isolation",
+      "requirement_summary": "Track and satisfy Privacy and tenant isolation without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "base44/shared/privacySafeIntelligence.ts",
+        "config/data-retention-matrix.json"
+      ],
+      "test_refs": [
+        "src/lib/privacySafeIntelligence.test.js",
+        "src/lib/tenantGuard.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S43",
+      "spec": "CPIC",
+      "section": "S43",
+      "title": "Authority and fail-closed",
+      "requirement_summary": "Track and satisfy Authority and fail-closed without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/entities/MandateAuthorityGrant.jsonc",
+        "base44/shared/agentAuthority.ts",
+        "base44/shared/approvalAuthority.ts",
+        "base44/shared/cpicFoundation.ts"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/p10EconomicAuthority.static.test.js",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "CPIC outputs remain advisory, non-billable and without execution authority; missing support/evidence causes abstention. Runtime authority drills remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S44",
+      "spec": "CPIC",
+      "section": "S44",
+      "title": "Cost governance",
+      "requirement_summary": "Track and satisfy Cost governance without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S45",
+      "spec": "CPIC",
+      "section": "S45",
+      "title": "Observability",
+      "requirement_summary": "Track and satisfy Observability without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S46",
+      "spec": "CPIC",
+      "section": "S46",
+      "title": "Model portfolio",
+      "requirement_summary": "Track and satisfy Model portfolio without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S47",
+      "spec": "CPIC",
+      "section": "S47",
+      "title": "Implementation phases",
+      "requirement_summary": "Track and satisfy Implementation phases without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S48",
+      "spec": "CPIC",
+      "section": "S48",
+      "title": "Acceptance tests",
+      "requirement_summary": "Track and satisfy Acceptance tests without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S49",
+      "spec": "CPIC",
+      "section": "S49",
+      "title": "Seal criteria",
+      "requirement_summary": "Track and satisfy Seal criteria without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S50",
+      "spec": "CPIC",
+      "section": "S50",
+      "title": "Required evidence",
+      "requirement_summary": "Track and satisfy Required evidence without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S51",
+      "spec": "CPIC",
+      "section": "S51",
+      "title": "Forbidden shortcuts",
+      "requirement_summary": "Track and satisfy Forbidden shortcuts without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CPIC",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "CPIC.S52",
+      "spec": "CPIC",
+      "section": "S52",
+      "title": "Definition of done",
+      "requirement_summary": "Track and satisfy Definition of done without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CPIC.S53",
+      "spec": "CPIC",
+      "section": "S53",
+      "title": "Final invariant",
+      "requirement_summary": "Track and satisfy Final invariant without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "CPIC",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S00",
+      "spec": "ALI",
+      "section": "S00",
+      "title": "NATURALEZA, ALCANCE Y FUERZA CONTRACTUAL",
+      "requirement_summary": "Track and satisfy NATURALEZA, ALCANCE Y FUERZA CONTRACTUAL without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S01",
+      "spec": "ALI",
+      "section": "S01",
+      "title": "PROPÓSITO DE PRODUCTO",
+      "requirement_summary": "Track and satisfy PROPÓSITO DE PRODUCTO without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S02",
+      "spec": "ALI",
+      "section": "S02",
+      "title": "CURRENT REALITY — SOURCE TREE INSPECCIONADO",
+      "requirement_summary": "Track and satisfy CURRENT REALITY — SOURCE TREE INSPECCIONADO without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S03",
+      "spec": "ALI",
+      "section": "S03",
+      "title": "TARGET STATE",
+      "requirement_summary": "Track and satisfy TARGET STATE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S04",
+      "spec": "ALI",
+      "section": "S04",
+      "title": "NON-GOALS",
+      "requirement_summary": "Track and satisfy NON-GOALS without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S05",
+      "spec": "ALI",
+      "section": "S05",
+      "title": "PRINCIPLES E INVARIANTS",
+      "requirement_summary": "Track and satisfy PRINCIPLES E INVARIANTS without inferring runtime capability from code presence.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S06",
+      "spec": "ALI",
+      "section": "S06",
+      "title": "SCOPE, ENTITIES Y BOUNDARIES",
+      "requirement_summary": "Track and satisfy SCOPE, ENTITIES Y BOUNDARIES without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S07",
+      "spec": "ALI",
+      "section": "S07",
+      "title": "OPERATIONAL TRUTH REMEDIATION",
+      "requirement_summary": "Track and satisfy OPERATIONAL TRUTH REMEDIATION without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IN_PROGRESS",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [
+        "src/lib/discoveryV2.test.js",
+        "src/lib/p6DiscoveryRadar.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S08",
+      "spec": "ALI",
+      "section": "S08",
+      "title": "CANONICAL COMPANY, CANDIDATE Y CONTACT IDENTITY",
+      "requirement_summary": "Track and satisfy CANONICAL COMPANY, CANDIDATE Y CONTACT IDENTITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderContact.jsonc"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S09",
+      "spec": "ALI",
+      "section": "S09",
+      "title": "UNIVERSAL CANDIDATE EXPERIENCE CONTRACT",
+      "requirement_summary": "Track and satisfy UNIVERSAL CANDIDATE EXPERIENCE CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc",
+        "base44/entities/ProviderContact.jsonc"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S10",
+      "spec": "ALI",
+      "section": "S10",
+      "title": "FUNNEL AND STATE-MACHINE CONTRACT",
+      "requirement_summary": "Track and satisfy FUNNEL AND STATE-MACHINE CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S11",
+      "spec": "ALI",
+      "section": "S11",
+      "title": "SIGNAL, OBSERVATION AND EVIDENCE CONTRACT",
+      "requirement_summary": "Track and satisfy SIGNAL, OBSERVATION AND EVIDENCE CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S12",
+      "spec": "ALI",
+      "section": "S12",
+      "title": "GAP CONTRACT",
+      "requirement_summary": "Track and satisfy GAP CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceObservation.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceCore.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S13",
+      "spec": "ALI",
+      "section": "S13",
+      "title": "VALUE OF INFORMATION CONTRACT",
+      "requirement_summary": "Track and satisfy VALUE OF INFORMATION CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [
+        "src/lib/p4BenchmarkIntelligence.test.js",
+        "src/lib/p4Integration.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S14",
+      "spec": "ALI",
+      "section": "S14",
+      "title": "SOURCE REGISTRY AND SOURCE ROUTER",
+      "requirement_summary": "Track and satisfy SOURCE REGISTRY AND SOURCE ROUTER without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S15",
+      "spec": "ALI",
+      "section": "S15",
+      "title": "COST TIERS AND RESEARCH LADDER",
+      "requirement_summary": "Track and satisfy COST TIERS AND RESEARCH LADDER without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S16",
+      "spec": "ALI",
+      "section": "S16",
+      "title": "COMPANY BEFORE PERSON / CONTACT-LAST CONTRACT",
+      "requirement_summary": "Track and satisfy COMPANY BEFORE PERSON / CONTACT-LAST CONTRACT without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S17",
+      "spec": "ALI",
+      "section": "S17",
+      "title": "SCORE, ESTIMATE, CONFIDENCE AND SUPPORT CONTRACTS",
+      "requirement_summary": "Track and satisfy SCORE, ESTIMATE, CONFIDENCE AND SUPPORT CONTRACTS without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S18",
+      "spec": "ALI",
+      "section": "S18",
+      "title": "THRESHOLD, STOPPING AND REOPENING POLICY",
+      "requirement_summary": "Track and satisfy THRESHOLD, STOPPING AND REOPENING POLICY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S19",
+      "spec": "ALI",
+      "section": "S19",
+      "title": "EXPECTED-VALUE QUEUE AND EXPLORATION",
+      "requirement_summary": "Track and satisfy EXPECTED-VALUE QUEUE AND EXPLORATION without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S20",
+      "spec": "ALI",
+      "section": "S20",
+      "title": "BACKEND BATCH / WORK-ITEM EXECUTION",
+      "requirement_summary": "Track and satisfy BACKEND BATCH / WORK-ITEM EXECUTION without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S21",
+      "spec": "ALI",
+      "section": "S21",
+      "title": "COST GOVERNANCE AND UNIT ECONOMICS",
+      "requirement_summary": "Track and satisfy COST GOVERNANCE AND UNIT ECONOMICS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "test_refs": [
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S22",
+      "spec": "ALI",
+      "section": "S22",
+      "title": "COMPLIANCE, SUPPRESSION AND OUTREACH AUTHORITY",
+      "requirement_summary": "Track and satisfy COMPLIANCE, SUPPRESSION AND OUTREACH AUTHORITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/entities/MandateAuthorityGrant.jsonc",
+        "base44/shared/agentAuthority.ts",
+        "base44/shared/approvalAuthority.ts"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/p10EconomicAuthority.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S23",
+      "spec": "ALI",
+      "section": "S23",
+      "title": "CRM, COMMERCIAL HANDOFF AND LIFECYCLE",
+      "requirement_summary": "Track and satisfy CRM, COMMERCIAL HANDOFF AND LIFECYCLE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S24",
+      "spec": "ALI",
+      "section": "S24",
+      "title": "OUTCOME, ATTRIBUTION AND LEARNING ELIGIBILITY",
+      "requirement_summary": "Track and satisfy OUTCOME, ATTRIBUTION AND LEARNING ELIGIBILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S25",
+      "spec": "ALI",
+      "section": "S25",
+      "title": "FEATURE, LABEL AND DATASET CONTRACTS",
+      "requirement_summary": "Track and satisfy FEATURE, LABEL AND DATASET CONTRACTS without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S26",
+      "spec": "ALI",
+      "section": "S26",
+      "title": "PROPRIETARY MODEL AND POLICY ROADMAP",
+      "requirement_summary": "Track and satisfy PROPRIETARY MODEL AND POLICY ROADMAP without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S27",
+      "spec": "ALI",
+      "section": "S27",
+      "title": "LANGUAGE-MODEL STRATEGY",
+      "requirement_summary": "Track and satisfy LANGUAGE-MODEL STRATEGY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S28",
+      "spec": "ALI",
+      "section": "S28",
+      "title": "EVALUATION, EXPERIMENTATION AND STATISTICAL DISCIPLINE",
+      "requirement_summary": "Track and satisfy EVALUATION, EXPERIMENTATION AND STATISTICAL DISCIPLINE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/functions/acquisitionLearningWorker/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S29",
+      "spec": "ALI",
+      "section": "S29",
+      "title": "PRIVACY, SECURITY, DATA RIGHTS AND TENANT ISOLATION",
+      "requirement_summary": "Track and satisfy PRIVACY, SECURITY, DATA RIGHTS AND TENANT ISOLATION without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "base44/shared/privacySafeIntelligence.ts",
+        "config/data-retention-matrix.json"
+      ],
+      "test_refs": [
+        "src/lib/privacySafeIntelligence.test.js",
+        "src/lib/tenantGuard.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S30",
+      "spec": "ALI",
+      "section": "S30",
+      "title": "AUTHORITY AND FAIL-CLOSED EXECUTION",
+      "requirement_summary": "Track and satisfy AUTHORITY AND FAIL-CLOSED EXECUTION without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/entities/MandateAuthorityGrant.jsonc",
+        "base44/shared/agentAuthority.ts",
+        "base44/shared/approvalAuthority.ts"
+      ],
+      "test_refs": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/p10EconomicAuthority.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S31",
+      "spec": "ALI",
+      "section": "S31",
+      "title": "OBSERVABILITY, ADMIN EXPLAINABILITY AND INCIDENTS",
+      "requirement_summary": "Track and satisfy OBSERVABILITY, ADMIN EXPLAINABILITY AND INCIDENTS without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/OperationalLog.jsonc",
+        "base44/entities/AgentRun.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/entities/SchedulerRun.jsonc"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S32",
+      "spec": "ALI",
+      "section": "S32",
+      "title": "KPI AND METRIC GOVERNANCE",
+      "requirement_summary": "Track and satisfy KPI AND METRIC GOVERNANCE without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S33",
+      "spec": "ALI",
+      "section": "S33",
+      "title": "VENDOR PORTABILITY AND SUNSET",
+      "requirement_summary": "Track and satisfy VENDOR PORTABILITY AND SUNSET without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S34",
+      "spec": "ALI",
+      "section": "S34",
+      "title": "MIGRATION AND BACKWARDS COMPATIBILITY",
+      "requirement_summary": "Track and satisfy MIGRATION AND BACKWARDS COMPATIBILITY without inferring runtime capability from code presence.",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CommercialStrategy.jsonc",
+        "base44/entities/CommercialCampaign.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "test_refs": [
+        "src/lib/leadOutcomeCalibration.test.js",
+        "src/lib/commercialAutonomySeal.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Static repository evidence only; runtime and production remain unverified."
+    },
+    {
+      "requirement_id": "ALI.S35",
+      "spec": "ALI",
+      "section": "S35",
+      "title": "IMPLEMENTATION PHASES",
+      "requirement_summary": "Track and satisfy IMPLEMENTATION PHASES without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S36",
+      "spec": "ALI",
+      "section": "S36",
+      "title": "ACCEPTANCE TEST MATRIX",
+      "requirement_summary": "Track and satisfy ACCEPTANCE TEST MATRIX without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S37",
+      "spec": "ALI",
+      "section": "S37",
+      "title": "SEAL CRITERIA",
+      "requirement_summary": "Track and satisfy SEAL CRITERIA without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S38",
+      "spec": "ALI",
+      "section": "S38",
+      "title": "OUTPUTS AND EVIDENCE REQUIRED",
+      "requirement_summary": "Track and satisfy OUTPUTS AND EVIDENCE REQUIRED without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "ALI.S39",
+      "spec": "ALI",
+      "section": "S39",
+      "title": "CONTRACTUAL DEFINITION OF DONE",
+      "requirement_summary": "Track and satisfy CONTRACTUAL DEFINITION OF DONE without inferring runtime capability from code presence.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "Adaptive Lead Intelligence",
+      "notes": "Target-state requirement retained; no seal inferred."
+    },
+    {
+      "requirement_id": "CIV2.APPENDIX_A",
+      "spec": "CIV2",
+      "section": "APPENDIX_A",
+      "title": "Anti-circular-learning rule",
+      "requirement_summary": "Govern Anti-circular-learning rule as a binding CIV2 constraint.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CIV2.APPENDIX_B",
+      "spec": "CIV2",
+      "section": "APPENDIX_B",
+      "title": "Reuse / extend / new decision rubric",
+      "requirement_summary": "Govern Reuse / extend / new decision rubric as a binding CIV2 constraint.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CIV2.APPENDIX_C",
+      "spec": "CIV2",
+      "section": "APPENDIX_C",
+      "title": "Forbidden shortcuts",
+      "requirement_summary": "Govern Forbidden shortcuts as a binding CIV2 constraint.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [
+        "src/lib/p12Intelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CIV2.APPENDIX_D",
+      "spec": "CIV2",
+      "section": "APPENDIX_D",
+      "title": "Minimum templates",
+      "requirement_summary": "Govern Minimum templates as a binding CIV2 constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CIV2.APPENDIX_E",
+      "spec": "CIV2",
+      "section": "APPENDIX_E",
+      "title": "Mandate for implementing agents",
+      "requirement_summary": "Govern Mandate for implementing agents as a binding CIV2 constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CIV2.FINAL",
+      "spec": "CIV2",
+      "section": "FINAL",
+      "title": "Final invariant",
+      "requirement_summary": "Govern Final invariant as a binding CIV2 constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CIV2",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CPIC.APPENDIX_A",
+      "spec": "CPIC",
+      "section": "APPENDIX_A",
+      "title": "Mandatory architecture invariant",
+      "requirement_summary": "Govern Mandatory architecture invariant as a binding CPIC constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "CPIC.APPENDIX_B",
+      "spec": "CPIC",
+      "section": "APPENDIX_B",
+      "title": "Implementing-agent mandate",
+      "requirement_summary": "Govern Implementing-agent mandate as a binding CPIC constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/entities/P4EvidenceProjection.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/p4Bridge.ts"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "CPIC",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.APPENDIX_A",
+      "spec": "ALI",
+      "section": "APPENDIX_A",
+      "title": "CURRENT RESOURCE MAP",
+      "requirement_summary": "Govern CURRENT RESOURCE MAP as a binding ALI constraint.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [
+        "src/lib/discoveryV2.test.js",
+        "src/lib/p6DiscoveryRadar.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.APPENDIX_B",
+      "spec": "ALI",
+      "section": "APPENDIX_B",
+      "title": "FORBIDDEN SHORTCUTS",
+      "requirement_summary": "Govern FORBIDDEN SHORTCUTS as a binding ALI constraint.",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [
+        "src/lib/discoveryV2.test.js",
+        "src/lib/p6DiscoveryRadar.test.js"
+      ],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.APPENDIX_C",
+      "spec": "ALI",
+      "section": "APPENDIX_C",
+      "title": "MINIMUM TEMPLATES",
+      "requirement_summary": "Govern MINIMUM TEMPLATES as a binding ALI constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.APPENDIX_D",
+      "spec": "ALI",
+      "section": "APPENDIX_D",
+      "title": "BASE44 IMPLEMENTATION RULES",
+      "requirement_summary": "Govern BASE44 IMPLEMENTATION RULES as a binding ALI constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.APPENDIX_E",
+      "spec": "ALI",
+      "section": "APPENDIX_E",
+      "title": "MANDATE FOR IMPLEMENTING AGENTS",
+      "requirement_summary": "Govern MANDATE FOR IMPLEMENTING AGENTS as a binding ALI constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    },
+    {
+      "requirement_id": "ALI.FINAL",
+      "spec": "ALI",
+      "section": "FINAL",
+      "title": "FINAL INVARIANT",
+      "requirement_summary": "Govern FINAL INVARIANT as a binding ALI constraint.",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "base44/shared/discoveryV2Planner.ts",
+        "base44/functions/adminSummaries/entry.ts",
+        "src/pages/admin/AdminDiscovery.jsx"
+      ],
+      "test_refs": [],
+      "runtime_evidence": [],
+      "dependencies": [
+        "ORCH.S01"
+      ],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "TARGET_CONTRACT_NOT_IMPLEMENTED"
+      ],
+      "owner": "ALI",
+      "notes": "No runtime or production-readiness claim."
+    }
+  ]
+}

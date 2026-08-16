@@ -358,16 +358,17 @@ describe("tenant isolation — resolveOwnedActivation", () => {
     expect(r.activation.id).toBe("act_a");
   });
 
-  it("User A cannot resolve User B's activation (different email, different brand)", async () => {
+  it("returns the same non-enumerable denial for another tenant, an unknown actor and an unknown activation", async () => {
     const svc = mockSvc(
       { id: "act_b", user_email: "b@b.com", brand_id: "brand_b" },
       { id: "brand_b", contact_email: "b@b.com", created_by: "b@b.com" }
     );
-    const user = { email: "a@a.com" };
-    const r = await resolveOwnedActivation(svc, user, "act_b");
-    expect(r.ok).toBe(false);
-    expect(r.status).toBe(403);
-    expect(r.error).toBe("forbidden");
+    const nonOwner = await resolveOwnedActivation(svc, { email: "a@a.com" }, "act_b");
+    const unknownActor = await resolveOwnedActivation(svc, {}, "act_b");
+    const unknownActivation = await resolveOwnedActivation(mockSvc(null, null), { email: "a@a.com" }, "nonexistent");
+    expect(nonOwner).toEqual({ ok: false, status: 404, error: "activation_not_found" });
+    expect(unknownActor).toEqual(nonOwner);
+    expect(unknownActivation).toEqual(nonOwner);
   });
 
   it("admin can resolve any activation", async () => {
@@ -387,16 +388,38 @@ describe("tenant isolation — resolveOwnedActivation", () => {
     );
     const user = { email: "intruder@x.com" };
     const r = await resolveOwnedActivation(svc, user, "act_x");
-    expect(r.ok).toBe(false);
-    expect(r.status).toBe(403);
+    expect(r).toEqual({ ok: false, status: 404, error: "activation_not_found" });
   });
 
-  it("returns 404 for a non-existent activation", async () => {
-    const svc = mockSvc(null, null);
-    const user = { email: "a@a.com" };
-    const r = await resolveOwnedActivation(svc, user, "nonexistent");
-    expect(r.ok).toBe(false);
-    expect(r.status).toBe(404);
+  it("fails closed when activation or brand authority is unavailable or ambiguous", async () => {
+    const activation = { id: "act_a", user_email: "a@a.com", brand_id: "brand_a" };
+    const brand = { id: "brand_a", contact_email: "a@a.com" };
+    const unavailable = {
+      entities: {
+        DealActivation: { filter: async () => { throw new Error("down"); } },
+        Brand: { filter: async () => [brand] },
+      },
+    };
+    await expect(resolveOwnedActivation(unavailable, { email: "a@a.com" }, "act_a"))
+      .resolves.toEqual({ ok: false, status: 503, error: "tenant_authority_unavailable" });
+
+    const ambiguousActivation = {
+      entities: {
+        DealActivation: { filter: async () => [activation, { ...activation }] },
+        Brand: { filter: async () => [brand] },
+      },
+    };
+    await expect(resolveOwnedActivation(ambiguousActivation, { email: "a@a.com" }, "act_a"))
+      .resolves.toEqual({ ok: false, status: 503, error: "tenant_authority_ambiguous" });
+
+    const ambiguousBrand = {
+      entities: {
+        DealActivation: { filter: async () => [activation] },
+        Brand: { filter: async () => [brand, { ...brand }] },
+      },
+    };
+    await expect(resolveOwnedActivation(ambiguousBrand, { email: "a@a.com" }, "act_a"))
+      .resolves.toEqual({ ok: false, status: 503, error: "tenant_authority_ambiguous" });
   });
 });
 

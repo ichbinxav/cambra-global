@@ -2,6 +2,38 @@
   "name": "WebhookDelivery",
   "type": "object",
   "properties": {
+    "effect_key": {
+      "type": "string",
+      "description": "Stable material-effect identity used for exact receipt reconciliation."
+    },
+    "operation_key": {
+      "type": "string",
+      "description": "Hashed logical operation key inherited from the dispatch intent."
+    },
+    "delivery_id": {
+      "type": "string",
+      "description": "Stable receiver-visible delivery id."
+    },
+    "payload_hash": {
+      "type": "string",
+      "description": "Canonical binding to the exact public payload."
+    },
+    "claim_token": {
+      "type": "string",
+      "description": "Fencing token that owned the corresponding WebhookDeadLetter effect."
+    },
+    "claim_revision": {
+      "type": "number",
+      "description": "Fencing revision that started the effect."
+    },
+    "provider_receipt_json": {
+      "type": "object",
+      "description": "Observed transport response only; an HTTP acknowledgement is not represented as downstream delivery."
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "webhook_id": {
       "type": "string"
     },
@@ -56,7 +88,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

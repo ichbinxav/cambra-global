@@ -2,14 +2,26 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { costReservationDecision, nextCostReservationState, reservationUsageFromControl, summarizeCostUsage, validateCostBudget } from '../../base44/shared/costGovernance.ts';
+import { costReservationDecision, costReservationStateForReconfiguration, costRuntimeSnapshot, nextCostReservationState, reservationUsageFromControl, selectSingleActiveCostBudget, summarizeCostUsage, validateCostBudget } from '../../base44/shared/costGovernance.ts';
 import { evaluateGoLiveHardGates, GO_LIVE_GATE_REQUIREMENTS } from '../../base44/shared/goLiveHardGates.ts';
 import { evaluateSchedulerEvidence, GO_CRITICAL_SCHEDULERS } from '../../base44/shared/schedulerRun.ts';
+import { runtimeDeploymentIdentity, runtimeGateEvidencePayload } from '../../base44/shared/runtimeEvidence.ts';
+import { sha256Canonical } from '../../base44/shared/legalExecution.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const NOW = Date.parse('2026-08-11T12:00:00.000Z');
 const SHA = '0123456789abcdef0123456789abcdef01234567';
+const HASH='a'.repeat(64);
+const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:'276',CAMBRA_LOGICAL_ROUTE_COUNT:'27'};
+
+async function signedEvidence(requirement,overrides={}){
+  const identity=runtimeDeploymentIdentity();
+  const kind=requirement.kinds[0];
+  const runtime=['REAL_RUNTIME','OPERATOR_EXERCISE'].includes(kind);
+  const row={gate_key:requirement.key,status:'PASS',evidence_kind:kind,source:'test-runtime',git_sha:requirement.sha_bound?SHA:'',evidence_refs:['test://receipt'],details_json:{proof:'controlled'},observed_at:new Date(NOW-60_000).toISOString(),expires_at:new Date(NOW+3600_000).toISOString(),recorded_by:'test',...(runtime?{...identity,identity_status:'COMPLETE',identity_blockers:[],identity_hash:await sha256Canonical(identity)}:{}),...overrides};
+  return {...row,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(row))};
+}
 
 const budget = {
   status:'active', currency:'EUR', version:'founder-v1', daily_total_limit_minor:1000, monthly_total_limit_minor:10000,
@@ -19,12 +31,15 @@ const budget = {
 };
 
 describe('final GO-live hard gates', () => {
-  it('never returns GO unless every gate has fresh acceptable evidence', () => {
-    const evidence = GO_LIVE_GATE_REQUIREMENTS.map(requirement => ({
-      gate_key:requirement.key, status:'PASS', evidence_kind:requirement.kinds[0], git_sha:requirement.sha_bound ? SHA : '', observed_at:new Date(NOW - 60_000).toISOString(),
-    }));
-    expect(evaluateGoLiveHardGates({ evidence, final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'GO_READY_FOR_CANARY', allowed:true, passed:GO_LIVE_GATE_REQUIREMENTS.length });
-    expect(evaluateGoLiveHardGates({ evidence:evidence.filter(row => row.gate_key !== 'EMERGENCY_STOP'), final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'NOT_GO_READY', allowed:false });
+  it('never returns GO unless every gate has fresh cryptographically valid evidence', async() => {
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
+    try{
+      const evidence = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map(signedEvidence));
+      expect(await evaluateGoLiveHardGates({ evidence, final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'GO_READY_FOR_CANARY', allowed:true, passed:GO_LIVE_GATE_REQUIREMENTS.length });
+      expect(await evaluateGoLiveHardGates({ evidence:evidence.filter(row => row.gate_key !== 'EMERGENCY_STOP'), final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'NOT_GO_READY', allowed:false });
+      const legacy=evidence.map(({evidence_hash,expires_at,...row})=>row);
+      expect(await evaluateGoLiveHardGates({evidence:legacy,final_sha:SHA,now_ms:NOW})).toMatchObject({classification:'NOT_GO_READY',allowed:false,passed:0});
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
 
   it('serializes concurrent budget reservations through a CAS revision',()=>{
@@ -35,13 +50,37 @@ describe('final GO-live hard gates', () => {
     expect(afterFirst.reservation_recent_event_keys).toContain('first');
   });
 
-  it('rejects local assertions, stale proof and proof from a different SHA', () => {
+  it('preserves the live reservation journal when the founder changes hard limits',()=>{
+    const live={...budget,reservation_revision:7,reservation_day_key:'2026-08-11',reservation_month_key:'2026-08',reserved_daily_total_minor:390,reserved_monthly_total_minor:1390,reserved_category_json:{...budget.reserved_category_json,ai:{daily_minor:390,monthly_minor:1390}},reservation_recent_event_keys:['first','second']};
+    expect(costReservationStateForReconfiguration(live,new Date(NOW))).toMatchObject({reservation_revision:7,reserved_daily_total_minor:390,reserved_monthly_total_minor:1390,reservation_recent_event_keys:['first','second']});
+    expect(costReservationStateForReconfiguration(live,new Date('2026-08-12T12:00:00.000Z'))).toMatchObject({reservation_revision:7,reserved_daily_total_minor:0,reserved_monthly_total_minor:1390,reservation_recent_event_keys:['first','second']});
+    expect(costReservationStateForReconfiguration(live,new Date('2026-09-01T12:00:00.000Z'))).toMatchObject({reservation_revision:7,reserved_daily_total_minor:0,reserved_monthly_total_minor:0,reservation_recent_event_keys:[]});
+  });
+
+  it('denies ambiguous active cost authority in runtime instead of picking a row',async()=>{
+    expect(selectSingleActiveCostBudget([])).toMatchObject({control:null,blockers:['active_cost_budget_required']});
+    expect(selectSingleActiveCostBudget([{id:'a'},{id:'b'}])).toMatchObject({control:null,blockers:['multiple_active_cost_budgets']});
+    const controls=[{...budget,id:'a'},{...budget,id:'b'}];
+    const svc={entities:{CostBudgetControl:{filter:async()=>controls},CostUsageEvent:{filter:async()=>[]}}};
+    const snapshot=await costRuntimeSnapshot(svc);
+    expect(snapshot).toMatchObject({control:null,active_control_count:2,validation:{ok:false,blockers:expect.arrayContaining(['multiple_active_cost_budgets'])}});
+    expect(snapshot.conflicting_active_control_ids).toEqual(['a','b']);
+  });
+
+  it('rejects local assertions, stale proof and proof from a different SHA', async() => {
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
+    try{
     const requirement = GO_LIVE_GATE_REQUIREMENTS.find(row => row.key === 'BASE44_RUNTIME_PARITY');
-    const baseline = GO_LIVE_GATE_REQUIREMENTS.map(row => ({ gate_key:row.key, status:'PASS', evidence_kind:row.kinds[0], git_sha:row.sha_bound ? SHA : '', observed_at:new Date(NOW - 60_000).toISOString() }));
-    const replace = (value) => baseline.map(row => row.gate_key === requirement.key ? { ...row, ...value } : row);
-    expect(evaluateGoLiveHardGates({ evidence:replace({ evidence_kind:'LOCAL_STATIC' }), final_sha:SHA, now_ms:NOW }).allowed).toBe(false);
-    expect(evaluateGoLiveHardGates({ evidence:replace({ observed_at:new Date(NOW - 48 * 3600000).toISOString() }), final_sha:SHA, now_ms:NOW }).allowed).toBe(false);
-    expect(evaluateGoLiveHardGates({ evidence:replace({ git_sha:'different' }), final_sha:SHA, now_ms:NOW }).allowed).toBe(false);
+    const baseline = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map(signedEvidence));
+    const replace = async(value) => Promise.all(baseline.map(async row => {
+      if(row.gate_key!==requirement.key)return row;
+      const changed={...row,...value};delete changed.evidence_hash;
+      return {...changed,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(changed))};
+    }));
+    expect((await evaluateGoLiveHardGates({ evidence:await replace({ evidence_kind:'LOCAL_STATIC' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    expect((await evaluateGoLiveHardGates({ evidence:await replace({ observed_at:new Date(NOW - 48 * 3600000).toISOString() }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    expect((await evaluateGoLiveHardGates({ evidence:await replace({ git_sha:'different' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
 
   it('fails paid execution closed on missing limits and stops a projected overrun', () => {
@@ -71,6 +110,8 @@ describe('final GO-live hard gates', () => {
     expect(admin).toContain("['active','warming'].includes(String(p.status||''))||Boolean(p.external_campaign_id)");
     expect(admin).toContain('instantly_transport_profile_keys');
     expect(admin).not.toContain("profiles.filter((p:any)=>p.provider==='instantly').every");
+    for(const token of ['cost_budget_authority_unavailable','multiple_active_cost_budgets','cost_budget_changed_concurrently','budget_bootstrap_validation_pending','concurrent_budget_bootstrap_conflict','budget_bootstrap_activation_conflict','String(stored.actor_email||\'\')!==actor','costReservationStateForReconfiguration'])expect(admin).toContain(token);
+    expect(admin).toContain("{id:active.id,status:'active',version:String(active.version),reservation_revision:expectedRevision}");
   });
 
   it('guards every known metered provider endpoint with the centralized cost governor', () => {

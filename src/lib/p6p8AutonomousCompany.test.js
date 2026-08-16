@@ -50,8 +50,8 @@ describe('P7 · autonomous commercial truth and forecast', () => {
     const authority = read('base44/shared/commercialAutonomy.ts');
     const negotiation = read('base44/functions/providerNegotiationAgent/entry.ts');
     expect(authority).toMatch(/L4_CLASSIFICATIONS|material/i);
-    expect(negotiation).toContain("action_type:'final_provider_deal'");
-    expect(negotiation).toContain("status:'waiting_approval'");
+    expect(negotiation).toMatch(/action_type:\s*["']final_provider_deal["']/);
+    expect(negotiation).toMatch(/status:\s*["']waiting_approval["']/);
   });
 });
 

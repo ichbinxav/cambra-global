@@ -1,11 +1,14 @@
 import { ACTION_POLICIES, canExecuteAction, canonicalize, sha256Canonical } from './legalExecution.ts';
 import { evaluateRegulatoryActivityRuntime } from './regulatoryRuntime.ts';
 import { hashSnapshot } from './recoverAcceptance.ts';
+import { requireCriticalOperation } from './criticalExecution.ts';
 
 async function rows(svc:any,name:string,query:any,sort='-created_date',limit=100):Promise<any[]>{
   const entity=svc?.entities?.[name];
-  if(!entity?.filter)return[];
-  return entity.filter(query,sort,limit).catch(()=>[]);
+  return requireCriticalOperation(`legal_execution_${name}_authority_read`, async()=>{
+    if(!entity?.filter)throw new Error(`entity_filter_unavailable:${name}`);
+    return await entity.filter(query,sort,limit);
+  });
 }
 
 function active(row:any,at:number){
@@ -28,7 +31,7 @@ function killSwitchMatches(row:any,input:any){
 
 async function contractFromMandate(mandate:any){
   if(!mandate?.acceptance_snapshot_json||!mandate?.acceptance_snapshot_hash)return null;
-  const actual=await hashSnapshot(mandate.acceptance_snapshot_json).catch(()=>null);
+  const actual=await requireCriticalOperation('legal_execution_contract_hash',()=>hashSnapshot(mandate.acceptance_snapshot_json));
   return{
     id:mandate.contract_instance_id||`mandate:${mandate.id}`,
     status:mandate.status==='active'?'ACCEPTED':String(mandate.status||'').toUpperCase(),
@@ -59,7 +62,7 @@ export async function evaluateLegalExecution(svc:any,raw:any){
   const requestedAction=String(raw.requested_action||'').toUpperCase();
   const actionPolicy=ACTION_POLICIES[requestedAction];
   const merchantId=String(raw.merchant_id||raw.brand_id||'');
-  const brand=merchantId?await svc.entities.Brand.get(merchantId).catch(()=>null):null;
+  const brand=merchantId?await requireCriticalOperation('legal_execution_brand_read',()=>svc.entities.Brand.get(merchantId)):null;
   const market=String(raw.market||raw.jurisdiction||brand?.billing_country||brand?.country||'').toUpperCase();
 
   const p10:any=actionPolicy?await evaluateRegulatoryActivityRuntime(svc,{
@@ -72,14 +75,14 @@ export async function evaluateLegalExecution(svc:any,raw:any){
   const p11=approved[0]||{status:'LEGAL_REVIEW_REQUIRED',confidence:'COUNSEL_REQUIRED',counsel_required:true,active:true,conditions:[]};
   const policyConflict=new Set(approved.map((x:any)=>String(x.status))).size>1;
 
-  let mandate=raw.mandate_id?await svc.entities.Mandate.get(String(raw.mandate_id)).catch(()=>null):null;
+  let mandate=raw.mandate_id?await requireCriticalOperation('legal_execution_mandate_read',()=>svc.entities.Mandate.get(String(raw.mandate_id))):null;
   if(!mandate&&raw.deal_activation_id){const found=await rows(svc,'Mandate',{deal_activation_id:String(raw.deal_activation_id),status:'active'},'-signed_at',5);mandate=found[0]||null;}
   if(!mandate&&merchantId){const found=await rows(svc,'Mandate',{brand_id:merchantId,status:'active'},'-signed_at',5);mandate=found[0]||null;}
   const grants=mandate?.id?await rows(svc,'MandateAuthorityGrant',{mandate_id:mandate.id,active:true},'-created_date',250):[];
   const restrictions=mandate?.id?await rows(svc,'MandateAuthorityRestriction',{mandate_id:mandate.id,active:true},'-created_date',250):[];
   const contract=await contractFromMandate(mandate);
 
-  let approval=raw.approval_id?await svc.entities.Approval.get(String(raw.approval_id)).catch(()=>null):null;
+  let approval=raw.approval_id?await requireCriticalOperation('legal_execution_approval_read',()=>svc.entities.Approval.get(String(raw.approval_id))):null;
   if(approval)approval={...approval,status:String(approval.status||'').toUpperCase(),action:approval.requested_action||approval.action_type,assurance_level:String(approval.assurance_level||'').toUpperCase()};
   const signature=mandate?.signed_at?{
     id:mandate.signature_evidence_id||null,level:'SIMPLE_E_SIGNATURE',

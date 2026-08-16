@@ -20,6 +20,6 @@
   "required": ["event_key", "category", "provider", "source", "amount_minor", "currency", "status", "occurred_at"],
   "rls": {
     "read": { "user_condition": { "role": "admin" } },
-    "write": { "user_condition": { "role": "admin" } }
+    "write": { "user_condition": { "role": "__service_role_only__" } }
   }
 }

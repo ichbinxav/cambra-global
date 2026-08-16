@@ -43,13 +43,29 @@ export class InstantlyApiError extends Error {
   status: number;
   code: string;
   retryable: boolean;
+  automatic_retry_blocked: boolean;
+  provider_effect_ambiguous: boolean;
   constructor(status: number, code: string, message: string) {
     super(message);
     this.name = "InstantlyApiError";
     this.status = status;
     this.code = code;
     this.retryable = status === 429 || status >= 500 || status === 0;
+    this.automatic_retry_blocked = false;
+    this.provider_effect_ambiguous = false;
   }
+}
+
+function instantlyReceiptError(message: string) {
+  const error = new InstantlyApiError(
+    0,
+    "INSTANTLY_PROVIDER_RECEIPT_REQUIRED",
+    message,
+  );
+  error.retryable = false;
+  error.automatic_retry_blocked = true;
+  error.provider_effect_ambiguous = true;
+  return error;
 }
 
 export async function instantlyRequest(
@@ -58,14 +74,22 @@ export async function instantlyRequest(
   options: any = {},
   fetcher: any = fetch,
 ) {
-  if (!apiKey)
+  if (!apiKey) {
     throw new InstantlyApiError(
       0,
       "INSTANTLY_NOT_CONFIGURED",
       "Instantly API key is not configured",
     );
+  }
+  const method = String(options.method || "GET").toUpperCase();
+  // Instantly does not document an idempotency contract for lead creation or
+  // email reply. Retry is therefore restricted to reads (including an
+  // explicitly-declared read-only POST); mutations are at-most-once.
+  const retrySafe = ["GET", "HEAD"].includes(method) ||
+    options.retry_mode === "read_only";
+  const maxAttempts = retrySafe ? 3 : 1;
   let last: any = null;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       const response = await fetcher(`${INSTANTLY_API_BASE}${path}`, {
         method: options.method || "GET",
@@ -91,24 +115,26 @@ export async function instantlyRequest(
         response.status === 401
           ? "INSTANTLY_UNAUTHORIZED"
           : response.status === 402
-            ? "INSTANTLY_PLAN_REQUIRED"
-            : response.status === 429
-              ? "INSTANTLY_RATE_LIMITED"
-              : response.status >= 500
-                ? "INSTANTLY_UPSTREAM_UNAVAILABLE"
-                : "INSTANTLY_REQUEST_REJECTED",
+          ? "INSTANTLY_PLAN_REQUIRED"
+          : response.status === 429
+          ? "INSTANTLY_RATE_LIMITED"
+          : response.status >= 500
+          ? "INSTANTLY_UPSTREAM_UNAVAILABLE"
+          : "INSTANTLY_REQUEST_REJECTED",
         message,
       );
     } catch (error: any) {
-      last =
-        error instanceof InstantlyApiError
-          ? error
-          : new InstantlyApiError(
-              0,
-              "INSTANTLY_NETWORK_ERROR",
-              clean(error?.message || error),
-            );
-      if (!last.retryable || attempt === 2) break;
+      last = error instanceof InstantlyApiError ? error : new InstantlyApiError(
+        0,
+        "INSTANTLY_NETWORK_ERROR",
+        clean(error?.message || error),
+      );
+      if (!retrySafe) {
+        last.retryable = false;
+        last.automatic_retry_blocked = true;
+        last.provider_effect_ambiguous = true;
+      }
+      if (!last.retryable || attempt === maxAttempts - 1) break;
       await wait(250 * 2 ** attempt);
     }
   }
@@ -138,13 +164,13 @@ export function instantlyProfileReady(profile: any) {
     : [];
   return Boolean(
     profile?.provider === "instantly" &&
-    profile?.external_campaign_id &&
-    accounts.length &&
-    profile?.from_address &&
-    profile?.webhook_status === "ACTIVE" &&
-    profile?.provider_config_json?.sender_ready === true &&
-    profile?.provider_config_json?.native_ai_conflict !== true &&
-    profile?.provider_config_json?.native_ai_reply_enabled !== true,
+      profile?.external_campaign_id &&
+      accounts.length &&
+      profile?.from_address &&
+      profile?.webhook_status === "ACTIVE" &&
+      profile?.provider_config_json?.sender_ready === true &&
+      profile?.provider_config_json?.native_ai_conflict !== true &&
+      profile?.provider_config_json?.native_ai_reply_enabled !== true,
   );
 }
 
@@ -253,7 +279,9 @@ export function instantlyLeadDefinition(input: any) {
     ...name,
     company_name: clean(input?.company_name, 200) || null,
     website: input?.company_domain
-      ? `https://${clean(input.company_domain, 200).replace(/^https?:\/\//, "")}`
+      ? `https://${
+        clean(input.company_domain, 200).replace(/^https?:\/\//, "")
+      }`
       : null,
     job_title: clean(input?.contact_title, 160) || null,
     personalization: clean(input?.personalization, 500) || null,
@@ -327,7 +355,9 @@ export class InstantlyOutboundProvider implements OutboundProvider {
   listEmails(limit = 100) {
     return instantlyRequest(
       this.apiKey,
-      `/emails?limit=${Math.max(1, Math.min(100, Math.floor(Number(limit) || 100)))}`,
+      `/emails?limit=${
+        Math.max(1, Math.min(100, Math.floor(Number(limit) || 100)))
+      }`,
       {},
       this.fetcher,
     );
@@ -379,18 +409,24 @@ export class InstantlyOutboundProvider implements OutboundProvider {
     );
   }
   async queueInitial(input: any) {
-    if (!input?.campaign_id)
+    if (!input?.campaign_id) {
       throw new InstantlyApiError(
         0,
         "INSTANTLY_CAMPAIGN_REQUIRED",
         "Instantly campaign is not configured",
       );
+    }
     const lead = await instantlyRequest(
       this.apiKey,
       "/leads",
       { method: "POST", body: instantlyLeadDefinition(input) },
       this.fetcher,
     );
+    if (!String(lead?.id || "").trim()) {
+      throw instantlyReceiptError(
+        "Instantly lead response did not include a provider ID",
+      );
+    }
     return {
       queued: true,
       provider_lead_id: String(lead?.id || ""),
@@ -399,24 +435,31 @@ export class InstantlyOutboundProvider implements OutboundProvider {
     };
   }
   async sendReply(input: any) {
-    if (!input?.reply_to_uuid)
+    if (!input?.reply_to_uuid) {
       throw new InstantlyApiError(
         0,
         "INSTANTLY_REPLY_REFERENCE_REQUIRED",
         "Instantly reply reference is missing",
       );
-    if (!input?.eaccount)
+    }
+    if (!input?.eaccount) {
       throw new InstantlyApiError(
         0,
         "INSTANTLY_SENDING_ACCOUNT_REQUIRED",
         "Instantly sending account is missing",
       );
+    }
     const email = await instantlyRequest(
       this.apiKey,
       "/emails/reply",
       { method: "POST", body: instantlyReplyDefinition(input) },
       this.fetcher,
     );
+    if (!String(email?.id || "").trim()) {
+      throw instantlyReceiptError(
+        "Instantly reply response did not include a provider ID",
+      );
+    }
     return {
       queued: false,
       provider_message_id: String(email?.id || ""),
@@ -442,12 +485,15 @@ export function normalizeInstantlyEvent(event: any) {
   };
   const rawType = clean(value?.event_type || value?.type, 100).toLowerCase();
   const type = aliases[rawType] || rawType;
+  const providerTimestamp = clean(
+    value?.timestamp || value?.timestamp_created,
+    80,
+  );
   return {
     provider: "instantly",
     event_type: type,
-    timestamp:
-      clean(value?.timestamp || value?.timestamp_created, 80) ||
-      new Date().toISOString(),
+    // Never invent event time: it participates in ordering and deduplication.
+    timestamp: providerTimestamp,
     workspace_id: clean(value?.workspace || value?.workspace_id, 100),
     campaign_id: clean(value?.campaign_id || value?.campaign, 100),
     campaign_name: clean(value?.campaign_name, 200),
@@ -457,7 +503,10 @@ export function normalizeInstantlyEvent(event: any) {
       320,
     ).toLowerCase(),
     message_id: clean(value?.email_id || value?.message_id, 160),
-    subject: clean(value?.reply_subject || value?.email_subject || value?.subject, 300),
+    subject: clean(
+      value?.reply_subject || value?.email_subject || value?.subject,
+      300,
+    ),
     text: String(
       value?.reply_text || value?.email_text || value?.reply_text_snippet || "",
     ).slice(0, 16000),
@@ -471,6 +520,12 @@ export function normalizeInstantlyEvent(event: any) {
 
 export async function instantlyEventKey(event: any) {
   const normalized = normalizeInstantlyEvent(event);
+  if (!normalized.timestamp) {
+    throw new Error("INSTANTLY_EVENT_TIMESTAMP_REQUIRED");
+  }
+  if (normalized.event_type === "reply_received" && !normalized.message_id) {
+    throw new Error("INSTANTLY_EVENT_MESSAGE_ID_REQUIRED");
+  }
   const value = [
     normalized.workspace_id,
     normalized.event_type,
@@ -483,5 +538,9 @@ export async function instantlyEventKey(event: any) {
     "SHA-256",
     new TextEncoder().encode(value),
   );
-  return `instantly:${[...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+  return `instantly:${
+    [...new Uint8Array(digest)].map((byte) =>
+      byte.toString(16).padStart(2, "0")
+    ).join("")
+  }`;
 }

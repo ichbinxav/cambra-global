@@ -1,9 +1,12 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { welcomeEmail } from '../../shared/emails/welcome.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { requireAdminOrInternal } from "../../shared/internalGate.ts";
+import { welcomeEmail } from "../../shared/emails/welcome.ts";
+import {
+  captureEmergencyEpoch,
+  emergencyState,
+} from "../../shared/operationalControl.ts";
+import { sendCostGovernedEmail } from "../../shared/costGovernance.ts";
 
 // Email 4: Welcome to CAMBRA — triggered when a Brand entity is created (onboarding complete)
 //
@@ -19,7 +22,10 @@ Deno.serve(async (req) => {
   // anonymous curl no longer does.
   const body = await req.json().catch(() => ({}));
   const gate = await requireAdminOrInternal(req, base44, body);
-  if (!gate.ok) return gate.response;
+  if (!gate.ok) {
+    return gate.response ||
+      Response.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
   const { data } = body;
 
   if (!data) return Response.json({ ok: true });
@@ -34,23 +40,57 @@ Deno.serve(async (req) => {
   // exists and its stored creator matches the payload. Kills anonymous
   // curl-with-forged-payload email spam through our sending domain.
   const brand = data.id
-    ? await base44.asServiceRole.entities.Brand.get(data.id).catch((error:any)=>safeBestEffort(error,{operation:'onBrandCreated',fallback:null,severity:'secondary'}))
+    ? await base44.asServiceRole.entities.Brand.get(data.id).catch((
+      error: any,
+    ) =>
+      safeBestEffort(error, {
+        operation: "onBrandCreated",
+        fallback: null,
+        severity: "secondary",
+      })
+    )
     : null;
   if (!brand || brand.created_by !== userEmail) {
     return Response.json({ ok: true, skipped: "unverified_payload" });
   }
 
-  const appDomain = Deno.env.get('APP_DOMAIN') || 'cambra.global';
+  const appDomain = Deno.env.get("APP_DOMAIN") || "cambra.global";
 
   // EMAIL-1 T4 — the language comes from the STORED Brand record (written at
   // creation from the active UI language), never from the request payload:
   // this function is automation-triggered and the request carries no user
   // context. Missing/unknown values resolve to 'en' inside welcomeEmail.
   const emergency = await emergencyState(base44.asServiceRole);
-  if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:true, skipped:'emergency_control_paused:communications' });
+  if (emergency.safe_mode || emergency.communications_paused) {
+    return Response.json({
+      ok: true,
+      skipped: "emergency_control_paused:communications",
+    });
+  }
+  let communicationEpoch: any;
+  try {
+    communicationEpoch = await captureEmergencyEpoch(
+      base44.asServiceRole,
+      "communications",
+    );
+  } catch (error: any) {
+    return Response.json({
+      ok: true,
+      skipped: String(
+        error?.message || "emergency_control_paused:communications",
+      ),
+    });
+  }
   const mail = welcomeEmail(brand.locale, { brandName, appDomain });
 
-  await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:brand-welcome:${brand.id}`, source:'onBrandCreated', related_entity_type:'Brand', related_entity_id:brand.id }, {
+  await sendCostGovernedEmail(base44.asServiceRole, {
+    event_key: `email:brand-welcome:${brand.id}`,
+    stable_event_key: true,
+    source: "onBrandCreated",
+    related_entity_type: "Brand",
+    related_entity_id: brand.id,
+    emergency_epoch_claim: communicationEpoch,
+  }, {
     from_name: "CAMBRA",
     to: userEmail,
     subject: mail.subject,

@@ -95,14 +95,16 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(DLQ).toContain('manualReplay && (!gate.isAdmin');
     expect(DLQ).toContain('REPLAY_EXHAUSTED');
     expect(DLQ).toContain('manual_replay_only_for_exhausted');
-    expect(DLQ).toContain('"X-CAMBRA-Delivery": dl.id');
+    expect(DLQ).toContain('const deliveryId = String(dl.delivery_id || dl.id)');
+    expect(DLQ).toContain('const effectKey = String(deliveryClaim.attempt_key)');
+    expect(DLQ).toContain('"X-CAMBRA-Delivery": deliveryId');
     expect(DLQ).toContain('agent_name: WORKER_AGENT');
   });
 
   it('observes the P6 reconciler without weakening its Stripe read-only guarantee', () => {
     expect(RECONCILER).toContain("agent_name: RECONCILER_AGENT");
-    expect(RECONCILER).toContain("stripeRequest(mode, 'GET'");
-    expect(RECONCILER).not.toContain("stripeRequest(mode, 'POST'");
+    expect(RECONCILER).toMatch(/stripeRequest\s*\(\s*mode\s*,\s*["']GET["']/);
+    expect(RECONCILER).not.toMatch(/stripeRequest\s*\(\s*mode\s*,\s*["']POST["']/);
   });
 
   it('schema and operator UI expose incident operations without economic authority', () => {

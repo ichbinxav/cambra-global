@@ -11,64 +11,81 @@
 // Protections (same funnel patterns as submitWaitlistSignup / the OAuth
 // endpoints):
 //   · body size limit BEFORE parsing (16KB)
-//   · per-IP hourly rate limit via RateLimitCounter
+//   · hourly rate limit via a versioned HMAC network fingerprint
 //   · strict validation: name (1-120), email (format), message (1-4000)
 // asServiceRole justification: anonymous callers can't write the admin-only
 // Lead entity; the response leaks no data (ok + lead_id only).
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { paidProviderFetch } from '../../shared/costGovernance.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { consumeRateLimit } from '../../shared/rateLimit.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { paidProviderFetch } from "../../shared/costGovernance.ts";
+import { emergencyState } from "../../shared/operationalControl.ts";
+import { normalizeLocale } from "../../shared/emailLocale.ts";
+import { consumePublicRequestRateLimit } from "../../shared/rateLimit.ts";
 
 const DEFAULT_LIMIT_PER_HOUR = 5;
 const MAX_BODY_BYTES = 16 * 1024;
 
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for') || '';
-  const first = fwd.split(',')[0]?.trim();
-  return first || req.headers.get('x-real-ip') || 'unknown';
-}
-
-async function checkRateLimit(base44: any, ip: string) {
-  return consumeRateLimit(base44.asServiceRole,{principal_id:`submitContactMessage:${ip}`,principal_type:'ip',limit:DEFAULT_LIMIT_PER_HOUR,window_seconds:3600});
-}
-
 Deno.serve(async (req) => {
   try {
-    if (req.method !== 'POST') {
-      return Response.json({ ok: false, error: 'method_not_allowed' }, { status: 405 });
+    if (req.method !== "POST") {
+      return Response.json({ ok: false, error: "method_not_allowed" }, {
+        status: 405,
+      });
     }
 
     // Body size limit BEFORE parsing (mirrors the OAuth endpoints).
     const raw = await req.text();
     if (raw.length > MAX_BODY_BYTES) {
-      return Response.json({ ok: false, error: 'payload_too_large' }, { status: 413 });
+      return Response.json({ ok: false, error: "payload_too_large" }, {
+        status: 413,
+      });
     }
 
     const base44 = createClientFromRequest(req);
 
-    const rl = await checkRateLimit(base44, getClientIp(req));
-    if (!rl.ok) return Response.json({ ok: false, error: 'rate_limited' }, { status: 429 });
+    const rl = await consumePublicRequestRateLimit(base44.asServiceRole, req, {
+      namespace: "submit-contact-message",
+      limit: DEFAULT_LIMIT_PER_HOUR,
+      window_seconds: 3600,
+    });
+    if (!rl.ok) {
+      return Response.json({
+        ok: false,
+        error: rl.status === 429 ? "rate_limited" : "rate_limit_unavailable",
+      }, { status: rl.status || 503 });
+    }
 
     let body: any = {};
-    try { body = JSON.parse(raw); } catch { body = {}; }
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      body = {};
+    }
 
-    const name = String(body?.name || '').trim();
-    const email = String(body?.email || '').trim().toLowerCase();
+    const name = String(body?.name || "").trim();
+    const email = String(body?.email || "").trim().toLowerCase();
     // PARTNERS-1 — topic routing. source_page is ALWAYS server-side determined
     // (never accepted from the browser) so a client cannot fake attribution.
-    const VALID_TOPICS = ['general_contact', 'data_request', 'partner_application'];
-    const topic = String(body?.topic || 'general_contact').trim();
+    const VALID_TOPICS = [
+      "general_contact",
+      "data_request",
+      "partner_application",
+    ];
+    const topic = String(body?.topic || "general_contact").trim();
     if (!VALID_TOPICS.includes(topic)) {
-      return Response.json({ ok: false, error: 'invalid_topic' }, { status: 400 });
+      return Response.json({ ok: false, error: "invalid_topic" }, {
+        status: 400,
+      });
     }
 
     if (!name || name.length > 120) {
-      return Response.json({ ok: false, error: 'invalid_name' }, { status: 400 });
+      return Response.json({ ok: false, error: "invalid_name" }, {
+        status: 400,
+      });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
-      return Response.json({ ok: false, error: 'invalid_email' }, { status: 400 });
+      return Response.json({ ok: false, error: "invalid_email" }, {
+        status: 400,
+      });
     }
 
     let sourcePage: string;
@@ -76,66 +93,98 @@ Deno.serve(async (req) => {
     let emailSubject: string;
     let emailBody: string;
 
-    if (topic === 'partner_application') {
+    if (topic === "partner_application") {
       // PARTNERS-1 — structured partner application with additional required
       // fields. Optional fields are length-bounded to stay within MAX_BODY_BYTES.
-      const organisation = String(body?.organisation || '').trim();
-      const role = String(body?.role || '').trim();
-      const country = String(body?.country || '').trim();
-      const partnerType = String(body?.partner_type || '').trim();
-      const supportDescription = String(body?.support_description || '').trim();
-      const website = String(body?.website || '').trim();
-      const businessCount = String(body?.business_count || '').trim();
-      const additionalContext = String(body?.additional_context || '').trim();
+      const organisation = String(body?.organisation || "").trim();
+      const role = String(body?.role || "").trim();
+      const country = String(body?.country || "").trim();
+      const partnerType = String(body?.partner_type || "").trim();
+      const supportDescription = String(body?.support_description || "").trim();
+      const website = String(body?.website || "").trim();
+      const businessCount = String(body?.business_count || "").trim();
+      const additionalContext = String(body?.additional_context || "").trim();
 
-      const VALID_PARTNER_TYPES = ['adviser', 'agency', 'association', 'finance', 'accelerator', 'other'];
+      const VALID_PARTNER_TYPES = [
+        "adviser",
+        "agency",
+        "association",
+        "finance",
+        "accelerator",
+        "other",
+      ];
       if (!organisation || organisation.length > 200) {
-        return Response.json({ ok: false, error: 'invalid_organisation' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_organisation" }, {
+          status: 400,
+        });
       }
       if (!role || role.length > 120) {
-        return Response.json({ ok: false, error: 'invalid_role' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_role" }, {
+          status: 400,
+        });
       }
       if (!country || country.length > 100) {
-        return Response.json({ ok: false, error: 'invalid_country' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_country" }, {
+          status: 400,
+        });
       }
       if (!VALID_PARTNER_TYPES.includes(partnerType)) {
-        return Response.json({ ok: false, error: 'invalid_partner_type' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_partner_type" }, {
+          status: 400,
+        });
       }
       if (!supportDescription || supportDescription.length > 4000) {
-        return Response.json({ ok: false, error: 'invalid_support_description' }, { status: 400 });
+        return Response.json({
+          ok: false,
+          error: "invalid_support_description",
+        }, { status: 400 });
       }
       if (website.length > 500) {
-        return Response.json({ ok: false, error: 'invalid_website' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_website" }, {
+          status: 400,
+        });
       }
       if (businessCount.length > 50) {
-        return Response.json({ ok: false, error: 'invalid_business_count' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_business_count" }, {
+          status: 400,
+        });
       }
       if (additionalContext.length > 2000) {
-        return Response.json({ ok: false, error: 'invalid_additional_context' }, { status: 400 });
+        return Response.json(
+          { ok: false, error: "invalid_additional_context" },
+          { status: 400 },
+        );
       }
 
-      sourcePage = '/Partners';
+      sourcePage = "/Partners";
       notes = [
-        'PARTNER APPLICATION',
+        "PARTNER APPLICATION",
         `Organisation: ${organisation}`,
         `Role: ${role}`,
         `Country: ${country}`,
         `Partner type: ${partnerType}`,
-        '',
+        "",
         `How they support: ${supportDescription}`,
-        website ? `Website: ${website}` : '',
-        businessCount ? `Businesses supported: ${businessCount}` : '',
-        additionalContext ? `Additional context: ${additionalContext}` : '',
-      ].filter(Boolean).join('\n');
+        website ? `Website: ${website}` : "",
+        businessCount ? `Businesses supported: ${businessCount}` : "",
+        additionalContext ? `Additional context: ${additionalContext}` : "",
+      ].filter(Boolean).join("\n");
       emailSubject = `Partner application — ${organisation}`;
-      emailBody = `Partner application from ${name} <${email}>\nOrganisation: ${organisation}\nRole: ${role}\nCountry: ${country}\nPartner type: ${partnerType}\n\n${supportDescription}\n${website ? `\nWebsite: ${website}` : ''}${businessCount ? `\nBusinesses supported: ${businessCount}` : ''}${additionalContext ? `\nAdditional context: ${additionalContext}` : ''}\n\nLead ID: `;
+      emailBody =
+        `Partner application from ${name} <${email}>\nOrganisation: ${organisation}\nRole: ${role}\nCountry: ${country}\nPartner type: ${partnerType}\n\n${supportDescription}\n${
+          website ? `\nWebsite: ${website}` : ""
+        }${businessCount ? `\nBusinesses supported: ${businessCount}` : ""}${
+          additionalContext ? `\nAdditional context: ${additionalContext}` : ""
+        }\n\nLead ID: `;
     } else {
       // general_contact + data_request — existing behaviour.
-      const message = String(body?.message || '').trim();
+      const message = String(body?.message || "").trim();
       if (!message || message.length > 4000) {
-        return Response.json({ ok: false, error: 'invalid_message' }, { status: 400 });
+        return Response.json({ ok: false, error: "invalid_message" }, {
+          status: 400,
+        });
       }
-      sourcePage = '/Contact';
+      sourcePage = "/Contact";
       notes = `Contact form · Name: ${name}\n\n${message}`;
       emailSubject = `Contact form — ${name}`;
       emailBody = `From: ${name} <${email}>\n\n${message}\n\nLead ID: `;
@@ -153,30 +202,54 @@ Deno.serve(async (req) => {
     });
 
     // Notify admin — best-effort, never blocks the response.
-    const adminEmail = String(Deno.env.get('ADMIN_NOTIFICATION_EMAIL') || '').trim();
-    const resendKey = Deno.env.get('RESEND_API_KEY');
+    const adminEmail = String(Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "")
+      .trim();
+    const resendKey = Deno.env.get("RESEND_API_KEY");
     const emergency = await emergencyState(base44.asServiceRole);
-    if (adminEmail && resendKey && !emergency.safe_mode && !emergency.communications_paused) {
+    if (
+      adminEmail && resendKey && !emergency.safe_mode &&
+      !emergency.communications_paused
+    ) {
       try {
-        await paidProviderFetch(base44.asServiceRole, { event_key:`email:contact-notification:${lead?.id || crypto.randomUUID()}`, category:'email', provider:'resend', source:'submitContactMessage', related_entity_type:'Lead', related_entity_id:lead?.id || '' }, 'https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendKey}` },
-          body: JSON.stringify({
-            from: Deno.env.get('RESEND_FROM') || 'CAMBRA <hello@contact.cambra.global>',
-            to: adminEmail,
-            reply_to: email,
-            subject: emailSubject,
-            text: emailBody + lead.id,
-          }),
-        });
+        await paidProviderFetch(
+          base44.asServiceRole,
+          {
+            event_key: `email:contact-notification:${lead.id}`,
+            stable_event_key: true,
+            category: "email",
+            provider: "resend",
+            source: "submitContactMessage",
+            related_entity_type: "Lead",
+            related_entity_id: lead.id,
+          },
+          "https://api.resend.com/emails",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${resendKey}`,
+              "Idempotency-Key": `contact-notification/${lead.id}`,
+            },
+            body: JSON.stringify({
+              from: Deno.env.get("RESEND_FROM") ||
+                "CAMBRA <hello@contact.cambra.global>",
+              to: adminEmail,
+              reply_to: email,
+              subject: emailSubject,
+              text: emailBody + lead.id,
+            }),
+          },
+        );
       } catch (e) {
-        console.warn('Contact admin notification failed:', (e as any)?.message);
+        console.warn("Contact admin notification failed:", (e as any)?.message);
       }
     }
 
     return Response.json({ ok: true, lead_id: lead.id });
   } catch (error) {
-    console.error('submitContactMessage error:', error);
-    return Response.json({ ok: false, error: 'internal_error' }, { status: 500 });
+    console.error("submitContactMessage error:", error);
+    return Response.json({ ok: false, error: "internal_error" }, {
+      status: 500,
+    });
   }
 });

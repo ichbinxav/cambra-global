@@ -1,0 +1,168 @@
+{
+  "schema_version": "intelligence-root-compositional-seals.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::APPENDIX_K",
+  "seal_status_enum": [
+    "NOT_SEALED",
+    "ISSUED",
+    "SUSPENDED",
+    "REVOKED",
+    "EXPIRED"
+  ],
+  "exact_seal_count": 8,
+  "issuance_policy": "Names are not attestations. No seal is issued without signed, scope-compatible, fresh dependency and evidence manifests.",
+  "seals": [
+    {
+      "seal_type": "SPEC_SET_RECONCILED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "UNSIGNED_COMPOSITION_ATTESTATION",
+        "REQUIREMENT_AND_TEST_APPLICABILITY_MAPPING_INCOMPLETE",
+        "INDEPENDENT_APPROVAL_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "INTELLIGENCE_FOUNDATION_INTEGRATED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "SPEC_SET_RECONCILED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "CPIC_INTEGRATED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "INTELLIGENCE_FOUNDATION_INTEGRATED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "ADAPTIVE_LEAD_INTEGRATED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "CPIC_INTEGRATED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "GOVERNED_EXECUTION_READY",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "INTELLIGENCE_FOUNDATION_INTEGRATED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "CPIC_INTEGRATED",
+        "ADAPTIVE_LEAD_INTEGRATED",
+        "GOVERNED_EXECUTION_READY"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_SANDBOX_VERIFIED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    },
+    {
+      "seal_type": "CAMBRA_COMPOUND_INTELLIGENCE_SYSTEM_READY",
+      "status": "NOT_SEALED",
+      "dependency_seal_types": [
+        "FULL_CAMBRA_INTELLIGENCE_LOOP_REAL_WORLD_VERIFIED"
+      ],
+      "scope": null,
+      "attestation_id": null,
+      "manifest_sha256": null,
+      "evidence_bundle_sha256": null,
+      "issued_at": null,
+      "expires_at": null,
+      "runtime_evidence_refs": [],
+      "blockers": [
+        "PREREQUISITE_SEAL_NOT_ISSUED",
+        "CHILD_SEAL_AND_SCOPE_EVIDENCE_MISSING",
+        "RUNTIME_OR_REAL_WORLD_EVIDENCE_MISSING"
+      ]
+    }
+  ]
+}

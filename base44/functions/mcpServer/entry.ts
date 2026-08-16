@@ -18,6 +18,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // as the REST router (/functions/apiV1), so a single API key works for both.
 // =============================================================================
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { consumeRateLimit, deriveRequestNetworkFingerprints, readTrustedClientAddress } from '../../shared/rateLimit.ts';
+import { recordApiUsage } from '../../shared/apiUsage.ts';
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = { name: "cambra-mcp", version: "1.1.0" };
@@ -158,47 +160,12 @@ function checkIpAllowlist(principal, ip) {
 // Rate limit — shared counter table with REST
 async function rateLimit(base44, principal) {
   const limit = principal.raw?.rate_limit_per_minute || 120;
-  const now = new Date();
-  const windowStart = new Date(Math.floor(now.getTime() / 60000) * 60000).toISOString();
-  const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({ principal_id: principal.id, window_start: windowStart });
-  let counter = matches?.[0];
-  if (!counter) {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id: principal.id, principal_type: principal.type, window_start: windowStart, count: 1, limit_per_minute: limit,
-    });
-    return { ok: true, limit, remaining: limit - 1 };
-  }
-  if ((counter.count || 0) >= limit) return { ok: false, limit, remaining: 0 };
-  await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, { count: (counter.count || 0) + 1 });
-  return { ok: true, limit, remaining: limit - (counter.count || 0) - 1 };
+  return consumeRateLimit(base44.asServiceRole, { principal_id: principal.id, principal_type: principal.type, limit, window_seconds: 60 });
 }
 
 // Usage tracking for billing
 async function trackUsage(base44, principal) {
-  const orgId = principal.raw?.organization_id;
-  if (!orgId) return;
-  const periodMonth = new Date().toISOString().slice(0, 7);
-  const matches = await base44.asServiceRole.entities.ApiUsageRecord.filter({ organization_id: orgId, period_month: periodMonth });
-  const record = matches?.[0];
-  if (!record) {
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
-    await base44.asServiceRole.entities.ApiUsageRecord.create({
-      organization_id: orgId, period_month: periodMonth, request_count: 1,
-      included_quota: org?.monthly_api_quota || 10000, overage_count: 0, overage_amount_eur: 0,
-      last_updated_at: new Date().toISOString(),
-    });
-  } else {
-    const newCount = (record.request_count || 0) + 1;
-    const quota = record.included_quota || 10000;
-    const overage = Math.max(0, newCount - quota);
-    const org = await base44.asServiceRole.entities.Organization.get(orgId).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
-    const overagePrice = (org?.overage_price_per_1k || 0.5) * (overage / 1000);
-    await base44.asServiceRole.entities.ApiUsageRecord.update(record.id, {
-      request_count: newCount, overage_count: overage,
-      overage_amount_eur: Math.round(overagePrice * 100) / 100,
-      last_updated_at: new Date().toISOString(),
-    });
-  }
+  return recordApiUsage(base44.asServiceRole, principal);
 }
 
 // Audit log
@@ -214,7 +181,8 @@ async function logCall(base44, ctx) {
       scope_used: ctx.scope,
       status_code: ctx.statusCode,
       status: ctx.status,
-      ip_address: ctx.ip,
+      network_fingerprint: ctx.ip,
+      network_fingerprint_version: String(ctx.ip || '').split(':')[1] || null,
       user_agent: ctx.userAgent,
       duration_ms: ctx.duration_ms,
       error_message: ctx.error,
@@ -614,7 +582,13 @@ Deno.serve(async (req) => {
   }
 
   const base44 = createClientFromRequest(req);
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  let clientAddress, ip;
+  try {
+    clientAddress = readTrustedClientAddress(req);
+    ip = (await deriveRequestNetworkFingerprints(req, 'mcp-audit')).current;
+  } catch {
+    return jsonResp(rpcError(null, -32010, 'Request network authority is unavailable'), 503);
+  }
   const userAgent = req.headers.get("user-agent") || "claude-mcp";
 
   // Enforce request size limit
@@ -683,7 +657,7 @@ Deno.serve(async (req) => {
     const principal = authRes.principal;
 
     // IP allowlist
-    if (!checkIpAllowlist(principal, ip)) {
+    if (!checkIpAllowlist(principal, clientAddress)) {
       await logCall(base44, { principal, rpcMethod: method, status: "forbidden", statusCode: 403, ip, userAgent, duration_ms: Date.now() - startedAt, error: "ip_not_allowed" });
       responses.push(rpcError(id, -32003, "Request IP is not in the key's allowlist"));
       continue;

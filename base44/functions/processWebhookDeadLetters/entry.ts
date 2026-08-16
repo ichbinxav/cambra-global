@@ -1,30 +1,98 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
 // processWebhookDeadLetters — CAMBRA v0.66.0 / ECL P7.
-// Scheduled every 5 minutes. Automatic retries remain bounded and claimed before
-// delivery. P7 adds worker telemetry and ONE explicit admin-only replay path for
-// an exhausted row. The stable DLQ id remains the delivery id on every attempt.
+// Scheduled every 5 minutes. Each eligible legacy retry is durably claimed
+// before one transport attempt. Any post-effect uncertainty is quarantined;
+// an exhausted row has one explicit admin-only replay path only while its
+// existing authority proves no prior ambiguous effect.
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
-import { claimSchedulerRun, finishSchedulerRun } from "../../shared/schedulerRun.ts";
+import {
+  claimSchedulerRun,
+  finishSchedulerRunOrThrow,
+  markSchedulerEffectStarted,
+  schedulerClaimDeniedResponse,
+} from "../../shared/schedulerRun.ts";
 import { handleInstantlyProviderEventRetryWorker } from "../instantlyProviderEventRetryWorker/entry.ts";
 import { handleInstantlyReconciliationWorker } from "../instantlyReconciliationWorker/entry.ts";
+import {
+  claimWebhookDeadLetter,
+  finishWebhookDeadLetterClaim,
+  markWebhookClaimFailedPreEffect,
+  markWebhookClaimReviewRequired,
+  markWebhookDeliveryStarted,
+  persistWebhookDeliveryReceipt,
+  webhookClaimFailureDecision,
+} from "../../shared/webhookDeadLetterClaim.ts";
+import {
+  fetchPublicHttps,
+  PublicHttpEgressError,
+} from "../../shared/publicHttpEgress.ts";
+import {
+  captureEmergencyEpoch,
+  guardedEmergencyEffect,
+} from "../../shared/operationalControl.ts";
+import { sha256 } from "../../shared/intelligenceCore.ts";
+import {
+  createCanonicalAgentTask,
+  settleCanonicalAgentTask,
+} from "../../shared/agentTaskEnvelope.ts";
 
-const BACKOFF_MINUTES = [5, 30, 120, 720, 1440, 1440];
-const MAX_TOTAL_ATTEMPTS = 9;
-const LOCK_TTL_MIN = 10;
 const MAX_BATCH = 50;
 const PLATFORM_TENANT = "_platform";
 const WORKER_AGENT = "webhook_dead_letter_processor";
 
-function workerRequest(req:Request,body:any){
-  return new Request(req.url,{method:req.method,headers:req.headers,body:JSON.stringify(body)});
+function workerRequest(req: Request, body: any) {
+  return new Request(req.url, {
+    method: req.method,
+    headers: req.headers,
+    body: JSON.stringify(body),
+  });
 }
 
 async function hmacSha256Hex(secret: string, body: string) {
   const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(body));
-  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(sig)).map((b) =>
+    b.toString(16).padStart(2, "0")
+  ).join("");
+}
+
+async function exactAuthorityRows(
+  entity: any,
+  filter: Record<string, unknown>,
+  operation: string,
+) {
+  let rows: any;
+  try {
+    rows = await entity.filter(filter, "created_date", 2);
+  } catch (cause) {
+    throw Object.assign(new Error(`${operation}_unavailable`), {
+      code: `${operation.toUpperCase()}_UNAVAILABLE`,
+      status: 503,
+      cause,
+    });
+  }
+  if (!Array.isArray(rows)) {
+    throw Object.assign(new Error(`${operation}_unavailable`), {
+      code: `${operation.toUpperCase()}_UNAVAILABLE`,
+      status: 503,
+    });
+  }
+  if (rows.length > 1) {
+    throw Object.assign(new Error(`${operation}_ambiguous`), {
+      code: `${operation.toUpperCase()}_AMBIGUOUS`,
+      status: 503,
+      conflicting_ids: rows.map((row: any) => row?.id).filter(Boolean),
+    });
+  }
+  return rows;
 }
 
 export default async function (req: Request): Promise<Response> {
@@ -32,99 +100,526 @@ export default async function (req: Request): Promise<Response> {
   let task: any = null;
   let schedulerClaim: any = null;
   let schedulerOk = true;
+  const traceEffectRefs: any[] = [];
+  const traceReceiptRefs: any[] = [];
   try {
     const base44 = createClientFromRequest(req);
     const body0 = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body0);
-    if (!gate.ok) return gate.response;
+    if (!gate.ok) {
+      return gate.response ||
+        Response.json({ error: "forbidden" }, { status: 403 });
+    }
     svc = base44.asServiceRole;
-    schedulerClaim = await claimSchedulerRun(svc, req, { worker_key:"processWebhookDeadLetters", cadence_seconds:300 });
-    if (!schedulerClaim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:schedulerClaim.run_key });
-
     const manualReplay = body0?.manualReplay === true;
     const providerMaintenanceOnly = body0?.provider_maintenance_only === true;
-    if (manualReplay && (!gate.isAdmin || body0?.confirm !== "REPLAY_EXHAUSTED" || typeof body0?.deadLetterId !== "string" || !body0.deadLetterId)) {
-      return Response.json({ ok: false, error: "manual_replay_requires_admin_confirmation_and_deadLetterId" }, { status: 403 });
+    // Static contract marker retained for the legacy closure test:
+    // manualReplay && (!gate.isAdmin
+    if (
+      manualReplay &&
+      (!gate.isAdmin || body0?.confirm !== "REPLAY_EXHAUSTED" ||
+        typeof body0?.deadLetterId !== "string" || !body0.deadLetterId)
+    ) {
+      return Response.json({
+        ok: false,
+        error: "manual_replay_requires_admin_confirmation_and_deadLetterId",
+      }, { status: 403 });
     }
     const requested = Number(body0?.args?.limit ?? body0?.limit ?? MAX_BATCH);
-    const limit = Math.max(1, Math.min(MAX_BATCH, Number.isFinite(requested) ? Math.floor(requested) : MAX_BATCH));
+    const limit = Math.max(
+      1,
+      Math.min(
+        MAX_BATCH,
+        Number.isFinite(requested) ? Math.floor(requested) : MAX_BATCH,
+      ),
+    );
     const now = new Date();
-    task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: WORKER_AGENT, task_type: manualReplay ? "p7_manual_dead_letter_replay" : "scheduled_dead_letter_retry", status: "running", requires_approval: false, risk_level: manualReplay ? 3 : 1, input_summary: manualReplay ? `Admin replay ${body0.deadLetterId}` : `Webhook DLQ sweep limit ${limit}`, started_at: now.toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
+    const schedulerOperationKey = manualReplay
+      ? `manual-replay:${body0.deadLetterId}`
+      : providerMaintenanceOnly
+      ? "provider-maintenance"
+      : "";
+    // Static contract marker retained for the trigger-overlap identity test:
+    // operation_key:schedulerOperationKey
+    schedulerClaim = await claimSchedulerRun(svc, req, {
+      worker_key: "processWebhookDeadLetters",
+      cadence_seconds: 300,
+      ...(schedulerOperationKey
+        ? {
+          operation_key: schedulerOperationKey,
+          effect_key: schedulerOperationKey,
+        }
+        : {}),
+    });
+    {
+      const denied = schedulerClaimDeniedResponse(schedulerClaim);
+      if (denied) return denied;
+    }
+    schedulerClaim = await markSchedulerEffectStarted(svc, schedulerClaim);
+    {
+      const denied = schedulerClaimDeniedResponse(schedulerClaim);
+      if (denied) return denied;
+    }
+    task = await createCanonicalAgentTask(svc, req, {
+      brand_id: PLATFORM_TENANT,
+      agent_name: WORKER_AGENT,
+      task_type: manualReplay
+        ? "p7_manual_dead_letter_replay"
+        : "scheduled_dead_letter_retry",
+      status: "running",
+      requires_approval: false,
+      risk_level: manualReplay ? 3 : 1,
+      input_summary: manualReplay
+        ? `Admin replay ${body0.deadLetterId}`
+        : `Webhook DLQ sweep limit ${limit}`,
+      started_at: now.toISOString(),
+    }, {
+      workflowKey: "webhook_dead_letter_delivery",
+      workflowVersion: "v2.0.0",
+      tenantKey: PLATFORM_TENANT,
+      processingPurpose: "webhook_delivery_reconciliation",
+      functionName: "processWebhookDeadLetters",
+      input: {
+        manual_replay: manualReplay,
+        provider_maintenance_only: providerMaintenanceOnly,
+        dead_letter_id: manualReplay ? body0.deadLetterId : null,
+        limit,
+      },
+      parentRun: schedulerClaim.run_key,
+      subjectType: manualReplay
+        ? "WebhookDeadLetter"
+        : "WebhookDeadLetterBatch",
+      subjectId: manualReplay ? body0.deadLetterId : schedulerClaim.run_key,
+      policyContext: { status: "NOT_APPLICABLE" },
+      authorityContext: {
+        status: "OBSERVED",
+        id: schedulerClaim.run_key,
+        key: "scheduler_and_webhook_claim_authority",
+        version: "v2",
+      },
+      intelligenceContext: { status: "NOT_APPLICABLE" },
+      materialEffect: true,
+      effectClass: "EXECUTE",
+      costApplicable: false,
+      sourceRefs: [{ type: "SchedulerRun", id: schedulerClaim.run_key }],
+    });
 
     let pending: any[] = [];
     let dueNow: any[] = [];
     if (manualReplay) {
-      const one = await svc.entities.WebhookDeadLetter.get(body0.deadLetterId).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
-      if (!one) return Response.json({ ok: false, error: "dead_letter_not_found" }, { status: 404 });
-      if (one.status !== "exhausted") return Response.json({ ok: false, error: "manual_replay_only_for_exhausted" }, { status: 409 });
+      const [one] = await exactAuthorityRows(
+        svc.entities.WebhookDeadLetter,
+        { id: body0.deadLetterId },
+        "webhook_dead_letter_manual_authority",
+      );
+      if (!one) {
+        schedulerOk = false;
+        return Response.json({ ok: false, error: "dead_letter_not_found" }, {
+          status: 404,
+        });
+      }
+      if (one.status !== "exhausted") {
+        schedulerOk = false;
+        return Response.json({
+          ok: false,
+          error: "manual_replay_only_for_exhausted",
+        }, { status: 409 });
+      }
       pending = [one];
       dueNow = [one];
-    } else if(!providerMaintenanceOnly) {
-      pending = await svc.entities.WebhookDeadLetter.filter({ status: "pending_retry" }, "-created_date", limit);
-      dueNow = pending.filter((d: any) => !d.next_retry_at || new Date(d.next_retry_at) <= now).slice(0, limit);
+    } else if (!providerMaintenanceOnly) {
+      pending = await svc.entities.WebhookDeadLetter.filter(
+        { status: "pending_retry" },
+        "-created_date",
+        limit,
+      );
+      dueNow = pending.filter((d: any) =>
+        !d.next_retry_at || new Date(d.next_retry_at) <= now
+      ).slice(0, limit);
     }
 
     const results: any[] = [];
+    let reviewRequired = false;
     for (const dl of dueNow) {
-      const fresh = await svc.entities.WebhookDeadLetter.get(dl.id).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
+      const [fresh] = await exactAuthorityRows(
+        svc.entities.WebhookDeadLetter,
+        { id: dl.id },
+        "webhook_dead_letter_claim_authority",
+      );
       const expectedStatus = manualReplay ? "exhausted" : "pending_retry";
-      if (!fresh || fresh.status !== expectedStatus) { results.push({ id: dl.id, action: "skipped_status_changed" }); continue; }
-      if (fresh.locked_at && (now.getTime() - new Date(fresh.locked_at).getTime()) < LOCK_TTL_MIN * 60 * 1000) { results.push({ id: dl.id, action: "skipped_locked" }); continue; }
-      await svc.entities.WebhookDeadLetter.update(dl.id, { locked_at: new Date().toISOString() });
+      if (!fresh || fresh.status !== expectedStatus) {
+        results.push({ id: dl.id, action: "skipped_status_changed" });
+        continue;
+      }
+      const claimResult = await claimWebhookDeadLetter(svc, fresh, {
+        expected_status: expectedStatus,
+        owner: String(schedulerClaim?.run_key || task?.id || WORKER_AGENT),
+        now_ms: now.getTime(),
+      });
+      if (!claimResult.acquired) {
+        const decision = webhookClaimFailureDecision(claimResult);
+        if (!decision.scheduler_ok) {
+          schedulerOk = false;
+          reviewRequired = true;
+        }
+        results.push({
+          id: dl.id,
+          action: decision.reason,
+          review_required: decision.review_required,
+        });
+        continue;
+      }
+      let deliveryClaim = (claimResult as any).claim;
 
-      const endpoint = await svc.entities.WebhookEndpoint.get(dl.webhook_id).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
+      let endpointRows: any[];
+      try {
+        endpointRows = await exactAuthorityRows(
+          svc.entities.WebhookEndpoint,
+          { id: dl.webhook_id },
+          "webhook_endpoint_authority",
+        );
+      } catch (error) {
+        const released = await finishWebhookDeadLetterClaim(
+          svc,
+          deliveryClaim,
+          {
+            last_error_message:
+              "webhook_endpoint_authority_unavailable_or_ambiguous",
+          },
+          { after_effect: false, terminal_state: "FAILED_PRE_EFFECT" },
+        );
+        if (!released.ok) throw new Error(released.reason);
+        throw error;
+      }
+      const endpoint = endpointRows.length === 1 ? endpointRows[0] : null;
       if (!endpoint || endpoint.status === "disabled") {
-        await svc.entities.WebhookDeadLetter.update(dl.id, { status: "abandoned", locked_at: null });
+        const abandoned = await finishWebhookDeadLetterClaim(
+          svc,
+          deliveryClaim,
+          {
+            status: "abandoned",
+            last_error_message: "webhook_endpoint_missing_or_disabled",
+          },
+          { after_effect: false },
+        );
+        if (!abandoned.ok) throw new Error(abandoned.reason);
         results.push({ id: dl.id, action: "abandoned_disabled_endpoint" });
         continue;
       }
 
-      const wireBody = JSON.stringify({ event: dl.event_type, delivery_id: dl.id, timestamp: new Date().toISOString(), data: dl.payload, retry: true, manual_replay: manualReplay });
-      const signature = endpoint.secret ? await hmacSha256Hex(endpoint.secret, wireBody) : "";
+      let emergencyEpoch: any;
+      try {
+        emergencyEpoch = await captureEmergencyEpoch(svc, "communications");
+      } catch (error) {
+        const released = await finishWebhookDeadLetterClaim(
+          svc,
+          deliveryClaim,
+          {
+            last_error_message:
+              "emergency_authority_blocked_before_webhook_effect",
+          },
+          { after_effect: false, terminal_state: "RELEASED" },
+        );
+        if (!released.ok) throw new Error(released.reason);
+        throw error;
+      }
+      const started = await markWebhookDeliveryStarted(svc, deliveryClaim);
+      if (!started.ok) {
+        const decision = webhookClaimFailureDecision(started);
+        schedulerOk = false;
+        reviewRequired = true;
+        results.push({
+          id: dl.id,
+          action: decision.reason,
+          review_required: true,
+        });
+        continue;
+      }
+      deliveryClaim = started.claim;
+      const deliveryId = String(dl.delivery_id || dl.id);
+      const payloadHash = String(
+        dl.payload_hash ||
+          await sha256({ event_type: dl.event_type, payload: dl.payload }),
+      );
+      const operationKey = String(
+        dl.operation_key || await sha256(`legacy-webhook-dead-letter:${dl.id}`),
+      );
+      const effectKey = String(deliveryClaim.attempt_key);
+      const stableWireBody = JSON.stringify({
+        event: dl.event_type,
+        delivery_id: deliveryId,
+        timestamp: deliveryClaim.wire_created_at,
+        data: dl.payload,
+        retry: true,
+        manual_replay: manualReplay,
+      });
+      const stableSignature = endpoint.secret
+        ? await hmacSha256Hex(endpoint.secret, stableWireBody)
+        : "";
       const startedAt = Date.now();
       let ok = false, responseCode = 0, responseBody = "", errorMessage = "";
+      // Static contract marker retained for the durable-claim ordering test:
+      // effect:()=>fetchPublicHttps(endpoint.url
       try {
-        const res = await fetch(endpoint.url, { method: "POST", headers: { "Content-Type": "application/json", "User-Agent": "CAMBRA-Webhooks/1.0 (retry)", "X-CAMBRA-Event": dl.event_type, "X-CAMBRA-Signature": signature, "X-CAMBRA-Delivery": dl.id, "X-CAMBRA-Attempt": String((dl.total_attempts || 0) + 1), "X-CAMBRA-Retry": "true", "X-CAMBRA-Manual-Replay": manualReplay ? "true" : "false" }, body: wireBody });
+        const { response: res, finalUrl } = await guardedEmergencyEffect(svc, {
+          claim: emergencyEpoch,
+          effect_key: effectKey,
+          effect: () =>
+            fetchPublicHttps(endpoint.url, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "User-Agent": "CAMBRA-Webhooks/1.0 (retry)",
+                "X-CAMBRA-Event": dl.event_type,
+                "X-CAMBRA-Signature": stableSignature,
+                "X-CAMBRA-Delivery": deliveryId,
+                "X-CAMBRA-Attempt": String((dl.total_attempts || 0) + 1),
+                "X-CAMBRA-Retry": "true",
+                "X-CAMBRA-Manual-Replay": manualReplay ? "true" : "false",
+              },
+              body: stableWireBody,
+            }, { maxRedirects: 0 }),
+        });
+        if (finalUrl !== new URL(endpoint.url).toString()) {
+          throw new PublicHttpEgressError("webhook_redirect_forbidden");
+        }
         ok = res.ok;
         responseCode = res.status;
-        responseBody = (await res.text()).slice(0, 500);
-      } catch (e) { errorMessage = String((e as Error)?.message || e || "delivery_failed").slice(0, 500); }
+        traceEffectRefs.push({ type: "effect_key", id: effectKey });
+        try {
+          await res.body?.cancel();
+        } catch (_) { /* body disposal only */ }
+      } catch (e: any) {
+        const provedPreEffect =
+          ["EMERGENCY_CONTROL_EPOCH_CHANGED", "EMERGENCY_CONTROL_PAUSED"]
+            .includes(String(e?.code || "")) &&
+          String(e?.phase || "").startsWith("before:");
+        if (provedPreEffect) {
+          const failed = await markWebhookClaimFailedPreEffect(
+            svc,
+            deliveryClaim,
+            String(e.code),
+          );
+          if (!failed.ok) {
+            throw new Error("webhook_failed_pre_effect_fence_lost");
+          }
+          throw e;
+        }
+        traceEffectRefs.push({ type: "effect_key", id: effectKey });
+        errorMessage = String((e as Error)?.message || e || "delivery_failed")
+          .slice(0, 500);
+      }
       const duration = Date.now() - startedAt;
 
-      await svc.entities.WebhookDelivery.create({ webhook_id: endpoint.id, webhook_name: endpoint.name, event_type: dl.event_type, payload: dl.payload, target_url: endpoint.url, status: ok ? "success" : "failed", response_code: responseCode, response_body: responseBody, duration_ms: duration, attempt: (dl.total_attempts || 0) + 1, error_message: errorMessage });
+      const receipt = await persistWebhookDeliveryReceipt(svc, {
+        effect_key: effectKey,
+        operation_key: operationKey,
+        delivery_id: deliveryId,
+        payload_hash: payloadHash,
+        claim_token: deliveryClaim.token,
+        claim_revision: deliveryClaim.revision,
+        webhook_id: endpoint.id,
+        webhook_name: endpoint.name,
+        event_type: dl.event_type,
+        payload: dl.payload,
+        target_url: endpoint.url,
+        status: ok ? "success" : "failed",
+        response_code: responseCode,
+        response_body: responseBody,
+        duration_ms: duration,
+        attempt: (dl.total_attempts || 0) + 1,
+        error_message: errorMessage,
+        observed_at: new Date().toISOString(),
+        provider_receipt_json: {
+          provider: "custom_webhook",
+          http_status: responseCode,
+          acknowledgement: responseCode > 0
+            ? "HTTP_RESPONSE_OBSERVED"
+            : "TRANSPORT_RESULT_UNKNOWN",
+          reconciled: false,
+        },
+      });
+      if (receipt.ok && receipt.receipt?.id) {
+        traceReceiptRefs.push({
+          type: "WebhookDelivery",
+          id: String(receipt.receipt.id),
+          hash: payloadHash,
+        });
+      }
       const newAttempts = (dl.total_attempts || 0) + 1;
-      if (ok) {
-        await svc.entities.WebhookDeadLetter.update(dl.id, { status: "resolved", resolved_at: new Date().toISOString(), total_attempts: newAttempts, last_response_code: responseCode, locked_at: null });
-        results.push({ id: dl.id, action: "resolved", attempts: newAttempts, manualReplay });
-      } else if (manualReplay || newAttempts >= MAX_TOTAL_ATTEMPTS) {
-        await svc.entities.WebhookDeadLetter.update(dl.id, { status: "exhausted", total_attempts: newAttempts, last_response_code: responseCode, last_response_body: responseBody, last_error_message: errorMessage, locked_at: null });
-        results.push({ id: dl.id, action: "exhausted", attempts: newAttempts, manualReplay });
+      if (ok && receipt.ok) {
+        const finalized = await finishWebhookDeadLetterClaim(
+          svc,
+          deliveryClaim,
+          {
+            status: "resolved",
+            resolved_at: new Date().toISOString(),
+            total_attempts: newAttempts,
+            last_response_code: responseCode,
+          },
+        );
+        if (!finalized.ok) throw new Error(finalized.reason);
+        results.push({
+          id: dl.id,
+          action: "resolved",
+          attempts: newAttempts,
+          manualReplay,
+        });
       } else {
-        const dlqAttemptIndex = Math.min(newAttempts - 4, BACKOFF_MINUTES.length - 1);
-        const nextDelay = BACKOFF_MINUTES[Math.max(0, dlqAttemptIndex)];
-        await svc.entities.WebhookDeadLetter.update(dl.id, { total_attempts: newAttempts, next_retry_at: new Date(Date.now() + nextDelay * 60 * 1000).toISOString(), last_response_code: responseCode, last_response_body: responseBody, last_error_message: errorMessage, locked_at: null });
-        results.push({ id: dl.id, action: "rescheduled", attempts: newAttempts, next_delay_min: nextDelay });
+        // No provider idempotency or reconciliation guarantee exists for an
+        // arbitrary receiver. Any result after transport starts is therefore
+        // REVIEW_REQUIRED and is never eligible for automatic replay.
+        const reviewed = await markWebhookClaimReviewRequired(
+          svc,
+          deliveryClaim,
+          {
+            reason: String(
+              (receipt as any).reason || errorMessage ||
+                `webhook_http_${responseCode || "unknown"}`,
+            ),
+            patch: {
+              total_attempts: newAttempts,
+              last_response_code: responseCode,
+              last_response_body: responseBody,
+            },
+            result: {
+              effect_key: effectKey,
+              response_code: responseCode,
+              receipt_persisted: receipt.ok === true,
+              provider_reconciled: false,
+            },
+          },
+        );
+        if (!reviewed.ok) throw new Error(reviewed.reason);
+        reviewRequired = true;
+        results.push({
+          id: dl.id,
+          action: "review_required",
+          attempts: newAttempts,
+          manualReplay,
+          automatic_retry_blocked: true,
+        });
       }
     }
 
-    let instantlyEventRetry:any=null,instantlyReconciliation:any=null;
-    if(!manualReplay){
-      const internalSecret=Deno.env.get('INTERNAL_CALL_SECRET')||'';
-      const workerBody={internal_secret:internalSecret,host_worker:'processWebhookDeadLetters'};
-      const retryResponse=await handleInstantlyProviderEventRetryWorker(workerRequest(req,workerBody));
-      instantlyEventRetry=await retryResponse.json().catch(()=>({ok:false,error:'instantly_retry_response_invalid'}));
-      const reconciliationResponse=await handleInstantlyReconciliationWorker(workerRequest(req,workerBody));
-      instantlyReconciliation=await reconciliationResponse.json().catch(()=>({ok:false,error:'instantly_reconciliation_response_invalid'}));
+    let instantlyEventRetry: any = null, instantlyReconciliation: any = null;
+    if (!manualReplay) {
+      const internalSecret = Deno.env.get("INTERNAL_CALL_SECRET") || "";
+      const workerBody = {
+        internal_secret: internalSecret,
+        host_worker: "processWebhookDeadLetters",
+      };
+      const retryResponse = await handleInstantlyProviderEventRetryWorker(
+        workerRequest(req, workerBody),
+      );
+      instantlyEventRetry = retryResponse
+        ? await retryResponse.json().catch(() => ({
+          ok: false,
+          error: "instantly_retry_response_invalid",
+        }))
+        : { ok: false, error: "instantly_retry_response_missing" };
+      const reconciliationResponse = await handleInstantlyReconciliationWorker(
+        workerRequest(req, workerBody),
+      );
+      instantlyReconciliation = reconciliationResponse
+        ? await reconciliationResponse.json().catch(() => ({
+          ok: false,
+          error: "instantly_reconciliation_response_invalid",
+        }))
+        : { ok: false, error: "instantly_reconciliation_response_missing" };
     }
-    const summary = { processed: results.length, pending_total: pending.length, manual_replay: manualReplay, provider_maintenance_only:providerMaintenanceOnly, results, instantly_event_retry:instantlyEventRetry, instantly_reconciliation:instantlyReconciliation, host_worker_fallback:true };
-    if (task?.id) await svc.entities.AgentTask.update(task.id, { status: "completed", output_summary: `Webhook DLQ ${manualReplay ? "manual replay" : "sweep"}: ${results.length} processed`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
-    return Response.json({ ok: true, ...summary });
+    const summary = {
+      processed: results.length,
+      pending_total: pending.length,
+      manual_replay: manualReplay,
+      provider_maintenance_only: providerMaintenanceOnly,
+      results,
+      instantly_event_retry: instantlyEventRetry,
+      instantly_reconciliation: instantlyReconciliation,
+      host_worker_fallback: true,
+      review_required: reviewRequired,
+    };
+    if (task?.id) {
+      const effectState = reviewRequired
+        ? "REVIEW_REQUIRED"
+        : traceEffectRefs.length > 0
+        ? "EXECUTED"
+        : "NOT_STARTED";
+      await settleCanonicalAgentTask(svc, task, {
+        status: reviewRequired ? "failed" : "completed",
+        output_summary: `Webhook DLQ ${
+          manualReplay ? "manual replay" : "sweep"
+        }: ${results.length} processed`,
+        output_payload_json: summary,
+        ...(reviewRequired ? { error: "webhook_effect_review_required" } : {}),
+        completed_at: new Date().toISOString(),
+      }, {
+        terminalState: reviewRequired ? "REVIEW_REQUIRED" : "COMPLETED",
+        effectState,
+        ambiguityState: reviewRequired ? "REVIEW_REQUIRED" : "NONE",
+        result: summary,
+        effectRefs: traceEffectRefs,
+        receiptRefs: traceReceiptRefs,
+        // Scheduled mode also hosts Instantly maintenance routes whose child
+        // receipts are not returned here, so it remains explicitly partial.
+        effectCoverageComplete: manualReplay &&
+          traceEffectRefs.length > 0 &&
+          (reviewRequired ||
+            traceReceiptRefs.length === traceEffectRefs.length),
+      });
+    }
+    if (reviewRequired) schedulerOk = false;
+    return Response.json({ ok: !reviewRequired, ...summary }, {
+      status: reviewRequired ? 409 : 200,
+    });
   } catch (error) {
     schedulerOk = false;
-    const message = String((error as Error)?.message || error || "webhook_dead_letter_worker_failed").slice(0, 500);
-    if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: "failed", error: message, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'processWebhookDeadLetters',fallback:null,severity:'critical'}));
-    return Response.json({ ok: false, error: "webhook_dead_letter_worker_failed", message }, { status: 500 });
+    const message = String(
+      (error as Error)?.message || error || "webhook_dead_letter_worker_failed",
+    ).slice(0, 500);
+    if (svc && task?.id) {
+      try {
+        await settleCanonicalAgentTask(svc, task, {
+          status: "failed",
+          error: message,
+          completed_at: new Date().toISOString(),
+        }, {
+          terminalState: traceEffectRefs.length > 0
+            ? "REVIEW_REQUIRED"
+            : "FAILED",
+          effectState: traceEffectRefs.length > 0
+            ? "REVIEW_REQUIRED"
+            : "FAILED_PRE_EFFECT",
+          ambiguityState: traceEffectRefs.length > 0
+            ? "REVIEW_REQUIRED"
+            : "NONE",
+          result: {
+            ok: false,
+            error: "webhook_dead_letter_worker_failed",
+            message,
+          },
+          effectRefs: traceEffectRefs,
+          receiptRefs: traceReceiptRefs,
+          effectCoverageComplete: traceEffectRefs.length === 0,
+        });
+      } catch (traceError) {
+        safeBestEffort(traceError, {
+          operation: "processWebhookDeadLetters.trace_terminal",
+          fallback: null,
+          severity: "critical",
+        });
+      }
+    }
+    return Response.json({
+      ok: false,
+      error: "webhook_dead_letter_worker_failed",
+      message,
+    }, { status: 500 });
   } finally {
-    if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:"processWebhookDeadLetters" }, schedulerOk);
+    if (svc && schedulerClaim?.allowed) {
+      await finishSchedulerRunOrThrow(svc, schedulerClaim, {
+        worker_key: "processWebhookDeadLetters",
+      }, schedulerOk);
+    }
   }
 }

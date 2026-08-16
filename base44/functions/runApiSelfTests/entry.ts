@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
     try {
       const log = await base44.asServiceRole.entities.ApiActivityLog.create({
         endpoint: "/v1/selftest", method: "GET", status: "success",
-        status_code: 200, ip_address: "127.0.0.1", duration_ms: 0, request_id: crypto.randomUUID(),
+        status_code: 200, network_fingerprint: "rlh:selftest:0000000000000000000000000000000000000000000000000000000000000000", network_fingerprint_version: "selftest", duration_ms: 0, request_id: crypto.randomUUID(),
       });
       await base44.asServiceRole.entities.ApiActivityLog.delete(log.id).catch((error:any)=>safeBestEffort(error,{operation:'runApiSelfTests',fallback:null,severity:'secondary'}));
       results.push(pass("audit_log_writable"));

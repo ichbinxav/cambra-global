@@ -22,8 +22,10 @@ function readPage() {
 describe("submitContactMessage — partner_application topic", () => {
   it("accepts topic 'partner_application'", () => {
     const src = readFn();
-    expect(src).toContain("'partner_application'");
-    expect(src).toContain("VALID_TOPICS");
+    expect(src).toMatch(
+      /const\s+VALID_TOPICS\s*=\s*\[[\s\S]*?["']partner_application["'][\s\S]*?\]/,
+    );
+    expect(src).toMatch(/VALID_TOPICS\.includes\(topic\)/);
   });
 
   it("rejects unsupported topics", () => {
@@ -34,7 +36,8 @@ describe("submitContactMessage — partner_application topic", () => {
   it("hardcodes source_page to /Partners for partner applications", () => {
     const src = readFn();
     // source_page is server-determined, never from body
-    expect(src).toContain("sourcePage = '/Partners'");
+    expect(src).toMatch(/sourcePage\s*=\s*["']\/Partners["']/);
+    expect(src).toMatch(/source_page:\s*sourcePage/);
     expect(src).not.toContain("source_page: body");
     expect(src).not.toContain("source_page: body?.source_page");
   });
@@ -50,18 +53,22 @@ describe("submitContactMessage — partner_application topic", () => {
 
   it("validates partner_type against an allowlist", () => {
     const src = readFn();
-    expect(src).toContain("VALID_PARTNER_TYPES");
-    expect(src).toContain("'adviser'");
-    expect(src).toContain("'agency'");
-    expect(src).toContain("'association'");
-    expect(src).toContain("'finance'");
-    expect(src).toContain("'accelerator'");
-    expect(src).toContain("'other'");
+    expect(src).toMatch(/VALID_PARTNER_TYPES\.includes\(partnerType\)/);
+    for (const partnerType of [
+      "adviser",
+      "agency",
+      "association",
+      "finance",
+      "accelerator",
+      "other",
+    ]) {
+      expect(src).toMatch(new RegExp(`["']${partnerType}["']`));
+    }
   });
 
   it("prefixes notes with PARTNER APPLICATION", () => {
     const src = readFn();
-    expect(src).toContain("'PARTNER APPLICATION'");
+    expect(src).toMatch(/notes\s*=\s*\[\s*["']PARTNER APPLICATION["']/);
   });
 
   it("uses Partner application — Organisation as email subject", () => {
@@ -77,7 +84,8 @@ describe("submitContactMessage — partner_application topic", () => {
 
   it("preserves rate limiting", () => {
     const src = readFn();
-    expect(src).toContain("checkRateLimit");
+    expect(src).toContain("consumePublicRequestRateLimit");
+    expect(src).toMatch(/namespace:\s*["']submit-contact-message["']/);
     expect(src).toContain("rate_limited");
   });
 

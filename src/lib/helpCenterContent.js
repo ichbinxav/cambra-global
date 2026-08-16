@@ -38,9 +38,9 @@ export const HELP_UI = {
     es: "Explora la base de conocimiento.",
   },
   categoriesCount: {
-    en: "{n} categories · Continuously updated",
-    fr: "{n} catégories · Mises à jour en continu",
-    es: "{n} categorías · Actualizado continuamente",
+    en: "{n} categories · Versioned guidance",
+    fr: "{n} catégories · Guides versionnés",
+    es: "{n} categorías · Guías versionadas",
   },
   // HelpSearch
   searchPlaceholder: {
@@ -641,9 +641,9 @@ export const FAQ_CONTENT = [
           es: "¿De dónde provienen los rangos de benchmark?",
         },
         a: {
-          en: "CAMBRA maintains proprietary benchmark datasets built from anonymized analyzer data, public provider pricing verified against each provider's pricing page, and regulatory interchange floors — segmented by revenue tier, geography, and channel mix.",
-          fr: "CAMBRA maintient des jeux de données de benchmark propriétaires, construits à partir de données d'analyse anonymisées, de tarifs publics de fournisseurs vérifiés contre la page de tarification de chacun, et de planchers d'interchange réglementaires — segmentés par palier de revenu, géographie et mix de canaux.",
-          es: "CAMBRA mantiene conjuntos de datos de benchmark propios, construidos a partir de datos de análisis anonimizados, precios públicos de proveedores verificados contra la página de tarifas de cada uno, y suelos de interchange regulatorios — segmentados por tramo de ingresos, geografía y mix de canales.",
+          en: "When sufficient evidence is available, CAMBRA can compare a business with scope-compatible aggregates and dated public or regulatory pricing evidence. A benchmark is shown only when its provenance, currency, period, coverage and privacy threshold are satisfied; otherwise the result remains unavailable or requires review.",
+          fr: "Lorsque les preuves sont suffisantes, CAMBRA peut comparer une entreprise à des agrégats de périmètre compatible et à des preuves tarifaires publiques ou réglementaires datées. Un benchmark n’est affiché que si sa provenance, sa devise, sa période, sa couverture et son seuil de confidentialité sont satisfaits ; sinon le résultat reste indisponible ou à revoir.",
+          es: "Cuando existe evidencia suficiente, CAMBRA puede comparar una empresa con agregados de ámbito compatible y evidencia fechada de precios públicos o regulatorios. Un benchmark solo se muestra si cumple procedencia, moneda, periodo, cobertura y umbral de privacidad; de lo contrario queda no disponible o requiere revisión.",
         },
       },
       {
@@ -653,9 +653,9 @@ export const FAQ_CONTENT = [
           es: "¿Con qué frecuencia se actualizan los benchmarks?",
         },
         a: {
-          en: "Continuously. As more brands run analyses and connect data, the benchmark dataset tightens. Major revisions are published quarterly.",
-          fr: "En continu. À mesure que davantage de marques lancent des analyses et connectent des données, le jeu de benchmark s'affine. Les révisions majeures sont publiées trimestriellement.",
-          es: "De forma continua. A medida que más marcas ejecutan análisis y conectan datos, el conjunto de benchmark se afina. Las revisiones mayores se publican trimestralmente.",
+          en: "Each benchmark carries its own observation period, effective date, provenance and freshness state. CAMBRA does not promise a universal update cadence: stale, incomplete or unverified evidence is withheld or marked for review.",
+          fr: "Chaque benchmark porte sa propre période d’observation, date d’effet, provenance et état de fraîcheur. CAMBRA ne promet pas une cadence universelle : les preuves périmées, incomplètes ou non vérifiées sont masquées ou signalées pour revue.",
+          es: "Cada benchmark incluye su propio periodo de observación, fecha efectiva, procedencia y estado de vigencia. CAMBRA no promete una frecuencia universal: la evidencia obsoleta, incompleta o no verificada se oculta o se marca para revisión.",
         },
       },
       {
@@ -665,9 +665,9 @@ export const FAQ_CONTENT = [
           es: "¿Los benchmarks están anonimizados?",
         },
         a: {
-          en: "Yes — always. Individual brand data is never exposed. Benchmarks are aggregated statistical models, designed to be useful without ever being identifying.",
-          fr: "Oui — toujours. Les données individuelles d'une marque ne sont jamais exposées. Les benchmarks sont des modèles statistiques agrégés, conçus pour être utiles sans jamais être identifiants.",
-          es: "Sí — siempre. Los datos individuales de una marca nunca se exponen. Los benchmarks son modelos estadísticos agregados, diseñados para ser útiles sin ser nunca identificativos.",
+          en: "CAMBRA is designed not to expose an individual business through a benchmark. Cross-business output is allowed only through privacy-safe aggregation with the configured minimum cohort, tenant boundaries and suppression of insufficient or ambiguous cohorts. This is an aggregate control, not a claim that a trained statistical model exists.",
+          fr: "CAMBRA est conçu pour ne pas exposer une entreprise individuelle dans un benchmark. Les sorties inter-entreprises ne sont autorisées qu’au moyen d’agrégats respectant le seuil minimal de cohorte, les frontières de tenant et la suppression des cohortes insuffisantes ou ambiguës. Il s’agit d’un contrôle d’agrégation, pas de l’affirmation qu’un modèle statistique entraîné existe.",
+          es: "CAMBRA está diseñado para no exponer a una empresa individual mediante un benchmark. La salida entre empresas solo se permite mediante agregación segura, con el tamaño mínimo de cohorte configurado, límites de tenant y supresión de cohortes insuficientes o ambiguas. Es un control de agregación, no una afirmación de que exista un modelo estadístico entrenado.",
         },
       },
       {

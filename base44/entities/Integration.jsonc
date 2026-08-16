@@ -28,11 +28,11 @@
     },
     "access_token": {
       "type": "string",
-      "description": "AES-256-GCM encrypted credential blob. For OAuth providers this is the access_token; for API-key providers this is the pasted API key. Same format in both cases: 'v1:<iv_base64>:<ciphertext_base64>' \u2014 the authentication tag is appended to the ciphertext by AES-GCM itself (it is NOT a separate segment). NEVER returned to the client by any function \u2014 server-only. RLS allows admin/creator read because Base44 RLS is row-level not field-level; functions strip this field before returning to UI."
+      "description": "DEPRECATED legacy migration source. New writes MUST use server-only IntegrationCredential.encrypted_access_token. Cleared only after credential persistence/readback succeeds."
     },
     "refresh_token": {
       "type": "string",
-      "description": "AES-256-GCM encrypted refresh token blob (OAuth providers only \u2014 null for api_key providers). Same format as access_token ('v1:<iv_base64>:<ciphertext_base64>', auth tag included inside the ciphertext). Same server-only access pattern."
+      "description": "DEPRECATED legacy migration source. New writes MUST use server-only IntegrationCredential.encrypted_refresh_token."
     },
     "access_token_expires_at": {
       "type": "string",
@@ -71,6 +71,94 @@
       "type": "string",
       "description": "External account id returned by the provider after OAuth (for display + dedup). Null for api_key providers that don't expose an account id."
     },
+    "provider_capability_risk_status": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DEGRADED",
+        "DEAUTHORIZED",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "UNKNOWN",
+      "description": "Fail-closed provider capability projection. Stripe account.updated may move this to DEGRADED and deauthorization to DEAUTHORIZED; a later positive webhook never auto-reactivates it."
+    },
+    "provider_charges_enabled": {
+      "type": "boolean",
+      "description": "Last risk-relevant Stripe charges_enabled observation. False is sticky until an explicit governed reconnect/review; positive webhooks do not auto-reactivate."
+    },
+    "provider_payouts_enabled": {
+      "type": "boolean",
+      "description": "Last risk-relevant Stripe payouts_enabled observation. False is sticky until an explicit governed reconnect/review; positive webhooks do not auto-reactivate."
+    },
+    "provider_capability_observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_capability_event_id": {
+      "type": "string",
+      "description": "Stripe event id that last established a degraded/deauthorized provider capability state."
+    },
+    "provider_event_revision": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "CAS revision for the one durable connected-account webhook claim hosted by this Integration."
+    },
+    "provider_event_claim_state": {
+      "type": "string",
+      "enum": [
+        "IDLE",
+        "CLAIMED",
+        "APPLYING",
+        "COMPLETED",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "IDLE"
+    },
+    "provider_event_claim_key": {
+      "type": "string",
+      "description": "Stable stripe-connect:<event.id>:<event.account> effect key for the current/last claim."
+    },
+    "provider_event_claim_token": {
+      "type": "string",
+      "description": "Opaque fencing token for the current provider event owner. Not a provider credential."
+    },
+    "provider_event_claim_owner": {
+      "type": "string"
+    },
+    "provider_event_claimed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_event_claim_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_event_effects_started": {
+      "type": "boolean",
+      "default": false
+    },
+    "provider_event_effect_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_event_last_processed_id": {
+      "type": "string"
+    },
+    "provider_event_last_processed_type": {
+      "type": "string"
+    },
+    "provider_event_last_processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_event_receipt_json": {
+      "type": "object",
+      "description": "Non-secret step receipts for the last Stripe connected-account transition."
+    },
+    "provider_event_last_error": {
+      "type": "string"
+    },
     "metadata_json": {
       "type": "object",
       "description": "Free-form metadata from the provider (account name, currency, auth_method, etc). Never put secrets here."
@@ -108,20 +196,13 @@
   ],
   "rls": {
     "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "created_by": "{{user.email}}"
-        }
-      ]
+      "user_condition": {
+        "role": "__service_role_only__"
+      }
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

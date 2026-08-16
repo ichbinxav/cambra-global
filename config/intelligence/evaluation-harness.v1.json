@@ -1,0 +1,349 @@
+{
+  "schema_version": "evaluation-harness.v1",
+  "contract_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_EVALUATION_HARNESS",
+  "scope": "Shared contract for CPIC, Adaptive Lead, Analyzer, Negotiation and future CAMBRA-trained models. This file does not train, evaluate, register, promote or serve a model.",
+  "evaluation_layers": [
+    "CONTRACT",
+    "DATA",
+    "OFFLINE_MODEL",
+    "ADVERSARIAL",
+    "SHADOW",
+    "CANARY",
+    "OUTCOME",
+    "SYSTEM",
+    "AUTHORITY"
+  ],
+  "problem_types": [
+    "RANKING",
+    "CLASSIFICATION",
+    "REGRESSION",
+    "FORECASTING_TIME_TO_EVENT",
+    "GENERATIVE"
+  ],
+  "required_baseline_kinds": [
+    "CURRENT_PRODUCTION",
+    "ABSTAIN_DO_NOTHING",
+    "DETERMINISTIC_RULE",
+    "STATISTICAL_BASELINE"
+  ],
+  "baseline_kinds": [
+    "CURRENT_PRODUCTION",
+    "ABSTAIN_DO_NOTHING",
+    "DETERMINISTIC_RULE",
+    "STATISTICAL_BASELINE",
+    "CALIBRATED_HEURISTIC",
+    "CURRENT_CHAMPION",
+    "DOMAIN_SPECIFIC"
+  ],
+  "mandatory_segment_cuts": [
+    "tenant",
+    "country",
+    "language",
+    "currency",
+    "industry",
+    "merchant_size",
+    "provider",
+    "channel_source",
+    "outcome_verification_tier",
+    "low_data_new_segment",
+    "time_cohort"
+  ],
+  "mandatory_safety_categories": [
+    "CROSS_TENANT_REQUEST",
+    "PROMPT_INJECTION",
+    "FORGED_EVIDENCE",
+    "STALE_OR_CONTRADICTORY_FACTS",
+    "UNSUPPORTED_IDENTITY_MERGE",
+    "MALICIOUS_CURRENCY_OR_UNIT",
+    "APPROVAL_BYPASS",
+    "REPLAYED_EXECUTION",
+    "COST_AMPLIFICATION",
+    "PII_EXTRACTION",
+    "DELETION_PROPAGATION",
+    "UNSUPPORTED_LOCALE_OR_MARKET",
+    "DEPENDENCY_UNAVAILABLE",
+    "ARTIFACT_VERSION_MISMATCH"
+  ],
+  "schemas": {
+    "problem_contract": {
+      "required": [
+        "problem_id",
+        "problem_version",
+        "problem_type",
+        "decision_to_improve",
+        "business_owner",
+        "affected_population",
+        "prediction_time_definition",
+        "action_enabled",
+        "current_baselines",
+        "false_positive_cost",
+        "false_negative_cost",
+        "required_latency_ms",
+        "authority_class",
+        "label_contract_ref",
+        "label_maturity",
+        "evaluation_guardrails",
+        "fallback_ref",
+        "expected_value_hypothesis",
+        "stop_criteria",
+        "privacy_security_assessment_ref",
+        "evidence_refs"
+      ],
+      "problem_type_enum_ref": "problem_types",
+      "baseline_kind_enum_ref": "baseline_kinds"
+    },
+    "metric_contract": {
+      "required": [
+        "metric_id",
+        "metric_version",
+        "name",
+        "formula",
+        "direction",
+        "population",
+        "exclusions",
+        "window",
+        "confidence_interval_method",
+        "minimum_sample",
+        "segment_cuts",
+        "materiality_threshold",
+        "baseline_ref",
+        "source_refs",
+        "owner",
+        "is_primary"
+      ],
+      "direction_enum": [
+        "HIGHER_IS_BETTER",
+        "LOWER_IS_BETTER",
+        "TARGET_RANGE"
+      ],
+      "invariants": [
+        "at least one primary metric is predeclared",
+        "every metric is population/window/baseline/source bound",
+        "a global average without segment cuts is invalid",
+        "statistical and business significance remain distinct"
+      ]
+    },
+    "candidate_contract": {
+      "required": [
+        "candidate_id",
+        "candidate_version",
+        "model_type",
+        "artifact_ref",
+        "artifact_hash",
+        "training_run_ref",
+        "evidence_refs"
+      ],
+      "model_type_enum": [
+        "RULES",
+        "STATISTICAL",
+        "ML",
+        "LLM_PROMPT",
+        "FINE_TUNED_LM",
+        "ENSEMBLE"
+      ]
+    },
+    "holdout_contract": {
+      "required": [
+        "dataset_id",
+        "dataset_version",
+        "content_hash",
+        "manifest_ref",
+        "split_strategy",
+        "frozen",
+        "immutable",
+        "independent_from_training",
+        "training_end_at",
+        "holdout_start_at",
+        "holdout_end_at",
+        "prediction_cutoff_at",
+        "treatment_started_at",
+        "latest_feature_available_at",
+        "leakage_report",
+        "evidence_refs"
+      ],
+      "split_strategy_enum": [
+        "TEMPORAL_GROUPED"
+      ],
+      "leakage_report_required": [
+        "status",
+        "post_treatment_feature_count",
+        "post_outcome_feature_count",
+        "future_information_count",
+        "identity_overlap_count",
+        "evidence_refs"
+      ]
+    },
+    "segment_report": {
+      "required": [
+        "status",
+        "cuts",
+        "material_regressions",
+        "unsupported_segments",
+        "evidence_refs"
+      ],
+      "cut_required": [
+        "name",
+        "status",
+        "sample_size",
+        "material_regression",
+        "evidence_refs"
+      ],
+      "cut_status_enum": [
+        "EVALUATED",
+        "INSUFFICIENT_SAMPLE"
+      ]
+    },
+    "calibration_report": {
+      "required": [
+        "status",
+        "applicability",
+        "method",
+        "candidate_result",
+        "baseline_result",
+        "non_regression",
+        "evidence_refs"
+      ],
+      "status_enum": [
+        "PASS",
+        "FAIL",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "safety_report": {
+      "required": [
+        "status",
+        "tests",
+        "tenant_leakage_count",
+        "authority_regression_count",
+        "unsupported_claim_rate",
+        "unsupported_claim_threshold",
+        "privacy_review_ref",
+        "authority_review_ref",
+        "evidence_refs"
+      ],
+      "test_required": [
+        "category",
+        "status",
+        "evidence_refs"
+      ]
+    },
+    "cost_latency_report": {
+      "required": [
+        "status",
+        "currency",
+        "candidate_cost",
+        "hard_cost_cap",
+        "net_utility",
+        "p95_latency_ms",
+        "latency_slo_ms",
+        "cost_attribution_refs",
+        "evidence_refs"
+      ]
+    },
+    "reproducibility_report": {
+      "required": [
+        "status",
+        "code_ref",
+        "dependency_lock_ref",
+        "dataset_content_hash",
+        "feature_contract_versions",
+        "label_contract_versions",
+        "random_seeds",
+        "environment_ref",
+        "logs_ref",
+        "artifact_hash",
+        "reproduction_command_ref",
+        "rerun_tolerance",
+        "observed_rerun_delta",
+        "within_tolerance",
+        "signed_evaluation_report_ref",
+        "evidence_refs"
+      ]
+    },
+    "promotion_packet": {
+      "required": [
+        "requested_stage",
+        "problem_contract_ref",
+        "model_card_ref",
+        "dataset_card_ref",
+        "evaluation_report_ref",
+        "baseline_comparison_ref",
+        "segment_report_ref",
+        "shadow_report_ref",
+        "privacy_security_authority_review_ref",
+        "cost_latency_report_ref",
+        "rollback_test_ref",
+        "owner_on_call",
+        "start_at",
+        "review_at",
+        "approvals",
+        "evidence_refs"
+      ],
+      "requested_stage_enum": [
+        "SHADOW",
+        "CANARY",
+        "CHAMPION"
+      ],
+      "decision_policy": "A structurally valid packet remains EVIDENCE_UNVERIFIED and HUMAN_REVIEW_REQUIRED. This contract cannot promote a model."
+    },
+    "evaluation_packet": {
+      "required": [
+        "evaluation_id",
+        "evaluation_version",
+        "evaluated_at",
+        "problem",
+        "candidate",
+        "holdout",
+        "metrics",
+        "segments",
+        "calibration",
+        "safety",
+        "cost_latency",
+        "reproducibility",
+        "promotion",
+        "evidence_refs"
+      ],
+      "valid_contract_decision": "CONTRACT_VALID_EVIDENCE_UNVERIFIED_HUMAN_REVIEW_REQUIRED",
+      "invalid_contract_decision": "REJECTED_FAIL_CLOSED"
+    }
+  },
+  "required_reports": [
+    "problem",
+    "candidate",
+    "holdout",
+    "metrics",
+    "segments",
+    "calibration",
+    "safety",
+    "cost_latency",
+    "reproducibility",
+    "promotion"
+  ],
+  "fail_closed_invariants": [
+    "empty evidence is invalid",
+    "post-treatment, post-outcome, future-information or identity-overlap leakage is invalid",
+    "holdout must be frozen, immutable, independent and temporally after training",
+    "segment, calibration, safety, cost/latency and reproducibility reports are mandatory",
+    "tenant leakage or authority regression is always a hard failure",
+    "cost above hard cap, latency above SLO or reproducibility outside tolerance is invalid",
+    "material segment regression cannot be hidden by aggregate improvement",
+    "a valid contract never auto-promotes, registers or serves a model"
+  ],
+  "records": {
+    "problems": [],
+    "metrics": [],
+    "evaluations": [],
+    "promotion_packets": []
+  },
+  "physical_resources_created": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_APPROVED_PROBLEM_RECORD",
+    "NO_SEALED_DATASET_OR_FROZEN_HOLDOUT",
+    "NO_TRAINING_RUN_OR_MODEL_ARTIFACT",
+    "NO_EXECUTED_EVALUATION_REPORT",
+    "NO_SHADOW_CANARY_OR_ROLLBACK_EVIDENCE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

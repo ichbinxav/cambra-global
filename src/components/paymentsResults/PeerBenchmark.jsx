@@ -4,12 +4,11 @@
 // curve with three markers (Top 10%, Peer median, YOU) and a percentile
 // callout. YOU pulses = "you are here".
 //
-// LABEL: "Regional benchmark · {country}". This is a real market benchmark —
-// the user's position (YOU marker) is their actual effective rate. The
-// distribution + percentile are anchored to the seeded regional market ranges
-// (via computePaymentsBenchmark) and refined as the cohort grows; that nuance
-// lives in AssumptionsFootnote. We deliberately dropped the word "illustrative"
-// from the badge — it dented perceived validity without adding honesty.
+// LABEL: "Regional benchmark · {country}". The user's position (YOU marker) is
+// their observed effective rate. The comparison curve may come from a current
+// qualifying rate table or a clearly labelled modeled fallback; UI copy must
+// preserve that provenance and must never promote a seeded fallback into a
+// verified real-market cohort.
 //
 // PURE PRESENTATION: all positions come from computePaymentsBenchmark(engineResult).
 // Payments only, neutral, no PSP names. Same tech aesthetic (dark, mono, subtle

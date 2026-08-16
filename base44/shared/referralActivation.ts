@@ -26,22 +26,23 @@
 
 import { feeForActivated } from './referralProgram.ts';
 import { scheduleReferralFee } from './referralBilling.ts';
+import { readRuntimeRows, requireRuntimeSource } from './runtimeSourceRead.ts';
 
 function lower(v: any): string { return String(v || '').trim().toLowerCase(); }
 
 async function resolveBrand(svc: any, brand_id?: string): Promise<any | null> {
   if (!brand_id) return null;
-  const rows = await svc.entities.Brand.filter({ id: brand_id }, '-created_date', 1).catch(() => []);
-  return rows?.[0] || null;
+  const rows=requireRuntimeSource(await readRuntimeRows({source:'referral_activation_brand',read:()=>svc.entities.Brand.filter({ id: brand_id }, '-created_date', 2)}));
+  if(rows.length>1)throw Object.assign(new Error('referral_brand_authority_ambiguous'),{status:503});
+  return rows[0] || null;
 }
 
 // The attribution evidence lives on the referred business's analysis session
 // (referred_by_code, written by submitPaymentsAnalysis).
 async function findReferralSession(svc: any, emails: string[]): Promise<any | null> {
   for (const email of emails) {
-    const rows = await svc.entities.PaymentsAnalysisSession
-      .filter({ contact_email: email }, '-created_date', 25).catch(() => []);
-    const hit = (rows || []).find((r: any) => r?.referred_by_code);
+    const rows=requireRuntimeSource(await readRuntimeRows({source:'referral_analysis_sessions',limit:25,read:()=>svc.entities.PaymentsAnalysisSession.filter({ contact_email: email }, '-created_date', 25)}));
+    const hit = rows.find((r: any) => r?.referred_by_code);
     if (hit) return hit;
   }
   return null;
@@ -59,7 +60,9 @@ export async function applyReferralActivation(
   if (!session) return { ok: true, applied: false, reason: 'no_referral' };
 
   const code = session.referred_by_code;
-  const link = (await svc.entities.ReferralLink.filter({ code }, 'created_date', 1).catch(() => []))?.[0] || null;
+  const linkRows=requireRuntimeSource(await readRuntimeRows({source:'referral_link_authority',read:()=>svc.entities.ReferralLink.filter({ code }, 'created_date', 2)}));
+  if(linkRows.length>1)throw Object.assign(new Error('referral_link_authority_ambiguous'),{status:503});
+  const link = linkRows[0] || null;
   if (!link) return { ok: true, applied: false, reason: 'unknown_code' };
   if (emails.includes(lower(link.owner_email))) {
     return { ok: true, applied: false, reason: 'self_referral' };
@@ -67,8 +70,8 @@ export async function applyReferralActivation(
 
   // ── Idempotency claim ───────────────────────────────────────────────────
   const referred_key = brand?.id || emails[0];
-  const prior = await svc.entities.ReferralActivation
-    .filter({ referred_key }, '-created_date', 1).catch(() => []);
+  const prior=requireRuntimeSource(await readRuntimeRows({source:'referral_activation_idempotency',read:()=>svc.entities.ReferralActivation.filter({ referred_key }, '-created_date', 2)}));
+  if(prior.length>1)throw Object.assign(new Error('referral_activation_authority_ambiguous'),{status:503});
   if (prior?.length) {
     return {
       ok: true,
@@ -105,9 +108,7 @@ export async function applyReferralActivation(
   });
 
   if (claim?.id) {
-    await svc.entities.ReferralActivation
-      .update(claim.id, { scheduled_rules_json: { rules: scheduled } })
-      .catch(() => null);
+    await svc.entities.ReferralActivation.update(claim.id, { scheduled_rules_json: { rules: scheduled } });
   }
 
   return { ok: true, applied: true, code, referrer_email: link.owner_email, activated_count, fee_pct, scheduled };

@@ -50,7 +50,7 @@ export function createRefreshState() {
  * cheap to provide so the caller can compute them once per sync.
  *
  * @param {string} authMethod - cfg.auth_method ("oauth" | "api_key" | "basic_auth")
- * @param {boolean} hasRefreshToken - whether Integration.refresh_token is non-null
+ * @param {boolean} hasRefreshToken - whether the server-only credential has a refresh token
  */
 export function isEligibleForRefresh(authMethod, hasRefreshToken) {
   return authMethod === "oauth" && hasRefreshToken === true;

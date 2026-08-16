@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════════
-// Registry of all 18 agents + 4 orchestrators + the engineering /
+// Registry of all 34 declared agents + 5 orchestrators + the engineering /
 // legal cluster, grouped by cluster, with: function name, level (L0-L4),
 // tool dependency (secret name → green if present, red if missing).
 //
@@ -7,7 +7,28 @@
 // are "active" vs "waiting on a key".
 // ════════════════════════════════════════════════════════════════════
 
-export const CLUSTERS = [
+/**
+ * @typedef {{
+ *   name: string,
+ *   fn: string,
+ *   level: number,
+ *   tool: string,
+ *   secret: string | null,
+ *   desc: string,
+ *   requiresInput?: string,
+ *   status?: string,
+ *   canonicalReplacement?: string
+ * }} AgentDefinition
+ * @typedef {{
+ *   key: string,
+ *   label: string,
+ *   description: string,
+ *   agents: AgentDefinition[]
+ * }} AgentCluster
+ */
+
+/** @type {AgentCluster[]} */
+const CLUSTER_DEFINITIONS = [
   {
     key: "founder_os",
     label: "Founder OS",
@@ -95,10 +116,24 @@ export const CLUSTERS = [
       { name: "QA Monitor",        fn: "qaMonitorAgent",         level: 1, tool: "Claude",   secret: "ANTHROPIC_API_KEY", desc: "Vigila runtime (fallos, regresiones)." },
       { name: "Engineering Report", fn: "engineeringReportAgent", level: 1, tool: "—",        secret: null, desc: "Consolida 2x/día con prompts listos." },
       { name: "Fix Validator",     fn: "fixValidatorAgent",      level: 1, tool: "Claude",   secret: "ANTHROPIC_API_KEY", desc: "Valida fixes aplicados (rescan + review)." },
-      { name: "System Health",     fn: "systemHealthAgent",      level: 1, tool: "Deterministic", secret: null, desc: "Meta-vigilante read-only: agentes fallando, tasks colgados, schedules, loop del Brain, events huérfanos." },
+      { name: "System Health",     fn: "systemHealthAgent",      level: 1, tool: "Deterministic", secret: null, status: "QUARANTINED_COMPATIBILITY", canonicalReplacement: "autonomousOperationsSupervisor", desc: "Quarantined compatibility surface (410; no supervisor, incident, AgentTask or Event writes). A bounded quarantine access audit may be recorded. General supervision is owned exclusively by autonomousOperationsSupervisor." },
     ],
   },
 ];
+
+// Keep the canonical source names while preserving the aliases consumed by
+// the two existing admin grids. This is a read-only UI projection; it grants
+// no agent authority and does not alter the generated workforce counts.
+export const CLUSTERS = CLUSTER_DEFINITIONS.map((cluster) => ({
+  ...cluster,
+  id: cluster.key,
+  agents: cluster.agents.map((agent) => ({
+    ...agent,
+    label: agent.name,
+    description: agent.desc,
+    risk: agent.level,
+  })),
+}));
 
 export const ORCHESTRATORS = [
   { name: "Brain Chain",     fn: "brainOrchestrator",     desc: "Discovery → Spend → Recommendation. Mete una URL, corre el loop entero.", requiresInput: "url" },

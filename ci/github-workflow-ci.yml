@@ -54,4 +54,4 @@ jobs:
             .release-evidence/
             .release-artifacts/
             RELEASE.json
-            base44/.deploy/manifest.json
+            base44/.deploy/

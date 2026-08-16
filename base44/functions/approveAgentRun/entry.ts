@@ -1,128 +1,47 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { quarantineProbe } from '../../shared/internalGate.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { quarantineProbe } from "../../shared/internalGate.ts";
+import { safeBestEffort } from "../../shared/bestEffort.ts";
 
 /**
- * M8 — approveAgentRun
+ * Deprecated compatibility surface.
  *
- * Human approval gate. Admin only.
- *
- * - Validates status === 'awaiting_approval'.
- * - Records approved/rejected actions.
- * - For agent_type='recommendation': writes approved items into the Recommendation entity.
- * - NEVER calls external provider APIs and NEVER activates deals.
+ * AgentTask is CAMBRA's only durable work lifecycle and Approval is its only
+ * material human-decision boundary. AgentRun is legacy read-only history. This
+ * physical entry point remains present solely to preserve Base44 topology and
+ * to make stale callers fail visibly; it performs no AgentRun, Recommendation
+ * or external-effect write.
  */
+export const AGENT_RUN_COMPATIBILITY_STATE =
+  "DEPRECATED_READ_ONLY_NO_WRITES" as const;
 
-const ENGINE_VERSION = 'm8-approve-agent-run-1.0';
-
-// [QUARANTINE 2026-08-15] PURGE-2 (2026-07-24): approvals surface live but no src caller — kept with probe.
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   await quarantineProbe(base44, "approveAgentRun");
 
-  // Admin only (no service-role bypass — this is a human gate)
-  let user = null;
-  try { user = await base44.auth.me(); } catch (_) { /* fall through */ }
-  if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-  if (user.role !== 'admin') {
-    return Response.json({ ok: false, error: 'Forbidden — admin only' }, { status: 403 });
+  // Authentication lookup failure is deliberately mapped to the same
+  // fail-closed unauthenticated result, but it must remain observable.
+  const user = await base44.auth.me().catch((error: any) =>
+    safeBestEffort(error, {
+      operation: "approveAgentRun.auth",
+      fallback: null,
+      severity: "critical",
+    })
+  );
+  if (!user) {
+    return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
-
-  let body = {};
-  try { body = await req.json(); } catch (_) { /* empty body ok */ }
-  const { run_id, approved_actions = [], rejected_actions = [] } = body || {};
-  if (!run_id) {
-    return Response.json({ ok: false, error: 'run_id required' }, { status: 400 });
+  if (user.role !== "admin") {
+    return Response.json({ ok: false, error: "Forbidden" }, { status: 403 });
   }
-
-  const svc = base44.asServiceRole;
-
-  const run = await svc.entities.AgentRun.get(run_id).catch((error:any)=>safeBestEffort(error,{operation:'approveAgentRun',fallback:null,severity:'secondary'}));
-  if (!run) {
-    return Response.json({ ok: false, error: 'AgentRun not found' }, { status: 404 });
-  }
-  if (run.status !== 'awaiting_approval') {
-    return Response.json({
-      ok: false,
-      error: `AgentRun status is '${run.status}', expected 'awaiting_approval'`,
-    }, { status: 409 });
-  }
-
-  const approvedArr = Array.isArray(approved_actions) ? approved_actions : [];
-  const rejectedArr = Array.isArray(rejected_actions) ? rejected_actions : [];
-  const nowIso = new Date().toISOString();
-
-  // ── For recommendation agent: persist approved recs to Recommendation entity ──
-  let recommendations_written = 0;
-  if (run.agent_type === 'recommendation' && approvedArr.length) {
-    const recsToCreate = approvedArr.map((a) => ({
-      brand_id: run.brand_id,
-      vertical: a.vertical || 'general',
-      type: 'ai_synthesis',
-      title: a.title || 'AI-generated recommendation',
-      description: a.reasoning || '',
-      expected_benefit: a.expected_saving_eur != null
-        ? `€${Math.round(a.expected_saving_eur).toLocaleString()}/yr`
-        : undefined,
-      action_required: 'Review and activate',
-      action_link: '/Dashboard',
-      score_json: {
-        total: Math.round((Number(a.confidence || 0) * 100) || 50),
-        confidence: Number(a.confidence || 0),
-        expected_saving_eur: Number(a.expected_saving_eur || 0),
-        priority: Number(a.priority || 3),
-      },
-      reasons: Array.isArray(a.evidence) ? a.evidence : (a.reasoning ? [a.reasoning] : []),
-      effort_level: a.effort || 'medium',
-      generated_at: nowIso,
-    }));
-
-    try {
-      await svc.entities.Recommendation.bulkCreate(recsToCreate);
-      recommendations_written = recsToCreate.length;
-    } catch (e) {
-      console.warn('Recommendation bulkCreate failed:', e?.message || e);
-    }
-  }
-
-  // ── Update the AgentRun ──────────────────────────────────────
-  let update_error = null;
-  try {
-    await svc.entities.AgentRun.update(run_id, {
-      status: 'approved',
-      actions_approved: approvedArr,
-      actions_rejected: rejectedArr,
-      approved_by: user.email,
-      approved_at: nowIso,
-    });
-  } catch (e) {
-    update_error = e?.message || String(e);
-    console.error('AgentRun update failed:', update_error);
-  }
-
-  // ── Log to OperationalLog (best-effort) ──────────────────────
-  try {
-    await svc.entities.OperationalLog.create({
-      brand_id: run.brand_id,
-      kind: 'agent_run_approved',
-      message: `AgentRun ${run_id} (${run.agent_type}) approved by ${user.email}`,
-      payload: {
-        run_id,
-        agent_type: run.agent_type,
-        approved_count: approvedArr.length,
-        rejected_count: rejectedArr.length,
-        recommendations_written,
-        engine_version: ENGINE_VERSION,
-      },
-    });
-  } catch (_) { /* OperationalLog may be optional — non-fatal */ }
 
   return Response.json({
-    ok: !update_error,
-    run_id,
-    actions_approved_count: approvedArr.length,
-    actions_rejected_count: rejectedArr.length,
-    recommendations_written,
-    update_error,
-  });
+    ok: false,
+    error: "agent_run_approval_surface_deprecated",
+    compatibility_state: AGENT_RUN_COMPATIBILITY_STATE,
+    canonical_work_entity: "AgentTask",
+    canonical_approval_entity: "Approval",
+    canonical_admin_surface: "/admin/approvals",
+    material_effects: 0,
+    migration_required: true,
+  }, { status: 410 });
 });

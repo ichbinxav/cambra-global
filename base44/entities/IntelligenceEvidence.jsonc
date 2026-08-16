@@ -54,6 +54,18 @@
         "tenant"
       ]
     },
+    "purpose": {
+      "type": "string",
+      "description": "Explicit allowed use. Presence does not authorize training, retrieval or cross-tenant reuse beyond this purpose."
+    },
+    "retention_policy_key": {
+      "type": "string",
+      "description": "Versioned central retention-policy reference; required for every new evidence row."
+    },
+    "legal_basis": {
+      "type": "string",
+      "description": "Recorded lawful/contractual basis for this evidence and purpose; never inferred from data availability."
+    },
     "effective_at": {
       "type": "string",
       "format": "date-time"
@@ -235,6 +247,10 @@
     "evidence_hash",
     "source_type",
     "truth_level",
+    "tenant_scope",
+    "purpose",
+    "retention_policy_key",
+    "legal_basis",
     "observed_at",
     "recorded_at"
   ],

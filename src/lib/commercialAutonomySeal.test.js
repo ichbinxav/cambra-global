@@ -74,8 +74,8 @@ describe("commercial autonomy static boundaries", () => {
 
   it("provider negotiation cannot auto-accept a final/material offer", () => {
     const src = read("base44/functions/providerNegotiationAgent/entry.ts");
-    expect(src).toContain("action_type:'final_provider_deal'");
-    expect(src).toContain("risk_level:4");
+    expect(src).toMatch(/action_type:\s*["']final_provider_deal["']/);
+    expect(src).toMatch(/risk_level:\s*4/);
     expect(src).toContain("awaiting_final_approval");
     expect(src).not.toContain("sign_contract'");
   });
@@ -85,8 +85,8 @@ describe("commercial autonomy static boundaries", () => {
     expect(src).toContain("offer_expired_reapproval_required");
     expect(src).toContain("recover_no_longer_authorized");
     expect(src).toContain("mandate_changed_reapproval_required");
-    expect(src).toContain("contract_execution:false");
-    expect(src).toContain("migration_go_live:false");
+    expect(src).toMatch(/contract_execution\s*:\s*false/);
+    expect(src).toMatch(/migration_go_live\s*:\s*false/);
   });
 
   it("contract mismatch is deterministic and cannot execute the contract", () => {
@@ -118,8 +118,9 @@ describe("commercial autonomy static boundaries", () => {
     const schema = read("base44/entities/CommunicationMessage.jsonc");
     const src = read("base44/functions/commercialSendMessage/entry.ts");
     expect(schema).toContain('"idempotency_key"');
-    expect(src).toContain("getConnection('outlook')");
-    expect(src).toContain("idempotency_key:idempotency");
+    expect(src).toMatch(/getConnection\(["']outlook["']\)/);
+    expect(src).toMatch(/idempotency_key:\s*idempotency/);
+    expect(src).toContain("readCommercialSendIdempotency");
     expect(src).toContain("commercial_email_not_configured");
   });
 

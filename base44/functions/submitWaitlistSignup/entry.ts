@@ -1,9 +1,9 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { paidProviderFetch } from '../../shared/costGovernance.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { consumeRateLimit } from '../../shared/rateLimit.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { paidProviderFetch } from "../../shared/costGovernance.ts";
+import { emergencyState } from "../../shared/operationalControl.ts";
+import { normalizeLocale } from "../../shared/emailLocale.ts";
+import { consumePublicRequestRateLimit } from "../../shared/rateLimit.ts";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
 
 /**
  * submitWaitlistSignup
@@ -17,54 +17,57 @@ import { internalErrorResponse } from '../../shared/publicErrors.ts';
  * (landing hero, HowItWorks step 04, Analyzer teaser).
  *
  * Behavior:
- *   1. Rate limit by IP (public write endpoint — see below).
+ *   1. Rate limit by versioned HMAC network fingerprint (public write endpoint).
  *   2. Validate email.
  *   3. Persist as a Lead record (source_page marks WHERE it came from).
  *   4. Notify admin (best-effort, never blocks the response on email failure).
  */
 
-// ─── Rate limiting (per IP, hourly) ─────────────────────────────────────────
+// ─── Rate limiting (per HMAC network fingerprint, hourly) ───────────────────
 //
 // Public write endpoint that also triggers an outbound email. Without a cap,
 // a bot could spam the Leads table AND drain email quota. Same RateLimitCounter
 // pattern as submitAnonymousAnalysis / copilotChat / apiV1.
 const DEFAULT_LIMIT_PER_HOUR = 5;
 
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for') || '';
-  const first = fwd.split(',')[0]?.trim();
-  return first || req.headers.get('x-real-ip') || 'unknown';
-}
-
-async function checkRateLimit(base44: any, ip: string) {
-  const envRaw = Deno.env.get('WAITLIST_RATE_LIMIT_PER_HOUR');
+async function checkRateLimit(base44: any, req: Request) {
+  const envRaw = Deno.env.get("WAITLIST_RATE_LIMIT_PER_HOUR");
   const parsed = envRaw ? parseInt(envRaw, 10) : NaN;
-  const limit = Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_LIMIT_PER_HOUR;
+  const limit = Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_LIMIT_PER_HOUR;
 
-  const principalId = `submitWaitlistSignup:${ip}`;
-  return consumeRateLimit(base44.asServiceRole,{principal_id:principalId,principal_type:'ip',limit,window_seconds:3600});
+  return consumePublicRequestRateLimit(base44.asServiceRole, req, {
+    namespace: "submit-waitlist-signup",
+    limit,
+    window_seconds: 3600,
+  });
 }
 
 Deno.serve(async (req) => {
   try {
     if (req.method !== "POST") {
-      return Response.json({ ok: false, error: "method_not_allowed" }, { status: 405 });
+      return Response.json({ ok: false, error: "method_not_allowed" }, {
+        status: 405,
+      });
     }
 
     const base44 = createClientFromRequest(req);
 
     // Rate limit BEFORE parsing/writing/emailing.
-    const ip = getClientIp(req);
-    const rl = await checkRateLimit(base44, ip);
+    const rl = await checkRateLimit(base44, req);
     if (!rl.ok) {
       return Response.json(
-        { ok: false, error: 'rate_limited' },
         {
-          status: 429,
+          ok: false,
+          error: rl.status === 429 ? "rate_limited" : "rate_limit_unavailable",
+        },
+        {
+          status: rl.status || 503,
           headers: {
-            'X-RateLimit-Limit': String(rl.limit),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rl.reset,
+            "X-RateLimit-Limit": String(rl.limit),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rl.reset || ""),
           },
         },
       );
@@ -72,12 +75,23 @@ Deno.serve(async (req) => {
 
     // HYGIENE-1 T3 — body size cap BEFORE parsing (same pattern as oauthToken).
     const MAX_BODY_BYTES = 16 * 1024;
-    const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
-    if (contentLength > MAX_BODY_BYTES) return Response.json({ error: "request_too_large" }, { status: 413 });
+    const contentLength = parseInt(
+      req.headers.get("content-length") || "0",
+      10,
+    );
+    if (contentLength > MAX_BODY_BYTES) {
+      return Response.json({ error: "request_too_large" }, { status: 413 });
+    }
     const bodyText = await req.text();
-    if (bodyText.length > MAX_BODY_BYTES) return Response.json({ error: "request_too_large" }, { status: 413 });
+    if (bodyText.length > MAX_BODY_BYTES) {
+      return Response.json({ error: "request_too_large" }, { status: 413 });
+    }
     let body: any = {};
-    try { body = JSON.parse(bodyText); } catch { body = {}; }
+    try {
+      body = JSON.parse(bodyText);
+    } catch {
+      body = {};
+    }
     const email = String(body?.email || "").trim().toLowerCase();
     const source = String(body?.source || "waitlist").trim();
     const context = body?.context || {};
@@ -85,7 +99,9 @@ Deno.serve(async (req) => {
     // Basic email validation
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailOk) {
-      return Response.json({ ok: false, error: "invalid_email" }, { status: 400 });
+      return Response.json({ ok: false, error: "invalid_email" }, {
+        status: 400,
+      });
     }
 
     // Persist as Lead (service-role — anonymous public users).
@@ -100,14 +116,21 @@ Deno.serve(async (req) => {
     const notes = [
       `Waitlist signup: ${source}`,
       context.brand_name ? `Brand: ${context.brand_name}` : null,
-      context.total_savings ? `Savings estimate: €${Number(context.total_savings).toLocaleString("fr-FR")}` : null,
+      context.total_savings
+        ? `Savings estimate: €${
+          Number(context.total_savings).toLocaleString("fr-FR")
+        }`
+        : null,
       context.session_id ? `Session: ${context.session_id}` : null,
     ].filter(Boolean).join(" · ");
 
     // Validate the session_id before storing it structurally — refuse to
     // persist garbage into a field that other code will trust.
-    const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const rawSid = typeof context.session_id === "string" ? context.session_id.trim() : "";
+    const UUID_V4 =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const rawSid = typeof context.session_id === "string"
+      ? context.session_id.trim()
+      : "";
     const anonSessionId = UUID_V4.test(rawSid) ? rawSid : "";
 
     const lead = await base44.asServiceRole.entities.Lead.create({
@@ -126,7 +149,8 @@ Deno.serve(async (req) => {
     // Admin email is configured via env var so we don't hard-code a personal
     // address in source. Empty/missing env → skip the notification silently
     // (the Lead is still persisted and the admin dashboard shows it).
-    const adminEmail = String(Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
+    const adminEmail = String(Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "")
+      .trim();
     if (adminEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
       try {
         const subject = `New waitlist signup — ${email}`;
@@ -136,7 +160,11 @@ Deno.serve(async (req) => {
           `Email: ${email}`,
           `Source: ${source}`,
           context.brand_name ? `Brand: ${context.brand_name}` : null,
-          context.total_savings ? `Estimated savings: €${Number(context.total_savings).toLocaleString("fr-FR")} / year` : null,
+          context.total_savings
+            ? `Estimated savings: €${
+              Number(context.total_savings).toLocaleString("fr-FR")
+            } / year`
+            : null,
           context.session_id ? `Analyzer session: ${context.session_id}` : null,
           ``,
           `Lead ID: ${lead.id}`,
@@ -147,26 +175,46 @@ Deno.serve(async (req) => {
         // the monitored root-domain inbox. Falls back silently on any error —
         // the Lead is already persisted and visible in the admin dashboard.
         const resendKey = Deno.env.get("RESEND_API_KEY");
-        const fromAddress = Deno.env.get("RESEND_FROM") || "CAMBRA <hello@contact.cambra.global>";
+        const fromAddress = Deno.env.get("RESEND_FROM") ||
+          "CAMBRA <hello@contact.cambra.global>";
         const emergency = await emergencyState(base44.asServiceRole);
-        if (resendKey && !emergency.safe_mode && !emergency.communications_paused) {
-          await paidProviderFetch(base44.asServiceRole, { event_key:`email:waitlist-notification:${lead?.id || crypto.randomUUID()}`, category:'email', provider:'resend', source:'submitWaitlistSignup', related_entity_type:'Lead', related_entity_id:lead?.id || '' }, "https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${resendKey}`,
+        if (
+          resendKey && !emergency.safe_mode && !emergency.communications_paused
+        ) {
+          await paidProviderFetch(
+            base44.asServiceRole,
+            {
+              event_key: `email:waitlist-notification:${lead.id}`,
+              stable_event_key: true,
+              category: "email",
+              provider: "resend",
+              source: "submitWaitlistSignup",
+              related_entity_type: "Lead",
+              related_entity_id: lead.id,
             },
-            body: JSON.stringify({
-              from: fromAddress,
-              to: adminEmail,
-              reply_to: adminEmail,
-              subject,
-              text: bodyText,
-            }),
-          });
+            "https://api.resend.com/emails",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${resendKey}`,
+                "Idempotency-Key": `waitlist-notification/${lead.id}`,
+              },
+              body: JSON.stringify({
+                from: fromAddress,
+                to: adminEmail,
+                reply_to: adminEmail,
+                subject,
+                text: bodyText,
+              }),
+            },
+          );
         }
       } catch (emailErr) {
-        console.warn("Admin notification email failed:", (emailErr as any)?.message);
+        console.warn(
+          "Admin notification email failed:",
+          (emailErr as any)?.message,
+        );
       }
     }
 
@@ -174,14 +222,14 @@ Deno.serve(async (req) => {
       { ok: true, lead_id: lead.id },
       {
         headers: {
-          'X-RateLimit-Limit': String(rl.limit),
-          'X-RateLimit-Remaining': String(rl.remaining),
-          'X-RateLimit-Reset': rl.reset,
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": String(rl.remaining),
+          "X-RateLimit-Reset": rl.reset,
         },
       },
     );
   } catch (error) {
     console.error("submitWaitlistSignup error:", error);
-    return internalErrorResponse(error, 'submitWaitlistSignup');
+    return internalErrorResponse(error, "submitWaitlistSignup");
   }
 });

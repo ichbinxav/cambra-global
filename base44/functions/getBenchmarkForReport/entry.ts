@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS } from '../../shared/intelligenceCore.ts';
 
 /**
  * M2 — Public-facing benchmark accessor.
@@ -110,7 +111,7 @@ Deno.serve(async (req) => {
       1
     );
 
-    if (cohorts && cohorts.length > 0 && Number(cohorts[0].n || 0) >= 10) {
+    if (cohorts && cohorts.length > 0 && Number(cohorts[0].n) >= P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS) {
       const c = cohorts[0];
       const n = Number(c.n || 0);
       const confidence = confidenceFor(n);

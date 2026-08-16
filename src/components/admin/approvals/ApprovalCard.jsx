@@ -38,7 +38,7 @@ function shortId(id) {
   return id.length > 12 ? `${id.slice(0, 6)}…${id.slice(-4)}` : id;
 }
 
-export default function ApprovalCard({ approval, agentName, onApprove, onReject, busy }) {
+export default function ApprovalCard({ approval, agentName, onApprove, onReject, busy, disabled = false }) {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -97,7 +97,15 @@ export default function ApprovalCard({ approval, agentName, onApprove, onReject,
 
       {/* Actions */}
       <div className="px-4 py-3 border-t border-border/40 bg-secondary/20">
-        {!rejectOpen ? (
+        {disabled ? (
+          <div className="flex items-center gap-2 text-xs text-amber-700">
+            <AlertTriangle size={12} />
+            <span className="font-bold">Resolution in progress.</span>
+            <span className="text-muted-foreground">
+              CAMBRA keeps this visible and blocks a second decision while the durable command is reconciled.
+            </span>
+          </div>
+        ) : !rejectOpen ? (
           <div className="flex items-center gap-2">
             <button
               type="button"

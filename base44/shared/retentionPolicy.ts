@@ -1,4 +1,4 @@
-export const RETENTION_POLICY_VERSION='cambra-retention-2.0.0';
+export const RETENTION_POLICY_VERSION='cambra-retention-2.1.0';
 export const RETENTION_MS_PER_DAY=86_400_000;
 
 export const RETENTION_POLICIES=Object.freeze({
@@ -6,6 +6,7 @@ export const RETENTION_POLICIES=Object.freeze({
   unengaged_outbound_leads:Object.freeze({category:'unengaged_outbound_leads',action:'DELETE',retention_days:365,cadence:'MONTHLY',legal_hold_supported:true}),
   inbound_leads:Object.freeze({category:'inbound_leads',action:'DELETE',retention_days:730,cadence:'MONTHLY',legal_hold_supported:true}),
   scheduler_runs:Object.freeze({category:'scheduler_runs',action:'DELETE',retention_days:90,cadence:'DAILY_BOUNDED',legal_hold_supported:true,terminal_statuses:['COMPLETED','DUPLICATE_BLOCKED']}),
+  rate_limit_counters:Object.freeze({category:'rate_limit_counters',action:'DELETE',retention_days:2,cadence:'PURGE_2_RUNTIME_PENDING',legal_hold_supported:false,execution_status:'RUNTIME_PENDING'}),
   intelligence_outcomes_aggregate:Object.freeze({category:'intelligence_outcomes_and_aggregates',action:'ANONYMIZE',retention_days:null,cadence:'SCHEDULED',minimum_distinct_merchants:10,raw_identifier_retention:false}),
 });
 

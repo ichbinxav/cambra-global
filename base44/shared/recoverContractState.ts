@@ -11,6 +11,8 @@
 // contract exists from the moment of a valid acceptance; delivery is a separate,
 // failure-tolerant concern.
 
+import { bestEffortExecutionEvidence } from './criticalExecution.ts';
+
 /** Retry ladder in minutes. Applied to both PDF and email. */
 const BACKOFF_MINUTES = [1, 5, 30, 120, 720, 1440];
 export const MAX_ATTEMPTS = BACKOFF_MINUTES.length;
@@ -114,7 +116,7 @@ export async function logContractEvent(
   data: Record<string, unknown> = {},
   actorEmail = 'internal',
 ): Promise<void> {
-  await svc.entities.OperationalLog.create({
+  await bestEffortExecutionEvidence('recover_contract_operational_log', () => svc.entities.OperationalLog.create({
     deal_activation_id: mandate?.deal_activation_id || '',
     brand_id: mandate?.brand_id || '',
     provider_id: mandate?.provider_id || '',
@@ -123,5 +125,5 @@ export async function logContractEvent(
     data_json: { event, mandate_id: mandate?.id, ...data },
     actor_email: actorEmail,
     created_at: new Date().toISOString(),
-  }).catch(() => null);
+  }), null);
 }

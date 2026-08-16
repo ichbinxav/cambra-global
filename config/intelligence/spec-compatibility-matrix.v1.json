@@ -1,0 +1,704 @@
+{
+  "schema_version": "spec-compatibility-matrix.v1",
+  "generated_at": "2026-08-13T03:49:26Z",
+  "source_ledger": "config/intelligence/requirement-ledger.v1.json",
+  "decision_rule": "Later/lower-authority specs add detail but cannot weaken higher-authority legal, financial, security, runtime or source truth. Conflict resolutions preserve deterministic truth and existing authorities.",
+  "conflicts": [
+    {
+      "compatibility_id": "STATUS_TAXONOMY",
+      "requirement": "Separate repository capability from delivery progress so EXISTING never means VERIFIED.",
+      "civ2_sections": [
+        "CIV2.S02"
+      ],
+      "orchestration_sections": [
+        "ORCH.S02",
+        "ORCH.S33"
+      ],
+      "cpic_sections": [
+        "CPIC.S01"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S00",
+        "ALI.S02"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Use capability_state=EXISTING|PARTIAL|TARGET and delivery_status=NOT_STARTED|IN_PROGRESS|IMPLEMENTED|VERIFIED|BLOCKED|DEFERRED|SUPERSEDED. Runtime qualifiers remain blockers.",
+      "controlling_authority": "ORCH.S02",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "config/intelligence/requirement-ledger.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "PRECEDENCE",
+      "requirement": "Resolve normative conflicts using the orchestration precedence chain.",
+      "civ2_sections": [
+        "CIV2.S00"
+      ],
+      "orchestration_sections": [
+        "ORCH.S01"
+      ],
+      "cpic_sections": [
+        "CPIC.S00"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S00"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Verifiable legal/financial/security/runtime truth outranks source code, evidence, specs and conversation; CIV2 outranks ORCH, then CPIC, then ALI.",
+      "controlling_authority": "ORCH.S01",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "config/intelligence/requirement-ledger.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "DETERMINISTIC_VS_INFERRED",
+      "requirement": "Prevent probabilistic or language outputs from overwriting financial truth.",
+      "civ2_sections": [
+        "CIV2.S05",
+        "CIV2.S07"
+      ],
+      "orchestration_sections": [
+        "ORCH.S09",
+        "ORCH.S10"
+      ],
+      "cpic_sections": [
+        "CPIC.S02",
+        "CPIC.S13",
+        "CPIC.S15"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S17"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "P3/rates, merchant inputs and Verified Savings remain deterministic sources; CPIC outputs versioned estimates/distributions only.",
+      "controlling_authority": "CPIC.S02",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/shared/p4Bridge.ts",
+        "base44/functions/outcomeLearningWorker/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "EVIDENCE_AUTHORITY",
+      "requirement": "Avoid parallel evidence registries.",
+      "civ2_sections": [
+        "CIV2.S02",
+        "CIV2.S07"
+      ],
+      "orchestration_sections": [
+        "ORCH.S05",
+        "ORCH.S23"
+      ],
+      "cpic_sections": [
+        "CPIC.S04",
+        "CPIC.S25"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S11"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Reuse IntelligenceEvidence as intelligence evidence ledger; EvidenceAssertion/Attestation retain domain verification roles and reference canonical evidence rather than becoming a second learning ledger.",
+      "controlling_authority": "CIV2.S07",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/EvidenceAssertion.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "OUTCOME_AUTHORITY",
+      "requirement": "Avoid duplicate learning outcome sources while preserving domain truth.",
+      "civ2_sections": [
+        "CIV2.S07",
+        "CIV2.S12"
+      ],
+      "orchestration_sections": [
+        "ORCH.S05",
+        "ORCH.S23"
+      ],
+      "cpic_sections": [
+        "CPIC.S26"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S24"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "IntelligenceOutcome is the canonical learning projection; billing, Verified Savings, GrowthDecisionOutcome and acquisition records remain domain truth and are referenced, not replaced.",
+      "controlling_authority": "CIV2.S12",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/entities/GrowthDecisionOutcome.jsonc",
+        "base44/entities/MonthlySavingsReport.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "IDENTITY_AUTHORITY",
+      "requirement": "Reconcile merchant/company/provider/contact identities without destructive fusion.",
+      "civ2_sections": [
+        "CIV2.S08"
+      ],
+      "orchestration_sections": [
+        "ORCH.S05",
+        "ORCH.S25"
+      ],
+      "cpic_sections": [
+        "CPIC.S04"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S08"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Brand stays merchant/tenant authority; OutboundLead stays company-candidate master; Provider stays operational provider authority pending CanonicalProvider migration evidence; contact identity remains TARGET with explicit links/merge lineage.",
+      "controlling_authority": "CIV2.S08",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Brand.jsonc",
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Provider.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "PROVIDER_IDENTITY",
+      "requirement": "Prevent a third provider authority.",
+      "civ2_sections": [
+        "CIV2.S08"
+      ],
+      "orchestration_sections": [
+        "ORCH.S07"
+      ],
+      "cpic_sections": [
+        "CPIC.S17"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S08"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Do not create a new provider master. Audit runtime data before deciding Provider↔CanonicalProvider cutover or adapter.",
+      "controlling_authority": "CIV2.S08",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Provider.jsonc",
+        "base44/entities/CanonicalProvider.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "UNIVERSAL_EXPERIENCE",
+      "requirement": "Resolve physical-table ambiguity.",
+      "civ2_sections": [
+        "CIV2.S07"
+      ],
+      "orchestration_sections": [
+        "ORCH.S06"
+      ],
+      "cpic_sections": [
+        "CPIC.S04"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S09"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "One semantic envelope is mandatory. Phase 1 extends Event only with backwards-compatible optional fields and projects existing snapshots, evidence, authority, costs and outcomes through a shared validator; domain records stay authoritative and no new event table is created.",
+      "controlling_authority": "CIV2.S07",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Event.jsonc",
+        "base44/entities/IntelligenceSnapshot.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/universal-experience.v1.json",
+        "config/intelligence/experience-event-registry.v1.json",
+        "src/docs/CAMBRA_INTELLIGENCE_PHASE_1_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "DOMAIN_ADAPTERS_NOT_WIRED_END_TO_END",
+        "COMMITTED_EVENT_OUTBOX_NOT_PROVEN"
+      ],
+      "notes": "Contract and additive schema are implemented locally. They do not prove runtime integration, exactly-once persistence or tenant enforcement."
+    },
+    {
+      "compatibility_id": "DURABLE_MEMORY",
+      "requirement": "Distinguish thread history, company state and governed memory.",
+      "civ2_sections": [
+        "CIV2.S09",
+        "CIV2.S11"
+      ],
+      "orchestration_sections": [
+        "ORCH.S12"
+      ],
+      "cpic_sections": [
+        "CPIC.S25"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S09"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Reuse CommunicationThread/Message, CompanyMemory and KnowledgeClaim by role; a universal retrieval contract is TARGET and must not be claimed from thread history alone.",
+      "controlling_authority": "CIV2.S09",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CompanyMemory.jsonc",
+        "base44/entities/CommunicationThread.jsonc",
+        "base44/entities/KnowledgeClaim.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "P4_CPIC",
+      "requirement": "Prevent CPIC from duplicating P4 statistical intelligence.",
+      "civ2_sections": [
+        "CIV2.S14"
+      ],
+      "orchestration_sections": [
+        "ORCH.S10"
+      ],
+      "cpic_sections": [
+        "CPIC.S19",
+        "CPIC.S30"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S13",
+        "ALI.S17"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Extend P4StatisticalEstimate/P4EvidenceProjection and existing benchmark baselines with common distribution/support contracts. CPIC is the shared mathematical layer, not a parallel benchmark store.",
+      "controlling_authority": "ORCH.S10",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/cpicFoundation.ts",
+        "base44/functions/requestP4Estimate/entry.ts",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "NO_REGISTERED_MODEL_OR_CALIBRATION_EVIDENCE"
+      ],
+      "notes": "The shared CPIC V0 contract and P4 adapters are locally implemented without a second store/function. No runtime, registered-model or calibration claim is implied."
+    },
+    {
+      "compatibility_id": "MODEL_FACTORY",
+      "requirement": "Ensure one future training control plane.",
+      "civ2_sections": [
+        "CIV2.S14"
+      ],
+      "orchestration_sections": [
+        "ORCH.S13"
+      ],
+      "cpic_sections": [
+        "CPIC.S30"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S26"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Phase 0 created no model infrastructure. Phase 1 now defines one shared contract-only registry family for Feature, Label, Dataset, Model and Prediction plus one fail-closed Evaluation Harness contract. They contain zero records and create no Feature Store, TrainingRun, artifact, serving runtime or production model; one future lifecycle serves all domains.",
+      "controlling_authority": "ORCH.S13",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "src/docs/P12_INTELLIGENCE_ARCHITECTURE.md",
+        "config/intelligence/feature-registry.v1.json",
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/prediction-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts",
+        "src/docs/CAMBRA_INTELLIGENCE_PHASE_1_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "REGISTRIES_CONTRACT_ONLY",
+        "EVALUATION_HARNESS_CONTRACT_ONLY",
+        "NO_DATASET_TRAINING_EXECUTED_EVALUATION_SERVING_OR_ROLLBACK",
+        "DATA_AND_MODEL_EVIDENCE_UNPROVEN"
+      ],
+      "notes": "The compatibility decision is materialized as empty schemas and a pure validator only. It does not verify referenced evidence or prove a Model Factory or any trained/proprietary model."
+    },
+    {
+      "compatibility_id": "EVALUATION_HARNESS",
+      "requirement": "Use one evaluation philosophy across Intelligence v2, CPIC and Adaptive Lead.",
+      "civ2_sections": [
+        "CIV2.S17"
+      ],
+      "orchestration_sections": [
+        "ORCH.S14"
+      ],
+      "cpic_sections": [
+        "CPIC.S36"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S28"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "All domains add task-specific metrics through evaluation-harness.v1 while sharing one problem, holdout, segment, calibration, safety, cost, reproducibility and promotion contract. Domain-specific evaluators may not create a second promotion authority or bypass the shared hard failures.",
+      "controlling_authority": "ORCH.S14",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts",
+        "src/docs/CAMBRA_INTELLIGENCE_EVALUATION_HARNESS_CONTRACT.md"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED",
+        "NO_EXECUTED_EVALUATION_OR_SIGNED_EVIDENCE",
+        "NO_SEALED_DATASET_OR_FROZEN_HOLDOUT",
+        "NO_SHADOW_CANARY_OR_ROLLBACK_EVIDENCE"
+      ],
+      "notes": "The shared harness is contract-only. A structurally valid packet remains evidence-unverified, human-review-required and unable to promote or serve a model."
+    },
+    {
+      "compatibility_id": "COST_AUTHORITY",
+      "requirement": "Unify paid research, inference and training costs.",
+      "civ2_sections": [
+        "CIV2.S24"
+      ],
+      "orchestration_sections": [
+        "ORCH.S15",
+        "ORCH.S29"
+      ],
+      "cpic_sections": [
+        "CPIC.S44"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S21"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "CostBudgetControl + CostUsageEvent + costGovernance are canonical. Every paid action reserves before execution and reconciles actual spend; no parallel budget ledger.",
+      "controlling_authority": "ORCH.S15",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/CostBudgetControl.jsonc",
+        "base44/entities/CostUsageEvent.jsonc",
+        "base44/shared/costGovernance.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "ACTION_AUTHORITY",
+      "requirement": "Separate recommendations/models from authority.",
+      "civ2_sections": [
+        "CIV2.S22"
+      ],
+      "orchestration_sections": [
+        "ORCH.S16",
+        "ORCH.S28"
+      ],
+      "cpic_sections": [
+        "CPIC.S43"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S22",
+        "ALI.S30"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Approval, AuthoritySnapshot, MandateAuthority and emergency controls remain deterministic. Models/agents cannot approve, sign, spend, charge, certify savings or expand authority.",
+      "controlling_authority": "ORCH.S16",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AuthoritySnapshot.jsonc",
+        "base44/shared/agentAuthority.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "PRIVACY_TENANCY",
+      "requirement": "Unify privacy rules across evidence, learning and serving.",
+      "civ2_sections": [
+        "CIV2.S21"
+      ],
+      "orchestration_sections": [
+        "ORCH.S17"
+      ],
+      "cpic_sections": [
+        "CPIC.S42"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S29"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Tenant-specific data stays isolated; cross-tenant learning only through approved privacy-safe aggregates with k≥10 and purpose/retention/deletion enforcement.",
+      "controlling_authority": "ORCH.S17",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc",
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "config/data-retention-matrix.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "DISCOVERY_EXECUTION",
+      "requirement": "Reconcile UI-driven and scheduled Discovery into one backend-owned lifecycle.",
+      "civ2_sections": [
+        "CIV2.S06"
+      ],
+      "orchestration_sections": [
+        "ORCH.S08"
+      ],
+      "cpic_sections": [
+        "CPIC.S23"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S07",
+        "ALI.S20"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Extend DiscoveryExecutionRun and existing routed backend entry points. Manual and scheduled paths must converge; no new super-orchestrator or physical function is justified in Phase 0.",
+      "controlling_authority": "ALI.S20",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "LEAD_BOUNDARIES",
+      "requirement": "Prevent inbound, provider and outbound lead conflation.",
+      "civ2_sections": [
+        "CIV2.S08"
+      ],
+      "orchestration_sections": [
+        "ORCH.S08"
+      ],
+      "cpic_sections": [
+        "CPIC.S23"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S06",
+        "ALI.S08"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "OutboundLead remains outbound company candidate; Lead/LeadCapture remain inbound; ProviderLead remains provider-domain. Link explicitly; do not merge by similar names.",
+      "controlling_authority": "ALI.S06",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/Lead.jsonc",
+        "base44/entities/LeadCapture.jsonc",
+        "base44/entities/ProviderLead.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "VERIFIED_SAVINGS",
+      "requirement": "Protect billing truth from estimated value.",
+      "civ2_sections": [
+        "CIV2.S05",
+        "CIV2.S07"
+      ],
+      "orchestration_sections": [
+        "ORCH.S09",
+        "ORCH.S10"
+      ],
+      "cpic_sections": [
+        "CPIC.S15",
+        "CPIC.S32"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S17",
+        "ALI.S24"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Probabilistic savings and expected value are advisory. Only deterministic verified/reconciled domain evidence may drive billing.",
+      "controlling_authority": "CPIC.S15",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/entities/PaymentsAnalysisVerified.jsonc",
+        "base44/entities/SavingsEvidence.jsonc",
+        "base44/entities/P4StatisticalEstimate.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "ORCHESTRATOR_REUSE",
+      "requirement": "Avoid another Brain/Foundry service.",
+      "civ2_sections": [
+        "CIV2.S04"
+      ],
+      "orchestration_sections": [
+        "ORCH.S07",
+        "ORCH.S30"
+      ],
+      "cpic_sections": [
+        "CPIC.S30"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S20",
+        "ALI.S34"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Route through existing bounded orchestrators/workers and shared contracts. A new physical orchestration function needs an ADR proving existing entry points cannot safely route it.",
+      "controlling_authority": "ORCH.S30",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/functions/brainOrchestrator/entry.ts",
+        "base44/functions/leadOrchestrator/entry.ts",
+        "base44/functions/autonomousCompanyOrchestrator/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "VENDOR_PORTABILITY",
+      "requirement": "Keep provider IDs out of canonical candidates and outcomes.",
+      "civ2_sections": [
+        "CIV2.S08",
+        "CIV2.S25"
+      ],
+      "orchestration_sections": [
+        "ORCH.S25"
+      ],
+      "cpic_sections": [
+        "CPIC.S23"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S14",
+        "ALI.S33"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "Provider adapters project external IDs into source references; canonical company/candidate/experience identity survives Apollo/Instantly/other provider transitions.",
+      "controlling_authority": "ALI.S33",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "base44/shared/leadIntelligenceProvider.ts",
+        "base44/shared/outboundProvider.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    },
+    {
+      "compatibility_id": "RUNTIME_TRUTH",
+      "requirement": "Prevent source presence from becoming a production claim.",
+      "civ2_sections": [
+        "CIV2.S02",
+        "CIV2.S28"
+      ],
+      "orchestration_sections": [
+        "ORCH.S34",
+        "ORCH.S35"
+      ],
+      "cpic_sections": [
+        "CPIC.S49",
+        "CPIC.S50"
+      ],
+      "adaptive_lead_sections": [
+        "ALI.S02",
+        "ALI.S37",
+        "ALI.S38"
+      ],
+      "decision_status": "RESOLVED",
+      "resolution": "All current capability mappings are static only. No integration/model/production seal can pass without immutable source identity, runtime parity and attributable runtime evidence.",
+      "controlling_authority": "ORCH.S35",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "implementation_refs": [
+        "RELEASE.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_UNVERIFIED"
+      ],
+      "notes": "Resolution is architectural/static. It does not prove runtime integration."
+    }
+  ]
+}

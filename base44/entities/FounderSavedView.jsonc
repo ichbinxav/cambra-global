@@ -1,6 +1,39 @@
 {
-  "name":"FounderSavedView","type":"object","description":"P16 founder-pinned analytics/search view definition. Contains configuration only, never copied financial truth.",
-  "properties":{"view_key":{"type":"string"},"name":{"type":"string"},"view_type":{"type":"string"},"config_json":{"type":"object"},"created_by":{"type":"string"},"created_at":{"type":"string","format":"date-time"},"updated_at":{"type":"string","format":"date-time"}},
-  "required":["view_key","name","view_type","config_json","created_by","created_at"],
-  "rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}
+  "name": "FounderSavedView",
+  "type": "object",
+  "description": "P16 founder-pinned analytics/search view revision. config_json is immutable; top-level scheduler claim metadata provides durable CAS/fencing and never contains copied financial truth.",
+  "properties": {
+    "view_key": { "type": "string" },
+    "name": { "type": "string" },
+    "view_type": { "type": "string" },
+    "config_json": { "type": "object" },
+    "revision": { "type": "number", "minimum": 1, "default": 1 },
+    "is_current": { "type": "boolean", "default": true },
+    "previous_revision_id": { "type": "string" },
+    "immutable_config_hash": { "type": "string" },
+    "scheduler_claim_state": { "type": "string" },
+    "scheduler_claim_token": { "type": "string" },
+    "scheduler_claim_owner": { "type": "string" },
+    "scheduler_claim_expires_at": { "type": "string", "format": "date-time" },
+    "scheduler_occurrence_key": { "type": "string" },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "view_key",
+    "name",
+    "view_type",
+    "config_json",
+    "created_by",
+    "created_at"
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": {
+      "user_condition": {
+        "role": "__service_role_only__"
+      }
+    }
+  }
 }

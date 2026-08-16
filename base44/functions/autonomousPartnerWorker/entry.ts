@@ -6,8 +6,8 @@ import { chooseVariant, personalizationFacts, compactFacts } from '../../shared/
 import { canonicalMarket } from '../../shared/marketContext.ts';
 import { sendingProfileIsValid } from '../../shared/commercialActivation.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const FREE=new Set(['gmail.com','googlemail.com','hotmail.com','outlook.com','yahoo.com','icloud.com','proton.me','protonmail.com']);
@@ -27,9 +27,8 @@ function score(p:any){let n=25;const why:any={base:25};const text=`${p.organizat
 }
 async function apollo(svc:any,key:string,country:string,titles:string[],perPage:number){
  const keywords='accounting OR ecommerce agency OR fractional CFO OR boutique consultancy OR expert comptable OR asesoría';
- const reservation=await reservePaidOperation(svc,{event_key:`api:apollo:partners:${country}:${new Date().toISOString().slice(0,13)}`,category:'api',provider:'apollo',source:'autonomousPartnerWorker'});
- const r=await fetch('https://api.apollo.io/api/v1/mixed_people/api_search',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache','x-api-key':key},body:JSON.stringify({person_titles:titles,person_locations:[country],q_keywords:keywords,page:1,per_page:perPage})});
- const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`apollo_partner_search_failed:${r.status}`);await settlePaidOperation(svc,reservation,{ok:true,usage_json:{people_returned:Array.isArray(d?.people)?d.people.length:0}});return Array.isArray(d?.people)?d.people:[];
+ const r=await paidProviderFetch(svc,{event_key:`api:apollo:partners:${country}:${new Date().toISOString().slice(0,13)}`,stable_event_key:true,category:'api',provider:'apollo',source:'autonomousPartnerWorker'},'https://api.apollo.io/api/v1/mixed_people/api_search',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache','x-api-key':key},body:JSON.stringify({person_titles:titles,person_locations:[country],q_keywords:keywords,page:1,per_page:perPage})});
+ const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(`apollo_partner_search_failed:${r.status}`);return Array.isArray(d?.people)?d.people:[];
 }
 
 async function claudeDraft(svc:any, prospect:any, language:string, variant:any, eventKey:string){
@@ -49,7 +48,7 @@ async function claudeDraft(svc:any, prospect:any, language:string, variant:any, 
 }
 
 Deno.serve(async(req)=>{let task:any=null;let schedulerSvc:any=null;let schedulerClaim:any=null;let schedulerOk=true;try{
- const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'autonomousPartnerWorker',cadence_seconds:3600});if(!schedulerClaim.allowed)return Response.json({ok:true,duplicate_blocked:true,run_key:schedulerClaim.run_key});
+ const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'autonomousPartnerWorker',cadence_seconds:3600});{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}schedulerClaim=await markSchedulerEffectStarted(svc,schedulerClaim);{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}
  const policies=await svc.entities.CommercialPolicy.filter({engine:'partner_acquisition',status:'active'},'-approved_at',10).catch((error:any)=>safeBestEffort(error,{operation:'autonomousPartnerWorker',fallback:[],severity:'secondary'}));const policy=policies.find((p:any)=>policyIsActive(p))||null;
  if(!policy)return Response.json({ok:true,automatic:false,reason:'partner_policy_missing'});
  let sendingProfile:any=null;for(const profileKey of policy.sending_profile_keys||[]){const rows=await svc.entities.OutboundSendingProfile.filter({profile_key:profileKey},'-created_date',1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousPartnerWorker',fallback:[],severity:'secondary'}));if(rows[0]?.provider==='outlook'&&sendingProfileIsValid(rows[0])){sendingProfile=rows[0];break}}if(!sendingProfile)return Response.json({ok:true,automatic:false,reason:'partner_policy_outlook_profile_missing'});
@@ -77,4 +76,4 @@ Deno.serve(async(req)=>{let task:any=null;let schedulerSvc:any=null;let schedule
   }
  }
  await svc.entities.AgentTask.update(task.id,{status:'completed',output_summary:`Partners: ${discovered} discovered, ${created} new, ${contacted} contacted, ${skipped} skipped`,output_payload_json:{discovered,created,contacted,skipped,failures:failures.slice(0,20)},completed_at:new Date().toISOString()});return Response.json({ok:true,task_id:task.id,discovered,created,contacted,skipped,failures:failures.length});
-}catch(error){schedulerOk=false;console.error('autonomousPartnerWorker failed',error);if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:String(error?.message||error),completed_at:new Date().toISOString()})}catch(error){safeBestEffort(error,{operation:'autonomousPartnerWorker',fallback:null,severity:'secondary'})}}return internalErrorResponse(error, 'autonomousPartnerWorker');}finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRun(schedulerSvc,schedulerClaim,{worker_key:'autonomousPartnerWorker'},schedulerOk)}});
+}catch(error){schedulerOk=false;console.error('autonomousPartnerWorker failed',error);if(task?.id){try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:String(error?.message||error),completed_at:new Date().toISOString()})}catch(error){safeBestEffort(error,{operation:'autonomousPartnerWorker',fallback:null,severity:'secondary'})}}return internalErrorResponse(error, 'autonomousPartnerWorker');}finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRunOrThrow(schedulerSvc,schedulerClaim,{worker_key:'autonomousPartnerWorker'},schedulerOk)}});

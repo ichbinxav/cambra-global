@@ -1,0 +1,870 @@
+{
+  "schema_version": "intelligence-gates.v1",
+  "generated_at": "2026-08-13T03:49:26Z",
+  "source_ledger": "config/intelligence/requirement-ledger.v1.json",
+  "gate_status_enum": [
+    "OPEN",
+    "BLOCKED",
+    "PASSED",
+    "DEFERRED"
+  ],
+  "global_state": "NOT_VERIFIED",
+  "global_blockers": [
+    "DIRTY_WORKING_TREE",
+    "RUNTIME_PARITY_UNVERIFIED",
+    "PRODUCTION_RUNTIME_UNVERIFIED",
+    "MODEL_AND_DATA_EVIDENCE_UNPROVEN"
+  ],
+  "claim_policy": "PASSED and every integration/model/production seal require same-source runtime evidence. Code presence, local tests, schema names, generated manifests or spec prose cannot substitute.",
+  "gates": [
+    {
+      "gate_id": "PHASE_0_GLOBAL_RECONCILIATION",
+      "name": "Phase 0 exact source/runtime reconciliation",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S20",
+        "ORCH.S33",
+        "ORCH.S34"
+      ],
+      "evidence_refs": [
+        "config/intelligence/requirement-ledger.v1.json",
+        "config/intelligence/spec-compatibility-matrix.v1.json",
+        "config/intelligence/resource-reuse-matrix.v1.json",
+        "config/intelligence/shared-contract-map.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "WORKING_TREE_DIRTY",
+        "RUNTIME_PARITY_UNVERIFIED",
+        "IMMUTABLE_RELEASE_IDENTITY_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "DISCOVERY_OPERATIONAL_TRUTH_READY",
+      "name": "Discovery may become an eligible operational/training source",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S06",
+        "ALI.S07",
+        "ALI.S20"
+      ],
+      "evidence_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts",
+        "src/lib/discoveryV2.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "BACKEND_CONTINUITY_NOT_RUNTIME_PROVEN",
+        "FILTER_FIDELITY_NOT_E2E_PROVEN",
+        "IMMUTABLE_RESULT_ATTRIBUTION_NOT_RUNTIME_PROVEN",
+        "SCORING_COVERAGE_NOT_RUNTIME_PROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "INTELLIGENCE_FOUNDATION_INTEGRATED",
+      "name": "Shared identity/experience/evidence/outcome/authority/privacy/cost foundation",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S35",
+        "CIV2.S07",
+        "CIV2.S08"
+      ],
+      "evidence_refs": [
+        "config/intelligence/shared-contract-map.v1.json",
+        "config/intelligence/universal-experience.v1.json",
+        "config/intelligence/experience-event-registry.v1.json",
+        "config/intelligence/learning-eligibility-policy.v1.json",
+        "base44/entities/Event.jsonc",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "base44/entities/IntelligenceEvidence.jsonc",
+        "base44/entities/IntelligenceOutcome.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "SHARED_IDENTITY_PARTIAL",
+        "UNIVERSAL_EXPERIENCE_RUNTIME_ADAPTERS_INCOMPLETE",
+        "RUNTIME_EVIDENCE_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "PROBABILISTIC_FOUNDATION_VERIFIED",
+      "name": "Canonical distribution, uncertainty, support/OOD and lineage",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CPIC.S49",
+        "CPIC.S04",
+        "CPIC.S05",
+        "CPIC.S10"
+      ],
+      "evidence_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "base44/shared/cpicFoundation.ts",
+        "base44/functions/requestP4Estimate/entry.ts",
+        "src/lib/cpicFoundation.test.js",
+        "src/docs/CAMBRA_CPIC_PHASE_2_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CANONICAL_CONTRACT_NOT_RUNTIME_VERIFIED",
+        "CALIBRATION_RUNTIME_EVIDENCE_MISSING",
+        "NO_REGISTERED_MODEL_DATASET_OR_EVALUATION",
+        "RUNTIME_PARITY_UNVERIFIED"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "BENCHMARK_INTELLIGENCE_READY",
+      "name": "P4/CPIC benchmark foundation with calibrated support/OOD",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CPIC.S19",
+        "CPIC.S49",
+        "ORCH.S10"
+      ],
+      "evidence_refs": [
+        "base44/shared/p4BenchmarkIntelligence.ts",
+        "src/lib/p4BenchmarkIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "SEGMENT_CALIBRATION_UNPROVEN",
+        "OOD_SUPPORT_RUNTIME_UNPROVEN",
+        "DATA_REPRESENTATIVENESS_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "PROBABILISTIC_ANALYZER_READY",
+      "name": "Analyzer propagates uncertainty without overwriting deterministic truth",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CPIC.S13",
+        "CPIC.S14",
+        "CPIC.S15",
+        "ORCH.S09"
+      ],
+      "evidence_refs": [
+        "base44/entities/AnalyzerResult.jsonc",
+        "base44/shared/p4Bridge.ts",
+        "base44/shared/analyzerFx.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "FULL_UNCERTAINTY_PROPAGATION_NOT_IMPLEMENTED",
+        "REPORT_EPISTEMIC_E2E_UNPROVEN",
+        "REAL_DOCUMENT_CORPUS_EVIDENCE_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CPIC_MODEL_READY",
+      "name": "At least one CAMBRA-trained CPIC model with defensible full lifecycle",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CPIC.S30",
+        "CPIC.S46",
+        "CPIC.S49"
+      ],
+      "evidence_refs": [
+        "config/intelligence/resource-reuse-matrix.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "NO_APPROVED_TRAINING_PROBLEM",
+        "NO_VERSIONED_DATASET_OR_FROZEN_HOLDOUT",
+        "NO_REPRODUCIBLE_TRAINING_ARTIFACT",
+        "NO_CALIBRATION_SEGMENT_SHADOW_ROLLBACK_EVIDENCE",
+        "DATA_SUFFICIENCY_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CPIC_PRODUCTION_READY",
+      "name": "CPIC production deployment and monitoring with rollback",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CPIC.S39",
+        "CPIC.S40",
+        "CPIC.S41",
+        "CPIC.S49"
+      ],
+      "evidence_refs": [
+        "config/intelligence/gates.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CPIC_MODEL_READY_NOT_PASSED",
+        "RUNTIME_PARITY_UNVERIFIED",
+        "PRODUCTION_SHADOW_CANARY_NOT_EXECUTED"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_LEAD_INTEGRATED",
+      "name": "Adaptive lead funnel uses shared identity/evidence/CPIC/VOI/cost/outcomes",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S35",
+        "ALI.S13",
+        "ALI.S20",
+        "ALI.S24"
+      ],
+      "evidence_refs": [
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/leadIntelligenceProvider.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CANDIDATE_LEVEL_VOI_INCOMPLETE",
+        "CONTACT_LAST_NOT_E2E_PROVEN",
+        "COST_OUTCOME_LINEAGE_INCOMPLETE",
+        "RUNTIME_EVIDENCE_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_LEAD_MODEL_READY",
+      "name": "Adaptive lead proprietary model/policy meets dataset and evaluation gates",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S26",
+        "ALI.S28",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "config/intelligence/resource-reuse-matrix.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "NO_DEFENSIBLE_VERSIONED_DATASET",
+        "NO_FROZEN_HOLDOUT",
+        "NO_SHADOW_CANARY_ROLLBACK",
+        "DATA_SUFFICIENCY_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "NO_CRITICAL_DUPLICATE_REGISTRIES",
+      "name": "No parallel evidence/outcome/cost/authority/model registries",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S07",
+        "ORCH.S23",
+        "ORCH.S24"
+      ],
+      "evidence_refs": [
+        "config/intelligence/spec-compatibility-matrix.v1.json",
+        "config/intelligence/resource-reuse-matrix.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "STATIC_AUDIT_ONLY",
+        "RUNTIME_RESOURCE_INVENTORY_UNVERIFIED"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "SHARED_PRIVACY_TENANT_GATE",
+      "name": "Tenant isolation, purpose, retention, deletion and k≥10 learning boundary",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S17",
+        "CIV2.S21",
+        "CPIC.S42",
+        "ALI.S29"
+      ],
+      "evidence_refs": [
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts",
+        "config/data-retention-matrix.json",
+        "src/lib/privacySafeIntelligence.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "SERVICE_ROLE_TENANT_E2E_UNPROVEN",
+        "DELETION_PROPAGATION_TO_DERIVED_DATA_UNPROVEN",
+        "LEGAL_REVIEW_REQUIRED_RETENTION_ROWS"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "SHARED_AUTHORITY_GATE",
+      "name": "Models/agents cannot approve, sign, spend, charge or certify value",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S16",
+        "CIV2.S22",
+        "CPIC.S43",
+        "ALI.S30"
+      ],
+      "evidence_refs": [
+        "base44/shared/agentAuthority.ts",
+        "base44/entities/Approval.jsonc",
+        "src/lib/p10EconomicAuthority.static.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "RUNTIME_EMERGENCY_STOP_AND_APPROVAL_DRILL_MISSING",
+        "CROSS_DOMAIN_FAIL_CLOSED_E2E_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "SHARED_COST_GATE",
+      "name": "All paid actions reserve/reconcile cost in the single governance plane",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S15",
+        "CIV2.S24",
+        "CPIC.S44",
+        "ALI.S21"
+      ],
+      "evidence_refs": [
+        "base44/shared/costGovernance.ts",
+        "base44/entities/CostBudgetControl.jsonc",
+        "src/lib/costEmergencyConcurrency.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "TRAINING_EVALUATION_COST_ATTRIBUTION_NOT_BUILT",
+        "PAID_RESEARCH_E2E_RECONCILIATION_UNPROVEN",
+        "RUNTIME_BUDGET_KILL_SWITCH_DRILL_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CROSS_SYSTEM_ACCEPTANCE",
+      "name": "All 30 orchestration acceptance steps pass on one trace",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S21"
+      ],
+      "evidence_refs": [
+        "config/intelligence/requirement-ledger.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "END_TO_END_TRACE_NOT_EXECUTED",
+        "RUNTIME_PARITY_UNVERIFIED",
+        "MATURE_OUTCOME_AND_MODEL_LINEAGE_UNAVAILABLE"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "FULL_CAMBRA_INTELLIGENCE_LOOP_VERIFIED",
+      "name": "Signal→decision→action→outcome→learning→model lineage verified",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S35",
+        "ORCH.S36"
+      ],
+      "evidence_refs": [
+        "config/intelligence/gates.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "INTELLIGENCE_FOUNDATION_INTEGRATED_NOT_PASSED",
+        "CPIC_INTEGRATED_NOT_PASSED",
+        "ADAPTIVE_LEAD_INTEGRATED_NOT_PASSED",
+        "GOLDEN_PATH_NOT_EXECUTED",
+        "RUNTIME_EVIDENCE_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CPIC_INTEGRATED",
+      "name": "CPIC consumes shared evidence/contracts and serves common consumers",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S35",
+        "ORCH.S08",
+        "ORCH.S09",
+        "ORCH.S10",
+        "ORCH.S11"
+      ],
+      "evidence_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "config/intelligence/shared-contract-map.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CPIC_FOUNDATION_INCOMPLETE",
+        "P4_RECONCILIATION_NOT_RUNTIME_VERIFIED",
+        "COMMON_CONSUMER_CONTRACTS_INCOMPLETE"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "IMMUTABLE_RUNTIME_PARITY",
+      "name": "Artifact, Git identity and Base44 runtime are identical",
+      "capability_state": "PARTIAL",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ORCH.S20",
+        "ORCH.S34"
+      ],
+      "evidence_refs": [
+        "RELEASE.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "WORKING_TREE_DIRTY",
+        "GIT_SHA_NULL_IN_RELEASE",
+        "RELEASE_BUILD_FALSE",
+        "BASE44_RUNTIME_PARITY_UNVERIFIED"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "MODEL_CLAIM_SAFETY",
+      "name": "No model-ready/proprietary-learning claim without real lifecycle evidence",
+      "capability_state": "EXISTING",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S28",
+        "CPIC.S49",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "config/intelligence/requirement-ledger.v1.json",
+        "config/intelligence/gates.v1.json",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json",
+        "src/lib/intelligenceFoundationContracts.test.js",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "NO_REAL_MODEL_LIFECYCLE_EVIDENCE"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CIV2_FOUNDATION_VERIFIED",
+      "name": "CIV2 FOUNDATION VERIFIED",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S28",
+        "CIV2.S00",
+        "CIV2.S02"
+      ],
+      "evidence_refs": [
+        "config/intelligence/requirement-ledger.v1.json",
+        "config/intelligence/resource-reuse-matrix.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "PHASE_0_GLOBAL_RECONCILIATION_NOT_PASSED",
+        "RUNTIME_PARITY_UNVERIFIED",
+        "RELEASE_NOT_GO_READY"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CIV2_OPERATIONAL_TRUTH_READY",
+      "name": "CIV2 OPERATIONAL TRUTH READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S06",
+        "CIV2.S28"
+      ],
+      "evidence_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CIV2_FOUNDATION_VERIFIED_NOT_PASSED",
+        "DISCOVERY_OPERATIONAL_TRUTH_READY_NOT_PASSED",
+        "OPTIMISTIC_COUNTER_LABEL_RISK_UNCLOSED"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CIV2_LEARNING_DATA_READY",
+      "name": "CIV2 LEARNING DATA READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S07",
+        "CIV2.S08",
+        "CIV2.S12",
+        "CIV2.S13",
+        "CIV2.S28"
+      ],
+      "evidence_refs": [
+        "config/intelligence/shared-contract-map.v1.json",
+        "config/intelligence/learning-eligibility-policy.v1.json",
+        "config/intelligence/feature-registry.v1.json",
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/dataset-registry.v1.json",
+        "base44/entities/IntelligenceOutcome.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CIV2_OPERATIONAL_TRUTH_READY_NOT_PASSED",
+        "ELIGIBILITY_CONTRACT_NOT_RUNTIME_WIRED",
+        "NO_CLEARED_RUNTIME_ROWS",
+        "NO_FROZEN_VERSIONED_DATASET",
+        "POINT_IN_TIME_AND_DELETION_E2E_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CIV2_AI_MODEL_READY",
+      "name": "CIV2 AI MODEL READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S14",
+        "CIV2.S15",
+        "CIV2.S28"
+      ],
+      "evidence_refs": [
+        "config/intelligence/resource-reuse-matrix.v1.json",
+        "config/intelligence/model-registry.v1.json",
+        "config/intelligence/prediction-registry.v1.json",
+        "config/intelligence/evaluation-harness.v1.json",
+        "src/lib/intelligenceEvaluationContract.test.js"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CIV2_LEARNING_DATA_READY_NOT_PASSED",
+        "NO_CAMBRA_TRAINED_REGISTERED_MODEL",
+        "NO_FROZEN_HOLDOUT",
+        "NO_EXECUTED_EVALUATION_OR_SIGNED_EVIDENCE",
+        "NO_SHADOW_CANARY_OUTCOME_ROLLBACK_EVIDENCE"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CIV2_PRODUCTION_READY",
+      "name": "CAMBRA INTELLIGENCE V2 PRODUCTION READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "CIV2.S28",
+        "CIV2.S30"
+      ],
+      "evidence_refs": [
+        "config/intelligence/gates.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CIV2_AI_MODEL_READY_NOT_PASSED",
+        "NO_REAL_MERCHANT_LIFECYCLE_WITH_VERIFIED_OUTCOME",
+        "MODEL_FACTORY_NOT_OPERATIONAL",
+        "RUNTIME_AND_INCIDENT_DELETION_EVIDENCE_MISSING"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ALI_FOUNDATION_VERIFIED",
+      "name": "ADAPTIVE FUNNEL FOUNDATION VERIFIED",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S37",
+        "ALI.S02"
+      ],
+      "evidence_refs": [
+        "config/intelligence/requirement-ledger.v1.json",
+        "config/intelligence/resource-reuse-matrix.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "PHASE_0_GLOBAL_RECONCILIATION_NOT_PASSED",
+        "RUNTIME_PARITY_UNVERIFIED",
+        "IDENTITY_TENANT_AUTHORITY_GAPS"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ALI_OPERATIONAL_TRUTH_READY",
+      "name": "ADAPTIVE FUNNEL OPERATIONAL TRUTH READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S07",
+        "ALI.S20",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc",
+        "base44/shared/discoveryV2Admin.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ALI_FOUNDATION_VERIFIED_NOT_PASSED",
+        "FILTER_AND_RESULT_ATTRIBUTION_E2E_UNPROVEN",
+        "RUN_IMMUTABILITY_CANCEL_RESUME_FAIRNESS_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_COMPANY_FUNNEL_READY",
+      "name": "ADAPTIVE COMPANY FUNNEL READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S08",
+        "ALI.S09",
+        "ALI.S10",
+        "ALI.S16",
+        "ALI.S20",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/DiscoveryExecutionRun.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ALI_OPERATIONAL_TRUTH_READY_NOT_PASSED",
+        "CANONICAL_CANDIDATE_EXPERIENCE_INCOMPLETE",
+        "COMPANY_ONLY_CONTACT_LAST_E2E_UNPROVEN",
+        "THREE_THOUSAND_AND_TEN_THOUSAND_LOAD_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_RESEARCH_READY",
+      "name": "ADAPTIVE RESEARCH READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S12",
+        "ALI.S13",
+        "ALI.S14",
+        "ALI.S15",
+        "ALI.S21",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "base44/entities/KnowledgeGap.jsonc",
+        "base44/shared/leadIntelligenceProvider.ts",
+        "base44/shared/costGovernance.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ADAPTIVE_COMPANY_FUNNEL_READY_NOT_PASSED",
+        "CANDIDATE_LEVEL_VOI_AND_STOPPING_INCOMPLETE",
+        "SOURCE_RIGHTS_HEALTH_PRICE_ROUTING_UNPROVEN",
+        "FIELD_DECISION_DELTA_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "CONTACT_LAST_READY",
+      "name": "CONTACT LAST READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S16",
+        "ALI.S22",
+        "ALI.S23",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "base44/entities/OutboundLead.jsonc",
+        "base44/entities/ContactSuppression.jsonc",
+        "base44/functions/commercialSendMessage/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ADAPTIVE_RESEARCH_READY_NOT_PASSED",
+        "OUTREACH_WORTHINESS_AND_ROLE_TARGET_E2E_UNPROVEN",
+        "SUPPRESSION_LIFECYCLE_RUNTIME_PROOF_MISSING",
+        "CONTACT_PRIVACY_GATE_UNPROVEN"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_FUNNEL_LEARNING_DATA_READY",
+      "name": "ADAPTIVE FUNNEL LEARNING DATA READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S24",
+        "ALI.S25",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "base44/entities/IntelligenceOutcome.jsonc",
+        "base44/entities/AcquisitionLearningCohort.jsonc"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "CONTACT_LAST_READY_NOT_PASSED",
+        "EXPOSURE_CENSORING_ATTRIBUTION_INCOMPLETE",
+        "FALSE_NEGATIVE_AUDIT_INCOMPLETE",
+        "NO_POINT_IN_TIME_REPRODUCIBLE_DATASET"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_RESEARCH_POLICY_READY",
+      "name": "ADAPTIVE RESEARCH POLICY READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S19",
+        "ALI.S26",
+        "ALI.S28",
+        "ALI.S37"
+      ],
+      "evidence_refs": [
+        "config/intelligence/shared-contract-map.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ADAPTIVE_LEAD_MODEL_READY_NOT_PASSED",
+        "NO_SEQUENTIAL_POLICY_DATASET_OR_PROPENSITY_SUPPORT",
+        "NO_POLICY_SHADOW_CANARY_REGRET_EVIDENCE"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    },
+    {
+      "gate_id": "ADAPTIVE_LEAD_INTELLIGENCE_READY",
+      "name": "ADAPTIVE LEAD INTELLIGENCE READY",
+      "capability_state": "TARGET",
+      "delivery_status": "BLOCKED",
+      "gate_status": "BLOCKED",
+      "requirement_refs": [
+        "ALI.S37",
+        "ALI.S39"
+      ],
+      "evidence_refs": [
+        "config/intelligence/gates.v1.json"
+      ],
+      "runtime_evidence": [],
+      "blockers": [
+        "ADAPTIVE_RESEARCH_POLICY_READY_NOT_PASSED",
+        "REAL_RUNTIME_AND_CONTROLLED_OUTCOME_EVIDENCE_MISSING",
+        "DELIVERABILITY_INCIDENT_DELETION_RESTORE_DRILLS_MISSING",
+        "RELEASE_NOT_GO_READY"
+      ],
+      "pass_rule": "All blockers closed with attributable evidence from one immutable source/runtime identity; local code/tests alone cannot pass this gate.",
+      "owner": "CAMBRA Intelligence",
+      "last_evaluated_at": "2026-08-13T03:49:26Z"
+    }
+  ]
+}

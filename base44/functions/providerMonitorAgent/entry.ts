@@ -2,7 +2,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
@@ -10,11 +10,10 @@ const AGENT_NAME = "provider_monitor";
 const TASK_TYPE = "provider_monitor";
 const RISK_LEVEL = 1;
 
-async function callPerplexity(svc, prompt, eventKey) {
+async function callPerplexity(svc:any, prompt:string, eventKey:string) {
   const key = Deno.env.get("PERPLEXITY_API_KEY");
   if (!key) return null;
-  const reservation = await reservePaidOperation(svc,{event_key:`api:perplexity:${eventKey}`,category:'api',provider:'perplexity',source:'providerMonitorAgent'});
-  const res = await fetch("https://api.perplexity.ai/v1/sonar", {
+  const res = await paidProviderFetch(svc,{event_key:`api:perplexity:${eventKey}`,stable_event_key:true,category:'api',provider:'perplexity',source:'providerMonitorAgent'},"https://api.perplexity.ai/v1/sonar", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({
@@ -23,15 +22,14 @@ async function callPerplexity(svc, prompt, eventKey) {
       max_tokens: 2500,
     }),
   });
-  const data = await res.json();
+  const data:any = await res.json();
   if (!res.ok) throw new Error(`Perplexity API error: ${data?.error?.message || res.statusText}`);
-  await settlePaidOperation(svc,reservation,{ok:true,usage_json:{model:'sonar-pro'}});
   return { content: data?.choices?.[0]?.message?.content || "", citations: data?.citations || [] };
 }
 
-async function callClaude(svc, prompt, eventKey) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000,svc,eventKey,source:'providerMonitorAgent'}); return out.text; }
+async function callClaude(svc:any, prompt:string, eventKey:string) { const out = await callCambraClaude(prompt,{tier:'standard',maxTokens:3000,svc,eventKey,source:'providerMonitorAgent'}); return out.text; }
 
-function safeParseJSON(text) {
+function safeParseJSON(text:string) {
   if (!text) return null;
   const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
   try { return JSON.parse(cleaned); } catch { /* fallthrough */ }
@@ -47,7 +45,7 @@ guardedScheduledServe({"worker_key":"providerMonitorAgent","cadence_seconds":864
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
-    if (!gate.ok) return gate.response;
+    if (!gate.ok) return gate.response as Response;
 
     // Collect providers actually used by active brands.
     // We don't touch M0-M2 entities directly — we read the InfrastructureNode entity
@@ -128,7 +126,7 @@ guardedScheduledServe({"worker_key":"providerMonitorAgent","cadence_seconds":864
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const candidateEvidenceIds = [];
     for (const change of changes) {
-      const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{source_type:'market_source',source_reference:change.source||source,vertical:'payments',provider_slug:String(change.provider||'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:change.severity==='high'?.65:.5,payload_json:{change,citations,research_source:source}}}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonitorAgent',fallback:null,severity:'secondary'}));
+      const er = await base44.asServiceRole.functions.invoke('intelligenceAccess',{internal_secret:internal,actor_capability:'provider_intelligence',action:'record_evidence',evidence:{tenant_scope:'global',domain:'market_intelligence',purpose:'public_provider_market_monitoring',retention_policy_key:'intelligence_public_research',legal_basis:'public_information',source_type:'market_source',source_reference:change.source||source,vertical:'payments',provider_slug:String(change.provider||'').toLowerCase().replace(/[^a-z0-9]+/g,'_'),observed_at:new Date().toISOString(),truth_level:'inferred',confidence:change.severity==='high'?.65:.5,payload_json:{change,citations,research_source:source}}}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonitorAgent',fallback:null,severity:'secondary'}));
       const eid=er?.data?.id||er?.id;if(eid)candidateEvidenceIds.push(eid);
     }
 
@@ -182,7 +180,7 @@ guardedScheduledServe({"worker_key":"providerMonitorAgent","cadence_seconds":864
       changes_detected: changes.length,
       events_created: eventsCreated.length,
     });
-  } catch (error) {
+  } catch (error:any) {
     if (task?.id) {
       try {
         const base44 = createClientFromRequest(req);

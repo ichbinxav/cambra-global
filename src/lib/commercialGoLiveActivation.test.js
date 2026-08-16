@@ -83,18 +83,18 @@ describe('commercial pre-GO activation seal',()=>{
     expect(runtime).toContain("Deno.env.get('INSTANTLY_API_KEY')");
     expect(runtime).toContain('instantly_authenticated_webhook_configuration_required');
     expect(runtime).toContain('policy_ids:policyIds');
-    expect(source('base44/functions/outboundVolumeWorker/entry.ts')).toContain('policy.sending_profile_keys||[]');
+    expect(source('base44/functions/outboundVolumeWorker/entry.ts')).toMatch(/policy\.sending_profile_keys\s*\|\|\s*\[\]/);
     expect(source('base44/functions/autonomousPartnerWorker/entry.ts')).toContain('policy.sending_profile_keys||[]');
   });
 
   it('stops a bad follow-up before policy, history and LLM work',()=>{
     const worker=source('base44/functions/commercialFollowUpWorker/entry.ts');
-    const gate=worker.indexOf('if(!sendingProfileIsValid(sendingProfile))');
+    const gate=worker.search(/if\s*\(!sendingProfileIsValid\(sendingProfile\)\)/);
     expect(gate).toBeGreaterThan(0);
     expect(gate).toBeLessThan(worker.indexOf('CommercialPolicy.filter'));
     expect(gate).toBeLessThan(worker.indexOf('CommunicationMessage.filter'));
-    expect(gate).toBeLessThan(worker.lastIndexOf('claude(svc,prompt'));
-    expect(worker).toContain("sending_profile_resolution_status:'REVIEW_REQUIRED'");
+    expect(gate).toBeLessThan(worker.lastIndexOf('draftFollowUp('));
+    expect(worker).toMatch(/sending_profile_resolution_status:\s*['"]REVIEW_REQUIRED['"]/);
   });
 
   it('keeps the backfill dry-run by default and apply explicitly confirmed',()=>{

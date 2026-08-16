@@ -27,7 +27,7 @@ import {
 } from '../../shared/generated/eclDomain.ts';
 import { ECL_POLICY } from '../../shared/generated/eclPolicy.ts';
 import { createOnce } from '../../shared/eclPersistence.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 
 const TARGETS = {
   statement_import: { entityName: 'StatementImport', entityType: 'statement_import' },
@@ -288,7 +288,9 @@ Deno.serve(async (req) => {
 
     svc = base44.asServiceRole;
     schedulerClaim = await claimSchedulerRun(svc, req, { worker_key:'eclLifecycleScheduler', cadence_seconds:900 });
-    if (!schedulerClaim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:schedulerClaim.run_key });
+    { const denied = schedulerClaimDeniedResponse(schedulerClaim); if (denied) return denied; }
+    schedulerClaim = await markSchedulerEffectStarted(svc, schedulerClaim);
+    { const denied = schedulerClaimDeniedResponse(schedulerClaim); if (denied) return denied; }
     const now = new Date().toISOString();
     // Base44 scheduled automations deliver function_args under body.args;
     // manual/admin calls use the top-level body. Support both without letting
@@ -400,6 +402,6 @@ Deno.serve(async (req) => {
     }
     return Response.json({ ok: false, error: 'scheduler_run_failed', message }, { status: 500 });
   } finally {
-    if (svc && schedulerClaim) await finishSchedulerRun(svc, schedulerClaim, { worker_key:'eclLifecycleScheduler' }, schedulerOk);
+    if (svc && schedulerClaim) await finishSchedulerRunOrThrow(svc, schedulerClaim, { worker_key:'eclLifecycleScheduler' }, schedulerOk);
   }
 });

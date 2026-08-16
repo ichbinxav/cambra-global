@@ -200,7 +200,7 @@ describe("ECL P5 — Economic Enforcement", () => {
     const explicitAttestation = ACCEPT.indexOf("evidence_attestation_accepted !== true");
     const refresh = ACCEPT.indexOf("ensureRecoverSavingsEvidence({");
     const attestation = ACCEPT.indexOf("createRecoverEvidenceAttestation({");
-    const proposal = ACCEPT.indexOf("gateName: 'recover_proposal'");
+    const proposal = ACCEPT.search(/gateName:\s*["']recover_proposal["']/);
     const mandateUpdate = ACCEPT.indexOf("entities.Mandate.update(mandate_id");
     expect(explicitAttestation).toBeGreaterThan(-1);
     expect(refresh).toBeGreaterThan(explicitAttestation);
@@ -213,20 +213,34 @@ describe("ECL P5 — Economic Enforcement", () => {
   });
 
   it("approve_report executes before any eligibility write", () => {
-    const gate = APPROVE.indexOf("gateName: 'approve_report'");
-    const firstUpdate = APPROVE.indexOf("entities.MonthlySavingsReport.update");
+    const gate = APPROVE.indexOf('gateName: "approve_report"');
+    // The exact-CAS helper lives in recoverReportAuthority; its first invocation
+    // is the material ordering boundary, not the helper's updateMany body.
+    const firstUpdate = APPROVE.indexOf(
+      "persistRecoverReportApprovalDecision(",
+      gate,
+    );
     expect(gate).toBeGreaterThan(-1);
     expect(firstUpdate).toBeGreaterThan(gate);
   });
 
   it("create_invoice executes after pure prep but before the P6 local execution claim and every Stripe POST", () => {
     const prep = INVOICE.indexOf("prepareEligibleRecoverInvoice({");
-    const gate = INVOICE.indexOf("gateName: 'create_invoice'");
+    const gate = INVOICE.indexOf('gateName: "create_invoice"', prep);
     const invoiceClaim = INVOICE.indexOf("claimRecoverInvoiceDraft(");
-    const stripePost = INVOICE.indexOf("stripeRequest(mode, 'POST'");
+    const providerExecutor = INVOICE.indexOf(
+      "return executeRecoverBillingProviderRequest(svc, claim, {",
+      invoiceClaim,
+    );
+    const stripePosts = [
+      ...INVOICE.matchAll(/await claimedStripeRequest\s*\(/g),
+    ].map((match) => match.index);
     expect(gate).toBeGreaterThan(prep);
     expect(invoiceClaim).toBeGreaterThan(gate);
-    expect(stripePost).toBeGreaterThan(gate);
+    expect(providerExecutor).toBeGreaterThan(invoiceClaim);
+    expect(stripePosts.length).toBeGreaterThan(0);
+    expect(stripePosts.every((index) => index > gate)).toBe(true);
+    expect(INVOICE).not.toMatch(/\bstripeRequest\s*\(/);
   });
 
   it("the P5 gate adapter is read-only; raw evidence materialization delegates every ECL classification write to eclProcessEvidence", () => {
@@ -272,7 +286,7 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(MODAL).toContain("context.evidence_attestation?.text");
     expect(MODAL).toContain("evidence_attestation_accepted: true");
     expect(REPORT).toContain("ensureRecoverSavingsEvidence({");
-    expect(REPORT).toContain("measurementMode === 'fully_verified'");
+    expect(REPORT).toContain('measurementMode === "fully_verified"');
     expect(SOURCE).toContain("PaymentsAnalysisVerified.filter");
     expect(SOURCE).toContain("StripeConnection.filter");
     expect(SOURCE).toContain("RECOVER_ECL_SOURCE_MAX_AGE_DAYS = 35");
@@ -294,8 +308,8 @@ describe("ECL P5 — Economic Enforcement", () => {
   });
 
   it("rechecks create_invoice binding immediately before the first economic write and freezes ECL provenance into Stripe + billing snapshot", () => {
-    expect((INVOICE.match(/gateName: 'create_invoice'/g) || [])).toHaveLength(2);
-    const finalGate = INVOICE.lastIndexOf("gateName: 'create_invoice'");
+    expect((INVOICE.match(/gateName:\s*["']create_invoice["']/g) || [])).toHaveLength(2);
+    const finalGate = INVOICE.lastIndexOf('gateName: "create_invoice"');
     const invoiceClaim = INVOICE.indexOf("claimRecoverInvoiceDraft(");
     expect(finalGate).toBeGreaterThan(-1);
     expect(invoiceClaim).toBeGreaterThan(finalGate);

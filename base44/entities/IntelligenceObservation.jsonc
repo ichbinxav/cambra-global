@@ -28,6 +28,14 @@
         "tenant"
       ]
     },
+    "domain": {
+      "type": "string",
+      "description": "Intelligence domain inherited from and scope-bound to source evidence."
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Purpose inherited from and scope-bound to source evidence for global rows."
+    },
     "observation_type": {
       "type": "string"
     },
@@ -77,6 +85,9 @@
     "supersedes_observation_id": {
       "type": "string"
     },
+    "quarantine_reason": {
+      "type": "string"
+    },
     "is_demo": {
       "type": "boolean",
       "default": false
@@ -87,6 +98,7 @@
     "evidence_id",
     "observation_type",
     "semantic_key",
+    "tenant_scope",
     "status"
   ],
   "rls": {

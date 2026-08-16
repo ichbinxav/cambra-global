@@ -26,7 +26,12 @@ for(const dir of fs.readdirSync(root,{withFileTypes:true}).filter((x)=>x.isDirec
     }
     continue;
   }
-  if(source.includes('claimSchedulerRun'))continue;
+  if(source.includes('claimSchedulerRun')){
+    if(!source.includes('markSchedulerEffectStarted')){
+      failures.push(`${dir.name}:scheduled_direct_claim_missing_effect_fence`);
+    }
+    continue;
+  }
   failures.push(`${dir.name}:scheduled_boundary_unguarded`);
   if(!fix)continue;
   const specs=active.map((a)=>({worker_key:String(a.function_args?.hosted_worker||a.function_name||config.name||dir.name),cadence_seconds:Number(a.repeat_interval)*(units[a.repeat_unit]||300),route:String(a.function_args?.host_action||a.function_args?.hosted_worker||'')}));

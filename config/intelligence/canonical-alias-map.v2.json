@@ -1,0 +1,138 @@
+{
+  "schema_version": "intelligence-canonical-alias-map.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "resolution_rule": "Aliases are versioned compatibility projections only. They never create a second authority or broaden a seal.",
+  "physical_document_aliases": [
+    {
+      "logical_alias": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPEC.md",
+      "authoritative_spec_id": "ORCH",
+      "authoritative_physical_locator": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPECxx.md",
+      "conflicting_physical_sha256": "4cdaa0daded4576eb297fd752f4b09aeb44830db28ebe7ab96a4511c61eafb06",
+      "conflicting_physical_line_count": 1299,
+      "alias_status": "CONTENT_MISMATCH",
+      "lifecycle_status": "SUPERSEDED",
+      "loader_eligible": false,
+      "rule": "Never resolve this logical alias by filename. Load the authoritative physical locator and verify hash plus line count."
+    },
+    {
+      "logical_alias": "CAMBRA_CPIC_ULTRA_MASTER_SPEC.md",
+      "authoritative_spec_id": "CPIC",
+      "authoritative_physical_locator": "CAMBRA_CPIC_ULTRA_MASTER_SPECx.md",
+      "conflicting_physical_sha256": "3d4f178a0092ad798be7a874e15571e1b40352ead9a417ddc4e0c1afa771e086",
+      "conflicting_physical_line_count": 429,
+      "alias_status": "CONTENT_MISMATCH",
+      "lifecycle_status": "SUPERSEDED",
+      "loader_eligible": false,
+      "rule": "Never resolve this logical alias by filename. Load the authoritative physical locator and verify hash plus line count."
+    }
+  ],
+  "logical_contract_aliases": [
+    {
+      "alias_a": "StatisticalProblem",
+      "alias_b": "StatisticalProblemDefinition",
+      "canonical_concept": "Problem/Estimand Registry record",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "FeatureContract",
+      "alias_b": "FeatureDefinition",
+      "canonical_concept": "Feature definition",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "LabelContract",
+      "alias_b": "LabelDefinition",
+      "canonical_concept": "Label definition",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "PredictionEvent",
+      "alias_b": "PredictionReceipt",
+      "canonical_concept": "Model prediction receipt",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "PolicyExposure",
+      "alias_b": "ExposureReceipt",
+      "canonical_concept": "Actual exposure receipt",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "EvaluationReport",
+      "alias_b": "EvaluationRun",
+      "canonical_concept": "Evaluation execution plus report projection",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "DriftAssessment",
+      "alias_b": "DriftReport",
+      "canonical_concept": "Drift evaluation artifact",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    },
+    {
+      "alias_a": "RetrainingProposal",
+      "alias_b": "RetrainingDecision",
+      "canonical_concept": "Linked proposal and decision lifecycle records",
+      "status": "CANONICALIZED_LOGICALLY",
+      "creates_physical_resource": false
+    }
+  ],
+  "compatibility_aliases": [
+    {
+      "legacy": "CandidateExperienceEvent",
+      "canonical": "UniversalExperience:ALIF_PROFILE",
+      "status": "SUPERSEDED_PROFILE_ALIAS",
+      "auto_migrate": false
+    },
+    {
+      "legacy": "CPIC implementation_status=BLOCKED",
+      "canonical": "requirement_progress=BLOCKED",
+      "status": "STATUS_AXIS_PROJECTION",
+      "auto_migrate": false
+    },
+    {
+      "legacy": "WITHHELD",
+      "canonical": "NOT_SEALED",
+      "status": "SEAL_STATUS_SPELLING_NORMALIZATION",
+      "auto_migrate": true
+    },
+    {
+      "legacy": "GRANTED",
+      "canonical": "ISSUED",
+      "status": "SEAL_STATUS_SPELLING_NORMALIZATION",
+      "auto_migrate": true
+    },
+    {
+      "legacy": "MASTER_ORCHESTRATION_READY",
+      "canonical": "GOVERNED_EXECUTION_READY",
+      "status": "INTERNAL_GATE_ALIAS_NOT_A_NINTH_SEAL",
+      "auto_migrate": false
+    },
+    {
+      "legacy": "FULL_CAMBRA_INTELLIGENCE_LOOP_VERIFIED",
+      "canonical": null,
+      "status": "AMBIGUOUS_LEGACY_LABEL_DO_NOT_AUTO_RESOLVE",
+      "auto_migrate": false
+    },
+    {
+      "legacy": "ANALYZER_INTELLIGENCE_INTEGRATED",
+      "canonical": null,
+      "status": "DOMAIN_EVIDENCE_GATE_NOT_ROOT_SEAL",
+      "auto_migrate": false
+    },
+    {
+      "legacy": "NEGOTIATION_INTELLIGENCE_INTEGRATED",
+      "canonical": null,
+      "status": "DOMAIN_EVIDENCE_GATE_NOT_ROOT_SEAL",
+      "auto_migrate": false
+    }
+  ],
+  "test_alias_map_ref": "config/intelligence/acceptance-test-catalog.v2.json"
+}

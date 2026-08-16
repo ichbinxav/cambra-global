@@ -1,8 +1,10 @@
 {
   "command": "npx tsc -p ./tsconfig.critical.json",
-  "sourceTreeHash": "0a1281570ee759e75514b947e3c0f82daa2da7182bf608eb64f4cf201a157a3d",
-  "startedAt": "2026-08-12T19:35:28.916Z",
-  "completedAt": "2026-08-12T19:35:30.009Z",
+  "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
+  "startedAt": "2026-08-14T19:11:03.626Z",
+  "completedAt": "2026-08-14T19:11:07.250Z",
   "exitCode": 0,
-  "ciRunId": null
+  "ciRunId": null,
+  "evidenceSchemaVersion": "cambra-release-evidence-v2",
+  "evidenceDigest": "a0b99d45a9c54597322d76da2e381e6eea414f32fd158c60d6814c86dea007f1"
 }

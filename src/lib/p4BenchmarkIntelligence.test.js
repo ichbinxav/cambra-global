@@ -8,6 +8,7 @@ describe('P4 statistical benchmark intelligence', () => {
     expect(P4_MIN_DISTINCT_MERCHANTS).toBe(10);
     const result = deriveBenchmarkCohort(Array.from({ length: 9 }, (_, index) => row(`m${index}`, 100 + index)));
     expect(result).toMatchObject({ status: 'INSUFFICIENT_DATA', isPublic: false, sampleSize: 9, median: null, p25: null, p75: null });
+    expect(deriveBenchmarkCohort(Array.from({ length: 9 }, (_, index) => row(`m${index}`, 100 + index)), { minimumDistinctMerchants: 5 }).isPublic).toBe(false);
   });
 
   it('derives deterministic percentiles and versioned provenance for a sufficient cohort', () => {

@@ -43,6 +43,44 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { isInternalCaller } from "../../shared/internalGate.ts";
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { assertPublicDns, normalizePublicHttpsUrl, PublicHttpEgressError } from '../../shared/publicHttpEgress.ts';
+import {
+  findExactIntegrationForProvider,
+  isIntegrationCredentialBoundaryError,
+  persistIntegrationCredential,
+  readIntegrationCredential,
+  resolveOwnedBrandForIntegrationActor,
+  resolveOwnedIntegrationForActor,
+  rotateIntegrationCredential,
+} from '../../shared/integrationCredentials.ts';
+
+function shopPlaceholderIsHostname(cfg) {
+  return (cfg?.data_endpoints || []).some((endpoint) => {
+    if (!String(endpoint?.url || '').includes('{shop}')) return false;
+    try {
+      return new URL(String(endpoint.url).replaceAll('{shop}', 'shop-placeholder.example')).hostname ===
+        'shop-placeholder.example';
+    } catch { return false; }
+  });
+}
+
+async function validateShopValue(cfg, raw) {
+  const value = String(raw || '').trim().toLowerCase();
+  if (!value || value.length > 180 || /[\r\n]/.test(value)) {
+    throw new PublicHttpEgressError('shop_domain_invalid', 400);
+  }
+  if (shopPlaceholderIsHostname(cfg)) {
+    const shopUrl = normalizePublicHttpsUrl(value);
+    await assertPublicDns(shopUrl);
+    return shopUrl.hostname.toLowerCase();
+  }
+  // Some registries reuse the field for a path/header account identifier.
+  // It must never contain URL syntax or path traversal.
+  if (!/^[a-z0-9][a-z0-9._:-]{0,179}$/i.test(value) || value.includes('..')) {
+    throw new PublicHttpEgressError('shop_identifier_invalid', 400);
+  }
+  return value;
+}
 
 // ─── REGISTRY (keep in sync with functions/dataSyncAgent.js) ───────────────
 // Each entry declares HOW to authenticate (`auth_method`) and HOW to read data
@@ -247,7 +285,7 @@ const REGISTRY = {
   // Pennylane = French accounting platform. Standard OAuth2 with Refresh Token
   // Rotation (RTR): every refresh call returns a NEW refresh_token and
   // invalidates the previous one. The engine already handles RTR correctly in
-  // modeRefresh (line: `json.refresh_token ? await encryptToken(json.refresh_token) : integ.refresh_token`),
+  // modeRefresh preserves or rotates the server-only refresh credential,
   // so Pennylane needs ZERO engine changes — just this registry entry.
   //
   // Verification pending (paths/scopes are from Pennylane public docs as of
@@ -286,7 +324,7 @@ const REGISTRY = {
   // as the username and a secret key as the password). The motor handles this
   // GENERICALLY via auth_method="basic_auth": we combine the two keys as
   // "public:secret" (Basic Auth's native wire format) and encrypt the combined
-  // blob in Integration.access_token using the existing AES-256-GCM helper.
+  // blob in server-only IntegrationCredential using the AES-256-GCM helper.
   // At sync time, buildAuthHeaders decrypts and emits `Basic base64(...)` —
   // no provider name appears in the engine. Adding any future basic_auth
   // provider = one registry entry, zero engine changes.
@@ -1039,14 +1077,54 @@ function interpolateShopDomain(url, shop) {
   return url.replaceAll("{shop}", shop);
 }
 
-async function assertBrandOwnedByUser(base44, brandId, userEmail) {
-  if (!brandId) throw new Error("brand_id is required");
-  const brand = await base44.entities.Brand.get(brandId);
-  if (!brand) throw new Error("Brand not found");
-  if (brand.created_by !== userEmail && brand.contact_email !== userEmail) {
-    throw new Error("This brand does not belong to the current user");
+async function assertBrandOwnedByUser(base44, brandId, user) {
+  return resolveOwnedBrandForIntegrationActor(base44.asServiceRole, {
+    brand_id: brandId,
+    actor: user,
+  });
+}
+
+async function persistConnectedIntegration(base44, input) {
+  const service = base44.asServiceRole;
+  if (Object.prototype.hasOwnProperty.call(input.metadata, 'access_token')
+    || Object.prototype.hasOwnProperty.call(input.metadata, 'refresh_token')) {
+    throw new Error('integration_metadata_secret_write_forbidden');
   }
-  return brand;
+  let integration = await findExactIntegrationForProvider(service, {
+    brand_id: input.brand_id,
+    provider: input.provider,
+  });
+  if (integration) {
+    await service.entities.Integration.update(integration.id, {
+      status: 'connecting',
+      last_error: null,
+    });
+  } else {
+    integration = await service.entities.Integration.create({
+      brand_id: input.brand_id,
+      provider: input.provider,
+      category: input.metadata.category,
+      status: 'connecting',
+      scopes: input.metadata.scopes || [],
+    });
+    const exact = await findExactIntegrationForProvider(service, {
+      brand_id: input.brand_id,
+      provider: input.provider,
+    });
+    if (!exact || exact.id !== integration.id) throw new Error('integration_create_readback_ambiguous');
+    integration = exact;
+  }
+  await persistIntegrationCredential(service, {
+    integration_id: integration.id,
+    brand_id: input.brand_id,
+    credential_type: input.credential_type,
+    encrypted_access_token: input.encrypted_access_token,
+    encrypted_refresh_token: input.encrypted_refresh_token || null,
+    scopes: input.metadata.scopes || [],
+    expires_at: input.metadata.access_token_expires_at || null,
+  });
+  await service.entities.Integration.update(integration.id, input.metadata);
+  return integration.id;
 }
 
 // ─── Mode: start ───────────────────────────────────────────────────────────
@@ -1073,9 +1151,7 @@ async function modeStart(base44, user, params) {
     }
   }
 
-  if (user.role !== "admin") {
-    await assertBrandOwnedByUser(base44, brand_id, user.email);
-  }
+  await assertBrandOwnedByUser(base44, brand_id, user);
 
   if (!cfg.demo_mode) {
     const clientId = Deno.env.get(cfg.client_id_env);
@@ -1094,11 +1170,9 @@ async function modeStart(base44, user, params) {
     expires_at: expiresAt,
   });
 
-  const existing = await base44.asServiceRole.entities.Integration
-    .filter({ brand_id, provider }, "-created_date", 1)
-    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
-  if (existing[0]) {
-    await base44.asServiceRole.entities.Integration.update(existing[0].id, {
+  const existing = await findExactIntegrationForProvider(base44.asServiceRole, { brand_id, provider });
+  if (existing) {
+    await base44.asServiceRole.entities.Integration.update(existing.id, {
       status: "connecting",
       last_error: null,
     });
@@ -1162,8 +1236,8 @@ async function exchangeCodeForTokens(cfg, code, shopDomain) {
     body,
   });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Token exchange failed (${res.status}): ${text.slice(0, 200)}`);
+    await res.body?.cancel().catch(() => {});
+    throw new Error(`token_exchange_failed_${res.status}`);
   }
   const json = await res.json();
   return {
@@ -1171,7 +1245,6 @@ async function exchangeCodeForTokens(cfg, code, shopDomain) {
     refresh_token: json.refresh_token,
     expires_in: json.expires_in,
     account_id: json.account_id || json.stripe_user_id || json.user_id || null,
-    raw: json,
   };
 }
 
@@ -1187,8 +1260,9 @@ async function modeCallback(base44, user, params) {
   if (row.used_at) return jsonError(400, "State already used");
   if (new Date(row.expires_at).getTime() < Date.now()) return jsonError(400, "State expired");
   if (row.user_email !== user.email && user.role !== "admin") {
-    return jsonError(403, "State does not belong to current user");
+    return jsonError(400, "Invalid or unknown state");
   }
+  await assertBrandOwnedByUser(base44, row.brand_id, user);
 
   const cfg = getProviderConfig(row.provider);
   if (!cfg) return jsonError(500, `Provider ${row.provider} no longer in registry`);
@@ -1201,16 +1275,17 @@ async function modeCallback(base44, user, params) {
   try {
     tokens = await exchangeCodeForTokens(cfg, code, row.shop_domain || null);
   } catch (err) {
-    const existing = await base44.asServiceRole.entities.Integration
-      .filter({ brand_id: row.brand_id, provider: row.provider }, "-created_date", 1)
-      .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
-    if (existing[0]) {
-      await base44.asServiceRole.entities.Integration.update(existing[0].id, {
+    const existing = await findExactIntegrationForProvider(base44.asServiceRole, {
+      brand_id: row.brand_id,
+      provider: row.provider,
+    });
+    if (existing) {
+      await base44.asServiceRole.entities.Integration.update(existing.id, {
         status: "error",
-        last_error: err.message,
+        last_error: "Token exchange failed",
       });
     }
-    return jsonError(502, `Token exchange failed: ${err.message}`);
+    return jsonError(502, "Token exchange failed");
   }
 
   const encryptedAccess = await encryptToken(tokens.access_token);
@@ -1255,8 +1330,6 @@ async function modeCallback(base44, user, params) {
 
   const update = {
     status: "connected",
-    access_token: encryptedAccess,
-    refresh_token: encryptedRefresh,
     access_token_expires_at: expiresAt,
     scopes: cfg.scopes || [],
     connected_at: new Date().toISOString(),
@@ -1275,21 +1348,14 @@ async function modeCallback(base44, user, params) {
     category: cfg.category,
   };
 
-  const existing = await base44.asServiceRole.entities.Integration
-    .filter({ brand_id: row.brand_id, provider: row.provider }, "-created_date", 1)
-    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
-  let integrationId;
-  if (existing[0]) {
-    await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
-    integrationId = existing[0].id;
-  } else {
-    const created = await base44.asServiceRole.entities.Integration.create({
-      brand_id: row.brand_id,
-      provider: row.provider,
-      ...update,
-    });
-    integrationId = created.id;
-  }
+  const integrationId = await persistConnectedIntegration(base44, {
+    brand_id: row.brand_id,
+    provider: row.provider,
+    metadata: update,
+    credential_type: "oauth_token",
+    encrypted_access_token: encryptedAccess,
+    encrypted_refresh_token: encryptedRefresh,
+  });
 
   return Response.json({
     ok: true,
@@ -1301,7 +1367,7 @@ async function modeCallback(base44, user, params) {
 // ─── Mode: connect_api_key ─────────────────────────────────────────────────
 // Generic API-key onboarding. The user pastes a key, we encrypt it with the
 // SAME AES-256-GCM mechanism used for OAuth tokens (reuses encryptToken — no
-// duplicate crypto logic), and we store it in Integration.access_token.
+// duplicate crypto logic), and store it only in IntegrationCredential.
 //
 // The key NEVER comes back to the client. We strip it from every Response.
 
@@ -1332,12 +1398,15 @@ async function modeConnectApiKey(base44, user, params) {
     if (typeof rawShopDomain !== "string" || rawShopDomain.trim().length < 3) {
       return jsonError(400, "shop_domain is required for this provider");
     }
-    shopDomain = rawShopDomain.trim().toLowerCase();
+    try {
+      shopDomain = await validateShopValue(cfg, rawShopDomain);
+    } catch (error) {
+      if (error instanceof PublicHttpEgressError) return jsonError(error.status, error.code);
+      throw error;
+    }
   }
 
-  if (user.role !== "admin") {
-    await assertBrandOwnedByUser(base44, brand_id, user.email);
-  }
+  await assertBrandOwnedByUser(base44, brand_id, user);
 
   // In demo mode we still encrypt the pasted value so the storage path is
   // identical to a real provider — that's the whole point of the demo.
@@ -1345,8 +1414,6 @@ async function modeConnectApiKey(base44, user, params) {
 
   const update = {
     status: "connected",
-    access_token: encryptedKey,
-    refresh_token: null,
     access_token_expires_at: null,
     scopes: [],
     connected_at: new Date().toISOString(),
@@ -1360,22 +1427,14 @@ async function modeConnectApiKey(base44, user, params) {
     category: cfg.category,
   };
 
-  const existing = await base44.asServiceRole.entities.Integration
-    .filter({ brand_id, provider }, "-created_date", 1)
-    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
-
-  let integrationId;
-  if (existing[0]) {
-    await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
-    integrationId = existing[0].id;
-  } else {
-    const created = await base44.asServiceRole.entities.Integration.create({
-      brand_id,
-      provider,
-      ...update,
-    });
-    integrationId = created.id;
-  }
+  const integrationId = await persistConnectedIntegration(base44, {
+    brand_id,
+    provider,
+    metadata: update,
+    credential_type: "api_key",
+    encrypted_access_token: encryptedKey,
+    encrypted_refresh_token: null,
+  });
 
   // Important: response carries the integration id only — NEVER the key.
   return Response.json({ ok: true, integration_id: integrationId });
@@ -1389,8 +1448,8 @@ async function modeConnectApiKey(base44, user, params) {
 // encryptToken — no duplicate crypto). At sync time buildAuthHeaders decrypts
 // once and emits the header.
 //
-// Storage choice (option b): one cipher blob in access_token, no schema
-// changes. The `:` in the plaintext IS the standard Basic Auth separator —
+// Storage choice: one cipher blob in server-only IntegrationCredential. The
+// `:` in the plaintext IS the standard Basic Auth separator —
 // RFC 7617 forbids `:` in the username field, so we mirror that and reject
 // any key containing `:` at input time. Mantenibilidad + seguridad: una sola
 // llamada a crypto en ambas direcciones, ningún campo nuevo en Integration.
@@ -1429,20 +1488,21 @@ async function modeConnectBasicAuth(base44, user, params) {
     if (typeof rawShopDomain !== "string" || rawShopDomain.trim().length < 3) {
       return jsonError(400, "shop_domain is required for this provider");
     }
-    shopDomain = rawShopDomain.trim().toLowerCase();
+    try {
+      shopDomain = await validateShopValue(cfg, rawShopDomain);
+    } catch (error) {
+      if (error instanceof PublicHttpEgressError) return jsonError(error.status, error.code);
+      throw error;
+    }
   }
 
-  if (user.role !== "admin") {
-    await assertBrandOwnedByUser(base44, brand_id, user.email);
-  }
+  await assertBrandOwnedByUser(base44, brand_id, user);
 
   const combined = `${public_key.trim()}:${secret_key.trim()}`;
   const encrypted = await encryptToken(combined);
 
   const update = {
     status: "connected",
-    access_token: encrypted,
-    refresh_token: null,
     access_token_expires_at: null,
     scopes: [],
     connected_at: new Date().toISOString(),
@@ -1456,22 +1516,14 @@ async function modeConnectBasicAuth(base44, user, params) {
     category: cfg.category,
   };
 
-  const existing = await base44.asServiceRole.entities.Integration
-    .filter({ brand_id, provider }, "-created_date", 1)
-    .catch((error:any)=>safeBestEffort(error,{operation:'oauthConnector',fallback:[],severity:'secondary'}));
-
-  let integrationId;
-  if (existing[0]) {
-    await base44.asServiceRole.entities.Integration.update(existing[0].id, update);
-    integrationId = existing[0].id;
-  } else {
-    const created = await base44.asServiceRole.entities.Integration.create({
-      brand_id,
-      provider,
-      ...update,
-    });
-    integrationId = created.id;
-  }
+  const integrationId = await persistConnectedIntegration(base44, {
+    brand_id,
+    provider,
+    metadata: update,
+    credential_type: "basic_auth",
+    encrypted_access_token: encrypted,
+    encrypted_refresh_token: null,
+  });
 
   // Important: response carries the integration id only — NEVER the keys.
   return Response.json({ ok: true, integration_id: integrationId });
@@ -1483,25 +1535,35 @@ async function modeRefresh(base44, user, params) {
   const { integration_id } = params;
   if (!integration_id) return jsonError(400, "integration_id is required");
 
-  const integ = await base44.asServiceRole.entities.Integration.get(integration_id);
-  if (!integ) return jsonError(404, "Integration not found");
-
-  if (user.role !== "admin") {
-    await assertBrandOwnedByUser(base44, integ.brand_id, user.email);
-  }
+  const integ = await resolveOwnedIntegrationForActor(base44.asServiceRole, {
+    integration_id,
+    actor: user,
+  });
   const cfg = getProviderConfig(integ.provider);
   if (!cfg) return jsonError(500, `Provider ${integ.provider} no longer in registry`);
+  const credential = await readIntegrationCredential(base44.asServiceRole, {
+    integration_id: integ.id,
+    brand_id: integ.brand_id,
+  });
 
   if (cfg.demo_mode) {
     const newAt = await encryptToken(`demo_at_${randomStateToken().slice(0, 24)}`);
+    await rotateIntegrationCredential(base44.asServiceRole, {
+      integration_id: integ.id,
+      brand_id: integ.brand_id,
+      credential_type: "oauth_token",
+      encrypted_access_token: newAt,
+      encrypted_refresh_token: credential.encrypted_refresh_token,
+      scopes: integ.scopes || [],
+      expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+    });
     await base44.asServiceRole.entities.Integration.update(integ.id, {
-      access_token: newAt,
       access_token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
     });
     return Response.json({ ok: true, demo_mode: true });
   }
 
-  const refreshPlain = await decryptToken(integ.refresh_token);
+  const refreshPlain = await decryptToken(credential.encrypted_refresh_token);
   if (!refreshPlain) return jsonError(400, "No refresh token stored");
 
   const body = new URLSearchParams({
@@ -1518,22 +1580,32 @@ async function modeRefresh(base44, user, params) {
     body,
   });
   if (!res.ok) {
-    const text = await res.text();
+    await res.body?.cancel().catch(() => {});
     await base44.asServiceRole.entities.Integration.update(integ.id, {
       status: "error",
       last_error: `Refresh failed: ${res.status}`,
     });
-    return jsonError(502, `Refresh failed: ${text.slice(0, 200)}`);
+    return jsonError(502, "Refresh failed");
   }
   const json = await res.json();
   const encryptedAccess = await encryptToken(json.access_token);
-  const encryptedRefresh = json.refresh_token ? await encryptToken(json.refresh_token) : integ.refresh_token;
+  const encryptedRefresh = json.refresh_token
+    ? await encryptToken(json.refresh_token)
+    : credential.encrypted_refresh_token;
+  const expiresAt = json.expires_in
+    ? new Date(Date.now() + json.expires_in * 1000).toISOString()
+    : null;
+  await rotateIntegrationCredential(base44.asServiceRole, {
+    integration_id: integ.id,
+    brand_id: integ.brand_id,
+    credential_type: "oauth_token",
+    encrypted_access_token: encryptedAccess,
+    encrypted_refresh_token: encryptedRefresh,
+    scopes: integ.scopes || [],
+    expires_at: expiresAt,
+  });
   await base44.asServiceRole.entities.Integration.update(integ.id, {
-    access_token: encryptedAccess,
-    refresh_token: encryptedRefresh,
-    access_token_expires_at: json.expires_in
-      ? new Date(Date.now() + json.expires_in * 1000).toISOString()
-      : null,
+    access_token_expires_at: expiresAt,
     last_error: null,
   });
   return Response.json({ ok: true });
@@ -1567,6 +1639,10 @@ Deno.serve(async (req) => {
     }
     return jsonError(400, `Unknown mode: ${mode}. Use start | callback | refresh | connect_api_key | connect_basic_auth | describe`);
   } catch (error) {
+    if (isIntegrationCredentialBoundaryError(error)
+      && error.code === 'integration_tenant_resource_not_available') {
+      return Response.json({ ok: false, error: 'integration_not_available' }, { status: 404 });
+    }
     return internalErrorResponse(error, 'oauthConnector');
   }
 });

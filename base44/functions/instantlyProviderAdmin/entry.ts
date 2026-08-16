@@ -14,6 +14,7 @@ import {
   upsertInstantlyProviderState,
 } from "../../shared/instantlyRuntime.ts";
 import {
+  guardReservedPaidProviderEffect,
   reservePaidOperation,
   settlePaidOperation,
 } from "../../shared/costGovernance.ts";
@@ -138,7 +139,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
       const leadStates=await svc.entities.CommercialProviderState.filter({provider_key:"instantly_supersearch",role:"lead_intelligence"},"-last_checked_at",1).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}));
       try{
         const capabilityPayload=instantlySuperSearchPayload({domains:["cambra.ai"],limit:1,one_lead_per_company:true});
-        const preview=await instantlyRequest(key,"/supersearch-enrichment/preview-leads-from-supersearch",{method:"POST",body:{search_filters:capabilityPayload.search_filters}});
+        const preview=await guardReservedPaidProviderEffect(svc,reservation,{category:'api',provider:'instantly',source:'instantlyProviderAdmin',event_key:eventKey,effect_key:'instantly_supersearch_capability_preview'},()=>instantlyRequest(key,"/supersearch-enrichment/preview-leads-from-supersearch",{method:"POST",body:{search_filters:capabilityPayload.search_filters}}));
         const patch={provider_key:"instantly_supersearch",role:"lead_intelligence",status:"AUTHENTICATED",api_version:"v2",secret_present:true,auth_test_pass:true,last_checked_at:new Date().toISOString(),last_success_at:new Date().toISOString(),metrics_json:{supersearch_permission_verified:true,last_preview_count:Number(preview?.number_of_leads||0)},configuration_json:{official_preview_endpoint:true,official_count_endpoint:true,official_enrichment_endpoint:true,automatic_enrichment_enabled:false},last_error_code:""};
         const state=leadStates[0]?await svc.entities.CommercialProviderState.update(leadStates[0].id,patch):await svc.entities.CommercialProviderState.create(patch);
         await settlePaidOperation(svc,reservation,{ok:true,usage_json:{operation:"supersearch_capability_preview",returned:Number(preview?.number_of_leads||0),lead_data_persisted:false}});
@@ -160,7 +161,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         related_entity_id: states[0]?.id || "instantly",
       });
       try {
-        const result = await provider.diagnose();
+        const result = await guardReservedPaidProviderEffect(svc,reservation,{category:'api',provider:'instantly',source:'instantlyProviderAdmin',event_key:reservation.event?.event_key,effect_key:'instantly_diagnose'},()=>provider.diagnose());
         const accounts = result.accounts.map(safeAccount),
           campaigns = result.campaigns.map(safeCampaign),
           webhooks = result.webhooks.map(safeWebhook);
@@ -388,13 +389,13 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         related_entity_id: profile.id,
       });
       try {
-        const campaign = await provider.createCampaign({
+        const campaign = await guardReservedPaidProviderEffect(svc,reservation,{category:'api',provider:'instantly',source:'instantlyProviderAdmin',event_key:reservation.event?.event_key,effect_key:`instantly_create_campaign:${profile.profile_key}`},()=>provider.createCampaign({
           name: body.name || `CAMBRA ${profile.profile_key} CANARY`,
           language: body.language || "EN",
           timezone: body.timezone || "Europe/Paris",
           account_emails: accounts,
           daily_limit: daily,
-        });
+        }));
         await settlePaidOperation(svc, reservation, {
           ok: true,
           usage_json: {
@@ -513,9 +514,9 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           campaign_id: profile.external_campaign_id,
           webhook_secret: webhookSecret,
         };
-        const webhook = existingWebhookId
-          ? await provider.updateWebhook(existingWebhookId, webhookInput)
-          : await provider.createWebhook(webhookInput);
+        const webhook = await guardReservedPaidProviderEffect(svc,reservation,{category:'api',provider:'instantly',source:'instantlyProviderAdmin',event_key:reservation.event?.event_key,effect_key:`instantly_${existingWebhookId?'update':'create'}_webhook:${profile.profile_key}`},()=>existingWebhookId
+          ? provider.updateWebhook(existingWebhookId, webhookInput)
+          : provider.createWebhook(webhookInput));
         const operation = existingWebhookId
           ? "update_webhook"
           : "create_webhook";
@@ -595,7 +596,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         related_entity_id: profile.id,
       });
       try {
-        const result = await provider.testWebhook(webhookId);
+        const result = await guardReservedPaidProviderEffect(svc,reservation,{category:'api',provider:'instantly',source:'instantlyProviderAdmin',event_key:reservation.event?.event_key,effect_key:`instantly_test_webhook:${profile.profile_key}`},()=>provider.testWebhook(webhookId));
         const passed =
           result?.success === true && Number(result?.status_code) >= 200 &&
           Number(result?.status_code) < 300;

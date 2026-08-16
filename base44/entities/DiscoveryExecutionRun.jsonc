@@ -1,0 +1,117 @@
+{
+  "name": "DiscoveryExecutionRun",
+  "type": "object",
+  "description": "Immutable-on-completion Discovery V2 execution evidence. One row records the accepted plan, progressive funnel, attributable cost and canonical result references for a merchant, partner or provider run. It is not a scheduler log or an agent approval record.",
+  "properties": {
+    "run_key": { "type": "string" },
+    "name": { "type": "string" },
+    "discovery_type": {
+      "type": "string",
+      "enum": ["MERCHANT", "PARTNER", "PROVIDER"]
+    },
+    "initiator": {
+      "type": "string",
+      "enum": ["FOUNDER", "CAMBRA", "SCHEDULED"]
+    },
+    "saved_view_id": { "type": "string" },
+    "saved_view_revision": { "type": "number", "minimum": 1 },
+    "saved_view_config_hash": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "COMPLETED",
+        "COMPLETED_PARTIAL",
+        "BUDGET_STOPPED",
+        "FOUNDER_STOPPED",
+        "SOURCE_LIMITED",
+        "FAILED",
+        "NEEDS_REVIEW"
+      ]
+    },
+    "current_stage": { "type": "string" },
+    "run_revision": { "type": "number", "minimum": 0, "default": 0 },
+    "lease_owner": { "type": "string" },
+    "lease_expires_at": { "type": "string", "format": "date-time" },
+    "heartbeat_at": { "type": "string", "format": "date-time" },
+    "stage_attempt": { "type": "number", "minimum": 0, "default": 0 },
+    "stage_attempt_token": { "type": "string" },
+    "stage_started_at": { "type": "string", "format": "date-time" },
+    "checkpoint_json": { "type": "object" },
+    "next_eligible_at": { "type": "string", "format": "date-time" },
+    "stop_requested": { "type": "boolean", "default": false },
+    "stop_reason": { "type": "string" },
+    "configuration_json": { "type": "object" },
+    "execution_plan_json": { "type": "object" },
+    "accepted_plan_hash": { "type": "string" },
+    "source_capability_version": { "type": "string" },
+    "selected_sources": { "type": "array", "items": { "type": "string" } },
+    "target_count": { "type": "number", "minimum": 1 },
+    "hard_cap_minor": { "type": "number", "minimum": 0 },
+    "reserved_cost_minor": { "type": "number", "minimum": 0, "default": 0 },
+    "actual_cost_minor": { "type": "number", "minimum": 0, "default": 0 },
+    "cost_reconciliation_json": { "type": "object" },
+    "cost_reservation_revision": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "monthly_budget_snapshot_json": { "type": "object" },
+    "actual_stages_json": { "type": "array", "items": { "type": "object" } },
+    "funnel_json": { "type": "object" },
+    "quality_json": { "type": "object" },
+    "result_entity_type": { "type": "string" },
+    "result_ids": { "type": "array", "items": { "type": "string" } },
+    "result_snapshot_json": { "type": "array", "items": { "type": "object" } },
+    "result_attribution_json": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "scoring_coverage_json": { "type": "object" },
+    "terminal_snapshot_hash": { "type": "string" },
+    "terminal_snapshot_json": { "type": "object" },
+    "correction_refs": { "type": "array", "items": { "type": "string" } },
+    "pipeline_transition_json": { "type": "object" },
+    "intelligence_contribution_json": { "type": "object" },
+    "errors_json": { "type": "array", "items": { "type": "object" } },
+    "created_by_email": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "engine_version": { "type": "string" }
+  },
+  "required": [
+    "run_key",
+    "name",
+    "discovery_type",
+    "initiator",
+    "status",
+    "current_stage",
+    "run_revision",
+    "configuration_json",
+    "execution_plan_json",
+    "accepted_plan_hash",
+    "source_capability_version",
+    "selected_sources",
+    "target_count",
+    "hard_cap_minor",
+    "reserved_cost_minor",
+    "cost_reservation_revision",
+    "actual_stages_json",
+    "funnel_json",
+    "result_ids",
+    "result_snapshot_json",
+    "result_attribution_json",
+    "scoring_coverage_json",
+    "started_at",
+    "engine_version"
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": {
+      "user_condition": {
+        "role": "__service_role_only__"
+      }
+    }
+  }
+}

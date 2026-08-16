@@ -66,6 +66,37 @@
     "activation_preflight_hash": {
       "type": "string"
     },
+    "control_revision": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Optimistic-CAS revision for Founder/Admin outbound state transitions."
+    },
+    "transition_key": {
+      "type": "string",
+      "description": "Opaque key for the single in-flight outbound state transition."
+    },
+    "transition_action": {
+      "type": "string"
+    },
+    "transition_actor": {
+      "type": "string"
+    },
+    "transition_preflight_hash": {
+      "type": "string"
+    },
+    "transition_emergency_revision": {
+      "type": "number",
+      "minimum": 0
+    },
+    "transition_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "transition_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "notes": {
       "type": "string"
     }

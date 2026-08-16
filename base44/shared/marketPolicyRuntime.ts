@@ -1,16 +1,17 @@
 import { canonicalMarket } from './marketContext.ts';
 import { assertNoAiOverride, MARKET_CAPABILITIES } from './jurisdictionPolicy.ts';
 import { auditRegulatoryDecision, evaluateRegulatoryActivityRuntime } from './regulatoryRuntime.ts';
+import { requireCriticalOperation } from './criticalExecution.ts';
 
 export async function evaluateMarketCapabilityRuntime(svc:any, input:any) {
   const capability = String(input?.capability || '').toUpperCase();
   if (!MARKET_CAPABILITIES.includes(capability)) return { allowed:false,state:'BLOCKED',reason_code:'unknown_capability',enforced:true };
   let brand = input?.brand || null;
-  if (!brand && input?.brand_id) brand = await svc.entities.Brand.get(String(input.brand_id)).catch(() => null);
+  if (!brand && input?.brand_id) brand = await requireCriticalOperation('market_policy_brand_read', () => svc.entities.Brand.get(String(input.brand_id)));
   let context = input?.context || null;
-  if (!context && brand?.market_context_id) context = await svc.entities.MerchantMarketContext.get(String(brand.market_context_id)).catch(() => null);
+  if (!context && brand?.market_context_id) context = await requireCriticalOperation('market_policy_context_read', () => svc.entities.MerchantMarketContext.get(String(brand.market_context_id)));
   if (!context && brand) {
-    const rows = await svc.entities.MerchantMarketContext.filter({ brand_id:brand.id }, '-last_resolved_at', 1).catch(() => []);
+    const rows = await requireCriticalOperation('market_policy_context_lookup', () => svc.entities.MerchantMarketContext.filter({ brand_id:brand.id }, '-last_resolved_at', 1));
     context = rows[0] || null;
   }
   const explicit = canonicalMarket(input?.jurisdiction)?.iso2 || null;
@@ -18,12 +19,12 @@ export async function evaluateMarketCapabilityRuntime(svc:any, input:any) {
   const rollout = String(input?.rollout || brand?.market_context_rollout || 'legacy');
   const enforced = input?.enforce === true || rollout === 'production';
   if (!jurisdiction) return { allowed:!enforced,state:enforced?'BLOCKED':'REVIEW_REQUIRED',reason_code:enforced?'market_jurisdiction_unresolved':'shadow_jurisdiction_unresolved',jurisdiction:null,enforced,rollout };
-  const policies = await svc.entities.JurisdictionCapabilityPolicy.filter({ jurisdiction,capability,active:true }, '-effective_from', 20).catch(() => []);
+  const policies = await requireCriticalOperation('market_capability_policy_authority_read', () => svc.entities.JurisdictionCapabilityPolicy.filter({ jurisdiction,capability,active:true }, '-effective_from', 20));
   let policy = policies[0] || null;
-  const controls = await svc.entities.MarketCapabilityControl.filter({ jurisdiction,capability,blocked:true }, '-updated_at', 20).catch(() => []);
+  const controls = await requireCriticalOperation('market_capability_control_authority_read', () => svc.entities.MarketCapabilityControl.filter({ jurisdiction,capability,blocked:true }, '-updated_at', 20));
   const now = Date.now();
   const control = controls.find((x:any) => (!x.effective_from || Date.parse(x.effective_from) <= now) && (!x.effective_to || Date.parse(x.effective_to) > now)) || null;
-  const overrides = await svc.entities.MarketPolicyOverride.filter({ jurisdiction,capability }, '-created_at', 20).catch(() => []);
+  const overrides = await requireCriticalOperation('market_policy_override_authority_read', () => svc.entities.MarketPolicyOverride.filter({ jurisdiction,capability }, '-created_at', 20));
   const override = overrides.find((x:any) => !x.revoked_at && (!x.effective_from || Date.parse(x.effective_from) <= now) && (!x.expires_at || Date.parse(x.expires_at) > now)) || null;
   const nonOverridable = ['ACCESS_BANK_ACCOUNT_DATA','INITIATE_PAYMENT','HOLD_FUNDS','ACT_AS_PSP','ACT_AS_PSP_AGENT'].includes(capability);
   if (override && !nonOverridable) policy = { ...(policy || {}),state:override.new_state,reason_code:'explicit_human_override',policy_version:`override:${override.id}` };
@@ -39,8 +40,8 @@ export async function evaluateMarketCapabilityRuntime(svc:any, input:any) {
 
 export async function auditMarketCapabilityDecision(svc:any, input:any, decision:any) {
   const eventType = decision.bypass_attempt ? 'country_policy_ai_bypass_denied' : decision.enforced ? (decision.allowed ? 'country_policy_allowed' : 'country_policy_denied') : 'country_policy_checked';
-  await svc.entities.Event.create({ brand_id:String(input?.brand_id || input?.brand?.id || '_platform'),event_type:eventType,source:String(input?.actor_type || 'market_policy_runtime'),entity_type:'JurisdictionCapabilityPolicy',entity_id:decision.policy_id || '',payload_json:{ jurisdiction:decision.jurisdiction,capability:String(input?.capability || '').toUpperCase(),decision,policy_id:decision.policy_id,control_id:decision.control_id,override_id:decision.override_id,context_id:decision.context_id },status:'processed',processed_at:new Date().toISOString() }).catch(() => null);
-  if (decision.regulatory_decision) await auditRegulatoryDecision(svc, input, decision.regulatory_decision).catch(() => null);
+  await requireCriticalOperation('market_capability_decision_audit_write', () => svc.entities.Event.create({ brand_id:String(input?.brand_id || input?.brand?.id || '_platform'),event_type:eventType,source:String(input?.actor_type || 'market_policy_runtime'),entity_type:'JurisdictionCapabilityPolicy',entity_id:decision.policy_id || '',payload_json:{ jurisdiction:decision.jurisdiction,capability:String(input?.capability || '').toUpperCase(),decision,policy_id:decision.policy_id,control_id:decision.control_id,override_id:decision.override_id,context_id:decision.context_id },status:'processed',processed_at:new Date().toISOString() }));
+  if (decision.regulatory_decision) await auditRegulatoryDecision(svc, input, decision.regulatory_decision);
   return decision;
 }
 

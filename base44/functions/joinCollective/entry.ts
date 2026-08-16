@@ -1,10 +1,14 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { collectiveJoinEmail } from '../../shared/emails/collectiveJoin.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { normalizeLocale } from "../../shared/emailLocale.ts";
+import { collectiveJoinEmail } from "../../shared/emails/collectiveJoin.ts";
+import {
+  captureEmergencyEpoch,
+  emergencyState,
+} from "../../shared/operationalControl.ts";
+import { sendCostGovernedEmail } from "../../shared/costGovernance.ts";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
+import { consumePublicRequestRateLimit } from "../../shared/rateLimit.ts";
 
 /**
  * joinCollective
@@ -26,7 +30,7 @@ import { internalErrorResponse } from '../../shared/publicErrors.ts';
  * (LEGAL-2 / EMAIL-1 removed that labelling from the UI and the email).
  *
  * Behavior:
- *   1. Rate limit by IP (public write + outbound email).
+ *   1. Rate limit by versioned HMAC network fingerprint (public write + outbound email).
  *   2. Validate email + accepted flag (clickwrap must be accepted).
  *   3. Persist a CollectiveMember row (service role).
  *   4. Notify admin (best-effort, never blocks the response).
@@ -34,60 +38,35 @@ import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const DEFAULT_LIMIT_PER_HOUR = 8;
 const TERMS_VERSION = "draft-v0";
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for') || '';
-  const first = fwd.split(',')[0]?.trim();
-  return first || req.headers.get('x-real-ip') || 'unknown';
-}
-
-async function checkRateLimit(base44: any, ip: string) {
-  const limit = DEFAULT_LIMIT_PER_HOUR;
-  const now = new Date();
-  const windowStart = new Date(Math.floor(now.getTime() / 3600000) * 3600000).toISOString();
-  const reset = new Date(new Date(windowStart).getTime() + 3600000).toISOString();
-  const principalId = `joinCollective:${ip}`;
-
-  const matches = await base44.asServiceRole.entities.RateLimitCounter.filter({
-    principal_id: principalId,
-    window_start: windowStart,
-  }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:[],severity:'secondary'}));
-
-  const counter = matches?.[0];
-  if (!counter) {
-    await base44.asServiceRole.entities.RateLimitCounter.create({
-      principal_id: principalId,
-      principal_type: 'ip',
-      window_start: windowStart,
-      count: 1,
-      limit_per_minute: limit,
-    }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
-    return { ok: true, remaining: limit - 1, limit, reset };
-  }
-  if ((counter.count || 0) >= limit) {
-    return { ok: false, remaining: 0, limit, reset };
-  }
-  await base44.asServiceRole.entities.RateLimitCounter.update(counter.id, {
-    count: (counter.count || 0) + 1,
-  }).catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
-  return { ok: true, remaining: limit - (counter.count || 0) - 1, limit, reset };
-}
+const UUID_V4 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
   try {
     if (req.method !== "POST") {
-      return Response.json({ ok: false, error: "method_not_allowed" }, { status: 405 });
+      return Response.json({ ok: false, error: "method_not_allowed" }, {
+        status: 405,
+      });
     }
 
     const base44 = createClientFromRequest(req);
 
-    const ip = getClientIp(req);
-    const rl = await checkRateLimit(base44, ip);
+    const rl = await consumePublicRequestRateLimit(base44.asServiceRole, req, {
+      namespace: "join-collective",
+      limit: DEFAULT_LIMIT_PER_HOUR,
+      window_seconds: 3600,
+    });
     if (!rl.ok) {
-      return Response.json({ ok: false, error: 'rate_limited' }, {
-        status: 429,
-        headers: { 'X-RateLimit-Limit': String(rl.limit), 'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': rl.reset },
+      return Response.json({
+        ok: false,
+        error: rl.status === 429 ? "rate_limited" : "rate_limit_unavailable",
+      }, {
+        status: rl.status || 503,
+        headers: {
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": rl.reset,
+        },
       });
     }
 
@@ -95,26 +74,40 @@ Deno.serve(async (req) => {
 
     // Clickwrap MUST be accepted — presence of the flag is the acceptance record.
     if (body?.accepted !== true) {
-      return Response.json({ ok: false, error: "terms_not_accepted" }, { status: 400 });
+      return Response.json({ ok: false, error: "terms_not_accepted" }, {
+        status: 400,
+      });
     }
 
     // Prefer the authenticated user's email when present; fall back to the
     // typed email. Anonymous callers may have no session — that's fine.
     let email = String(body?.email || "").trim().toLowerCase();
-    const me = await base44.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'joinCollective',fallback:null,severity:'secondary'}));
+    const me = await base44.auth.me().catch((error: any) =>
+      safeBestEffort(error, {
+        operation: "joinCollective",
+        fallback: null,
+        severity: "secondary",
+      })
+    );
     if (me?.email) email = String(me.email).trim().toLowerCase();
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!emailOk) {
-      return Response.json({ ok: false, error: "invalid_email" }, { status: 400 });
+      return Response.json({ ok: false, error: "invalid_email" }, {
+        status: 400,
+      });
     }
 
     const ctx = body?.context || {};
-    const rawSid = typeof ctx.session_id === "string" ? ctx.session_id.trim() : "";
+    const rawSid = typeof ctx.session_id === "string"
+      ? ctx.session_id.trim()
+      : "";
     const sourceSession = UUID_V4.test(rawSid) ? rawSid : "";
     const gmv = Number(ctx.gmv_eur_monthly);
     const annual = Number(ctx.annual_savings_eur);
-    const channel = ctx.channel === "in_store" ? "in_store" : (ctx.channel === "online" ? "online" : undefined);
+    const channel = ctx.channel === "in_store"
+      ? "in_store"
+      : (ctx.channel === "online" ? "online" : undefined);
     // EMAIL-1 T2 — the UI language active when the member joined. Normalized
     // (unknown/absent → 'en') so the record always carries a usable value.
     const locale = normalizeLocale(body?.locale);
@@ -126,14 +119,37 @@ Deno.serve(async (req) => {
       status: "founding",
       locale,
       ...(Number.isFinite(gmv) && gmv > 0 ? { gmv_eur_monthly: gmv } : {}),
-      ...(Number.isFinite(annual) && annual > 0 ? { annual_savings_eur: annual } : {}),
-      ...(typeof ctx.provider_slug === "string" && ctx.provider_slug ? { provider_slug: String(ctx.provider_slug).slice(0, 60) } : {}),
-      ...(typeof ctx.country === "string" && ctx.country ? { country: String(ctx.country).slice(0, 8) } : {}),
+      ...(Number.isFinite(annual) && annual > 0
+        ? { annual_savings_eur: annual }
+        : {}),
+      ...(typeof ctx.provider_slug === "string" && ctx.provider_slug
+        ? { provider_slug: String(ctx.provider_slug).slice(0, 60) }
+        : {}),
+      ...(typeof ctx.country === "string" && ctx.country
+        ? { country: String(ctx.country).slice(0, 8) }
+        : {}),
       ...(channel ? { channel } : {}),
       ...(sourceSession ? { source_session: sourceSession } : {}),
     });
 
-    const gmvFmt = Number.isFinite(gmv) && gmv > 0 ? Math.round(gmv).toLocaleString("en-US") : null;
+    const gmvFmt = Number.isFinite(gmv) && gmv > 0
+      ? Math.round(gmv).toLocaleString("en-US")
+      : null;
+    // Joining remains an inbound-safe operation. One epoch fences only the
+    // notification phase and is retained across both recipients.
+    const emergency = await emergencyState(base44.asServiceRole);
+    const communicationEpoch =
+      !emergency.safe_mode && !emergency.communications_paused
+        ? await captureEmergencyEpoch(base44.asServiceRole, "communications")
+          .catch((error: any) =>
+            safeBestEffort(error, {
+              operation: "joinCollective.capture_communications_epoch",
+              fallback: null,
+              severity: "critical",
+            })
+          )
+        : null;
+    let communicationsReviewRequired = false;
 
     // ── Emails (best-effort — a failure NEVER breaks the persisted member).
     //    Uses Core.SendEmail (same integration as onBrandCreated), so it works
@@ -143,22 +159,36 @@ Deno.serve(async (req) => {
     //    steps, NO concrete rate promised. EMAIL-1: template + language live in
     //    base44/shared/emails/collectiveJoin.ts, routed by the member's locale.
     try {
-      const emergency = await emergencyState(base44.asServiceRole);
-      if (!emergency.safe_mode && !emergency.communications_paused) {
-      const mail = collectiveJoinEmail(locale, { gmvEurMonthly: gmv });
-      await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:collective-confirmation:${member.id}`, source:'joinCollective', related_entity_type:'CollectiveMember', related_entity_id:member.id }, {
-        from_name: "CAMBRA",
-        to: email,
-        subject: mail.subject,
-        body: mail.html,
-      });
+      if (communicationEpoch) {
+        const mail = collectiveJoinEmail(locale, { gmvEurMonthly: gmv });
+        await sendCostGovernedEmail(base44.asServiceRole, {
+          event_key: `email:collective-confirmation:${member.id}`,
+          stable_event_key: true,
+          source: "joinCollective",
+          related_entity_type: "CollectiveMember",
+          related_entity_id: member.id,
+          emergency_epoch_claim: communicationEpoch,
+        }, {
+          from_name: "CAMBRA",
+          to: email,
+          subject: mail.subject,
+          body: mail.html,
+        });
       }
     } catch (userEmailErr) {
-      console.warn("Collective user confirmation email failed:", (userEmailErr as any)?.message);
+      communicationsReviewRequired ||=
+        (userEmailErr as any)?.code === "EMERGENCY_EFFECT_AMBIGUOUS";
+      console.warn(
+        "Collective user confirmation email failed:",
+        (userEmailErr as any)?.message,
+      );
     }
 
     // 2) Founder/admin lead alert — this is how CAMBRA hears about the join.
-    const adminEmail = String(Deno.env.get("FOUNDER_EMAIL") || Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "").trim();
+    const adminEmail = String(
+      Deno.env.get("FOUNDER_EMAIL") ||
+        Deno.env.get("ADMIN_NOTIFICATION_EMAIL") || "",
+    ).trim();
     if (adminEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
       try {
         const bodyText = [
@@ -166,7 +196,11 @@ Deno.serve(async (req) => {
           ``,
           `Email: ${email}`,
           gmvFmt ? `Monthly GMV: €${gmvFmt}` : null,
-          Number.isFinite(annual) && annual > 0 ? `Annual savings estimate: €${Math.round(annual).toLocaleString("en-US")}` : null,
+          Number.isFinite(annual) && annual > 0
+            ? `Annual savings estimate: €${
+              Math.round(annual).toLocaleString("en-US")
+            }`
+            : null,
           ctx.provider_slug ? `Provider: ${ctx.provider_slug}` : null,
           ctx.country ? `Country: ${ctx.country}` : null,
           sourceSession ? `Session: ${sourceSession}` : null,
@@ -176,22 +210,48 @@ Deno.serve(async (req) => {
           `Locale: ${locale}`,
           `Member ID: ${member.id}`,
         ].filter(Boolean).join("\n");
-        await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:collective-admin:${member.id}`, source:'joinCollective', related_entity_type:'CollectiveMember', related_entity_id:member.id }, {
+        if (!communicationEpoch) {
+          throw new Error("emergency_control_paused:communications");
+        }
+        await sendCostGovernedEmail(base44.asServiceRole, {
+          event_key: `email:collective-admin:${member.id}`,
+          stable_event_key: true,
+          source: "joinCollective",
+          related_entity_type: "CollectiveMember",
+          related_entity_id: member.id,
+          emergency_epoch_claim: communicationEpoch,
+        }, {
           from_name: "CAMBRA",
           to: adminEmail,
-          subject: `New collective member: ${email}${gmvFmt ? ` · €${gmvFmt}/mo` : ""}`,
-          body: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap;">${bodyText}</pre>`,
+          subject: `New collective member: ${email}${
+            gmvFmt ? ` · €${gmvFmt}/mo` : ""
+          }`,
+          body:
+            `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap;">${bodyText}</pre>`,
         });
       } catch (emailErr) {
-        console.warn("Admin notification email failed:", (emailErr as any)?.message);
+        communicationsReviewRequired ||=
+          (emailErr as any)?.code === "EMERGENCY_EFFECT_AMBIGUOUS";
+        console.warn(
+          "Admin notification email failed:",
+          (emailErr as any)?.message,
+        );
       }
     }
 
-    return Response.json({ ok: true, member_id: member.id }, {
-      headers: { 'X-RateLimit-Limit': String(rl.limit), 'X-RateLimit-Remaining': String(rl.remaining), 'X-RateLimit-Reset': rl.reset },
+    return Response.json({
+      ok: true,
+      member_id: member.id,
+      communications_review_required: communicationsReviewRequired,
+    }, {
+      headers: {
+        "X-RateLimit-Limit": String(rl.limit),
+        "X-RateLimit-Remaining": String(rl.remaining),
+        "X-RateLimit-Reset": rl.reset,
+      },
     });
   } catch (error) {
     console.error("joinCollective error:", error);
-    return internalErrorResponse(error, 'joinCollective');
+    return internalErrorResponse(error, "joinCollective");
   }
 });

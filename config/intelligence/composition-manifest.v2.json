@@ -1,0 +1,283 @@
+{
+  "schema_version": "intelligence-composition-manifest.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "composition_id": "CAMBRA_INTELLIGENCE_CANONICAL_COMPOSITION_V2_2026-08-13",
+  "root_version": "2.0.0-root",
+  "sources": [
+    {
+      "spec_id": "ORCH",
+      "version": "2.0.0-root",
+      "physical_locator": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPECxx.md",
+      "sha256": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "line_count": 7921
+    },
+    {
+      "spec_id": "CIV2",
+      "version": "2.0.0-master-spec",
+      "physical_locator": "CAMBRA_INTELLIGENCE_V2_MASTER_SPEC.md",
+      "sha256": "48f781020c8893a439c84743703152d337e5a917348297dbb015a5bf448905c6",
+      "line_count": 4859
+    },
+    {
+      "spec_id": "ALIF",
+      "version": "2.0.0-master-spec",
+      "physical_locator": "CAMBRA_ADAPTIVE_LEAD_INTELLIGENCE_FUNNEL_MASTER_SPEC.md",
+      "sha256": "78236a93e571ce6aa4ec095294df91e8e1c1a51f43c266cf99ff944823157d4f",
+      "line_count": 5989
+    },
+    {
+      "spec_id": "CPIC",
+      "version": "1.0.0",
+      "physical_locator": "CAMBRA_CPIC_ULTRA_MASTER_SPECx.md",
+      "sha256": "6279c2cb83bc9bdbab31167a6d1acbaca1a6a8c1ee5a400eb418800d599a6502",
+      "line_count": 7929
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "config/intelligence/requirement-ledger.v2.json",
+      "sha256": "e71f92457b4be2cd8606cf8a7ec11e8ce647d42b7cf6c336c2dafa77c8958e18"
+    },
+    {
+      "path": "config/intelligence/acceptance-test-catalog.v2.json",
+      "sha256": "07971de5e9a2e47fbbe518e5c5b42b546a5eb4ec30221703498bbc47d175db89"
+    },
+    {
+      "path": "config/intelligence/orchestration-p0-remediation.v2.json",
+      "sha256": "976654d2b93435f3cde01b934d8959cc7d212922fbe883abeee263a9714667ed"
+    },
+    {
+      "path": "config/intelligence/canonical-alias-map.v2.json",
+      "sha256": "e4813b9c205c25e8059eb5844faf416f6ce9e4d330767189046ef5676ed74f83"
+    },
+    {
+      "path": "config/intelligence/scope-precedence.v2.json",
+      "sha256": "54cde30ee0c0dbe3a1a9f76ceefc885851d6a2c5ba99b9977781148be4019b88"
+    },
+    {
+      "path": "config/intelligence/compatibility-ledger.v2.json",
+      "sha256": "20115e7f1b5d134c10dbc4134cb2a2c940fdb9d99b781a1b2f98f9ff5f3c907b"
+    },
+    {
+      "path": "config/intelligence/root-seals.v2.json",
+      "sha256": "72b687b3d5c84a997282a20911359a4a7c8fe173aa41b958317fbf5ca5395b44"
+    }
+  ],
+  "composition_hash": "ce56c21c4a69a0365a887f4f2dc3977a44bc8c943b9fe6e3f18eb177a6df0a18",
+  "source_binding": {
+    "status": "PASS",
+    "verification_level": "SOURCE_OBSERVED",
+    "method": "LOCAL_SHA256_AND_LINE_COUNT_RECOMPUTATION",
+    "checked_source_count": 4,
+    "checked_at": "2026-08-13T00:00:00Z",
+    "limitation": "This local source-binding receipt is not a signature, runtime attestation, implementation verification or seal."
+  },
+  "locator_adr": {
+    "adr_id": "ADR-INTELLIGENCE-PHYSICAL-SOURCE-LOCATORS-001",
+    "decision_status": "RECORDED",
+    "decision": "Use the explicitly attached SPECxx and CPICx physical locators, pinned by observed SHA-256 and line count. Treat old names declared inside documents as legacy logical aliases only.",
+    "rationale": "Files with the old physical names remain present with different content. Filename-only loading would select the wrong normative bytes.",
+    "loader_rule": "Resolve only a manifest physical_locator and require exact SHA-256 plus line count.",
+    "external_approval_evidence_refs": []
+  },
+  "specs": [
+    {
+      "spec_id": "ORCH",
+      "version": "2.0.0-root",
+      "physical_locator": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPECxx.md",
+      "declared_logical_name": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPEC.md",
+      "sha256": "f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123",
+      "line_count": 7921,
+      "scope": "Root composition, compatibility, orchestration, integration tests and compositional seals",
+      "lifecycle_status": "ACTIVE",
+      "loader_eligible": true
+    },
+    {
+      "spec_id": "CIV2",
+      "version": "2.0.0-master-spec",
+      "physical_locator": "CAMBRA_INTELLIGENCE_V2_MASTER_SPEC.md",
+      "declared_logical_name": "CAMBRA_INTELLIGENCE_V2_MASTER_SPEC.md",
+      "sha256": "48f781020c8893a439c84743703152d337e5a917348297dbb015a5bf448905c6",
+      "line_count": 4859,
+      "scope": "Parent intelligence system and shared contracts",
+      "lifecycle_status": "ACTIVE",
+      "loader_eligible": true
+    },
+    {
+      "spec_id": "ALIF",
+      "version": "2.0.0-master-spec",
+      "physical_locator": "CAMBRA_ADAPTIVE_LEAD_INTELLIGENCE_FUNNEL_MASTER_SPEC.md",
+      "declared_logical_name": "CAMBRA_ADAPTIVE_LEAD_INTELLIGENCE_FUNNEL_MASTER_SPEC.md",
+      "sha256": "78236a93e571ce6aa4ec095294df91e8e1c1a51f43c266cf99ff944823157d4f",
+      "line_count": 5989,
+      "scope": "Discovery, research and adaptive lead funnel domain profile",
+      "lifecycle_status": "ACTIVE",
+      "loader_eligible": true
+    },
+    {
+      "spec_id": "CPIC",
+      "version": "1.0.0",
+      "physical_locator": "CAMBRA_CPIC_ULTRA_MASTER_SPECx.md",
+      "declared_logical_name": "CAMBRA_CPIC_ULTRA_MASTER_SPEC.md",
+      "sha256": "6279c2cb83bc9bdbab31167a6d1acbaca1a6a8c1ee5a400eb418800d599a6502",
+      "line_count": 7929,
+      "scope": "Statistical, probabilistic, decision and uncertainty intelligence",
+      "lifecycle_status": "ACTIVE",
+      "loader_eligible": true
+    }
+  ],
+  "legacy_logical_aliases": [
+    {
+      "logical_alias": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPEC.md",
+      "authoritative_spec_id": "ORCH",
+      "authoritative_physical_locator": "CAMBRA_INTELLIGENCE_MASTER_ORCHESTRATION_SPECxx.md",
+      "conflicting_physical_sha256": "4cdaa0daded4576eb297fd752f4b09aeb44830db28ebe7ab96a4511c61eafb06",
+      "conflicting_physical_line_count": 1299,
+      "alias_status": "CONTENT_MISMATCH",
+      "lifecycle_status": "SUPERSEDED",
+      "loader_eligible": false,
+      "rule": "Never resolve this logical alias by filename. Load the authoritative physical locator and verify hash plus line count."
+    },
+    {
+      "logical_alias": "CAMBRA_CPIC_ULTRA_MASTER_SPEC.md",
+      "authoritative_spec_id": "CPIC",
+      "authoritative_physical_locator": "CAMBRA_CPIC_ULTRA_MASTER_SPECx.md",
+      "conflicting_physical_sha256": "3d4f178a0092ad798be7a874e15571e1b40352ead9a417ddc4e0c1afa771e086",
+      "conflicting_physical_line_count": 429,
+      "alias_status": "CONTENT_MISMATCH",
+      "lifecycle_status": "SUPERSEDED",
+      "loader_eligible": false,
+      "rule": "Never resolve this logical alias by filename. Load the authoritative physical locator and verify hash plus line count."
+    }
+  ],
+  "active_v1_artifacts": [
+    {
+      "path": "config/intelligence/research-conflicts.v1.json",
+      "lifecycle_status": "ACTIVE_RESEARCH_KNOWLEDGE_V1",
+      "read_compatibility": "SUPPORTED",
+      "write_target": true,
+      "authority": "CANDIDATE_ONLY_NON_EXECUTABLE"
+    },
+    {
+      "path": "config/intelligence/research-knowledge.v1.json",
+      "lifecycle_status": "ACTIVE_RESEARCH_KNOWLEDGE_V1",
+      "read_compatibility": "SUPPORTED",
+      "write_target": true,
+      "authority": "CANDIDATE_ONLY_NON_EXECUTABLE"
+    },
+    {
+      "path": "config/intelligence/research-source-manifest.v1.json",
+      "lifecycle_status": "ACTIVE_RESEARCH_KNOWLEDGE_V1",
+      "read_compatibility": "SUPPORTED",
+      "write_target": true,
+      "authority": "CANDIDATE_ONLY_NON_EXECUTABLE"
+    }
+  ],
+  "legacy_v1_artifacts": [
+    {
+      "path": "config/intelligence/dataset-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/evaluation-harness.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/experience-event-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/feature-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/gates.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/label-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/learning-eligibility-policy.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/model-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/prediction-registry.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/requirement-ledger.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/resource-reuse-matrix.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/shared-contract-map.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/spec-compatibility-matrix.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    },
+    {
+      "path": "config/intelligence/universal-experience.v1.json",
+      "lifecycle_status": "SUPERSEDED_FOR_CANONICAL_V2_RECONCILIATION",
+      "read_compatibility": "SUPPORTED",
+      "write_target": false
+    }
+  ],
+  "repository_observation": {
+    "physical_function_target": 276,
+    "logical_route_count_observed": 27,
+    "topology_rule": "Preserve 276 physical functions and 27 logical routes in this slice; no runtime resources are modified.",
+    "runtime_parity": "UNVERIFIED",
+    "production_runtime": "UNKNOWN"
+  },
+  "canonical_refs": {
+    "requirement_ledger": "config/intelligence/requirement-ledger.v2.json",
+    "acceptance_test_catalog": "config/intelligence/acceptance-test-catalog.v2.json",
+    "p0_remediation_ledger": "config/intelligence/orchestration-p0-remediation.v2.json",
+    "aliases": "config/intelligence/canonical-alias-map.v2.json",
+    "precedence": "config/intelligence/scope-precedence.v2.json",
+    "compatibility": "config/intelligence/compatibility-ledger.v2.json",
+    "seals": "config/intelligence/root-seals.v2.json"
+  },
+  "seal_effect": {
+    "source_binding": "PASS",
+    "SPEC_SET_RECONCILED": "NOT_SEALED",
+    "reason": "Local canonical manifests/checks do not supply signed approval, complete applicability mapping or independent seal evidence."
+  }
+}

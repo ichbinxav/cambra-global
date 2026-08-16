@@ -104,6 +104,14 @@
       "type": "string",
       "format": "date-time"
     },
+    "authorization_mandate_id": {
+      "type": "string",
+      "description": "RECOVER-1 CAS binding: while awaiting_authorization, only this exact Mandate may complete authorization. Prevents concurrent acceptances for different mandates."
+    },
+    "active_mandate_id": {
+      "type": "string",
+      "description": "RECOVER-1 authoritative pointer to the sole active Mandate whose verified activation transition reached authorized."
+    },
     "payment_method_status": {
       "type": "string",
       "enum": [

@@ -6,6 +6,140 @@
       "type": "string",
       "description": "Tenant isolation key. Every Event belongs to exactly one Brand."
     },
+    "tenant_id": {
+      "type": "string",
+      "description": "Explicit tenant identifier for Universal Experience projections. New v2 producers must keep this equal to brand_id; legacy Event rows may omit it."
+    },
+    "tenant_scope": {
+      "type": "string",
+      "enum": [
+        "TENANT",
+        "PLATFORM",
+        "ANONYMIZED_AGGREGATE"
+      ],
+      "description": "Explicit scope for Universal Experience projections. Optional for legacy rows."
+    },
+    "experience_id": {
+      "type": "string",
+      "description": "CAMBRA-owned semantic experience identifier. Required by the Universal Experience v1 contract, optional for legacy rows."
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "Experience envelope schema version. `universal-experience.v1` activates the strict shared validator."
+    },
+    "event_version": {
+      "type": "integer",
+      "description": "Version of the dot-namespaced semantic event type."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "description": "Business-event idempotency key. Duplicate delivery must resolve to one semantic experience; same key/different payload is a conflict."
+    },
+    "aggregate_id": {
+      "type": "string",
+      "description": "Optional ordered aggregate/episode identifier. Global event ordering is never assumed."
+    },
+    "sequence_number": {
+      "type": "integer",
+      "description": "Optional monotonic sequence within aggregate_id."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time the event occurred in the source world."
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time CAMBRA observed the event."
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time the semantic experience was durably recorded."
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start of the fact/action's effective validity."
+    },
+    "available_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Earliest time this information was legitimately available to a decision."
+    },
+    "payload_content_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical semantic payload, separate from any raw source content."
+    },
+    "actor_json": {
+      "type": "object",
+      "description": "Typed actor identity/version for Universal Experience."
+    },
+    "identity_json": {
+      "type": "object",
+      "description": "Typed canonical subject references; external identifiers remain source references."
+    },
+    "source_json": {
+      "type": "object",
+      "description": "Pointer/hash to the authoritative domain source. Event does not replace that source."
+    },
+    "context_snapshot_id": {
+      "type": "string",
+      "description": "Optional immutable IntelligenceSnapshot used at decision time."
+    },
+    "decision_json": {
+      "type": "object",
+      "description": "Decision/recommendation and reason codes. Never implies authority or execution."
+    },
+    "producer_json": {
+      "type": "object",
+      "description": "Code, policy, prompt, rule and model versions involved in producing the decision."
+    },
+    "authority_json": {
+      "type": "object",
+      "description": "Reference to deterministic authority/approval state; confidence cannot expand authority."
+    },
+    "execution_json": {
+      "type": "object",
+      "description": "Proposal/approval/queue/execution state and receipt lineage."
+    },
+    "outcome_json": {
+      "type": "object",
+      "description": "Outcome projection referencing domain truth and IntelligenceOutcome where applicable."
+    },
+    "learning_json": {
+      "type": "object",
+      "description": "Learning eligibility projection. New writers use INELIGIBLE, QUARANTINED or CLEARED from the shared policy."
+    },
+    "privacy_json": {
+      "type": "object",
+      "description": "Classification, purpose, training/cross-tenant permissions and retention policy."
+    },
+    "trace_json": {
+      "type": "object",
+      "description": "Correlation, causation, parent/supersession and aggregate sequence references."
+    },
+    "data_quality_json": {
+      "type": "object",
+      "description": "Identity, provenance, temporal, outcome, contradiction and eligibility quality states."
+    },
+    "is_demo": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_synthetic": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_replay": {
+      "type": "boolean",
+      "default": false
+    },
     "event_type": {
       "type": "string",
       "description": "Dot-namespaced event name (e.g. 'analyzer.completed', 'agent.task.created', 'approval.approved')."
@@ -25,6 +159,101 @@
     "agent_task_id": {
       "type": "string",
       "description": "Optional FK to AgentTask if this event was emitted by or for an agent task."
+    },
+    "trace_envelope_version": {
+      "type": "string",
+      "description": "AgentTask trace-envelope version copied from the exact canonical task; optional for legacy Event rows."
+    },
+    "trace_lineage_state": {
+      "type": "string",
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "UNKNOWN"
+      ],
+      "description": "Honest completeness of the linked task trace. Event never upgrades PARTIAL/UNKNOWN lineage."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Stable trace identifier copied from the exact canonical AgentTask."
+    },
+    "parent_run": {
+      "type": "string",
+      "description": "Exact parent run/task reference; never inferred for legacy events."
+    },
+    "step": {
+      "type": "object",
+      "description": "Exact canonical step projection from AgentTask."
+    },
+    "tenant_key": {
+      "type": "string",
+      "description": "Canonical trace tenant key. New traced events must keep it equal to brand_id."
+    },
+    "subject_type": {
+      "type": "string",
+      "description": "Canonical traced subject type."
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Canonical traced subject identity."
+    },
+    "input_hash": {
+      "type": "string",
+      "description": "SHA-256 of the canonical secret-redacted task input."
+    },
+    "policy_context_json": {
+      "type": "object",
+      "description": "Exact typed policy context copied from the linked task."
+    },
+    "authority_context_json": {
+      "type": "object",
+      "description": "Exact typed authority context copied from the linked task."
+    },
+    "intelligence_context_json": {
+      "type": "object",
+      "description": "Exact typed intelligence context copied from the linked task."
+    },
+    "cost_record_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Immutable CostUsageEvent references copied from the linked task."
+    },
+    "effect_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Stable material effect references copied from the linked task."
+    },
+    "receipt_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Immutable provider/domain receipt references copied from the linked task."
+    },
+    "terminal_result_hash": {
+      "type": "string",
+      "description": "Hash of the linked task terminal result when present."
+    },
+    "terminal_result_json": {
+      "type": "object",
+      "description": "Bounded secret-redacted terminal task projection."
+    },
+    "terminal_state": {
+      "type": "string",
+      "description": "Terminal state copied from the linked task."
+    },
+    "ambiguity_state": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "UNKNOWN",
+        "REVIEW_REQUIRED"
+      ],
+      "description": "Explicit linked-task ambiguity."
     },
     "payload_json": {
       "type": "object",

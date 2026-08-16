@@ -1,1 +1,35 @@
-{"name":"AcquisitionLearningCohort","type":"object","properties":{"cohort_key":{"type":"string"},"sample_size":{"type":"number"},"reply_count":{"type":"number"},"positive_reply_count":{"type":"number"},"meeting_count":{"type":"number"},"won_count":{"type":"number"},"verified_savings_count":{"type":"number"},"verified_savings_total":{"type":"number"},"outcome_value_total":{"type":"number"},"mean_outcome_value":{"type":"number"},"learning_multiplier":{"type":"number"},"updated_at":{"type":"string"}},"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}}
+{
+  "name": "AcquisitionLearningCohort",
+  "type": "object",
+  "description": "Bounded selected-population advisory for ordering already-eligible acquisition candidates. It is never a trained/calibrated model or an authority artifact.",
+  "properties": {
+    "cohort_key": { "type": "string" },
+    "sample_size": { "type": "number" },
+    "eligible_sample_size": { "type": "number" },
+    "exposure_count": { "type": "number" },
+    "negative_count": { "type": "number" },
+    "reply_count": { "type": "number" },
+    "positive_reply_count": { "type": "number" },
+    "meeting_count": { "type": "number" },
+    "won_count": { "type": "number" },
+    "verified_savings_count": { "type": "number" },
+    "verified_savings_total": { "type": "number" },
+    "outcome_value_total": { "type": "number" },
+    "mean_outcome_value": { "type": "number" },
+    "learning_multiplier": { "type": "number" },
+    "label_contract_version": { "type": "string" },
+    "methodology_class": {
+      "type": "string",
+      "enum": ["DESCRIPTIVE_SELECTED_POPULATION_ADVISORY"]
+    },
+    "probabilistic_calibration": { "type": "boolean", "default": false },
+    "training_eligible": { "type": "boolean", "default": false },
+    "selected_population_note": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["cohort_key"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

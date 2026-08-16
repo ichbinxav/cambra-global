@@ -17,6 +17,7 @@ import {
 } from './generated/eclDomain.ts';
 import { createOnce } from './eclPersistence.ts';
 import { invokeInternal } from './invokeInternal.ts';
+import { bestEffortExecutionEvidence } from './criticalExecution.ts';
 
 export const RECOVER_ECL_SOURCE_MAX_AGE_DAYS = 35;
 const DAY_MS = 86400000;
@@ -258,7 +259,11 @@ export async function ensureRecoverSavingsEvidence({ base44, svc, activation, ba
     row = (afterCreate || [])[0] || created;
     for (const dup of afterCreate || []) {
       if (dup?.id && row?.id && dup.id !== row.id && dup.id === created?.id) {
-        await svc.entities.SavingsEvidence.delete(dup.id).catch(() => null);
+        await bestEffortExecutionEvidence(
+          'ecl_duplicate_savings_evidence_compensation',
+          () => svc.entities.SavingsEvidence.delete(dup.id),
+          null,
+        );
       }
     }
   }

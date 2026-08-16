@@ -1,0 +1,1154 @@
+{
+  "schema_version": "resource-reuse-matrix.v1",
+  "generated_at": "2026-08-13T03:49:26Z",
+  "source_ledger": "config/intelligence/requirement-ledger.v1.json",
+  "allowed_decisions": [
+    "REUSE",
+    "EXTEND",
+    "REUSE_AS_AUTHORITY",
+    "REUSE_AS_BASELINE",
+    "EXTEND_CAUTIOUSLY",
+    "EVALUATE_EXTENSION",
+    "MIGRATE_OR_DEPRECATE_AFTER_AUDIT",
+    "DEPRECATE",
+    "TARGET_NEW_AFTER_GATE",
+    "REUSE_ROUTING",
+    "NEW_LOGICAL_CONTRACT"
+  ],
+  "rule": "Names do not prove authority. Reuse or extend an existing authoritative role before NEW; NEW_LOGICAL_CONTRACT may define the single shared machine-readable schema but does not authorize a runtime store, trained artifact or production capability.",
+  "resources": [
+    {
+      "resource_id": "RESOURCE.INTELLIGENCEEVIDENCE",
+      "resource": "IntelligenceEvidence",
+      "resource_type": "entity",
+      "current_role": "Immutable intelligence evidence/provenance ledger",
+      "decision": "REUSE",
+      "authoritative_contract": "Evidence",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Canonical intelligence evidence; do not duplicate.",
+      "migration_or_gap": "Runtime parity and tenant/service-role enforcement remain unverified.",
+      "evidence_refs": [
+        "base44/entities/IntelligenceEvidence.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.INTELLIGENCEOBSERVATION",
+      "resource": "IntelligenceObservation",
+      "resource_type": "entity",
+      "current_role": "Normalized observation derived from evidence",
+      "decision": "REUSE",
+      "authoritative_contract": "Evidence",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserves observation≠truth boundary.",
+      "migration_or_gap": "Universal Experience linkage is partial.",
+      "evidence_refs": [
+        "base44/entities/IntelligenceObservation.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.KNOWLEDGECLAIM",
+      "resource": "KnowledgeClaim",
+      "resource_type": "entity",
+      "current_role": "Versioned knowledge claim with truth state",
+      "decision": "EXTEND",
+      "authoritative_contract": "Memory/Evidence",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Useful governed fact memory.",
+      "migration_or_gap": "Add shared identity/time/retrieval contract through backwards-compatible adapter.",
+      "evidence_refs": [
+        "base44/entities/KnowledgeClaim.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.INTELLIGENCESNAPSHOT",
+      "resource": "IntelligenceSnapshot",
+      "resource_type": "entity",
+      "current_role": "Immutable decision-time intelligence snapshot",
+      "decision": "EXTEND",
+      "authoritative_contract": "Decision",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing critical-domain snapshot authority.",
+      "migration_or_gap": "Add feature/retrieval/model context versions without rewriting history.",
+      "evidence_refs": [
+        "base44/entities/IntelligenceSnapshot.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.INTELLIGENCEOUTCOME",
+      "resource": "IntelligenceOutcome",
+      "resource_type": "entity",
+      "current_role": "Canonical learning projection of mature outcomes",
+      "decision": "EXTEND",
+      "authoritative_contract": "Outcome/Learning",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Reuse as learning ledger, referencing domain truth.",
+      "migration_or_gap": "Eligibility, exposure, censoring and label lineage remain partial.",
+      "evidence_refs": [
+        "base44/entities/IntelligenceOutcome.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.KNOWLEDGEGAP",
+      "resource": "KnowledgeGap",
+      "resource_type": "entity",
+      "current_role": "Ranked intelligence gap",
+      "decision": "EXTEND",
+      "authoritative_contract": "Evidence/VOI",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Natural gap primitive for research decisions.",
+      "migration_or_gap": "Candidate-level action/VOI and realized information value are not complete.",
+      "evidence_refs": [
+        "base44/entities/KnowledgeGap.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.MOATMETRIC",
+      "resource": "MoatMetric",
+      "resource_type": "entity",
+      "current_role": "Transparent versioned moat metric",
+      "decision": "REUSE",
+      "authoritative_contract": "Learning",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Governed metric, not predictive model.",
+      "migration_or_gap": "Do not present as model quality or valuation.",
+      "evidence_refs": [
+        "base44/entities/MoatMetric.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.ANONYMIZEDINTELLIGENCEAGGREGATE",
+      "resource": "AnonymizedIntelligenceAggregate",
+      "resource_type": "entity",
+      "current_role": "Privacy-safe cross-tenant aggregate",
+      "decision": "REUSE",
+      "authoritative_contract": "Privacy",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing k≥10 retained-intelligence boundary.",
+      "migration_or_gap": "Runtime deletion/retention proof remains unverified.",
+      "evidence_refs": [
+        "base44/entities/AnonymizedIntelligenceAggregate.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.P4STATISTICALESTIMATE",
+      "resource": "P4StatisticalEstimate",
+      "resource_type": "entity",
+      "current_role": "Versioned statistical estimate cache",
+      "decision": "EXTEND",
+      "authoritative_contract": "CPIC/Model output",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Best existing home for CPIC-compatible estimate envelopes.",
+      "migration_or_gap": "The canonical V0 envelope is stored inside estimate_json; runtime parity, approved model registry and calibration evidence remain absent.",
+      "evidence_refs": [
+        "base44/entities/P4StatisticalEstimate.jsonc",
+        "base44/functions/requestP4Estimate/entry.ts",
+        "base44/shared/cpicFoundation.ts",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.P4EVIDENCEPROJECTION",
+      "resource": "P4EvidenceProjection",
+      "resource_type": "entity",
+      "current_role": "Privacy-safe evidence projection for P4",
+      "decision": "EXTEND",
+      "authoritative_contract": "CPIC/Evidence",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Avoids raw evidence leakage into statistics.",
+      "migration_or_gap": "Support and dataset lineage need formal versioning.",
+      "evidence_refs": [
+        "base44/entities/P4EvidenceProjection.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.BENCHMARKCONTRIBUTION",
+      "resource": "BenchmarkContribution",
+      "resource_type": "entity",
+      "current_role": "Pseudonymized benchmark input",
+      "decision": "REUSE",
+      "authoritative_contract": "Benchmark truth",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Keep existing benchmark path as baseline.",
+      "migration_or_gap": "Pseudonymous, not anonymous; deletion/purpose controls apply.",
+      "evidence_refs": [
+        "base44/entities/BenchmarkContribution.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.BENCHMARKCOHORT",
+      "resource": "BenchmarkCohort",
+      "resource_type": "entity",
+      "current_role": "Current robust benchmark cohort",
+      "decision": "EXTEND",
+      "authoritative_contract": "Benchmark baseline",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Simple baseline must remain for challenger comparison.",
+      "migration_or_gap": "Partial pooling/temporal/OOD extensions require CPIC phases.",
+      "evidence_refs": [
+        "base44/entities/BenchmarkCohort.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.EVENT",
+      "resource": "Event",
+      "resource_type": "entity",
+      "current_role": "General application event with optional Universal Experience v1 projection fields",
+      "decision": "EXTEND",
+      "authoritative_contract": "Universal Experience",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Backwards-compatible extension avoids a duplicate event bus while domain records remain authoritative.",
+      "migration_or_gap": "Domain adapters, committed-event/outbox semantics, cardinality/query/retention and runtime tenant proof remain blocked.",
+      "evidence_refs": [
+        "base44/entities/Event.jsonc",
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/universal-experience.v1.json",
+        "src/docs/CAMBRA_INTELLIGENCE_PHASE_1_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.OPERATIONALLOG",
+      "resource": "OperationalLog",
+      "resource_type": "entity",
+      "current_role": "Operational audit log",
+      "decision": "REUSE",
+      "authoritative_contract": "Observability",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Keep audit semantics.",
+      "migration_or_gap": "Do not repurpose as experience/model registry.",
+      "evidence_refs": [
+        "base44/entities/OperationalLog.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.AUTHORITYSNAPSHOT",
+      "resource": "AuthoritySnapshot",
+      "resource_type": "entity",
+      "current_role": "Decision-time authority state",
+      "decision": "REUSE",
+      "authoritative_contract": "Authority",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Canonical authority snapshot.",
+      "migration_or_gap": "No model record may duplicate or weaken it.",
+      "evidence_refs": [
+        "base44/entities/AuthoritySnapshot.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.APPROVAL",
+      "resource": "Approval",
+      "resource_type": "entity",
+      "current_role": "Founder/admin material approval",
+      "decision": "REUSE",
+      "authoritative_contract": "Authority",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing deterministic approval authority.",
+      "migration_or_gap": "Execution receipt linkage is being hardened separately.",
+      "evidence_refs": [
+        "base44/entities/Approval.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COSTBUDGETCONTROL",
+      "resource": "CostBudgetControl",
+      "resource_type": "entity",
+      "current_role": "Canonical budget/kill-switch control",
+      "decision": "REUSE",
+      "authoritative_contract": "Cost",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Single budget authority.",
+      "migration_or_gap": "Runtime credentials/configuration and end-to-end reservations unverified.",
+      "evidence_refs": [
+        "base44/entities/CostBudgetControl.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COSTUSAGEEVENT",
+      "resource": "CostUsageEvent",
+      "resource_type": "entity",
+      "current_role": "Canonical cost reservation/reconciliation event",
+      "decision": "EXTEND",
+      "authoritative_contract": "Cost",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Use for research/inference/training/evaluation/shadow.",
+      "migration_or_gap": "Model/dataset/problem attribution fields may need additive extension.",
+      "evidence_refs": [
+        "base44/entities/CostUsageEvent.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.BRAND",
+      "resource": "Brand",
+      "resource_type": "entity",
+      "current_role": "Merchant tenant/operational identity",
+      "decision": "REUSE",
+      "authoritative_contract": "Identity",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserve tenant authority.",
+      "migration_or_gap": "Cross-domain explicit tenant links remain incomplete.",
+      "evidence_refs": [
+        "base44/entities/Brand.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.OUTBOUNDLEAD",
+      "resource": "OutboundLead",
+      "resource_type": "entity",
+      "current_role": "Outbound company candidate master",
+      "decision": "EXTEND",
+      "authoritative_contract": "Adaptive Lead Identity",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Primary funnel candidate; provider-independent key already exists.",
+      "migration_or_gap": "Company-only/contact-last semantics and complete action lineage remain partial.",
+      "evidence_refs": [
+        "base44/entities/OutboundLead.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.LEAD",
+      "resource": "Lead",
+      "resource_type": "entity",
+      "current_role": "Inbound/waitlist lead",
+      "decision": "REUSE",
+      "authoritative_contract": "Inbound Identity",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Distinct inbound meaning.",
+      "migration_or_gap": "Must not be merged with OutboundLead.",
+      "evidence_refs": [
+        "base44/entities/Lead.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.LEADCAPTURE",
+      "resource": "LeadCapture",
+      "resource_type": "entity",
+      "current_role": "Public inbound capture",
+      "decision": "REUSE",
+      "authoritative_contract": "Inbound Identity",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Distinct consent/capture role.",
+      "migration_or_gap": "Must not be treated as outbound company.",
+      "evidence_refs": [
+        "base44/entities/LeadCapture.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.PROVIDERLEAD",
+      "resource": "ProviderLead",
+      "resource_type": "entity",
+      "current_role": "Provider-domain lead",
+      "decision": "REUSE",
+      "authoritative_contract": "Provider Identity",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Separate domain semantics.",
+      "migration_or_gap": "Live use and identity adapter require evidence.",
+      "evidence_refs": [
+        "base44/entities/ProviderLead.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.PROVIDER",
+      "resource": "Provider",
+      "resource_type": "entity",
+      "current_role": "Operational provider identity",
+      "decision": "REUSE_AS_AUTHORITY",
+      "authoritative_contract": "Provider Identity",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Widely used operational authority.",
+      "migration_or_gap": "Audit runtime CanonicalProvider data before any cutover.",
+      "evidence_refs": [
+        "base44/entities/Provider.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.CANONICALPROVIDER",
+      "resource": "CanonicalProvider",
+      "resource_type": "entity",
+      "current_role": "Unused/uncertain alternate provider identity",
+      "decision": "MIGRATE_OR_DEPRECATE_AFTER_AUDIT",
+      "authoritative_contract": "Provider Identity",
+      "capability_state": "PARTIAL",
+      "delivery_status": "NOT_STARTED",
+      "reason": "Do not create a third provider master.",
+      "migration_or_gap": "Runtime data/use audit required.",
+      "evidence_refs": [
+        "base44/entities/CanonicalProvider.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.PROVIDERPRICINGVERSION",
+      "resource": "ProviderPricingVersion",
+      "resource_type": "entity",
+      "current_role": "Official/observed provider pricing history",
+      "decision": "REUSE",
+      "authoritative_contract": "Deterministic Rate Truth",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "P3 truth must remain separate from CPIC inference.",
+      "migration_or_gap": "Runtime source freshness still unverified.",
+      "evidence_refs": [
+        "base44/entities/ProviderPricingVersion.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.RATECOMPONENT",
+      "resource": "RateComponent",
+      "resource_type": "entity",
+      "current_role": "Structured deterministic pricing component",
+      "decision": "REUSE",
+      "authoritative_contract": "Deterministic Rate Truth",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Supports reproducible pricing truth.",
+      "migration_or_gap": "CPIC only conditions estimates; never overwrites.",
+      "evidence_refs": [
+        "base44/entities/RateComponent.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COMPANYMEMORY",
+      "resource": "CompanyMemory",
+      "resource_type": "entity",
+      "current_role": "Brand discovery/onboarding/resume state",
+      "decision": "EXTEND_CAUTIOUSLY",
+      "authoritative_contract": "Memory",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Useful company state but not universal commercial memory.",
+      "migration_or_gap": "Need explicit fact/episode/contradiction scope or adapters.",
+      "evidence_refs": [
+        "base44/entities/CompanyMemory.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COMMUNICATIONTHREAD",
+      "resource": "CommunicationThread",
+      "resource_type": "entity",
+      "current_role": "Conversation/thread source of truth",
+      "decision": "REUSE",
+      "authoritative_contract": "Memory/Execution",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Canonical thread grouping.",
+      "migration_or_gap": "Tenant identity linkage is heterogeneous.",
+      "evidence_refs": [
+        "base44/entities/CommunicationThread.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COMMUNICATIONMESSAGE",
+      "resource": "CommunicationMessage",
+      "resource_type": "entity",
+      "current_role": "Message source of truth",
+      "decision": "REUSE",
+      "authoritative_contract": "Memory/Execution",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Experience references message rather than copying it.",
+      "migration_or_gap": "Cross-thread retrieval and retention policy remain partial.",
+      "evidence_refs": [
+        "base44/entities/CommunicationMessage.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.NEGOTIATIONCASE",
+      "resource": "NegotiationCase",
+      "resource_type": "entity",
+      "current_role": "Persistent negotiation state",
+      "decision": "EXTEND",
+      "authoritative_contract": "Negotiation",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserve case truth.",
+      "migration_or_gap": "Episode/turn/tactic/reaction lineage missing.",
+      "evidence_refs": [
+        "base44/entities/NegotiationCase.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.NEGOTIATIONOFFER",
+      "resource": "NegotiationOffer",
+      "resource_type": "entity",
+      "current_role": "Observed/proposed terms by round",
+      "decision": "EXTEND",
+      "authoritative_contract": "Negotiation",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Useful economic term history.",
+      "migration_or_gap": "Distinguish observed/proposed/sent/accepted/executed consistently.",
+      "evidence_refs": [
+        "base44/entities/NegotiationOffer.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.NEGOTIATIONMEMORYCOHORT",
+      "resource": "NegotiationMemoryCohort",
+      "resource_type": "entity",
+      "current_role": "Aggregate negotiation memory",
+      "decision": "REUSE_AS_BASELINE",
+      "authoritative_contract": "Negotiation Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Keep as simple cohort baseline.",
+      "migration_or_gap": "Not episode-level causal learning.",
+      "evidence_refs": [
+        "base44/entities/NegotiationMemoryCohort.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.DISCOVERYEXECUTIONRUN",
+      "resource": "DiscoveryExecutionRun",
+      "resource_type": "entity",
+      "current_role": "Discovery run/checkpoint/result container",
+      "decision": "EXTEND",
+      "authoritative_contract": "Adaptive Lead Execution",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IN_PROGRESS",
+      "reason": "Reuse existing run instead of new physical function/entity.",
+      "migration_or_gap": "Backend ownership, leases, immutable attribution and filter fidelity need proof.",
+      "evidence_refs": [
+        "base44/entities/DiscoveryExecutionRun.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.ACQUISITIONLEARNINGCOHORT",
+      "resource": "AcquisitionLearningCohort",
+      "resource_type": "entity",
+      "current_role": "Bounded acquisition outcome calibration",
+      "decision": "REUSE_AS_BASELINE",
+      "authoritative_contract": "Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserve as bounded baseline.",
+      "migration_or_gap": "Selected-population bias, exposure and mature labels need correction.",
+      "evidence_refs": [
+        "base44/entities/AcquisitionLearningCohort.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.ACQUISITIONTOUCH",
+      "resource": "AcquisitionTouch",
+      "resource_type": "entity",
+      "current_role": "Acquisition attribution touch",
+      "decision": "EXTEND",
+      "authoritative_contract": "Universal Experience/Outcome",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Useful cross-domain touch primitive.",
+      "migration_or_gap": "Writer coverage and exact exposure lineage are unverified.",
+      "evidence_refs": [
+        "base44/entities/AcquisitionTouch.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COMMERCIALSTRATEGY",
+      "resource": "CommercialStrategy",
+      "resource_type": "entity",
+      "current_role": "Canonical commercial strategy",
+      "decision": "REUSE",
+      "authoritative_contract": "Decision",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing strategy contract.",
+      "migration_or_gap": "Predictions advise; deterministic policy authorizes.",
+      "evidence_refs": [
+        "base44/entities/CommercialStrategy.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COMMERCIALCAMPAIGN",
+      "resource": "CommercialCampaign",
+      "resource_type": "entity",
+      "current_role": "Campaign execution container",
+      "decision": "REUSE",
+      "authoritative_contract": "Execution",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserve execution semantics.",
+      "migration_or_gap": "Adaptive lead handoff must reference candidate/decision/evidence versions.",
+      "evidence_refs": [
+        "base44/entities/CommercialCampaign.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.AGENTTASK",
+      "resource": "AgentTask",
+      "resource_type": "entity",
+      "current_role": "Durable agent work/proposal task",
+      "decision": "EXTEND",
+      "authoritative_contract": "Execution",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Shared work lifecycle primitive.",
+      "migration_or_gap": "Uniform external execution receipts and idempotency are being hardened.",
+      "evidence_refs": [
+        "base44/entities/AgentTask.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.AGENTRUN",
+      "resource": "AgentRun",
+      "resource_type": "entity",
+      "current_role": "Deprecated read-only compatibility history; zero production writers",
+      "decision": "DEPRECATE",
+      "authoritative_contract": "Observability",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "AgentTask is the only canonical work lifecycle. Keeping AgentRun writable would create a competing execution and approval authority.",
+      "migration_or_gap": "Historical rows remain readable. New correlation, execution and approval lineage belongs to AgentTask, Approval and Event; runtime proof of zero legacy callers remains pending.",
+      "evidence_refs": [
+        "base44/entities/AgentRun.jsonc"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+        ,"DEPRECATED_READ_ONLY"
+        ,"ZERO_WRITERS_SOURCE_PROVEN_RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.MODELREGISTRY",
+      "resource": "ModelRegistry",
+      "resource_type": "machine-readable registry contract",
+      "current_role": "Single shared model lifecycle/stage schema with zero registered artifacts",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Model",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Defines the one future registry contract without a Base44 table, artifact or serving claim.",
+      "migration_or_gap": "No problem, dataset, training run, artifact, evaluation, model card, shadow, rollback or runtime record exists.",
+      "evidence_refs": [
+        "config/intelligence/model-registry.v1.json",
+        "src/docs/CAMBRA_INTELLIGENCE_PHASE_1_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.FEATUREREGISTRY",
+      "resource": "FeatureRegistry",
+      "resource_type": "machine-readable registry contract",
+      "current_role": "Single shared point-in-time feature definition schema with zero approved definitions",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Defines the one semantic registry contract without creating an online Feature Store.",
+      "migration_or_gap": "No approved feature, point-in-time builder or online/offline parity evidence exists.",
+      "evidence_refs": [
+        "config/intelligence/feature-registry.v1.json"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.LABELREGISTRY",
+      "resource": "LabelRegistry",
+      "resource_type": "machine-readable registry contract",
+      "current_role": "Single shared label/maturity/censoring schema with zero approved definitions",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Centralizes anti-self-training, maturity and verification semantics for every domain.",
+      "migration_or_gap": "No mature approved label cohort, censoring policy evidence or runtime evaluator exists.",
+      "evidence_refs": [
+        "config/intelligence/label-registry.v1.json",
+        "config/intelligence/learning-eligibility-policy.v1.json"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.DATASETREGISTRY",
+      "resource": "DatasetRegistry",
+      "resource_type": "machine-readable registry contract",
+      "current_role": "Single shared immutable dataset-manifest schema with zero sealed datasets",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Defines one reproducible manifest contract without claiming a dataset or data lake.",
+      "migration_or_gap": "No builder, sealed dataset, content hash, frozen holdout, card or revocation impact evidence exists.",
+      "evidence_refs": [
+        "config/intelligence/dataset-registry.v1.json",
+        "config/intelligence/learning-eligibility-policy.v1.json"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.PREDICTIONREGISTRY",
+      "resource": "PredictionRegistry",
+      "resource_type": "machine-readable registry contract",
+      "current_role": "Single shared prediction/model/dataset/feature/outcome lineage schema with zero predictions",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Model",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Prevents CPIC, Discovery, Analyzer and Negotiation from inventing incompatible prediction lineage.",
+      "migration_or_gap": "No registered model, serving runtime, prediction writer or prediction-to-outcome trace exists.",
+      "evidence_refs": [
+        "config/intelligence/prediction-registry.v1.json"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.EVALUATIONHARNESS",
+      "resource": "EvaluationHarness",
+      "resource_type": "machine-readable shared contract and pure validator",
+      "current_role": "Single cross-domain problem/metric/holdout/segment/safety/reproducibility/promotion contract with zero evaluation records",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "Model",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Prevents CPIC, Adaptive Lead, Analyzer and Negotiation from creating incompatible evaluation or promotion philosophies without adding a Base44 entity or function.",
+      "migration_or_gap": "No approved problem, frozen holdout, executed evaluation, signed report, shadow/canary result, rollback evidence or runtime verifier exists.",
+      "evidence_refs": [
+        "config/intelligence/evaluation-harness.v1.json",
+        "base44/shared/intelligenceEvaluationContract.ts",
+        "src/lib/intelligenceEvaluationContract.test.js",
+        "src/docs/CAMBRA_INTELLIGENCE_EVALUATION_HARNESS_CONTRACT.md"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "CONTRACT_ONLY",
+        "NO_RECORDS",
+        "NO_PROMOTION_AUTHORITY"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.TRAININGRUN",
+      "resource": "TrainingRun",
+      "resource_type": "target resource",
+      "current_role": "No authoritative repository implementation found",
+      "decision": "TARGET_NEW_AFTER_GATE",
+      "authoritative_contract": "Model",
+      "capability_state": "TARGET",
+      "delivery_status": "NOT_STARTED",
+      "reason": "Needed only when first approved training problem exists.",
+      "migration_or_gap": "No model-ready claim until real data, holdout, evaluation, shadow and rollback exist.",
+      "evidence_refs": [],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.BRAINORCHESTRATOR",
+      "resource": "brainOrchestrator",
+      "resource_type": "function",
+      "current_role": "Existing bounded orchestration entry point",
+      "decision": "REUSE_ROUTING",
+      "authoritative_contract": "Orchestration",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Prefer routing/shared modules over another physical function.",
+      "migration_or_gap": "Must not become universal source of truth.",
+      "evidence_refs": [
+        "base44/functions/brainOrchestrator/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.LEADORCHESTRATOR",
+      "resource": "leadOrchestrator",
+      "resource_type": "function",
+      "current_role": "Existing lead workflow orchestration",
+      "decision": "EXTEND",
+      "authoritative_contract": "Adaptive Lead Execution",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Use for compatible lead stages.",
+      "migration_or_gap": "Large-universe work items/leases/idempotency require proof.",
+      "evidence_refs": [
+        "base44/functions/leadOrchestrator/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.INTELLIGENCEACCESS",
+      "resource": "intelligenceAccess",
+      "resource_type": "function",
+      "current_role": "Canonical intelligence access boundary",
+      "decision": "EXTEND",
+      "authoritative_contract": "Evidence/Knowledge",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing least-capability access surface.",
+      "migration_or_gap": "Add shared contracts only without weakening capability checks.",
+      "evidence_refs": [
+        "base44/functions/intelligenceAccess/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.PRIVACYSAFEINTELLIGENCEWORKER",
+      "resource": "privacySafeIntelligenceWorker",
+      "resource_type": "function",
+      "current_role": "Privacy-safe aggregation worker",
+      "decision": "REUSE",
+      "authoritative_contract": "Privacy/Learning",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing k≥10 boundary.",
+      "migration_or_gap": "Runtime scheduler and deletion evidence unverified.",
+      "evidence_refs": [
+        "base44/functions/privacySafeIntelligenceWorker/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.OUTCOMELEARNINGWORKER",
+      "resource": "outcomeLearningWorker",
+      "resource_type": "function",
+      "current_role": "Projects mature domain outcomes to intelligence",
+      "decision": "EXTEND",
+      "authoritative_contract": "Outcome/Learning",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Natural learning projection writer.",
+      "migration_or_gap": "Eligibility/exposure/censoring/label maturity incomplete.",
+      "evidence_refs": [
+        "base44/functions/outcomeLearningWorker/entry.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.COSTGOVERNANCE",
+      "resource": "costGovernance",
+      "resource_type": "shared module",
+      "current_role": "Atomic reserve/reconcile/kill-switch logic",
+      "decision": "REUSE",
+      "authoritative_contract": "Cost",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Single shared cost implementation.",
+      "migration_or_gap": "Training/eval/model dimensions need additive attribution when built.",
+      "evidence_refs": [
+        "base44/shared/costGovernance.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.AGENTAUTHORITY",
+      "resource": "agentAuthority",
+      "resource_type": "shared module",
+      "current_role": "Default-deny agent authority",
+      "decision": "REUSE",
+      "authoritative_contract": "Authority",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Preserve least authority.",
+      "migration_or_gap": "No confidence/model output can expand it.",
+      "evidence_refs": [
+        "base44/shared/agentAuthority.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.P4BRIDGE",
+      "resource": "p4Bridge",
+      "resource_type": "shared module",
+      "current_role": "P4 statistical bridge",
+      "decision": "EXTEND",
+      "authoritative_contract": "CPIC",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Existing CPIC integration seam.",
+      "migration_or_gap": "The P4 request path now attaches the canonical V0 envelope; service runtime and registered model/calibration evidence remain unverified.",
+      "evidence_refs": [
+        "base44/shared/p4Bridge.ts",
+        "base44/functions/requestP4Estimate/entry.ts",
+        "base44/shared/cpicFoundation.ts",
+        "src/lib/cpicFoundation.test.js"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.CPICFOUNDATION",
+      "resource": "cpicFoundation",
+      "resource_type": "shared module",
+      "current_role": "Canonical distribution, uncertainty, support/OOD, Expected Value and Value of Information V0 contract",
+      "decision": "NEW_LOGICAL_CONTRACT",
+      "authoritative_contract": "CPIC/Decision",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "A single pure adapter/calculation boundary was required to reconcile existing P4 output with the shared Intelligence v2 registries without adding a store, entity or function.",
+      "migration_or_gap": "Local contract and tests only; no Bayesian model, calibrated model, runtime serving, shadow/canary or production seal.",
+      "evidence_refs": [
+        "base44/shared/cpicFoundation.ts",
+        "src/lib/cpicFoundation.test.js",
+        "src/docs/CAMBRA_CPIC_PHASE_2_FOUNDATION.md"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED",
+        "NO_MODEL_OR_CALIBRATION_CLAIM"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.LEADINTELLIGENCEPROVIDER",
+      "resource": "leadIntelligenceProvider",
+      "resource_type": "shared module",
+      "current_role": "Provider abstraction for lead intelligence",
+      "decision": "EXTEND",
+      "authoritative_contract": "Source Router",
+      "capability_state": "PARTIAL",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Supports vendor portability.",
+      "migration_or_gap": "Field-level usefulness, costs and source action lineage incomplete.",
+      "evidence_refs": [
+        "base44/shared/leadIntelligenceProvider.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    },
+    {
+      "resource_id": "RESOURCE.OUTBOUNDPROVIDER",
+      "resource": "outboundProvider",
+      "resource_type": "shared module",
+      "current_role": "Outbound transport abstraction",
+      "decision": "REUSE",
+      "authoritative_contract": "Execution",
+      "capability_state": "EXISTING",
+      "delivery_status": "IMPLEMENTED",
+      "reason": "Transport remains separate from candidate identity.",
+      "migration_or_gap": "Runtime provider parity unverified.",
+      "evidence_refs": [
+        "base44/shared/outboundProvider.ts"
+      ],
+      "runtime_evidence": [],
+      "qualifiers": [
+        "RUNTIME_UNVERIFIED"
+      ]
+    }
+  ]
+}

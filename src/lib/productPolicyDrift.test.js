@@ -179,12 +179,23 @@ describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
     const src = read("base44/functions/createEligibleRecoverInvoices/entry.ts");
     expect(src).toContain("prepareEligibleRecoverInvoice");
     // Order guard: the pure core (which resolves the contract policy) is
-    // invoked before the first Stripe invoice call in the handler body.
+    // invoked before the canonical provider executor is installed and before
+    // its first claimed Stripe request. Raw stripeRequest calls are forbidden:
+    // the executor owns the descriptor, receipt and ambiguity contract.
     const coreIdx = src.indexOf("prepareEligibleRecoverInvoice({");
-    const stripeIdx = src.indexOf("stripeRequest(mode, 'POST', 'invoices'");
+    const providerIdx = src.indexOf(
+      "return executeRecoverBillingProviderRequest(svc, claim, {",
+      coreIdx,
+    );
+    const stripeIdx = src.indexOf(
+      "const created = await claimedStripeRequest(",
+      providerIdx,
+    );
     expect(coreIdx).toBeGreaterThan(-1);
+    expect(providerIdx).toBeGreaterThan(coreIdx);
     expect(stripeIdx).toBeGreaterThan(-1);
     expect(coreIdx).toBeLessThan(stripeIdx);
+    expect(src).not.toMatch(/\bstripeRequest\s*\(/);
     // The old post-finalize resolution is gone.
     expect(src).not.toMatch(/standard_fee_pct \|\| 25/);
   });

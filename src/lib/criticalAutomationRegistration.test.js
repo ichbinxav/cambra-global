@@ -19,6 +19,7 @@ describe("critical automation registration", () => {
   it("billApiUsage has a valid monthly cadence and duplicate-run protection", () => {
     const automation = load("base44/functions/billApiUsage/function.jsonc").automations?.[0];
     const source = readFileSync(join(process.cwd(), "base44/functions/billApiUsage/entry.ts"), "utf8");
+    const billingAuthority = readFileSync(join(process.cwd(), "base44/shared/apiUsageBilling.ts"), "utf8");
     expect(automation).toMatchObject({
       is_active: true,
       schedule_mode: "recurring",
@@ -27,7 +28,8 @@ describe("critical automation registration", () => {
       repeat_on_day_of_month: 1,
       function_name: "billApiUsage",
     });
-    expect(source).toContain("billing_run_id");
+    expect(source).toContain("billApiUsageOrganization");
+    expect(billingAuthority).toContain("billing_run_id");
     expect(source).toContain("assertOperationAllowed(svc, 'billing_issuance')");
   });
 });

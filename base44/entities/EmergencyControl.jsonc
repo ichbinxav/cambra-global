@@ -26,6 +26,25 @@
       "type": "boolean",
       "default": false
     },
+    "paid_discovery_paused": {
+      "type": "boolean",
+      "default": false,
+      "description": "Founder Control V2 gate for paid Discovery and enrichment. Local/read-only intelligence may continue."
+    },
+    "resume_check_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Durable marker set by emergency containment and cleared only by a dependency-aware selective Safe Resume."
+    },
+    "last_correlation_id": {
+      "type": "string"
+    },
+    "control_revision": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Optimistic-CAS revision preventing concurrent stop/resume transitions from overwriting one another."
+    },
     "reason": {
       "type": "string"
     },
@@ -42,6 +61,19 @@
     },
     "previous_state_json": {
       "type": "object"
+    },
+    "transport_containment_json": {
+      "type": "object",
+      "description": "Durable ROOT-OTR-003 evidence keyed by outlook/resend/instantly. Each configured transport uses exactly NOT_CONFIGURED, LOCALLY_BLOCKED, REMOTELY_VERIFIED_PAUSED, UNVERIFIED or ERROR; local blocking never impersonates a remote provider receipt."
+    },
+    "transport_containment_status": {
+      "type": "string",
+      "enum": ["CONTAINED", "CONTAINMENT_INCOMPLETE"],
+      "description": "CONTAINED only when every configured transport has local blocking plus a provider pause receipt under the current strict drill contract."
+    },
+    "transport_containment_observed_at": {
+      "type": "string",
+      "format": "date-time"
     }
   },
   "required": [

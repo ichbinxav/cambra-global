@@ -96,7 +96,8 @@ function RunModal({ open, target, onClose, onRun }) {
 
 function AgentTile({ agent, lastTask, secretConfigured, onRun }) {
   const lvl = levelBadge(agent.level);
-  const active = !agent.secret || secretConfigured;
+  const quarantined = agent.status === "QUARANTINED_COMPATIBILITY";
+  const active = !quarantined && (!agent.secret || secretConfigured);
   // Brain agents are special: deterministic part works without key.
   const deterministicOk = agent.tool && (agent.tool.includes("scoreEngine") || agent.tool.includes("Deterministic"));
   return (
@@ -110,7 +111,11 @@ function AgentTile({ agent, lastTask, secretConfigured, onRun }) {
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">{agent.tool}</span>
-        {active ? (
+        {quarantined ? (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Quarantined
+          </span>
+        ) : active ? (
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Ready
           </span>
@@ -132,10 +137,14 @@ function AgentTile({ agent, lastTask, secretConfigured, onRun }) {
       <button
         type="button"
         onClick={() => onRun?.(agent)}
-        disabled={!active && !deterministicOk}
+        disabled={quarantined || (!active && !deterministicOk)}
         className="w-full inline-flex items-center justify-center gap-1.5 h-7 rounded-full bg-foreground text-background text-[11px] font-bold hover:opacity-90 disabled:opacity-40"
       >
-        {(active || deterministicOk) ? <><Play size={9} /> Run</> : <><KeyRound size={9} /> Configure key</>}
+        {quarantined
+          ? <>Quarantined</>
+          : (active || deterministicOk)
+          ? <><Play size={9} /> Run</>
+          : <><KeyRound size={9} /> Configure key</>}
       </button>
     </div>
   );

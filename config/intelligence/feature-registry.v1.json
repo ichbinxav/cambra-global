@@ -1,0 +1,69 @@
+{
+  "schema_version": "feature-registry.v1",
+  "registry_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_REGISTRY",
+  "record_schema": {
+    "required": [
+      "feature_id",
+      "feature_name",
+      "feature_version",
+      "description",
+      "owner",
+      "entity_key",
+      "value_type",
+      "unit",
+      "event_time_field",
+      "available_time_field",
+      "source_refs",
+      "transformation_ref",
+      "window",
+      "freshness_sla",
+      "null_semantics",
+      "default_policy",
+      "privacy_class",
+      "tenant_scope",
+      "eligibility_policy_version",
+      "online_offline_parity",
+      "range_or_allowed_values",
+      "leakage_risks",
+      "tests",
+      "lifecycle_state"
+    ],
+    "value_type_enum": [
+      "boolean",
+      "integer",
+      "float",
+      "string",
+      "category",
+      "vector"
+    ],
+    "tenant_scope_enum": [
+      "TENANT_PRIVATE",
+      "GLOBAL_PUBLIC",
+      "PRIVACY_SAFE_AGGREGATE"
+    ],
+    "lifecycle_state_enum": [
+      "DRAFT",
+      "REVIEW",
+      "APPROVED_OFFLINE",
+      "APPROVED_SERVING",
+      "DEPRECATED",
+      "QUARANTINED"
+    ]
+  },
+  "invariants": [
+    "unknown, not_applicable, zero and not_observed are distinct",
+    "available_at must not be after prediction_time",
+    "native amount/currency and normalized amount/FX lineage remain separate",
+    "text-derived features identify extractor, prompt and model versions",
+    "a feature cannot become approved merely because it exists in this file"
+  ],
+  "records": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_APPROVED_FEATURE_DEFINITIONS",
+    "NO_POINT_IN_TIME_BUILDER",
+    "NO_ONLINE_OFFLINE_PARITY_EVIDENCE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

@@ -1,9 +1,21 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { EUROPE_MARKETS, EUROPE_MARKET_BY_ISO2, EUROPE_MARKET_CODES } from "@/lib/generated/europeMarkets";
+import {
+  ACTIVE_LAUNCH_MARKETS,
+  EUROPE_MARKETS,
+  EUROPE_MARKET_BY_ISO2,
+  EUROPE_MARKET_CODES,
+  MARKET_OUTBOUND_MODE,
+  MARKET_REGULATED_CAPABILITIES_MODE,
+  MARKET_SCOPE_COUNTS,
+  MARKET_SCOPE_DECISION_STATUS,
+  MARKET_SCOPE_VERSION,
+  PROTECTED_MARKETS,
+  marketScopeForIso2,
+} from "@/lib/generated/europeMarkets";
 import { LOCALE_MARKET_BY_CODE } from "@/lib/generated/localeRegistry";
 
 const STORAGE_KEY = "cambra_market";
-const ANALYZER_ENABLED_MARKETS = Object.freeze(["FR", "ES"]);
+const ANALYZER_ENABLED_MARKETS = ACTIVE_LAUNCH_MARKETS;
 
 function isKnownMarket(value) {
   return typeof value === "string" && EUROPE_MARKET_CODES.includes(value.toUpperCase());
@@ -36,25 +48,77 @@ function readStoredMarket() {
 }
 
 export function resolvePublicExperience(marketCode) {
-  const code = isKnownMarket(marketCode) ? marketCode.toUpperCase() : "GB";
+  const code = isKnownMarket(marketCode) ? marketCode.toUpperCase() : null;
+  if (!code) {
+    return Object.freeze({
+      marketCode: null,
+      market: null,
+      currency: null,
+      locale: null,
+      scope: Object.freeze({
+        status: "UNKNOWN_BLOCKED",
+        decisionStatus: MARKET_SCOPE_DECISION_STATUS,
+        version: MARKET_SCOPE_VERSION,
+        launchActive: false,
+        researchAllowed: false,
+        researchOnly: false,
+      }),
+      landing: Object.freeze({ status: "BLOCKED", reason: "UNKNOWN_MARKET" }),
+      analyzer: Object.freeze({
+        status: "BLOCKED",
+        href: "/Contact?intent=market-access",
+        reason: "MARKET_NOT_CANONICAL",
+      }),
+      recovery: Object.freeze({ status: "BLOCKED", reason: "MARKET_NOT_CANONICAL" }),
+      outbound: Object.freeze({ status: MARKET_OUTBOUND_MODE, capacity: 0, allowed: false }),
+      regulated: Object.freeze({
+        status: MARKET_REGULATED_CAPABILITIES_MODE,
+        authorizedByMarketMembership: false,
+      }),
+      legal: Object.freeze({ status: "LEGAL_REVIEW_REQUIRED", translationStatus: "UNKNOWN" }),
+      translation: Object.freeze({
+        status: "UNKNOWN",
+        defaultLocale: null,
+        fallbackLocale: null,
+        supportedLocales: Object.freeze([]),
+      }),
+    });
+  }
   const market = EUROPE_MARKET_BY_ISO2[code];
   const locale = LOCALE_MARKET_BY_CODE[code];
-  const analyzerEnabled = ANALYZER_ENABLED_MARKETS.includes(code);
+  const marketScope = marketScopeForIso2(code);
+  const analyzerEnabled = marketScope.launch_active;
 
   return Object.freeze({
     marketCode: code,
     market,
     currency: market.primary_currency,
     locale,
+    scope: Object.freeze({
+      status: marketScope.scope_status,
+      decisionStatus: MARKET_SCOPE_DECISION_STATUS,
+      version: MARKET_SCOPE_VERSION,
+      launchActive: marketScope.launch_active,
+      researchAllowed: marketScope.research_allowed,
+      researchOnly: marketScope.research_only,
+    }),
     landing: Object.freeze({ status: "AVAILABLE", reason: "INFORMATIONAL_SURFACE" }),
     analyzer: Object.freeze({
       status: analyzerEnabled ? "ENABLED" : "LIMITED",
       href: analyzerEnabled
         ? `/Analyzer?market=${encodeURIComponent(code)}`
         : `/Contact?market=${encodeURIComponent(code)}&intent=market-access`,
-      reason: analyzerEnabled ? "MARKET_POLICY_ENABLED" : "MARKET_EVIDENCE_REVIEW_REQUIRED",
+      reason: analyzerEnabled ? "MARKET_POLICY_ENABLED" : "PROTECTED_MARKET_RESEARCH_ONLY",
     }),
-    recovery: Object.freeze({ status: "REVIEW_REQUIRED", reason: "CASE_AND_LEGAL_REVIEW_REQUIRED" }),
+    recovery: Object.freeze({
+      status: analyzerEnabled ? "REVIEW_REQUIRED" : "BLOCKED",
+      reason: analyzerEnabled ? "CASE_AND_LEGAL_REVIEW_REQUIRED" : "PROTECTED_MARKET_RESEARCH_ONLY",
+    }),
+    outbound: Object.freeze({ status: MARKET_OUTBOUND_MODE, capacity: 0, allowed: false }),
+    regulated: Object.freeze({
+      status: MARKET_REGULATED_CAPABILITIES_MODE,
+      authorizedByMarketMembership: false,
+    }),
     legal: Object.freeze({
       status: locale.legal_applicability_status,
       translationStatus: locale.legal_translation_status,
@@ -119,4 +183,10 @@ export function useMarket() {
   return context;
 }
 
-export { ANALYZER_ENABLED_MARKETS, EUROPE_MARKETS };
+export {
+  ACTIVE_LAUNCH_MARKETS,
+  ANALYZER_ENABLED_MARKETS,
+  EUROPE_MARKETS,
+  MARKET_SCOPE_COUNTS,
+  PROTECTED_MARKETS,
+};

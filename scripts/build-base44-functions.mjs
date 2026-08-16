@@ -3,6 +3,13 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import {
+  BASE44_BUNDLE_HASH_ALGORITHM,
+  BASE44_BUNDLE_SCHEMA_VERSION,
+  computeBase44BundleTree,
+  inspectBase44Bundle,
+  sha256File,
+} from './lib/base44Bundle.mjs';
 
 const repoRoot = process.cwd();
 const base44Root = path.join(repoRoot, 'base44');
@@ -115,27 +122,10 @@ function copyDependencyClosure(entryPath, destinationRoot) {
   return copied;
 }
 
-function treeHash(root) {
-  const files = [];
-  function walk(directory) {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      const absolute = path.join(directory, entry.name);
-      if (entry.isDirectory()) walk(absolute);
-      else files.push(absolute);
-    }
-  }
-  walk(root);
-  const hash = crypto.createHash('sha256');
-  for (const file of files) {
-    hash.update(path.relative(root, file).replaceAll(path.sep, '/'));
-    hash.update('\0');
-    hash.update(fs.readFileSync(file));
-    hash.update('\0');
-  }
-  return { sha256: hash.digest('hex'), file_count: files.length };
-}
-
-fs.rmSync(outputRoot, { recursive: true, force: true });
+// `.deploy` is an ignored, generated boundary. Remove it as a unit so stale or
+// unbound files can never leak into a release artifact beside the verified
+// manifest and functions tree.
+fs.rmSync(deployRoot, { recursive: true, force: true });
 fs.mkdirSync(outputRoot, { recursive: true });
 
 const sourceDirectories = fs.readdirSync(sourceRoot, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
@@ -192,9 +182,13 @@ for (const functionName of physicalNames) {
 }
 if (escapedImports.length) throw new Error(`Bundled relative imports escape physical function roots: ${JSON.stringify(escapedImports.slice(0, 20))}`);
 
-const digest = treeHash(outputRoot);
+const digest = computeBase44BundleTree(outputRoot);
 const manifest = {
-  schema_version: 'cambra-base44-function-bundle-v1',
+  schema_version: BASE44_BUNDLE_SCHEMA_VERSION,
+  hash_algorithm: BASE44_BUNDLE_HASH_ALGORITHM,
+  functions_dir: './.deploy/functions',
+  topology_sha256: sha256File(topologyPath),
+  config_sha256: sha256File(path.join(base44Root, 'config.jsonc')),
   physical_function_count: physicalNames.length,
   logical_route_count: logicalNames.size,
   copied_module_instances: copiedModuleCount,
@@ -204,4 +198,5 @@ const manifest = {
   logical_routes: logicalRoutes,
 };
 fs.writeFileSync(path.join(deployRoot, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(`base44:functions:bundle PASS — ${physicalNames.length} physical functions, ${logicalNames.size} logical routes, ${digest.file_count} staged files, ${digest.sha256}`);
+const verified = inspectBase44Bundle(repoRoot);
+console.log(`base44:functions:bundle PASS — ${verified.physical_function_count} physical functions, ${verified.logical_route_count} logical routes, ${verified.staged_file_count} staged files, ${verified.staged_tree_sha256}`);

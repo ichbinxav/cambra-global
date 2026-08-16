@@ -18,53 +18,17 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // grow in the future — allowlisting isolates us from silent leaks on schema
 // evolution).
 //
-// Rate limit: 30 reads / hour / IP (3× the write cap of submit) so a
+// Rate limit: 30 reads/hour/versioned HMAC network fingerprint (3× the write
+// cap of submit) so a
 // legitimate user refreshing/sharing the page doesn't hit the limit, while
 // still making session-id enumeration attacks unprofitable at ~122 bits of
-// entropy. Reuses the same RateLimitCounter bucket pattern + DERIVED IP salt
-// as submitPaymentsAnalysis.
+// entropy. Reuses the shared HMAC RateLimitCounter authority used by
+// submitPaymentsAnalysis; no raw address or unkeyed digest is stored.
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { consumeRateLimit } from '../../shared/rateLimit.ts';
+import { consumePublicRequestRateLimit } from '../../shared/rateLimit.ts';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-// ── IP salt derivation — same pattern as submitPaymentsAnalysis, keyed on a
-//    different suffix so this endpoint's rate-limit domain is separable.
-async function sha256Hex(input: string): Promise<string> {
-  const bytes = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-let _ipSaltCache: string | null = null;
-async function getIpSalt(): Promise<string> {
-  if (_ipSaltCache) return _ipSaltCache;
-  const raw = Deno.env.get('BENCHMARK_ANON_SALT') || '';
-  if (!raw) throw new Error('missing_benchmark_anon_salt');
-  _ipSaltCache = await sha256Hex(raw + ':ip-hashing');
-  return _ipSaltCache;
-}
-
-async function hashIp(ip: string): Promise<string> {
-  const salt = await getIpSalt();
-  return sha256Hex(salt + ':' + ip);
-}
-
-function extractClientIp(req: Request): string {
-  const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
-  return req.headers.get('x-real-ip') || 'unknown';
-}
-
-async function checkAndIncrementRateLimit(
-  base44: any,
-  ipHash: string,
-  limitPerHour: number,
-): Promise<{ ok: boolean; retry_after_seconds?: number }> {
-  const principal_id = `getPaymentsGapTeaser:${ipHash}`;
-  return consumeRateLimit(base44.asServiceRole,{principal_id,principal_type:'ip',limit:limitPerHour,window_seconds:3600});
-}
 
 Deno.serve(async (req) => {
   try {
@@ -93,14 +57,14 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'invalid_session_id' }, { status: 400 });
     }
 
-    // Rate limit — 30/h/IP. Enforced BEFORE the DB read so brute-force is cheap
+    // Rate limit — 30/h/HMAC network fingerprint. Enforced BEFORE the DB read so brute-force is cheap
     // to reject (Base44 filter() is not free at scale).
-    const ip = extractClientIp(req);
-    const ipHash = await hashIp(ip);
     const limitPerHour = Number(Deno.env.get('PAYMENTS_GAP_TEASER_RATE_LIMIT_PER_HOUR') || 30);
-    const rl = await checkAndIncrementRateLimit(base44, ipHash, limitPerHour);
+    const rl = await consumePublicRequestRateLimit(base44.asServiceRole, req, {
+      namespace: 'get-payments-gap-teaser', limit: limitPerHour, window_seconds: 3600,
+    });
     if (!rl.ok) {
-      return Response.json({ error: 'rate_limited', retry_after_seconds: rl.retry_after_seconds }, { status: 429 });
+      return Response.json({ error: rl.status === 429 ? 'rate_limited' : 'rate_limit_unavailable', retry_after_seconds: rl.retry_after_seconds }, { status: rl.status || 503 });
     }
 
     const rows = await base44.asServiceRole.entities.PaymentsAnalysisSession

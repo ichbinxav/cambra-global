@@ -32,6 +32,30 @@
     "lead_id": {
       "type": "string"
     },
+    "tenant_scope": {
+      "type": "string",
+      "enum": ["platform", "tenant"],
+      "description": "Durable commercial data boundary. Platform acquisition uses _platform; merchant operations/negotiation require an exact Brand id."
+    },
+    "brand_id": {
+      "type": "string",
+      "description": "Exact durable tenant owner, or _platform for platform acquisition. Never inferred after the send boundary."
+    },
+    "tenant_resolution_status": {
+      "type": "string",
+      "enum": ["RESOLVED", "REVIEW_REQUIRED"],
+      "description": "Legacy tenant backfill state. Unresolved or ambiguous threads fail closed before transport."
+    },
+    "tenant_resolution_reason": {
+      "type": "string"
+    },
+    "tenant_resolver_version": {
+      "type": "string"
+    },
+    "tenant_resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "counterparty_email": {
       "type": "string"
     },

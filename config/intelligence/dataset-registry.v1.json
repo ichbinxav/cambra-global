@@ -1,0 +1,65 @@
+{
+  "schema_version": "dataset-registry.v1",
+  "registry_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_REGISTRY",
+  "record_schema": {
+    "required": [
+      "dataset_id",
+      "dataset_name",
+      "dataset_version",
+      "purpose",
+      "created_at",
+      "created_by",
+      "code_ref",
+      "source_watermarks",
+      "eligibility_policy_version",
+      "feature_contract_versions",
+      "label_contract_versions",
+      "row_identity_strategy",
+      "population_query_hash",
+      "as_of_time",
+      "split_strategy",
+      "train_range",
+      "validation_range",
+      "test_range",
+      "holdout_policy",
+      "exclusion_counts",
+      "segment_counts",
+      "quality_report_ref",
+      "privacy_report_ref",
+      "lineage_manifest_ref",
+      "content_hash",
+      "immutable",
+      "lifecycle_state"
+    ],
+    "split_strategy_enum": [
+      "TEMPORAL_GROUPED"
+    ],
+    "lifecycle_state_enum": [
+      "DRAFT",
+      "BUILDING",
+      "QUARANTINED",
+      "SEALED",
+      "REVOKED",
+      "SUPERSEDED"
+    ]
+  },
+  "invariants": [
+    "only CLEARED rows for the exact purpose/scope may enter a sealed dataset",
+    "merchant, provider or episode grouping prevents identity leakage",
+    "future/post-outcome information cannot enter prediction-time features",
+    "sealed datasets are immutable and corrections create a superseding version",
+    "source revocation produces an impact report",
+    "synthetic data never counts as verified real outcome evidence"
+  ],
+  "records": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_DATASET_BUILDER",
+    "NO_SEALED_DATASET",
+    "NO_FROZEN_HOLDOUT",
+    "NO_REPRODUCIBLE_CONTENT_HASH",
+    "NO_REVOCATION_IMPACT_EVIDENCE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

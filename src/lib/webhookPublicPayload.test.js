@@ -53,8 +53,10 @@ describe("buildPublicWebhookPayload (v62.2 CP6.3 — allowlist boundary)", () =>
     expect(src).toContain("buildPublicWebhookPayload(event_type, payload)");
     // Outbound HTTP body uses the public payload…
     expect(src).toContain("data: publicPayload");
-    // …and both persistence rows store the same public payload.
-    expect((src.match(/payload: publicPayload/g) || []).length).toBe(2);
+    // …and the stable identity, intent and receipt all bind the same payload.
+    expect((src.match(/payload: publicPayload/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(src).toContain("prepareWebhookDispatchIntent");
+    expect(src).toContain("persistWebhookDeliveryReceipt");
     // No raw payload reaches persistence or the wire.
     expect(src).not.toContain("data: payload,");
   });

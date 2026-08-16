@@ -7,11 +7,37 @@ const json=(path)=>JSON.parse(read(path));
 describe('v0.97 CTO production remediation controls',()=>{
   it('records all active Base44 schedules and proves a slot guard at every physical boundary',()=>{
     const inventory=json('config/scheduler-inventory.json');
-    expect(inventory.scheduled_automation_count).toBe(68);
-    expect(inventory.active_count).toBe(66);
+    expect(inventory.scheduled_automation_count).toBe(69);
+    expect(inventory.active_count).toBe(67);
+    expect(inventory.inactive_count).toBe(2);
     expect(inventory.unguarded_active).toEqual([]);
-    expect(inventory.automations.filter((row)=>row.is_active).every((row)=>row.protection_classification==='SLOT_GUARDED')).toBe(true);
+    const active=inventory.automations.filter((row)=>row.is_active);
+    expect(active.every((row)=>row.protection_classification==='SLOT_GUARDED')).toBe(true);
+    expect(active.every((row)=>row.lease_seconds===900)).toBe(true);
+    expect(inventory.periodic_heartbeat_proven_count).toBe(57);
+    expect(inventory.periodic_heartbeat_not_proven).toEqual([
+      'alwaysOnLeadDiscoveryWorker',
+      'autonomousPartnerWorker',
+      'commercialFollowUpWorker',
+      'eclLifecycleScheduler',
+      'operatingHealthWorker',
+      'outboundDeliverabilityManager',
+      'outboundVolumeWorker',
+      'postMeetingWorker',
+      'processWebhookDeadLetters',
+      'reconcileRecoverBilling',
+    ]);
+    expect(active.every((row)=>row.effect_boundary==='HANDLER_ENTRY_CONSERVATIVE')).toBe(true);
+    expect(active.every((row)=>row.deadline_seconds==='UNKNOWN'&&row.timeout_seconds==='UNKNOWN')).toBe(true);
+    expect(inventory.hard_deadline_unknown_count).toBe(67);
+    expect(inventory.otr_005_status).toBe('PARTIAL');
+    expect(inventory.inactive_automations.map((row)=>[row.worker_key,row.classification])).toEqual([
+      ['autonomousCommercialWorker','INTENTIONALLY_DISABLED_COMPATIBILITY'],
+      ['seedP3RateIntelligence','TEMPORARY_BOOTSTRAP_DISABLED'],
+    ]);
+    expect(inventory.automations.every((row)=>row.physical_host&&row.logical_worker&&row.responsibility)).toBe(true);
     expect(read('scripts/harden-scheduled-functions.mjs')).toContain('scheduled_boundary_unguarded');
+    expect(read('scripts/harden-scheduled-functions.mjs')).toContain('scheduled_direct_claim_missing_effect_fence');
     const entries=fs.readdirSync('base44/functions',{withFileTypes:true})
       .filter((row)=>row.isDirectory())
       .map((row)=>`base44/functions/${row.name}/entry.ts`)
@@ -50,7 +76,7 @@ describe('v0.97 CTO production remediation controls',()=>{
   });
 
   it('identifies CAMBRA to GitHub for runtime repository and Dependabot checks',()=>{
-    expect(read('base44/functions/developerMigrationEngine/entry.ts')).toContain("'User-Agent': 'CAMBRA/0.97.0'");
+    expect(read('base44/functions/developerMigrationEngine/entry.ts')).toMatch(/["']User-Agent["']\s*:\s*["']CAMBRA\/0\.97\.0["']/);
     const monitor=read('base44/functions/dependencySecurityWorker/entry.ts');
     expect(monitor).toContain('"User-Agent": "CAMBRA/0.97.0"');
     expect(monitor).toContain('p17:dependency_monitor_failed:');

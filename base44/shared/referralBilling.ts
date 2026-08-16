@@ -17,12 +17,16 @@
 
 import { firstOfNextMonth, lastOfCurrentMonth } from './billingFee.ts';
 import { PRODUCT_POLICY } from './generated/productPolicy.ts';
+import { readRuntimeRows, requireRuntimeSource } from './runtimeSourceRead.ts';
 
 const DEAD_ACTIVATION_STATUSES = ['closed', 'revoked'];
 
 async function referrerBrands(svc: any, referrerEmail: string): Promise<any[]> {
-  const byContact = await svc.entities.Brand.filter({ contact_email: referrerEmail }, '-created_date', 50).catch(() => []);
-  const byCreator = await svc.entities.Brand.filter({ created_by: referrerEmail }, '-created_date', 50).catch(() => []);
+  const [contactRead,creatorRead]=await Promise.all([
+    readRuntimeRows({source:'referral_billing_contact_brands',limit:50,read:()=>svc.entities.Brand.filter({ contact_email: referrerEmail }, '-created_date', 50)}),
+    readRuntimeRows({source:'referral_billing_creator_brands',limit:50,read:()=>svc.entities.Brand.filter({ created_by: referrerEmail }, '-created_date', 50)}),
+  ]);
+  const byContact=requireRuntimeSource(contactRead),byCreator=requireRuntimeSource(creatorRead);
   const seen = new Set<string>();
   const out: any[] = [];
   for (const b of [...(byContact || []), ...(byCreator || [])]) {
@@ -44,7 +48,7 @@ export async function scheduleReferralFee(
 
   const brands = await referrerBrands(svc, referrerEmail);
   for (const brand of brands) {
-    const activations = (await svc.entities.DealActivation.filter({ brand_id: brand.id }, '-created_date', 50).catch(() => []))
+    const activations = requireRuntimeSource(await readRuntimeRows({source:'referral_billing_deal_activations',limit:50,read:()=>svc.entities.DealActivation.filter({ brand_id: brand.id }, '-created_date', 50)}))
       .filter((a: any) => !DEAD_ACTIVATION_STATUSES.includes(a?.status));
 
     // No activation yet → seed ONE brand-level rule so the discount is already
@@ -57,7 +61,7 @@ export async function scheduleReferralFee(
       const query = target.deal_activation_id
         ? { deal_activation_id: target.deal_activation_id }
         : { brand_id: brand.id };
-      const rules = await svc.entities.BillingRule.filter(query, '-effective_start_date', 25).catch(() => []);
+      const rules=requireRuntimeSource(await readRuntimeRows({source:'referral_billing_rules',limit:25,read:()=>svc.entities.BillingRule.filter(query, '-effective_start_date', 25)}));
       const live = (rules || []).filter((r: any) => r?.status === 'active');
 
       // Already scheduled (same fee, same start date) → idempotent no-op.
@@ -77,7 +81,7 @@ export async function scheduleReferralFee(
 
       const current = live.find((r: any) => !r.effective_end_date) || live[0] || null;
       if (current) {
-        await svc.entities.BillingRule.update(current.id, { effective_end_date: closeDate }).catch(() => null);
+        await svc.entities.BillingRule.update(current.id, { effective_end_date: closeDate });
       }
 
       const created = await svc.entities.BillingRule.create({

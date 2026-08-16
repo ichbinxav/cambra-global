@@ -1,0 +1,105 @@
+{
+  "schema_version": "model-registry.v1",
+  "registry_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_REGISTRY",
+  "record_schema": {
+    "required": [
+      "model_id",
+      "model_name",
+      "model_version",
+      "problem_id",
+      "problem_version",
+      "model_type",
+      "artifact_ref",
+      "artifact_hash",
+      "dataset_id",
+      "dataset_version",
+      "training_run_id",
+      "feature_contract_versions",
+      "label_contract_versions",
+      "evaluation_report_ref",
+      "model_card_ref",
+      "privacy_security_review_ref",
+      "authority_class",
+      "supported_segments",
+      "unsupported_segments",
+      "fallback_version",
+      "stage",
+      "lifecycle_state",
+      "deployment_role",
+      "available_at",
+      "created_at",
+      "expires_at",
+      "owner",
+      "approvals"
+    ],
+    "model_type_enum": [
+      "RULES",
+      "STATISTICAL",
+      "ML",
+      "LLM_PROMPT",
+      "FINE_TUNED_LM",
+      "ENSEMBLE"
+    ],
+    "stage_enum": [
+      "EXPERIMENT",
+      "CANDIDATE",
+      "SHADOW",
+      "CANARY",
+      "CHAMPION",
+      "RETIRED",
+      "QUARANTINED"
+    ],
+    "lifecycle_state_enum": [
+      "REGISTERED",
+      "OFFLINE_APPROVED",
+      "SHADOW",
+      "CANARY",
+      "LIMITED_PRODUCTION",
+      "PRODUCTION",
+      "SUSPENDED",
+      "ROLLED_BACK",
+      "RETIRED"
+    ],
+    "deployment_role_enum": [
+      "NONE",
+      "SHADOW",
+      "CHALLENGER",
+      "CHAMPION",
+      "FALLBACK"
+    ],
+    "legacy_stage_semantics": {
+      "stage": "Retained for V0 compatibility. V1 separates deployment lifecycle_state from CHAMPION/CHALLENGER deployment_role; a caller-supplied stage never proves approval or serving authority."
+    }
+  },
+  "promotion_requires": [
+    "approved_problem_contract",
+    "sealed_versioned_dataset",
+    "frozen_holdout",
+    "reproducible_training_run",
+    "baseline_comparison",
+    "independent_evaluation_and_segments",
+    "privacy_security_tenant_authority_review",
+    "shadow_evidence",
+    "rollback_evidence",
+    "cost_and_net_utility_evidence",
+    "explicit_scope_bound_approval"
+  ],
+  "invariants": [
+    "registry is the only future authority for model stage",
+    "unregistered or hash-mismatched artifacts cannot serve",
+    "confidence never expands authority",
+    "material models cannot auto-promote",
+    "rules and heuristics remain explicit baselines rather than being mislabeled as trained models"
+  ],
+  "records": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_APPROVED_MODEL_PROBLEM",
+    "NO_TRAINING_RUN",
+    "NO_MODEL_ARTIFACT",
+    "NO_EVALUATION_OR_MODEL_CARD",
+    "NO_SHADOW_CANARY_ROLLBACK",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

@@ -3,7 +3,7 @@ export const APOLLO_PROVIDER_KEY = 'apollo';
 export const INSTANTLY_SUPERSEARCH_PROVIDER_KEY = 'instantly_supersearch';
 export const APOLLO_CONTRACT_EXPIRES_AT = '2026-09-07T23:59:59.999Z';
 
-export type LeadProviderStatus = 'NOT_CONFIGURED'|'CONFIGURED'|'AUTHENTICATED'|'ACTIVE'|'DEGRADED'|'ERROR'|'EXPIRED';
+export type LeadProviderStatus = 'NOT_CONFIGURED'|'CONFIGURED'|'AUTHENTICATED'|'ACTIVE'|'DEGRADED'|'ERROR'|'EXPIRED'|'BLOCKED';
 
 export interface LeadIntelligenceProvider {
   readonly key:string;
@@ -60,15 +60,15 @@ export function instantlySuperSearchPayload(input:any={}){
 
 export class InstantlySuperSearchLeadProvider implements LeadIntelligenceProvider {
   readonly key = INSTANTLY_SUPERSEARCH_PROVIDER_KEY;
-  readonly capabilities = ['company_search','decision_maker_search','supersearch_preview','supersearch_count','supersearch_enrichment'];
+  readonly capabilities = ['contact_search','decision_maker_search','supersearch_preview','supersearch_count','selective_contact_enrichment'];
   constructor(private readonly request:ProviderRequest,private readonly configured=false, private readonly permissionVerified=false) {}
   status(){
     if(!this.configured)return {status:'NOT_CONFIGURED' as const,available:false,reason:'secret_missing',expires_at:null};
     if(!this.permissionVerified)return {status:'CONFIGURED' as const,available:false,reason:'supersearch_permission_not_verified',expires_at:null};
-    return {status:'AUTHENTICATED' as const,available:true,reason:null,expires_at:null};
+    return {status:'BLOCKED' as const,available:false,reason:'contact_person_only_company_search_unsupported',expires_at:null,outbound_transport_affected:false};
   }
-  searchCompanies(input:any){const payload=instantlySuperSearchPayload(input);return this.request('/supersearch-enrichment/preview-leads-from-supersearch',{method:'POST',body:{search_filters:payload.search_filters}});}
-  searchPeople(input:any){return this.searchCompanies(input);}
+  async searchCompanies(_input:any){const error:any=new Error('instantly_company_search_unsupported_contact_person_only');error.code='INSTANTLY_COMPANY_SEARCH_UNSUPPORTED_CONTACT_PERSON_ONLY';error.status=409;throw error;}
+  searchPeople(input:any){const payload=instantlySuperSearchPayload(input);return this.request('/supersearch-enrichment/preview-leads-from-supersearch',{method:'POST',body:{search_filters:payload.search_filters}});}
   count(input:any){const payload=instantlySuperSearchPayload(input);return this.request('/supersearch-enrichment/count-leads-from-supersearch',{method:'POST',body:{search_filters:payload.search_filters}});}
   enrichPerson(input:any){return this.request('/supersearch-enrichment/enrich-leads-from-supersearch',{method:'POST',body:instantlySuperSearchPayload({...input,work_email_enrichment:input?.work_email_enrichment!==false})});}
 }
@@ -78,8 +78,8 @@ export function selectLeadIntelligenceProvider(input:{mode?:string;apolloConfigu
   if(mode==='APOLLO')return{selected:apollo.available?APOLLO_PROVIDER_KEY:null,reason:apollo.available?'founder_selected_apollo':apollo.reason,apollo,instantly};
   if(mode==='INSTANTLY')return{selected:instantly.available?INSTANTLY_SUPERSEARCH_PROVIDER_KEY:null,reason:instantly.available?'founder_selected_instantly':instantly.reason,apollo,instantly};
   if(apollo.available)return{selected:APOLLO_PROVIDER_KEY,reason:'apollo_active_until_contract_expiry',apollo,instantly};
-  if(instantly.available)return{selected:INSTANTLY_SUPERSEARCH_PROVIDER_KEY,reason:'apollo_unavailable_safe_instantly_handoff',apollo,instantly};
-  return{selected:null,reason:apollo.reason==='provider_contract_expired'?'apollo_expired_and_instantly_unavailable':'no_available_lead_provider',apollo,instantly};
+  if(instantly.available)return{selected:INSTANTLY_SUPERSEARCH_PROVIDER_KEY,reason:'instantly_company_source_runtime_verified',apollo,instantly};
+  return{selected:null,reason:apollo.reason==='provider_contract_expired'&&instantly.reason==='contact_person_only_company_search_unsupported'?'apollo_expired_and_instantly_contact_person_only':apollo.reason==='provider_contract_expired'?'apollo_expired_and_instantly_unavailable':'no_available_lead_provider',apollo,instantly};
 }
 
 export function leadProviderRegistry(input:{apolloConfigured?:boolean;instantlyConfigured?:boolean;instantlySuperSearchPermission?:boolean}={}) {

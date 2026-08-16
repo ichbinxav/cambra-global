@@ -15,6 +15,8 @@
 // Counters are summed, never dropped — losing an activated_count means charging
 // a merchant more than Terms §8 promises.
 
+import { readRuntimeRows, requireRuntimeSource } from './runtimeSourceRead.ts';
+
 function newCode(): string {
   const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
@@ -26,10 +28,8 @@ function sum(rows: any[], field: string): number {
 }
 
 async function readAll(svc: any, ownerEmail: string): Promise<any[]> {
-  const rows = await svc.entities.ReferralLink
-    .filter({ owner_email: ownerEmail }, 'created_date', 50)
-    .catch(() => []);
-  return (rows || []).filter((r: any) => r?.code);
+  const rows=requireRuntimeSource(await readRuntimeRows({source:'referral_link_owner_rows',limit:50,read:()=>svc.entities.ReferralLink.filter({ owner_email: ownerEmail }, 'created_date', 50)}));
+  return rows.filter((r: any) => r?.code);
 }
 
 // Collapse duplicates onto the oldest row, folding counters in. Returns the winner.
@@ -41,7 +41,7 @@ async function consolidate(svc: any, rows: any[]): Promise<any> {
   const activated_count = sum(rows, 'activated_count');
   await svc.entities.ReferralLink.update(winner.id, { times_used, activated_count });
   for (const extra of extras) {
-    await svc.entities.ReferralLink.delete(extra.id).catch(() => null);
+    await svc.entities.ReferralLink.delete(extra.id);
   }
   return { ...winner, times_used, activated_count };
 }

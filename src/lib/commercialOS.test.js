@@ -39,9 +39,9 @@ describe('CAMBRA Commercial Operating System', () => {
     expect(instantlySuperSearchPayload({countries:['France'],industries:['Retail'],titles:['CEO'],employee_ranges:['26 - 50'],technologies:['Shopify'],limit:200})).toMatchObject({search_filters:{locations:[{label:'France'}],industry:{include:['Retail'],exclude:[]},title:{include:['CEO'],exclude:[]},employeeCount:['26 - 50'],technologies:['Shopify'],show_one_lead_per_company:true},limit:200});
   });
 
-  it('keeps Apollo until September 7 and hands off without changing canonical data', () => {
+  it('keeps Apollo until September 7 and blocks an unsafe person-only handoff', () => {
     expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-08-20T00:00:00Z')}).selected).toBe('apollo');
-    expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-09-08T00:00:00Z')}).selected).toBe('instantly_supersearch');
+    expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-09-08T00:00:00Z')})).toMatchObject({selected:null,reason:'apollo_expired_and_instantly_contact_person_only'});
     expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:false,now:new Date('2026-09-08T00:00:00Z')})).toMatchObject({selected:null,reason:'apollo_expired_and_instantly_unavailable'});
   });
 

@@ -1,0 +1,194 @@
+{
+  "schema_version": "operational-plane-inventory-v1.0.0",
+  "generation": {
+    "mode": "SOURCE_DERIVED",
+    "source_hashes": {
+      "base44/entities/AgentRun.jsonc": "d86c378ad7d52d7ee4fda90bea44f3959f24d531b45b06716a3790e1f7b53b27",
+      "base44/entities/AutonomyIncident.jsonc": "f0f55af0a800d875652e2527c2e31584c635b0c86621e339d0e98aa493791bcf",
+      "base44/entities/IncidentAlertDelivery.jsonc": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
+      "base44/entities/OperationalIncident.jsonc": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
+      "base44/functions/autonomousOperationsSupervisor/entry.ts": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
+      "base44/functions/eclProductionHealth/entry.ts": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
+      "base44/functions/operatingHealthWorker/entry.ts": "28bdf08e2772ccd166fc7bd9a91e38cfa178503f42baf577a866820409bf7bc6",
+      "base44/functions/productionReadinessWorker/entry.ts": "7a800a744903e53d4573cbb2c97dbc0884bdf998ced2c3d8fb49d678cfca5bfa",
+      "base44/functions/systemHealthAgent/entry.ts": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",
+      "base44/shared/canonicalIncident.ts": "2d346d22341c8be10b4a5ac2b9d9946a070f8ca7cd55b0eabbfcea42b712e8b4",
+      "base44/shared/supervisorObservation.ts": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006"
+    }
+  },
+  "health_planes": {
+    "surface_count": 5,
+    "active_general_supervisor_count": 1,
+    "active_non_authoritative_projection_count": 2,
+    "authoritative_specialized_sweep_count": 1,
+    "quarantined_compatibility_count": 1,
+    "surfaces": [
+      {
+        "function_name": "autonomousOperationsSupervisor",
+        "classification": "CANONICAL_GENERAL_SUPERVISOR",
+        "status": "ACTIVE",
+        "authoritative_for": [
+          "dependency truth",
+          "bounded recovery selection",
+          "AutonomyIncident escalation"
+        ],
+        "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
+        "dependency_labels": [
+          "AgentTask.stale_running",
+          "AggregatePool.stale_active",
+          "AggregateRFP.stale_active",
+          "AgreementTier.pending_confirmation",
+          "AutonomyIncident.supervisor_dependencies",
+          "CommunicationThread.due_followups",
+          "DealActivation.live",
+          "KnowledgeConflict.active_operation",
+          "MigrationTask.blocked",
+          "NegotiationCase.awaiting_provider",
+          "PaymentRoutingObservation.production",
+          "ProviderPricingVersion.stale_verified",
+          "RoutingProviderPerformance.stale"
+        ]
+      },
+      {
+        "function_name": "eclProductionHealth",
+        "classification": "AUTHORITATIVE_ECL_HEALTH_SWEEP",
+        "status": "ACTIVE_SPECIALIZED",
+        "authoritative_for": [
+          "ECL liveness/backlog/drift signals",
+          "OperationalIncident compatibility episodes"
+        ],
+        "path": "base44/functions/eclProductionHealth/entry.ts",
+        "dependency_labels": [
+          "AgentTask.recent",
+          "Invoice.reconciliation_error",
+          "Invoice.reconciliation_mismatch",
+          "ReviewCase.resolving",
+          "SavingsEvidence.overdue",
+          "StatementImport.overdue",
+          "WebhookDeadLetter.exhausted",
+          "WebhookDeadLetter.pending_overdue"
+        ]
+      },
+      {
+        "function_name": "operatingHealthWorker",
+        "classification": "ADVISORY_HEALTH_PROJECTION",
+        "status": "ACTIVE_NON_AUTHORITATIVE",
+        "authoritative_for": [],
+        "path": "base44/functions/operatingHealthWorker/entry.ts",
+        "dependency_labels": [
+          "AgentTask.recent",
+          "Approval.pending",
+          "AutonomyIncident.open",
+          "CommunicationThread.recent",
+          "Invoice.recent",
+          "KnowledgeConflict.open",
+          "RevenueLifecycle.recent"
+        ]
+      },
+      {
+        "function_name": "productionReadinessWorker",
+        "classification": "RELEASE_READINESS_EVALUATOR",
+        "status": "ACTIVE_NON_AUTHORITATIVE",
+        "authoritative_for": [
+          "fail-closed release readiness projection only"
+        ],
+        "path": "base44/functions/productionReadinessWorker/entry.ts",
+        "dependency_labels": [
+          "production_findings",
+          "release_verifications",
+          "restore_exercises",
+          "runtime_gate_evidence"
+        ]
+      },
+      {
+        "function_name": "systemHealthAgent",
+        "classification": "QUARANTINED_COMPATIBILITY",
+        "status": "HTTP_410_NO_OPERATIONAL_PLANE_WRITES",
+        "authoritative_for": [],
+        "path": "base44/functions/systemHealthAgent/entry.ts",
+        "dependency_labels": []
+      }
+    ],
+    "system_health_quarantine_proven": true,
+    "admin_invocation_removed": true
+  },
+  "incidents": {
+    "canonical_authority": "AutonomyIncident",
+    "ecl_compatibility_ledger": "OperationalIncident",
+    "transport_ledger": "IncidentAlertDelivery",
+    "entity_paths": [
+      "base44/entities/AutonomyIncident.jsonc",
+      "base44/entities/IncidentAlertDelivery.jsonc",
+      "base44/entities/OperationalIncident.jsonc"
+    ],
+    "incident_entity_count": 3,
+    "third_incident_entity_count": 0,
+    "write_roles": {
+      "AutonomyIncident": "__service_role_only__",
+      "OperationalIncident": "__service_role_only__",
+      "IncidentAlertDelivery": "__service_role_only__"
+    },
+    "writer_files": {
+      "AutonomyIncident": [
+        "base44/functions/autonomousOperationsSupervisor/entry.ts",
+        "base44/functions/collectionOperationsWorker/entry.ts",
+        "base44/functions/costGovernanceWorker/entry.ts",
+        "base44/functions/dependencySecurityWorker/entry.ts",
+        "base44/functions/emergencyControlAdmin/entry.ts",
+        "base44/functions/goLiveControlAdmin/entry.ts",
+        "base44/functions/maintenanceEngine/entry.ts",
+        "base44/functions/providerRevenueReconciliationWorker/entry.ts",
+        "base44/functions/providerRevenueRecoveryAgent/entry.ts",
+        "base44/functions/respondMerchantInformationRequest/entry.ts",
+        "base44/shared/costGovernance.ts",
+        "base44/shared/disasterRecoveryRuntime.ts",
+        "base44/shared/instantlyRuntime.ts",
+        "base44/shared/outboundProviderEventProcessing.ts",
+        "base44/shared/stripeConnectedAccountLifecycle.ts"
+      ],
+      "OperationalIncident": [
+        "base44/functions/eclIncidentWorkflow/entry.ts",
+        "base44/functions/eclProductionHealth/entry.ts"
+      ],
+      "IncidentAlertDelivery": [
+        "base44/shared/incidentAlerting.ts"
+      ]
+    },
+    "writer_counts": {
+      "AutonomyIncident": 15,
+      "OperationalIncident": 2,
+      "IncidentAlertDelivery": 1
+    },
+    "operational_writer_allowlist": [
+      "base44/functions/eclIncidentWorkflow/entry.ts",
+      "base44/functions/eclProductionHealth/entry.ts"
+    ],
+    "operational_writer_allowlist_exact": true,
+    "adapter": {
+      "path": "base44/shared/canonicalIncident.ts",
+      "version": "canonical-incident-adapter-v1.3.0",
+      "autonomy_projection": true,
+      "operational_projection": true,
+      "stable_dedupe_projection": true,
+      "third_entity_allowed": false
+    },
+    "command_center": {
+      "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
+      "reads_autonomy": true,
+      "reads_operational": true,
+      "uses_canonical_view": true,
+      "stable_linkage_exposed": true,
+      "all_observed_active_rows_exposed": true,
+      "source_coverage_exposed": true,
+      "exact_counts_require_complete_sources": true
+    }
+  },
+  "work_planes": {
+    "canonical_entity": "AgentTask",
+    "legacy_entity": "AgentRun",
+    "legacy_write_role": "__service_role_only__",
+    "agent_run_writer_files": [],
+    "agent_run_writer_count": 0
+  }
+}

@@ -8,7 +8,9 @@ describe("Recover billing digest production closure", () => {
   it("is gated admin/internal and never anonymous-by-design", () => {
     const src = read("base44/functions/recoverBillingDigest/entry.ts");
     expect(src).toContain("requireAdminOrInternal");
-    expect(src).toContain("if (!gate.ok) return gate.response");
+    expect(src).toMatch(
+      /if\s*\(\s*!gate\.ok\s*\)\s*\{\s*return\s+gate\.response\s*\|\|\s*Response\.json\([\s\S]*?status:\s*403[\s\S]*?\);\s*\}/,
+    );
   });
   it("has one active versioned weekly automation", () => {
     const cfg = JSON.parse(read("base44/functions/recoverBillingDigest/function.jsonc"));

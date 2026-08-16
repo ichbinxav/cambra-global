@@ -1,9 +1,12 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { monthlySummaryEmail } from '../../shared/emails/monthlySummary.ts';
-import { emergencyState } from '../../shared/operationalControl.ts';
-import { sendCostGovernedEmail } from '../../shared/costGovernance.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { monthlySummaryEmail } from "../../shared/emails/monthlySummary.ts";
+import {
+  captureEmergencyEpoch,
+  emergencyState,
+} from "../../shared/operationalControl.ts";
+import { sendCostGovernedEmail } from "../../shared/costGovernance.ts";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
 
 // Sends the monthly savings summary email to a user (or to all opted-in users when called from scheduler).
 // Payload:
@@ -20,30 +23,67 @@ Deno.serve(async (req) => {
       const caller = await base44.auth.me();
       if (caller) {
         callerEmail = caller.email;
-        isAdminCaller = caller.role === 'admin';
+        isAdminCaller = caller.role === "admin";
       }
-    } catch(error){safeBestEffort(error,{operation:'sendMonthlySavingsSummary',fallback:null,severity:'secondary'})}
+    } catch (error) {
+      safeBestEffort(error, {
+        operation: "sendMonthlySavingsSummary",
+        fallback: null,
+        severity: "secondary",
+      });
+    }
 
     let body: any = {};
-    try { body = await req.json(); } catch(error){safeBestEffort(error,{operation:'sendMonthlySavingsSummary',fallback:null,severity:'secondary'})}
+    try {
+      body = await req.json();
+    } catch (error) {
+      safeBestEffort(error, {
+        operation: "sendMonthlySavingsSummary",
+        fallback: null,
+        severity: "secondary",
+      });
+    }
     requestedEmail = body?.userEmail || null;
 
     // Authorization rules:
     //  - If a userEmail is passed, only admins OR the user themselves can trigger it.
     //  - If no userEmail (bulk run), only admin/service can call.
     if (requestedEmail) {
-      if (!callerEmail) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (!callerEmail) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
       if (!isAdminCaller && callerEmail !== requestedEmail) {
-        return Response.json({ error: 'Forbidden' }, { status: 403 });
+        return Response.json({ error: "Forbidden" }, { status: 403 });
       }
     } else {
       if (!isAdminCaller) {
-        return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+        return Response.json({ error: "Forbidden: admin only" }, {
+          status: 403,
+        });
       }
     }
 
     const emergency = await emergencyState(base44.asServiceRole);
-    if (emergency.safe_mode || emergency.communications_paused) return Response.json({ ok:false, error:'emergency_control_paused:communications', safe_mode:emergency.safe_mode, reason:emergency.reason || null }, { status:409 });
+    if (emergency.safe_mode || emergency.communications_paused) {
+      return Response.json({
+        ok: false,
+        error: "emergency_control_paused:communications",
+      }, { status: 409 });
+    }
+    let communicationEpoch: any;
+    try {
+      communicationEpoch = await captureEmergencyEpoch(
+        base44.asServiceRole,
+        "communications",
+      );
+    } catch (error: any) {
+      return Response.json({
+        ok: false,
+        error: String(
+          error?.message || "emergency_control_paused:communications",
+        ),
+      }, { status: Number(error?.status || 409) });
+    }
 
     // Find target users
     let targets: any[] = [];
@@ -54,15 +94,19 @@ Deno.serve(async (req) => {
       if (me && (isAdminCaller || me.email === requestedEmail)) {
         targets = [me];
       } else {
-        const list = await base44.asServiceRole.entities.User.filter({ email: requestedEmail });
+        const list = await base44.asServiceRole.entities.User.filter({
+          email: requestedEmail,
+        });
         targets = list;
       }
     } else {
-      targets = await base44.asServiceRole.entities.User.filter({ monthly_email_summary: true });
+      targets = await base44.asServiceRole.entities.User.filter({
+        monthly_email_summary: true,
+      });
     }
 
     if (!targets.length) {
-      return Response.json({ sent: 0, message: 'No recipients' });
+      return Response.json({ sent: 0, message: "No recipients" });
     }
 
     const results: any[] = [];
@@ -76,18 +120,23 @@ Deno.serve(async (req) => {
         // service role. Skip semantics preserved: users without a brand get
         // 'skipped_no_data', just like before, but for the right reason.
         const brands = await base44.asServiceRole.entities.Brand.filter(
-          { contact_email: u.email }, '-created_date', 1
+          { contact_email: u.email },
+          "-created_date",
+          1,
         );
         const brand = brands[0] || null;
         if (!brand) {
-          results.push({ email: u.email, status: 'skipped_no_brand' });
+          results.push({ email: u.email, status: "skipped_no_brand" });
           continue;
         }
-        const analyses = await base44.asServiceRole.entities.AnalyzerResult.filter(
-          { brand_id: brand.id }, '-created_date', 12
-        );
+        const analyses = await base44.asServiceRole.entities.AnalyzerResult
+          .filter(
+            { brand_id: brand.id },
+            "-created_date",
+            12,
+          );
         if (!analyses.length) {
-          results.push({ email: u.email, status: 'skipped_no_data' });
+          results.push({ email: u.email, status: "skipped_no_data" });
           continue;
         }
 
@@ -96,11 +145,15 @@ Deno.serve(async (req) => {
         const monthly = Math.round(total / 12);
 
         // Cumulative estimate (sum of all identified savings monthly run-rate × months active)
-        const sorted = [...analyses].sort((a, b) => new Date(a.created_date).getTime() - new Date(b.created_date).getTime());
+        const sorted = [...analyses].sort((a, b) =>
+          new Date(a.created_date).getTime() -
+          new Date(b.created_date).getTime()
+        );
         const firstDate = new Date(sorted[0].created_date);
         const monthsActive = Math.max(
           1,
-          (new Date().getFullYear() - firstDate.getFullYear()) * 12 + (new Date().getMonth() - firstDate.getMonth()) + 1
+          (new Date().getFullYear() - firstDate.getFullYear()) * 12 +
+            (new Date().getMonth() - firstDate.getMonth()) + 1,
         );
         const cumulative = Math.round((total / 12) * monthsActive);
 
@@ -108,31 +161,40 @@ Deno.serve(async (req) => {
         // breakdown and the composite efficiency score card; the email
         // now reports only card-payment savings + cumulative.
         const mail = monthlySummaryEmail(brand.locale, {
-          firstName: u.full_name?.split(' ')[0] || '',
+          firstName: u.full_name?.split(" ")[0] || "",
           total,
           monthly,
           cumulative,
-          appDomain: Deno.env.get('APP_DOMAIN') || 'cambra.global',
+          appDomain: Deno.env.get("APP_DOMAIN") || "cambra.global",
         });
 
-        await sendCostGovernedEmail(base44.asServiceRole, { event_key:`email:monthly-savings:${u.id || u.email}:${new Date().toISOString().slice(0,7)}`, source:'sendMonthlySavingsSummary', related_entity_type:'User', related_entity_id:u.id || u.email }, {
-          from_name: 'CAMBRA',
+        await sendCostGovernedEmail(base44.asServiceRole, {
+          event_key: `email:monthly-savings:${u.id || u.email}:${
+            new Date().toISOString().slice(0, 7)
+          }`,
+          stable_event_key: true,
+          source: "sendMonthlySavingsSummary",
+          related_entity_type: "User",
+          related_entity_id: u.id || u.email,
+          emergency_epoch_claim: communicationEpoch,
+        }, {
+          from_name: "CAMBRA",
           to: u.email,
           subject: mail.subject,
           body: mail.html,
         });
-        results.push({ email: u.email, status: 'sent' });
-      } catch (err) {
-        results.push({ email: u.email, status: 'error', error: err.message });
+        results.push({ email: u.email, status: "sent" });
+      } catch (err: any) {
+        results.push({ email: u.email, status: "error", error: err.message });
       }
     }
 
     return Response.json({
-      sent: results.filter(r => r.status === 'sent').length,
+      sent: results.filter((r) => r.status === "sent").length,
       total: results.length,
       results,
     });
   } catch (error) {
-    return internalErrorResponse(error, 'sendMonthlySavingsSummary');
+    return internalErrorResponse(error, "sendMonthlySavingsSummary");
   }
 });

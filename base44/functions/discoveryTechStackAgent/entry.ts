@@ -2,6 +2,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import { requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
  * Discovery / Tech Stack Agent — Brain B1
@@ -84,6 +86,8 @@ Deno.serve(async (req) => {
     if (!brand_id) return Response.json({ ok: false, error: "Missing brand_id" }, { status: 400 });
     if (!website_url) return Response.json({ ok: false, error: "Missing website_url" }, { status: 400 });
 
+    await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+
     // Open AgentTask (L1, no Approval) — visible in Activity Log
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id,
@@ -117,15 +121,18 @@ Deno.serve(async (req) => {
     // Load full DiscoveryFinding rows for this job to recover evidence_value
     const jobId = discoveryPayload.job_id;
     const findingRows = jobId
-      ? await base44.asServiceRole.entities.DiscoveryFinding
-          .filter({ discovery_job_id: jobId }, "-created_date", 200)
-          .catch((error:any)=>safeBestEffort(error,{operation:'discoveryTechStackAgent',fallback:[],severity:'secondary'}))
+      ? await requireCriticalOperation(
+          'discovery_tech_stack_finding_read',
+          () => base44.asServiceRole.entities.DiscoveryFinding
+            .filter({ discovery_job_id: jobId, brand_id }, "-created_date", 200),
+        )
       : [];
 
     // ── 2. Cross-reference with IntegrationCatalog ────────────────────────
-    const catalog = await base44.asServiceRole.entities.IntegrationCatalog
-      .list("-priority", 500)
-      .catch((error:any)=>safeBestEffort(error,{operation:'discoveryTechStackAgent',fallback:[],severity:'secondary'}));
+    const catalog = await requireCriticalOperation(
+      'discovery_tech_stack_catalog_read',
+      () => base44.asServiceRole.entities.IntegrationCatalog.list("-priority", 500),
+    );
     const catalogIndex = {
       list: catalog.map(c => ({
         id: c.id,
@@ -272,6 +279,8 @@ Deno.serve(async (req) => {
       interpretation_status,
     });
   } catch (error) {
+    const tenantError = tenantOwnershipErrorResponse(error);
+    if (tenantError) return tenantError;
     if (task?.id) {
       try {
         const base44 = createClientFromRequest(req);

@@ -25,9 +25,21 @@ export function fireAndForget(base44: any, fnName: string, payload: Record<strin
   try {
     void Promise.resolve(
       base44.asServiceRole.functions.invoke(fnName, { ...payload, internal_secret: secret }),
-    ).catch(() => null);
-  } catch {
-    /* the reconciler picks the work up */
+    ).catch((error: unknown) => {
+      console.warn(JSON.stringify({
+        event: 'internal_fire_and_forget_failed_reconciler_required',
+        function_name: fnName,
+        error_name: error instanceof Error ? error.name : typeof error,
+        observed_at: new Date().toISOString(),
+      }));
+    });
+  } catch (error) {
+    console.warn(JSON.stringify({
+      event: 'internal_fire_and_forget_start_failed_reconciler_required',
+      function_name: fnName,
+      error_name: error instanceof Error ? error.name : typeof error,
+      observed_at: new Date().toISOString(),
+    }));
   }
 }
 

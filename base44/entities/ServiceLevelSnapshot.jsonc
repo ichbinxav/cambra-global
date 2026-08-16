@@ -1,1 +1,40 @@
-{"name":"ServiceLevelSnapshot","type":"object","description":"P11 measured SLI/SLO window. Unknown or undersampled observations never pass.","properties":{"snapshot_key":{"type":"string"},"slo_key":{"type":"string"},"window_from":{"type":"string","format":"date-time"},"window_to":{"type":"string","format":"date-time"},"sample_count":{"type":"number"},"success_count":{"type":"number"},"latency_p95_ms":{"type":"number"},"status":{"type":"string","enum":["MET","BREACHED","INSUFFICIENT_EVIDENCE","UNKNOWN"]},"methodology_version":{"type":"string"},"source_refs":{"type":"array","items":{"type":"string"}},"calculated_at":{"type":"string","format":"date-time"}},"required":["snapshot_key","slo_key","window_from","window_to","sample_count","success_count","status","methodology_version","calculated_at"],"rls":{"read":{"user_condition":{"role":"admin"}},"write":{"user_condition":{"role":"admin"}}}}
+{
+  "name": "ServiceLevelSnapshot",
+  "type": "object",
+  "description": "Measured point-in-time SLI/SLO window bound to one complete runtime deployment identity. UNKNOWN, incomplete coverage, invalid duration or undersampling can never become MET.",
+  "properties": {
+    "snapshot_key": { "type": "string" },
+    "slo_key": { "type": "string" },
+    "service_class": { "type": "string", "enum": ["USER_FACING", "ASYNCHRONOUS"] },
+    "window_from": { "type": "string", "format": "date-time" },
+    "window_to": { "type": "string", "format": "date-time" },
+    "coverage_epoch": { "type": "string", "format": "date-time", "description": "Deployment-owned start of complete durable observation. It must predate the exact 30-day window before coverage can be COMPLETE." },
+    "sample_count": { "type": "number" },
+    "success_count": { "type": "number" },
+    "latency_p95_ms": { "type": "number" },
+    "availability_observed": { "type": "number" },
+    "availability_target": { "type": "number" },
+    "latency_target_ms": { "type": "number" },
+    "status": { "type": "string", "enum": ["MET", "BREACHED", "INSUFFICIENT_EVIDENCE", "UNKNOWN"] },
+    "coverage_status": { "type": "string", "enum": ["COMPLETE", "INCOMPLETE", "UNAVAILABLE"] },
+    "coverage_blockers": { "type": "array", "items": { "type": "string" } },
+    "source_entity": { "type": "string" },
+    "source_record_count": { "type": "number" },
+    "source_records_hash": { "type": "string", "description": "SHA-256 over the complete paginated source projection used for this snapshot." },
+    "snapshot_hash": { "type": "string", "description": "SHA-256 over the canonical release-relevant snapshot fields; Base44 metadata and this hash are excluded." },
+    "runtime_identity_hash": { "type": "string" },
+    "git_sha": { "type": "string" },
+    "source_tree_hash": { "type": "string" },
+    "base44_bundle_hash": { "type": "string" },
+    "deployment_topology_hash": { "type": "string" },
+    "scheduler_inventory_hash": { "type": "string" },
+    "methodology_version": { "type": "string" },
+    "source_refs": { "type": "array", "items": { "type": "string" } },
+    "calculated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["snapshot_key", "slo_key", "service_class", "window_from", "window_to", "sample_count", "success_count", "status", "coverage_status", "methodology_version", "calculated_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

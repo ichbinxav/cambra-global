@@ -1,14 +1,24 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { safeBestEffort } from "../../shared/bestEffort.ts";
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { callCambraClaude } from "../../shared/commercialModelRouter.ts";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
 
 const AGENT_NAME = "investor_update";
 const TASK_TYPE = "draft_investor_update";
 const RISK_LEVEL = 2;
 const ACTION_TYPE = "send_investor_update";
 
-async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'high_reasoning', maxTokens:2048, svc, eventKey, source:'investorUpdateAgent' })).text; }
+async function callClaude(svc, prompt, eventKey) {
+  return (
+    await callCambraClaude(prompt, {
+      tier: "high_reasoning",
+      maxTokens: 2048,
+      svc,
+      eventKey,
+      source: "investorUpdateAgent",
+    })
+  ).text;
+}
 
 Deno.serve(async (req) => {
   let task = null;
@@ -16,12 +26,26 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
-    if (user.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
+    if (user.role !== "admin")
+      return Response.json({ error: "Forbidden" }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
+    if (body?.mode === "execute")
+      return Response.json(
+        {
+          ok: false,
+          error: "investor_update_transport_not_configured",
+          execution: false,
+        },
+        { status: 409 },
+      );
     const now = new Date();
-    const month = Number.isInteger(body?.month) ? body.month : now.getUTCMonth() + 1;
-    const year = Number.isInteger(body?.year) ? body.year : now.getUTCFullYear();
+    const month = Number.isInteger(body?.month)
+      ? body.month
+      : now.getUTCMonth() + 1;
+    const year = Number.isInteger(body?.year)
+      ? body.year
+      : now.getUTCFullYear();
 
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id: "_platform",
@@ -39,24 +63,69 @@ Deno.serve(async (req) => {
     const periodEnd = new Date(Date.UTC(year, month, 1)).toISOString();
 
     // Collect metrics
-    const [brands, savingsReports, activations, completedTasks] = await Promise.all([
-      base44.asServiceRole.entities.Brand.list("-updated_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
-      base44.asServiceRole.entities.MonthlySavingsReport
-        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
-      base44.asServiceRole.entities.DealActivation
-        .filter({ created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
-      base44.asServiceRole.entities.AgentTask
-        .filter({ status: "completed", created_date: { $gte: periodStart, $lt: periodEnd } }, "-created_date", 500).catch((error:any)=>safeBestEffort(error,{operation:'investorUpdateAgent',fallback:[],severity:'secondary'})),
-    ]);
+    const [brands, savingsReports, activations, completedTasks] =
+      await Promise.all([
+        base44.asServiceRole.entities.Brand.list("-updated_date", 500).catch(
+          (error: any) =>
+            safeBestEffort(error, {
+              operation: "investorUpdateAgent",
+              fallback: [],
+              severity: "secondary",
+            }),
+        ),
+        base44.asServiceRole.entities.MonthlySavingsReport.filter(
+          { created_date: { $gte: periodStart, $lt: periodEnd } },
+          "-created_date",
+          500,
+        ).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "investorUpdateAgent",
+            fallback: [],
+            severity: "secondary",
+          }),
+        ),
+        base44.asServiceRole.entities.DealActivation.filter(
+          { created_date: { $gte: periodStart, $lt: periodEnd } },
+          "-created_date",
+          500,
+        ).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "investorUpdateAgent",
+            fallback: [],
+            severity: "secondary",
+          }),
+        ),
+        base44.asServiceRole.entities.AgentTask.filter(
+          {
+            status: "completed",
+            created_date: { $gte: periodStart, $lt: periodEnd },
+          },
+          "-created_date",
+          500,
+        ).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "investorUpdateAgent",
+            fallback: [],
+            severity: "secondary",
+          }),
+        ),
+      ]);
 
-    const sum = (arr, key) => arr.reduce((s, x) => s + (Number(x?.[key]) || 0), 0);
+    const sum = (arr, key) =>
+      arr.reduce((s, x) => s + (Number(x?.[key]) || 0), 0);
     const metrics = {
       period: `${year}-${String(month).padStart(2, "0")}`,
       active_brands: brands.length,
       savings_reports_count: savingsReports.length,
-      total_savings_eur: Math.round(sum(savingsReports, "total_savings_eur") || sum(savingsReports, "total_savings") || 0),
+      total_savings_eur: Math.round(
+        sum(savingsReports, "total_savings_eur") ||
+          sum(savingsReports, "total_savings") ||
+          0,
+      ),
       deal_activations: activations.length,
-      revenue_pipeline_eur: Math.round(sum(activations, "estimated_savings") || 0),
+      revenue_pipeline_eur: Math.round(
+        sum(activations, "estimated_savings") || 0,
+      ),
       tasks_completed: completedTasks.length,
     };
 
@@ -74,7 +143,11 @@ Deno.serve(async (req) => {
       `Tasks de agentes completados: ${metrics.tasks_completed}`,
     ].join("\n");
 
-    const draft = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
+    const draft = await callClaude(
+      base44.asServiceRole,
+      prompt,
+      task?.id || crypto.randomUUID(),
+    );
 
     // Create Approval
     const approval = await base44.asServiceRole.entities.Approval.create({
@@ -84,6 +157,7 @@ Deno.serve(async (req) => {
       risk_level: RISK_LEVEL,
       draft_content: draft,
       draft_payload_json: { metrics, period: metrics.period },
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       status: "pending",
     });
 
@@ -95,7 +169,13 @@ Deno.serve(async (req) => {
       output_payload_json: { metrics },
     });
 
-    return Response.json({ ok: true, task_id: task.id, approval_id: approval.id, period: metrics.period, metrics });
+    return Response.json({
+      ok: true,
+      task_id: task.id,
+      approval_id: approval.id,
+      period: metrics.period,
+      metrics,
+    });
   } catch (error) {
     if (task?.id) {
       try {
@@ -105,8 +185,10 @@ Deno.serve(async (req) => {
           error: error.message,
           completed_at: new Date().toISOString(),
         });
-      } catch (_) { /* swallow */ }
+      } catch (_) {
+        /* swallow */
+      }
     }
-    return internalErrorResponse(error, 'investorUpdateAgent');
+    return internalErrorResponse(error, "investorUpdateAgent");
   }
 });

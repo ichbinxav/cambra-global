@@ -1,13 +1,26 @@
 {
   "name": "RuntimeGateEvidence",
   "type": "object",
-  "description": "Admin-only, time-bounded evidence for a pre-launch runtime gate. Local/static assertions can be retained for context but can never satisfy REAL_RUNTIME or EXTERNAL gate requirements.",
+  "description": "Admin-only, time-bounded production evidence. REAL_RUNTIME and OPERATOR_EXERCISE PASS rows are valid only when the runtime itself supplies the complete immutable deployment identity; request payloads cannot assert deployment identity.",
   "properties": {
     "evidence_key": { "type": "string" },
     "gate_key": { "type": "string" },
     "environment": { "type": "string" },
+    "release_version": { "type": "string" },
+    "release_build_id": { "type": "string" },
     "git_sha": { "type": "string" },
     "source_tree_hash": { "type": "string" },
+    "source_tree_file_count": { "type": "number" },
+    "base44_bundle_hash": { "type": "string" },
+    "base44_bundle_file_count": { "type": "number" },
+    "deployment_topology_hash": { "type": "string" },
+    "scheduler_inventory_hash": { "type": "string" },
+    "physical_function_count": { "type": "number" },
+    "logical_route_count": { "type": "number" },
+    "identity_version": { "type": "string" },
+    "identity_status": { "type": "string", "enum": ["COMPLETE", "INCOMPLETE", "NOT_REQUIRED"] },
+    "identity_hash": { "type": "string" },
+    "identity_blockers": { "type": "array", "items": { "type": "string" } },
     "status": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"] },
     "evidence_kind": { "type": "string", "enum": ["REAL_RUNTIME", "EXTERNAL", "OPERATOR_EXERCISE", "LOCAL_STATIC"] },
     "source": { "type": "string" },
@@ -22,6 +35,6 @@
   "required": ["evidence_key", "gate_key", "environment", "status", "evidence_kind", "source", "observed_at"],
   "rls": {
     "read": { "user_condition": { "role": "admin" } },
-    "write": { "user_condition": { "role": "admin" } }
+    "write": { "user_condition": { "role": "__service_role_only__" } }
   }
 }

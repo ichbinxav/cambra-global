@@ -170,7 +170,13 @@ describe("ECL stage gate (v62.3)", () => {
     const freeze = JSON.parse(fs.readFileSync(new URL("../../config/pre-ecl-freeze.json", import.meta.url), "utf8"));
     expect(resolveStage(freeze)).toBe(STAGE_ECL_P8);
     expect([...freeze.allowlist].sort()).toEqual([...P8_ALLOWLIST].sort());
-    expect(freeze.entries).toHaveLength(8);
+    expect(freeze.entries).toHaveLength(12);
+    expect(freeze.entries.slice(-4).map((entry) => entry.path)).toEqual([
+      "base44/functions/stripeBillingWebhook/entry.ts",
+      "base44/functions/processWebhookDeadLetters/entry.ts",
+      "base44/entities/OperationalIncident.jsonc",
+      "base44/functions/eclProductionHealth/entry.ts",
+    ]);
   });
 
   it("the P3 allowlist widens P2 by EXACT engine paths only — no wildcard, no new schema, no scheduler (v62.5)", () => {

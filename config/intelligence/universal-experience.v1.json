@@ -1,0 +1,141 @@
+{
+  "schema_version": "universal-experience.v1",
+  "status": "CONTRACT_IMPLEMENTED_RUNTIME_UNVERIFIED",
+  "physical_projection": {
+    "entity": "Event",
+    "mode": "BACKWARDS_COMPATIBLE_OPTIONAL_FIELDS",
+    "source_of_truth_rule": "Domain records remain authoritative. Event is the shared semantic projection and must only be emitted from a committed domain write or an equivalent durable outbox boundary.",
+    "exactly_once_claimed": false,
+    "idempotency_required_for_new_writers": true
+  },
+  "required_fields": [
+    "experience_id",
+    "schema_version",
+    "event_type",
+    "event_version",
+    "occurred_at",
+    "observed_at",
+    "recorded_at",
+    "effective_at",
+    "available_at",
+    "tenant_id",
+    "tenant_scope",
+    "actor",
+    "identity",
+    "source",
+    "context_snapshot_id",
+    "decision",
+    "producer",
+    "authority",
+    "execution",
+    "outcome",
+    "learning",
+    "privacy",
+    "trace",
+    "data_quality",
+    "is_demo",
+    "is_synthetic",
+    "is_test",
+    "is_replay",
+    "idempotency_key",
+    "payload_content_hash"
+  ],
+  "tenant_scope_enum": [
+    "TENANT",
+    "PLATFORM",
+    "ANONYMIZED_AGGREGATE"
+  ],
+  "actor_type_enum": [
+    "HUMAN",
+    "AGENT",
+    "WORKER",
+    "EXTERNAL_COUNTERPARTY",
+    "SYSTEM"
+  ],
+  "execution_status_enum": [
+    "NOT_PROPOSED",
+    "PROPOSED",
+    "APPROVED",
+    "REJECTED",
+    "QUEUED",
+    "EXECUTED",
+    "FAILED",
+    "CANCELLED",
+    "UNKNOWN"
+  ],
+  "outcome_status_enum": [
+    "PENDING",
+    "OBSERVED",
+    "VERIFIED",
+    "RECONCILED",
+    "EXPIRED",
+    "UNATTRIBUTABLE"
+  ],
+  "learning_state_enum": [
+    "INELIGIBLE",
+    "QUARANTINED",
+    "CLEARED"
+  ],
+  "identity_fields": [
+    "merchant_id",
+    "company_id",
+    "contact_id",
+    "provider_id",
+    "provider_legal_entity_id",
+    "partner_id",
+    "product_id",
+    "market",
+    "thread_id",
+    "negotiation_id",
+    "discovery_run_id",
+    "migration_id",
+    "deal_activation_id"
+  ],
+  "time_invariants": [
+    "occurred_at <= observed_at <= recorded_at",
+    "available_at <= prediction_time for every feature used by a decision",
+    "training_cutoff < prediction_time",
+    "unknown timestamps never default to now"
+  ],
+  "semantic_invariants": [
+    "signal, context, decision, authority, execution and outcome remain distinct",
+    "approval does not imply execution",
+    "prediction does not imply verified outcome",
+    "estimated value does not imply billing eligibility",
+    "identity and tenant scope are explicit",
+    "corrections use supersession rather than silent rewrite",
+    "external source identifiers never replace canonical identity",
+    "demo, synthetic, test and replay flags are explicit",
+    "legacy Event rows remain readable but cannot be presumed learning-eligible"
+  ],
+  "data_quality_required_fields": [
+    "schema_valid",
+    "identity_resolution_status",
+    "provenance_completeness",
+    "context_completeness",
+    "execution_certainty",
+    "outcome_certainty",
+    "temporal_consistency",
+    "currency_unit_validity",
+    "contradiction_status",
+    "privacy_eligibility",
+    "learning_eligibility"
+  ],
+  "authority_refs": [
+    "base44/entities/Event.jsonc",
+    "base44/entities/IntelligenceSnapshot.jsonc",
+    "base44/entities/IntelligenceEvidence.jsonc",
+    "base44/entities/IntelligenceOutcome.jsonc",
+    "base44/entities/AuthoritySnapshot.jsonc",
+    "base44/entities/Approval.jsonc",
+    "base44/entities/CostUsageEvent.jsonc",
+    "base44/shared/intelligenceFoundationContracts.ts"
+  ],
+  "runtime_evidence": [],
+  "blockers": [
+    "DOMAIN_ADAPTERS_NOT_WIRED_END_TO_END",
+    "COMMITTED_EVENT_OUTBOX_NOT_PROVEN",
+    "RUNTIME_PARITY_UNVERIFIED",
+    "TENANT_ISOLATION_RUNTIME_UNVERIFIED"
+  ]
+}

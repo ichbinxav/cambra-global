@@ -2,6 +2,19 @@
   "schemaVersion": 1,
   "registryVersion": "p1-europe-2026.08.10",
   "effectiveDate": "2026-08-10",
+  "launchScope": {
+    "scopeVersion": "founder-market-scope-2026.08.13",
+    "effectiveDate": "2026-08-13",
+    "decisionStatus": "FOUNDER_DECIDED",
+    "canonical_market_count": 33,
+    "active_launch_count": 30,
+    "protected_market_count": 3,
+    "active": ["AT", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "NO", "IS", "LI", "CH", "GB", "AD"],
+    "protected": ["FR", "BE", "NL"],
+    "protectedMode": "RESEARCH_ONLY",
+    "outboundMode": "PAUSED_ZERO",
+    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED"
+  },
   "markets": [
     {"iso2":"AT","iso3":"AUT","canonical_name":"Austria","aliases":["Austria"],"region":"Europe","subregion":"Western Europe","eu_member":true,"eea_member":true,"eurozone_member":true,"primary_currency":"EUR","timezones":["Europe/Vienna"]},
     {"iso2":"BE","iso3":"BEL","canonical_name":"Belgium","aliases":["Belgium","Belgique","België"],"region":"Europe","subregion":"Western Europe","eu_member":true,"eea_member":true,"eurozone_member":true,"primary_currency":"EUR","timezones":["Europe/Brussels"]},

@@ -1,6 +1,402 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
-import{createClientFromRequest}from'npm:@base44/sdk@0.8.41';import{requireAdminOrInternal}from'../../shared/internalGate.ts';import{callCambraClaude}from'../../shared/commercialModelRouter.ts';import{sanitizeExternalText}from'../../shared/commercialAutonomy.ts';import{merchantSuitability,providerEconomicsScore,providerExpectedRevenueMinor}from'../../shared/providerEconomicsCore.ts';import{emergencyState}from'../../shared/operationalControl.ts';
-const parse=(t:string)=>{const c=String(t||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();try{return JSON.parse(c)}catch(error){safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'})}const m=c.match(/\{[\s\S]*\}/);if(m)try{return JSON.parse(m[0])}catch(error){safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'})}return null};
-Deno.serve(async req=>{let task:any=null;try{const b=createClientFromRequest(req),body=await req.json().catch(()=>({})),g=await requireAdminOrInternal(req,b,body);if(!g.ok)return g.response;const s=b.asServiceRole,emergency=await emergencyState(s);if(emergency.safe_mode||emergency.negotiations_paused)return Response.json({ok:false,error:'emergency_control_paused:negotiations',safe_mode:emergency.safe_mode,reason:emergency.reason||null},{status:409});const c=await s.entities.NegotiationCase.get(String(body.case_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));if(!c)return Response.json({ok:false,error:'negotiation_case_not_found'},{status:404});const bid=await s.entities.AggregateBid.get(String(body.bid_id||c.aggregate_bid_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));if(!bid||bid.negotiation_case_id!==c.id)return Response.json({ok:false,error:'aggregate_bid_required'},{status:400});if(!merchantSuitability(Number(bid.merchant_outcome_score||0)))return Response.json({ok:false,error:'merchant_suitability_gate_failed',merchant_outcome_score:bid.merchant_outcome_score},{status:409});const thread=await s.entities.CommunicationThread.get(c.thread_id).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));if(!thread)return Response.json({ok:false,error:'thread_missing'},{status:409});task=await s.entities.AgentTask.create({brand_id:'_platform',agent_name:'provider_monetization',task_type:String(body.action||'request_provider_economics'),related_entity_type:'AggregateBid',related_entity_id:bid.id,status:'running',requires_approval:false,risk_level:3,input_summary:`Provider-side economics · ${c.provider_name}`,started_at:new Date().toISOString()});const internal=Deno.env.get('INTERNAL_CALL_SECRET')||'';
-if(body.action!=='process_offer'){const text=`Now that the merchant commercial proposal is established, we would like to discuss CAMBRA's partnership economics separately. Please outline any available economics for merchant origination, successful activation/migration, processed volume, recurring revenue share, tiered volume incentives, market expansion or product adoption. Please keep these terms separate from the merchant pricing already proposed and confirm that the merchant commercial terms are not worsened or conditioned on CAMBRA compensation. Please include calculation basis, rate/bps/fixed amount, eligibility, tiers, payment frequency, payment terms and clawbacks.`;const send=await s.functions.invoke('commercialSendMessage',{thread_id:thread.id,action:'provider_monetization_request',classification:'pricing_request',subject:`Re: ${c.provider_name} CAMBRA partnership economics`,text,agent_name:'provider_monetization',idempotency_key:`provider-monetization:${bid.id}`,next_action_at:new Date(Date.now()+72*3600000).toISOString(),internal_secret:internal});await s.entities.Provider.update(c.provider_id,{provider_monetization_status:'negotiating'}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.Event.create({brand_id:'_platform',event_type:'REVENUE_SHARE_REQUESTED',source:'provider_monetization',entity_type:'AggregateBid',entity_id:bid.id,payload_json:{provider_id:c.provider_id,pool_id:c.aggregate_pool_id,merchant_terms_already_established:true},status:'processed',processed_at:new Date().toISOString()}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.AgentTask.update(task.id,{status:'completed',output_summary:'Separate provider-side economics requested after merchant suitability gate',output_payload_json:{send:send?.data||send},completed_at:new Date().toISOString()});return Response.json({ok:true,sent:true,merchant_terms_separate:true})}
-const msg=await s.entities.CommunicationMessage.get(String(body.message_id||'')).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));if(!msg||msg.thread_id!==thread.id||msg.direction!=='inbound')return Response.json({ok:false,error:'provider_message_required'},{status:400});const prompt=['Extract ONLY CAMBRA/provider-side compensation economics from this provider message. Never alter or infer merchant pricing. Missing numbers must be null. Return ONLY JSON:',`{"compensation_types":["REFERRAL_FEE|ACTIVATION_BOUNTY|MIGRATION_BOUNTY|VOLUME_REBATE|RECURRING_REVENUE_SHARE|TRANSACTION_REVENUE_SHARE|TIERED_VOLUME_REBATE|STRATEGIC_PARTNERSHIP_FEE|MARKET_EXPANSION_INCENTIVE|PERFORMANCE_BONUS|OTHER"],"rate_bps":number|null,"percentage":number|null,"fixed_fee_minor":number|null,"basis":"string","payment_frequency":"string","payment_terms":"string","clawback_conditions":"string","eligible_products":[],"eligible_countries":[],"tiers":[{"name":"","metric":"activated_volume|processed_volume|transaction_count|activated_merchants|provider_net_revenue|product_adoption|retention|growth_rate","threshold_value":number,"rate_bps":number|null,"percentage":number|null,"fixed_fee_minor":number|null,"activation_mode":"automatic_contractual|provider_confirmation|manual"}],"merchant_terms_explicitly_unchanged":true|false|null,"legal_terms":{},"confidence":0-1}`,String(msg.text_body||'').slice(0,16000)].join('\n');const ex=parse((await callCambraClaude(prompt,{tier:'high_reasoning',maxTokens:2600,svc:s,eventKey:`provider-economics:${msg.id}`,source:'providerMonetizationAgent'})).text);if(!ex)throw new Error('provider_economics_unparseable');const pe={...ex,source_message_id:msg.id,expected_annual_volume_minor:0,expected_activated_merchants:0};const score=providerEconomicsScore(pe),exp12=providerExpectedRevenueMinor(pe,12);await s.entities.AggregateBid.update(bid.id,{provider_economics_json:pe,provider_economics_score:score,provider_expected_revenue_12m_minor:exp12,compensation_effect_on_ranking:false});await s.entities.NegotiationOffer.update(bid.negotiation_offer_id,{provider_economics_json:pe,provider_economics_extraction_confidence:Number(ex.confidence||0)}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.Provider.update(c.provider_id,{provider_monetization_status:'negotiating',provider_compensation_summary_json:{latest_bid_id:bid.id,score,compensation_types:ex.compensation_types||[]}}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.Event.create({brand_id:'_platform',event_type:'REVENUE_SHARE_OFFER_RECEIVED',source:'provider_monetization',entity_type:'AggregateBid',entity_id:bid.id,payload_json:{provider_id:c.provider_id,provider_economics_score:score,compensation_effect_on_ranking:false},status:'processed',processed_at:new Date().toISOString()}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.functions.invoke('providerEconomicsAssessmentWorker',{internal_secret:internal}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));const assessment=(await s.entities.ProviderEconomicAssessment.filter({bid_id:bid.id},'-calculated_at',1).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:[],severity:'secondary'})))[0]||null;const conflict=String(assessment?.conflict_classification||'conflict_none');const approval=await s.entities.Approval.create({brand_id:'_platform',agent_task_id:task.id,action_type:'aggregate_contract',related_entity_type:'NegotiationCase',related_entity_id:c.id,risk_level:4,draft_content:`DUAL-SIDED PROVIDER PROPOSAL\nProvider: ${c.provider_name}\nMerchant Outcome Score: ${bid.merchant_outcome_score}\nMerchant annual cost: ${bid.normalized_annual_cost_minor}\nCAMBRA provider economics: ${JSON.stringify(pe)}\nExpected provider revenue 12m: ${exp12} minor units\nConflict: ${conflict}\nCompensation affected merchant ranking: NO\nProvider compensation activation: LEGAL/DISCLOSURE REVIEW REQUIRED\nThis approval accepts the commercial proposal for contract drafting only; it does not activate provider revenue, execute a contract or create a volume guarantee.`,draft_payload_json:{case_id:c.id,rfp_id:c.aggregate_rfp_id,pool_id:c.aggregate_pool_id,bid_id:bid.id,offer_id:bid.negotiation_offer_id,demand_snapshot:c.demand_snapshot_json||{},material_commitment:bid.material_commitment===true,legal_terms:bid.legal_terms_json||{},tier_schedule:bid.tier_schedule_json||[],provider_economics:pe,provider_economics_score:score,provider_expected_revenue_12m_minor:exp12,conflict_classification:conflict,compensation_effect_on_ranking:false,provider_compensation_activation:false,provider_compensation_legal_review_required:true,requires_contract_revalidation:true,contract_execution:false},status:'pending',expires_at:new Date(Date.now()+7*86400000).toISOString()});await s.entities.NegotiationCase.update(c.id,{status:'awaiting_final_approval',final_approval_id:approval.id,next_action:'founder_dual_sided_contract_approval'});await s.entities.AggregateRFP.update(c.aggregate_rfp_id,{status:'human_approval'}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.AggregatePool.update(c.aggregate_pool_id,{status:'human_approval'}).catch((error:any)=>safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'}));await s.entities.CommunicationThread.update(thread.id,{status:'awaiting_approval',automation_paused:true,pause_reason:'dual_sided_provider_proposal'});await s.entities.AgentTask.update(task.id,{status:'waiting_approval',requires_approval:true,risk_level:4,approval_id:approval.id,output_summary:'Dual-sided proposal ready for founder review; provider economics remain legally inactive',output_payload_json:{provider_economics_score:score,expected_12m_minor:exp12,conflict,approval_id:approval.id},completed_at:new Date().toISOString()});return Response.json({ok:true,bid_id:bid.id,provider_economics_score:score,expected_12m_minor:exp12,conflict,approval_id:approval.id,compensation_effect_on_ranking:false,legal_activation_allowed:false})}catch(e){console.error(e);if(task?.id)try{const b=createClientFromRequest(req);await b.asServiceRole.entities.AgentTask.update(task.id,{status:'failed',error:'provider_monetization_failed',completed_at:new Date().toISOString()})}catch(error){safeBestEffort(error,{operation:'providerMonetizationAgent',fallback:null,severity:'secondary'})}return Response.json({ok:false,error:'provider_monetization_failed'},{status:500})}});
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { requireAdminOrInternal } from '../../shared/internalGate.ts';
+import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
+import { requireAcceptedCommercialSendResponse } from '../../shared/commercialSendSafety.ts';
+import { sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
+import { merchantSuitability, providerEconomicsScore, providerExpectedRevenueMinor } from '../../shared/providerEconomicsCore.ts';
+import { assertEmergencyEpochUnchanged, captureEmergencyEpoch, emergencyState, inheritEmergencyEpoch } from '../../shared/operationalControl.ts';
+const parse = (t: string) => {
+  const c = String(t || '').replace(/```json\s*/gi, '').replace(/```/g, '')
+    .trim();
+  try {
+    return JSON.parse(c);
+  } catch (error) {
+    safeBestEffort(error, {
+      operation: 'providerMonetizationAgent',
+      fallback: null,
+      severity: 'secondary',
+    });
+  }
+  const m = c.match(/\{[\s\S]*\}/);
+  if (m) {
+    try {
+      return JSON.parse(m[0]);
+    } catch (error) {
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      });
+    }
+  }
+  return null;
+};
+Deno.serve(async (req) => {
+  let task: any = null;
+  try {
+    const b = createClientFromRequest(req),
+      body = await req.json().catch(() => ({})),
+      g = await requireAdminOrInternal(req, b, body);
+    if (!g.ok) {
+      return g.response ||
+        Response.json({ ok: false, error: 'forbidden' }, { status: 403 });
+    }
+    const s = b.asServiceRole, emergency = await emergencyState(s);
+    if (emergency.safe_mode || emergency.negotiations_paused) {
+      return Response.json({
+        ok: false,
+        error: 'emergency_control_paused:negotiations',
+        safe_mode: emergency.safe_mode,
+        reason: emergency.reason || null,
+      }, { status: 409 });
+    }
+    const negotiationEpoch = body?.emergency_epoch_claim
+      ? await inheritEmergencyEpoch(
+        s,
+        body.emergency_epoch_claim,
+        'negotiations',
+      )
+      : await captureEmergencyEpoch(s, 'negotiations');
+    const c = await s.entities.NegotiationCase.get(String(body.case_id || ''))
+      .catch((error: any) =>
+        safeBestEffort(error, {
+          operation: 'providerMonetizationAgent',
+          fallback: null,
+          severity: 'secondary',
+        })
+      );
+    if (!c) {
+      return Response.json({ ok: false, error: 'negotiation_case_not_found' }, {
+        status: 404,
+      });
+    }
+    const bid = await s.entities.AggregateBid.get(
+      String(body.bid_id || c.aggregate_bid_id || ''),
+    ).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    if (!bid || bid.negotiation_case_id !== c.id) {
+      return Response.json({ ok: false, error: 'aggregate_bid_required' }, {
+        status: 400,
+      });
+    }
+    if (!merchantSuitability(Number(bid.merchant_outcome_score || 0))) {
+      return Response.json({
+        ok: false,
+        error: 'merchant_suitability_gate_failed',
+        merchant_outcome_score: bid.merchant_outcome_score,
+      }, { status: 409 });
+    }
+    const thread = await s.entities.CommunicationThread.get(c.thread_id).catch((
+      error: any,
+    ) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    if (!thread) {
+      return Response.json({ ok: false, error: 'thread_missing' }, {
+        status: 409,
+      });
+    }
+    task = await s.entities.AgentTask.create({
+      brand_id: '_platform',
+      agent_name: 'provider_monetization',
+      task_type: String(body.action || 'request_provider_economics'),
+      related_entity_type: 'AggregateBid',
+      related_entity_id: bid.id,
+      status: 'running',
+      requires_approval: false,
+      risk_level: 3,
+      input_summary: `Provider-side economics · ${c.provider_name}`,
+      started_at: new Date().toISOString(),
+    });
+    const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+    if (body.action !== 'process_offer') {
+      const text = `Now that the merchant commercial proposal is established, we would like to discuss CAMBRA's partnership economics separately. Please outline any available economics for merchant origination, successful activation/migration, processed volume, recurring revenue share, tiered volume incentives, market expansion or product adoption. Please keep these terms separate from the merchant pricing already proposed and confirm that the merchant commercial terms are not worsened or conditioned on CAMBRA compensation. Please include calculation basis, rate/bps/fixed amount, eligibility, tiers, payment frequency, payment terms and clawbacks.`;
+      await assertEmergencyEpochUnchanged(
+        s,
+        negotiationEpoch,
+        'before_provider_monetization_send',
+      );
+      const send = await s.functions.invoke('commercialSendMessage', {
+        thread_id: thread.id,
+        action: 'provider_monetization_request',
+        classification: 'pricing_request',
+        subject: `Re: ${c.provider_name} CAMBRA partnership economics`,
+        text,
+        agent_name: 'provider_monetization',
+        idempotency_key: `provider-monetization:${bid.id}`,
+        next_action_at: new Date(Date.now() + 72 * 3600000).toISOString(),
+        emergency_epoch_claim: negotiationEpoch,
+        internal_secret: internal,
+      });
+      const acceptedSend = requireAcceptedCommercialSendResponse(send, 'provider_monetization_send');
+      await s.entities.Provider.update(c.provider_id, {
+        provider_monetization_status: 'negotiating',
+      }).catch((error: any) =>
+        safeBestEffort(error, {
+          operation: 'providerMonetizationAgent',
+          fallback: null,
+          severity: 'secondary',
+        })
+      );
+      await s.entities.Event.create({
+        brand_id: '_platform',
+        event_type: 'REVENUE_SHARE_REQUESTED',
+        source: 'provider_monetization',
+        entity_type: 'AggregateBid',
+        entity_id: bid.id,
+        payload_json: {
+          provider_id: c.provider_id,
+          pool_id: c.aggregate_pool_id,
+          merchant_terms_already_established: true,
+        },
+        status: 'processed',
+        processed_at: new Date().toISOString(),
+      }).catch((error: any) =>
+        safeBestEffort(error, {
+          operation: 'providerMonetizationAgent',
+          fallback: null,
+          severity: 'secondary',
+        })
+      );
+      await s.entities.AgentTask.update(task.id, {
+        status: 'completed',
+        output_summary: 'Separate provider-side economics requested after merchant suitability gate',
+        output_payload_json: { send: acceptedSend },
+        completed_at: new Date().toISOString(),
+      });
+      return Response.json({
+        ok: true,
+        sent: true,
+        merchant_terms_separate: true,
+      });
+    }
+    const msg = await s.entities.CommunicationMessage.get(
+      String(body.message_id || ''),
+    ).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    if (!msg || msg.thread_id !== thread.id || msg.direction !== 'inbound') {
+      return Response.json({ ok: false, error: 'provider_message_required' }, {
+        status: 400,
+      });
+    }
+    const prompt = [
+      'Extract ONLY CAMBRA/provider-side compensation economics from this provider message. Never alter or infer merchant pricing. Missing numbers must be null. Return ONLY JSON:',
+      `{"compensation_types":["REFERRAL_FEE|ACTIVATION_BOUNTY|MIGRATION_BOUNTY|VOLUME_REBATE|RECURRING_REVENUE_SHARE|TRANSACTION_REVENUE_SHARE|TIERED_VOLUME_REBATE|STRATEGIC_PARTNERSHIP_FEE|MARKET_EXPANSION_INCENTIVE|PERFORMANCE_BONUS|OTHER"],"rate_bps":number|null,"percentage":number|null,"fixed_fee_minor":number|null,"basis":"string","payment_frequency":"string","payment_terms":"string","clawback_conditions":"string","eligible_products":[],"eligible_countries":[],"tiers":[{"name":"","metric":"activated_volume|processed_volume|transaction_count|activated_merchants|provider_net_revenue|product_adoption|retention|growth_rate","threshold_value":number,"rate_bps":number|null,"percentage":number|null,"fixed_fee_minor":number|null,"activation_mode":"automatic_contractual|provider_confirmation|manual"}],"merchant_terms_explicitly_unchanged":true|false|null,"legal_terms":{},"confidence":0-1}`,
+      String(msg.text_body || '').slice(0, 16000),
+    ].join('\n');
+    const ex = parse(
+      (await callCambraClaude(prompt, {
+        tier: 'high_reasoning',
+        maxTokens: 2600,
+        svc: s,
+        eventKey: `provider-economics:${msg.id}`,
+        source: 'providerMonetizationAgent',
+        emergencyEpochClaim: negotiationEpoch,
+        emergencyCapabilities: 'negotiations',
+      })).text,
+    );
+    if (!ex) throw new Error('provider_economics_unparseable');
+    const pe = {
+      ...ex,
+      source_message_id: msg.id,
+      expected_annual_volume_minor: 0,
+      expected_activated_merchants: 0,
+    };
+    const score = providerEconomicsScore(pe),
+      exp12 = providerExpectedRevenueMinor(pe, 12);
+    await s.entities.AggregateBid.update(bid.id, {
+      provider_economics_json: pe,
+      provider_economics_score: score,
+      provider_expected_revenue_12m_minor: exp12,
+      compensation_effect_on_ranking: false,
+    });
+    await s.entities.NegotiationOffer.update(bid.negotiation_offer_id, {
+      provider_economics_json: pe,
+      provider_economics_extraction_confidence: Number(ex.confidence || 0),
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    await s.entities.Provider.update(c.provider_id, {
+      provider_monetization_status: 'negotiating',
+      provider_compensation_summary_json: {
+        latest_bid_id: bid.id,
+        score,
+        compensation_types: ex.compensation_types || [],
+      },
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    await s.entities.Event.create({
+      brand_id: '_platform',
+      event_type: 'REVENUE_SHARE_OFFER_RECEIVED',
+      source: 'provider_monetization',
+      entity_type: 'AggregateBid',
+      entity_id: bid.id,
+      payload_json: {
+        provider_id: c.provider_id,
+        provider_economics_score: score,
+        compensation_effect_on_ranking: false,
+      },
+      status: 'processed',
+      processed_at: new Date().toISOString(),
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    await s.functions.invoke('providerEconomicsAssessmentWorker', {
+      internal_secret: internal,
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    const assessment = (await s.entities.ProviderEconomicAssessment.filter(
+      { bid_id: bid.id },
+      '-calculated_at',
+      1,
+    ).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: [],
+        severity: 'secondary',
+      })
+    ))[0] || null;
+    const conflict = String(
+      assessment?.conflict_classification || 'conflict_none',
+    );
+    const approval = await s.entities.Approval.create({
+      brand_id: '_platform',
+      agent_task_id: task.id,
+      action_type: 'aggregate_contract',
+      related_entity_type: 'NegotiationCase',
+      related_entity_id: c.id,
+      risk_level: 4,
+      draft_content: `DUAL-SIDED PROVIDER PROPOSAL\nProvider: ${c.provider_name}\nMerchant Outcome Score: ${bid.merchant_outcome_score}\nMerchant annual cost: ${bid.normalized_annual_cost_minor}\nCAMBRA provider economics: ${JSON.stringify(pe)}\nExpected provider revenue 12m: ${exp12} minor units\nConflict: ${conflict}\nCompensation affected merchant ranking: NO\nProvider compensation activation: LEGAL/DISCLOSURE REVIEW REQUIRED\nThis approval accepts the commercial proposal for contract drafting only; it does not activate provider revenue, execute a contract or create a volume guarantee.`,
+      draft_payload_json: {
+        case_id: c.id,
+        rfp_id: c.aggregate_rfp_id,
+        pool_id: c.aggregate_pool_id,
+        bid_id: bid.id,
+        offer_id: bid.negotiation_offer_id,
+        demand_snapshot: c.demand_snapshot_json || {},
+        material_commitment: bid.material_commitment === true,
+        legal_terms: bid.legal_terms_json || {},
+        tier_schedule: bid.tier_schedule_json || [],
+        provider_economics: pe,
+        provider_economics_score: score,
+        provider_expected_revenue_12m_minor: exp12,
+        conflict_classification: conflict,
+        compensation_effect_on_ranking: false,
+        provider_compensation_activation: false,
+        provider_compensation_legal_review_required: true,
+        requires_contract_revalidation: true,
+        contract_execution: false,
+      },
+      status: 'pending',
+      expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+    });
+    await s.entities.NegotiationCase.update(c.id, {
+      status: 'awaiting_final_approval',
+      final_approval_id: approval.id,
+      next_action: 'founder_dual_sided_contract_approval',
+    });
+    await s.entities.AggregateRFP.update(c.aggregate_rfp_id, {
+      status: 'human_approval',
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    await s.entities.AggregatePool.update(c.aggregate_pool_id, {
+      status: 'human_approval',
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: 'providerMonetizationAgent',
+        fallback: null,
+        severity: 'secondary',
+      })
+    );
+    await s.entities.CommunicationThread.update(thread.id, {
+      status: 'awaiting_approval',
+      automation_paused: true,
+      pause_reason: 'dual_sided_provider_proposal',
+    });
+    await s.entities.AgentTask.update(task.id, {
+      status: 'waiting_approval',
+      requires_approval: true,
+      risk_level: 4,
+      approval_id: approval.id,
+      output_summary: 'Dual-sided proposal ready for founder review; provider economics remain legally inactive',
+      output_payload_json: {
+        provider_economics_score: score,
+        expected_12m_minor: exp12,
+        conflict,
+        approval_id: approval.id,
+      },
+      completed_at: new Date().toISOString(),
+    });
+    return Response.json({
+      ok: true,
+      bid_id: bid.id,
+      provider_economics_score: score,
+      expected_12m_minor: exp12,
+      conflict,
+      approval_id: approval.id,
+      compensation_effect_on_ranking: false,
+      legal_activation_allowed: false,
+    });
+  } catch (e) {
+    console.error(e);
+    const reviewRequired = (e as any)?.review_required === true || (e as any)?.code === 'EMERGENCY_EFFECT_AMBIGUOUS';
+    if (task?.id) {
+      try {
+        const b = createClientFromRequest(req);
+        await b.asServiceRole.entities.AgentTask.update(task.id, {
+          status: reviewRequired ? 'waiting_input' : 'failed',
+          error: reviewRequired ? 'negotiation_effect_unknown_review_required' : 'provider_monetization_failed',
+          output_payload_json: reviewRequired ? { ambiguity_state: 'REVIEW_REQUIRED', automatic_retry_blocked: true, effect_key: (e as any)?.effect_key || null } : undefined,
+          completed_at: new Date().toISOString(),
+        });
+      } catch (error) {
+        safeBestEffort(error, {
+          operation: 'providerMonetizationAgent',
+          fallback: null,
+          severity: 'secondary',
+        });
+      }
+    }
+    return Response.json({ ok: false, error: reviewRequired ? 'negotiation_effect_unknown_review_required' : 'provider_monetization_failed', review_required: reviewRequired }, {
+      status: reviewRequired ? 409 : 500,
+    });
+  }
+});

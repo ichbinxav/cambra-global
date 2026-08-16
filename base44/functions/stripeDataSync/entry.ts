@@ -1,6 +1,11 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import {
+  classifyStripeCardGeography,
+  normalizeStripeCountry,
+  STRIPE_COUNTRY_UNKNOWN,
+} from '../../shared/stripeGeography.ts';
 
 /**
  * M3-1b — Stripe Data Sync (READ-ONLY) — canonical measured rate
@@ -121,6 +126,24 @@ Deno.serve(async (req) => {
       };
     }
 
+    // Country is territorial authority for domestic/international metrics.
+    // Prefer an explicit connection value, otherwise read the authenticated
+    // Stripe account. Any read/malformed result remains UNKNOWN.
+    let acctCountry = normalizeStripeCountry(conn.country);
+    if (acctCountry === STRIPE_COUNTRY_UNKNOWN) {
+      try {
+        const accountResponse = await fetch('https://api.stripe.com/v1/account', {
+          headers: stripeHeaders,
+        });
+        const account = await accountResponse.json().catch(() => ({}));
+        if (accountResponse.ok) {
+          acctCountry = normalizeStripeCountry(account?.country);
+        }
+      } catch {
+        acctCountry = STRIPE_COUNTRY_UNKNOWN;
+      }
+    }
+
     // ── Fetch charges (paginated, up to 1000 for the window) ─────────────
     // We fetch charges primarily to enrich WITH card.country (the international
     // share signal we need for M3 — payments-gap engine uses intl_pct today
@@ -214,20 +237,7 @@ Deno.serve(async (req) => {
 
     // ── International share from card.country (enrichment) ───────────────
     // Only counts successful charges; refunds don't add signal here.
-    let intlCharges = 0;
-    let domesticCharges = 0;
-    const acctCountry = (conn.country || 'FR').toUpperCase();
-    for (const c of charges) {
-      if (c.status !== 'succeeded') continue;
-      const cardCountry = c.payment_method_details?.card?.country;
-      if (!cardCountry) continue;
-      if (String(cardCountry).toUpperCase() === acctCountry) domesticCharges++;
-      else intlCharges++;
-    }
-    const identifiedCharges = intlCharges + domesticCharges;
-    const intlSharePct = identifiedCharges > 0
-      ? Math.round((intlCharges / identifiedCharges) * 10000) / 100
-      : null; // null when we can't identify (rather than a lying 0).
+    const geography = classifyStripeCardGeography(charges, acctCountry);
 
     // ── Aggregates for the StripeConnection row (major units for legacy fields) ─
     const monthlyVolumeMajor = Math.round(denominatorCents) / 100;
@@ -292,11 +302,14 @@ Deno.serve(async (req) => {
           counts: { charge: countCharge, refund: countRefund, partial_capture_reversal: countPartial },
         },
         intl: {
-          identified_charges: identifiedCharges,
-          intl_charges: intlCharges,
-          domestic_charges: domesticCharges,
-          intl_share_pct: intlSharePct,
-          acct_country: acctCountry,
+          identified_charges: geography.identified,
+          intl_charges: geography.international_charges,
+          domestic_charges: geography.domestic_charges,
+          unclassified_charges: geography.unclassified_charges,
+          intl_share_pct: geography.international_share_pct,
+          acct_country: geography.account_country,
+          country_status: geography.country_status,
+          geography_inference_status: geography.geography_inference_status,
         },
         // Raw counts for cross-checking against ground truth.
         raw_counts: { charges_fetched: charges.length, balance_txns_fetched: balanceTxns.length },

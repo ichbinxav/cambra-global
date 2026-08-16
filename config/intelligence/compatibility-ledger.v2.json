@@ -1,0 +1,127 @@
+{
+  "schema_version": "intelligence-compatibility-ledger.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "composition_manifest_ref": "config/intelligence/composition-manifest.v2.json",
+  "supersessions": [
+    {
+      "compatibility_id": "FLAT_TEST_IDS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Flat/local test IDs",
+      "canonical": "Composite globally unique test UID",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "FLAT_LIFECYCLE_STATUS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Flat lifecycle/status field",
+      "canonical": "Orthogonal status axes",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "CANDIDATE_EXPERIENCE_BUS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Adaptive Candidate Experience bus",
+      "canonical": "Universal Experience ALIF profile",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "CPIC_SHARED_SYNONYMS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "CPIC synonyms for shared resources",
+      "canonical": "Versioned logical aliases to shared owners",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "LINEAR_PHASE_LIST",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "One linear phase list",
+      "canonical": "Dependency DAG and workstreams",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "SANDBOX_EQUALS_READINESS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Sandbox golden path as full readiness",
+      "canonical": "Sandbox proves contract/plumbing only",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "BARE_CPIC_RESPONSE",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Illustrative bare CPIC response",
+      "canonical": "Canonical Probabilistic Estimate",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "UNCOMPOSED_SEALS",
+      "conflict_type": "EXPLICIT_ROOT_SUPERSESSION",
+      "decision_status": "RESOLVED",
+      "superseded": "Integration seals without dependency manifest",
+      "canonical": "Appendix K composed seal framework",
+      "controlling_source": "ORCH@f64a20bd69cb46c0f767f024ebaff4cf7145ff746f80ff0e01534da316bc5123::section-6.3",
+      "approver_evidence_refs": [],
+      "migration_status": "NOT_STARTED",
+      "blocks_seals": true
+    }
+  ],
+  "open_conflicts": [
+    {
+      "compatibility_id": "EVENT_IMMUTABLE_PAYLOAD_VS_MUTABLE_DELIVERY_FIELDS",
+      "decision_status": "OPEN",
+      "safe_default": "Keep semantic Event immutable and delivery state separate; do not create a second bus.",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "AGENTTASK_STEP_VS_ATTEMPT_OWNERSHIP",
+      "decision_status": "OPEN",
+      "safe_default": "Do not add a parallel run ledger or rewrite attempt history.",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "PRIVACY_SAFE_VS_ANONYMIZED_AGGREGATE",
+      "decision_status": "OPEN",
+      "safe_default": "Do not equate anonymous and pseudonymous/privacy-safe values.",
+      "blocks_seals": true
+    },
+    {
+      "compatibility_id": "ADAPTIVE_PHASE_ORDER_VS_SEAL_DAG",
+      "decision_status": "RESOLVED",
+      "safe_default": "Implementation may overlap; ADAPTIVE_LEAD_INTEGRATED remains blocked until CPIC_INTEGRATED is ISSUED.",
+      "blocks_seals": false
+    },
+    {
+      "compatibility_id": "STATIC_APPENDIX_TOPOLOGY_VS_CURRENT_REPO",
+      "decision_status": "RESOLVED",
+      "safe_default": "Treat 26/68/66 as historical snapshot; preserve currently observed 276 physical, 27 logical and do not roll back scheduler inventory.",
+      "blocks_seals": false
+    }
+  ]
+}

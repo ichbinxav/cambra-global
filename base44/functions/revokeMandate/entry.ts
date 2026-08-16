@@ -88,25 +88,50 @@ export default async function (req: Request): Promise<Response> {
     // Revocation stops future action; it never rewinds terminal/history states.
     // CAS prevents a stale revocation request from overwriting a concurrent
     // go-live. If the state changed, recompute from the fresh state and retry once.
-    let previousStatus = String(activation.status || '');
-    let next = statusAfterRevocation(previousStatus);
-    if (next !== previousStatus) {
+    // Re-read AFTER the mandate CAS. acceptRecoverMandate may have moved the
+    // activation between our initial ownership check and this revocation; using
+    // the stale row could leave `authorized` pointing at a revoked mandate.
+    let authorityActivation = (await svc.entities.DealActivation
+      .filter({ id: activation.id }, '-created_date', 1))?.[0];
+    if (!authorityActivation) return Response.json({ error: 'activation_not_found_after_revocation' }, { status: 409 });
+    const nextFor = (row:any) =>
+      row.status === 'awaiting_authorization' && row.authorization_mandate_id === mandate.id
+        ? 'activated'
+        : statusAfterRevocation(String(row.status || ''));
+    const patchFor = (row:any, nextStatus:string) => ({
+      status: nextStatus,
+      last_updated: now,
+      ...(row.authorization_mandate_id === mandate.id ? { authorization_mandate_id: '' } : {}),
+      ...(row.active_mandate_id === mandate.id ? { active_mandate_id: '' } : {}),
+    });
+    let previousStatus = String(authorityActivation.status || '');
+    let next = nextFor(authorityActivation);
+    let needsAuthorityClear =
+      authorityActivation.authorization_mandate_id === mandate.id ||
+      authorityActivation.active_mandate_id === mandate.id;
+    if (next !== previousStatus || needsAuthorityClear) {
       let changed = await svc.entities.DealActivation.updateMany(
         { id: activation.id, status: previousStatus },
-        { $set: { status: next, last_updated: now } },
+        { $set: patchFor(authorityActivation, next) },
       );
       if (!updatedExactlyOne(changed)) {
         const fresh = (await svc.entities.DealActivation.filter({ id: activation.id }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'revokeMandate',fallback:[],severity:'secondary'})))?.[0];
         if (!fresh) return Response.json({ error: 'activation_not_found_after_revocation' }, { status: 409 });
+        authorityActivation = fresh;
         previousStatus = String(fresh.status || '');
-        next = statusAfterRevocation(previousStatus);
-        if (next !== previousStatus) {
+        next = nextFor(fresh);
+        needsAuthorityClear =
+          fresh.authorization_mandate_id === mandate.id ||
+          fresh.active_mandate_id === mandate.id;
+        if (next !== previousStatus || needsAuthorityClear) {
           changed = await svc.entities.DealActivation.updateMany(
             { id: activation.id, status: previousStatus },
-            { $set: { status: next, last_updated: now } },
+            { $set: patchFor(fresh, next) },
           );
           if (!updatedExactlyOne(changed)) return Response.json({ error: 'activation_changed_concurrently' }, { status: 409 });
         }
+      } else {
+        authorityActivation = { ...authorityActivation, ...patchFor(authorityActivation, next) };
       }
     }
 

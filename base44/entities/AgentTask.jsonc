@@ -76,6 +76,333 @@
       "type": "string",
       "description": "FK to the Approval blocking this task, if any."
     },
+    "envelope_version": {
+      "type": "string",
+      "description": "Version of the canonical AgentTask trace/task/step envelope. Missing on a legacy row means UNKNOWN lineage; it is never inferred."
+    },
+    "lineage_state": {
+      "type": "string",
+      "enum": [
+        "COMPLETE",
+        "PARTIAL",
+        "UNKNOWN"
+      ],
+      "default": "UNKNOWN",
+      "description": "Completeness of the persisted orchestration lineage. PARTIAL/UNKNOWN cannot be represented as complete by projections or release evidence."
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "Stable trace identifier shared by the root task and every linked child step."
+    },
+    "orchestration_id": {
+      "type": "string",
+      "description": "Stable identity of one workflow execution, distinct from an individual AgentTask row."
+    },
+    "root_task_id": {
+      "type": "string",
+      "description": "AgentTask id of the canonical root. Populated only after the root row is durably created."
+    },
+    "parent_task_id": {
+      "type": "string",
+      "description": "Direct parent AgentTask id for a child step. Absent on a root task; never guessed for legacy rows."
+    },
+    "parent_run": {
+      "type": "string",
+      "description": "Exact parent run reference (AgentTask, SchedulerRun or another canonical run authority). Missing on a root without a parent is not inferred."
+    },
+    "workflow_key": {
+      "type": "string",
+      "description": "Versioned logical workflow contract key."
+    },
+    "workflow_version": {
+      "type": "string",
+      "description": "Version of the workflow contract used for this execution."
+    },
+    "step_key": {
+      "type": "string",
+      "description": "Stable logical step within workflow_key."
+    },
+    "step_index": {
+      "type": "number",
+      "description": "Zero-based step order when the workflow has an ordered plan."
+    },
+    "step": {
+      "type": "object",
+      "description": "Canonical step projection containing key, index and attempt. It is redundant by design so Event projections can preserve the exact step without guessing."
+    },
+    "attempt_number": {
+      "type": "number",
+      "description": "One-based attempt number for this task/step."
+    },
+    "attempt_token": {
+      "type": "string",
+      "description": "Server-generated attempt identity. It does not by itself authorize or prove an external effect."
+    },
+    "fence_token": {
+      "type": "string",
+      "description": "Server-generated task-attempt fencing identity. External effects still require their own authoritative commit-boundary fence."
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "SCHEDULED",
+        "MANUAL",
+        "INTERNAL",
+        "EVENT",
+        "APPROVAL",
+        "RESUME",
+        "UNKNOWN"
+      ],
+      "default": "UNKNOWN"
+    },
+    "trigger_ref": {
+      "type": "string",
+      "description": "Non-secret automation, command, event or request reference when defensibly observed."
+    },
+    "tenant_key": {
+      "type": "string",
+      "description": "Canonical tenant/scope key bound by the server; normally equal to brand_id or the explicit _platform scope."
+    },
+    "subject_type": {
+      "type": "string",
+      "description": "Canonical type of the subject affected or observed by this task."
+    },
+    "subject_id": {
+      "type": "string",
+      "description": "Canonical subject identity bound server-side; never inferred from free-form summaries."
+    },
+    "processing_purpose": {
+      "type": "string",
+      "description": "Declared processing purpose for this workflow. It is provenance, not an authority grant."
+    },
+    "input_hash": {
+      "type": "string",
+      "description": "SHA-256 of a canonical, recursively secret-redacted input projection constructed server-side."
+    },
+    "output_hash": {
+      "type": "string",
+      "description": "SHA-256 of a canonical output projection when a producer explicitly closes the output envelope."
+    },
+    "policy_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 of an authoritative policy snapshot when one is actually bound; missing remains unknown."
+    },
+    "policy_snapshot_id": {
+      "type": "string",
+      "description": "Durable policy snapshot identifier when the task observed one."
+    },
+    "authority_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 of an authoritative actor/capability snapshot when one is actually bound; missing remains unknown."
+    },
+    "authority_snapshot_id": {
+      "type": "string",
+      "description": "Durable authority snapshot identifier when the task observed one."
+    },
+    "intelligence_snapshot_id": {
+      "type": "string",
+      "description": "Immutable IntelligenceSnapshot identifier used at decision/effect time when actually observed."
+    },
+    "intelligence_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 of the immutable intelligence context when actually observed."
+    },
+    "policy_context_json": {
+      "type": "object",
+      "description": "Typed OBSERVED, NOT_APPLICABLE or UNKNOWN policy context. UNKNOWN keeps lineage PARTIAL."
+    },
+    "authority_context_json": {
+      "type": "object",
+      "description": "Typed OBSERVED, NOT_APPLICABLE or UNKNOWN effect-authority context. It is provenance and never grants authority."
+    },
+    "intelligence_context_json": {
+      "type": "object",
+      "description": "Typed OBSERVED, NOT_APPLICABLE or UNKNOWN intelligence context. UNKNOWN is never treated as empty/healthy."
+    },
+    "material_effect": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when this task may execute or orchestrate a material boundary. It does not grant permission."
+    },
+    "effect_class": {
+      "type": "string",
+      "description": "Registered material effect class when material_effect=true."
+    },
+    "cost_applicable": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when complete lineage requires at least one immutable CostUsageEvent reference."
+    },
+    "effect_state": {
+      "type": "string",
+      "enum": [
+        "NOT_APPLICABLE",
+        "NOT_STARTED",
+        "EFFECT_STARTED",
+        "EXECUTED",
+        "FAILED_PRE_EFFECT",
+        "FAILED_POST_EFFECT",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "NOT_APPLICABLE",
+      "description": "Trace projection of material-effect progress. It does not replace the domain claim primitive."
+    },
+    "effect_coverage_state": {
+      "type": "string",
+      "enum": [
+        "NOT_APPLICABLE",
+        "UNKNOWN",
+        "PARTIAL",
+        "COMPLETE"
+      ],
+      "default": "UNKNOWN",
+      "description": "Whether every material effect in this task is represented by effect/cost/receipt refs. Only COMPLETE can support complete trace lineage."
+    },
+    "ambiguity_state": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "UNKNOWN",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "NONE",
+      "description": "Explicit ambiguity of the terminal effect. UNKNOWN/REVIEW_REQUIRED can never be projected as successful execution."
+    },
+    "terminal_state": {
+      "type": "string",
+      "enum": [
+        "OPEN",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "OPEN",
+      "description": "Trace-envelope terminal result, independent of approval decision and domain execution authority."
+    },
+    "terminal_result_hash": {
+      "type": "string",
+      "description": "SHA-256 of the secret-redacted canonical terminal result."
+    },
+    "terminal_result_json": {
+      "type": "object",
+      "description": "Bounded secret-redacted terminal projection; authoritative receipts remain referenced, not copied."
+    },
+    "trace_revision": {
+      "type": "integer",
+      "default": 0,
+      "description": "CAS revision for trace-envelope binding/settlement only. It never authorizes a domain or provider effect."
+    },
+    "cost_record_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Immutable CostUsageEvent references for this step."
+    },
+    "effect_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Stable effect-key/domain-effect references. The AgentTask is not the effect authority."
+    },
+    "receipt_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Immutable provider/domain receipt references proving observed postconditions or ambiguity."
+    },
+    "deadline_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Declared workflow deadline when the workflow owns a real timeout contract. Missing is not imputed."
+    },
+    "heartbeat_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Latest task-envelope liveness timestamp. Scheduler lease semantics remain in SchedulerRun."
+    },
+    "source_refs_json": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Sanitized source references used to construct this task/step lineage. Never stores secrets or raw provider payloads."
+    },
+    "execution_command_key": {
+      "type": "string",
+      "description": "Founder command key that owns the durable external-execution claim."
+    },
+    "execution_authority_hash": {
+      "type": "string",
+      "description": "Revalidated Founder authority snapshot hash fenced into the external-execution claim."
+    },
+    "execution_phase": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "claimed",
+        "applying",
+        "completed",
+        "review_required"
+      ],
+      "default": "idle",
+      "description": "Durable phase for approval-gated external effects. review_required is terminal until a founder explicitly reconciles the ambiguous effect."
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": [
+        "NOT_STARTED",
+        "CLAIMED",
+        "EFFECTING",
+        "EXECUTED",
+        "FAILED_RETRYABLE",
+        "FAILED_TERMINAL",
+        "REVIEW_REQUIRED"
+      ],
+      "default": "NOT_STARTED",
+      "description": "Approval-gated execution lifecycle, distinct from the Approval decision. EXECUTED requires execution_receipt_ref and a completed canonical AgentTask result."
+    },
+    "execution_receipt_ref": {
+      "type": "string",
+      "description": "Immutable CAMBRA/provider receipt reference proving the canonical executor postcondition."
+    },
+    "execution_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "Optimistic-concurrency revision for the external-execution claim."
+    },
+    "execution_attempt_token": {
+      "type": "string",
+      "description": "Fencing token for the process currently allowed to perform the external effect."
+    },
+    "execution_effects_started": {
+      "type": "boolean",
+      "default": false,
+      "description": "True immediately before the first external effect. Once true, an uncertain crash is never replayed automatically."
+    },
+    "execution_lease_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "execution_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "execution_completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "execution_result_json": {
+      "type": "object",
+      "description": "Persisted terminal result or fail-closed reconciliation evidence returned on idempotent replay."
+    },
+    "execution_error": {
+      "type": "string",
+      "description": "Stable blocker code for review-required external execution."
+    },
     "started_at": {
       "type": "string",
       "format": "date-time"
@@ -106,7 +433,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

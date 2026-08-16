@@ -1,19 +1,54 @@
 {
   "name": "IncidentAlertDelivery",
   "type": "object",
-  "description": "Transport ledger for externally pushed HIGH/CRITICAL AutonomyIncident alerts. AutonomyIncident remains the sole incident source of truth.",
+  "description": "Durable transport ledger for aggregated HIGH/CRITICAL AutonomyIncident founder alerts. AutonomyIncident remains the sole incident source of truth; this entity stores only batch claim, linkage, acceptance and reconciliation evidence.",
   "properties": {
     "alert_key": { "type": "string" },
+    "batch_key": { "type": "string" },
+    "window_key": { "type": "string" },
+    "effect_key": { "type": "string" },
+    "claim_token": { "type": "string" },
+    "scheduler_run_key": { "type": "string" },
     "incident_id": { "type": "string" },
+    "incident_ids": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Every canonical AutonomyIncident linked to this aggregated delivery."
+    },
+    "incident_links_json": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Immutable per-incident ID, dedupe key and alert-severity linkage for this batch."
+    },
     "severity": { "type": "string", "enum": ["HIGH", "CRITICAL"] },
     "channel": { "type": "string", "enum": ["EMAIL"] },
     "recipient_fingerprint": { "type": "string" },
-    "status": { "type": "string", "enum": ["PENDING", "DELIVERED", "RETRY_PENDING", "CONFIGURATION_REQUIRED", "FAILED"] },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CLAIMED",
+        "EFFECTING",
+        "ACCEPTED",
+        "OBSERVED",
+        "BLOCKED",
+        "REVIEW_REQUIRED",
+        "PENDING",
+        "DELIVERED",
+        "RETRY_PENDING",
+        "CONFIGURATION_REQUIRED",
+        "FAILED"
+      ],
+      "description": "ACCEPTED is a provider acknowledgement, not delivery. OBSERVED requires a later receipt/reconciliation. Legacy PENDING/DELIVERED/RETRY_PENDING/FAILED remain readable and are treated conservatively."
+    },
     "attempt_count": { "type": "number", "minimum": 0 },
     "last_attempt_at": { "type": "string", "format": "date-time" },
+    "effect_started_at": { "type": "string", "format": "date-time" },
+    "accepted_at": { "type": "string", "format": "date-time" },
+    "observed_at": { "type": "string", "format": "date-time" },
     "delivered_at": { "type": "string", "format": "date-time" },
     "next_retry_at": { "type": "string", "format": "date-time" },
     "provider_message_id": { "type": "string" },
+    "provider_receipt_json": { "type": "object" },
     "last_error_code": { "type": "string" },
     "created_at": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string", "format": "date-time" }
@@ -21,6 +56,6 @@
   "required": ["alert_key", "incident_id", "severity", "channel", "status", "attempt_count", "created_at", "updated_at"],
   "rls": {
     "read": { "user_condition": { "role": "admin" } },
-    "write": { "user_condition": { "role": "admin" } }
+    "write": { "user_condition": { "role": "__service_role_only__" } }
   }
 }

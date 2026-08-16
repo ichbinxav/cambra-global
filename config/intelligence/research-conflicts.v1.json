@@ -1,0 +1,121 @@
+{
+  "schema_version": "research-conflicts.v1",
+  "catalog_id": "cambra-research-conflicts-2026-08-13",
+  "generated_at": "2026-08-13T00:00:00.000Z",
+  "resolution_policy": {
+    "stronger_primary_evidence_wins_only_after_direct_review": true,
+    "unresolved_conflict_can_drive_execution": false,
+    "unresolved_conflict_can_drive_training": false,
+    "country_sets_are_never_silently_merged": true
+  },
+  "conflicts": [
+    {
+      "conflict_id": "research-conflict:exact-duplicate-r4-r10",
+      "conflict_type": "EXACT_DUPLICATE",
+      "record_ids": [],
+      "source_document_ids": ["R4", "R10"],
+      "status": "RESOLVED_BY_CONTENT_HASH_ALIAS",
+      "severity": "info",
+      "reason": "The two physical originals have the same SHA-256 and are indexed once while both originals remain preserved.",
+      "operational_effect": "NO_DOUBLE_COUNT",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:exact-duplicate-r1-r7",
+      "conflict_type": "EXACT_DUPLICATE",
+      "record_ids": [],
+      "source_document_ids": ["R1", "R7"],
+      "status": "RESOLVED_BY_CONTENT_HASH_ALIAS",
+      "severity": "info",
+      "reason": "The two physical originals have the same SHA-256 and are indexed once while both originals remain preserved.",
+      "operational_effect": "NO_DOUBLE_COUNT",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:country-universe-33",
+      "conflict_type": "INCOMPATIBLE_SCOPE_DEFINITION",
+      "record_ids": ["rk-rates-r8-public-rate-candidates", "rk-country-economics-r9-key-metrics", "rk-corpus-r3-paneuropean-gates"],
+      "source_document_ids": ["R1", "R3", "R6", "R8", "R9"],
+      "status": "OPEN_REQUIRES_CANONICAL_MARKET_REGISTRY",
+      "severity": "critical",
+      "reason": "The reports define different 33-country universes (Turkey, Serbia, Andorra and Monaco differ).",
+      "operational_effect": "KEEP_EACH_COUNTRY_SET_EXPLICIT_AND_NEVER_REPLACE_CAMBRA_MARKET_REGISTRY",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:icp-policy",
+      "conflict_type": "CONTRADICTORY_PROPOSED_POLICY",
+      "record_ids": ["rk-icp-r1-pan-european", "rk-icp-gtm-spain-first"],
+      "source_document_ids": ["R1", "GTM-FINAL"],
+      "status": "OPEN_FOUNDER_POLICY_DECISION_REQUIRED",
+      "severity": "warning",
+      "reason": "One report proposes 50–5,000 employees and another 2–200 with different revenue and score scales.",
+      "operational_effect": "RETRIEVAL_ONLY_NO_DISCOVERY_POLICY_MUTATION",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:corpus-scope-and-scale",
+      "conflict_type": "SUPERSEDING_OR_ALTERNATIVE_PROPOSAL",
+      "record_ids": ["rk-corpus-r2-fr-es-en-gates", "rk-corpus-r3-paneuropean-gates"],
+      "source_document_ids": ["R2", "R3"],
+      "status": "OPEN_PROGRAM_SCOPE_DECISION_REQUIRED",
+      "severity": "warning",
+      "reason": "The trilingual 1,500–2,500 document design and pan-European 9,000–12,000 design are distinct acceptance programs, not proof that either corpus exists.",
+      "operational_effect": "NO_CORPUS_PASS_OR_METRIC_CLAIM",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:ifr-is-not-mdr",
+      "conflict_type": "UNIT_AND_SEMANTIC_COLLISION",
+      "record_ids": ["rk-rates-r8-public-rate-candidates", "rk-country-economics-r9-key-metrics"],
+      "source_document_ids": ["R8", "R9"],
+      "status": "RESOLVED_BY_TYPE_SEPARATION",
+      "severity": "critical",
+      "reason": "Interchange regulatory caps and scheme components are not merchant discount rates or achievable provider pricing.",
+      "operational_effect": "KEEP_COMPONENTS_OUT_OF_PAYMENTSRATETABLE_MERCHANT_RATE_PROJECTION",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:opaque-citations",
+      "conflict_type": "UNRESOLVED_PROVENANCE",
+      "record_ids": ["rk-rates-r8-public-rate-candidates", "rk-deliverability-r1-provider-requirements", "rk-country-economics-r9-key-metrics"],
+      "source_document_ids": ["R1", "R6", "R8", "R9"],
+      "status": "OPEN_SOURCE_URL_RECOVERY_REQUIRED",
+      "severity": "critical",
+      "reason": "Opaque turn citations are preserved but cannot be resolved as durable source URLs.",
+      "operational_effect": "REFERENCE_UNRESOLVED_NOT_EXECUTABLE",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:r9-missing-package",
+      "conflict_type": "MISSING_ARTIFACT",
+      "record_ids": ["rk-country-economics-r9-missing-artifact"],
+      "source_document_ids": ["R9"],
+      "status": "OPEN_ARTIFACT_RECOVERY_REQUIRED",
+      "severity": "critical",
+      "reason": "The report references an ephemeral ZIP, dossiers, methodology and manifest that are not present in the retained corpus.",
+      "operational_effect": "DO_NOT_INGEST_CLAIMED_DOSSIERS",
+      "execution_blocked": true,
+      "training_blocked": true
+    },
+    {
+      "conflict_id": "research-conflict:official-url-is-not-reviewed-truth",
+      "conflict_type": "EVIDENCE_MATURITY_BOUNDARY",
+      "record_ids": ["rk-legal-eidas-910-consolidated", "rk-legal-eidas-2024-1183", "rk-legal-fr-code-civil-mandat", "rk-legal-es-codigo-civil"],
+      "source_document_ids": ["R10"],
+      "status": "OPEN_DIRECT_LEGAL_REVIEW_REQUIRED",
+      "severity": "critical",
+      "reason": "A literal official URL establishes provenance candidate quality, not a reviewed legal interpretation or execution authority.",
+      "operational_effect": "REGULATORY_EVIDENCE_QUEUE_ONLY",
+      "execution_blocked": true,
+      "training_blocked": true
+    }
+  ]
+}

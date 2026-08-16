@@ -2,6 +2,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import { requireExactBrandTask, requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
  * Recommendation Engine Agent — Brain B3
@@ -183,6 +185,8 @@ Deno.serve(async (req) => {
     const { brand_id, spend_task_id } = body;
     if (!brand_id) return Response.json({ ok:false, error:"Missing brand_id" }, { status: 400 });
 
+    await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id,
       agent_name: AGENT_NAME,
@@ -197,13 +201,18 @@ Deno.serve(async (req) => {
     // ── 1. Load B2 output — reuse, do NOT recompute ──────────────────────
     let spendTask = null;
     if (spend_task_id) {
-      const rows = await base44.asServiceRole.entities.AgentTask.filter({ id: spend_task_id }).catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
-      spendTask = rows[0] || null;
+      spendTask = await requireExactBrandTask(base44.asServiceRole, spend_task_id, {
+        brandId: brand_id,
+        agentName: 'spend_intelligence',
+        status: 'completed',
+      });
     }
     if (!spendTask) {
-      const rows = await base44.asServiceRole.entities.AgentTask
-        .filter({ brand_id, agent_name: "spend_intelligence", status: "completed" }, "-created_date", 1)
-        .catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
+      const rows = await requireCriticalOperation(
+        'recommendation_spend_task_read',
+        () => base44.asServiceRole.entities.AgentTask
+          .filter({ brand_id, agent_name: "spend_intelligence", status: "completed" }, "-created_date", 2),
+      );
       spendTask = rows[0] || null;
     }
     if (!spendTask) {
@@ -229,8 +238,10 @@ Deno.serve(async (req) => {
     }
 
     // ── 4. Pre-load catalog providers (one query for all verticals) ──────
-    const catalog = await base44.asServiceRole.entities.IntegrationCatalog
-      .list("-priority", 500).catch((error:any)=>safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:[],severity:'secondary'}));
+    const catalog = await requireCriticalOperation(
+      'recommendation_catalog_read',
+      () => base44.asServiceRole.entities.IntegrationCatalog.list("-priority", 500),
+    );
     const catalogByCategory = {};
     for (const c of catalog) {
       (catalogByCategory[c.category] = catalogByCategory[c.category] || []).push(c);
@@ -421,6 +432,8 @@ Deno.serve(async (req) => {
         });
       } catch(error){safeBestEffort(error,{operation:'recommendationEngineAgent',fallback:null,severity:'secondary'})}
     }
+    const tenantError = tenantOwnershipErrorResponse(error);
+    if (tenantError) return tenantError;
     return internalErrorResponse(error, 'recommendationEngineAgent');
   }
 });

@@ -1,0 +1,66 @@
+{
+  "schema_version": "label-registry.v1",
+  "registry_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_REGISTRY",
+  "record_schema": {
+    "required": [
+      "label_id",
+      "label_name",
+      "label_version",
+      "business_question",
+      "prediction_time_definition",
+      "observation_window",
+      "maturity_delay",
+      "outcome_source",
+      "positive_definition",
+      "negative_definition",
+      "censoring_policy",
+      "partial_execution_policy",
+      "reversal_policy",
+      "dispute_policy",
+      "missing_outcome_policy",
+      "verification_tier_required",
+      "confidence_threshold",
+      "human_adjudication",
+      "privacy_scope",
+      "known_biases",
+      "tests",
+      "lifecycle_state"
+    ],
+    "verification_tier_enum": [
+      "V0",
+      "V1",
+      "V2",
+      "V3",
+      "V4"
+    ],
+    "missing_outcome_policy_enum": [
+      "EXCLUDE",
+      "CENSORED",
+      "EXPLICIT_CLASS"
+    ],
+    "lifecycle_state_enum": [
+      "DRAFT",
+      "REVIEW",
+      "APPROVED_EVALUATION",
+      "APPROVED_TRAINING",
+      "DEPRECATED",
+      "QUARANTINED"
+    ]
+  },
+  "invariants": [
+    "CAMBRA recommendation is never ground truth",
+    "human approval is not an outcome",
+    "missing outcome is not negative",
+    "accepted is not signed, executed or verified",
+    "billing/value labels require deterministic domain truth and the declared verification tier"
+  ],
+  "records": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_APPROVED_LABEL_DEFINITIONS",
+    "NO_MATURE_DEFENSIBLE_LABEL_COHORT",
+    "NO_CENSORING_OR_REVERSAL_EVIDENCE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

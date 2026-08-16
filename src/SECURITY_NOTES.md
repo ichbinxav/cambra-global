@@ -68,7 +68,7 @@ exist). The "agent" layer is implemented as backend functions that call
 
 - `AgentRun.requires_approval` is hardcoded to `true` — no autonomous external actions.
 - All orchestrator actions with `risk_level ≥ 2` create an `Approval` row and block until a human approves inline.
-- `approveAgentRun` (the centralized approval handler) is in QUARANTINE — the real approval flow is inline in each orchestrator, not routed through it.
+- `approveAgentRun` is a quarantined `410 Gone` compatibility endpoint with zero `AgentRun`/`Recommendation` writes. `AgentTask` + canonical `Approval` resolvers are the only live work/approval path.
 - Payments and contracts are hard-blocked (never automated).
 - See `src/docs/PRODUCTION_SURFACE_INVENTORY.md` §5 for the full classification.
 

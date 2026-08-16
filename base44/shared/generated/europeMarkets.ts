@@ -3,6 +3,54 @@ export const EUROPE_MARKET_REGISTRY={
   "schemaVersion": 1,
   "registryVersion": "p1-europe-2026.08.10",
   "effectiveDate": "2026-08-10",
+  "launchScope": {
+    "scopeVersion": "founder-market-scope-2026.08.13",
+    "effectiveDate": "2026-08-13",
+    "decisionStatus": "FOUNDER_DECIDED",
+    "canonical_market_count": 33,
+    "active_launch_count": 30,
+    "protected_market_count": 3,
+    "active": [
+      "AT",
+      "BG",
+      "HR",
+      "CY",
+      "CZ",
+      "DK",
+      "EE",
+      "FI",
+      "DE",
+      "GR",
+      "HU",
+      "IE",
+      "IT",
+      "LV",
+      "LT",
+      "LU",
+      "MT",
+      "PL",
+      "PT",
+      "RO",
+      "SK",
+      "SI",
+      "ES",
+      "SE",
+      "NO",
+      "IS",
+      "LI",
+      "CH",
+      "GB",
+      "AD"
+    ],
+    "protected": [
+      "FR",
+      "BE",
+      "NL"
+    ],
+    "protectedMode": "RESEARCH_ONLY",
+    "outboundMode": "PAUSED_ZERO",
+    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED"
+  },
   "markets": [
     {
       "iso2": "AT",
@@ -584,4 +632,17 @@ export const EUROPE_MARKET_REGISTRY={
 export const EUROPE_MARKETS=Object.freeze(EUROPE_MARKET_REGISTRY.markets);
 export const EUROPE_MARKET_BY_ISO2=Object.freeze(Object.fromEntries(EUROPE_MARKETS.map(m=>[m.iso2,m])));
 export const EUROPE_MARKET_CODES=Object.freeze(EUROPE_MARKETS.map(m=>m.iso2));
+export const CANONICAL_MARKET_CODES=EUROPE_MARKET_CODES;
 export const EUROPE_CURRENCIES=Object.freeze([...new Set(EUROPE_MARKETS.map(m=>m.primary_currency))]);
+export const MARKET_SCOPE_VERSION=EUROPE_MARKET_REGISTRY.launchScope.scopeVersion;
+export const MARKET_SCOPE_DECISION_STATUS=EUROPE_MARKET_REGISTRY.launchScope.decisionStatus;
+export const ACTIVE_LAUNCH_MARKETS=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.active]);
+export const PROTECTED_MARKETS=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.protected]);
+export const RESEARCH_ONLY_MARKETS=PROTECTED_MARKETS;
+export const MARKET_SCOPE_COUNTS=Object.freeze({canonical_market_count:EUROPE_MARKET_CODES.length,active_launch_count:ACTIVE_LAUNCH_MARKETS.length,protected_market_count:PROTECTED_MARKETS.length});
+export const MARKET_OUTBOUND_MODE=EUROPE_MARKET_REGISTRY.launchScope.outboundMode;
+export const MARKET_REGULATED_CAPABILITIES_MODE=EUROPE_MARKET_REGISTRY.launchScope.regulatedCapabilitiesMode;
+export const MARKET_SCOPE_BY_ISO2=Object.freeze(Object.fromEntries(EUROPE_MARKET_CODES.map(iso2=>{const launchActive=ACTIVE_LAUNCH_MARKETS.includes(iso2);return[iso2,Object.freeze({iso2,scope_status:launchActive?'ACTIVE_LAUNCH':'PROTECTED_RESEARCH_ONLY',launch_active:launchActive,research_allowed:true,research_only:!launchActive,commercial_scope_eligible:launchActive,outbound_allowed:false,regulated_capabilities_authorized:false})]})));
+export function canonicalMarketIso2(value){const iso2=typeof value==='string'?value.trim().toUpperCase():'';return Object.prototype.hasOwnProperty.call(EUROPE_MARKET_BY_ISO2,iso2)?iso2:null}
+export function marketScopeForIso2(value){const iso2=canonicalMarketIso2(value);return iso2?MARKET_SCOPE_BY_ISO2[iso2]:null}
+export function paymentsRegionForCanonicalMarket(value){const iso2=canonicalMarketIso2(value);if(!iso2)return null;if(iso2==='GB')return'UK';if(iso2==='AD')return'RoW';return'EU'}

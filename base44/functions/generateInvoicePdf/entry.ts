@@ -1,51 +1,108 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { jsPDF } from 'npm:jspdf@4.0.0';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
+import { jsPDF } from "npm:jspdf@4.0.0";
+import { internalErrorResponse } from "../../shared/publicErrors.ts";
 
-function pad(n, w = 5) { return String(n).padStart(w, '0'); }
+function pad(n, w = 5) {
+  return String(n).padStart(w, "0");
+}
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Forbidden: Admin access required" }, {
+        status: 403,
+      });
     }
 
     const body = await req.json();
     const { invoice_id, expires_in = 3600 } = body || {};
-    if (!invoice_id) return Response.json({ error: 'invoice_id is required' }, { status: 400 });
+    if (!invoice_id) {
+      return Response.json({ error: "invoice_id is required" }, {
+        status: 400,
+      });
+    }
 
-    const invRows = await base44.asServiceRole.entities.Invoice.filter({ id: invoice_id }, '-created_date', 1);
-    const inv = invRows?.[0];
-    if (!inv) return Response.json({ error: 'Invoice not found' }, { status: 404 });
+    const invRows = await base44.asServiceRole.entities.Invoice.filter(
+      { id: invoice_id },
+      "-created_date",
+      2,
+    );
+    if (!Array.isArray(invRows)) {
+      throw new Error("invoice_authority_unavailable");
+    }
+    if (invRows.length === 0) {
+      return Response.json({ error: "Invoice not found" }, { status: 404 });
+    }
+    if (invRows.length !== 1) {
+      return Response.json({
+        error: "invoice_authority_ambiguous",
+        effects: false,
+      }, { status: 409 });
+    }
+    const inv = invRows[0];
 
-    const report = inv.monthly_savings_report_id ? (await base44.asServiceRole.entities.MonthlySavingsReport.filter({ id: inv.monthly_savings_report_id }, '-created_date', 1))?.[0] : null;
+    // Recover/Stripe invoice artifacts are provider-authoritative. Generating a
+    // second local PDF could overwrite Stripe's legal artifact reference and
+    // bypass the Recover saga, receipts and Emergency boundary. Return the
+    // current projection without upload or mutation.
+    if (
+      inv.monthly_savings_report_id ||
+      String(inv.payment_provider || "").toLowerCase() === "stripe" ||
+      inv.stripe_invoice_id
+    ) {
+      return Response.json({
+        error: "canonical_provider_invoice_artifact_only",
+        invoice_id: inv.id,
+        pdf_url: inv.pdf_url || null,
+        effects: false,
+      }, { status: 409 });
+    }
+
+    const report = inv.monthly_savings_report_id
+      ? (await base44.asServiceRole.entities.MonthlySavingsReport.filter(
+        { id: inv.monthly_savings_report_id },
+        "-created_date",
+        1,
+      ))?.[0]
+      : null;
 
     // Build a simple PDF
     const doc = new jsPDF();
     const now = new Date();
 
-    const number = inv.invoice_number || `${inv.series || `INV-${now.getFullYear()}`}-${pad(inv.sequence || 1)}`;
+    const number = inv.invoice_number ||
+      `${inv.series || `INV-${now.getFullYear()}`}-${pad(inv.sequence || 1)}`;
 
     doc.setFontSize(18);
-    doc.text('INVOICE', 20, 20);
+    doc.text("INVOICE", 20, 20);
 
     doc.setFontSize(10);
     doc.text(`Invoice No: ${number}`, 20, 30);
-    doc.text(`Status: ${inv.status || 'draft'}`, 20, 36);
-    doc.text(`Issued: ${inv.issued_at ? new Date(inv.issued_at).toLocaleString() : '-'}`, 20, 42);
-    doc.text(`Due: ${inv.due_at ? new Date(inv.due_at).toLocaleString() : '-'}`, 20, 48);
+    doc.text(`Status: ${inv.status || "draft"}`, 20, 36);
+    doc.text(
+      `Issued: ${
+        inv.issued_at ? new Date(inv.issued_at).toLocaleString() : "-"
+      }`,
+      20,
+      42,
+    );
+    doc.text(
+      `Due: ${inv.due_at ? new Date(inv.due_at).toLocaleString() : "-"}`,
+      20,
+      48,
+    );
 
-    doc.text(`Brand: ${inv.brand_id || '-'}`, 120, 30);
-    doc.text(`Provider: ${inv.provider_id || '-'}`, 120, 36);
+    doc.text(`Brand: ${inv.brand_id || "-"}`, 120, 30);
+    doc.text(`Provider: ${inv.provider_id || "-"}`, 120, 36);
     if (report?.month) doc.text(`Month: ${report.month}`, 120, 42);
 
     // Table header
     let y = 62;
     doc.setFontSize(12);
-    doc.text('Description', 20, y);
-    doc.text('Amount', 170, y, { align: 'right' });
+    doc.text("Description", 20, y);
+    doc.text("Amount", 170, y, { align: "right" });
 
     y += 8;
     doc.setFontSize(10);
@@ -56,35 +113,57 @@ Deno.serve(async (req) => {
     const snap = inv.billing_snapshot_json || {};
     const feePct = Number(snap.fee_pct ?? NaN);
     const savingsBase = Number(snap.savings ?? report?.savings ?? NaN);
-    const pctLabel = Number.isFinite(feePct) ? ` — ${feePct}% of verified savings` : '';
-    const line = `Node fee for ${report?.month || inv.month || 'period'}${pctLabel}`;
-    const amount = Number(inv.total_amount ?? inv.subtotal_amount ?? 0).toFixed(2);
+    const pctLabel = Number.isFinite(feePct)
+      ? ` — ${feePct}% of verified savings`
+      : "";
+    const line = `Node fee for ${
+      report?.month || inv.month || "period"
+    }${pctLabel}`;
+    const amount = Number(inv.total_amount ?? inv.subtotal_amount ?? 0).toFixed(
+      2,
+    );
     doc.text(line, 20, y);
-    doc.text(`€${amount}`, 170, y, { align: 'right' });
+    doc.text(`€${amount}`, 170, y, { align: "right" });
 
     if (Number.isFinite(savingsBase) && Number.isFinite(feePct)) {
       y += 6;
       doc.setFontSize(9);
-      doc.text(`Verified savings this period: €${savingsBase.toFixed(2)} · fee applied: ${feePct}%`, 20, y);
+      doc.text(
+        `Verified savings this period: €${
+          savingsBase.toFixed(2)
+        } · fee applied: ${feePct}%`,
+        20,
+        y,
+      );
       if (Number(snap?.referral?.activated_count) > 0) {
         y += 5;
-        doc.text(`Includes referral discount (${snap.referral.activated_count} activated referral(s))`, 20, y);
+        doc.text(
+          `Includes referral discount (${snap.referral.activated_count} activated referral(s))`,
+          20,
+          y,
+        );
       }
       doc.setFontSize(10);
     }
 
     y += 10;
-    doc.text('Subtotal', 140, y);
-    doc.text(`€${Number(inv.subtotal_amount || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    doc.text("Subtotal", 140, y);
+    doc.text(`€${Number(inv.subtotal_amount || 0).toFixed(2)}`, 170, y, {
+      align: "right",
+    });
 
     y += 6;
-    doc.text('Tax', 140, y);
-    doc.text(`€${Number(inv.tax_amount || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    doc.text("Tax", 140, y);
+    doc.text(`€${Number(inv.tax_amount || 0).toFixed(2)}`, 170, y, {
+      align: "right",
+    });
 
     y += 6;
     doc.setFontSize(12);
-    doc.text('Total', 140, y);
-    doc.text(`€${Number(inv.total_amount || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    doc.text("Total", 140, y);
+    doc.text(`€${Number(inv.total_amount || 0).toFixed(2)}`, 170, y, {
+      align: "right",
+    });
 
     y += 12;
     doc.setFontSize(9);
@@ -92,25 +171,31 @@ Deno.serve(async (req) => {
     y += 5;
     doc.text(`Invoice ID: ${inv.id}`, 20, y);
 
-    const pdfBytes = doc.output('arraybuffer');
+    const pdfBytes = doc.output("arraybuffer");
 
     // Upload to private storage and return a signed URL
     // A bare Blob is rejected by the upload endpoint ("'file' field is an empty
     // object") because it carries no filename — it must be a named File.
-    const filename = `invoice-${number.replace(/\s+/g, '-')}.pdf`;
-    const file = new File([pdfBytes], filename, { type: 'application/pdf' });
+    const filename = `invoice-${number.replace(/\s+/g, "-")}.pdf`;
+    const file = new File([pdfBytes], filename, { type: "application/pdf" });
 
-    const upload = await base44.asServiceRole.integrations.Core.UploadPrivateFile({ file });
+    const upload = await base44.asServiceRole.integrations.Core
+      .UploadPrivateFile({ file });
     const file_uri = upload?.file_uri;
-    if (!file_uri) return Response.json({ error: 'Upload failed' }, { status: 500 });
+    if (!file_uri) {
+      return Response.json({ error: "Upload failed" }, { status: 500 });
+    }
 
     // Persist reference for future reuse
-    await base44.asServiceRole.entities.Invoice.update(inv.id, { pdf_url: file_uri });
+    await base44.asServiceRole.entities.Invoice.update(inv.id, {
+      pdf_url: file_uri,
+    });
 
-    const { signed_url } = await base44.asServiceRole.integrations.Core.CreateFileSignedUrl({ file_uri, expires_in });
+    const { signed_url } = await base44.asServiceRole.integrations.Core
+      .CreateFileSignedUrl({ file_uri, expires_in });
 
     return Response.json({ url: signed_url, file_uri, invoice_id: inv.id });
   } catch (error) {
-    return internalErrorResponse(error, 'generateInvoicePdf');
+    return internalErrorResponse(error, "generateInvoicePdf");
   }
 });

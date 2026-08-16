@@ -14,6 +14,7 @@ export class InstantlyInboundConversationProvider implements InboundConversation
   validate(event:any){
     if(!event?.event_type)return {ok:false,reason:'event_type_required'};
     if(!event?.timestamp)return {ok:false,reason:'event_timestamp_required'};
+    if(event?.event_type==='reply_received'&&!event?.message_id)return {ok:false,reason:'event_message_id_required'};
     if(['reply_received','email_bounced','lead_unsubscribed','lead_not_interested','lead_wrong_person','lead_out_of_office'].includes(String(event.event_type))&&!event?.lead_email)return {ok:false,reason:'lead_email_required'};
     return {ok:true,reason:null};
   }

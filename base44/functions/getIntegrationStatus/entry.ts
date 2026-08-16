@@ -1,5 +1,9 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import {
+  isIntegrationCredentialBoundaryError,
+  resolveOwnedBrandForIntegrationActor,
+} from '../../shared/integrationCredentials.ts';
 
 /**
  * M5 — getIntegrationStatus
@@ -40,22 +44,26 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     let { brand_id } = body;
+    const svc = base44.asServiceRole;
 
     if (!brand_id) {
       const brands = await base44.entities.Brand.filter({ created_by: user.email }, '-created_date', 1).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));
       brand_id = brands[0]?.id || null;
     }
 
-    // Ownership check (admin bypass)
-    const isAdmin = user.role === 'admin';
-    if (brand_id && !isAdmin) {
-      const owned = await base44.entities.Brand.filter({ created_by: user.email, id: brand_id }).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));
-      if (!owned.length) {
-        return Response.json({ ok: false, error: 'Forbidden' }, { status: 403 });
+    // Exact service-side tenant proof. Missing and non-owner brand ids share
+    // the same non-enumerable response contract.
+    if (brand_id) {
+      try {
+        await resolveOwnedBrandForIntegrationActor(svc, { brand_id, actor: user });
+      } catch (error) {
+        if (isIntegrationCredentialBoundaryError(error)
+          && error.code === 'integration_tenant_resource_not_available') {
+          return Response.json({ ok: false, error: 'integration_not_available' }, { status: 404 });
+        }
+        throw error;
       }
     }
-
-    const svc = base44.asServiceRole;
 
     // Catalog (publicly readable)
     const catalog = await svc.entities.IntegrationCatalog.list('priority', 100).catch((error:any)=>safeBestEffort(error,{operation:'getIntegrationStatus',fallback:[],severity:'secondary'}));

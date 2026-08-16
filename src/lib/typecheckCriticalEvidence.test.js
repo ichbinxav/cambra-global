@@ -6,10 +6,10 @@
 // fact that the approve script actually enforces it.
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
-import { criticalTypecheckEvidenceStatus, CRITICAL_TYPECHECK_PROJECT } from '../../scripts/lib/evidence.mjs';
+import { criticalTypecheckEvidenceStatus, CRITICAL_TYPECHECK_PROJECT, sealEvidence } from '../../scripts/lib/evidence.mjs';
 
 const TREE = 'a'.repeat(64);
-const green = (over = {}) => ({
+const green = (over = {}) => sealEvidence({
   command: `npx tsc -p ./${CRITICAL_TYPECHECK_PROJECT}`,
   sourceTreeHash: TREE,
   exitCode: 0,
@@ -53,6 +53,12 @@ describe('criticalTypecheckEvidenceStatus', () => {
 
   it('FAILS when the evidence came from another project (e.g. jsconfig)', () => {
     expect(criticalTypecheckEvidenceStatus(green({ command: 'npx tsc -p ./jsconfig.json' }), TREE)).toBe('wrong_command');
+  });
+
+  it('FAILS when a sealed artifact is edited after execution', () => {
+    const tampered = green();
+    tampered.exitCode = 1;
+    expect(criticalTypecheckEvidenceStatus(tampered, TREE)).toBe('tampered');
   });
 
   it('a red critical typecheck can never yield valid evidence', () => {

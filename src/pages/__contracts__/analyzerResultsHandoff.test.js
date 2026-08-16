@@ -46,9 +46,16 @@ describe('CONTRACT — Analyzer → Results session handoff', () => {
 
   // 1. Backend returns `anon_session_id` — exact field name the analyzer reads.
   it('submitPaymentsAnalysis returns { anon_session_id } in the success response', () => {
-    // The response builder is the last Response.json in the handler.
-    // Assert both the key name AND that it's included alongside ok:true.
-    expect(submit).toMatch(/return Response\.json\(\{\s*ok:\s*true,\s*anon_session_id,/);
+    // The endpoint is wrapped by the durable SLO observer. Lock the product
+    // response contract inside that callback instead of requiring Response.json
+    // to be the outer return expression (which would make instrumentation look
+    // like an API-contract regression).
+    expect(submit).toMatch(/return await observeServiceLevelRequest\(/);
+    const observedCallback = submit.slice(submit.indexOf('return await observeServiceLevelRequest('));
+    expect(observedCallback).toContain('async () => {');
+    expect(observedCallback).toMatch(
+      /return serviceLevelResult\(\s*Response\.json\(\{[\s\S]{0,160}?ok:\s*true,[\s\S]{0,160}?anon_session_id,/,
+    );
   });
 
   // 2. Analyzer reads body.anon_session_id — same field name, no typos.

@@ -79,7 +79,10 @@
     "revenue_range": { "type": "string" },
     "detected_technologies": { "type": "array", "items": { "type": "string" } },
     "ecommerce_platform": { "type": "string" },
-    "probable_payment_stack": { "type": "array", "items": { "type": "string" } },
+    "probable_payment_stack": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "estimated_tpv_min_eur": { "type": "number", "minimum": 0 },
     "estimated_tpv_max_eur": { "type": "number", "minimum": 0 },
     "estimated_opportunity_min_eur": { "type": "number", "minimum": 0 },
@@ -91,10 +94,19 @@
     },
     "pre_score": { "type": "number", "minimum": 0, "maximum": 100 },
     "enrichment_worthy": { "type": "boolean", "default": false },
-    "contactability": { "type": "string", "enum": ["UNKNOWN", "UNAVAILABLE", "UNVERIFIED", "PROFESSIONAL_VERIFIED"] },
+    "contactability": {
+      "type": "string",
+      "enum": ["UNKNOWN", "UNAVAILABLE", "UNVERIFIED", "PROFESSIONAL_VERIFIED"]
+    },
     "email_verification_status": { "type": "string" },
-    "outreach_eligibility": { "type": "string", "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "ELIGIBLE", "BLOCKED"] },
-    "compliance_status": { "type": "string", "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "CLEARED", "BLOCKED"] },
+    "outreach_eligibility": {
+      "type": "string",
+      "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "ELIGIBLE", "BLOCKED"]
+    },
+    "compliance_status": {
+      "type": "string",
+      "enum": ["NOT_ASSESSED", "REVIEW_REQUIRED", "CLEARED", "BLOCKED"]
+    },
     "enriched": {
       "type": "boolean",
       "default": false
@@ -167,13 +179,28 @@
     },
     "reservoir_state": {
       "type": "string",
-      "enum": ["discovered","enriching","qualified","ready","queued","waiting_window","waiting_capacity","suppressed","disqualified","converted"],
+      "enum": [
+        "discovered",
+        "enriching",
+        "qualified",
+        "ready",
+        "queued",
+        "waiting_window",
+        "waiting_capacity",
+        "suppressed",
+        "disqualified",
+        "converted"
+      ],
       "description": "Durable always-on acquisition reservoir state. Discovery/preparation is independent from send windows."
     },
     "reservoir_updated_at": { "type": "string", "format": "date-time" },
     "outreach_ready_at": { "type": "string", "format": "date-time" },
     "last_verified_at": { "type": "string", "format": "date-time" },
-    "suppression_reason": { "type": "string" }
+    "suppression_reason": { "type": "string" },
+    "learning_eligibility_json": {
+      "type": "object",
+      "description": "Latest advisory-label eligibility evaluation. UNKNOWN/pending rows are excluded; a negative requires confirmed send exposure and a mature observation horizon. This is not a training label, probability, calibration, or authority artifact."
+    }
   },
   "required": [],
   "rls": {

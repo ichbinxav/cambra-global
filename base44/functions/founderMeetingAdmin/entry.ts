@@ -1,4 +1,5 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { resolveCommunicationThreadBrandId } from '../../shared/communicationTenant.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeFounderMeetingPolicy, parseFounderMeetingCommand, normalizeMeetingOutcome } from '../../shared/founderMeeting.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
@@ -60,7 +61,7 @@ export async function handleFounderMeetingAdmin(req: Request) {
       if (!parsed.ok) return Response.json({ ok:false, error:parsed.error, deterministic_only:true }, { status:400 });
       let preview:any;
       try { preview = normalizeFounderMeetingPolicy({ ...(current || {}), ...parsed.patch, version:'preview', status:'active' }); }
-      catch (error) { return Response.json({ ok:false, error:String(error?.message || error) }, { status:400 }); }
+      catch (error) { return Response.json({ ok:false, error:String((error as Error)?.message || error) }, { status:400 }); }
       const expected = confirmationFor(action);
       if (body.confirmation !== expected) {
         await svc.entities.FounderCommandAudit.create({ command_key:key, actor_email:user.email, intent:'founder_meeting_policy', action, scope_json:{ matched:parsed.matched }, risk_level:3, material:false, requires_confirmation:true, confirmed:false, preview_json:preview, status:'previewed', result_json:{}, policy_json:{ prior_version:current?.version || null }, created_at:new Date().toISOString() });
@@ -78,12 +79,13 @@ export async function handleFounderMeetingAdmin(req: Request) {
       if (!thread || !thread.meeting_event_id) return Response.json({ ok:false, error:'booked_meeting_thread_required' }, { status:404 });
       let outcome:any;
       try { outcome = normalizeMeetingOutcome(body.outcome || {}); }
-      catch (error) { return Response.json({ ok:false, error:String(error?.message || error) }, { status:400 }); }
+      catch (error) { return Response.json({ ok:false, error:String((error as Error)?.message || error) }, { status:400 }); }
       const now = new Date().toISOString();
       const requiresApproval = outcome.requires_approval.length > 0;
       let approval:any = null;
       if (requiresApproval) {
-        const task = await svc.entities.AgentTask.create({ brand_id:thread.related_entity_type === 'Brand' ? thread.related_entity_id : '_platform', agent_name:'post_meeting_worker', task_type:'review_post_meeting_commitments', related_entity_type:'CommunicationThread', related_entity_id:thread.id, status:'waiting_approval', requires_approval:true, risk_level:4, input_summary:`Review post-meeting items requiring approval for ${thread.counterparty_name || thread.counterparty_email}`, output_summary:'Structured outcome captured; no commitment has been executed.', output_payload_json:{ outcome }, started_at:now });
+        const threadBrandId=await resolveCommunicationThreadBrandId(svc,thread);
+        const task = await svc.entities.AgentTask.create({ brand_id:threadBrandId, agent_name:'post_meeting_worker', task_type:'review_post_meeting_commitments', related_entity_type:'CommunicationThread', related_entity_id:thread.id, status:'waiting_approval', requires_approval:true, risk_level:4, input_summary:`Review post-meeting items requiring approval for ${thread.counterparty_name || thread.counterparty_email}`, output_summary:'Structured outcome captured; no commitment has been executed.', output_payload_json:{ outcome }, started_at:now });
         approval = await svc.entities.Approval.create({ brand_id:task.brand_id, agent_task_id:task.id, action_type:'post_meeting_commitment_review', related_entity_type:'CommunicationThread', related_entity_id:thread.id, risk_level:4, draft_content:`Meeting outcome captured. Items requiring approval:\n${outcome.requires_approval.join('\n')}`, draft_payload_json:{ thread_id:thread.id, outcome, execution:false }, status:'pending', expires_at:new Date(Date.now()+7*86400000).toISOString() });
         await svc.entities.AgentTask.update(task.id, { approval_id:approval.id });
       }

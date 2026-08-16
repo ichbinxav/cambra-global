@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import { Buffer } from "node:buffer";
-import { checkFreeze, hasEclImports, sha256Hex, ECL_NAME_PATTERN, resolveStage } from "../../scripts/lib/preEclFreeze.mjs";
+import { checkFreeze, hasEclImports, sha256Hex, ECL_NAME_PATTERN, resolveStage, STAGE_ECL_P8 } from "../../scripts/lib/preEclFreeze.mjs";
 
 const entryFor = (path, content) => ({ path, sha256: sha256Hex(Buffer.from(content)), allowedChange: false });
 
@@ -38,6 +38,23 @@ describe("pre-ECL freeze (v62.2 CP7)", () => {
     const entries = [entryFor("base44/functions/processUploadedFile/entry.ts", content)];
     const res = checkFreeze(entries, () => Buffer.from(content));
     expect(res.failures.some((f) => f.includes("imports ECL"))).toBe(true);
+  });
+
+  it("allows an exactly allowlisted ECL-owned handler to be hash-frozen without widening non-ECL handlers", () => {
+    const eclContent = "import { workerFreshness } from '../../shared/eclOperationalRecovery.ts';\nexport default () => null;";
+    const ordinaryContent = "import { workerFreshness } from '../../shared/eclOperationalRecovery.ts';\nexport default () => null;";
+    const entries = [
+      entryFor("base44/functions/eclProductionHealth/entry.ts", eclContent),
+      entryFor("base44/functions/processUploadedFile/entry.ts", ordinaryContent),
+    ];
+    const res = checkFreeze(
+      entries,
+      (path) => Buffer.from(path.includes("eclProductionHealth") ? eclContent : ordinaryContent),
+      { stage: STAGE_ECL_P8 },
+    );
+    expect(res.failures).toEqual([
+      "frozen handler imports ECL code: base44/functions/processUploadedFile/entry.ts",
+    ]);
   });
 
   it("hasEclImports does not false-positive on ordinary code (declare, reclassify)", () => {

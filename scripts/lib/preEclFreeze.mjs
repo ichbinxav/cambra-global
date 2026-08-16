@@ -277,6 +277,7 @@ export const sha256Hex = (buf) => crypto.createHash("sha256").update(buf).digest
  */
 export function checkFreeze(entries, readFile, options = {}) {
   const stage = options.stage || STAGE_PRE_ECL;
+  const stageAllowlist = allowlistForStage(stage).map(normalizePath);
   // P2 adds NO schema permission: the same two schemas, and only those, may
   // carry ECL fields. Baseline.jsonc and processUploadedFile stay excluded in
   // every stage, and their hashes are still checked below without exception.
@@ -299,7 +300,14 @@ export function checkFreeze(entries, readFile, options = {}) {
     if (entry.path.endsWith(".jsonc") && ECL_FIELD_PATTERN.test(text) && !eclFieldsAllowedIn.includes(normalizePath(entry.path))) {
       failures.push(`frozen schema contains ECL field: ${entry.path} (stage ${stage})`);
     }
-    if (entry.path.endsWith(".ts") && hasEclImports(text)) {
+    const normalizedEntryPath = normalizePath(entry.path);
+    const eclOwnedHandlerAtDeclaredStage =
+      stageAllowlist.includes(normalizedEntryPath) &&
+      ECL_NAME_PATTERN.test(normalizedEntryPath);
+    if (
+      entry.path.endsWith(".ts") && hasEclImports(text) &&
+      !eclOwnedHandlerAtDeclaredStage
+    ) {
       failures.push(`frozen handler imports ECL code: ${entry.path}`);
     }
   }

@@ -23,10 +23,12 @@
         "pr_open",
         "awaiting_cutover_approval",
         "cutting_over",
+        "rolling_back",
         "verifying",
         "completed",
         "failed",
-        "rolled_back"
+        "rolled_back",
+        "review_required"
       ],
       "default": "queued"
     },
@@ -77,6 +79,82 @@
     },
     "cutover_approval_id": {
       "type": "string"
+    },
+    "lifecycle_version": {
+      "type": "string",
+      "description": "Version of the durable material-effect lifecycle used for apply, cutover and rollback."
+    },
+    "lifecycle_action": {
+      "type": "string",
+      "enum": [
+        "",
+        "apply_plan",
+        "cutover",
+        "rollback"
+      ],
+      "default": ""
+    },
+    "lifecycle_phase": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "claimed",
+        "effecting",
+        "completed",
+        "review_required"
+      ],
+      "default": "idle"
+    },
+    "lifecycle_revision": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0,
+      "description": "Optimistic-CAS revision fencing concurrent material execution."
+    },
+    "lifecycle_attempt_token": {
+      "type": "string"
+    },
+    "lifecycle_lease_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lifecycle_idempotency_key": {
+      "type": "string"
+    },
+    "lifecycle_approval_id": {
+      "type": "string"
+    },
+    "lifecycle_authority_hash": {
+      "type": "string"
+    },
+    "lifecycle_binding_hash": {
+      "type": "string"
+    },
+    "lifecycle_steps": {
+      "type": "object",
+      "description": "Durable before/after evidence for each external mutation. A pending step is never retried blindly."
+    },
+    "lifecycle_result": {
+      "type": "object",
+      "description": "Sanitized terminal evidence used for idempotent replay without repeating an external effect."
+    },
+    "lifecycle_review_reason": {
+      "type": "string"
+    },
+    "lifecycle_review_evidence": {
+      "type": "object"
+    },
+    "lifecycle_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lifecycle_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lifecycle_completed_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "started_at": {
       "type": "string",

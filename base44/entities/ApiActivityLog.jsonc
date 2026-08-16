@@ -2,6 +2,37 @@
   "name": "ApiActivityLog",
   "type": "object",
   "properties": {
+    "observation_key": {
+      "type": "string",
+      "description": "Server-generated identity of one durable SLO observation. Missing means a legacy API log, never an SLO sample."
+    },
+    "observation_version": {
+      "type": "string"
+    },
+    "observation_state": {
+      "type": "string",
+      "enum": ["STARTED", "SUCCEEDED", "FAILED", "EXCLUDED"]
+    },
+    "slo_key": {
+      "type": "string"
+    },
+    "workload_key": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runtime_identity_hash": {
+      "type": "string"
+    },
+    "runtime_git_sha": {
+      "type": "string"
+    },
     "api_key_id": {
       "type": "string"
     },
@@ -46,6 +77,14 @@
       "default": "success"
     },
     "ip_address": {
+      "type": "string",
+      "description": "Legacy deprecated field. New writes MUST leave it unset; raw network addresses are prohibited."
+    },
+    "network_fingerprint": {
+      "type": "string",
+      "description": "Versioned, domain-separated HMAC fingerprint. Cannot contain a raw network address or proxy header."
+    },
+    "network_fingerprint_version": {
       "type": "string"
     },
     "user_agent": {
@@ -78,7 +117,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

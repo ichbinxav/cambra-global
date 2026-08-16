@@ -1,0 +1,3371 @@
+{
+  "schema_version": "agenttask-creator-inventory-v2.0.0",
+  "envelope_version": "agent-task-envelope-v2.0.0",
+  "generated_from": [
+    "base44/functions/**/*.ts",
+    "config/remediation/material-boundary-registry.v1.json"
+  ],
+  "material_registry_schema_version": "cambra-material-boundary-registry-v1",
+  "source_inventory_hash": "b5b6606ce07b27a53a8e00a34503ea0d7bb19a214bb50a277ee9aea6df19b741",
+  "counts": {
+    "creator_files": 60,
+    "raw_create_sites": 56,
+    "canonical_root_create_sites": 8,
+    "canonical_child_link_sites": 7,
+    "canonical_terminal_sites": 6,
+    "root_envelope_adapted_files": 8,
+    "partial_mixed_files": 0,
+    "not_adapted_files": 52,
+    "material_creator_files": 46,
+    "legacy_creator_files": 14,
+    "material_trace_adapted_files": 0,
+    "material_root_only_files": 3,
+    "material_not_adapted_files": 43,
+    "material_route_files": 111,
+    "material_route_files_without_agenttask_creator": 65,
+    "unresolved_material_route_files": 111
+  },
+  "compatibility": {
+    "legacy_row_lineage": "UNKNOWN",
+    "v1_envelope_lineage": "PARTIAL_UNTIL_EXPLICIT_V2_RECONCILIATION",
+    "implicit_parent_inference": false,
+    "implicit_trace_inference": false,
+    "implicit_effect_receipt_inference": false,
+    "backfill_performed": false
+  },
+  "root_otr_013": {
+    "implementation_status": "PARTIAL",
+    "binary_closure_status": "NOT_MET",
+    "local_test_status": "PASSED_LOCAL",
+    "verification_level": "LOCAL_FAILURE_INJECTION",
+    "blockers": [
+      "46 material creator file(s) lack a complete local terminal envelope",
+      "65 material route file(s) have no local AgentTask creator",
+      "111 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
+      "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
+    ],
+    "material_creator_blockers": [
+      "base44/functions/aggregateAgreementWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/autonomousCommercialWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/autonomousPartnerWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/blogAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/codeReviewAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/collectiveNegotiationAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/commercialFollowUpWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/commercialReplyAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/competitorMonitorAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/complianceAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/contractIPAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/crmAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/dataSyncAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/developerMigrationEngine/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/discoveryTechStackAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/fixValidatorAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/followUpAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/founderCopilotAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/gdprAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/investorUpdateAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/leadDiscoveryAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/leadEnrichmentAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/leadScoringAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/legalReviewAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/linkedinAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/meetingAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/newsletterAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/outlookMeetingCoordinator/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/outreachAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/postMeetingWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/processWebhookDeadLetters/entry.ts:ROOT_ONLY",
+      "base44/functions/providerMonetizationAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/providerMonitorAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/providerNegotiationAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/providerResearchAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/qaAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/qaMonitorAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/rateIntelligenceWatchWorker/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/recommendationEngineAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/reconcileRecoverBilling/entry.ts:ROOT_ONLY",
+      "base44/functions/recoverAutopilotWorker/entry.ts:ROOT_ONLY",
+      "base44/functions/reviewProviderContract/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/securityAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/seoAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/spendIntelligenceAgent/entry.ts:NO_CANONICAL_ROOT",
+      "base44/functions/xTwitterAgent/entry.ts:NO_CANONICAL_ROOT"
+    ],
+    "material_route_blockers": [
+      "base44/functions/acceptRecoverMandate/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/aggregateAgreementWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/aggregateProcurementWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/approveProviderMonetizationLegalReview/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/approveRecoverReportForInvoicing/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/autonomousCommercialWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/autonomousPartnerWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/billApiUsage/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/blogAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/chatChiefOrchestrator/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/checkVatVies/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/codeReviewAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/collectionOperationsWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/collectiveNegotiationAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/commercialFollowUpWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/commercialReplyAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/commercialSendMessage/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/competitorMonitorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/complianceAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/computeStripeVerifiedGap/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/contractIPAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/copilotChat/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/createEligibleRecoverInvoices/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/createPaymentLink/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/crmAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/dataSyncAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/developerMigrationEngine/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/discoveryTechStackAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/dispatchWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/fixValidatorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/followUpAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/founderChiefOfStaff/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/founderCopilotAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/gdprAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/generateInvoicePdf/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/generateMonthlySavingsReport/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/generateRecoverContractPdf/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/goLiveControlAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/instantlyProviderAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/instantlyReconciliationWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/intelligenceAccess/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/intelligenceAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/intelligenceMaintenanceWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/investorUpdateAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/joinCollective/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/leadDiscoveryAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/leadEnrichmentAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/leadScoringAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/legalReviewAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/linkedinAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/maintenanceEngine/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/marketPolicyAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/meetingAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/missingInformationWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/newsletterAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/oauthConnector/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/onBrandCreated/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/onInvoiceStatusEvent/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/onboardingConciergeWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/outboundControlAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/outboundVolumeWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/outcomeLearningWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/outlookMeetingCoordinator/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/outreachAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/postMeetingWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/processUploadedFile/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/processWebhookDeadLetters/entry.ts:MATERIAL_ROOT_ONLY",
+      "base44/functions/providerContactResolver/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/providerMonetizationAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/providerMonitorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/providerNegotiationAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/providerResearchAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/providerRevenueBillingWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/qaAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/qaMonitorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/rateIntelligenceWatchWorker/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/recommendationEngineAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/reconcileInvoice/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/reconcileRecoverBilling/entry.ts:MATERIAL_ROOT_ONLY",
+      "base44/functions/recordConditionsActivation/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/recordPayment/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/recordProviderRevenueInvoiceIssued/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/recordProviderRevenuePayment/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/recoverAutopilotWorker/entry.ts:MATERIAL_ROOT_ONLY",
+      "base44/functions/recoverBillingDigest/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/requestP4Estimate/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/resendInboundWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/resolveCommercialApproval/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/retryPendingRecoverContracts/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/reviewProviderContract/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/revokeMandate/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/securityAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/seedP3RateIntelligence/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/sendMonthlySavingsSummary/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/sendRecoverContractEmail/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/sendTestWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/seoAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/spendIntelligenceAgent/entry.ts:MATERIAL_NOT_ADAPTED",
+      "base44/functions/startPaymentMethodSetup/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/startPaymentsMigration/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/startProviderNegotiation/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/startRecoverAcceptance/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/stripeBillingWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/stripeDataSync/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/stripeOAuthConnect/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/submitCallRequest/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/submitContactMessage/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/submitWaitlistSignup/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/updatePaymentsMigrationTask/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
+      "base44/functions/xTwitterAgent/entry.ts:MATERIAL_NOT_ADAPTED"
+    ],
+    "runtime_pending": [
+      "production final-SHA trace completeness scan",
+      "real material runs joined to provider/domain receipts",
+      "real CostUsageEvent linkage for paid effects",
+      "legacy AgentTask/Event backfill decision and execution",
+      "runtime orphan and ambiguous-effect denominator windows"
+    ]
+  },
+  "material_route_files": [
+    {
+      "path": "base44/functions/acceptRecoverMandate/entry.ts",
+      "source_sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
+      "boundary_ids": [
+        "MB-MANDATE-ACCEPT"
+      ],
+      "material_effect_kinds": [
+        "sign_mandate",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/aggregateAgreementWorker/entry.ts",
+      "source_sha256": "f38007951bf2086ca64f2bfab34cbc0ddc99d1f2f0cb59384cc2368b6776e6b6",
+      "boundary_ids": [
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/aggregateProcurementWorker/entry.ts",
+      "source_sha256": "6e3c8180e65d71f38558e2b372be0862e97e4c563c0651b792fdb7dff5025be8",
+      "boundary_ids": [
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
+      "source_sha256": "b1ad7b026a8946db9d56cb908e83097ac97d012da5e81d984273fab84519678c",
+      "boundary_ids": [
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/approveProviderMonetizationLegalReview/entry.ts",
+      "source_sha256": "1abff038c343668a0d90259cadce661689148e47d2586c1885ad7bdd9f1a89f4",
+      "boundary_ids": [
+        "MB-TERMS-PROVIDER-MONETIZATION-LEGAL"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+      "source_sha256": "e05714e264e375b9f60c779347d943d020761e10cdb3d710715a8de8bea9f21d",
+      "boundary_ids": [
+        "MB-BILL-RECOVER-ELIGIBILITY"
+      ],
+      "material_effect_kinds": [
+        "billing_charge"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/autonomousCommercialWorker/entry.ts",
+      "source_sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/autonomousPartnerWorker/entry.ts",
+      "source_sha256": "6821e2d0cf81c9488eb9ac4c89583cba35761220ab5f00e25443db254c96f638",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/billApiUsage/entry.ts",
+      "source_sha256": "27e9149a3b4da3b34f751d919168e3b94851b2e94777696b613b15e60c3b3e53",
+      "boundary_ids": [
+        "MB-BILL-API-OVERAGE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/blogAgent/entry.ts",
+      "source_sha256": "98849cf4cc9d30d876a0ef53a00cd84090ab38309b5db162afc1e5136ac5cc8f",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/chatChiefOrchestrator/entry.ts",
+      "source_sha256": "0904effe1116af028547e1c99fe208c7512e5e1f0f3ef56ea3d4f04451a71b48",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/checkVatVies/entry.ts",
+      "source_sha256": "4f6697f8923c95ed4d96bb9f39931da6ef722495c382e8e3592ebdb7ab5a4b95",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/codeReviewAgent/entry.ts",
+      "source_sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/collectionOperationsWorker/entry.ts",
+      "source_sha256": "a522f8d418c8d6c27ddfa37eb09539701f694e9c8aedc86d03cb6b90e01600b2",
+      "boundary_ids": [
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
+      "source_sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+      "boundary_ids": [
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/commercialFollowUpWorker/entry.ts",
+      "source_sha256": "c9d1ac1365acde3b81f2d73af87f400baab6969b4ce50c7066ad4759453cd879",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/commercialReplyAgent/entry.ts",
+      "source_sha256": "412ec9949cb8371fdf8259d0ab31cb71ec196f2ceb6d6ab54439f36a9f80caf5",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/commercialSendMessage/entry.ts",
+      "source_sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+      "boundary_ids": [
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SEND-COMMERCIAL"
+      ],
+      "material_effect_kinds": [
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/competitorMonitorAgent/entry.ts",
+      "source_sha256": "36c55ff362bd221899c3a00e4aca38d7a2be9b9a0dfac939f0b80a2fa04fe851",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/complianceAgent/entry.ts",
+      "source_sha256": "3550cb8b0003ff16dbded186496035650d97264431b6ece4d42e807165b7edb0",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
+      "source_sha256": "e5873034e539f832d11509a4390e33ba1d419dc92c2f3890de0bffce6712cfb1",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/contractIPAgent/entry.ts",
+      "source_sha256": "92109cd5be6afb1b8a1e6f8514168bf22dab076b0abe36603d1f59677f0bf041",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/copilotChat/entry.ts",
+      "source_sha256": "15049214b2a8c08c2141deae0b25b60ef2ca1307590004a3ba819aa72bb7f006",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
+      "source_sha256": "5e700ca5d2b2e154bba22af869440c674ba5b7f65b1f875013f03be6ac646471",
+      "boundary_ids": [
+        "MB-BILL-RECOVER-STRIPE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/createPaymentLink/entry.ts",
+      "source_sha256": "1e897b7ecba6a4fe0f8977fc5ee4c8922c1818a3e770ae887a1653329dff54e1",
+      "boundary_ids": [
+        "MB-BILL-PAYMENT-LINK"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/crmAgent/entry.ts",
+      "source_sha256": "86aa3eb8604fb135bbc24be0f4189d817e140f8d79c92c4495bdaf30d985802d",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/dataSyncAgent/entry.ts",
+      "source_sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/developerMigrationEngine/entry.ts",
+      "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+      "boundary_ids": [
+        "MB-MIGRATE-DEVELOPER-GITHUB",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "migrate_go_live",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/discoveryTechStackAgent/entry.ts",
+      "source_sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/dispatchWebhook/entry.ts",
+      "source_sha256": "358417e87fb89883149f9b1431126ceef51d28461971cb59551edb03ad3100f1",
+      "boundary_ids": [
+        "MB-WEBHOOK-DISPATCH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/fixValidatorAgent/entry.ts",
+      "source_sha256": "efad3655d03b3415ee57bcf3ac67235ab778cf6002fae2d7a39bd9a62dbe862d",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/followUpAgent/entry.ts",
+      "source_sha256": "bb6f63802a65272f0d8c23980cd5d3229bbe830718961fdaa9a0b537944c91f9",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/founderChiefOfStaff/entry.ts",
+      "source_sha256": "710eb3ef76c62d2649613bd78e18439be483c216e1e972c27b0e4a897aaca5df",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/founderCopilotAgent/entry.ts",
+      "source_sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/gdprAgent/entry.ts",
+      "source_sha256": "5cebcb4bc88ce2bc16df7710b3e768aad03d53e4c5cf35227e211a54947365c7",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/generateInvoicePdf/entry.ts",
+      "source_sha256": "cf409f3702c45060648475e5eb1c0288075e28043fc6d0e6d83629d3c0aabdc3",
+      "boundary_ids": [
+        "MB-BILL-INVOICE-PDF-STORAGE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
+      "source_sha256": "4bb6a0ea371ed843a2bb76e00b9e698c71f77627f885cf69f88baa320b7c6802",
+      "boundary_ids": [
+        "MB-BILL-RECOVER-REPORT-GENERATION"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "claim_outcome_dataset_promotion"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/generateRecoverContractPdf/entry.ts",
+      "source_sha256": "32fd5fa9fb56381bf49935ec51a8ae95cb0f6214896117b6105ebe3a133b528a",
+      "boundary_ids": [
+        "MB-CONTRACT-PDF-STORAGE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/goLiveControlAdmin/entry.ts",
+      "source_sha256": "e5572a6ec47ac6882be88e75b103f488dc0c3c21ef67a52a077086b48d96dd42",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/instantlyProviderAdmin/entry.ts",
+      "source_sha256": "a4b5df262478b4050a2edd8ac520d000f155b2c4ba5fad4d00de8df9a5febded",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/instantlyReconciliationWorker/entry.ts",
+      "source_sha256": "7207718d5f4fe2dfa392507827150b6e756e287f43448cd3f682a6342d00be25",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/intelligenceAccess/entry.ts",
+      "source_sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
+      "boundary_ids": [
+        "MB-INTEL-CLAIM-UPSERT",
+        "MB-INTEL-OUTCOME-RECORD"
+      ],
+      "material_effect_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/intelligenceAdmin/entry.ts",
+      "source_sha256": "a1b63eae7a1774b1c7587d5b8e3f0da050dba1d5861755fec7ca8688abb769f9",
+      "boundary_ids": [
+        "MB-INTEL-CLAIM-PROMOTE"
+      ],
+      "material_effect_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
+      "source_sha256": "4543ac82bd1328eca767f5f5ee0ae29bafa3ca9be9a79dfb7c1e46a205202350",
+      "boundary_ids": [
+        "MB-INTEL-P3-LEGACY-PROMOTION",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/investorUpdateAgent/entry.ts",
+      "source_sha256": "1432aa3653cf1cc7b59e536b34f64ddfb6398683be7fe7d98ea9d29b2f7e8703",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/joinCollective/entry.ts",
+      "source_sha256": "c8f28710cbc9cabc582ed619036ebae76bb6eb4c2b6c44379332bcdbe8ff36d8",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/leadDiscoveryAgent/entry.ts",
+      "source_sha256": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/leadEnrichmentAgent/entry.ts",
+      "source_sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/leadScoringAgent/entry.ts",
+      "source_sha256": "de3b6a69c4e36c9f5ea1aafab8fb2c789d174dff4c658f0d215eb5b230b1ba11",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/legalReviewAgent/entry.ts",
+      "source_sha256": "95f8ed79cd66188d1ce6187ec48a4128f114f97acfc1dec038ddbb8338a031d3",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/linkedinAgent/entry.ts",
+      "source_sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/maintenanceEngine/entry.ts",
+      "source_sha256": "ba878883d3924be5c5d33081f285f4fd37b1ab42d5ab412a1e64184980f1c644",
+      "boundary_ids": [
+        "MB-PROVIDER-DR-SHAREPOINT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/marketPolicyAdmin/entry.ts",
+      "source_sha256": "7d5dd151020edcdffe49fe2e26a07915c2a72109b2daf74160367f4a951867d6",
+      "boundary_ids": [
+        "MB-LEGAL-AUTHORITY-ADMIN",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect",
+        "sign_mandate",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 3,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/meetingAgent/entry.ts",
+      "source_sha256": "ac2780b34c5490b4c5be49b7acbd6075e62faa603702c8e4a3528a0520ac0958",
+      "boundary_ids": [
+        "MB-SCHEDULE-MEETING"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/missingInformationWorker/entry.ts",
+      "source_sha256": "2a5239798dd81b2dc14e35e033ba46ffbf260c415353c4e284e9b7a691deb767",
+      "boundary_ids": [
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/newsletterAgent/entry.ts",
+      "source_sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/oauthConnector/entry.ts",
+      "source_sha256": "d0424c4429aa8002e7384fe61f070e54e5d0dae637da49da57b6e3dbb9c8b118",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/onboardingConciergeWorker/entry.ts",
+      "source_sha256": "a2c4080ba68b1785f4e695b67a2e9da452573888897d04ffc89b730c7b656430",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/onBrandCreated/entry.ts",
+      "source_sha256": "7bfd831e23a74a631ec18b184c2356743d2165269fabdcca1394ea777ba59fab",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/onInvoiceStatusEvent/entry.ts",
+      "source_sha256": "4185bbd036b05f8b68ee1331b24dc8b4d3a7a8274d38fb25451cf0ddf612fdfd",
+      "boundary_ids": [
+        "MB-BILL-LEGACY-INVOICE-EVENT-QUARANTINE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/outboundControlAdmin/entry.ts",
+      "source_sha256": "a36870e6799a9389a208362c391ef53cbecf3b0be15f91776e47c0b3b7da5022",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/outboundVolumeWorker/entry.ts",
+      "source_sha256": "c93e2e1aa9c68eb771f9ab79e2e9334ca4de7ec19c191b51d93dcb298f62d123",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/outcomeLearningWorker/entry.ts",
+      "source_sha256": "95ac64029c9e2762dad44b16d720df1d779bdb31c75d9c02733ec24da965c683",
+      "boundary_ids": [
+        "MB-INTEL-OUTCOME-SCHEDULED",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/outlookMeetingCoordinator/entry.ts",
+      "source_sha256": "5776f2baa029e125dd1955b17f152da760fb4d885574e10777cd916e8fd08b53",
+      "boundary_ids": [
+        "MB-SCHEDULE-MEETING"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/outreachAgent/entry.ts",
+      "source_sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/postMeetingWorker/entry.ts",
+      "source_sha256": "de56c0507bcd1752c4723c0515b4719f86a93c6dfd8dee7662cc846cc7882719",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "source_sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "source_sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "boundary_ids": [
+        "MB-SCHEDULER-BASE",
+        "MB-WEBHOOK-DLQ-RETRY"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_ROOT_ONLY",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/providerContactResolver/entry.ts",
+      "source_sha256": "8814751b8099d1e2360eb5dd338577a830e386b8d17a5ce9da8f9d6b230fcb02",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/providerMonetizationAgent/entry.ts",
+      "source_sha256": "40245b0c322cdbb65744c7c480221f1fda1b0e175ffac20c9cd4add6d867905f",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/providerMonitorAgent/entry.ts",
+      "source_sha256": "6dce0368f6a81ea2fbda1fa3939a43f6f2c5d30aaf3ee68c0372b9e3db3a25e8",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/providerNegotiationAgent/entry.ts",
+      "source_sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
+      "boundary_ids": [
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/providerResearchAgent/entry.ts",
+      "source_sha256": "89500d2cbc4d7937a93dac1be881f7a667d23c5df62c3d2e14ea4fa684f97fc3",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/providerRevenueBillingWorker/entry.ts",
+      "source_sha256": "fedec3bbb5ed1596b9029db5efa674174caf7d67406b6fd17811e65376e15af0",
+      "boundary_ids": [
+        "MB-BILL-PROVIDER-REVENUE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/qaAgent/entry.ts",
+      "source_sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/qaMonitorAgent/entry.ts",
+      "source_sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/rateIntelligenceWatchWorker/entry.ts",
+      "source_sha256": "2458124b88b2a09415c557ea9a8cb727c47b8069d814cc92802878c498247781",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/recommendationEngineAgent/entry.ts",
+      "source_sha256": "3a9ee071c11a9b539568a8e28138e410fddcbe736e8842c1231b80bf596b9cdf",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/reconcileInvoice/entry.ts",
+      "source_sha256": "9dc543c8cc20f2d1e563d9d4855ce10198ee8f5ff15653000750376c496f6a1c",
+      "boundary_ids": [
+        "MB-BILL-LOCAL-RECONCILE-OVERRIDE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+      "source_sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31",
+      "boundary_ids": [
+        "MB-BILL-RECOVER-STRIPE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_ROOT_ONLY",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/recordConditionsActivation/entry.ts",
+      "source_sha256": "ab9be731f44d8f4e6baffcf7caca3ba412a8523744f98fff8f4291de512ba81c",
+      "boundary_ids": [
+        "MB-CONDITIONS-ACTIVATION"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/recordPayment/entry.ts",
+      "source_sha256": "970c212f5d0f12e6632090a5e864aa8e0c65eae0d0391c29c00743358d11e528",
+      "boundary_ids": [
+        "MB-BILL-MANUAL-RECORD"
+      ],
+      "material_effect_kinds": [
+        "billing_charge"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/recordProviderRevenueInvoiceIssued/entry.ts",
+      "source_sha256": "beac1046f30ef440f64fce0934aaf6dd7635df49cad7fd88fd0228f5d65890e1",
+      "boundary_ids": [
+        "MB-BILL-PROVIDER-REVENUE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/recordProviderRevenuePayment/entry.ts",
+      "source_sha256": "134091804d0f1cb1ee0090121ef0bc81987afabdbc5aaadbf3d17d2f32e6a38d",
+      "boundary_ids": [
+        "MB-BILL-PROVIDER-REVENUE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/recoverAutopilotWorker/entry.ts",
+      "source_sha256": "5882931b6301979f9c4e91e24e4e9b72a9a9d7b8f07e1e403ed2fff05c9bd2f6",
+      "boundary_ids": [
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_ROOT_ONLY",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/recoverBillingDigest/entry.ts",
+      "source_sha256": "9957a69d76420ce318e10e1bd149a1fa887fb9cd8aa4875fa891d29302024973",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/requestP4Estimate/entry.ts",
+      "source_sha256": "7a283bd76824942ac7602e24aa96c4dd89302748fa6f4d4796054b1ffc05a152",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/resendInboundWebhook/entry.ts",
+      "source_sha256": "93d4151d3d4f3ccdc69b8bf692988945628c2b23a162e28010c4e6359dd33327",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/resolveCommercialApproval/entry.ts",
+      "source_sha256": "90be2ff852ea0b7b5379452ecf51fc416cce68847920ad59a6a59a5e608bc9ee",
+      "boundary_ids": [
+        "MB-TERMS-APPROVAL-EXECUTION"
+      ],
+      "material_effect_kinds": [
+        "negotiate",
+        "send",
+        "sign_mandate",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/retryPendingRecoverContracts/entry.ts",
+      "source_sha256": "a37ef0d827aa0f7589449b87b716b3f61234aeb614015dd55096f72944504cd1",
+      "boundary_ids": [
+        "MB-CONTRACT-PDF-STORAGE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/reviewProviderContract/entry.ts",
+      "source_sha256": "b9d2696fe4bf61fa7d62a40b41ef7f5bb84ee81ba116519cc86c736c1f72f9b1",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/revokeMandate/entry.ts",
+      "source_sha256": "d41f5ac3378bb20a8f34c42cf2bcf822ed18d78c40ac0818b8b52800735284de",
+      "boundary_ids": [
+        "MB-MANDATE-REVOKE"
+      ],
+      "material_effect_kinds": [
+        "sign_mandate",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/securityAgent/entry.ts",
+      "source_sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/seedP3RateIntelligence/entry.ts",
+      "source_sha256": "da2f24be30efbead7ab029f95519fa2e070bebf1e9b308775da09c46c7e0d8bd",
+      "boundary_ids": [
+        "MB-INTEL-P3-SEED"
+      ],
+      "material_effect_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/sendMonthlySavingsSummary/entry.ts",
+      "source_sha256": "6112533fde5827184ac59986604bd342ae5016c5eb1e0f4e9c1e578e6655a6e2",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/sendRecoverContractEmail/entry.ts",
+      "source_sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a",
+      "boundary_ids": [
+        "MB-CONTRACT-EMAIL",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SEND-CORE-EMAIL"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/sendTestWebhook/entry.ts",
+      "source_sha256": "60392b609e387171425284270fc2b523ff95b14c912a761e49998f1302a4af34",
+      "boundary_ids": [
+        "MB-WEBHOOK-DISPATCH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/seoAgent/entry.ts",
+      "source_sha256": "c48bfd72f3eb4fbe4edda74c342b4b9a33b037608e76ef7034badb634e90f4af",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/spendIntelligenceAgent/entry.ts",
+      "source_sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
+      "boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    },
+    {
+      "path": "base44/functions/startPaymentMethodSetup/entry.ts",
+      "source_sha256": "972624524a519b5eb880d44cf90472a8a4761e3e45ad5796c3821e7ca9bad271",
+      "boundary_ids": [
+        "MB-BILL-PAYMENT-METHOD"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/startPaymentsMigration/entry.ts",
+      "source_sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
+      "boundary_ids": [
+        "MB-MIGRATE-PAYMENTS"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "migrate_go_live"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/startProviderNegotiation/entry.ts",
+      "source_sha256": "dad15483fe08f29d798ce019ad5d61bec10b9214f7a1cc7700c9c94a732856a8",
+      "boundary_ids": [
+        "MB-NEGOTIATE-PROVIDER"
+      ],
+      "material_effect_kinds": [
+        "negotiate",
+        "paid_spend",
+        "send",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/startRecoverAcceptance/entry.ts",
+      "source_sha256": "56e5a993a4ba0aea38ffd0d5b1211a5b7b7a58b677cf6273ca5b86b8995d0006",
+      "boundary_ids": [
+        "MB-MANDATE-ACCEPT"
+      ],
+      "material_effect_kinds": [
+        "sign_mandate",
+        "terms"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "source_sha256": "af836e8e2d69c40a7db9ecfc8f5261fdf4e7d8562d2b03a2c545d16c82552a71",
+      "boundary_ids": [
+        "MB-BILL-RECOVER-STRIPE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/stripeDataSync/entry.ts",
+      "source_sha256": "568ca5e2dc3aeaa5c76873bb3780bfc06ef807b3d3a9542f64c867dc91871bb3",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/stripeOAuthConnect/entry.ts",
+      "source_sha256": "6f5ac289f1c91c80b2e5545ff60a59093473e54b4666074657e862c7f7a3e513",
+      "boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/submitCallRequest/entry.ts",
+      "source_sha256": "d70db59ee35ffddce4605447f6f792ef7c4f2b3842d26c4dcda0f58a82b97cfe",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/submitContactMessage/entry.ts",
+      "source_sha256": "d691d9509860c2be0af6d299d3edb78bad233a453c97752587cf3b6847724edd",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SEND-RESEND-PUBLIC-NOTIFY"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/submitWaitlistSignup/entry.ts",
+      "source_sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
+      "boundary_ids": [
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SEND-RESEND-PUBLIC-NOTIFY"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/updatePaymentsMigrationTask/entry.ts",
+      "source_sha256": "47c1f40d3147b4d65c1f03a7d5e03cc5657bcd646f5be5f6c73d5bbfc91024af",
+      "boundary_ids": [
+        "MB-MIGRATE-PAYMENTS"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "migrate_go_live"
+      ],
+      "agenttask_creator": false,
+      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
+    },
+    {
+      "path": "base44/functions/xTwitterAgent/entry.ts",
+      "source_sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb",
+      "boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "agenttask_creator": true,
+      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+    }
+  ],
+  "creators": [
+    {
+      "path": "base44/functions/aggregateAgreementWorker/entry.ts",
+      "source_sha256": "f38007951bf2086ca64f2bfab34cbc0ddc99d1f2f0cb59384cc2368b6776e6b6",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "send",
+        "terms"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/autonomousCommercialWorker/entry.ts",
+      "source_sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/autonomousCompanyOrchestrator/entry.ts",
+      "source_sha256": "aa3627f56640f6ee1c71a9356084963d73e7df34247158d89f0da13b66a98426",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 1,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
+      "source_sha256": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/autonomousPartnerWorker/entry.ts",
+      "source_sha256": "6821e2d0cf81c9488eb9ac4c89583cba35761220ab5f00e25443db254c96f638",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/blogAgent/entry.ts",
+      "source_sha256": "98849cf4cc9d30d876a0ef53a00cd84090ab38309b5db162afc1e5136ac5cc8f",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/brainOrchestrator/entry.ts",
+      "source_sha256": "970976352663562346d43c8d9c7c06b0dee1dc602f0021b00ed96a6650b95d1d",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 3,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/codeReviewAgent/entry.ts",
+      "source_sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
+      "source_sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/commercialFollowUpWorker/entry.ts",
+      "source_sha256": "c9d1ac1365acde3b81f2d73af87f400baab6969b4ce50c7066ad4759453cd879",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/commercialReplyAgent/entry.ts",
+      "source_sha256": "412ec9949cb8371fdf8259d0ab31cb71ec196f2ceb6d6ab54439f36a9f80caf5",
+      "raw_create_sites": 2,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/competitorMonitorAgent/entry.ts",
+      "source_sha256": "36c55ff362bd221899c3a00e4aca38d7a2be9b9a0dfac939f0b80a2fa04fe851",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/complianceAgent/entry.ts",
+      "source_sha256": "3550cb8b0003ff16dbded186496035650d97264431b6ece4d42e807165b7edb0",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/contractIPAgent/entry.ts",
+      "source_sha256": "92109cd5be6afb1b8a1e6f8514168bf22dab076b0abe36603d1f59677f0bf041",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/crmAgent/entry.ts",
+      "source_sha256": "86aa3eb8604fb135bbc24be0f4189d817e140f8d79c92c4495bdaf30d985802d",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/dataSyncAgent/entry.ts",
+      "source_sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "material_effect_kinds": [
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/developerMigrationEngine/entry.ts",
+      "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+      "raw_create_sites": 3,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-MIGRATE-DEVELOPER-GITHUB",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "migrate_go_live",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/developerSignalWorker/entry.ts",
+      "source_sha256": "483c780e4e99d3552c583dbee86f473fe905a3cf334240998159a4e42efbc183",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/discoveryTechStackAgent/entry.ts",
+      "source_sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/eclLifecycleScheduler/entry.ts",
+      "source_sha256": "645c81bddfb164a44bb531a187c5a26d52f0a49e3caef9d4bf4ef42eb795a422",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "source_sha256": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/engineeringReportAgent/entry.ts",
+      "source_sha256": "57c8a52b62d0e6f9fa3f42a4c358b7e95e9c2415bba32a05d20dc081bc255d0a",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/fixValidatorAgent/entry.ts",
+      "source_sha256": "efad3655d03b3415ee57bcf3ac67235ab778cf6002fae2d7a39bd9a62dbe862d",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/followUpAgent/entry.ts",
+      "source_sha256": "bb6f63802a65272f0d8c23980cd5d3229bbe830718961fdaa9a0b537944c91f9",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/founderCopilotAgent/entry.ts",
+      "source_sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/founderMeetingAdmin/entry.ts",
+      "source_sha256": "0726d27df3c53b8f322dbb3d533f3414a1d2eaad3db5629f27c9b63d180bf9c7",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/gdprAgent/entry.ts",
+      "source_sha256": "5cebcb4bc88ce2bc16df7710b3e768aad03d53e4c5cf35227e211a54947365c7",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/investorUpdateAgent/entry.ts",
+      "source_sha256": "1432aa3653cf1cc7b59e536b34f64ddfb6398683be7fe7d98ea9d29b2f7e8703",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/leadDiscoveryAgent/entry.ts",
+      "source_sha256": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
+      "raw_create_sites": 2,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/leadEnrichmentAgent/entry.ts",
+      "source_sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/leadOrchestrator/entry.ts",
+      "source_sha256": "a8646da02666c58c592b4bec0713572aa7feefdf7a2f4d08ddd7eee0131c508f",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 1,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/leadScoringAgent/entry.ts",
+      "source_sha256": "de3b6a69c4e36c9f5ea1aafab8fb2c789d174dff4c658f0d215eb5b230b1ba11",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/legalReviewAgent/entry.ts",
+      "source_sha256": "95f8ed79cd66188d1ce6187ec48a4128f114f97acfc1dec038ddbb8338a031d3",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/linkedinAgent/entry.ts",
+      "source_sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/marketingOrchestrator/entry.ts",
+      "source_sha256": "208a67cca912cdcd624af6512888c153504f81a490d5f459549def66c89a4ae8",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 1,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/meetingAgent/entry.ts",
+      "source_sha256": "ac2780b34c5490b4c5be49b7acbd6075e62faa603702c8e4a3528a0520ac0958",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-SCHEDULE-MEETING"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/newsletterAgent/entry.ts",
+      "source_sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/outlookMeetingCoordinator/entry.ts",
+      "source_sha256": "5776f2baa029e125dd1955b17f152da760fb4d885574e10777cd916e8fd08b53",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-SCHEDULE-MEETING"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/outreachAgent/entry.ts",
+      "source_sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/outreachOrchestrator/entry.ts",
+      "source_sha256": "3546c4f39dedfb301a782c73b4ba185acf02a0737a4df7c7677eb8a100ed1aac",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/postMeetingWorker/entry.ts",
+      "source_sha256": "de56c0507bcd1752c4723c0515b4719f86a93c6dfd8dee7662cc846cc7882719",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "source_sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 2,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_ROOT_ONLY",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-SCHEDULER-BASE",
+        "MB-WEBHOOK-DLQ-RETRY"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/providerMonetizationAgent/entry.ts",
+      "source_sha256": "40245b0c322cdbb65744c7c480221f1fda1b0e175ffac20c9cd4add6d867905f",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/providerMonitorAgent/entry.ts",
+      "source_sha256": "6dce0368f6a81ea2fbda1fa3939a43f6f2c5d30aaf3ee68c0372b9e3db3a25e8",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/providerNegotiationAgent/entry.ts",
+      "source_sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "negotiate",
+        "paid_spend",
+        "provider_effect",
+        "send",
+        "terms"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/providerResearchAgent/entry.ts",
+      "source_sha256": "89500d2cbc4d7937a93dac1be881f7a667d23c5df62c3d2e14ea4fa684f97fc3",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/qaAgent/entry.ts",
+      "source_sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/qaMonitorAgent/entry.ts",
+      "source_sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/rateIntelligenceWatchWorker/entry.ts",
+      "source_sha256": "2458124b88b2a09415c557ea9a8cb727c47b8069d814cc92802878c498247781",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/recommendationEngineAgent/entry.ts",
+      "source_sha256": "3a9ee071c11a9b539568a8e28138e410fddcbe736e8842c1231b80bf596b9cdf",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+      "source_sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 2,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_ROOT_ONLY",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-BILL-RECOVER-STRIPE",
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/recoverAutopilotWorker/entry.ts",
+      "source_sha256": "5882931b6301979f9c4e91e24e4e9b72a9a9d7b8f07e1e403ed2fff05c9bd2f6",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 2,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_ROOT_ONLY",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-SCHEDULER-BASE"
+      ],
+      "material_effect_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/researchOrchestrator/entry.ts",
+      "source_sha256": "2da261d4b3cfe79de62065f725d414f446d186e043730fed1584e9721ba30dd6",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
+      "canonical_child_link_sites": 1,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 2,
+      "canonical_event_create_sites": 0,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/revenueGoldenPathSelfTest/entry.ts",
+      "source_sha256": "b9c17732a3c55a8fa828e4f516d0a6a97ad128d2732f9885ebbc5c072eac7951",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/reviewProviderContract/entry.ts",
+      "source_sha256": "b9d2696fe4bf61fa7d62a40b41ef7f5bb84ee81ba116519cc86c736c1f72f9b1",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/securityAgent/entry.ts",
+      "source_sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/seoAgent/entry.ts",
+      "source_sha256": "c48bfd72f3eb4fbe4edda74c342b4b9a33b037608e76ef7034badb634e90f4af",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/spendIntelligenceAgent/entry.ts",
+      "source_sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/verifyRegistrySync/entry.ts",
+      "source_sha256": "e0d56ac0bd790b1e59a286009a3243fcf87e5ce96980deed91539c75da6034c2",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 1,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "LEGACY_NOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    },
+    {
+      "path": "base44/functions/xTwitterAgent/entry.ts",
+      "source_sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb",
+      "raw_create_sites": 1,
+      "canonical_root_create_sites": 0,
+      "canonical_child_link_sites": 0,
+      "canonical_terminal_sites": 0,
+      "raw_event_create_sites": 0,
+      "canonical_event_create_sites": 0,
+      "status": "NOT_ADAPTED",
+      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "classification": "MATERIAL_BOUNDARY_CREATOR",
+      "material_boundary_ids": [
+        "MB-PAID-AI",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PUBLISH-SOCIAL-APPROVED"
+      ],
+      "material_effect_kinds": [
+        "paid_spend",
+        "provider_effect",
+        "send"
+      ],
+      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
+      "runtime_verified": false
+    }
+  ]
+}

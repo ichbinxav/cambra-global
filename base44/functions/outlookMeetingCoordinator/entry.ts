@@ -2,9 +2,10 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { normalizeEmail, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
-import { assertOperationAllowed } from '../../shared/operationalControl.ts';
+import { assertEmergencyEpochUnchanged, captureEmergencyEpoch, containCommunicationTransport, guardedEmergencyEffect } from '../../shared/operationalControl.ts';
 import { buildFounderMeetingBrief, founderMeetingCapacityDecision, normalizeFounderMeetingPolicy } from '../../shared/founderMeeting.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { assertExternalApprovalExecutionActive, beginExternalApprovalEffects } from '../../shared/externalApprovalExecution.ts';
 
 const SLOT_MS_MINIMUM = 15 * 60 * 1000;
 const roundUp = (ms:number, slotMs:number) => Math.ceil(ms / slotMs) * slotMs;
@@ -31,19 +32,22 @@ async function activePolicy(svc:any) {
 }
 
 async function graphConnection(svc:any) {
-  const connection = await svc.connectors.getConnection('outlook').catch(() => ({ accessToken:null }));
+  const connection = await svc.connectors.getConnection('outlook').catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator.outlook_connection_read',fallback:{accessToken:null},severity:'critical'}));
   return connection?.accessToken || null;
 }
 
 Deno.serve(async (req) => {
   let task:any = null;
+  let externallyManaged = false;
   try {
     const base44 = createClientFromRequest(req);
     const originalBody = await req.json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, originalBody);
-    if (!gate.ok) return gate.response;
+    if (!gate.ok) return gate.response || Response.json({ ok:false, error:'forbidden' }, { status:403 });
     const svc = base44.asServiceRole;
-    await assertOperationAllowed(svc, 'communications');
+    let emergencyEpoch:any;
+    try { emergencyEpoch=await captureEmergencyEpoch(svc,'communications'); }
+    catch(error:any){return Response.json({ok:false,error:error?.message||'emergency_control_paused:communications'},{status:409});}
 
     let body:any = originalBody;
     let approvedByFounder = false;
@@ -51,9 +55,15 @@ Deno.serve(async (req) => {
     if (body.mode === 'execute') {
       approval = await svc.entities.Approval.get(String(body.approval_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
       if (!approval || approval.action_type !== 'schedule_founder_meeting' || approval.status !== 'approved') return Response.json({ ok:false, error:'approved_founder_meeting_required' }, { status:403 });
-      body = { ...(approval.draft_payload_json || {}), mode:'execute', approval_id:approval.id, selected_slot:body.selected_slot || approval.draft_payload_json?.selected_slot };
+      externallyManaged = originalBody.external_execution_managed === true;
+      if (!externallyManaged) return Response.json({ok:false,error:'canonical_meeting_execution_gateway_required'},{status:409});
+      body = { ...(approval.draft_payload_json || {}), mode:'execute', approval_id:approval.id, selected_slot:body.selected_slot || approval.draft_payload_json?.selected_slot, external_execution_managed:externallyManaged, execution_command_key:originalBody.execution_command_key, execution_attempt_token:originalBody.execution_attempt_token, execution_revision:originalBody.execution_revision };
       approvedByFounder = true;
       task = approval.agent_task_id ? await svc.entities.AgentTask.get(approval.agent_task_id).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'})) : null;
+      if (externallyManaged) {
+        if (!task || String(body.execution_command_key || '') !== String(approval.resolution_command_key || '')) return Response.json({ok:false,error:'external_meeting_execution_binding_mismatch'},{status:409});
+        if (task.status !== 'running' || task.execution_phase !== 'claimed' || String(task.execution_attempt_token || '') !== String(body.execution_attempt_token || '') || Number(task.execution_revision) !== Number(body.execution_revision)) return Response.json({ok:false,error:'external_meeting_execution_fence_lost'},{status:409});
+      }
     }
 
     const thread = await svc.entities.CommunicationThread.get(String(body.thread_id || '')).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
@@ -63,7 +73,7 @@ Deno.serve(async (req) => {
       if (!thread.meeting_event_id) return Response.json({ ok:true, cancelled:false, reason:'meeting_not_booked' });
       const token = await graphConnection(svc);
       if (!token) return Response.json({ ok:false, error:'outlook_connector_required', setup_required:true }, { status:409 });
-      const response = await fetch(`https://graph.microsoft.com/v1.0/me/events/${encodeURIComponent(thread.meeting_event_id)}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } });
+      const response = await guardedEmergencyEffect(svc,{claim:emergencyEpoch,effect_key:`outlook_meeting_cancel:${thread.meeting_event_id}`,effect:()=>fetch(`https://graph.microsoft.com/v1.0/me/events/${encodeURIComponent(thread.meeting_event_id)}`, { method:'DELETE', headers:{ Authorization:`Bearer ${token}` } })});
       if (!response.ok && response.status !== 404) return Response.json({ ok:false, error:`outlook_event_cancel_failed:${response.status}` }, { status:502 });
       const now = new Date().toISOString();
       await svc.entities.CommunicationThread.update(thread.id, { meeting_status:'cancelled', conversation_state:'AI_RESUMED', automation_paused:false, pause_reason:null, post_meeting_status:'not_applicable' });
@@ -71,7 +81,10 @@ Deno.serve(async (req) => {
       return Response.json({ ok:true, cancelled:true, thread_id:thread.id });
     }
 
-    if (thread.meeting_event_id && thread.meeting_status === 'booked') return Response.json({ ok:true, already_booked:true, event_id:thread.meeting_event_id, start:thread.meeting_start_at, end:thread.meeting_end_at });
+    if (thread.meeting_event_id && thread.meeting_status === 'booked') {
+      if (externallyManaged) await beginExternalApprovalEffects(svc,{acquired:true,task,approval,commandKey:String(body.execution_command_key||''),token:String(body.execution_attempt_token||''),revision:Number(body.execution_revision),effectsStarted:false});
+      return Response.json({ ok:true, already_booked:true, event_id:thread.meeting_event_id, start:thread.meeting_start_at, end:thread.meeting_end_at });
+    }
     const attendee = normalizeEmail(body.attendee_email || thread.counterparty_email);
     if (!attendee) return Response.json({ ok:false, error:'attendee_email_required' }, { status:400 });
 
@@ -85,11 +98,11 @@ Deno.serve(async (req) => {
     if (!capacity.allowed) return Response.json({ ok:false, error:'founder_meeting_capacity_reached', blockers:capacity.blockers, capacity }, { status:409 });
 
     if (!task) task = await svc.entities.AgentTask.create({ brand_id:thread.related_entity_type === 'Brand' ? thread.related_entity_id : '_platform', agent_name:'founder_meeting', task_type:'schedule_founder_meeting', related_entity_type:'CommunicationThread', related_entity_id:thread.id, status:'running', requires_approval:!approvedByFounder, risk_level:3, input_summary:`Schedule founder meeting with ${attendee}`, started_at:new Date().toISOString() });
-    else await svc.entities.AgentTask.update(task.id, { status:'running' });
+    else if (!externallyManaged) await svc.entities.AgentTask.update(task.id, { status:'running' });
 
     const token = await graphConnection(svc);
     if (!token) {
-      await svc.entities.AgentTask.update(task.id, { status:'waiting_input', output_summary:'Outlook founder calendar connection unavailable', output_payload_json:{ blocker:'outlook_connector_required' }, completed_at:new Date().toISOString() });
+      if (!externallyManaged) await svc.entities.AgentTask.update(task.id, { status:'waiting_input', output_summary:'Outlook founder calendar connection unavailable', output_payload_json:{ blocker:'outlook_connector_required' }, completed_at:new Date().toISOString() });
       return Response.json({ ok:false, error:'outlook_connector_required', setup_required:true, task_id:task.id }, { status:409 });
     }
 
@@ -112,7 +125,7 @@ Deno.serve(async (req) => {
       slots.push(date.toISOString());
     }
     if (!slots.length) {
-      await svc.entities.AgentTask.update(task.id, { status:'waiting_input', output_summary:'No real founder calendar slot available inside policy', output_payload_json:{ blocker:'no_calendar_slot', policy_version:policy.version }, completed_at:new Date().toISOString() });
+      if (!externallyManaged) await svc.entities.AgentTask.update(task.id, { status:'waiting_input', output_summary:'No real founder calendar slot available inside policy', output_payload_json:{ blocker:'no_calendar_slot', policy_version:policy.version }, completed_at:new Date().toISOString() });
       return Response.json({ ok:false, error:'no_calendar_slot', task_id:task.id }, { status:409 });
     }
 
@@ -124,20 +137,50 @@ Deno.serve(async (req) => {
     const brief = buildFounderMeetingBrief(thread, body.context || {});
     const transactionId = `cambra-founder-${thread.id}-${start.toISOString().slice(0,16)}`.replace(/[^a-zA-Z0-9-]/g,'').slice(0,120);
     const subject = sanitizeExternalText(body.subject || 'CAMBRA — Conversation with Xavi', 160);
-    const eventResponse = await fetch('https://graph.microsoft.com/v1.0/me/events', { method:'POST', headers:{ Authorization:`Bearer ${token}`,'Content-Type':'application/json' }, body:JSON.stringify({ subject, body:{ contentType:'text', content:'Conversation with Xavi, Founder & CEO of CAMBRA. Commercial and confidential details remain in CAMBRA.' }, start:{ dateTime:start.toISOString(),timeZone:'UTC' }, end:{ dateTime:end.toISOString(),timeZone:'UTC' }, attendees:[{ emailAddress:{ address:attendee,name:sanitizeExternalText(thread.counterparty_name || attendee,120) },type:'required' }], allowNewTimeProposals:true, transactionId }) });
-    const event = await eventResponse.json().catch(() => ({}));
-    if (!eventResponse.ok) throw new Error(`outlook_event_create_failed:${eventResponse.status}`);
+    await assertEmergencyEpochUnchanged(svc,emergencyEpoch,'before_founder_meeting_effect');
+    if (externallyManaged) {
+      await beginExternalApprovalEffects(svc,{acquired:true,task,approval,commandKey:String(body.execution_command_key||''),token:String(body.execution_attempt_token||''),revision:Number(body.execution_revision),effectsStarted:false});
+      task = await svc.entities.AgentTask.get(task.id);
+      await assertExternalApprovalExecutionActive(svc,{task,commandKey:String(body.execution_command_key||''),token:String(body.execution_attempt_token||''),revision:Number(body.execution_revision)});
+    }
+    const containCreatedMeeting=async(created:any)=>{
+      const remote=created?.id?await fetch(`https://graph.microsoft.com/v1.0/me/events/${encodeURIComponent(String(created.id))}`,{method:'DELETE',headers:{Authorization:`Bearer ${token}`}}).then((response)=>({ok:response.ok||response.status===404,status:response.status})).catch((error:any)=>({ok:false,error:String(error?.message||error).slice(0,160)})):{ok:false,error:'outlook_event_id_missing'};
+      const local=await containCommunicationTransport(svc,'outlook','emergency_epoch_changed_during_meeting_create').catch((error:any)=>({ok:false,error:String(error?.message||error).slice(0,160)}));
+      return{ok:remote.ok&&local.ok,remote,local};
+    };
+    const event = await guardedEmergencyEffect(svc,{
+      claim:emergencyEpoch,
+      effect_key:`outlook_meeting_create:${transactionId}`,
+      effect:async()=>{
+        const response=await fetch('https://graph.microsoft.com/v1.0/me/events', { method:'POST', headers:{ Authorization:`Bearer ${token}`,'Content-Type':'application/json' }, body:JSON.stringify({ subject, body:{ contentType:'text', content:'Conversation with Xavi, Founder & CEO of CAMBRA. Commercial and confidential details remain in CAMBRA.' }, start:{ dateTime:start.toISOString(),timeZone:'UTC' }, end:{ dateTime:end.toISOString(),timeZone:'UTC' }, attendees:[{ emailAddress:{ address:attendee,name:sanitizeExternalText(thread.counterparty_name || attendee,120) },type:'required' }], allowNewTimeProposals:true, transactionId }) });
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(`outlook_event_create_failed:${response.status}`);
+        return data;
+      },
+      contain:containCreatedMeeting,
+    });
 
+    try { await assertEmergencyEpochUnchanged(svc,emergencyEpoch,'before_founder_meeting_commit'); }
+    catch(error:any){
+      const containment=await containCreatedMeeting(event);
+      throw Object.assign(new Error('emergency_control_changed_during_external_effect'),{code:'EMERGENCY_EFFECT_AMBIGUOUS',status:409,cause:error,containment,review_required:true});
+    }
     const now = new Date().toISOString();
     await svc.entities.CommunicationThread.update(thread.id, { status:'awaiting_cambra', conversation_state:'MEETING_BOOKED', automation_paused:true, pause_reason:'founder_meeting_booked', next_action_at:null, meeting_event_id:event.id || '', meeting_start_at:start.toISOString(), meeting_end_at:end.toISOString(), meeting_status:'booked', meeting_type:meetingType, meeting_mode:policy.mode, meeting_classification:['PROVIDER_NEGOTIATION_CALL','PARTNERSHIP_CALL','STRATEGIC_RELATIONSHIP_CALL','LEGAL_COMMERCIAL_CALL'].includes(meetingType)?'strategic':'commercial', founder_required:true, founder_meeting_policy_version:policy.version, founder_meeting_policy_snapshot_json:{ mode:policy.mode, daily_cap:policy.daily_meeting_cap, weekly_cap:policy.weekly_meeting_cap, minimum_notice_hours:policy.minimum_notice_hours }, meeting_brief_json:brief, post_meeting_status:'pending', summary:`Founder meeting booked ${start.toISOString()} · ${attendee}` });
     if (thread.engine === 'merchant_acquisition' && thread.lead_id) await svc.entities.OutboundLead.update(thread.lead_id, { stage:'meeting', next_action:`Founder meeting booked ${start.toISOString()}` }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
     if (thread.engine === 'partner_acquisition' && thread.related_entity_id) await svc.entities.PartnerProspect.update(thread.related_entity_id, { stage:'meeting', next_action_at:null }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
     await svc.entities.OperationalLog.create({ event_type:'FOUNDER_MEETING_BOOKED', message:`Founder meeting with ${attendee}`, data_json:{ thread_id:thread.id, event_id:event.id || null, start:start.toISOString(), end:end.toISOString(), organizer, attendee, meeting_type:meetingType, policy_version:policy.version, approved_by_founder:approvedByFounder }, created_at:now }).catch((error:any)=>safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'}));
-    await svc.entities.AgentTask.update(task.id, { status:'completed', output_summary:`Founder meeting booked ${start.toISOString()} with ${attendee}`, output_payload_json:{ event_id:event.id || null,start:start.toISOString(),end:end.toISOString(),organizer,attendee,meeting_type:meetingType,policy_version:policy.version }, completed_at:now });
+    try { await assertEmergencyEpochUnchanged(svc,emergencyEpoch,'after_founder_meeting_commit'); }
+    catch(error:any){
+      const containment=await containCreatedMeeting(event);
+      await svc.entities.CommunicationThread.update(thread.id,{meeting_status:'cancelled',conversation_state:'AI_PAUSED',automation_paused:true,pause_reason:'emergency_epoch_changed_during_meeting_create'}).catch((containmentError:any)=>safeBestEffort(containmentError,{operation:'outlookMeetingCoordinator.mark_ambiguous_meeting_contained',fallback:null,severity:'critical'}));
+      throw Object.assign(new Error('emergency_control_changed_during_external_effect'),{code:'EMERGENCY_EFFECT_AMBIGUOUS',status:409,cause:error,containment,review_required:true});
+    }
+    if (!externallyManaged) await svc.entities.AgentTask.update(task.id, { status:'completed', output_summary:`Founder meeting booked ${start.toISOString()} with ${attendee}`, output_payload_json:{ event_id:event.id || null,start:start.toISOString(),end:end.toISOString(),organizer,attendee,meeting_type:meetingType,policy_version:policy.version }, completed_at:now });
     return Response.json({ ok:true, task_id:task.id, event_id:event.id || null, start:start.toISOString(), end:end.toISOString(), organizer, attendee, meeting_type:meetingType, meeting_brief:brief, policy_version:policy.version });
   } catch (error) {
     console.error('outlookMeetingCoordinator failed', error);
-    if (task?.id) {
+    if (task?.id && !externallyManaged) {
       try { const base44=createClientFromRequest(req); await base44.asServiceRole.entities.AgentTask.update(task.id, { status:'failed', error:'outlook_meeting_failed', completed_at:new Date().toISOString() }); } catch(error){safeBestEffort(error,{operation:'outlookMeetingCoordinator',fallback:null,severity:'secondary'})}
     }
     return internalErrorResponse(error, 'outlookMeetingCoordinator');

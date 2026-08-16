@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
     if (!u) return Response.json({ ok:false, error:'Unauthorized' }, { status:401 });
     if (u.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const s = b.asServiceRole;
-    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation, production, alertDeliveries, schedulerRuns] = await Promise.all([
+    const [runs, incidents, integrations, tasks, pricing, knowledge, security, documentation, production, alertDeliveries, schedulerRuns, disasterRecoveryExercises, disasterRecoveryEvents] = await Promise.all([
       s.entities.MaintenanceRun.list('-started_at', 50),
       s.entities.AutonomyIncident.filter({ status:'open' }, '-last_seen_at', 500),
       s.entities.Integration.list('-last_sync_at', 2000),
@@ -21,6 +21,8 @@ Deno.serve(async (req) => {
       s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.IncidentAlertDelivery.list('-updated_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.SchedulerRun.list('-started_at', 5000).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
+      s.entities.DisasterRecoveryExercise.list('-completed_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
+      s.entities.OperationalLog.filter({ event_type:{ $in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested'] } }, '-created_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
     ]);
     const last = runs[0] || null;
     const doc = documentation[0] || null;
@@ -58,6 +60,16 @@ Deno.serve(async (req) => {
         calculated_at:doc.calculated_at || null,
       } : null,
       production_readiness: production[0] || null,
+      disaster_recovery:{
+        latest_backup_event:disasterRecoveryEvents.find((row:any)=>row.event_type==='disaster_recovery_backup_completed') || null,
+        latest_failure_event:disasterRecoveryEvents.find((row:any)=>row.event_type==='disaster_recovery_backup_failed') || null,
+        latest_real_restore:disasterRecoveryExercises.find((row:any)=>row.exercise_type==='REAL_RESTORE') || null,
+        exercises:disasterRecoveryExercises,
+        events:disasterRecoveryEvents,
+        rpo_target_minutes:1440,
+        rto_target_minutes:480,
+        independent_storage:'globalcambra.sharepoint.com / CAMBRA INFRASTRUCTURE / Production Backups',
+      },
       scheduler_health:schedulerHealth,
       metrics:{
         active_issues:incidents.length,
@@ -76,8 +88,14 @@ Deno.serve(async (req) => {
         documentation_critical_drift:Number(doc?.critical_drift_count || 0),
         production_sealed:production[0]?.sealed === true,
         production_external_blockers:(production[0]?.external_blockers || []).length,
+        disaster_recovery_pass:disasterRecoveryExercises.some((row:any)=>row.exercise_type==='REAL_RESTORE'&&row.status==='PASS'),
         critical_alerts_delivered:alertDeliveries.filter((x:any)=>x.status==='DELIVERED').length,
-        critical_alerts_pending:alertDeliveries.filter((x:any)=>['PENDING','RETRY_PENDING','CONFIGURATION_REQUIRED','FAILED'].includes(x.status)).length,
+        critical_alerts_accepted:alertDeliveries.filter((x:any)=>x.status==='ACCEPTED').length,
+        critical_alerts_observed:alertDeliveries.filter((x:any)=>['OBSERVED','DELIVERED'].includes(x.status)).length,
+        critical_alerts_review_required:alertDeliveries.filter((x:any)=>['REVIEW_REQUIRED','FAILED'].includes(x.status)).length,
+        critical_alerts_blocked:alertDeliveries.filter((x:any)=>['BLOCKED','CONFIGURATION_REQUIRED'].includes(x.status)).length,
+        critical_alerts_pending:alertDeliveries.filter((x:any)=>['CLAIMED','EFFECTING','PENDING','RETRY_PENDING'].includes(x.status)).length,
+        critical_alert_batches:alertDeliveries.filter((x:any)=>Array.isArray(x.incident_ids)&&x.incident_ids.length>0).length,
       },
       last_run:last,
       runs:runs.slice(0,20),
@@ -92,7 +110,7 @@ Deno.serve(async (req) => {
         financial_integrity:'authoritative Invoice/ProviderRevenue ledgers and reconciliation workers remain source of truth',
         security:'signals are escalated; P17 never autonomously weakens auth, permissions or security controls',
         developer:'technical incidents may create investigation tasks; code application/cutover remains DeveloperMigrationEngine approval-gated',
-        incident_alerting:'AutonomyIncident is the sole incident source of truth; IncidentAlertDelivery is only a deduplicated transport/retry ledger for HIGH/CRITICAL pushes.',
+        incident_alerting:'AutonomyIncident is the sole incident source of truth; IncidentAlertDelivery is only the aggregated transport/linkage ledger. ACCEPTED is not DELIVERED; OBSERVED requires a provider receipt or reconciliation.',
       },
     });
   } catch (e) {

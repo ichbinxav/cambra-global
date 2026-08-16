@@ -125,9 +125,9 @@ describe("human commercial communication and Founder meeting policy", () => {
     }
     const central = read("base44/functions/commercialSendMessage/entry.ts");
     expect(central).toContain("admin_or_approved_internal_manual_override_required");
-    expect(central).toContain("approvedOverride?.status!=='approved'");
-    expect(central).toContain("approvalBoundToThread(approvedOverride,thread)");
-    expect(central).toContain("manual_override_approval_id:approvedOverride?.id||null");
+    expect(central).toMatch(/approvedOverride\?\.status\s*!==\s*["']approved["']/);
+    expect(central).toContain("approvalBoundToThread(approvedOverride, thread)");
+    expect(central).toMatch(/manual_override_approval_id:\s*approvedOverride\?\.id\s*\|\|\s*null/);
     expect(central).toContain("approved_send_profile_required");
   });
 
@@ -166,7 +166,9 @@ describe("human commercial communication and Founder meeting policy", () => {
     ];
     for (const worker of critical) {
       expect(read(`base44/functions/${worker}/entry.ts`)).toContain("claimSchedulerRun");
-      expect(read("base44/shared/schedulerRun.ts")).toContain(`worker_key:'${worker}'`);
+      expect(read("base44/shared/schedulerRun.ts")).toMatch(
+        new RegExp(`worker_key\\s*:\\s*["']${worker}["']`),
+      );
     }
     const goLive = read("base44/functions/goLiveControlAdmin/entry.ts");
     expect(goLive).toContain("nativeScheduledWorkerKeys");

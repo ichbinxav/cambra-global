@@ -20,6 +20,8 @@ export type CambraLegalIdentity = {
   legal_name: string;
   legal_form: string;
   registered_address: string;
+  domiciliation_details: string;
+  country: string;
   registration_number: string;
   siren: string;
   siret: string;
@@ -38,6 +40,8 @@ export const CAMBRA_PUBLIC_LEGAL_IDENTITY = Object.freeze({
   legal_name: 'CAMBRA Global SASU',
   legal_form: 'Société par actions simplifiée (SAS)',
   registered_address: '47 rue Vivienne, Chez Vivienne Domiciliation, 75002 Paris, France',
+  domiciliation_details: 'Chez Vivienne Domiciliation',
+  country: 'France',
   registration_number: 'SIREN 105 452 916',
   siren: '105452916',
   siret: '10545291600015',

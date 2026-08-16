@@ -130,7 +130,7 @@ export function canExecuteAction(input:any){
   }
 
   const approvalRequired=policy.approval==='REQUIRED'||(policy.approval==='POLICY'&&input.legal_policy?.merchant_approval_required!==false);
-  if(approvalRequired){const a=approvalSatisfied(input);if(!a.ok)return decision(a.reason==='MERCHANT_APPROVAL_REQUIRED'?'MERCHANT_APPROVAL_REQUIRED':'BLOCK',[a.reason],input,{authority_source:authoritySource});}
+  if(approvalRequired){const a=approvalSatisfied(input);if(!a.ok){const reason=a.reason||'APPROVAL_NOT_SATISFIED';return decision(reason==='MERCHANT_APPROVAL_REQUIRED'?'MERCHANT_APPROVAL_REQUIRED':'BLOCK',[reason],input,{authority_source:authoritySource});}}
   const required=String(input.legal_policy?.signature_requirement||policy.minimum_signature).toUpperCase();
   if(!signatureSatisfied(required,input.signature_state,String(input.legal_policy?.signer_capacity_requirement||'VERIFIED').toUpperCase()))return decision(required==='POLICY_DEFINED'?'LEGAL_REVIEW_REQUIRED':'BLOCK',['SIGNATURE_REQUIREMENT_NOT_MET'],input,{authority_source:authoritySource});
   if(policy.high_assurance&&input.approval?.assurance_level!=='HIGH_ASSURANCE')return decision('BLOCK',['HIGH_ASSURANCE_REQUIRED'],input);

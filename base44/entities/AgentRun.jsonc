@@ -1,6 +1,7 @@
 {
   "name": "AgentRun",
   "type": "object",
+  "description": "DEPRECATED read-only compatibility history. AgentTask is the sole canonical durable work lifecycle; new code MUST NOT create or update AgentRun.",
   "properties": {
     "brand_id": {
       "type": "string"
@@ -132,7 +133,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

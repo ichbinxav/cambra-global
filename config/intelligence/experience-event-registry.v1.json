@@ -1,0 +1,356 @@
+{
+  "schema_version": "experience-event-registry.v1",
+  "status": "CONTRACT_IMPLEMENTED_RUNTIME_UNVERIFIED",
+  "event_contract": {
+    "required": [
+      "event_type",
+      "event_version",
+      "owner_domain",
+      "source_of_truth",
+      "runtime_state"
+    ],
+    "runtime_state_enum": [
+      "CONTRACT_ONLY",
+      "ADAPTER_PARTIAL",
+      "RUNTIME_VERIFIED",
+      "DEPRECATED"
+    ]
+  },
+  "events": [
+    {
+      "event_type": "discovery.plan.accepted",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "discovery.stage.started",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "discovery.stage.completed",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "discovery.stage.failed",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "discovery.result.attributed",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "discovery.result.scored",
+      "event_version": 1,
+      "owner_domain": "Discovery",
+      "source_of_truth": "DiscoveryExecutionRun",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "candidate.score_calculated",
+      "event_version": 1,
+      "owner_domain": "Adaptive Lead",
+      "source_of_truth": "OutboundLead",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "candidate.outreach_worthiness_decided",
+      "event_version": 1,
+      "owner_domain": "Adaptive Lead",
+      "source_of_truth": "OutboundLead",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "candidate.stopped",
+      "event_version": 1,
+      "owner_domain": "Adaptive Lead",
+      "source_of_truth": "OutboundLead",
+      "runtime_state": "ADAPTER_PARTIAL"
+    },
+    {
+      "event_type": "commercial.message.received",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.classified",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.drafted",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.sent",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.delivered",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.bounced",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.message.replied",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.objection.observed",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "commercial.next_action.selected",
+      "event_version": 1,
+      "owner_domain": "Commercial",
+      "source_of_truth": "AgentTask",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.offer.observed",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "NegotiationOffer",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.tactic.proposed",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "NegotiationCase",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.counteroffer.sent",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "CommunicationMessage",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.concession.observed",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "NegotiationOffer",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.terms.approved",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "Approval",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.terms.signed",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "SignedAgreement",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "negotiation.terms.executed",
+      "event_version": 1,
+      "owner_domain": "Negotiation",
+      "source_of_truth": "NegotiationCase",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "analyzer.analysis.created",
+      "event_version": 1,
+      "owner_domain": "Analyzer",
+      "source_of_truth": "AnalyzerResult",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "analyzer.analysis.verified",
+      "event_version": 1,
+      "owner_domain": "Analyzer",
+      "source_of_truth": "PaymentsAnalysisVerified",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "opportunity.predicted",
+      "event_version": 1,
+      "owner_domain": "Opportunity",
+      "source_of_truth": "Opportunity",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "recommendation.produced",
+      "event_version": 1,
+      "owner_domain": "Decision",
+      "source_of_truth": "IntelligenceSnapshot",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "recommendation.approved",
+      "event_version": 1,
+      "owner_domain": "Decision",
+      "source_of_truth": "Approval",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "recommendation.rejected",
+      "event_version": 1,
+      "owner_domain": "Decision",
+      "source_of_truth": "Approval",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "migration.stage.started",
+      "event_version": 1,
+      "owner_domain": "Migration",
+      "source_of_truth": "MigrationTask",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "migration.stage.completed",
+      "event_version": 1,
+      "owner_domain": "Migration",
+      "source_of_truth": "MigrationTask",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "migration.stage.blocked",
+      "event_version": 1,
+      "owner_domain": "Migration",
+      "source_of_truth": "MigrationTask",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "savings.estimated",
+      "event_version": 1,
+      "owner_domain": "Savings",
+      "source_of_truth": "AnalyzerResult",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "savings.verified",
+      "event_version": 1,
+      "owner_domain": "Savings",
+      "source_of_truth": "MonthlySavingsReport",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "billing.eligible",
+      "event_version": 1,
+      "owner_domain": "Billing",
+      "source_of_truth": "MonthlySavingsReport",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "billing.invoiced",
+      "event_version": 1,
+      "owner_domain": "Billing",
+      "source_of_truth": "BillingRecord",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "billing.paid",
+      "event_version": 1,
+      "owner_domain": "Billing",
+      "source_of_truth": "PaymentEvent",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "billing.disputed",
+      "event_version": 1,
+      "owner_domain": "Billing",
+      "source_of_truth": "PaymentEvent",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "model.prediction.produced",
+      "event_version": 1,
+      "owner_domain": "Model",
+      "source_of_truth": "PredictionRegistry",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "model.evaluation.completed",
+      "event_version": 1,
+      "owner_domain": "Model",
+      "source_of_truth": "EvaluationRegistry",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "model.deployment.changed",
+      "event_version": 1,
+      "owner_domain": "Model",
+      "source_of_truth": "ModelRegistry",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "memory.fact.observed",
+      "event_version": 1,
+      "owner_domain": "Memory",
+      "source_of_truth": "KnowledgeClaim",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "memory.fact.promoted",
+      "event_version": 1,
+      "owner_domain": "Memory",
+      "source_of_truth": "KnowledgeClaim",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "memory.fact.contradicted",
+      "event_version": 1,
+      "owner_domain": "Memory",
+      "source_of_truth": "KnowledgeConflict",
+      "runtime_state": "CONTRACT_ONLY"
+    },
+    {
+      "event_type": "memory.fact.expired",
+      "event_version": 1,
+      "owner_domain": "Memory",
+      "source_of_truth": "KnowledgeClaim",
+      "runtime_state": "CONTRACT_ONLY"
+    }
+  ],
+  "runtime_evidence": [],
+  "blockers": [
+    "EVENT_WRITER_ADAPTERS_NOT_RUNTIME_VERIFIED",
+    "NO_CROSS_DOMAIN_GOLDEN_TRACE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

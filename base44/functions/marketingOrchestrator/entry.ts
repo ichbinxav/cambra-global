@@ -1,11 +1,13 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { attachCanonicalChildTask, createCanonicalAgentTask } from '../../shared/agentTaskEnvelope.ts';
 
 const ORCHESTRATOR_NAME = "marketing_orchestrator";
 const TASK_TYPE = "orchestrate";
+const WORKFLOW_VERSION = "marketing-orchestrator-v1.0.0";
 
-const AGENT_MAP = {
+const AGENT_MAP: Record<string, string> = {
   linkedin:   "linkedinAgent",
   x:          "xTwitterAgent",
   twitter:    "xTwitterAgent",
@@ -18,7 +20,7 @@ const AGENT_MAP = {
 // Cada L2 crea su propio Approval → cadena PARA en cada uno.
 
 Deno.serve(async (req) => {
-  let parent = null;
+  let parent: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -36,7 +38,7 @@ Deno.serve(async (req) => {
     }
     if (chain.length === 0) return Response.json({ ok: false, error: "No valid agents in input" }, { status: 400 });
 
-    parent = await base44.asServiceRole.entities.AgentTask.create({
+    parent = await createCanonicalAgentTask(base44.asServiceRole, req, {
       brand_id: "_platform",
       agent_name: ORCHESTRATOR_NAME,
       task_type: TASK_TYPE,
@@ -46,6 +48,10 @@ Deno.serve(async (req) => {
       input_summary: `Marketing chain over topic "${topic}": ${chain.map(c => c.function).join(" → ")}`,
       output_payload_json: { chain: chain.map(c => c.function), steps: [], topic },
       started_at: new Date().toISOString(),
+    }, {
+      workflowKey:'marketing_content_chain', workflowVersion:WORKFLOW_VERSION, tenantKey:'_platform',
+      processingPurpose:'founder_approved_marketing_content', functionName:'marketingOrchestrator',
+      input:{agents:requested,topic}, sourceRefs:[{type:'platform_scope',id:'_platform'}],
     });
 
     const executed = [];
@@ -64,6 +70,7 @@ Deno.serve(async (req) => {
         const data = res?.data || res || {};
         stepEntry.child_task_id = data.task_id || null;
         stepEntry.approval_id = data.approval_id || null;
+        if (data.task_id) await attachCanonicalChildTask(base44.asServiceRole, data.task_id, parent, {stepKey:step.key,stepIndex:i+1,input:payload,sourceRefs:[{type:'function',id:step.function}]});
         if (data.task_id) {
           const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch((error:any)=>safeBestEffort(error,{operation:'marketingOrchestrator',fallback:null,severity:'secondary'}));
           stepEntry.status = child?.status || (data.ok === false ? "failed" : "completed");
@@ -71,7 +78,7 @@ Deno.serve(async (req) => {
           stepEntry.status = data.ok === false ? "failed" : "completed";
         }
         if (data.ok === false) stepEntry.error = data.error;
-      } catch (e) { stepEntry.status = "failed"; stepEntry.error = e.message; }
+      } catch (e: any) { stepEntry.status = "failed"; stepEntry.error = e.message; }
 
       executed.push(stepEntry);
 
@@ -106,7 +113,7 @@ Deno.serve(async (req) => {
       completed_at: new Date().toISOString(),
     });
     return Response.json({ ok: true, parent_task_id: parent.id, status: "completed", executed });
-  } catch (error) {
+  } catch (error: any) {
     if (parent?.id) {
       try {
         const base44 = createClientFromRequest(req);

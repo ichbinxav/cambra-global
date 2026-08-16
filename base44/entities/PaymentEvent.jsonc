@@ -34,7 +34,12 @@
         "dispute_created",
         "credit_note_created",
         "reconciliation_corrected",
-        "reconciliation_mismatch"
+        "reconciliation_observed",
+        "reconciliation_mismatch",
+        "provider_effect_started",
+        "provider_effect_observed",
+        "provider_effect_failed_pre_effect",
+        "saga_review_required"
       ]
     },
     "processor": {
@@ -78,7 +83,7 @@
     },
     "write": {
       "user_condition": {
-        "role": "admin"
+        "role": "__service_role_only__"
       }
     }
   }

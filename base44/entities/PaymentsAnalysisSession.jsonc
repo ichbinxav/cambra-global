@@ -42,7 +42,60 @@
     },
     "ip_hash": {
       "type": "string",
-      "description": "SHA-256(IP_SALT + client_ip) where IP_SALT is itself SHA-256(BENCHMARK_ANON_SALT + ':ip-hashing') \u2014 a derived salt, not the raw benchmark salt. This decouples the rate-limiting/audit domain from the (irrotable) benchmark pseudonymization domain: rotating one salt does not corrupt the other's history. Client IP is never stored in the clear. Used for rate-limit accounting and (future) abuse forensics only."
+      "description": "Legacy field name. New rows store only the versioned, domain-separated HMAC network fingerprint (rlh:<key-version>:<digest>) produced by rateLimit.ts. It is never a raw IP or an unkeyed SHA digest."
+    },
+    "claim_state": {
+      "type": "string",
+      "enum": [
+        "UNCLAIMED",
+        "CLAIMED",
+        "MATERIALIZING",
+        "RECONCILE_REQUIRED",
+        "COMPLETED"
+      ],
+      "default": "UNCLAIMED",
+      "description": "Durable authority for anonymous-to-authenticated ownership. Once CLAIMED, ownership is never released to a different email; failures remain resumable by the canonical owner."
+    },
+    "claim_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "Monotonic CAS fence for every ownership/materialization transition."
+    },
+    "claim_token": {
+      "type": "string",
+      "description": "Opaque fencing token minted only when the authenticated email atomically claims this session."
+    },
+    "claim_owner": {
+      "type": "string",
+      "description": "Normalized authenticated email that permanently owns this session after the first successful CAS claim."
+    },
+    "claim_acquired_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "claim_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "claim_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "claim_error_code": {
+      "type": "string",
+      "description": "Retryable internal phase error. Never exposed to anonymous claim callers."
+    },
+    "claim_analyzer_result_id": {
+      "type": "string",
+      "description": "Canonical AnalyzerResult created for this claim; immutable once bound."
+    },
+    "claim_brand_id": {
+      "type": "string",
+      "description": "Brand selected or created by the canonical owner during resumable materialization."
+    },
+    "claim_intelligence_snapshot_id": {
+      "type": "string",
+      "description": "Winner-only IntelligenceSnapshot bound after tenant/brand checks."
     }
   },
   "required": [

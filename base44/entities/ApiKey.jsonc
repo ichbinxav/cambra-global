@@ -79,6 +79,13 @@
       "format": "date-time"
     },
     "last_used_ip": {
+      "type": "string",
+      "description": "Legacy deprecated field; no new raw IP writes are permitted."
+    },
+    "last_used_network_fingerprint": {
+      "type": "string"
+    },
+    "network_fingerprint_version": {
       "type": "string"
     },
     "usage_count": {

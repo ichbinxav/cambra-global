@@ -1,0 +1,86 @@
+{
+  "schema_version": "intelligence-scope-precedence.v2",
+  "generated_at": "2026-08-13T00:00:00Z",
+  "global_file_order_forbidden": true,
+  "rule": "Resolve by governed scope and canonical owner; an incompatible conflict remains blocked until an attributable decision exists.",
+  "precedence": [
+    {
+      "rank": 1,
+      "scope": "LAW_RIGHTS_FINANCIAL_TRUTH",
+      "authority": "Applicable law, contracts, data rights and verified financial truth"
+    },
+    {
+      "rank": 2,
+      "scope": "PRIVACY_SECURITY_AUTHORITY_FAIL_CLOSED",
+      "authority": "Most restrictive applicable control"
+    },
+    {
+      "rank": 3,
+      "scope": "CURRENT_RUNTIME_FACT",
+      "authority": "Authenticated runtime evidence proves actuality, never normative conformance by itself"
+    },
+    {
+      "rank": 4,
+      "scope": "CURRENT_SOURCE_FACT",
+      "authority": "Exact inspected source/config/artifact identity"
+    },
+    {
+      "rank": 5,
+      "scope": "ROOT_COMPOSITION",
+      "authority": "ORCH composition, compatibility, ownership and compositional seals only"
+    },
+    {
+      "rank": 6,
+      "scope": "SHARED_INTELLIGENCE_CONTRACTS",
+      "authority": "CIV2"
+    },
+    {
+      "rank": 7,
+      "scope": "PROBABILITY_UNCERTAINTY_VOI_MATH",
+      "authority": "CPIC"
+    },
+    {
+      "rank": 8,
+      "scope": "DISCOVERY_RESEARCH_LEAD_FUNNEL_PROFILE",
+      "authority": "ALIF"
+    }
+  ],
+  "canonical_owners": [
+    {
+      "concept": "Spec composition and compatibility",
+      "owner": "ORCH"
+    },
+    {
+      "concept": "Canonical identity and Universal Experience",
+      "owner": "CIV2"
+    },
+    {
+      "concept": "Evidence, claims, outcomes and learning eligibility",
+      "owner": "CIV2/P12"
+    },
+    {
+      "concept": "Probability, uncertainty and VOI math",
+      "owner": "CPIC"
+    },
+    {
+      "concept": "Source Registry, Router and adaptive lead domain profile",
+      "owner": "ALIF"
+    },
+    {
+      "concept": "Operational truth",
+      "owner": "Existing domain source"
+    },
+    {
+      "concept": "Cost",
+      "owner": "CostBudgetControl/CostUsageEvent"
+    },
+    {
+      "concept": "Authority and approval",
+      "owner": "Shared Authority/Approval plus stricter domain gates"
+    },
+    {
+      "concept": "P4 inference route",
+      "owner": "Existing rateIntelligenceQuery route"
+    }
+  ]
+}

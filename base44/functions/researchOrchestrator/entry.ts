@@ -1,15 +1,17 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { attachCanonicalChildTask, createCanonicalAgentTask } from '../../shared/agentTaskEnvelope.ts';
 
 const ORCHESTRATOR_NAME = "research_orchestrator";
 const TASK_TYPE = "orchestrate";
+const WORKFLOW_VERSION = "research-orchestrator-v1.0.0";
 
 // Encadena: competitorMonitor → providerResearch → providerMonitor (todos L1, sin Approval).
 // Corre entera salvo fallo. Resume todo en un Event para el Copilot.
 
 Deno.serve(async (req) => {
-  let parent = null;
+  let parent: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -21,7 +23,7 @@ Deno.serve(async (req) => {
     const providerCategory = body?.category || "payments";
     const providerCountry = body?.country || "Spain";
 
-    parent = await base44.asServiceRole.entities.AgentTask.create({
+    parent = await createCanonicalAgentTask(base44.asServiceRole, req, {
       brand_id: "_platform",
       agent_name: ORCHESTRATOR_NAME,
       task_type: TASK_TYPE,
@@ -31,6 +33,11 @@ Deno.serve(async (req) => {
       input_summary: `Research chain: competitor monitor → provider research (${providerToResearch}) → provider monitor`,
       output_payload_json: { chain: ["competitorMonitorAgent", "providerResearchAgent", "providerMonitorAgent"], steps: [] },
       started_at: new Date().toISOString(),
+    }, {
+      workflowKey:'market_provider_research_chain', workflowVersion:WORKFLOW_VERSION, tenantKey:'_platform',
+      processingPurpose:'provider_and_market_research', functionName:'researchOrchestrator',
+      input:{provider_name:providerToResearch,category:providerCategory,country:providerCountry,competitors:body?.competitors||null},
+      sourceRefs:[{type:'platform_scope',id:'_platform'}],
     });
 
     const steps = [
@@ -42,11 +49,12 @@ Deno.serve(async (req) => {
     const executed = [];
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      const stepEntry = { step: step.name, child_task_id: null, status: "unknown", error: null, output_summary: null };
+      const stepEntry: any = { step: step.name, child_task_id: null, status: "unknown", error: null, output_summary: null };
       try {
         const res = await base44.functions.invoke(step.name, step.payload);
         const data = res?.data || res || {};
         stepEntry.child_task_id = data.task_id || null;
+        if (data.task_id) await attachCanonicalChildTask(base44.asServiceRole, data.task_id, parent, {stepKey:step.name,stepIndex:i+1,input:step.payload,sourceRefs:[{type:'function',id:step.name}]});
         if (data.task_id) {
           const child = await base44.asServiceRole.entities.AgentTask.get(data.task_id).catch((error:any)=>safeBestEffort(error,{operation:'researchOrchestrator',fallback:null,severity:'secondary'}));
           stepEntry.status = child?.status || (data.ok === false ? "failed" : "completed");
@@ -55,7 +63,7 @@ Deno.serve(async (req) => {
           stepEntry.status = data.ok === false ? "failed" : "completed";
         }
         if (data.ok === false) stepEntry.error = data.error;
-      } catch (e) { stepEntry.status = "failed"; stepEntry.error = e.message; }
+      } catch (e: any) { stepEntry.status = "failed"; stepEntry.error = e.message; }
 
       executed.push(stepEntry);
 
@@ -105,7 +113,7 @@ Deno.serve(async (req) => {
     }).catch((error:any)=>safeBestEffort(error,{operation:'researchOrchestrator',fallback:null,severity:'secondary'}));
 
     return Response.json({ ok: true, parent_task_id: parent.id, status: "completed", executed });
-  } catch (error) {
+  } catch (error: any) {
     if (parent?.id) {
       try {
         const base44 = createClientFromRequest(req);

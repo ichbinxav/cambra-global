@@ -1,0 +1,117 @@
+{
+  "schema_version": "prediction-registry.v1",
+  "registry_state": "CONTRACT_ONLY",
+  "authority": "SINGLE_SHARED_CAMBRA_INTELLIGENCE_REGISTRY",
+  "record_schema": {
+    "required": [
+      "prediction_id",
+      "estimate_contract_version",
+      "problem_id",
+      "problem_version",
+      "model_id",
+      "model_version",
+      "dataset_id",
+      "dataset_version",
+      "tenant_id",
+      "tenant_scope",
+      "subject_ref",
+      "subject_identity",
+      "prediction_time",
+      "time_contract",
+      "feature_snapshot_ref",
+      "feature_snapshot_hash",
+      "output_json",
+      "status_dimensions",
+      "distribution_contract",
+      "support_status",
+      "confidence",
+      "calibration_ref",
+      "reason_codes",
+      "abstained",
+      "policy_version",
+      "trace_id",
+      "cost_usage_event_refs",
+      "created_at",
+      "outcome_ref",
+      "eligibility_state"
+    ],
+    "estimate_contract_version_enum": [
+      "cpic-estimate.v1"
+    ],
+    "value_mode_enum": [
+      "UNKNOWN",
+      "OBSERVED",
+      "EXTRACTED",
+      "DETERMINISTIC_DERIVED",
+      "STATISTICALLY_INFERRED",
+      "PREDICTED",
+      "SIMULATED",
+      "IMPUTED"
+    ],
+    "verification_status_enum": [
+      "NOT_ASSESSED",
+      "UNVERIFIED",
+      "SOURCE_VERIFIED",
+      "CORROBORATED",
+      "VERIFIED",
+      "RECONCILED",
+      "REJECTED"
+    ],
+    "evidence_status_enum": [
+      "NO_EVIDENCE",
+      "PARTIAL",
+      "SUFFICIENT_FOR_ESTIMATION",
+      "SUFFICIENT_FOR_DECISION",
+      "QUARANTINED",
+      "CONTRADICTED",
+      "REVOKED"
+    ],
+    "temporal_status_enum": [
+      "CURRENT",
+      "STALE",
+      "EXPIRED",
+      "FUTURE_NOT_YET_EFFECTIVE",
+      "SUPERSEDED",
+      "UNKNOWN_TIME"
+    ],
+    "support_status_enum": [
+      "IN_DISTRIBUTION",
+      "EDGE_OF_SUPPORT",
+      "LOW_SUPPORT",
+      "OUT_OF_DISTRIBUTION",
+      "UNKNOWN_SUPPORT"
+    ],
+    "support_status_legacy_aliases": {
+      "BORDERLINE": "EDGE_OF_SUPPORT",
+      "EDGE_OF_DISTRIBUTION": "EDGE_OF_SUPPORT",
+      "UNKNOWN": "UNKNOWN_SUPPORT"
+    },
+    "eligibility_state_enum": [
+      "INELIGIBLE",
+      "QUARANTINED",
+      "CLEARED"
+    ],
+    "legacy_field_semantics": {
+      "confidence": "Deprecated ambiguous display value only. It grants no calibration, support, eligibility or authority; V1 consumers use the typed distribution and orthogonal status dimensions.",
+      "support_status": "V1 requires a registered support detector. Heuristic or provider-reported values remain source lineage and canonicalize to UNKNOWN_SUPPORT until resolved."
+    }
+  },
+  "invariants": [
+    "a prediction is not an approval, execution, outcome or label",
+    "model and dataset versions are explicit; latest is forbidden",
+    "feature snapshot is point-in-time and content-hashed",
+    "unsupported or OOD input abstains or uses a registered safe fallback",
+    "later outcomes reference predictions without rewriting the original prediction",
+    "truth, verification, evidence, temporal, support, realization, dispute and causal states remain orthogonal",
+    "caller-provided model, calibration, deployment or support references never establish registry authority"
+  ],
+  "records": [],
+  "runtime_evidence": [],
+  "blockers": [
+    "NO_REGISTERED_MODEL",
+    "NO_PREDICTION_WRITER",
+    "NO_SERVING_RUNTIME",
+    "NO_PREDICTION_TO_OUTCOME_TRACE",
+    "RUNTIME_PARITY_UNVERIFIED"
+  ]
+}

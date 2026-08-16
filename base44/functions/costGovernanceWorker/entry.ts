@@ -2,7 +2,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { activateCostEmergencyStop, COST_CATEGORIES, costRuntimeSnapshot } from '../../shared/costGovernance.ts';
-import { claimSchedulerRun, finishSchedulerRun } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 import { recordRuntimeGateEvidence, runtimeGitSha } from '../../shared/runtimeEvidence.ts';
 
 export async function handleCostGovernanceWorker(req: Request) {
@@ -14,11 +14,14 @@ export async function handleCostGovernanceWorker(req: Request) {
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;
     claim = await claimSchedulerRun(svc, req, { worker_key:'costGovernanceWorker', cadence_seconds:3600 });
-    if (!claim.allowed) return Response.json({ ok:true, duplicate_blocked:true, run_key:claim.run_key });
+    { const denied = schedulerClaimDeniedResponse(claim); if (denied) return denied; }
+    claim = await markSchedulerEffectStarted(svc, claim);
+    { const denied = schedulerClaimDeniedResponse(claim); if (denied) return denied; }
     const snapshot = await costRuntimeSnapshot(svc);
-    const percentages:number[] = [snapshot.utilization.daily_total_pct, snapshot.utilization.monthly_total_pct];
+    const percentages:(number|null)[] = [snapshot.utilization.daily_total_pct, snapshot.utilization.monthly_total_pct];
     for (const category of COST_CATEGORIES) percentages.push(snapshot.utilization.categories[category].daily_pct, snapshot.utilization.categories[category].monthly_pct);
-    const maximumPct = Math.max(0, ...percentages.filter(Number.isFinite));
+    const finitePercentages = percentages.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
+    const maximumPct = Math.max(0, ...finitePercentages);
     const warningPct = Number(snapshot.control?.anomaly_warning_pct || 0);
     const hardStopPct = Number(snapshot.control?.hard_stop_pct || 0);
     const now = new Date().toISOString();
@@ -34,11 +37,11 @@ export async function handleCostGovernanceWorker(req: Request) {
     // The worker proves budget configuration and emits real alerts/stops, but it
     // must not self-certify that alert delivery and the kill-switch work. Only
     // the Founder operator exercise may satisfy COST_ANOMALY_ALERTS.
-    await finishSchedulerRun(svc, claim, { maximum_utilization_pct:maximumPct, budget_version:snapshot.control?.version || null }, true);
+    await finishSchedulerRunOrThrow(svc, claim, { maximum_utilization_pct:maximumPct, budget_version:snapshot.control?.version || null }, true);
     return Response.json({ ok:true, snapshot, maximum_utilization_pct:maximumPct });
   } catch (error) {
     console.error('costGovernanceWorker failed', error);
-    if (svc && claim) await finishSchedulerRun(svc, claim, { error:String((error as Error)?.message || error).slice(0,300) }, false);
+    if (svc && claim) await finishSchedulerRunOrThrow(svc, claim, { error:String((error as Error)?.message || error).slice(0,300) }, false);
     return Response.json({ ok:false, error:'cost_governance_worker_failed' }, { status:500 });
   }
 }

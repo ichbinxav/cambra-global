@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
 
     // Log
     try {
-      await base44.entities.OperationalLog.create({
+      await base44.asServiceRole.entities.OperationalLog.create({
         deal_activation_id: null,
         brand_id: null,
         provider_id: null,

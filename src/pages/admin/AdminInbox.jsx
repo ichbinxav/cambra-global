@@ -62,6 +62,7 @@ export default function AdminInbox() {
     const confirmRes = await base44.functions.invoke("founderOSCommand", {
       action: "resolve_approval", approval_id: approval.id, decision, reason,
       confirmed: true, command_key: preview.command_key,
+      confirmation_nonce: preview.confirmation_nonce,
     });
     const result = confirmRes?.data || confirmRes || {};
     if (result.ok === false) throw new Error(result.error || "Founder approval command failed.");
