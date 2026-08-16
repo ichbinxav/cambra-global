@@ -14,7 +14,7 @@ describe('P9 European localization and productization', () => {
     // I18N-30M (2026-08-15) — deliberately widened from the fixed launch
     // trio: the 30-market rollout adds native product locales in rollout
     // order. The list stays EXACT so an unregistered locale still fails.
-    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE', 'da-DK', 'fi-FI', 'cs-CZ', 'ro-RO', 'hu-HU', 'bg-BG', 'hr-HR', 'et-EE', 'lv-LV', 'lt-LT', 'sk-SK', 'sl-SI', 'nb-NO']);
+    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE', 'da-DK', 'fi-FI', 'cs-CZ', 'ro-RO', 'hu-HU', 'bg-BG', 'hr-HR', 'et-EE', 'lv-LV', 'lt-LT', 'sk-SK', 'sl-SI', 'nb-NO', 'is-IS']);
     for (const market of LOCALE_MARKETS) {
       expect(market.market_code).toMatch(/^[A-Z]{2}$/);
       expect(market.currency).toMatch(/^[A-Z]{3}$/);
@@ -50,10 +50,16 @@ describe('P9 European localization and productization', () => {
     expect(resolveLocale({ market_code: 'SK' })).toMatchObject({ locale: 'sk-SK', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'SI' })).toMatchObject({ locale: 'sl-SI', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'NO' })).toMatchObject({ locale: 'nb-NO', source: 'market_default', fallback_used: false });
-    // The honest-fallback invariant itself is unchanged — it now bites on a
-    // market whose native language is still pending (Iceland until `is` lands).
-    expect(resolveLocale({ market_code: 'IS' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
-    expect(localizationReadiness('IS')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
+    expect(resolveLocale({ market_code: 'IS' })).toMatchObject({ locale: 'is-IS', source: 'market_default', fallback_used: false });
+    // The honest-fallback invariant itself is unchanged. With the 30-market
+    // rollout complete, the ONLY market still resolving to a non-native
+    // fallback is the Netherlands: `nl` was deliberately not built because NL
+    // and BE are protected RESEARCH_ONLY markets (Decision_Log_I18N_30_MERCADOS).
+    // Malta and Ireland are NOT witnesses — English is genuinely native there,
+    // so their resolution is not a fallback at all. If `nl` is ever built, this
+    // assertion must be replaced by a deliberate decision, never deleted.
+    expect(resolveLocale({ market_code: 'NL' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
+    expect(localizationReadiness('NL')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
   });
 
   it('formats non-EUR market money and locale plurals without string concatenation', () => {

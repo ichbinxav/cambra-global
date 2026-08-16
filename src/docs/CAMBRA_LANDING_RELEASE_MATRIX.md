@@ -43,7 +43,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | ES | Spain | EUR | es-ES | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SE | Sweden | SEK | sv-SE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | NO | Norway | NOK | nb-NO | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| IS | Iceland | ISK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| IS | Iceland | ISK | is-IS | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LI | Liechtenstein | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | CH | Switzerland | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GB | United Kingdom | GBP | en-GB | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -75,6 +75,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | sk-SK | sk | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | sl-SI | sl | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | nb-NO | nb | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| is-IS | is | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

@@ -157,6 +157,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "is-IS",
+      "language": "is",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -791,10 +798,11 @@ export const LOCALE_REGISTRY={
         "is-IS"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "is-IS"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "is-IS",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "ISK",
       "timezone": "Atlantic/Reykjavik",

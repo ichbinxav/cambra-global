@@ -3,6 +3,8 @@
 Fecha de arranque: 2026-08-15 · Rama: `agent/i18n-30-markets` ·
 Diccionario: `src/lib/locales/{code}.js` (flat keys, paridad con `en.js`).
 Documento VIVO — se actualiza con cada bloque de idioma committeado.
+**Fase C CERRADA el 2026-08-16:** los 20 idiomas planificados están
+implementados y committeados. Ver "Estado final" al pie.
 
 ## Corrección al brief de partida
 
@@ -34,11 +36,29 @@ las 1.349 reales. Los 2 blancos intencionales (`ri_sub_post`,
 | 16 | lt (lituano) | 4080a76b | LT → NATIVE | ✅ verify verde |
 | 17 | sk (eslovaco) | 69f902c8 | SK → NATIVE | ✅ verify verde |
 | 18 | sl (esloveno) | 33386fbf | SI → NATIVE | ✅ verify verde |
-| 19 | nb (noruego bokmål) | — | NO → NATIVE (nn fuera de alcance) | ✅ verify verde |
-| 20 | is (islandés) | — | IS | ⏳ pendiente |
+| 19 | nb (noruego bokmål) | 7e776ad1 | NO → NATIVE (nn fuera de alcance) | ✅ verify verde |
+| 20 | is (islandés) | — | IS → NATIVE | ✅ verify verde |
 
-Mercados en NATIVE_PRODUCT tras el bloque 19: **FR ES GB AT DE LI IT CH PL
-PT GR CY SE DK FI CZ RO HU BG HR EE LV LT SK SI NO (26 de 30 activos)**.
+## Estado final de la Fase C
+
+**23 product locales registrados** (en, fr, es + los 20 del rollout).
+**27 de 30 mercados activos en NATIVE_PRODUCT:** FR ES GB AT DE LI IT CH
+PL PT GR CY SE DK FI CZ RO HU BG HR EE LV LT SK SI NO IS.
+
+Los 3 restantes NO son huecos, son decisiones documentadas más abajo:
+
+| Mercado | Estado | Motivo |
+|---|---|---|
+| NL | Fallback EN honesto | `nl` no se construye: NL/BE son `protected: RESEARCH_ONLY` |
+| MT, IE | Inglés nativo | EN es el idioma de negocio; no es fallback (`fallback_used: false`) |
+| LU, AD | PARTIAL_NATIVE | cubiertos por fr/de y es/fr; `lb` y `ca` fuera del alcance |
+
+**Ningún idioma está marcado como revisado por hablante nativo.** Los 23
+locales llevan `quality_status: AUTOMATED_QA` y
+`legal_review_status: LEGAL_REVIEW_REQUIRED`, y los documentos legales
+siguen en `IMPLEMENTED_UNVERIFIED` / `LEGAL_REVIEW_REQUIRED` en los 33
+mercados. La revisión humana por mercado sigue siendo trabajo pendiente
+(Fase E) y no se ha simulado en ningún estado del registry.
 
 ## Decisiones deliberadas (Fase A/B — no reabrir sin motivo)
 
@@ -68,8 +88,11 @@ PT GR CY SE DK FI CZ RO HU BG HR EE LV LT SK SI NO (26 de 30 activos)**.
   explícita `SUPPORTED_LANGUAGES` (sigue siendo EXACTA); test nuevo de
   resolución Intl (NumberFormat/DateTimeFormat) por idioma.
 - `p9EuropeanLocalization.test.js`: la lista de product locales se amplía
-  por bloque; el invariante de "fallback honesto" se conserva rotando el
-  mercado testigo al siguiente pendiente (actual: IS).
+  por bloque; el invariante de "fallback honesto" se conservó rotando el
+  mercado testigo al siguiente pendiente en cada bloque. **Testigo final:
+  NL**, el único mercado que sigue resolviendo a un fallback no nativo.
+  MT/IE NO sirven como testigo: el inglés es nativo allí y su resolución
+  devuelve `fallback_used: false` — el test lo detectó al intentar usar MT.
 - `landingRelease.test.js`: el conteo de locales del readiness report se
   deriva del registro fuente (sin `3` mágico); el barrido de claims
   prohibidos en landing gana patrones por idioma (DSGVO-konform,

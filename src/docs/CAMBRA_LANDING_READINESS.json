@@ -161,6 +161,13 @@
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "is-IS",
+      "language": "is",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "market_rows": [
@@ -504,8 +511,8 @@
       "market_code": "IS",
       "market_name": "Iceland",
       "currency": "ISK",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "is-IS",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
