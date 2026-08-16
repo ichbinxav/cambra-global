@@ -126,6 +126,13 @@
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "lv-LV",
+      "language": "lv",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "market_rows": [
@@ -313,8 +320,8 @@
       "market_code": "LV",
       "market_name": "Latvia",
       "currency": "EUR",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "lv-LV",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",

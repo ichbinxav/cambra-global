@@ -30,7 +30,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | HU | Hungary | HUF | hu-HU | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IE | Ireland | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IT | Italy | EUR | it-IT | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| LV | Latvia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| LV | Latvia | EUR | lv-LV | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LT | Lithuania | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LU | Luxembourg | EUR | fr-FR | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | MT | Malta | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -70,6 +70,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | bg-BG | bg | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | hr-HR | hr | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | et-EE | et | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| lv-LV | lv | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 
