@@ -108,12 +108,13 @@ describe("reproducible Base44 physical bundle pipeline", () => {
   // DPA-1 (2026-08-16) — logical routes deliberately 27 -> 28.
   // CAMP-C5 (2026-08-16) — 28 -> 29 for conversationAdmin. Physical stays 276:
   // a logical route adds an action to an already deployed entry point.
-  it("rebuilds a clean source checkout into the exact 276 physical / 29 logical topology", () => {
+  // COMMAND-C2 (2026-08-17) — 29 -> 30 for commandConversationAdmin.
+  it("rebuilds a clean source checkout into the exact 276 physical / 30 logical topology", () => {
     expect(firstIdentity).toMatchObject({
       schema_version: "cambra-base44-function-bundle-v2",
       functions_dir: BASE44_FUNCTIONS_DIR,
       physical_function_count: 276,
-      logical_route_count: 29,
+      logical_route_count: 30,
       hash_algorithm: BASE44_BUNDLE_HASH_ALGORITHM,
       escaped_relative_import_count: 0,
       unresolved_relative_import_count: 0,

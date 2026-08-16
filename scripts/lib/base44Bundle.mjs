@@ -10,7 +10,10 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // This counter is a deliberateness gate, not a prohibition: a new logical route
 // must be a conscious act recorded here, so an action surface can never appear
 // on a physical function without the plan noticing. See src/docs/Decision_Log_DPA.md.
-export const BASE44_LOGICAL_ROUTE_TARGET = 29;
+// COMMAND-C2 (2026-08-17): 29 -> 30 for commandConversationAdmin, the durable
+// CAMBRA Command conversation layer hosted on the existing adminSummaries
+// entry point. Physical function count is unchanged at 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 30;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

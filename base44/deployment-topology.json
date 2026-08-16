@@ -211,6 +211,14 @@
         "action_prefix": "conversation_"
       },
       "boundary": "strict_admin"
+    },
+    "commandConversationAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/commandConversationCore.ts",
+      "route": {
+        "action_prefix": "command_conversation_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }

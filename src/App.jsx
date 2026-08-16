@@ -75,7 +75,10 @@ const AdminAgents = lazy(() => import('@/pages/admin/AdminAgents'));
 const AdminDeveloper = lazy(() => import('@/pages/admin/AdminDeveloper'));
 const AdminAutomations = lazy(() => import('@/pages/admin/AdminAutomations')); 
 const AdminInbox = lazy(() => import('@/pages/admin/AdminInbox'));
-const AdminChat = lazy(() => import('@/pages/admin/AdminChat'));
+// COMMAND-C2: /admin/chat is now the durable conversation workspace. The old
+// sessionStorage-backed AdminChat.jsx is kept on disk (it is referenced by the
+// approval-registry test) but is no longer routed.
+const AdminCommandChat = lazy(() => import('@/pages/admin/AdminCommandChat'));
 const AdminDiscovery = lazy(() => import('@/pages/admin/AdminDiscovery'));
 const AdminCampaigns = lazy(() => import('@/pages/admin/AdminCampaigns'));
 const AdminConversations = lazy(() => import('@/pages/admin/AdminConversations'));
@@ -350,7 +353,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/developer" element={withBoundary(<AdminDeveloper />)} />
           <Route path="/admin/automations" element={withBoundary(<AdminAutomations />)} />
           <Route path="/admin/inbox" element={withBoundary(<AdminInbox />)} />
-          <Route path="/admin/chat" element={withBoundary(<AdminChat />)} />
+          <Route path="/admin/chat" element={withBoundary(<AdminCommandChat />)} />
           <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
           <Route path="/admin/campaigns" element={withBoundary(<AdminCampaigns />)} />
           <Route path="/admin/conversations" element={withBoundary(<AdminConversations />)} />
