@@ -20,12 +20,13 @@ import fi from './locales/fi.js';
 import cs from './locales/cs.js';
 import ro from './locales/ro.js';
 import hu from './locales/hu.js';
+import bg from './locales/bg.js';
 
-const dictionaries = { en, fr, es, de, it: itDict, pl, pt, el, sv, da, fi, cs, ro, hu };
+const dictionaries = { en, fr, es, de, it: itDict, pl, pt, el, sv, da, fi, cs, ro, hu, bg };
 // The supported-language contract, extended deliberately per market rollout —
 // decisions in src/docs/Decision_Log_I18N_30_MERCADOS.md. Order: en first,
 // then launch locales, then 30-market additions in rollout order.
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de', 'it', 'pl', 'pt', 'el', 'sv', 'da', 'fi', 'cs', 'ro', 'hu'];
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de', 'it', 'pl', 'pt', 'el', 'sv', 'da', 'fi', 'cs', 'ro', 'hu', 'bg'];
 const keys = Object.fromEntries(Object.entries(dictionaries).map(([lang, dict]) => [lang, Object.keys(dict).sort()]));
 const INTENTIONAL_BLANKS = new Set(['ri_sub_post','su_badge_beta']);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');

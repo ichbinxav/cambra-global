@@ -101,6 +101,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "bg-BG",
+      "language": "bg",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -157,10 +164,11 @@ export const LOCALE_REGISTRY={
         "bg-BG"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "bg-BG"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "bg-BG",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "EUR",
       "timezone": "Europe/Sofia",
