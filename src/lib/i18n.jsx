@@ -15,6 +15,7 @@ import sv from "@/lib/locales/sv";
 import da from "@/lib/locales/da";
 import fi from "@/lib/locales/fi";
 import cs from "@/lib/locales/cs";
+import ro from "@/lib/locales/ro";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -40,14 +41,15 @@ export const LANGUAGES = [
   { code: "da", locale: "da-DK", label: "Dansk", short: "DA" },
   { code: "fi", locale: "fi-FI", label: "Suomi", short: "FI" },
   { code: "cs", locale: "cs-CZ", label: "Čeština", short: "CS" },
+  { code: "ro", locale: "ro-RO", label: "Română", short: "RO" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -69,7 +71,7 @@ export function formatDate(date, lang = "en") {
 }
 
 /* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs };
+const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {

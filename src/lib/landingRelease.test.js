@@ -17,8 +17,9 @@ import sv from "./locales/sv.js";
 import da from "./locales/da.js";
 import fi from "./locales/fi.js";
 import cs from "./locales/cs.js";
+import ro from "./locales/ro.js";
 
-const PRODUCT_DICTS = [en, fr, es, de, itDict, pl, pt, el, sv, da, fi, cs];
+const PRODUCT_DICTS = [en, fr, es, de, itDict, pl, pt, el, sv, da, fi, cs, ro];
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -26,7 +27,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 describe("landing truth and release controls", () => {
   it("keeps public landing claims evidence-safe in every product locale", () => {
     const keys = ["hero_sub", "hero_image_alt", "prob_h2_pre", "prob_h2_kw", "prob_h2_post", "prob_intro", "prob_c1_body", "prob_c2_body", "prob_c3_body", "prob_total_line1", "prob_total_note", "ri_h2_pre", "ri_h2_kw", "ri_sub_pre"];
-    const forbidden = [/40\s*[–-]\s*60/i, /2[,.]30\s*%/, /0[,.]92\s*%/, /\+14\s*%/, /minimum allowed/i, /minimum autorisé/i, /mínimo permitido/i, /GDPR compliant/i, /conforme RGPD/i, /cumple el RGPD/i, /bank-level/i, /niveau bancaire/i, /nivel bancario/i, /DSGVO-konform/i, /Bankniveau/i, /zulässiges Minimum/i, /conforme al GDPR/i, /livello bancario/i, /minimo consentito/i, /zgodne z RODO/i, /poziom bankowy/i, /dozwolone minimum/i, /conforme com o RGPD/i, /nível bancário/i, /mínimo permitido/i, /συμβατό με GDPR/i, /τραπεζικού επιπέδου/i, /επιτρεπόμενο ελάχιστο/i, /GDPR-kompatibel/i, /banknivå/i, /tillåtet minimum/i, /bankniveau/i, /tilladt minimum/i, /GDPR-yhteensopiva/i, /pankkitason/i, /sallittu minimi/i, /v souladu s GDPR/i, /bankovní úrovně/i, /povolené minimum/i];
+    const forbidden = [/40\s*[–-]\s*60/i, /2[,.]30\s*%/, /0[,.]92\s*%/, /\+14\s*%/, /minimum allowed/i, /minimum autorisé/i, /mínimo permitido/i, /GDPR compliant/i, /conforme RGPD/i, /cumple el RGPD/i, /bank-level/i, /niveau bancaire/i, /nivel bancario/i, /DSGVO-konform/i, /Bankniveau/i, /zulässiges Minimum/i, /conforme al GDPR/i, /livello bancario/i, /minimo consentito/i, /zgodne z RODO/i, /poziom bankowy/i, /dozwolone minimum/i, /conforme com o RGPD/i, /nível bancário/i, /mínimo permitido/i, /συμβατό με GDPR/i, /τραπεζικού επιπέδου/i, /επιτρεπόμενο ελάχιστο/i, /GDPR-kompatibel/i, /banknivå/i, /tillåtet minimum/i, /bankniveau/i, /tilladt minimum/i, /GDPR-yhteensopiva/i, /pankkitason/i, /sallittu minimi/i, /v souladu s GDPR/i, /bankovní úrovně/i, /povolené minimum/i, /conform GDPR/i, /nivel bancar/i, /minimul permis/i];
     for (const dict of PRODUCT_DICTS) {
       const copy = keys.map((key) => dict[key]).join(" ");
       for (const pattern of forbidden) expect(copy).not.toMatch(pattern);

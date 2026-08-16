@@ -21,10 +21,15 @@ las 1.349 reales. Los 2 blancos intencionales (`ri_sub_post`,
 | 3 | pl (polaco) | 838b629a | PL → NATIVE | ✅ verify verde |
 | 4 | pt (portugués europeo) | 97301c7f | PT → NATIVE | ✅ verify verde |
 | 5 | el (griego) | e58901d5 | GR → NATIVE · CY → NATIVE | ✅ verify verde |
-| 6–20 | sv, da, fi, cs, ro, hu, bg, hr, et, lv, lt, sk, sl, nb, is | — | SE DK FI CZ RO HU BG HR EE LV LT SK SI NO IS | ⏳ pendientes |
+| 6 | sv (sueco) | 48c6c978 | SE → NATIVE | ✅ verify verde |
+| 7 | da (danés) | 5c19bc3d | DK → NATIVE | ✅ verify verde |
+| 8 | fi (finés) | 4857312f | FI → NATIVE | ✅ verify verde |
+| 9 | cs (checo) | afe996b8 | CZ → NATIVE | ✅ verify verde |
+| 10 | ro (rumano) | — | RO → NATIVE | ✅ verify verde |
+| 11–20 | hu, bg, hr, et, lv, lt, sk, sl, nb, is | — | HU BG HR EE LV LT SK SI NO IS | ⏳ pendientes |
 
-Mercados en NATIVE_PRODUCT tras el bloque 5: **FR ES GB AT DE LI IT CH PL
-PT GR CY (12 de 30 activos)**.
+Mercados en NATIVE_PRODUCT tras el bloque 10: **FR ES GB AT DE LI IT CH PL
+PT GR CY SE DK FI CZ RO (17 de 30 activos)**.
 
 ## Decisiones deliberadas (Fase A/B — no reabrir sin motivo)
 
@@ -55,7 +60,7 @@ PT GR CY (12 de 30 activos)**.
   resolución Intl (NumberFormat/DateTimeFormat) por idioma.
 - `p9EuropeanLocalization.test.js`: la lista de product locales se amplía
   por bloque; el invariante de "fallback honesto" se conserva rotando el
-  mercado testigo al siguiente pendiente (actual: SE).
+  mercado testigo al siguiente pendiente (actual: HU).
 - `landingRelease.test.js`: el conteo de locales del readiness report se
   deriva del registro fuente (sin `3` mágico); el barrido de claims
   prohibidos en landing gana patrones por idioma (DSGVO-konform,
