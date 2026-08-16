@@ -56,6 +56,13 @@
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "el-GR",
+      "language": "el",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "market_rows": [
@@ -111,8 +118,8 @@
       "market_code": "CY",
       "market_name": "Cyprus",
       "currency": "EUR",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "el-GR",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
@@ -195,8 +202,8 @@
       "market_code": "GR",
       "market_name": "Greece",
       "currency": "EUR",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "el-GR",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
