@@ -203,6 +203,14 @@
         "action": "record_legal_acceptance"
       },
       "boundary": "authenticated_merchant_self"
+    },
+    "conversationAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/conversationAdminCore.ts",
+      "route": {
+        "action_prefix": "conversation_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }

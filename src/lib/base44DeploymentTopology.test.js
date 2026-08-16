@@ -23,8 +23,10 @@ describe('Base44 quota-safe backend deployment topology', () => {
   // loosened into an inequality. The PHYSICAL count is what protects the quota
   // and it is unchanged at 276 — a logical route adds an action to an already
   // deployed entry point, not a new deployment unit.
-  it('consolidates exactly 28 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(28);
+  // CAMP-C5 (2026-08-16): 28 -> 29 for conversationAdmin (Inbox &
+  // Conversations read model on the existing adminSummaries host).
+  it('consolidates exactly 29 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(29);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {

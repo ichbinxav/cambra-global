@@ -4,6 +4,8 @@ import { buildDiscoveryAdminRadar } from '../../shared/discoveryAdmin.ts';
 import { buildCommercialOperatingSystem } from '../../shared/commercialOperatingSystem.ts';
 import { handleCommercialCampaignAdmin } from '../../shared/commercialCampaignAdmin.ts';
 import { handleDiscoveryV2Admin } from '../../shared/discoveryV2Admin.ts';
+// CAMP-C5: Inbox & Conversations read model, hosted here as a logical route.
+import { handleConversationAdminAction } from '../../shared/conversationAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
@@ -17,6 +19,7 @@ Deno.serve(async (req) => {
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     if (String(routedBody?.action||'').startsWith('discovery_v2_')) return handleDiscoveryV2Admin(base44.asServiceRole,user,routedBody);
+    if (String(routedBody?.action||'').startsWith('conversation_')) return handleConversationAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^conversation_/, '')},base44.asServiceRole);
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
     if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 
