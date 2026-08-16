@@ -22,7 +22,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | CY | Cyprus | EUR | el-GR | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | CZ | Czechia | CZK | cs-CZ | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DK | Denmark | DKK | da-DK | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| EE | Estonia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| EE | Estonia | EUR | et-EE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FI | Finland | EUR | fi-FI | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FR | France | EUR | fr-FR | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DE | Germany | EUR | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -69,6 +69,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | hu-HU | hu | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | bg-BG | bg | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | hr-HR | hr | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| et-EE | et | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 
