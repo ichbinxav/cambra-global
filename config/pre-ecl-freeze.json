@@ -103,7 +103,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "e13bd0285391408cc6e52820f9f4871a4b26844f8e2ef6cdaba4b5ec2ada219d",
+      "sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
       "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
       "allowedChange": false
     },
@@ -129,6 +129,30 @@
       "path": "base44/entities/ReviewCase.jsonc",
       "sha256": "5cb3f83d7f0d1418e9f4343e47b6204e92162facd8a261274731c6e62c0570e1",
       "freezeReason": "ECL P1 schema (v62.3) — storage shape only, no queue and no routing",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "sha256": "af836e8e2d69c40a7db9ecfc8f5261fdf4e7d8562d2b03a2c545d16c82552a71",
+      "freezeReason": "R2",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "freezeReason": "R3 webhook replay safety: durable manual/scheduled operation identity, CAS effect-start fence, fail-closed authority, and post-effect REVIEW_REQUIRED without blind retry; no ECL economic semantics changed",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/entities/OperationalIncident.jsonc",
+      "sha256": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
+      "freezeReason": "R5 OTR-015: restrict the frozen ECL compatibility incident ledger to service-role writers so only the two versioned ECL backend adapters can mutate it; no ECL signal, recovery, economic, or status semantics changed",
+      "allowedChange": false
+    },
+    {
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "sha256": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "freezeReason": "R5 ROOT-OTR-014: make the authoritative ECL health sweep fail closed on unavailable, malformed, truncated, or duplicate incident authority reads using cap-plus-one evidence before any healthy or auto-resolution projection; no recovery worker, economic effect, or production action was added",
       "allowedChange": false
     }
   ]

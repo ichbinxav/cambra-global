@@ -7,6 +7,11 @@ import {
   validateDocumentEnvelope,
 } from '../../shared/documentExtraction.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
+import {
+  excludedServiceLevelResult,
+  observeServiceLevelRequest,
+  serviceLevelResult,
+} from '../../shared/serviceLevelObservation.ts';
 
 // processUploadedFile v2 — authenticated, tenant-scoped and fail-closed.
 //
@@ -136,6 +141,11 @@ async function callAnthropic(svc:any, checksum:string, kind: string, mime: strin
   if (!document) return { ok: false, reason: 'text_document_too_large_for_independent_review' };
   const model = Deno.env.get('ANTHROPIC_EXTRACTION_MODEL') || 'claude-sonnet-4-5';
   const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:anthropic:${checksum}`, category:'ai', provider:'anthropic', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
+  // A duplicate reservation means another invocation already owns (or has
+  // completed) this paid effect. Never turn an idempotency replay into a second
+  // provider call. The durable StatementImport replay above will serve the
+  // completed result; an in-flight owner leaves this attempt in review.
+  if (reservation?.duplicate) return { ok: false, duplicate: true, reason: 'primary_reservation_duplicate' };
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -173,6 +183,7 @@ async function callOpenAI(svc:any, checksum:string, kind: string, mime: string, 
   if (!key) return { ok: false, reason: 'secondary_key_missing' };
   const model = Deno.env.get('OPENAI_EXTRACTION_MODEL') || 'gpt-4.1';
   const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:openai:${checksum}`, category:'ai', provider:'openai', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
+  if (reservation?.duplicate) return { ok: false, duplicate: true, reason: 'secondary_reservation_duplicate' };
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -207,7 +218,7 @@ async function projectAccepted(base44: any, brandId: string, projection: any, ca
     updates.payments = true;
   }
   const analyzerPatch: any = { brand_id: brandId, data_source: 'file_upload' };
-  if (aggregates.payments) Object.assign(analyzerPatch, { monthly_revenue: aggregates.payments.total_volume_eur, payment_fee_pct: aggregates.payments.fee_pct, ...(aggregates.payments.provider ? { payment_provider: aggregates.payments.provider } : {}) });
+  if (aggregates.payments) Object.assign(analyzerPatch, { monthly_revenue: aggregates.payments.total_volume_eur, currency: 'EUR' /* FX-2: projection output is EUR-normalized by construction */, payment_fee_pct: aggregates.payments.fee_pct, ...(aggregates.payments.provider ? { payment_provider: aggregates.payments.provider } : {}) });
   if (aggregates.payments) {
     const [row] = await base44.entities.AnalyzerInput.filter({ brand_id: brandId }, '-updated_date', 1);
     row?.id ? await base44.entities.AnalyzerInput.update(row.id, analyzerPatch) : await base44.entities.AnalyzerInput.create(analyzerPatch);
@@ -236,11 +247,26 @@ Deno.serve(async (req) => {
     }
     if (!brand?.id) return Response.json({ error: 'brand_required' }, { status: 409 });
 
+    const svc = base44.asServiceRole;
+    return await observeServiceLevelRequest(
+      svc,
+      req,
+      {
+        slo_key: 'document_extraction',
+        endpoint: 'processUploadedFile',
+        workload_key: String(brand.id),
+      },
+      async () => {
+
     const fileResponse = await fetch(trusted.url, { redirect: 'error', signal: AbortSignal.timeout(20_000) });
-    if (!fileResponse.ok) return Response.json({ error: 'stored_file_unavailable' }, { status: 422 });
+    if (!fileResponse.ok) return serviceLevelResult(Response.json({ error: 'stored_file_unavailable' }, { status: 422 }), { outcome: 'FAILED', reason: 'stored_file_unavailable' });
     let bytes: Uint8Array;
     try { bytes = await readResponseWithLimit(fileResponse, 15 * 1024 * 1024); }
-    catch (error) { return Response.json({ error: error?.message === 'file_too_large' ? 'file_too_large' : 'stored_file_unavailable' }, { status: error?.message === 'file_too_large' ? 413 : 422 }); }
+    catch (error) {
+      const tooLarge=error?.message === 'file_too_large';
+      const response=Response.json({ error: tooLarge ? 'file_too_large' : 'stored_file_unavailable' }, { status: tooLarge ? 413 : 422 });
+      return tooLarge ? excludedServiceLevelResult(response,'file_too_large') : serviceLevelResult(response,{outcome:'FAILED',reason:'stored_file_unavailable'});
+    }
     const envelope = validateDocumentEnvelope({ fileName, bytes });
     if (envelope.ok === false) return Response.json({ error: envelope.reason }, { status: envelope.reason === 'file_too_large' ? 413 : 400 });
     if (['csv', 'json'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {
@@ -248,14 +274,18 @@ Deno.serve(async (req) => {
     }
     const checksum = await sha256Hex(bytes);
 
-    const previous = await base44.entities.StatementImport.filter({ brand_id: brand.id, checksum }, '-imported_at', 1).catch(() => []);
+    // Idempotency authority read: an outage is not equivalent to "not seen".
+    // Fail the request before reserving or calling either paid provider.
+    const previous = await base44.entities.StatementImport.filter({ brand_id: brand.id, checksum }, '-imported_at', 1);
     const replay = previous[0];
     if (replay?.metadata_json?.extraction_version === DOCUMENT_EXTRACTION_VERSION) {
-      return Response.json({ ok: true, duplicate: true, statement_import_id: replay.id, status: replay.parsed_status, extraction_confidence: replay.extraction_confidence, provider_detected: replay.provider_detected || '', detected: replay.vertical || 'unknown', aggregates: replay.metadata_json?.aggregates || {}, updates: { payments: false, shipping: false, saas: false }, layer_verdicts: replay.metadata_json?.model_verdicts || {}, fields: replay.metadata_json?.canonical?.fields || {} });
+      return excludedServiceLevelResult(
+        Response.json({ ok: true, duplicate: true, statement_import_id: replay.id, status: replay.parsed_status, extraction_confidence: replay.extraction_confidence, provider_detected: replay.provider_detected || '', detected: replay.vertical || 'unknown', aggregates: replay.metadata_json?.aggregates || {}, updates: { payments: false, shipping: false, saas: false }, layer_verdicts: replay.metadata_json?.model_verdicts || {}, fields: replay.metadata_json?.canonical?.fields || {} }),
+        'idempotent_replay',
+      );
     }
 
     const base64 = bytesToBase64(bytes);
-    const svc = base44.asServiceRole;
     const [primaryRaw, secondaryRaw] = await Promise.all([
       callAnthropic(svc, checksum, envelope.kind, envelope.mime, base64, bytes),
       callOpenAI(svc, checksum, envelope.kind, envelope.mime, base64, fileName, bytes),
@@ -263,7 +293,17 @@ Deno.serve(async (req) => {
     const primary = primaryRaw.ok ? normalizeExtractionCandidate(primaryRaw.parsed, { checksum, model: primaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: primaryRaw.reason }], candidate: null };
     const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed, { checksum, model: secondaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: secondaryRaw.reason }], candidate: null };
     const comparison = crossValidateCandidates(primary, secondary);
-    const projection = comparison.accepted ? buildAnalyzerProjection(comparison.canonical) : { eligible: false, reason: 'independent_verification_required', aggregates: {} };
+    // FX-2 (2026-08-16, freeze update sanctioned by founder) — non-EUR
+    // statements now project when a reliable FxSnapshot resolves at the
+    // statement period end (fail-closed inside buildAnalyzerProjection).
+    // Snapshots are loaded only when actually needed: an accepted non-EUR
+    // document. No ECL code enters this handler — the FX path is the same
+    // pure marketMoney/analyzerFx doctrine the verified Stripe path uses.
+    const needsFxSnapshots = comparison.accepted && comparison.canonical?.currency && comparison.canonical.currency !== 'EUR';
+    const fxSnapshots = needsFxSnapshots
+      ? await svc.entities.FxSnapshot.list('-effective_at', 1000).catch(() => [])
+      : [];
+    const projection = comparison.accepted ? buildAnalyzerProjection(comparison.canonical, fxSnapshots) : { eligible: false, reason: 'independent_verification_required', aggregates: {} };
     const status = comparison.accepted ? 'success' : (primaryRaw.ok || secondaryRaw.ok ? 'needs_review' : 'format_unknown');
     const vertical = comparison.canonical?.documentType?.startsWith('payments_') ? 'payments' : comparison.canonical?.documentType === 'shipping_invoice' ? 'shipping' : comparison.canonical?.documentType === 'saas_invoice' ? 'saas' : undefined;
 
@@ -291,23 +331,34 @@ Deno.serve(async (req) => {
     let projected = { aggregates: projection.aggregates || {}, updates: { payments: false, shipping: false, saas: false }, document_type: comparison.canonical?.documentType || 'unknown' };
     if (comparison.accepted && projection.eligible) projected = await projectAccepted(base44, brand.id, projection, comparison.canonical);
 
-    return Response.json({
-      ok: true,
-      duplicate: false,
-      status,
-      detected: vertical || 'unknown',
-      document_type: projected.document_type,
-      aggregates: projected.aggregates,
-      updates: projected.updates,
-      extraction_confidence: comparison.accepted ? 'high' : (primaryRaw.ok || secondaryRaw.ok ? 'low' : 'unverified'),
-      provider_detected: comparison.canonical?.providerSlug || '',
-      statement_import_id: stored.id,
-      checksum,
-      layer_verdicts: { primary: primaryRaw.ok, secondary: secondaryRaw.ok, accepted: comparison.accepted, disagreements: comparison.disagreements, problems: comparison.problems },
-      fields: comparison.canonical?.fields || {},
-      projection_eligible: projection.eligible,
-      projection_reason: projection.reason,
-    });
+    return serviceLevelResult(
+      Response.json({
+        ok: true,
+        duplicate: false,
+        status,
+        detected: vertical || 'unknown',
+        document_type: projected.document_type,
+        aggregates: projected.aggregates,
+        updates: projected.updates,
+        extraction_confidence: comparison.accepted ? 'high' : (primaryRaw.ok || secondaryRaw.ok ? 'low' : 'unverified'),
+        provider_detected: comparison.canonical?.providerSlug || '',
+        statement_import_id: stored.id,
+        checksum,
+        layer_verdicts: { primary: primaryRaw.ok, secondary: secondaryRaw.ok, accepted: comparison.accepted, disagreements: comparison.disagreements, problems: comparison.problems },
+        fields: comparison.canonical?.fields || {},
+        projection_eligible: projection.eligible,
+        projection_reason: projection.reason,
+      }),
+      {
+        outcome: status === 'format_unknown' ? 'FAILED' : 'SUCCEEDED',
+        reason: status === 'format_unknown' ? 'independent_extraction_providers_unavailable' : undefined,
+        source_refs: [
+          { entity: 'StatementImport', id: stored.id, checksum },
+        ],
+      },
+    );
+      },
+    );
   } catch (error) {
     console.error('processUploadedFile failed', error);
     return Response.json({ error: 'process_uploaded_file_failed' }, { status: 500 });

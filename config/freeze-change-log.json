@@ -699,6 +699,114 @@
       "oldHash": "aefbc4f8aad983a86786c3160098bfd2fba21c80e93f073ed509116a427dd08b",
       "newHash": "e13bd0285391408cc6e52820f9f4871a4b26844f8e2ef6cdaba4b5ec2ada219d",
       "reason": "Final pre-launch cost governance: gate both independent extraction providers before paid execution; extraction/ECL economic semantics unchanged"
+    },
+    {
+      "date": "2026-08-13T08:51:35.993Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "e13bd0285391408cc6e52820f9f4871a4b26844f8e2ef6cdaba4b5ec2ada219d",
+      "newHash": "fe9908b5763aed5e0aa5bdaab0e588b76c6b81e0162399b2cc4cf8bb3b32468c",
+      "reason": "OTR-019 release-grade extractor SLO attempt receipts plus independently verified Anthropic/OpenAI extraction; no ECL authority or economic semantics changed"
+    },
+    {
+      "date": "2026-08-13T13:51:43.898Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "fe9908b5763aed5e0aa5bdaab0e588b76c6b81e0162399b2cc4cf8bb3b32468c",
+      "newHash": "f61b119bf46bc86a8eaa8ac92a699c865c7eb73c6377249492ff697907ac880f",
+      "reason": "Authorize audited fail-closed dual-provider extraction, durable SLO receipts, cost idempotency and emergency-boundary hardening; no ECL import or semantic authority added."
+    },
+    {
+      "date": "2026-08-13T21:04:22.772Z",
+      "type": "freeze_add",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "oldHash": null,
+      "newHash": "829cfb8fc0dc09dbe5aa26860e42430e2ce3aaecb5da20cc808208acfe283d19",
+      "reason": "R2"
+    },
+    {
+      "date": "2026-08-13T21:06:08.598Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "oldHash": "829cfb8fc0dc09dbe5aa26860e42430e2ce3aaecb5da20cc808208acfe283d19",
+      "newHash": "7d901ff82c2d09cbed38988b6307f4d6bb18ab8ca46416e2d542aa39cc214601",
+      "reason": "R2 Stripe Connect security remediation: existing signed raw-body webhook now handles account.application.deauthorized and account.updated with event.account binding, durable event-id fencing, fail-closed reconciliation, and no change to frozen invoice economics"
+    },
+    {
+      "date": "2026-08-13T22:20:44.917Z",
+      "type": "freeze_add",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": null,
+      "newHash": "7cfdc87ab8f5077ae17635c2c2deaab553702cb8d0a6af4042245efc2ad168a4",
+      "reason": "R3 webhook replay safety: durable manual/scheduled operation identity, CAS effect-start fence, fail-closed authority, and post-effect REVIEW_REQUIRED without blind retry; no ECL economic semantics changed"
+    },
+    {
+      "date": "2026-08-13T23:44:57.969Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "oldHash": "7d901ff82c2d09cbed38988b6307f4d6bb18ab8ca46416e2d542aa39cc214601",
+      "newHash": "4bbe0f5f3530eee4282d70aaa4bde06259bd486270e45d9bb8cb86843767c9c3",
+      "reason": "R4 billing saga remediation: no PaymentEvent early return; Stripe current-state reread; bounded cap-plus-one authority; idempotent Invoice, immutable event, report and activation readbacks with resumable fault convergence; no economic or ECL semantics changed"
+    },
+    {
+      "date": "2026-08-14T00:07:13.319Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "oldHash": "4bbe0f5f3530eee4282d70aaa4bde06259bd486270e45d9bb8cb86843767c9c3",
+      "newHash": "e8926bdc76536033e95b7d27e7cdfb07766fbd2f6ad2641b02a70c08c58dffec",
+      "reason": "R4 billing saga hardening: bind each signed Stripe event to the exact local invoice, re-read current Stripe authority, converge local invoice/report/activation projections with monotonic CAS and immutable receipts, and resume safely after partial persistence without changing frozen economics"
+    },
+    {
+      "date": "2026-08-14T00:36:03.400Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "oldHash": "e8926bdc76536033e95b7d27e7cdfb07766fbd2f6ad2641b02a70c08c58dffec",
+      "newHash": "af836e8e2d69c40a7db9ecfc8f5261fdf4e7d8562d2b03a2c545d16c82552a71",
+      "reason": "R4 report-truth hardening: signed Stripe current-state projection now revokes stale paid verification on dispute, refund, or void while preserving immutable invoice economics and canonical saga convergence"
+    },
+    {
+      "date": "2026-08-14T01:34:32.975Z",
+      "type": "freeze_add",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/entities/OperationalIncident.jsonc",
+      "oldHash": null,
+      "newHash": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
+      "reason": "R5 OTR-015: restrict the frozen ECL compatibility incident ledger to service-role writers so only the two versioned ECL backend adapters can mutate it; no ECL signal, recovery, economic, or status semantics changed"
+    },
+    {
+      "date": "2026-08-14T11:17:19.218Z",
+      "type": "freeze_add",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "oldHash": null,
+      "newHash": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "reason": "R5 ROOT-OTR-014: make the authoritative ECL health sweep fail closed on unavailable, malformed, truncated, or duplicate incident authority reads using cap-plus-one evidence before any healthy or auto-resolution projection; no recovery worker, economic effect, or production action was added"
+    },
+    {
+      "date": "2026-08-14T11:23:20.072Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "7cfdc87ab8f5077ae17635c2c2deaab553702cb8d0a6af4042245efc2ad168a4",
+      "newHash": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "reason": "R5 ROOT-OTR-013: bind the existing webhook dead-letter scheduler AgentTask to the canonical trace, effect, cost and terminal envelope with fenced readback; no webhook delivery, retry, receiver, ECL economic, or post-effect replay semantics changed"
+    },
+    {
+      "date": "2026-08-16T15:35:13.526Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "f61b119bf46bc86a8eaa8ac92a699c865c7eb73c6377249492ff697907ac880f",
+      "newHash": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
+      "reason": "FX-2 (2026-08-16), founder-authorized: pass FxSnapshot reference rows to buildAnalyzerProjection so accepted non-EUR statements project with evidence-backed ECB conversion (fail-closed), and stamp currency:'EUR' on the EUR-normalized AnalyzerInput patch. No ECL code enters the handler; the original freeze intent (ECL must not leak into the upload pipeline) is preserved."
     }
   ]
 }

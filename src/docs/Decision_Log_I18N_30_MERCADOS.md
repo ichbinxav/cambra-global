@@ -194,14 +194,17 @@ La ruta FX explícita que pedía la sección anterior existe ya en dos capas:
    inflado — produce ~11.7k EUR con auditoría de tipo, o un rechazo honesto.
 
 Además: `buildAnalyzerProjection` proyecta extractos no-EUR con la misma
-doctrina (capacidad probada por test). **Cableado pendiente y declarado:** su
-caller de producción, `processUploadedFile/entry.ts`, es un frozen file con
-`allowedChange: false` (doctrina "ECL must not leak into the upload
-pipeline"); pasarle los FxSnapshots exige `scripts/update-freeze.mjs` con
-token de confirmación — decisión del founder, no de este cambio. Hasta
-entonces el pipeline de subida sigue llamando a la proyección sin snapshots
-y un extracto no-EUR falla cerrado (`analyzer_fx_evidence_required`), igual
-de seguro que antes. `MonthlySavingsReport.currency` se deriva de la fuente de medición
+doctrina (capacidad probada por test). **Cableado completado con
+autorización del founder (2026-08-16):** su caller de producción,
+`processUploadedFile/entry.ts`, es un frozen file con `allowedChange: false`;
+el founder autorizó el cambio y se selló por la vía sancionada
+(`scripts/update-freeze.mjs`, registrado en `config/freeze-change-log.json`,
+hash nuevo c723fdf3b92a…). El handler pasa los FxSnapshots a la proyección
+solo cuando el documento aceptado no es EUR; un extracto sin snapshot
+resoluble sigue fallando cerrado (`analyzer_fx_evidence_required`). El
+intento de freeze original ("ECL must not leak into the upload pipeline") se
+preserva: no entra código ECL, solo la misma doctrina pura de
+marketMoney/analyzerFx del path verificado de Stripe. `MonthlySavingsReport.currency` se deriva de la fuente de medición
 (nunca literal) y el candado de `prepareEligibleRecoverInvoice` es por fin
 alcanzable de verdad (bloquea `currency_mismatch:<CUR>`, divisa ausente y
 `review_required`).
