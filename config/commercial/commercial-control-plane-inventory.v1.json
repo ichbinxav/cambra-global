@@ -1,0 +1,49 @@
+{
+  "schema_version": "cambra-commercial-control-plane-inventory-v1",
+  "generated_by": "hand-maintained — C0 control/data plane map for Campaigns + Inbox & Conversations; one authority per concept (spec §3.1)",
+  "authorities": {
+    "campaign": { "entity": "CommercialCampaign", "state": "LEGACY_SHAPE_TO_EVOLVE", "admin_plane": "logical_route:commercialCampaignAdmin@adminSummaries(action_prefix=campaign_)" },
+    "policy": { "entity": "CommercialPolicy", "admin_plane": "commercialPolicyAdmin", "state": "REUSE_AS_IS" },
+    "audience_version": { "entity": "CampaignAudienceVersion", "state": "GAP_NEW_C1" },
+    "enrollment": { "entity": "CampaignEnrollment", "state": "GAP_NEW_C1" },
+    "content_version": { "entity": "CampaignContentVersion", "state": "GAP_NEW_C1" },
+    "sequence_version": { "entity": "CampaignSequenceVersion", "state": "GAP_NEW_C1" },
+    "thread": { "entity": "CommunicationThread", "state": "REUSE_EVOLVE" },
+    "message": { "entity": "CommunicationMessage", "state": "REUSE_EVOLVE" },
+    "provider_event": { "entity": "OutboundProviderEvent", "state": "REUSE_EVOLVE" },
+    "sending_profile": { "entity": "OutboundSendingProfile", "state": "REUSE_AS_IS_PLUS_HEALTH_READ_MODEL" },
+    "suppression": { "entity": "ContactSuppression", "state": "REUSE_EVOLVE_SCOPES" },
+    "pipeline_state": { "entity": "OutboundLead.stage (+revenue_stage projection)", "state": "REUSE — frontier documented in Decision_Log_Discovery_V2_Fix.md" },
+    "approval": { "entity": "Approval + FounderCommandAudit preview/confirm", "state": "REUSE" },
+    "material_action": { "primitive": "materialEffectContract.ts + commercialSendMessage + schedulerRun.ts", "state": "REUSE_ONLY_PATH" },
+    "receipt_audit": { "entity": "OperationalLog + FounderCommandAudit", "state": "REUSE" },
+    "incident": { "entity": "AutonomyIncident", "state": "REUSE" },
+    "attribution": { "entity": "AcquisitionTouch + AcquisitionAttribution", "state": "REUSE" },
+    "experiment": { "entity": "OutreachExperimentStats", "state": "REUSE" },
+    "emergency": { "entity": "EmergencyControl (emergencyControlAdminCore.ts)", "state": "REUSE — epoch checks mandatory around effects" },
+    "tenant": { "primitive": "communicationTenant.ts", "state": "REUSE" }
+  },
+  "send_plane": {
+    "canonical_primitive": "commercialSendMessage",
+    "rule": "No UI, agent, worker or Command path may call a provider send directly; all outbound goes through commercialSendMessage (spec §8.4).",
+    "workers": ["outboundVolumeWorker", "commercialFollowUpWorker", "followUpAgent", "autonomousCommercialWorker"],
+    "reply_agent": "commercialReplyAgent"
+  },
+  "inbound_plane": {
+    "webhooks": ["instantlyWebhook", "outlookInboundRouter", "resendInboundWebhook"],
+    "processing": "outboundProviderEventProcessing.ts",
+    "retry": "instantlyProviderEventRetryWorker",
+    "reconciliation": "instantlyReconciliationWorker",
+    "dead_letters": "processWebhookDeadLetters + webhookDeadLetterClaim.ts"
+  },
+  "quota_policy": {
+    "physical_function_target": 276,
+    "rule": "No new physical functions for this Parte; every new backend action ships as a logical route on an existing host (commercialCampaignAdmin pattern) with a deliberate BASE44_LOGICAL_ROUTE_TARGET bump per new route.",
+    "logical_route_target_at_c0": 28
+  },
+  "command_integration": {
+    "gateway": "NOT_BUILT (PROMPT_CAMBRA_COMMAND_V1 pending)",
+    "strategy": "typed actions on canonical routes, discoverable later; FounderPermit preflight dimension reports CONFIGURATION_REQUIRED fail-closed"
+  },
+  "external_effects_policy": "ZERO during this Parte: no sends, no DNS, no live migration, no suppression mutations of live data, dry-run adapters only (spec §1.10)."
+}
