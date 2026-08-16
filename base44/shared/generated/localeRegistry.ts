@@ -94,6 +94,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "hu-HU",
+      "language": "hu",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -370,10 +377,11 @@ export const LOCALE_REGISTRY={
         "hu-HU"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "hu-HU"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "hu-HU",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "HUF",
       "timezone": "Europe/Budapest",

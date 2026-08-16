@@ -27,7 +27,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | FR | France | EUR | fr-FR | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DE | Germany | EUR | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GR | Greece | EUR | el-GR | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| HU | Hungary | HUF | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| HU | Hungary | HUF | hu-HU | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IE | Ireland | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IT | Italy | EUR | it-IT | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LV | Latvia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -66,6 +66,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | fi-FI | fi | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | cs-CZ | cs | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | ro-RO | ro | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| hu-HU | hu | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

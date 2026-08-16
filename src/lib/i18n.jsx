@@ -16,6 +16,7 @@ import da from "@/lib/locales/da";
 import fi from "@/lib/locales/fi";
 import cs from "@/lib/locales/cs";
 import ro from "@/lib/locales/ro";
+import hu from "@/lib/locales/hu";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -42,14 +43,15 @@ export const LANGUAGES = [
   { code: "fi", locale: "fi-FI", label: "Suomi", short: "FI" },
   { code: "cs", locale: "cs-CZ", label: "Čeština", short: "CS" },
   { code: "ro", locale: "ro-RO", label: "Română", short: "RO" },
+  { code: "hu", locale: "hu-HU", label: "Magyar", short: "HU" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -71,7 +73,7 @@ export function formatDate(date, lang = "en") {
 }
 
 /* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro };
+const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro, hu };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {
