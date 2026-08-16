@@ -4,6 +4,11 @@
 // The production worker and the local test suite execute the exact same
 // normalization, cross-check and acceptance rules.
 
+// FX-2 (2026-08-16) — both imports are pure modules (no IO/SDK), so the
+// purity contract above still holds.
+import { normalizeCurrencyCode, normalizeMoney, resolveFX } from './marketMoney.ts';
+import { analyzerReliableFxSnapshots } from './analyzerFx.ts';
+
 export const DOCUMENT_EXTRACTION_VERSION = 'document-extraction-2.0.0';
 export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
@@ -263,8 +268,19 @@ export function crossValidateCandidates(primaryResult: ReturnType<typeof normali
   return { accepted, status: accepted ? 'success' : 'needs_review', disagreements, problems, canonical };
 }
 
-export function buildAnalyzerProjection(canonical: any) {
-  if (!canonical || canonical.currency !== 'EUR') return { eligible: false, reason: 'analyzer_requires_eur', aggregates: {} };
+// FX-2 (2026-08-16) — non-EUR statements can now project into the Analyzer.
+// Before this, a document whose printed currency was correctly extracted as,
+// say, SEK stayed auditable but was silently useless to the Analyzer
+// ('analyzer_requires_eur'). Now the caller may pass FxSnapshot rows; when a
+// reliable resolution exists (same doctrine as analyzerFx.ts — reference
+// rate, auditable provenance, resolved at the statement's period end), the
+// gross minor amount is converted to EUR minor with exact BigInt math and
+// the projection carries the frozen fx audit. No resolvable snapshot → fail
+// closed with 'analyzer_fx_evidence_required' — never a guessed rate.
+// fee_pct is computed on the ORIGINAL amounts: a fees/gross ratio is
+// currency-invariant, so conversion must never touch it.
+export function buildAnalyzerProjection(canonical: any, fxSnapshots: any[] = []) {
+  if (!canonical || !normalizeCurrencyCode(canonical.currency)) return { eligible: false, reason: 'analyzer_requires_eur', aggregates: {} };
   const f = canonical.fields || {};
   if (canonical.documentType === 'payments_statement' && f.gross_amount_minor && f.fees_amount_minor) {
     if (!canonical.periodStart || !canonical.periodEnd) return { eligible: false, reason: 'monthly_statement_period_required', aggregates: {} };
@@ -275,7 +291,45 @@ export function buildAnalyzerProjection(canonical: any) {
     const gross = f.gross_amount_minor.value;
     const fees = f.fees_amount_minor.value;
     if (gross <= 0) return { eligible: false, reason: 'invalid_gross', aggregates: {} };
-    return { eligible: true, reason: null, aggregates: { payments: { total_volume_eur: gross / 100, fee_pct: Number(((fees / gross) * 100).toFixed(4)), provider: canonical.providerSlug, period_start: canonical.periodStart, period_end: canonical.periodEnd, period_days: inclusiveDays } } };
+    // Ratio first — on original amounts, before any conversion.
+    const fee_pct = Number(((fees / gross) * 100).toFixed(4));
+    let grossEurMinor = gross;
+    let fxAudit: any = null;
+    if (canonical.currency !== 'EUR') {
+      const effectiveAt = `${canonical.periodEnd}T23:59:59Z`;
+      const resolution = resolveFX(analyzerReliableFxSnapshots(fxSnapshots), {
+        base_currency: canonical.currency,
+        quote_currency: 'EUR',
+        effective_at: effectiveAt,
+        purpose: 'ANALYZER_DOCUMENT_PROJECTION',
+        source_policy: { stale_after_days: 7 },
+      });
+      if (!resolution?.ok || !['CURRENT', 'VERIFIED_REFERENCE'].includes(String(resolution?.status || ''))) {
+        return { eligible: false, reason: 'analyzer_fx_evidence_required', aggregates: {} };
+      }
+      // `any`: the backend typecheck (strict:false) cannot narrow normalizeMoney's union.
+  const normalized: any = normalizeMoney({
+        amount_original: gross,
+        currency_original: canonical.currency,
+        target_currency: 'EUR',
+        effective_at: effectiveAt,
+        fx_resolution: resolution,
+      });
+      if (!normalized?.ok || !Number.isSafeInteger(normalized.amount_normalized)) {
+        return { eligible: false, reason: 'analyzer_fx_evidence_required', aggregates: {} };
+      }
+      grossEurMinor = normalized.amount_normalized;
+      fxAudit = {
+        currency_original: canonical.currency,
+        rate_decimal: String(normalized.fx_rate),
+        source: String(normalized.fx_source),
+        source_url: normalized.fx_source_url || null,
+        source_snapshot_id: normalized.fx_source_snapshot_id || null,
+        resolved_effective_at: String(normalized.fx_resolved_effective_at),
+        resolution_method: String(normalized.fx_resolution_method),
+      };
+    }
+    return { eligible: true, reason: null, aggregates: { payments: { total_volume_eur: grossEurMinor / 100, fee_pct, provider: canonical.providerSlug, period_start: canonical.periodStart, period_end: canonical.periodEnd, period_days: inclusiveDays, ...(fxAudit ? { fx: fxAudit } : {}) } } };
   }
   // An invoice total is not automatically a monthly run-rate. Shipping and
   // SaaS are also retired merchant-facing verticals. Keep those documents

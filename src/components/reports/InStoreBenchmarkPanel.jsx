@@ -7,10 +7,11 @@
 import { useTranslation } from "@/lib/i18n.jsx";
 import { getBenchmarks } from "@/lib/scoreEngine";
 
-const eur = (n) => `€${Math.round(n).toLocaleString()}`;
-
 export default function InStoreBenchmarkPanel({ result, brand }) {
-  const { t } = useTranslation();
+  const { t, formatCurrency } = useTranslation();
+  // FX-2 Fase C — amounts are denominated in the AnalyzerResult's currency
+  // (legacy rows without the field are EUR by construction).
+  const eur = (n) => formatCurrency(Math.round(n), result?.currency || "EUR");
 
   const details = result?.details || {};
   const effectiveRate = details.tpe_effective_rate || 0;

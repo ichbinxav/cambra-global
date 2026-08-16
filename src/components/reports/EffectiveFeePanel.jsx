@@ -9,6 +9,7 @@
 // The anonymous teaser is untouched: this component is never mounted there and
 // getPaymentsGapTeaser's allowlist gained no field.
 
+import React from "react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
@@ -17,7 +18,7 @@ import { BASE_FEE_PCT } from "@/lib/referralProgram";
 import { ArrowRight } from "lucide-react";
 
 export default function EffectiveFeePanel({ report }) {
-  const { t } = useTranslation();
+  const { t, formatCurrency } = useTranslation();
   const [activated, setActivated] = useState(null);
 
   useEffect(() => {
@@ -34,7 +35,10 @@ export default function EffectiveFeePanel({ report }) {
   const savings = Number(report?.savings || 0);
   const feeAmount = savings > 0 ? savings * (fee / 100) : 0;
   const net = Math.max(0, savings - feeAmount);
-  const eur = (n) => `€${Math.round(n).toLocaleString()}`;
+  // FX-2 Fase C — amounts are denominated in the report's measured currency
+  // (MonthlySavingsReport.currency; legacy rows wrote 'EUR' explicitly).
+  const reportCurrency = report?.currency || "EUR";
+  const eur = (n) => formatCurrency(Math.round(n), reportCurrency);
 
   return (
     <div className="cambra-card p-7 mb-6">

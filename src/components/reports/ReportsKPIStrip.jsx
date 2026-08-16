@@ -1,13 +1,28 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Gauge, Sparkles } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
  * KPI strip for Reports — 4 dense premium cells.
  * Aggregates totals from the analyzer results list.
  */
 export default function ReportsKPIStrip({ results }) {
+  const { locale, formatCurrency } = useTranslation();
   const latest = results[0];
   const totalSavings = results.reduce((acc, r) => acc + (r.total_savings || 0), 0);
+  // FX-2 Fase C — compact currency in the currency of the newest result
+  // (legacy rows without the field are EUR by construction). Was a hardcoded
+  // `€${...}K` — wrong symbol for non-EUR results, wrong grouping for most
+  // locales.
+  const kpiCurrency = latest?.currency || "EUR";
+  const compact = (n) => {
+    try {
+      return new Intl.NumberFormat(locale, { style: "currency", currency: kpiCurrency, notation: "compact", maximumFractionDigits: 1 }).format(n);
+    } catch {
+      return formatCurrency(Math.round(n), kpiCurrency);
+    }
+  };
   // P0.2 — payments-only KPIs. Removed the multi-vertical composite score
   // and the cross-vertical pillars count. Replaced with payment-specific
   // metrics: data quality and recovery status.
@@ -28,14 +43,14 @@ export default function ReportsKPIStrip({ results }) {
   const items = [
     {
       label: "Latest opportunity",
-      value: latest ? `€${Math.round((latest.total_savings || 0) / 1000)}K` : "—",
+      value: latest ? compact(latest.total_savings || 0) : "—",
       hint: latest ? "Annualized payment savings" : "Run a scan",
       Icon: Sparkles,
       accent: "from-[#5B4CF5] to-[#39C6F0]",
     },
     {
       label: "Cumulative identified",
-      value: `€${(totalSavings / 1000).toFixed(totalSavings < 10000 ? 1 : 0)}K`,
+      value: compact(totalSavings),
       hint: `${results.length} scan${results.length === 1 ? "" : "s"}`,
       Icon: TrendingUp,
       accent: "from-[#39C6F0] to-[#2FE0A8]",

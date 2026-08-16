@@ -178,3 +178,39 @@ moneda evidenciada, o una conversión declarada con fuente y fecha en la
 propia fila. Es un cambio en el núcleo del cálculo del gap (protegido por
 la suite de `paymentsGap`), no un seed. Debe ir en su propio PR y con
 decisión previa del fundador sobre cómo se declara el FX al comerciante.
+
+### Actualización 2026-08-16 — FX paso 2 ejecutado; la Fase D pasa de "bloqueada por FX" a "bloqueada por DATOS"
+
+La ruta FX explícita que pedía la sección anterior existe ya en dos capas:
+
+1. **Ingesta BCE diaria** (`base44/shared/ecbFxIngest.ts`, alojada en
+   `intelligenceMaintenanceWorker`): FxSnapshots con evidencia para las 10
+   divisas no-EUR de los mercados activos.
+2. **Divisa en el punto de entrada** (`analyzerSubmissionCurrency.ts` +
+   selector en el Analyzer): el merchant declara su divisa (propuesta desde
+   el país, cambiable), los importes se convierten a EUR en la frontera con
+   el tipo BCE **congelado sobre la sesión**, fail-closed sin snapshot. Un
+   merchant polaco que teclea 50.000 PLN ya no produce un resultado 4-5×
+   inflado — produce ~11.7k EUR con auditoría de tipo, o un rechazo honesto.
+
+Además: `buildAnalyzerProjection` proyecta extractos no-EUR con la misma
+doctrina (capacidad probada por test). **Cableado pendiente y declarado:** su
+caller de producción, `processUploadedFile/entry.ts`, es un frozen file con
+`allowedChange: false` (doctrina "ECL must not leak into the upload
+pipeline"); pasarle los FxSnapshots exige `scripts/update-freeze.mjs` con
+token de confirmación — decisión del founder, no de este cambio. Hasta
+entonces el pipeline de subida sigue llamando a la proyección sin snapshots
+y un extracto no-EUR falla cerrado (`analyzer_fx_evidence_required`), igual
+de seguro que antes. `MonthlySavingsReport.currency` se deriva de la fuente de medición
+(nunca literal) y el candado de `prepareEligibleRecoverInvoice` es por fin
+alcanzable de verdad (bloquea `currency_mismatch:<CUR>`, divisa ausente y
+`review_required`).
+
+**Lo que sigue bloqueado — y por qué ya no es ingeniería:** las filas de
+tarifas locales. Solo ES (12) y FR (10) tienen filas propias; 28 mercados
+caen al fallback `ANY|ANY|EU`. Cerrar eso exige tarifas verificadas con
+`source_url` + cita por mercado — trabajo de datos de campo. Inventario
+exacto y checklist por mercado: `src/docs/RATE_TABLE_COVERAGE_GAP_30_MERCADOS.md`.
+El candado de `paymentsRateCurrency.test.js` sigue vigente: la primera fila
+con fee en divisa local debe llegar junto a la conversión del fixed fee en
+el motor, nunca antes. Priorización de mercados: decisión del founder.

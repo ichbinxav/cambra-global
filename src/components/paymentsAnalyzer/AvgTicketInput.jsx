@@ -8,7 +8,7 @@ import { useTranslation } from "@/lib/i18n.jsx";
 
 const QUICK_TICKETS = [25, 50, 80, 150];
 
-export default function AvgTicketInput({ value, onChange }) {
+export default function AvgTicketInput({ value, onChange, currency = "EUR" }) {
   const { t, formatCurrency } = useTranslation();
   const active = (chip) => Number(value) === chip;
 
@@ -16,7 +16,7 @@ export default function AvgTicketInput({ value, onChange }) {
     <div className="space-y-2.5">
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          {t("az_lbl_ticket")}
+          {`${t("az_lbl_ticket")} (${currency})`}
         </span>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_hint_preset_or_type")}</span>
       </div>
@@ -54,7 +54,7 @@ export default function AvgTicketInput({ value, onChange }) {
                   }
             }
           >
-            {formatCurrency(v)}
+            {formatCurrency(v, currency)}
           </button>
         ))}
       </div>

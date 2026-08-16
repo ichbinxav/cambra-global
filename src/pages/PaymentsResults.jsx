@@ -195,7 +195,7 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
 
 export default function PaymentsResults() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, formatCurrency } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [params] = useSearchParams();
   // Two mutually-exclusive URL contracts:
@@ -868,13 +868,25 @@ export default function PaymentsResults() {
         {isVerifiedMode ? (
           <>
             Measured from {sampleMetrics?.tx_count_charges_90d ?? "—"} charges over {measurementWindow?.days_covered ?? "—"} days ·
-            {sampleMetrics?.gmv_eur_monthly ? ` €${Math.round(sampleMetrics.gmv_eur_monthly).toLocaleString("en-US")}/mo GMV ` : " "}·
+            {sampleMetrics?.gmv_eur_monthly ? ` ${formatCurrency(Math.round(sampleMetrics.gmv_eur_monthly))}/mo GMV ` : " "}·
             {" "}{inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
           </>
         ) : (
           <>
-            Analysis run on {inputSnapshot?.monthly_gmv_eur ? `€${Number(inputSnapshot.monthly_gmv_eur).toLocaleString("en-US")}` : "—"} monthly GMV
-            {inputSnapshot?.avg_ticket_eur ? `, €${inputSnapshot.avg_ticket_eur} average ticket` : ""} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
+            {/* FX-2 — show what the merchant actually typed: the original
+                amounts in their declared currency when the submission was
+                converted, the EUR figures otherwise. Formatting follows the
+                active locale, never en-US. */}
+            Analysis run on {(() => {
+              const cur = inputSnapshot?.currency || "EUR";
+              const gmv = inputSnapshot?.original_amounts?.monthly_gmv ?? inputSnapshot?.monthly_gmv_eur;
+              return gmv ? formatCurrency(Number(gmv), cur) : "—";
+            })()} monthly GMV
+            {(() => {
+              const cur = inputSnapshot?.currency || "EUR";
+              const ticket = inputSnapshot?.original_amounts?.avg_ticket ?? inputSnapshot?.avg_ticket_eur;
+              return ticket ? `, ${formatCurrency(Number(ticket), cur)} average ticket` : "";
+            })()} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
           </>
         )}
       </div>

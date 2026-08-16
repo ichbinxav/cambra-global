@@ -143,8 +143,46 @@ describe('document extraction v2 · independent agreement gate', () => {
   it('projects only independently accepted EUR evidence', () => {
     const agreed = crossValidateCandidates(normalize(payment(), modelA), normalize(payment(), modelB));
     expect(buildAnalyzerProjection(agreed.canonical)).toEqual({ eligible: true, reason: null, aggregates: { payments: { total_volume_eur: 10000, fee_pct: 2.9, provider: 'stripe', period_start: '2026-07-01', period_end: '2026-07-31', period_days: 31 } } });
+    // FX-2 (2026-08-16, deliberate R4 update): a non-EUR statement without a
+    // resolvable FxSnapshot used to be 'analyzer_requires_eur' (permanently
+    // useless); it is now 'analyzer_fx_evidence_required' (fail-closed until
+    // evidence exists). Same refusal to guess, more honest reason.
     const usd = crossValidateCandidates(normalize(payment({ currency: 'USD' }), modelA), normalize(payment({ currency: 'USD' }), modelB));
-    expect(buildAnalyzerProjection(usd.canonical)).toMatchObject({ eligible: false, reason: 'analyzer_requires_eur' });
+    expect(buildAnalyzerProjection(usd.canonical)).toMatchObject({ eligible: false, reason: 'analyzer_fx_evidence_required' });
+  });
+
+  it('FX-2: projects a non-EUR statement when a reliable FxSnapshot resolves at period end', () => {
+    // ECB-shaped snapshot (base EUR → quote SEK 11.20), effective the last
+    // TARGET business day before the statement period end.
+    const sekSnapshot = {
+      id: 'fx-sek-1',
+      base_currency: 'EUR',
+      quote_currency: 'SEK',
+      rate_kind: 'REFERENCE',
+      rate_decimal: '11.20',
+      source: 'ECB',
+      source_type: 'CENTRAL_BANK',
+      source_url: 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml',
+      effective_at: '2026-07-31T14:15:00Z',
+      status: 'CURRENT',
+      version: 1,
+    };
+    const sek = crossValidateCandidates(normalize(payment({ currency: 'SEK', fields: { gross_amount_major: field('112000.00', 'Gross volume'), fees_amount_major: field('3248.00', 'Total fees'), net_amount_major: field('108752.00', 'Net total') } }), modelA), normalize(payment({ currency: 'SEK', fields: { gross_amount_major: field('112000.00', 'Gross volume'), fees_amount_major: field('3248.00', 'Total fees'), net_amount_major: field('108752.00', 'Net total') } }), modelB));
+    expect(sek.accepted).toBe(true);
+    const projection = buildAnalyzerProjection(sek.canonical, [sekSnapshot]);
+    expect(projection.eligible).toBe(true);
+    // 112,000 SEK at 11.20 SEK/EUR = 10,000 EUR. fee_pct computed on the
+    // ORIGINAL amounts (ratio is currency-invariant): 3248/112000 = 2.9%.
+    expect(projection.aggregates.payments.total_volume_eur).toBeCloseTo(10000, 2);
+    expect(projection.aggregates.payments.fee_pct).toBeCloseTo(2.9, 4);
+    // The applied rate is frozen onto the projection for reproducibility.
+    expect(projection.aggregates.payments.fx).toMatchObject({
+      currency_original: 'SEK',
+      source: 'ECB',
+      resolved_effective_at: '2026-07-31T14:15:00.000Z',
+    });
+    // Same statement WITHOUT the snapshot fails closed, never a guessed rate.
+    expect(buildAnalyzerProjection(sek.canonical, [])).toMatchObject({ eligible: false, reason: 'analyzer_fx_evidence_required' });
   });
 
   it('does not reinterpret a quarterly statement as monthly Analyzer volume', () => {
@@ -191,6 +229,17 @@ describe('processUploadedFile v2 · production wiring', () => {
   it('requires independent acceptance before any profile or AnalyzerInput projection', () => {
     expect(source).toContain('if (comparison.accepted && projection.eligible)');
     expect(source).toContain('crossValidateCandidates(primary, secondary)');
+  });
+
+  it('consumes Anthropic and OpenAI as the two independent readers and routes disagreement to review', () => {
+    expect(source).toMatch(/const \[primaryRaw, secondaryRaw\] = await Promise\.all\(\[\s*callAnthropic\([\s\S]*?callOpenAI\(/u);
+    expect(source).toContain('const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed');
+    expect(source).toContain('const comparison = crossValidateCandidates(primary, secondary)');
+    expect(source).toContain("const status = comparison.accepted ? 'success' : (primaryRaw.ok || secondaryRaw.ok ? 'needs_review' : 'format_unknown')");
+    expect(source).toContain('if (comparison.accepted && projection.eligible) projected = await projectAccepted');
+    expect(source.match(/callAnthropic\(svc, checksum/g)).toHaveLength(1);
+    expect(source.match(/callOpenAI\(svc, checksum/g)).toHaveLength(1);
+    expect(source).toContain("outcome: status === 'format_unknown' ? 'FAILED' : 'SUCCEEDED'");
   });
 
   it('does not persist raw model responses', () => {

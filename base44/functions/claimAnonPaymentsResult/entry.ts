@@ -1,215 +1,346 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
-// claimAnonPaymentsResult — the payments-only handoff step. SINGLE SOURCE OF
-import { sha256 } from '../../shared/intelligenceCore.ts';
-// TRUTH for the anonymous→authenticated claim (the only claim function; the
-// former `claimPaymentsAnalysisSession` was deleted 2026-07-13).
-//
-// ROOT CAUSE (corrected 2026-07-13): reports rendered blank NOT because of a
-// "frozen deploy" but because the AnalyzerResult.details schema only declared
-// the legacy scoreEngine keys, so Base44 silently STRIPPED every payments key
-// on write (engine_result, input_snapshot, AND the details_shape fingerprint —
-// which is exactly why edits appeared to "never land": the probe itself was
-// being eaten). The fix was declaring the payments sub-properties on the
-// details schema. The deploy was never frozen. This is the sole survivor and
-// AuthContext points at it.
-//
-// ── CONDICIONES NO NEGOCIABLES (Xavi 2026-07-13) ────────────────────────────
-//  1. NO RECALCULAR — COPIAR. The materialized AnalyzerResult carries the
-//     EXACT engine_result + engine_version from the PaymentsAnalysisSession.
-//     The engine is NEVER re-run here.
-//  2. VOCABULARIO — the row is verification_status:"estimated" + was_anonymous:true.
-//  3. IDEMPOTENTE + DUEÑO ÚNICO — keyed by anon_session_id on AnalyzerResult.
-//  4. AISLAMIENTO DE TENANT — written USER-scoped so created_by === user.email.
-//  5. Fires on BOTH signup AND login.
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { sha256 } from '../../shared/intelligenceCore.ts';
+import {
+  ANONYMOUS_PAYMENTS_BLOCKED_RESPONSE,
+  acquireAnonymousPaymentsClaim,
+  anonymousPaymentsResultMatches,
+  assertAnonymousPaymentsClaimOwned,
+  markAnonymousPaymentsClaimRetryable,
+  normalizeAnonymousClaimEmail,
+  readCanonicalAnonymousPaymentsResult,
+  readCanonicalAnonymousPaymentsSnapshot,
+  selectAnonymousPaymentsClaimSession,
+  transitionAnonymousPaymentsClaim,
+} from '../../shared/anonymousPaymentsClaim.ts';
 
+// The PaymentsAnalysisSession CAS claim is the only ownership authority and
+// is acquired before any Brand, AnalyzerResult or snapshot materialization.
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function normalizeEmail(email: string | null | undefined): string {
-  if (typeof email !== 'string') return '';
-  return email.trim().toLowerCase();
+function blocked() {
+  return Response.json(ANONYMOUS_PAYMENTS_BLOCKED_RESPONSE, { status: 404 });
 }
 
-// Copy the annual savings RANGE verbatim from the session's engine_result.
+function internalError() {
+  return Response.json({ ok: false, error: 'claim_temporarily_unavailable' }, { status: 503 });
+}
+
 function readAnnualRange(engineResult: any): { lo: number; point: number; hi: number } {
-  const a = engineResult?.annual_savings_eur || {};
-  const num = (v: any) => (isFinite(Number(v)) ? Number(v) : 0);
-  return { lo: num(a.lo), point: num(a.point), hi: num(a.hi) };
+  const annual = engineResult?.annual_savings_eur || {};
+  const number = (value: any) => isFinite(Number(value)) ? Number(value) : 0;
+  return { lo: number(annual.lo), point: number(annual.point), hi: number(annual.hi) };
+}
+
+function claimResponse(session: any, claimed: boolean) {
+  return Response.json({
+    ok: true,
+    claimed,
+    analyzer_result_id: session.claim_analyzer_result_id,
+    brand_id: session.claim_brand_id,
+  });
 }
 
 Deno.serve(async (req) => {
+  let service: any = null;
+  let durableClaim: any = null;
   try {
     const base44 = createClientFromRequest(req);
-
-    // ── Auth guard (fires on both signup and login) ───────────────────────
-    let user: any = null;
+    service = base44.asServiceRole;
+    let user: any;
     try {
       user = await base44.auth.me();
-    } catch {
-      user = null;
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: 'anonymous_claim_auth_authority_unavailable',
+        error_name: error instanceof Error ? error.name : typeof error,
+      }));
+      return internalError();
     }
-    if (!user || !user.email) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    const userEmail = normalizeEmail(user.email);
+    const userEmail = normalizeAnonymousClaimEmail(user?.email);
+    if (!userEmail) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // ── Parse + validate session id ───────────────────────────────────────
-    let body: any = null;
+    let body: any;
     try {
       body = await req.json();
-    } catch {
-      return Response.json({ ok: false, error: 'invalid_json_body' }, { status: 400 });
+    } catch (error) {
+      console.warn(JSON.stringify({
+        event: 'anonymous_claim_request_invalid',
+        error_name: error instanceof Error ? error.name : typeof error,
+      }));
+      return blocked();
     }
-    const anon_session_id = body?.anon_session_id || body?.session_id || null;
-    if (typeof anon_session_id !== 'string' || !UUID_V4.test(anon_session_id)) {
-      return Response.json({ ok: false, error: 'invalid_session_id' }, { status: 400 });
+    const anonymousSessionId = body?.anon_session_id || body?.session_id || null;
+    if (typeof anonymousSessionId !== 'string' || !UUID_V4.test(anonymousSessionId)) {
+      return blocked();
     }
 
-    // ── IDEMPOTENCY + owner check (condición #3) ──────────────────────────
-    const priorClaims = await base44.asServiceRole.entities.AnalyzerResult
-      .filter({ anon_session_id }, '-created_date', 1)
-      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
-    if (Array.isArray(priorClaims) && priorClaims[0]) {
-      const prior = priorClaims[0];
-      const priorOwner = normalizeEmail(prior.created_by);
-      if (priorOwner && priorOwner !== userEmail) {
-        return Response.json({ ok: false, error: 'already_claimed' }, { status: 409 });
+    const sessions = await service.entities.PaymentsAnalysisSession.filter(
+      { anon_session_id: anonymousSessionId },
+      '-created_date',
+      2,
+    );
+    // Missing, ambiguous, wrong-email and incomplete sessions share one exact
+    // non-enumerable response contract.
+    const eligibility = selectAnonymousPaymentsClaimSession(sessions, userEmail);
+    if (!eligibility.eligible) return blocked();
+    let session = eligibility.session;
+
+    const acquisition = await acquireAnonymousPaymentsClaim(service, session, {
+      authenticated_email: userEmail,
+    });
+    if (!acquisition.claim) return blocked();
+    durableClaim = acquisition.claim;
+    session = acquisition.session;
+
+    if (durableClaim.state === 'COMPLETED') {
+      const completedResult = await readCanonicalAnonymousPaymentsResult(service, session, durableClaim);
+      const completedSnapshot = completedResult
+        ? await readCanonicalAnonymousPaymentsSnapshot(service, session, durableClaim, completedResult)
+        : null;
+      if (!completedResult || !completedSnapshot) {
+        throw new Error('anonymous_claim_completed_binding_missing');
       }
-      return Response.json({
-        ok: true,
-        claimed: false,
-        analyzer_result_id: prior.id,
-        brand_id: prior.brand_id || null,
+      return claimResponse(session, false);
+    }
+
+    if (durableClaim.state === 'MATERIALIZING') {
+      if (!acquisition.materialization_stale) return internalError();
+      const recovered = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+        from: 'MATERIALIZING',
+        to: 'RECONCILE_REQUIRED',
+        patch: { claim_error_code: 'stale_materialization_lease_recovered' },
       });
+      if (!recovered.ok) return internalError();
+      durableClaim = recovered.claim;
+      session = recovered.session;
     }
 
-    // ── Read the ownerless anonymous session (service role — condición #2) ─
-    const sessions = await base44.asServiceRole.entities.PaymentsAnalysisSession
-      .filter({ anon_session_id }, '-created_date', 1)
-      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
-    if (!Array.isArray(sessions) || !sessions[0]) {
-      return Response.json({ ok: false, error: 'session_not_found' });
+    if (['CLAIMED', 'RECONCILE_REQUIRED'].includes(durableClaim.state)) {
+      const transition = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+        from: durableClaim.state,
+        to: 'MATERIALIZING',
+        patch: { claim_error_code: '' },
+      });
+      if (!transition.ok) return internalError();
+      durableClaim = transition.claim;
+      session = transition.session;
     }
-    const session = sessions[0];
-    const engineResult = session.engine_result || null;
-    const engineVersion = session.engine_version || engineResult?.engine_version || null;
-    const snapshot = session.input_snapshot || {};
+    if (durableClaim.state !== 'MATERIALIZING') return internalError();
 
-    if (!engineResult || engineResult.ok !== true) {
-      return Response.json({ ok: false, error: 'session_not_found' });
-    }
-
-    // ── Resolve or create the user's Brand (contact_email pivot) ──────────
-    const pickWinner = (rows: any[]) => {
-      return [...rows].sort((a, b) => {
-        const da = new Date(a.created_date || 0).getTime();
-        const db = new Date(b.created_date || 0).getTime();
-        if (da !== db) return da - db;
-        return String(a.id).localeCompare(String(b.id));
-      })[0];
-    };
-
+    await assertAnonymousPaymentsClaimOwned(service, durableClaim);
+    let result = await readCanonicalAnonymousPaymentsResult(service, session, durableClaim);
     let brand: any = null;
-    const ownedBrands = await base44.entities.Brand
-      .filter({ contact_email: userEmail }, '-created_date', 20)
-      .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
-    if (Array.isArray(ownedBrands) && ownedBrands.length > 0) {
-      brand = pickWinner(ownedBrands);
-    } else {
-      await base44.entities.Brand.create({
-        name: (typeof snapshot.brand_name === 'string' && snapshot.brand_name.trim())
-          ? snapshot.brand_name.trim()
+    if (session.claim_brand_id) {
+      brand = await service.entities.Brand.get(String(session.claim_brand_id));
+      if (
+        !brand?.id ||
+        normalizeAnonymousClaimEmail(brand.created_by) !== userEmail ||
+        normalizeAnonymousClaimEmail(brand.contact_email) !== userEmail
+      ) throw new Error('anonymous_claim_brand_binding_mismatch');
+    }
+    if (!brand && result?.brand_id) {
+      brand = await service.entities.Brand.get(String(result.brand_id));
+      if (!brand?.id || normalizeAnonymousClaimEmail(brand.created_by) !== userEmail) {
+        throw new Error('anonymous_claim_result_brand_tenant_mismatch');
+      }
+    }
+    if (!brand) {
+      const ownedBrands = await base44.entities.Brand.filter(
+        { contact_email: userEmail },
+        '-created_date',
+        2,
+      );
+      if (!Array.isArray(ownedBrands) || ownedBrands.length > 1) {
+        throw new Error('anonymous_claim_brand_authority_ambiguous');
+      }
+      brand = ownedBrands[0] || await base44.entities.Brand.create({
+        name: typeof session.input_snapshot?.brand_name === 'string' && session.input_snapshot.brand_name.trim()
+          ? session.input_snapshot.brand_name.trim()
           : 'My brand',
         contact_email: userEmail,
         contact_name: user.full_name || undefined,
-        website: typeof snapshot.website === 'string' ? snapshot.website : undefined,
-        country: typeof snapshot.country === 'string' ? snapshot.country : undefined,
-        category: typeof snapshot.sector === 'string' ? snapshot.sector : undefined,
-        // EMAIL-1 T2 — carry the anonymous session's language onto the Brand
-        // so the welcome + monthly emails keep speaking the language the
-        // visitor ran the analysis in. Absent → entity default 'en'.
+        website: typeof session.input_snapshot?.website === 'string'
+          ? session.input_snapshot.website
+          : undefined,
+        country: typeof session.input_snapshot?.country === 'string'
+          ? session.input_snapshot.country
+          : undefined,
+        category: typeof session.input_snapshot?.sector === 'string'
+          ? session.input_snapshot.sector
+          : undefined,
         locale: typeof session.locale === 'string' ? session.locale : undefined,
       });
-      const afterCreate = await base44.entities.Brand
-        .filter({ contact_email: userEmail }, '-created_date', 20)
-        .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
-      brand = (Array.isArray(afterCreate) && afterCreate.length > 0)
-        ? pickWinner(afterCreate)
-        : null;
-      if (Array.isArray(afterCreate) && afterCreate.length > 1) {
-        console.warn('claimAnonPaymentsResult: residual duplicate Brand for', userEmail, '— left orphaned for offline purge. count=', afterCreate.length);
+      if (!brand?.id || normalizeAnonymousClaimEmail(brand.created_by) !== userEmail) {
+        throw new Error('anonymous_claim_brand_tenant_mismatch');
       }
     }
-    if (!brand?.id) {
-      return Response.json({ ok: false, error: 'brand_resolution_failed' }, { status: 500 });
+
+    if (!session.claim_brand_id) {
+      const bound = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+        from: 'MATERIALIZING',
+        to: 'MATERIALIZING',
+        patch: { claim_brand_id: String(brand.id) },
+      });
+      if (!bound.ok) return internalError();
+      durableClaim = bound.claim;
+      session = bound.session;
+    }
+    if (String(session.claim_brand_id || '') !== String(brand.id)) {
+      throw new Error('anonymous_claim_brand_fence_lost');
     }
 
-    // ── Materialize the AnalyzerResult (COPY, no recompute — condición #1) ─
-    const range = readAnnualRange(engineResult);
-    const created = await base44.entities.AnalyzerResult.create({
-      brand_id: brand.id,
-      anon_session_id,
-      was_anonymous: true,
-      verification_status: 'estimated',
-      savings_model_version: engineVersion || undefined,
-      score_engine_version: engineVersion || undefined,
-      total_savings: range.point,
-      payment_savings: range.point,
-      assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [],
-      methodology: 'Materialized from anonymous payments analysis (estimated). Connect your PSP to verify.',
-      confidence_level: 'medium',
-      benchmark_source: 'provider_published',
-      details: {
-        // Payments shape — this is exactly what PaymentsResults reads
-        // (details.engine_result + details.input_snapshot).
-        details_shape: 'payments-v1',
-        savings_range: range,
-        engine_result: engineResult,
+    await assertAnonymousPaymentsClaimOwned(service, durableClaim);
+    if (!result) {
+      const engineResult = session.engine_result;
+      const engineVersion = session.engine_version || engineResult.engine_version || null;
+      const inputSnapshot = session.input_snapshot || {};
+      const range = readAnnualRange(engineResult);
+      result = await base44.entities.AnalyzerResult.create({
+        brand_id: brand.id,
+        anon_session_id: anonymousSessionId,
+        anonymous_claim_session_id: String(session.id),
+        anonymous_claim_token: String(durableClaim.token),
+        anonymous_claim_revision: Number(durableClaim.revision),
+        anonymous_claim_owner: userEmail,
+        was_anonymous: true,
+        verification_status: 'estimated',
+        savings_model_version: engineVersion || undefined,
+        score_engine_version: engineVersion || undefined,
+        total_savings: range.point,
+        payment_savings: range.point,
+        // FX-2 (2026-08-16) — the gap engine is EUR-only; non-EUR merchant
+        // input was converted at the submit boundary. Explicit, never default.
+        currency: 'EUR',
+        assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [],
+        methodology: 'Materialized from anonymous payments analysis (estimated). Connect your PSP to verify.',
+        confidence_level: 'medium',
+        benchmark_source: 'provider_published',
+        details: {
+          details_shape: 'payments-v1',
+          savings_range: range,
+          engine_result: engineResult,
+          engine_version: engineVersion,
+          cohort: engineResult.cohort || null,
+          input_snapshot: {
+            monthly_gmv_eur: inputSnapshot.monthly_gmv_eur ?? null,
+            avg_ticket_eur: inputSnapshot.avg_ticket_eur ?? null,
+            provider_slug: inputSnapshot.provider_slug ?? null,
+            country: inputSnapshot.country ?? null,
+          },
+        },
+      });
+      if (!anonymousPaymentsResultMatches(result, session, durableClaim)) {
+        throw new Error('anonymous_claim_created_result_binding_mismatch');
+      }
+    }
+
+    if (!session.claim_analyzer_result_id) {
+      const bound = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+        from: 'MATERIALIZING',
+        to: 'MATERIALIZING',
+        patch: { claim_analyzer_result_id: String(result.id) },
+      });
+      if (!bound.ok) return internalError();
+      durableClaim = bound.claim;
+      session = bound.session;
+    }
+    if (!anonymousPaymentsResultMatches(result, session, durableClaim)) {
+      throw new Error('anonymous_claim_result_fence_lost');
+    }
+
+    await assertAnonymousPaymentsClaimOwned(service, durableClaim);
+    let intelligenceSnapshot = await readCanonicalAnonymousPaymentsSnapshot(service, session, durableClaim, result);
+    if (!intelligenceSnapshot) {
+      const engineResult = session.engine_result;
+      const engineVersion = session.engine_version || engineResult.engine_version || null;
+      const inputSnapshot = session.input_snapshot || {};
+      const snapshotPayload = {
         engine_version: engineVersion,
         cohort: engineResult.cohort || null,
         input_snapshot: {
-          monthly_gmv_eur: snapshot.monthly_gmv_eur ?? null,
-          avg_ticket_eur: snapshot.avg_ticket_eur ?? null,
-          provider_slug: snapshot.provider_slug ?? null,
-          country: snapshot.country ?? null,
+          monthly_gmv_eur: inputSnapshot.monthly_gmv_eur ?? null,
+          avg_ticket_eur: inputSnapshot.avg_ticket_eur ?? null,
+          provider_slug: inputSnapshot.provider_slug ?? null,
+          country: inputSnapshot.country ?? null,
         },
-      },
-    });
-
-    // ── CONCURRENCY — AnalyzerResult create-then-verify ───────────────────
-    let winnerId = created.id;
-    try {
-      const dupes = await base44.asServiceRole.entities.AnalyzerResult
-        .filter({ anon_session_id }, '-created_date', 20)
-        .catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:[],severity:'secondary'}));
-      if (Array.isArray(dupes) && dupes.length > 1) {
-        const winner = pickWinner(dupes);
-        winnerId = winner?.id || created.id;
-        const winnerPresent = dupes.some((r: any) => r.id === winnerId);
-        if (winnerPresent && created.id !== winnerId) {
-          const mine = normalizeEmail(created.created_by) === userEmail;
-          if (mine) {
-            await base44.entities.AnalyzerResult.delete(created.id).catch(() => { /* already gone — fine */ });
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('claimAnonPaymentsResult: dedup verify skipped:', (e as any)?.message);
+        assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [],
+        source: 'anonymous_estimated',
+        claim_session_id: String(session.id),
+        claim_owner: userEmail,
+      };
+      const snapshotHash = await sha256(snapshotPayload);
+      intelligenceSnapshot = await service.entities.IntelligenceSnapshot.create({
+        snapshot_key: `analyzer-claim:${session.id}:${durableClaim.token}`,
+        snapshot_type: 'analyzer_result',
+        related_entity_type: 'AnalyzerResult',
+        related_entity_id: result.id,
+        brand_id: brand.id,
+        vertical: 'payments',
+        anonymous_claim_session_id: String(session.id),
+        anonymous_claim_token: String(durableClaim.token),
+        anonymous_claim_owner: userEmail,
+        claim_ids: [String(session.id)],
+        pricing_version_ids: [],
+        benchmark_refs_json: { cohort: engineResult.cohort || null },
+        calculation_version: engineVersion || undefined,
+        snapshot_json: snapshotPayload,
+        snapshot_hash: snapshotHash,
+        captured_at: new Date().toISOString(),
+      });
+      if (
+        !intelligenceSnapshot?.id ||
+        String(intelligenceSnapshot.related_entity_id) !== String(result.id) ||
+        String(intelligenceSnapshot.brand_id) !== String(brand.id)
+      ) throw new Error('anonymous_claim_snapshot_tenant_mismatch');
     }
 
-    // P12 — freeze the intelligence context that produced the historical AnalyzerResult.
-    const analyzerSnapshotPayload = { engine_version: engineVersion, cohort: engineResult.cohort || null, input_snapshot: { monthly_gmv_eur: snapshot.monthly_gmv_eur ?? null, avg_ticket_eur: snapshot.avg_ticket_eur ?? null, provider_slug: snapshot.provider_slug ?? null, country: snapshot.country ?? null }, assumptions: Array.isArray(engineResult.assumptions) ? engineResult.assumptions : [], source: 'anonymous_estimated' };
-    const analyzerSnapshotHash = await sha256(analyzerSnapshotPayload);
-    const intelSnapshot = await base44.asServiceRole.entities.IntelligenceSnapshot.create({ snapshot_key: `analyzer:${winnerId}:${analyzerSnapshotHash.slice(0,16)}`, snapshot_type: 'analyzer_result', related_entity_type: 'AnalyzerResult', related_entity_id: winnerId, brand_id: brand.id, vertical: 'payments', claim_ids: [], pricing_version_ids: [], benchmark_refs_json: { cohort: engineResult.cohort || null }, calculation_version: engineVersion || undefined, snapshot_json: analyzerSnapshotPayload, snapshot_hash: analyzerSnapshotHash, captured_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:null,severity:'secondary'}));
-    if (intelSnapshot?.id) await base44.asServiceRole.entities.AnalyzerResult.update(winnerId,{ intelligence_snapshot_id: intelSnapshot.id }).catch((error:any)=>safeBestEffort(error,{operation:'claimAnonPaymentsResult',fallback:null,severity:'secondary'}));
+    if (!session.claim_intelligence_snapshot_id) {
+      const bound = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+        from: 'MATERIALIZING',
+        to: 'MATERIALIZING',
+        patch: { claim_intelligence_snapshot_id: String(intelligenceSnapshot.id) },
+      });
+      if (!bound.ok) return internalError();
+      durableClaim = bound.claim;
+      session = bound.session;
+    }
+    if (String(session.claim_intelligence_snapshot_id || '') !== String(intelligenceSnapshot.id)) {
+      throw new Error('anonymous_claim_snapshot_fence_lost');
+    }
+    if (String(result.intelligence_snapshot_id || '') !== String(intelligenceSnapshot.id)) {
+      await assertAnonymousPaymentsClaimOwned(service, durableClaim);
+      result = await base44.entities.AnalyzerResult.update(result.id, {
+        intelligence_snapshot_id: intelligenceSnapshot.id,
+      });
+      if (!anonymousPaymentsResultMatches(result, session, durableClaim)) {
+        throw new Error('anonymous_claim_result_snapshot_binding_lost');
+      }
+    }
 
-    return Response.json({
-      ok: true,
-      claimed: true,
-      analyzer_result_id: winnerId,
-      brand_id: brand.id,
+    const completed = await transitionAnonymousPaymentsClaim(service, durableClaim, {
+      from: 'MATERIALIZING',
+      to: 'COMPLETED',
+      patch: { claim_error_code: '' },
     });
+    if (!completed.ok) return internalError();
+    return claimResponse(completed.session, acquisition.acquired === true);
   } catch (error) {
-    console.error('claimAnonPaymentsResult:', (error as any)?.message, (error as any)?.stack);
-    return Response.json({ ok: false, error: 'internal_error' }, { status: 500 });
+    console.error('claimAnonPaymentsResult:', (error as any)?.message);
+    if (service && durableClaim && durableClaim.state !== 'COMPLETED') {
+      try {
+        await markAnonymousPaymentsClaimRetryable(
+          service,
+          durableClaim,
+          (error as any)?.code || (error as any)?.message || 'materialization_failed',
+        );
+      } catch (reconciliationError) {
+        console.error(JSON.stringify({
+          event: 'anonymous_claim_reconciliation_persist_failed',
+          claim_session_id: durableClaim.session_id || null,
+          error_name: reconciliationError instanceof Error ? reconciliationError.name : typeof reconciliationError,
+        }));
+      }
+    }
+    return internalError();
   }
 });

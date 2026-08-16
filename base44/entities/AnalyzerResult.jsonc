@@ -17,6 +17,10 @@
     "brand_id": {
       "type": "string"
     },
+    "currency": {
+      "type": "string",
+      "description": "FX-2 (2026-08-16) \u2014 ISO 4217 currency the monetary result fields (payment_savings, totals) are denominated in. Deliberately NO default: absent = unknown legacy row, never a silent EUR. BrandSavings inherits this via result_id \u2014 it deliberately has no currency field of its own (single authority)."
+    },
     "input_id": {
       "type": "string"
     },
@@ -31,7 +35,7 @@
     },
     "banking_savings": {
       "type": "number",
-      "description": "OPTIONAL \u2014 savings recoverable in the Banking vertical (account fees excess + FX conversion spread). Populated by the shared score engine (scoreEngine.calculateSavings.bankingSavings). Historical rows and rows produced before the Stripe FX line existed leave it undefined; downstream reads MUST treat undefined as 0 (never render '\u2014'). NOT part of any total_savings recomputation \u2014 the persisted total_savings already includes this figure from the same engine call. Purely additive: no migration."
+      "description": "OPTIONAL \u2014 savings recoverable in the Banking vertical (account fees excess + FX conversion spread). Populated by the shared score engine (scoreEngine.calculateSavings.bankingSavings). Historical rows and rows produced before the Stripe FX line existed leave it undefined; downstream reads MUST preserve that state as not measured/unknown and MUST NOT convert it to 0. An explicit persisted 0 remains a real measured zero. NOT part of any total_savings recomputation \u2014 the persisted total_savings already includes this figure from the same engine call. Purely additive: no migration."
     },
     "total_savings": {
       "type": "number"
@@ -180,6 +184,22 @@
     "anon_session_id": {
       "type": "string",
       "description": "Set when this AnalyzerResult was created during an anonymous Analyzer session, before the user signed up. Cleared on claim. The teaser endpoint exposes ONLY a 4-field subset of this record to clients with a matching anon_session_id."
+    },
+    "anonymous_claim_session_id": {
+      "type": "string",
+      "description": "Canonical PaymentsAnalysisSession row id whose durable CAS claim authorized this materialization. Unlike anon_session_id, this internal claim link is never used as an ownership authority."
+    },
+    "anonymous_claim_token": {
+      "type": "string",
+      "description": "Opaque fencing token copied from the canonical PaymentsAnalysisSession claim so replay can find and verify exactly one winner."
+    },
+    "anonymous_claim_revision": {
+      "type": "number",
+      "description": "PaymentsAnalysisSession claim revision observed when this result was materialized."
+    },
+    "anonymous_claim_owner": {
+      "type": "string",
+      "description": "Normalized authenticated owner copied from the canonical session claim for tenant verification."
     },
     "was_anonymous": {
       "type": "boolean",

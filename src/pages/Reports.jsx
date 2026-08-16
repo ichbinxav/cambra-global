@@ -33,7 +33,7 @@ import { formatShortDate } from "@/components/reports/reportsLabels";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 export default function Reports() {
-  const { t, lang } = useTranslation();
+  const { t, lang, locale, formatCurrency } = useTranslation();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [brand, setBrand] = useState(null);
@@ -83,6 +83,21 @@ export default function Reports() {
     date: formatShortDate(r.created_date, lang),
     payments: r.payment_savings || 0,
   }));
+
+  // FX-2 Fase C (2026-08-16) — the chart's currency is the currency of the
+  // NEWEST AnalyzerResult (results[0]); legacy rows without the field are EUR
+  // by construction (the engine was EUR-only when they were written). The
+  // axis/tooltip previously hardcoded `€${...}` with en-US grouping — wrong
+  // symbol for any future non-EUR result AND wrong separators for most
+  // merchants ("€2,500" shown to a German instead of "2.500 €").
+  const chartCurrency = results[0]?.currency || "EUR";
+  const compactAxisFormat = (v) => {
+    try {
+      return new Intl.NumberFormat(locale, { style: "currency", currency: chartCurrency, notation: "compact", maximumFractionDigits: 0 }).format(v);
+    } catch {
+      return formatCurrency(v, chartCurrency);
+    }
+  };
 
   return (
     <div>
@@ -169,10 +184,10 @@ export default function Reports() {
                   <BarChart data={chartData} barCategoryGap="35%">
                     <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.08)" vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
+                    <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} tickFormatter={compactAxisFormat} />
                     <Tooltip
                       contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", fontSize: 11, background: "#0B1023", color: "#fff" }}
-                      formatter={v => [`€${v?.toLocaleString()}${t("rpt_per_year")}`, t("rpt_chart_series")]}
+                      formatter={v => [`${formatCurrency(Number(v) || 0, chartCurrency)}${t("rpt_per_year")}`, t("rpt_chart_series")]}
                     />
                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
                     {/* dataKey stays the stored field; `name` is what the legend

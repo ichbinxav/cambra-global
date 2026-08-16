@@ -64,24 +64,26 @@ const TICK_VALUES = [500, 10_000, 100_000, 1_000_000, 10_000_000];
 // still rejects submits without user intent.
 const DEFAULT_DISPLAY_EUR = 25_000;
 
-export default function GmvSlider({ value, onChange }) {
+export default function GmvSlider({ value, onChange, currency = "EUR" }) {
   const { t, locale, formatCurrency } = useTranslation();
 
-  // Compact, locale-aware tick labels ("€10K" in en, "10 Mio. €" in de).
+  // Compact, locale-aware tick labels ("€10K" in en, "10 Mio. €" in de,
+  // "10 mln zł" in pl). FX-2: formatted in the merchant's selected currency —
+  // the typed amounts ARE that currency, so the ticks must not claim EUR.
   // formatCurrency is not used here because it has no compact notation and a
   // full "10.000.000 €" does not fit under a slider tick.
   const tickLabels = useMemo(() => {
     let fmt;
     try {
-      fmt = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 0 });
+      fmt = new Intl.NumberFormat(locale, { style: "currency", currency, notation: "compact", maximumFractionDigits: 0 });
     } catch {
       fmt = null;
     }
-    // Fallback is the locale-aware full formatter, never a hardcoded "€" —
+    // Fallback is the locale-aware full formatter, never a hardcoded symbol —
     // an exotic-but-valid locale tag must not regress a German merchant to
     // "€25000" with the symbol on the wrong side.
-    return TICK_VALUES.map((v) => (fmt ? fmt.format(v) : formatCurrency(v)));
-  }, [locale, formatCurrency]);
+    return TICK_VALUES.map((v) => (fmt ? fmt.format(v) : formatCurrency(v, currency)));
+  }, [locale, currency, formatCurrency]);
 
   // isSet distinguishes "user hasn't touched it" (show default in the big
   // number so the slider position matches) from "user typed / dragged".
@@ -111,7 +113,7 @@ export default function GmvSlider({ value, onChange }) {
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          {t("az_lbl_gmv")}
+          {`${t("az_lbl_gmv")} (${currency})`}
         </span>
         <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_hint_slide_or_type")}</span>
       </div>
@@ -136,7 +138,7 @@ export default function GmvSlider({ value, onChange }) {
             color: isSet ? "#ffffff" : "rgba(255,255,255,0.45)",
           }}
         >
-          {formatAmount(displayValue, formatCurrency)}
+          {formatAmount(displayValue, (n) => formatCurrency(n, currency))}
         </div>
         <span className="text-[12px] shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_per_month_suffix")}</span>
         <div className="ml-auto flex items-center gap-1.5 shrink-0">

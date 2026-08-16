@@ -6,7 +6,8 @@
       "type": "string"
     },
     "result_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Link to the AnalyzerResult these figures were computed from. FX-2 Fase B (2026-08-16): currency authority \u2014 the monetary fields of this row are denominated in AnalyzerResult.currency of the linked row. BrandSavings deliberately has NO currency field of its own: duplicating it would create two authorities that can drift."
     },
     "estimated_savings_monthly": {
       "type": "number",

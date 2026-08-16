@@ -78,8 +78,9 @@ export function normalizeAnalyzerStripeRows(rows:any[], snapshots:any[], targetC
     if (!resolution?.ok || !['CURRENT','VERIFIED_REFERENCE'].includes(String(resolution?.status || ''))) {
       return { ok:false,error:'analyzer_fx_evidence_required',blockers:[{ row_ref:rowRef,currency,requested_effective_at:effectiveAt,reason:resolution?.error||resolution?.status||'fx_evidence_required' }],original_totals_by_currency };
     }
-    const normalizedAmount = normalizeMoney({ amount_original:amount,currency_original:currency,target_currency:target,effective_at:effectiveAt,fx_resolution:resolution });
-    const normalizedFee = normalizeMoney({ amount_original:fee,currency_original:currency,target_currency:target,effective_at:effectiveAt,fx_resolution:resolution });
+    // `any`: the critical typecheck cannot narrow normalizeMoney's union (FX-2).
+    const normalizedAmount:any = normalizeMoney({ amount_original:amount,currency_original:currency,target_currency:target,effective_at:effectiveAt,fx_resolution:resolution });
+    const normalizedFee:any = normalizeMoney({ amount_original:fee,currency_original:currency,target_currency:target,effective_at:effectiveAt,fx_resolution:resolution });
     if (!normalizedAmount?.ok || !normalizedFee?.ok) {
       return { ok:false,error:'analyzer_fx_evidence_required',blockers:[{ row_ref:rowRef,currency,requested_effective_at:effectiveAt,reason:normalizedAmount?.error||normalizedFee?.error||'fx_normalization_failed' }],original_totals_by_currency };
     }

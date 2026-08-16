@@ -4,8 +4,9 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 //
 // Chunk 3 scope (as approved):
 //   - Anonymous POST — no auth required.
-//   - Rate-limit 10/hour/IP via RateLimitCounter (principal_id per-endpoint,
-//     ip_hashed with a DERIVED salt — see IP_SALT below). Env override:
+//   - Rate-limit 10/hour/network fingerprint via RateLimitCounter. The
+//     principal is a versioned, domain-separated HMAC; raw IPs and unkeyed
+//     hashes are never persisted. Env override:
 //     PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR.
 //   - Hard-range validation per contract §2.1. No silent clamping — out of
 //     range → 400 with { error, field, reason } naming the offending field.
@@ -27,7 +28,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 // EMAIL-1 T2 — locale normalization lives OUTSIDE the SYNC block on purpose:
 // it is transport/metadata concern, never engine logic.
 import { normalizeLocale } from '../../shared/emailLocale.ts';
-import { consumeRateLimit } from '../../shared/rateLimit.ts';
+import { consumePublicRequestRateLimit } from '../../shared/rateLimit.ts';
+import { validatePaymentsLaunchMarketInput } from '../../shared/marketLaunchScope.ts';
+// FX-2 (2026-08-16) — merchant-selected currency. The engine below stays
+// EUR-only; a non-EUR payload is converted AT THIS BOUNDARY with a frozen,
+// evidence-backed ECB rate (fail-closed when no FxSnapshot resolves).
+import { prepareAnalyzerSubmissionCurrency } from '../../shared/analyzerSubmissionCurrency.ts';
+import {
+  observeServiceLevelRequest,
+  serviceLevelResult,
+} from '../../shared/serviceLevelObservation.ts';
 
 // ─── SYNC block — verbatim copy of src/lib/paymentsGap.js ───────────────────
 // Base44 functions cannot share code via imports and do not share a service
@@ -521,11 +531,21 @@ function selectRow(rows, provider_slug, region, channel, country) {
 // to the pre-1.1.0 behavior. The engine does NOT own a default uplift
 // constant — every value must come from the row (Enmienda 1).
 //
-// The caller is responsible for currency alignment. We do NOT do FX here:
-// PaymentsRateTable stores the fixed fee in the provider's native currency,
-// but for a first-pass gap estimate we treat EUR/GBP/USD as ~1:1 at the
-// magnitudes involved (fees under €0.50). FX-precise treatment is deferred
-// to when we have live sync data.
+// Currency alignment (FX-2, 2026-08-16). The caller is responsible for it,
+// and as of FX-2 it actually happens: merchant-entered amounts are converted
+// to EUR at the submitPaymentsAnalysis boundary with an evidence-backed ECB
+// rate (fail-closed), so avg_ticket_eur/monthly_gmv_eur here are genuinely
+// EUR. We do NOT do FX here — inside the engine — for ONE remaining input:
+// the rate-table fixed fee, which PaymentsRateTable stores in the provider's
+// native currency. Seeded rows only carry EUR/GBP/USD fees (locked by
+// paymentsRateCurrency.test.js), and we treat those as ~1:1.
+// Exact bound of that approximation: seeded fixed fees are ≤ 0.50 major
+// units and EUR/GBP/USD cross rates have stayed within ±25%; at the minimum
+// allowed ticket (€5) a 0.50 fee amortizes to 1000 bps, so the worst-case
+// currency error is ≤250 bps — but at the P50 ticket (€40+) it is ≤31 bps,
+// inside the ±35% honesty band the product already displays. Local-currency
+// rate rows (Fase D) remove even this residue; until then the currency lock
+// keeps any non-EUR/GBP/USD fee out of the table.
 function computeEffectiveBps(
   { percent_bps, fixed_fee_minor_units, terminal_rental_monthly_minor },
   avg_ticket_eur,
@@ -1449,25 +1469,6 @@ const ALLOWED_CHANNELS = new Set<string>(['online', 'in_store']);
 // single-channel (online o in_store) es byte-idéntico al pre-Fase-3.
 const ALLOWED_MODES = new Set<string>(['single', 'combined']);
 
-// Country → region mapping. Region is DERIVED server-side from country; the
-// caller only provides country. This prevents the client from picking a region
-// that mismatches their country and cherry-picking a friendlier fallback row.
-const EU_COUNTRIES = new Set([
-  'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT',
-  'LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE',
-  // Included as EU-adjacent for payments purposes (EEA / SEPA):
-  'IS','LI','NO','CH',
-]);
-const UK_COUNTRIES = new Set(['GB']);
-const US_COUNTRIES = new Set(['US']);
-
-function countryToRegion(iso2: string): 'EU' | 'UK' | 'US' | 'RoW' {
-  if (EU_COUNTRIES.has(iso2)) return 'EU';
-  if (UK_COUNTRIES.has(iso2)) return 'UK';
-  if (US_COUNTRIES.has(iso2)) return 'US';
-  return 'RoW';
-}
-
 // ─── Website normalization ──────────────────────────────────────────────────
 // Accepts inputs like "aimestudio.com", "www.aimestudio.com",
 // "https://aimestudio.com/shop", "http://…" and reduces to a bare hostname
@@ -1497,61 +1498,18 @@ function normalizeWebsite(raw: string): string | null {
   return s;
 }
 
-// ─── IP salt derivation — decoupled from BENCHMARK_ANON_SALT ────────────────
-// We derive a per-domain salt from the raw benchmark salt with a fixed suffix.
-// Rotating the benchmark salt would break historical benchmark pseudonyms
-// (permanent, on purpose). We do NOT want that same immutability to bind
-// rate-limit hashes: those are transient. Deriving IP_SALT once at boot,
-// keyed by ':ip-hashing', gives us a stable-during-runtime salt for IP hashing
-// that lives in a separate domain from benchmarks. Both salts can rotate
-// independently in the future without touching each other's history.
-async function sha256Hex(input: string): Promise<string> {
-  const bytes = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-let _ipSaltCache: string | null = null;
-async function getIpSalt(): Promise<string> {
-  if (_ipSaltCache) return _ipSaltCache;
-  const raw = Deno.env.get('BENCHMARK_ANON_SALT') || '';
-  if (!raw) throw new Error('missing_benchmark_anon_salt');
-  _ipSaltCache = await sha256Hex(raw + ':ip-hashing');
-  return _ipSaltCache;
-}
-
-async function hashIp(ip: string): Promise<string> {
-  const salt = await getIpSalt();
-  return sha256Hex(salt + ':' + ip);
-}
-
-function extractClientIp(req: Request): string {
-  // Trust the standard forwarding chain the platform sets. Falls back to a
-  // literal 'unknown' bucket so rate-limiting still applies (all unknowns
-  // share a bucket — that's the point; better than letting them bypass).
-  const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
-  return req.headers.get('x-real-ip') || 'unknown';
-}
-
-// ─── Rate limit — hourly bucket via RateLimitCounter ────────────────────────
-// principal_id namespacing: 'submitPaymentsAnalysis:<ip_hash>'. The ip_hash
-// uses the DERIVED IP_SALT (see above). We reuse the existing RateLimitCounter
-// entity (originally designed for per-minute buckets, but its shape —
-// principal_id + window_start + count — works fine for hourly buckets: we
-// simply set window_start to the top of the current UTC hour, and filter on
-// (principal_id, window_start) to find/increment the row for this bucket.
-async function checkAndIncrementRateLimit(
-  base44: any,
-  ipHash: string,
-  limitPerHour: number,
-): Promise<{ ok: boolean; remaining: number; retry_after_seconds?: number }> {
-  const principal_id = `submitPaymentsAnalysis:${ipHash}`;
-  return consumeRateLimit(base44.asServiceRole,{principal_id,principal_type:'ip',limit:limitPerHour,window_seconds:3600});
-}
-
 // ─── Input validation — hard ranges, no clamp ───────────────────────────────
-type ValidationFailure = { field: string; reason: 'missing' | 'out_of_range' | 'not_in_enum' | 'invalid_type' };
+type ValidationFailure = {
+  field: string;
+  reason:
+    | 'missing'
+    | 'out_of_range'
+    | 'not_in_enum'
+    | 'invalid_type'
+    | 'not_canonical_market'
+    | 'protected_research_only'
+    | 'manual_region_forbidden';
+};
 
 // UX-1 T1 (2026-07-29) — email is REQUIRED on every submission (deliberate
 // funnel change: no report is generated without a valid email). Session
@@ -1637,10 +1595,13 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
   if (!provider) return { ok: false, failure: { field: 'provider_slug', reason: 'missing' } };
   if (!ALLOWED_PROVIDER_SET.has(provider)) return { ok: false, failure: { field: 'provider_slug', reason: 'not_in_enum' } };
 
-  // country — required, ISO-3166-1 alpha-2
-  const country = typeof raw.country === 'string' ? raw.country.trim().toUpperCase() : '';
-  if (!country) return { ok: false, failure: { field: 'country', reason: 'missing' } };
-  if (!/^[A-Z]{2}$/.test(country)) return { ok: false, failure: { field: 'country', reason: 'invalid_type' } };
+  // Market membership and region derivation are backend-authoritative. A
+  // caller-supplied region is rejected instead of trusted or ignored.
+  const marketValidation = validatePaymentsLaunchMarketInput(raw);
+  if (!marketValidation.ok) {
+    return { ok: false, failure: marketValidation.failure as ValidationFailure };
+  }
+  const { country, region } = marketValidation;
 
   // email — REQUIRED (UX-1 T1). Session metadata only, never an engine input.
   const emailCheck = validateEmail(raw.email);
@@ -1693,8 +1654,6 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
     if (!ALLOWED_SECTOR_SET.has(s)) return { ok: false, failure: { field: 'sector', reason: 'not_in_enum' } };
     sector = s;
   }
-
-  const region = countryToRegion(country);
 
   return {
     ok: true,
@@ -1762,6 +1721,23 @@ function sanitizeEngineResultForAnon(er: any): any {
   return out;
 }
 
+// FX-2 — what the anonymous response reveals about the conversion: the
+// declared currency, whether a conversion happened, and (non-EUR) the rate,
+// its source and the fixing date, so the results page can state "converted at
+// the ECB reference rate of <date>". Internal ids stay out of the response.
+function publicCurrencyContext(ctx: any) {
+  if (!ctx?.converted) return { currency: ctx?.currency || 'EUR', converted: false };
+  return {
+    currency: ctx.currency,
+    converted: true,
+    fx: {
+      rate_decimal: ctx.fx?.rate_decimal || null,
+      source: ctx.fx?.source || null,
+      resolved_effective_at: ctx.fx?.resolved_effective_at || null,
+    },
+  };
+}
+
 // ─── HTTP handler ───────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   try {
@@ -1784,20 +1760,91 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'invalid_json_body' }, { status: 400 });
     }
 
-    // ── Mode detection ──────────────────────────────────────────────────
+    // ── Auth-independent input gates ────────────────────────────────────
     // Payload with `mode: 'combined'` + `channels: [...]` runs the engine
-    // once per channel and aggregates. Anything else (default 'single') is
-    // the pre-Fase-3 path — byte-identical validation + execution.
+    // once per channel and aggregates. Anything else defaults to single.
     const modeRaw = typeof raw?.mode === 'string' ? raw.mode.trim().toLowerCase() : 'single';
     if (modeRaw && !ALLOWED_MODES.has(modeRaw)) {
       return Response.json({ error: 'invalid_input', field: 'mode', reason: 'not_in_enum' }, { status: 400 });
     }
     const isCombined = modeRaw === 'combined';
 
+    // The founder-decided market scope is authoritative on the backend.
+    const launchMarket = validatePaymentsLaunchMarketInput(raw);
+    if (!launchMarket.ok) {
+      return Response.json(
+        { error: 'invalid_input', field: launchMarket.failure.field, reason: launchMarket.failure.reason },
+        { status: 400 },
+      );
+    }
+
+    // This is the first durable dependency/effect. Missing HMAC authority
+    // returns 503 before the SLO receipt, referral access or any business
+    // write. Successful requests persist only the counter's versioned HMAC.
+    const limitPerHour = Number(Deno.env.get('PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR') || 10);
+    const rl = await consumePublicRequestRateLimit(base44.asServiceRole, req, { namespace: 'submit-payments-analysis', limit: limitPerHour, window_seconds: 3600 });
+    if (!rl.ok) {
+      return Response.json({ error: rl.status === 429 ? 'rate_limited' : 'rate_limit_unavailable', retry_after_seconds: rl.retry_after_seconds }, { status: rl.status || 503 });
+    }
+    const ipHash = String(rl.network_fingerprint || '');
+
+    // OTR-019: only syntactically valid, market-eligible and rate-limit-
+    // authorized requests enter the Analyzer SLO denominator. From here the
+    // receipt precedes every lookup, engine execution and business write.
+    return await observeServiceLevelRequest(
+      base44.asServiceRole,
+      req,
+      {
+        slo_key: 'analyzer_submission',
+        endpoint: 'submitPaymentsAnalysis',
+        workload_key: typeof raw?.mode === 'string' ? raw.mode : 'single',
+      },
+      async () => {
+
     // EMAIL-1 T2 — UI language at submit time, persisted alongside
     // contact_email so any report delivery to this session goes out in the
     // language the visitor was reading. Never an engine input; unknown → 'en'.
     const locale = normalizeLocale(raw?.locale);
+
+    // ── FX-2 (2026-08-16) — merchant-selected currency ──────────────────
+    // The merchant declares the currency they operate in (proposed from the
+    // selected country's primary currency in the UI, freely changeable).
+    // Non-EUR amounts are converted to EUR HERE — before validation, before
+    // the engine — using ONE evidence-backed FxSnapshot resolution (ECB daily
+    // reference rate, ≤5 days old to survive weekends). The applied rate is
+    // frozen onto the session so the result stays reproducible. Fail-closed:
+    // no resolvable snapshot → 422 review_required, never a guessed rate.
+    // Legacy payloads without `currency` behave exactly as before (EUR).
+    let currencyContext:
+      | { currency: string; converted: false }
+      | { currency: string; converted: true; original_amounts: any; fx: any } = { currency: 'EUR', converted: false };
+    {
+      const needsFx = typeof raw?.currency === 'string' && !['', 'EUR'].includes(raw.currency.trim().toUpperCase());
+      const fxSnapshots = needsFx
+        ? await base44.asServiceRole.entities.FxSnapshot.list('-effective_at', 1000)
+          .catch((error: any) => safeBestEffort(error, { operation: 'submitPaymentsAnalysis', fallback: [], severity: 'critical' }))
+        : [];
+      const prep = prepareAnalyzerSubmissionCurrency(raw, fxSnapshots, new Date().toISOString());
+      if (!prep.ok) {
+        if (prep.review_required) {
+          // Honest refusal: we cannot verify this currency right now. The
+          // merchant sees "we need to verify your currency", not a number
+          // computed from an invented rate.
+          return Response.json(
+            { error: 'fx_evidence_required', review_required: true, currency: prep.currency },
+            { status: 422 },
+          );
+        }
+        return Response.json(
+          { error: 'invalid_input', field: prep.failure.field, reason: prep.failure.reason },
+          { status: 400 },
+        );
+      }
+      raw = prep.payload;
+      currencyContext = prep.converted
+        ? { currency: prep.currency, converted: true, original_amounts: prep.original_amounts, fx: prep.fx }
+        : { currency: prep.currency, converted: false };
+    }
 
     // GROWTH-1 (2026-08-01) — optional growth metadata. NEVER engine inputs,
     // never in the anonymous response, never on the teaser allowlist.
@@ -1825,15 +1872,6 @@ Deno.serve(async (req) => {
       ? Math.round(ttrRaw)
       : null;
 
-    // ── IP → hash → rate limit (shared across modes) ────────────────────
-    const ip = extractClientIp(req);
-    const ipHash = await hashIp(ip);
-    const limitPerHour = Number(Deno.env.get('PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR') || 10);
-    const rl = await checkAndIncrementRateLimit(base44, ipHash, limitPerHour);
-    if (!rl.ok) {
-      return Response.json({ error: 'rate_limited', retry_after_seconds: rl.retry_after_seconds }, { status: 429 });
-    }
-
     // ── Load rate table (shared across modes) ───────────────────────────
     const table = await loadRateTable(base44);
     if (!table.ok) {
@@ -1843,9 +1881,7 @@ Deno.serve(async (req) => {
 
     if (isCombined) {
       // ── Combined path: validate top-level lead metadata + each channel ──
-      const country = typeof raw.country === 'string' ? raw.country.trim().toUpperCase() : '';
-      if (!country) return Response.json({ error: 'invalid_input', field: 'country', reason: 'missing' }, { status: 400 });
-      if (!/^[A-Z]{2}$/.test(country)) return Response.json({ error: 'invalid_input', field: 'country', reason: 'invalid_type' }, { status: 400 });
+      const country = launchMarket.country;
 
       // brand_name — OPTIONAL (SWEEP-1 T2). Same rule as the single path.
       const brandName = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
@@ -1892,7 +1928,7 @@ Deno.serve(async (req) => {
         sector = s;
       }
 
-      const region = countryToRegion(country);
+      const region = launchMarket.region;
 
       // Run engine ONCE PER CHANNEL. Motor is byte-identical to 1.4.0 —
       // each call goes through the same normalizeInput → selectRow →
@@ -1986,6 +2022,14 @@ Deno.serve(async (req) => {
           avg_ticket_eur: primary.input_snapshot.avg_ticket_eur,
           provider_slug: primary.input_snapshot.provider_slug,
           channels: cleanChannels,
+          // FX-2 — the currency the merchant declared, plus (when non-EUR)
+          // the pre-conversion amounts and the frozen rate that produced the
+          // EUR figures above. Reproducibility: this snapshot alone is enough
+          // to re-derive the engine input without today's FxSnapshot table.
+          currency: currencyContext.currency,
+          ...(currencyContext.converted
+            ? { original_amounts: currencyContext.original_amounts, fx: currencyContext.fx }
+            : {}),
         },
         engine_result: engineResult,
         engine_version: engineResult.engine_version,
@@ -1996,7 +2040,19 @@ Deno.serve(async (req) => {
         ...(time_to_result_ms !== null ? { time_to_result_ms } : {}),
       });
 
-      return Response.json({ ok: true, anon_session_id, engine_result: sanitizeEngineResultForAnon(engineResult) });
+      return serviceLevelResult(
+        Response.json({
+          ok: true,
+          anon_session_id,
+          engine_result: sanitizeEngineResultForAnon(engineResult),
+          currency_context: publicCurrencyContext(currencyContext),
+        }),
+        {
+          source_refs: [
+            { entity: 'PaymentsAnalysisSession', key: anon_session_id },
+          ],
+        },
+      );
     }
 
     // ── Single-channel path (pre-Fase-3, byte-identical) ────────────────
@@ -2033,7 +2089,15 @@ Deno.serve(async (req) => {
       anon_session_id,
       contact_email: v.email, // UX-1-FIX T2 — dedicated PII field, not in input_snapshot
       locale, // EMAIL-1 T2 — routing metadata, never an engine input
-      input_snapshot: v.clean,
+      // FX-2 — see the combined path: declared currency + (non-EUR only) the
+      // original amounts and the frozen conversion rate.
+      input_snapshot: {
+        ...v.clean,
+        currency: currencyContext.currency,
+        ...(currencyContext.converted
+          ? { original_amounts: currencyContext.original_amounts, fx: currencyContext.fx }
+          : {}),
+      },
       engine_result: engineResult,
       engine_version: engineResult.engine_version,
       ip_hash: ipHash,
@@ -2043,11 +2107,21 @@ Deno.serve(async (req) => {
       ...(time_to_result_ms !== null ? { time_to_result_ms } : {}),
     });
 
-    return Response.json({
-      ok: true,
-      anon_session_id,
-      engine_result: sanitizeEngineResultForAnon(engineResult),
-    });
+    return serviceLevelResult(
+      Response.json({
+        ok: true,
+        anon_session_id,
+        engine_result: sanitizeEngineResultForAnon(engineResult),
+        currency_context: publicCurrencyContext(currencyContext),
+      }),
+      {
+        source_refs: [
+          { entity: 'PaymentsAnalysisSession', key: anon_session_id },
+        ],
+      },
+    );
+      },
+    );
   } catch (error) {
     console.error('submitPaymentsAnalysis:', (error as any)?.message, (error as any)?.stack);
     return Response.json({ error: 'internal_error' }, { status: 500 });

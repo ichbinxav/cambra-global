@@ -511,11 +511,21 @@ function selectRow(rows, provider_slug, region, channel, country) {
 // to the pre-1.1.0 behavior. The engine does NOT own a default uplift
 // constant — every value must come from the row (Enmienda 1).
 //
-// The caller is responsible for currency alignment. We do NOT do FX here:
-// PaymentsRateTable stores the fixed fee in the provider's native currency,
-// but for a first-pass gap estimate we treat EUR/GBP/USD as ~1:1 at the
-// magnitudes involved (fees under €0.50). FX-precise treatment is deferred
-// to when we have live sync data.
+// Currency alignment (FX-2, 2026-08-16). The caller is responsible for it,
+// and as of FX-2 it actually happens: merchant-entered amounts are converted
+// to EUR at the submitPaymentsAnalysis boundary with an evidence-backed ECB
+// rate (fail-closed), so avg_ticket_eur/monthly_gmv_eur here are genuinely
+// EUR. We do NOT do FX here — inside the engine — for ONE remaining input:
+// the rate-table fixed fee, which PaymentsRateTable stores in the provider's
+// native currency. Seeded rows only carry EUR/GBP/USD fees (locked by
+// paymentsRateCurrency.test.js), and we treat those as ~1:1.
+// Exact bound of that approximation: seeded fixed fees are ≤ 0.50 major
+// units and EUR/GBP/USD cross rates have stayed within ±25%; at the minimum
+// allowed ticket (€5) a 0.50 fee amortizes to 1000 bps, so the worst-case
+// currency error is ≤250 bps — but at the P50 ticket (€40+) it is ≤31 bps,
+// inside the ±35% honesty band the product already displays. Local-currency
+// rate rows (Fase D) remove even this residue; until then the currency lock
+// keeps any non-EUR/GBP/USD fee out of the table.
 function computeEffectiveBps(
   { percent_bps, fixed_fee_minor_units, terminal_rental_monthly_minor },
   avg_ticket_eur,

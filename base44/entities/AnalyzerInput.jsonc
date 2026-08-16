@@ -9,6 +9,10 @@
     "monthly_revenue": {
       "type": "number"
     },
+    "currency": {
+      "type": "string",
+      "description": "FX-2 (2026-08-16) \u2014 ISO 4217 currency the monetary fields of this row are denominated in. Deliberately NO default: an absent value is a visible unknown, never a silent EUR. Writers that produce EUR-normalized figures (buildAnalyzerProjection, Stripe-verified bridge) must set 'EUR' explicitly. generateMonthlySavingsReport refuses to calculate a report from a row whose currency is indeterminable (status review_required)."
+    },
     "monthly_revenue_range": {
       "type": "string",
       "enum": [

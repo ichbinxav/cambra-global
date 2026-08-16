@@ -36,7 +36,13 @@ import PspVerificationOptions from "@/components/paymentsAnalyzer/PspVerificatio
 import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import CountryField from "@/components/paymentsAnalyzer/CountryField";
-import { EUROPE_MARKETS, marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
+import CurrencyField from "@/components/paymentsAnalyzer/CurrencyField";
+import {
+  ACTIVE_LAUNCH_MARKETS,
+  EUROPE_MARKETS,
+  marketDisplayName,
+  useMarket,
+} from "@/lib/publicExperience.jsx";
 
 // ── Provider enum — VERBATIM copy of ALLOWED_PROVIDER_SLUGS in
 //    submitPaymentsAnalysis/entry.ts. Order matters (product decision).
@@ -192,11 +198,19 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 // Checkpoint H — messages come from the dictionary, and the bounds are grouped
 // in the ACTIVE language (they were hardcoded to "en-US", so a Spanish merchant
 // was told the limit was "10,000,000" instead of "10.000.000").
-function fieldRangeError(key, value, t, lang) {
+function fieldRangeError(key, value, t, lang, currency = "EUR") {
   const r = RANGES[key];
   const label = t(r.labelKey);
   const n = Number(value);
   if (!isFinite(n)) return t("az_err_number", { label });
+  // FX-2 — the contract ranges are EUR-denominated. When the merchant works
+  // in another currency the client cannot convert (it has no verified rate),
+  // so it only rejects non-positive/percent-invalid values here; the backend
+  // converts at the ECB rate and applies the EUR ranges authoritatively.
+  // Percent fields (intl_pct, card_mix_debit_pct) are currency-independent
+  // and keep their full range check.
+  const isMoneyField = key === "monthly_gmv_eur" || key === "avg_ticket_eur";
+  if (currency !== "EUR" && isMoneyField) return n > 0 ? null : t("az_err_number", { label });
   if (n < r.min || n > r.max) {
     const locale = { en: "en-IE", fr: "fr-FR", es: "es-ES" }[lang] || "en-IE";
     return t("az_err_range", {
@@ -212,7 +226,9 @@ export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
   const { t, lang, locale } = useTranslation();
   const { marketCode, setMarket } = useMarket();
-  const countryOptions = useMemo(() => EUROPE_MARKETS.map((market) => ({
+  const countryOptions = useMemo(() => EUROPE_MARKETS
+    .filter((market) => ACTIVE_LAUNCH_MARKETS.includes(market.iso2))
+    .map((market) => ({
     code: market.iso2,
     name: marketDisplayName(market.iso2, locale),
   })).sort((a, b) => a.name.localeCompare(b.name, locale)), [locale]);
@@ -242,10 +258,26 @@ export default function PaymentsAnalyzer() {
   const [country, setCountry]           = useState(() => {
     try {
       const requested = new URLSearchParams(window.location.search).get("market")?.toUpperCase();
-      if (EUROPE_MARKETS.some((market) => market.iso2 === requested)) return requested;
+      if (ACTIVE_LAUNCH_MARKETS.includes(requested)) return requested;
     } catch {}
-    return marketCode;
+    return ACTIVE_LAUNCH_MARKETS.includes(marketCode) ? marketCode : "";
   });
+  // FX-2 — merchant currency. Proposed from the selected country's primary
+  // currency (market registry); freely changeable. "" = follow the country
+  // proposal; a non-empty value means the merchant explicitly picked one and
+  // country changes stop overriding it (they chose their working currency).
+  const [currencyChoice, setCurrencyChoice] = useState("");
+  const marketCurrency = useMemo(
+    () => EUROPE_MARKETS.find((m) => m.iso2 === country)?.primary_currency || "EUR",
+    [country],
+  );
+  const currency = currencyChoice || marketCurrency;
+  const currencyOptions = useMemo(() => {
+    const active = EUROPE_MARKETS
+      .filter((m) => ACTIVE_LAUNCH_MARKETS.includes(m.iso2))
+      .map((m) => m.primary_currency);
+    return [...new Set(["EUR", ...active])].sort();
+  }, []);
   const [cardMixOpen, setCardMixOpen]   = useState(false);
   const [cardMixDebit, setCardMixDebit] = useState("");
   // Combined mode holds independent per-channel form state, so switching
@@ -322,7 +354,7 @@ export default function PaymentsAnalyzer() {
     // Checkpoint H — every message below is dictionary-driven. In combined mode
     // each error is prefixed with the CHANNEL name, which is itself translated
     // (it was the English literal "Online" / "In-store" before).
-    const range = (key, value) => fieldRangeError(key, value, t, lang);
+    const range = (key, value) => fieldRangeError(key, value, t, lang, currency);
     const onPrefix = (msg) => `${t("analyzer_channel_online")} — ${msg}`;
     const inPrefix = (msg) => `${t("analyzer_channel_in_store")} — ${msg}`;
 
@@ -360,7 +392,7 @@ export default function PaymentsAnalyzer() {
       if (!providerSlug) errors.push(t(channel === "in_store" ? "az_err_tpv_req" : "az_err_provider_req"));
     }
     if (!country) errors.push(t("az_err_country_req"));
-    else if (!["FR", "ES"].includes(country)) errors.push(t("az_err_market_limited"));
+    else if (!ACTIVE_LAUNCH_MARKETS.includes(country)) errors.push(t("az_err_market_limited"));
 
     // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
     const trimmedBrand = brandName.trim();
@@ -397,7 +429,7 @@ export default function PaymentsAnalyzer() {
     }
 
     return { valid: errors.length === 0, errors };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t, lang]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, currency, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t, lang]);
 
   // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
   //    optional (card mix) when the drawer is open. Website and sector are
@@ -449,6 +481,7 @@ export default function PaymentsAnalyzer() {
         payload = {
           mode: "combined",
           country,
+          currency, // FX-2 — the currency the typed amounts are in
           email: email.trim().toLowerCase(), // UX-1 T1 — required
           locale: lang, // EMAIL-1 T2 — language for report delivery
           // GROWTH-1 — attribution + time-to-value (never engine inputs).
@@ -486,6 +519,7 @@ export default function PaymentsAnalyzer() {
             channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions
           ),
           country,
+          currency, // FX-2 — the currency the typed amounts are in
           channel,
           email: email.trim().toLowerCase(), // UX-1 T1 — required
           locale: lang, // EMAIL-1 T2 — language for report delivery
@@ -506,6 +540,14 @@ export default function PaymentsAnalyzer() {
         const secs = Number(body.retry_after_seconds) || 0;
         const mins = Math.max(1, Math.ceil(secs / 60));
         setErrorBanner(t("az_err_rate_limited", { mins }));
+        setSubmitting(false);
+        return;
+      }
+      if (body?.error === "fx_evidence_required") {
+        // FX-2 — fail-closed conversion: no verifiable ECB rate for the
+        // selected currency right now. Honest message, never a guessed rate.
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'fx_evidence_required'});
+        setErrorBanner(t("az_err_fx_review", { currency }));
         setSubmitting(false);
         return;
       }
@@ -717,18 +759,24 @@ export default function PaymentsAnalyzer() {
                 onInStoreChange={setCombinedInStore}
                 onlineProviders={onlineProviderOptions}
                 inStoreProviders={inStoreProviderOptions}
+                currency={currency}
               />
-              {/* Country lives at the top level — single field shared by
-                  both channels (a merchant is in one country). */}
-              <FieldCard>
-                <CountryField value={country} onChange={setCountry} options={countryOptions} />
-              </FieldCard>
+              {/* Country + currency live at the top level — shared by both
+                  channels (a merchant is in one country, one currency). */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-8">
+                <FieldCard>
+                  <CountryField value={country} onChange={setCountry} options={countryOptions} />
+                </FieldCard>
+                <FieldCard>
+                  <CurrencyField value={currency} onChange={setCurrencyChoice} options={currencyOptions} />
+                </FieldCard>
+              </div>
             </>
           ) : (
           <>
           {/* GMV always spans full width — it's the anchor number. */}
           <FieldCard>
-            <GmvSlider value={gmv} onChange={setGmv} />
+            <GmvSlider value={gmv} onChange={setGmv} currency={currency} />
           </FieldCard>
 
           {/* Ticket + International share + Country live in one responsive
@@ -737,7 +785,7 @@ export default function PaymentsAnalyzer() {
               keep instead of leaving dead space on the right. */}
           <div className={`grid grid-cols-1 lg:grid-cols-2 ${channel === "online" ? "xl:grid-cols-3" : ""} gap-x-8 gap-y-8`}>
             <FieldCard>
-              <AvgTicketInput value={avgTicket} onChange={setAvgTicket} />
+              <AvgTicketInput value={avgTicket} onChange={setAvgTicket} currency={currency} />
             </FieldCard>
             {/* Intl share — online only. In-store: card-present cross-border
                 is negligible for the ICP and none of the seeded in-store rows
@@ -753,6 +801,12 @@ export default function PaymentsAnalyzer() {
                 own row into this one to reclaim the desktop width. */}
             <FieldCard>
               <CountryField value={country} onChange={setCountry} options={countryOptions} />
+            </FieldCard>
+            {/* FX-2 — merchant currency, proposed from the country but freely
+                changeable. Declares what the typed amounts mean; conversion to
+                EUR happens server-side at the frozen ECB rate. */}
+            <FieldCard>
+              <CurrencyField value={currency} onChange={setCurrencyChoice} options={currencyOptions} />
             </FieldCard>
           </div>
 

@@ -149,7 +149,20 @@ export function prepareEligibleRecoverInvoice(input: {
   }
 
   // ── 6. Currency ──────────────────────────────────────────────────────
-  const currency = String(report.currency || 'EUR').toUpperCase();
+  // FX-2 Fase B (2026-08-16) — report.currency is now derived from the real
+  // measurement source (it used to be a hardcoded "EUR" literal upstream, so
+  // this lock could never fire). Two consequences here:
+  //   1. A missing/null currency is a BLOCKER, not a silent EUR: it means the
+  //      report was held as review_required (or predates the field without
+  //      the legacy literal) and must never be invoiced on an assumption.
+  //   2. The non-EUR branch is genuinely reachable now — a Stripe account
+  //      settling in PLN produces currency:'PLN' and stops here.
+  if (report.status === 'review_required') return blocked(['report_review_required'], audit);
+  const currencyRaw = report.currency;
+  if (currencyRaw === null || currencyRaw === undefined || String(currencyRaw).trim() === '') {
+    return blocked(['currency_indeterminable'], audit);
+  }
+  const currency = String(currencyRaw).toUpperCase();
   if (currency !== 'EUR') return blocked([`currency_mismatch:${currency}`], audit);
 
   // ── 7. Fiscal state ──────────────────────────────────────────────────

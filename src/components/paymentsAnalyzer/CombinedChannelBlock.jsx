@@ -62,6 +62,7 @@ export default function CombinedChannelBlock({
   onInStoreChange,
   onlineProviders,
   inStoreProviders,
+  currency = "EUR",
 }) {
   const { t } = useTranslation();
   const patchOnline = (patch) => onOnlineChange({ ...onlineValue, ...patch });
@@ -78,11 +79,13 @@ export default function CombinedChannelBlock({
         <GmvSlider
           value={onlineValue.monthly_gmv_eur}
           onChange={(v) => patchOnline({ monthly_gmv_eur: v })}
+          currency={currency}
         />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-6">
           <AvgTicketInput
             value={onlineValue.avg_ticket_eur}
             onChange={(v) => patchOnline({ avg_ticket_eur: v })}
+            currency={currency}
           />
           <IntlSlider
             value={onlineValue.intl_pct}
@@ -113,10 +116,12 @@ export default function CombinedChannelBlock({
         <GmvSlider
           value={inStoreValue.monthly_gmv_eur}
           onChange={(v) => patchInStore({ monthly_gmv_eur: v })}
+          currency={currency}
         />
         <AvgTicketInput
           value={inStoreValue.avg_ticket_eur}
           onChange={(v) => patchInStore({ avg_ticket_eur: v })}
+          currency={currency}
         />
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">

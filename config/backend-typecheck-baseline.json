@@ -9,7 +9,7 @@
     "TS2564",
     "TS7027"
   ],
-  "maxNoiseDiagnostics": 201,
+  "maxNoiseDiagnostics": 188,
   "functionCount": 300,
   "capturedWith": "scripts/check-backend-typecheck.mjs --update"
 }

@@ -33,6 +33,7 @@ const GUARDED_COMPONENTS = [
   'IntlSlider.jsx',
   'CardMixSlider.jsx',
   'CombinedChannelBlock.jsx',
+  'CurrencyField.jsx',
 ];
 
 // Literals that are legitimately not translatable. Each needs a reason.
