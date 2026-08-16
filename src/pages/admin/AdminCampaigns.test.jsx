@@ -183,9 +183,14 @@ describe("AdminCampaigns — detail", () => {
     expect(model.textContent).toContain("sequence not prepared");
   });
 
-  it("states that audience/content/sequence editing and execution are not built yet", async () => {
+  // CAMP-FOLLOWUP (2026-08-16): this used to pin the copy "Not built yet —
+  // chunk C3", which stopped being true once C3/C4 shipped. The invariant that
+  // still matters is that the screen states what it CANNOT do — the editing
+  // forms — instead of implying the whole flow is available.
+  it("states honestly what this screen still lacks", async () => {
     await openDetail();
-    await waitFor(() => expect(screen.getByText(/Not built yet — chunk C3/)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/lacks are\s*the forms/i)).toBeTruthy());
+    expect(document.body.textContent).not.toMatch(/Not built yet — chunk C3/);
   });
 
   it("requests the detail through the canonical campaign_detail action", async () => {

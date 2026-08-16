@@ -7,7 +7,10 @@
 // Fail-visible (spec §23.2): an unavailable source renders "Data unavailable"
 // with its blocker, never a silently empty table.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Ban, ChevronRight, Layers, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, ChevronRight, KeyRound, Layers, Loader2, RefreshCw, ShieldAlert, Stethoscope } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { base44 } from "@/api/base44Client";
 
 const TABS = [
@@ -234,7 +237,181 @@ function AllCampaigns({ data, loading, filters, setFilters, reload, onOpen }) {
   );
 }
 
-function Detail({ detail, loading, onBack }) {
+// CAMP-FOLLOWUP (2026-08-16) — human wording for each preflight dimension.
+// The raw key and status are still shown, but a founder reading this must not
+// have to decode BLOCKED/UNKNOWN to know what to do next.
+const DIMENSION_LABELS = {
+  audience: "Audience",
+  content: "Message content",
+  claims_policy: "Claims policy",
+  sequence: "Sequence",
+  market_authority: "Market authority",
+  commercial_policy: "Commercial policy",
+  sending_infrastructure: "Sending infrastructure",
+  outbound_control: "Global outbound control",
+  emergency: "Emergency state",
+  budget: "Budget",
+  founder_permit: "Founder permit",
+};
+
+const STATUS_PHRASE = {
+  PASS: "Ready.",
+  BLOCKED: "Blocks approval — this must be fixed.",
+  REVIEW_REQUIRED: "Needs a decision before approval.",
+  UNKNOWN: "Could not be verified, so it counts as not ready.",
+};
+
+const VERDICT_PHRASE = {
+  PASS: "Everything checked out. This campaign can be sent for approval.",
+  REVIEW_REQUIRED: "Some checks need a decision from you before approval.",
+  UNKNOWN: "At least one check could not be verified. An unverified check never counts as passed.",
+  BLOCKED: "At least one check blocks approval outright.",
+};
+
+function statusTone2(status) {
+  if (status === "PASS") return "good";
+  if (status === "BLOCKED") return "bad";
+  return "warn";
+}
+
+/** The Founder permit gap deserves its own callout, not a table row. */
+function FounderPermitNotice() {
+  return (
+    <div data-testid="preflight-founder-permit-notice" className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+      <div className="flex items-start gap-3">
+        <KeyRound size={18} className="mt-0.5 shrink-0 text-amber-700" />
+        <div>
+          <p className="text-xs font-black text-amber-900">Founder permit is not available on this platform yet</p>
+          <p className="mt-1 text-[11px] leading-5 text-amber-800">
+            No campaign can be approved until this authority exists. It is activated by running
+            {" "}<code className="rounded bg-amber-100 px-1 font-bold">PROMPT_CAMBRA_COMMAND_V1.md</code>.
+            Until then this check reports as unverified, and an unverified check never counts as passed.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PreflightBreakdown({ preflight }) {
+  const dimensions = preflight?.dimensions || [];
+  const permitUnknown = (preflight?.unknown_dimensions || []).includes("founder_permit");
+  return (
+    <div className="space-y-3">
+      <div data-testid="preflight-verdict" className="rounded-xl border bg-secondary/40 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Chip tone={statusTone2(preflight?.verdict)}>{preflight?.verdict || "UNKNOWN"}</Chip>
+          <p className="text-[11px] font-bold">{VERDICT_PHRASE[preflight?.verdict] || VERDICT_PHRASE.UNKNOWN}</p>
+        </div>
+      </div>
+
+      {permitUnknown && <FounderPermitNotice />}
+
+      <ul data-testid="preflight-dimensions" className="divide-y rounded-xl border">
+        {dimensions.map((dimension) => (
+          <li key={`${dimension.key}-${dimension.status}`} data-testid={`preflight-dimension-${dimension.key}`} className="p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-[11px] font-bold">{DIMENSION_LABELS[dimension.key] || dimension.key}</p>
+              <Chip tone={statusTone2(dimension.status)}>{dimension.status}</Chip>
+            </div>
+            <p className="mt-1 text-[10px] font-bold text-muted-foreground">{STATUS_PHRASE[dimension.status] || dimension.status}</p>
+            {dimension.detail && <p className="mt-0.5 text-[10px] text-muted-foreground">{dimension.detail}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * Preflight + approval dialog.
+ *
+ * Neither button is ever pre-disabled from a client-side guess about what will
+ * fail: the server is the authority on both. "Request approval" therefore
+ * always calls the backend, and a 409 (preflight_not_passed) is rendered as a
+ * fresh per-dimension breakdown rather than a generic error — the fresh
+ * preflight the server returns is more truthful than the cached one on screen.
+ */
+function PreflightDialog({ state, onClose, onRequestApproval }) {
+  const open = Boolean(state);
+  const preflight = state?.approvalRejection?.preflight || state?.preflight || null;
+  const approval = state?.approval || null;
+  return (
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="max-h-[88vh] overflow-y-auto rounded-3xl sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Campaign status check</DialogTitle>
+          <DialogDescription>
+            A read-only check of every approval condition. Running it changes nothing and sends nothing.
+          </DialogDescription>
+        </DialogHeader>
+
+        {state?.loading && (
+          <div className="flex items-center gap-2 p-4 text-xs text-muted-foreground">
+            <Loader2 size={14} className="animate-spin" />Checking…
+          </div>
+        )}
+
+        {state?.error && !state?.approvalRejection && (
+          <div role="alert" data-testid="preflight-error" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">
+            {state.error}
+          </div>
+        )}
+
+        {/* A refused approval is explained with the same breakdown, not as a bare error. */}
+        {state?.approvalRejection && (
+          <div data-testid="approval-rejected" className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+            <p className="text-[11px] font-black text-amber-900">Approval was not granted</p>
+            <p className="mt-1 text-[10px] text-amber-800">
+              The checks below did not pass, so the campaign stays as it was. Nothing was changed and nothing was sent.
+            </p>
+          </div>
+        )}
+
+        {approval && (
+          <div data-testid="approval-granted" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-700" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-black text-emerald-900">Configuration approved · status READY_FOR_APPROVAL</p>
+                <p className="mt-1 text-[10px] leading-5 text-emerald-800">
+                  This records that the configuration was reviewed. It does <b>not</b> send anything and does
+                  {" "}<b>not</b> authorize sending. Moving to APPROVED still requires the founder permit, which does not
+                  exist on this platform yet.
+                </p>
+                <p className="mt-2 break-all text-[10px] text-emerald-800">
+                  <span className="font-bold">Approval hash:</span> {approval.approval_hash}
+                </p>
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-[10px] font-bold text-emerald-800">Bound scope</summary>
+                  <pre className="mt-1 whitespace-pre-wrap break-all text-[9px] text-emerald-900">
+                    {JSON.stringify(approval.scope, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {preflight && <PreflightBreakdown preflight={preflight} />}
+
+        <DialogFooter>
+          <button onClick={onClose} className="h-10 rounded-xl border px-4 text-xs font-bold">Close</button>
+          <button
+            data-testid="request-approval-button"
+            onClick={onRequestApproval}
+            disabled={Boolean(state?.loading) || Boolean(approval)}
+            className="h-10 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40"
+          >
+            {state?.loading ? "Working…" : "Request approval"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Detail({ detail, loading, onBack, onCheckStatus }) {
   if (loading && !detail) return <div className="flex items-center gap-2 p-8 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading campaign…</div>;
   if (!detail) return <p className="p-6 text-xs text-muted-foreground">Select a campaign from All Campaigns.</p>;
   const item = detail.item || {};
@@ -247,6 +424,15 @@ function Detail({ detail, loading, onBack }) {
           <h2 className="text-lg font-black">{item.name}</h2>
           <Chip tone={statusTone(item.status)}>{item.status}</Chip>
           {item.status_is_legacy && <Chip tone="warn">stored as {item.stored_status}</Chip>}
+          {/* Never pre-disabled: the check itself is always allowed, and its
+              answer is what says whether anything blocks. */}
+          <button
+            data-testid="check-status-button"
+            onClick={onCheckStatus}
+            className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-bold"
+          >
+            <Stethoscope size={13} />Check status
+          </button>
         </div>
         <dl className="mt-4 grid gap-3 text-[11px] md:grid-cols-4">
           <div><dt className="text-muted-foreground">Lane</dt><dd className="font-bold">{item.lane || "—"}</dd></div>
@@ -300,9 +486,13 @@ function Detail({ detail, loading, onBack }) {
         <div className="flex items-start gap-3">
           <Layers size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
           <div>
-            <p className="text-xs font-black">Audience, Content, Sequence and Preflight editing</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Not built yet — chunk C3. Execution, scheduling and analytics land in C4. This workspace performs no sends in any chunk of this work.
+            <p className="text-xs font-black">What this screen can and cannot do yet</p>
+            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              The audience, content, sequence and preflight engines are built and tested in the backend, and so is the
+              execution engine — which runs in dry-run only, against no real provider. What this screen still lacks are
+              the forms to build and edit an audience, a message and a sequence; those are a separate piece of work.
+              What you can do here today is <b>Check status</b>, which runs the full preflight read-only, and
+              <b> Request approval</b>, which records a reviewed configuration. Neither sends anything.
             </p>
           </div>
         </div>
@@ -319,6 +509,7 @@ export default function AdminCampaigns() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({ status: "ALL", lane: "ALL", search: "", needs_attention: false });
+  const [preflightState, setPreflightState] = useState(null);
 
   const loadOverview = useCallback(async () => {
     setLoading(true); setError("");
@@ -345,14 +536,54 @@ export default function AdminCampaigns() {
     finally { setLoading(false); }
   }, []);
 
+  // `preflight` is the read-only action: it never mutates a campaign.
+  const checkStatus = useCallback(async () => {
+    const campaignId = detail?.item?.id;
+    if (!campaignId) return;
+    setPreflightState({ campaignId, loading: true });
+    try {
+      const response = await call("preflight", { campaign_id: campaignId });
+      setPreflightState({ campaignId, loading: false, preflight: response.preflight });
+    } catch (caught) {
+      setPreflightState({ campaignId, loading: false, error: caught.message, preflight: caught.data?.preflight || null });
+    }
+  }, [detail]);
+
+  // The server is the authority on approvability, so this always calls it:
+  // a cached preflight can be stale, and the 409 carries a FRESH preflight
+  // that is more truthful than what is already on screen.
+  const requestApproval = useCallback(async () => {
+    const campaignId = preflightState?.campaignId || detail?.item?.id;
+    if (!campaignId) return;
+    setPreflightState((current) => ({ ...(current || {}), campaignId, loading: true, error: "", approvalRejection: null }));
+    try {
+      const response = await call("request_approval", { campaign_id: campaignId });
+      setPreflightState({
+        campaignId, loading: false,
+        preflight: response.preflight,
+        approval: response.approval,
+      });
+      // Reflect the persisted status change in the open detail view.
+      if (response.item) setDetail((current) => (current ? { ...current, item: response.item } : current));
+    } catch (caught) {
+      const rejected = caught.data?.error === "preflight_not_passed";
+      setPreflightState({
+        campaignId, loading: false,
+        preflight: caught.data?.preflight || preflightState?.preflight || null,
+        approvalRejection: rejected ? { preflight: caught.data?.preflight || null } : null,
+        error: rejected ? "" : caught.message,
+      });
+    }
+  }, [detail, preflightState]);
+
   useEffect(() => { if (tab === "overview") loadOverview(); }, [tab, loadOverview]);
   useEffect(() => { if (tab === "all") loadList(); }, [tab, loadList]);
 
   const body = useMemo(() => {
     if (tab === "overview") return <Overview data={overview} loading={loading} reload={loadOverview} />;
     if (tab === "all") return <AllCampaigns data={list} loading={loading} filters={filters} setFilters={setFilters} reload={loadList} onOpen={openDetail} />;
-    return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} />;
-  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail]);
+    return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} onCheckStatus={checkStatus} />;
+  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus]);
 
   return (
     <div className="space-y-5 p-4 md:p-6">
@@ -367,14 +598,21 @@ export default function AdminCampaigns() {
             {label}
           </button>
         ))}
+        {/* Still true: nothing here reaches a provider. Spelled out so the new
+            check/approve buttons cannot be mistaken for a send. */}
         <span className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-[10px] font-bold text-muted-foreground">
-          <Ban size={12} />No sends from this workspace
+          <Ban size={12} />No sends from this workspace — approving is not sending
         </span>
       </div>
       {error && (
         <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">{error}</div>
       )}
       {body}
+      <PreflightDialog
+        state={preflightState}
+        onClose={() => setPreflightState(null)}
+        onRequestApproval={requestApproval}
+      />
     </div>
   );
 }
