@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-16T17:54:38.367Z",
+  "generatedAt": "2026-08-16T18:55:03.432Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -717,8 +717,8 @@
     },
     {
       "path": "base44/functions/emergencyControlAdmin/entry.ts",
-      "sha256": "991b7e14868d66754378c14fa013b3b2ca7aeddbfdaea5358c380452a14ce5a4",
-      "bytes": 26036
+      "sha256": "4682cbfbef6cdbc9dd99d496029765a7fb984dbd8839870967124d399aed06bb",
+      "bytes": 897
     },
     {
       "path": "base44/functions/fixValidatorAgent/entry.ts",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "b5897077fe99e935351a061267ec7df18fe3b85cf253105a359a851eecaa608f",
+      "sha256": "6b3eab7944d8a51cdbbaa829814fa75ff52595519693a0624b98a5b0e9f7d88d",
       "bytes": 42987
     },
     {
@@ -2172,8 +2172,8 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "855b659adc042f4e35fc0604401f998d1e60ad8f36ce81e26bdcb04d6bd3d11b",
-      "bytes": 8032
+      "sha256": "52a67a9f2c9d834ecde066228e1df713845dfef2360a2fa09fd88aa7ca814472",
+      "bytes": 8027
     },
     {
       "path": "config/pre-ecl-freeze.json",
@@ -2187,7 +2187,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "e45c05f167a9478bc302ef63830dc20630e85654ad6d4a6206c9567c3117781e",
+      "sha256": "4f860b507aac371d26918f1ad4422d8ae31bc9132a223829bcff6f0cfa0c2c9f",
       "bytes": 13243
     },
     {
@@ -2207,7 +2207,7 @@
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "6494ab657a2da9af11b81955fd6d91278ccfc43d3e9e439ef2fcdf5ec90545e3",
+      "sha256": "a8eb477bb094c4f25505d6e055a3cf42865cf21629b705ee4a3271e66dbacc65",
       "bytes": 25749
     },
     {
@@ -3232,13 +3232,13 @@
     },
     {
       "path": "src/lib/emergencyEpochBoundary.test.js",
-      "sha256": "8c7c558db047e0a19873cd722372062e5f753c9c50ea282774348e01eb70779c",
-      "bytes": 12154
+      "sha256": "aaad18da492e0425bdb34e8a6299586efa45837386aca71302e62e3c619a9b6a",
+      "bytes": 12341
     },
     {
       "path": "src/lib/emergencyMaterialBoundaries.test.js",
-      "sha256": "4f1111cc700b46688ba533bd0ca048077bd5b330039c1b40d1db62097ec04e83",
-      "bytes": 6628
+      "sha256": "33dcd246462ed8b1a128a7820d849b817796c8aa6185c340dba1eb20b4388bfd",
+      "bytes": 6835
     },
     {
       "path": "src/lib/europeV1ClosureReport.test.js",
@@ -3277,13 +3277,13 @@
     },
     {
       "path": "src/lib/founderApprovalRegistry.test.js",
-      "sha256": "e6d0bfdfe956ac65e906d9b4b78a81071f178c8adf2739d17e1b22e896938223",
-      "bytes": 17482
+      "sha256": "924a60f5f7153c76257af66c10bf63d365ca70fb7acf0ca1e0057de654aaefe7",
+      "bytes": 17754
     },
     {
       "path": "src/lib/founderControlV2.test.js",
-      "sha256": "a1bd0776c9286b889e9212bff89111cd3cb039b6692cedaaf6bab5a14ee50eab",
-      "bytes": 11828
+      "sha256": "af50014148014fde2f36fae464b98547b342b98a81ced326633e7656425f4b66",
+      "bytes": 12203
     },
     {
       "path": "src/lib/founderMerchantsV2.test.js",
@@ -3512,8 +3512,8 @@
     },
     {
       "path": "src/lib/p18Documentation.test.js",
-      "sha256": "f38bd5c4487c263e9840756a5a8cbf4606e2487de37b29a4fc7f69f30f8e1118",
-      "bytes": 8636
+      "sha256": "f023981ad3e4405db88eeac24f7d80e1edda74e346df58f277d46e85c7428e62",
+      "bytes": 8684
     },
     {
       "path": "src/lib/p1EuropeMarketFoundation.test.js",
@@ -3542,8 +3542,8 @@
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",
-      "sha256": "221bc60e0956b36179554eb581dd8a97228b8a307d244c125eae03b6070da15e",
-      "bytes": 15261
+      "sha256": "9cf70cf2999852655c6b68e9bc8aa869bdc846350a14b67a36a45a459bef2db3",
+      "bytes": 15397
     },
     {
       "path": "src/lib/partnerAcquisitionAutonomy.test.js",
@@ -3737,8 +3737,8 @@
     },
     {
       "path": "src/lib/singletonAuthority.test.js",
-      "sha256": "dbf8137201b1dbd4ee42eee9029b79f033833c2ff7ef556b08068cf71c5501a8",
-      "bytes": 19258
+      "sha256": "ee0d4ffce0ae5dda5d586fdf76c54d5be4dad86f906710ae8b0fd45d6c0573e4",
+      "bytes": 19480
     },
     {
       "path": "src/lib/stripeConnectedAccountLifecycle.test.js",

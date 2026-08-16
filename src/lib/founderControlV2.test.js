@@ -91,7 +91,12 @@ describe("Founder Control V2 canonical authority projection", () => {
   });
 
   it("binds emergency changes to preview, reason, idempotency and audit without blind restart", () => {
-    const source = read("base44/functions/emergencyControlAdmin/entry.ts");
+    // FCTRL-J: the handler body lives in the shared core module; the entry is
+    // a thin Deno.serve wrapper. Behavior is now invoked directly in
+    // src/lib/emergencyControlAdminBehavior.test.js — this check only pins the
+    // invariant strings.
+    const source = read("base44/functions/emergencyControlAdmin/entry.ts") +
+      read("base44/shared/emergencyControlAdminCore.ts");
     for (const requirement of [
       "safe_mode_preview",
       "resume_preflight",
@@ -250,7 +255,8 @@ describe("Founder Control V2 canonical authority projection", () => {
   });
 
   it("uses optimistic concurrency for material emergency and outbound transitions", () => {
-    const emergency = read("base44/functions/emergencyControlAdmin/entry.ts");
+    const emergency = read("base44/functions/emergencyControlAdmin/entry.ts") +
+      read("base44/shared/emergencyControlAdminCore.ts");
     const outbound = read("base44/functions/outboundControlAdmin/entry.ts");
     const emergencySchema = read("base44/entities/EmergencyControl.jsonc");
     const outboundSchema = read("base44/entities/OutboundControl.jsonc");

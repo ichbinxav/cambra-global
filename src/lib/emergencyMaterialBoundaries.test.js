@@ -69,7 +69,9 @@ describe('R2 emergency material-boundary failure matrix',()=>{
     expect(model).toContain('PROVIDER_EFFECT_REVIEW_REQUIRED');
     expect(model).toContain("ambiguity_state:'REVIEW_REQUIRED'");
     expect(model).toContain('transport.started=true');
-    const admin=read('base44/functions/emergencyControlAdmin/entry.ts');
+    // FCTRL-J: the emergencyControlAdmin handler lives in the shared core; the
+    // entry is a thin Deno.serve wrapper. The invariant covers both files.
+    const admin=read('base44/functions/emergencyControlAdmin/entry.ts')+read('base44/shared/emergencyControlAdminCore.ts');
     expect(admin).toContain('{status:containmentComplete?200:503}');
     expect(admin).toContain('containment_blockers:transportEvidence.blockers');
     expect(admin).toContain('{status:incompleteStop?503:200}');

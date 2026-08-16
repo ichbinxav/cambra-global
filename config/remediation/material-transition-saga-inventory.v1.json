@@ -625,7 +625,7 @@
     },
     {
       "path": "src/lib/founderApprovalRegistry.test.js",
-      "sha256": "e6d0bfdfe956ac65e906d9b4b78a81071f178c8adf2739d17e1b22e896938223"
+      "sha256": "924a60f5f7153c76257af66c10bf63d365ca70fb7acf0ca1e0057de654aaefe7"
     },
     {
       "path": "src/lib/paymentsMigrationP9.test.js",

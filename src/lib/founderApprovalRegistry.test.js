@@ -376,7 +376,11 @@ describe('Founder approval action registry', () => {
       'base44/functions/founderMeetingAdmin/entry.ts',
       'base44/functions/goLiveControlAdmin/entry.ts',
     ]) {
-      const source = read(file);
+      // FCTRL-J: emergencyControlAdmin's handler lives in the shared core; its
+      // entry stays the trust boundary that resolves asServiceRole.
+      const source = file.includes('emergencyControlAdmin')
+        ? read(file) + read('base44/shared/emergencyControlAdminCore.ts')
+        : read(file);
       expect(source, file).toContain('asServiceRole');
       expect(source, file).toContain('FounderCommandAudit.create');
     }

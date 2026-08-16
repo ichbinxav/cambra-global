@@ -50,9 +50,10 @@ describe("ROOT-OTR-002/003 source boundary inventory", () => {
     expect(source).toContain("containCommunicationTransport");
     expect(source).toContain("pauseAllInstantlyCampaigns");
     expect(source).toContain("send_effect_ambiguous_review_required");
+    // FCTRL-J: handler extracted to the shared core for behavior testing.
     const emergencyAdmin = read(
       "base44/functions/emergencyControlAdmin/entry.ts",
-    );
+    ) + read("base44/shared/emergencyControlAdminCore.ts");
     expect(emergencyAdmin).toContain("containCommunicationTransport");
     expect(emergencyAdmin).toContain(
       "containment_status:containmentComplete?'CONTAINED':'CONTAINMENT_INCOMPLETE'",
@@ -189,7 +190,8 @@ describe("ROOT-OTR-002/003 source boundary inventory", () => {
   });
 
   it("does not claim remote containment for configured one-shot transports", () => {
-    const admin = read("base44/functions/emergencyControlAdmin/entry.ts");
+    const admin = read("base44/functions/emergencyControlAdmin/entry.ts") +
+      read("base44/shared/emergencyControlAdminCore.ts");
     const authority = read("base44/shared/operationalControl.ts");
     for (
       const status of [

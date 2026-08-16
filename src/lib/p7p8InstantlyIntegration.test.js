@@ -343,7 +343,9 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
       "base44/functions/instantlyReconciliationWorker/entry.ts",
     );
     const send = source("base44/functions/commercialSendMessage/entry.ts");
-    const emergency = source("base44/functions/emergencyControlAdmin/entry.ts");
+    // FCTRL-J: handler extracted to the shared core for behavior testing.
+    const emergency = source("base44/functions/emergencyControlAdmin/entry.ts") +
+      source("base44/shared/emergencyControlAdminCore.ts");
     expect(webhook.indexOf("if(!await providerSecretMatches")).toBeLessThan(
       webhook.indexOf("const base44=createClientFromRequest"),
     );

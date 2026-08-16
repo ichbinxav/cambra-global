@@ -135,7 +135,6 @@
         "base44/functions/collectionOperationsWorker/entry.ts",
         "base44/functions/costGovernanceWorker/entry.ts",
         "base44/functions/dependencySecurityWorker/entry.ts",
-        "base44/functions/emergencyControlAdmin/entry.ts",
         "base44/functions/goLiveControlAdmin/entry.ts",
         "base44/functions/maintenanceEngine/entry.ts",
         "base44/functions/providerRevenueReconciliationWorker/entry.ts",
@@ -143,6 +142,7 @@
         "base44/functions/respondMerchantInformationRequest/entry.ts",
         "base44/shared/costGovernance.ts",
         "base44/shared/disasterRecoveryRuntime.ts",
+        "base44/shared/emergencyControlAdminCore.ts",
         "base44/shared/instantlyRuntime.ts",
         "base44/shared/outboundProviderEventProcessing.ts",
         "base44/shared/stripeConnectedAccountLifecycle.ts"

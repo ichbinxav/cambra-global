@@ -233,18 +233,21 @@ describe('canonical singleton authority',()=>{
   });
 
   it('uses singleton helpers at the material Founder/GO/outbound boundaries',()=>{
+    // FCTRL-J: emergencyControlAdmin's handler lives in the shared core module
+    // (base44/shared/emergencyControlAdminCore.ts); the entry is a thin
+    // Deno.serve wrapper, so the singleton-usage invariant is asserted there.
     for(const file of [
       'base44/shared/operationalControl.ts',
       'base44/shared/founderControlV2.ts',
       'base44/shared/goLiveRuntime.ts',
       'base44/shared/commercialActivationRuntime.ts',
-      'base44/functions/emergencyControlAdmin/entry.ts',
+      'base44/shared/emergencyControlAdminCore.ts',
       'base44/functions/outboundControlAdmin/entry.ts',
       'base44/functions/goLiveControlAdmin/entry.ts',
       'base44/functions/commercialGoLiveReadiness/entry.ts',
       'base44/functions/commercialSendMessage/entry.ts',
     ])expect(read(file)).toContain('singletonAuthority');
-    const emergency=read('base44/functions/emergencyControlAdmin/entry.ts');
+    const emergency=read('base44/shared/emergencyControlAdminCore.ts');
     expect(emergency).toContain('readAuthorityRowsForContainment');
     expect(emergency).toContain('duplicate_authority_detected');
     expect(emergency).toContain('coverage_complete');
