@@ -20,7 +20,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | BG | Bulgaria | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | HR | Croatia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | CY | Cyprus | EUR | el-GR | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| CZ | Czechia | CZK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| CZ | Czechia | CZK | cs-CZ | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DK | Denmark | DKK | da-DK | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | EE | Estonia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FI | Finland | EUR | fi-FI | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -64,6 +64,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | sv-SE | sv | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | da-DK | da | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | fi-FI | fi | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| cs-CZ | cs | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

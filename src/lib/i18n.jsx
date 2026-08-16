@@ -14,6 +14,7 @@ import el from "@/lib/locales/el";
 import sv from "@/lib/locales/sv";
 import da from "@/lib/locales/da";
 import fi from "@/lib/locales/fi";
+import cs from "@/lib/locales/cs";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -38,14 +39,15 @@ export const LANGUAGES = [
   { code: "sv", locale: "sv-SE", label: "Svenska", short: "SV" },
   { code: "da", locale: "da-DK", label: "Dansk", short: "DA" },
   { code: "fi", locale: "fi-FI", label: "Suomi", short: "FI" },
+  { code: "cs", locale: "cs-CZ", label: "Čeština", short: "CS" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -67,7 +69,7 @@ export function formatDate(date, lang = "en") {
 }
 
 /* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi };
+const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {

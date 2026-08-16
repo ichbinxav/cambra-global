@@ -80,6 +80,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "cs-CZ",
+      "language": "cs",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -201,10 +208,11 @@ export const LOCALE_REGISTRY={
         "cs-CZ"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "cs-CZ"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "cs-CZ",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "CZK",
       "timezone": "Europe/Prague",
