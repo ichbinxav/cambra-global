@@ -47,8 +47,14 @@
     {
       "id": "base44-hosting-region",
       "severity": "review",
-      "finding": "CAMBRA does not publish a hosting region for Base44. The 'EU-based infrastructure' claim was deliberately removed from Terms section 1 during LEGAL-1 as not demonstrable, so no transfer mechanism can be asserted for the hosting layer.",
-      "action": "Founder to obtain Base44's DPA and hosting-region statement; until then the sub-processors page carries 'Pending legal review' for that row rather than a guess."
+      "finding": "Base44 does not publish hosting region or cloud infrastructure provider in any public document (verified in base44.com/dpa and base44.com/terms-of-service, accessed 2026-08-16). The ToS only describes 'third-party cloud services and CDN's' generically (§4.2). Transfer mechanism WAS confirmed (EU-US Data Privacy Framework + SCC Module 2/3, declared in their own DPA) and the legal operator was confirmed (Wix.com Ltd., Tel Aviv, Israel).",
+      "action": "PENDING — founder sent formal inquiry to compliance@base44.com on 2026-08-16 requesting: (1) country/region where production data is stored, (2) cloud infrastructure provider (AWS/GCP/Azure/other), (3) whether data residency option in EU/EEA exists, (4) where backups are stored, (5) CDN provider and regions. Awaiting Base44/Wix response. Until received, the Base44 row in /Subprocessors carries 'hosting region pending direct confirmation' instead of assumption — do not close this finding or add region/provider data without founder providing the received response."
+    },
+    {
+      "id": "base44-breach-notice-gap",
+      "severity": "review",
+      "finding": "Base44's public DPA (base44.com/dpa, accessed 2026-08-16) commits to notifying security breaches 'without undue delay as required by applicable law', with no fixed hour threshold. CAMBRA's own DPA to its merchants (DPA_MAESTRO_CAMBRA_ENCARGADO_ES.md, section 9.2) commits to a maximum of 48 hours. This is a real asymmetry in the vendor chain, not a defect in CAMBRA's text.",
+      "action": "Founder to assess: (a) negotiate a fixed contractual timeline with Base44/Wix if business volume permits, or (b) operationally mitigate (own monitoring of Base44/Wix incident status, direct support contact established) while the timeline remains unfixed. Does not block production seal — it is a vendor risk-management finding, not a CAMBRA DPA requirement."
     }
   ]
 }
