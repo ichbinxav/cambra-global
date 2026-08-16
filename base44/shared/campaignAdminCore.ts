@@ -13,9 +13,56 @@ import { validateCampaignContent } from './campaignContentValidator.ts';
 import { validateCampaignSequence } from './campaignSequenceValidator.ts';
 import { buildApprovalBinding, buildCampaignPreflight } from './campaignPreflight.ts';
 import { sha256 } from './intelligenceCore.ts';
+// COMMAND-C1: the FounderPermit authority now exists and is consulted here.
+import { evaluatePermit } from './founderPermitAuthority.ts';
 
 const clean=(value:any,max=240)=>String(value??'').replace(/[\r\n\t]+/g,' ').trim().slice(0,max);
 const unique=(value:any,max=1000)=>[...new Set((Array.isArray(value)?value:[]).map((item:any)=>clean(item,200)).filter(Boolean))].slice(0,max);
+
+/**
+ * COMMAND-C1: does a live FounderPermit actually cover approving THIS campaign?
+ *
+ * Fail-closed at every step: no reference, an unreadable permit, or a permit
+ * that fails evaluation all resolve to "not covered". The permit is evaluated
+ * against the same live hard controls as any other action, so an emergency or a
+ * protected market blocks coverage even when the permit itself is valid.
+ */
+async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,emergencyAvailable:boolean){
+  const permitId=clean(campaign?.founder_permit_id);
+  if(!permitId)return{covered:false,blockers:['no_founder_permit_bound_to_campaign'],permit_id:null};
+  const read=await readRuntimeSource<any>({source:'campaign_preflight_permit',read:()=>svc.entities.FounderPermit.get(permitId),fallback:null});
+  if(read.status==='UNAVAILABLE')return{covered:false,blockers:['founder_permit_unreadable'],permit_id:permitId};
+  const permit=read.value;
+  if(!permit)return{covered:false,blockers:['founder_permit_not_found'],permit_id:permitId};
+  const evaluation=evaluatePermit({
+    permit,
+    now:new Date().toISOString(),
+    presented_permit_hash:clean(campaign?.approval_binding_json?.permit_hash)||undefined,
+    request:{
+      domain:'campaign',
+      tool_id:'cambra.campaign.request_approval',
+      read_or_write:'WRITE',
+      effect_class:'campaign_config',
+      entity_type:'CommercialCampaign',
+      entity_id:clean(campaign?.id),
+      market:(Array.isArray(campaign?.market_scope)?campaign.market_scope:[])[0],
+      environment:'production',
+    },
+    controls:{
+      emergency,
+      emergencyAvailable,
+      // Approving a configuration is not a send, so no recipient suppression
+      // applies at this point; the send path re-checks it for real.
+      suppressionAvailable:true,
+      recipient_suppressed:false,
+      tenant_matches:true,
+      exposes_secret:false,
+      market_commercially_eligible:true,
+      legal_block:false,
+    },
+  });
+  return{covered:evaluation.allowed,blockers:evaluation.blockers,permit_id:permitId,permit_hash:clean(permit.permit_hash)};
+}
 
 function readiness(profile:any){
   const ready=Boolean(profile?.profile_key&&profile?.domain&&profile?.from_address&&profile?.status==='active'&&Number(profile?.current_daily_cap||0)>0&&(profile?.provider!=='instantly'||(profile?.provider_config_json?.sender_ready===true&&profile?.provider_config_json?.native_ai_conflict!==true&&profile?.webhook_status==='ACTIVE')));
@@ -307,6 +354,10 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
       readRuntimeRows({source:'campaign_preflight_emergency',limit:2,read:()=>svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_at',2)}),
     ]);
     const controls=controlRead.value||[];const emergencies=emergencyRead.value||[];
+    // COMMAND-C1: resolve whether a real FounderPermit covers this campaign.
+    // A campaign with no permit reference, an unreadable permit, or a permit
+    // that fails evaluation is simply "not covered" — never assumed covered.
+    const permitCoverage=await resolveCampaignPermitCoverage(svc,campaign,emergencies.length===1?emergencies[0]:null,emergencyRead.status!=='UNAVAILABLE'&&emergencies.length===1);
     const audienceVersion=audienceRead?.value||null;
     const contentVersion=contentRead?.value||null;
     const sequenceVersion=sequenceRead?.value||null;
@@ -327,9 +378,16 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
       emergency:emergencies.length===1?emergencies[0]:null,
       emergencyAvailable:emergencyRead.status!=='UNAVAILABLE'&&emergencies.length===1,
       budget:{available:Number.isFinite(Number(campaign.budget_limit_minor)),remaining_minor:Number(campaign.budget_limit_minor)},
-      // The FounderPermit authority does not exist on this tree (C0): reported
-      // UNKNOWN, which blocks approval, rather than silently skipped.
-      founderPermit:null,
+      // COMMAND-C1 (2026-08-17): the FounderPermit authority now exists, so the
+      // dimension reports a real verdict instead of a permanent UNKNOWN. The
+      // authority is available; whether a permit actually covers THIS campaign
+      // is decided by evaluatePermit against live hard controls — an unreadable
+      // permit still yields not-present, which blocks approval.
+      founderPermit:{
+        authority_available:true,
+        present:permitCoverage.covered,
+        blockers:permitCoverage.blockers,
+      },
     });
     if(action==='preflight'){
       return Response.json({ok:true,preflight,source_coverage:runtimeSourceCoverage({sending_profiles:profileRead,outbound_control:controlRead,emergency_control:emergencyRead}),external_send_performed:false});

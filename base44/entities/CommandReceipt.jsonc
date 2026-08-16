@@ -1,0 +1,51 @@
+{
+  "name": "CommandReceipt",
+  "type": "object",
+  "description": "Append-only, hash-chained traceability ledger for CAMBRA Command. It aggregates what happened across a run; it is NOT the canonical proof of a domain effect. Domain receipts (CostUsageEvent, provider receipts, AgentTask execution receipts) remain authoritative and are referenced from here. A receipt is never rewritten: a correction is a new row that supersedes an earlier one.",
+  "properties": {
+    "receipt_id": { "type": "string" },
+    "sequence": { "type": "number", "minimum": 1, "description": "Monotonic per chain. A gap or a duplicate is tamper evidence." },
+    "chain_key": { "type": "string", "description": "Chain identity, normally the conversation or run." },
+    "previous_receipt_hash": { "type": "string", "description": "Hash of the previous row in this chain. Empty only for sequence 1." },
+    "receipt_hash": { "type": "string", "description": "Hash over this row's canonical payload plus previous_receipt_hash." },
+    "run_id": { "type": "string" },
+    "conversation_id": { "type": "string" },
+    "step_key": { "type": "string" },
+    "actor": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "enum": ["READ", "PREPARE", "EFFECT", "DECISION", "ESCALATION", "ERROR", "SUPERSESSION"]
+    },
+    "state": {
+      "type": "string",
+      "enum": ["OBSERVED", "DERIVED", "INFERRED", "UNVERIFIED", "CONFLICTED", "UNKNOWN", "REVIEW_REQUIRED"],
+      "description": "Epistemic state of what this receipt asserts. INFERRED or UNVERIFIED is never promoted to OBSERVED."
+    },
+    "tool_id": { "type": "string" },
+    "tool_version": { "type": "string" },
+    "input_hash": { "type": "string" },
+    "output_hash": { "type": "string" },
+    "permit_id": { "type": "string" },
+    "permit_hash": { "type": "string", "description": "The exact permit scope this action was authorised under, so a later permit amendment cannot retroactively justify it." },
+    "approval_id": { "type": "string" },
+    "emergency_control_revision": { "type": "number" },
+    "tenant_scope": { "type": "string" },
+    "market_scope": { "type": "string" },
+    "domain_receipt_refs": { "type": "array", "items": { "type": "string" }, "description": "The canonical proofs. This ledger points at them; it does not replace them." },
+    "cost_event_refs": { "type": "array", "items": { "type": "string" } },
+    "artifact_refs": { "type": "array", "items": { "type": "string" } },
+    "source_refs": { "type": "array", "items": { "type": "string" } },
+    "external_effect_performed": { "type": "boolean", "default": false },
+    "ambiguity_state": { "type": "string" },
+    "supersedes_receipt_id": { "type": "string" },
+    "superseded_reason": { "type": "string" },
+    "summary": { "type": "string" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["receipt_id", "sequence", "chain_key", "receipt_hash", "kind", "state", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

@@ -48,7 +48,7 @@
     "start_at": { "type": "string", "format": "date-time" },
     "end_at": { "type": "string", "format": "date-time" },
     "timezone_policy": { "type": "string" },
-    "founder_permit_id": { "type": "string", "description": "Reserved for CAMBRA Command's FounderPermit; absent until that authority exists (fail-closed preflight dimension, never skipped)." },
+    "founder_permit_id": { "type": "string", "description": "FounderPermit authorising this campaign. The preflight founder_permit dimension evaluates it through founderPermitAuthority; absent, not found or unreadable means BLOCKED, never skipped." },
     "audience_mode": { "type": "string", "enum": ["SNAPSHOT", "DYNAMIC_UNTIL_LAUNCH"] },
     "audience_current_version_id": { "type": "string" },
     "content_current_version_id": { "type": "string" },

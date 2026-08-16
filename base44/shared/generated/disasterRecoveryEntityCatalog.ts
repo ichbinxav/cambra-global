@@ -42,6 +42,10 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "ChatMessage",
   "CohortDefinition",
   "CollectiveMember",
+  "CommandArtifact",
+  "CommandConversation",
+  "CommandReceipt",
+  "CommandRun",
   "CommercialCampaign",
   "CommercialIntelligenceSnapshot",
   "CommercialPolicy",
@@ -91,6 +95,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "FounderDecision",
   "FounderGrowthBrief",
   "FounderMeetingPolicy",
+  "FounderPermit",
   "FounderSavedView",
   "FounderSimulation",
   "FxSnapshot",
@@ -147,6 +152,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "MerchantUnitEconomics",
   "MigrationTask",
   "MoatMetric",
+  "ModelRouteDecision",
   "MonthlySavingsReport",
   "NegotiationCase",
   "NegotiationMemoryCohort",
@@ -258,4 +264,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:257';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:263';

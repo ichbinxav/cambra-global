@@ -253,13 +253,19 @@ describe("C3 — preflight and approval", () => {
       OutboundControl: [{ id: "oc1", control_key: "global", acquisition_enabled: true }],
       EmergencyControl: [{ id: "ec1", control_key: "global", safe_mode: false, communications_paused: false, control_revision: 7 }],
       ...overrides.entities,
-    });
+    }, overrides.behavior || {});
   }
 
-  it("reports UNKNOWN for FounderPermit and therefore refuses approval even when everything else passes", async () => {
+  // COMMAND-C1 (2026-08-17): this used to assert the dimension was permanently
+  // UNKNOWN because the FounderPermit authority did not exist. It now exists,
+  // so the honest verdict for a campaign with no permit bound is BLOCKED — the
+  // authority answered, and the answer is "nothing covers this". Approval is
+  // still refused, which is the invariant that actually matters.
+  it("refuses approval when no FounderPermit covers the campaign", async () => {
     const svc = readySvc();
     const preflight = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "preflight", campaign_id: "c1" }, svc));
-    expect(preflight.body.preflight.unknown_dimensions).toContain("founder_permit");
+    expect(preflight.body.preflight.blocked_dimensions).toContain("founder_permit");
+    expect(preflight.body.preflight.unknown_dimensions).not.toContain("founder_permit");
     expect(preflight.body.preflight.approvable).toBe(false);
 
     const approval = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "request_approval", campaign_id: "c1" }, svc));
@@ -267,6 +273,74 @@ describe("C3 — preflight and approval", () => {
     expect(approval.body.error).toBe("preflight_not_passed");
     // Nothing was promoted to READY_FOR_APPROVAL.
     expect(svc.entities.CommercialCampaign.store[0].status).toBe("DRAFT");
+  });
+
+  it("passes the permit dimension — and reaches approval — once a valid permit covers the campaign", async () => {
+    const svc = readySvc({
+      campaign: { founder_permit_id: "permit-1" },
+      entities: {
+        FounderPermit: [{
+          id: "permit-1", permit_id: "permit-1", objective: "Launch the ES fashion campaign",
+          issued_by: "founder@cambra.global", status: "ACTIVE", preset: "OPERATE",
+          permit_hash: "permit-hash-1",
+          allowed_domains: ["campaign"],
+          allowed_tool_ids: ["cambra.campaign.request_approval"],
+          allowed_effect_classes: ["campaign_config"],
+          allowed_entity_types: ["CommercialCampaign"],
+          allowed_markets: ["ES"],
+          allowed_environments: ["production"],
+          explicit_denials: [],
+          valid_from: "2020-01-01T00:00:00.000Z",
+          expires_at: "2099-01-01T00:00:00.000Z",
+          emergency_control_revision: 7,
+        }],
+      },
+    });
+    const preflight = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "preflight", campaign_id: "c1" }, svc));
+    const permitDimension = preflight.body.preflight.dimensions.find((row) => row.key === "founder_permit");
+    expect(permitDimension.status).toBe("PASS");
+    expect(preflight.body.preflight.approvable).toBe(true);
+
+    // The whole point of C1: a campaign can now actually reach READY_FOR_APPROVAL.
+    const approval = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "request_approval", campaign_id: "c1" }, svc));
+    expect(approval.status).toBe(200);
+    expect(approval.body.approval.approval_hash).toBeTruthy();
+    expect(svc.entities.CommercialCampaign.store[0].status).toBe("READY_FOR_APPROVAL");
+    // Approving is still not sending.
+    expect(approval.body.external_send_performed).toBe(false);
+  });
+
+  it("refuses the permit dimension when the emergency stop is active, even with a valid permit", async () => {
+    const svc = readySvc({
+      campaign: { founder_permit_id: "permit-1" },
+      entities: {
+        EmergencyControl: [{ id: "ec1", control_key: "global", safe_mode: true, communications_paused: true, control_revision: 9 }],
+        FounderPermit: [{
+          id: "permit-1", permit_id: "permit-1", objective: "Launch", issued_by: "f@c.com",
+          status: "ACTIVE", preset: "FOUNDER_ROOT", permit_hash: "h",
+          allowed_domains: [], allowed_tool_ids: [], allowed_effect_classes: [], allowed_entity_types: [],
+          allowed_markets: [], allowed_environments: [], explicit_denials: [],
+          valid_from: "2020-01-01T00:00:00.000Z", expires_at: "2099-01-01T00:00:00.000Z",
+          emergency_control_revision: 9,
+        }],
+      },
+    });
+    const preflight = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "preflight", campaign_id: "c1" }, svc));
+    // Both the emergency dimension and the permit dimension refuse: a permit
+    // never lifts the emergency stop, not even at FOUNDER_ROOT.
+    expect(preflight.body.preflight.blocked_dimensions).toContain("emergency");
+    expect(preflight.body.preflight.blocked_dimensions).toContain("founder_permit");
+    expect(preflight.body.preflight.approvable).toBe(false);
+  });
+
+  it("treats an unreadable permit as not covering the campaign", async () => {
+    const svc = readySvc({
+      campaign: { founder_permit_id: "permit-1" },
+      behavior: { FounderPermit: { throws: "permit_store_down" } },
+    });
+    const preflight = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "preflight", campaign_id: "c1" }, svc));
+    expect(preflight.body.preflight.blocked_dimensions).toContain("founder_permit");
+    expect(preflight.body.preflight.approvable).toBe(false);
   });
 
   it("blocks the preflight when outbound is globally paused", async () => {

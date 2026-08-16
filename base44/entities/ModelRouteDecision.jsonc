@@ -1,0 +1,49 @@
+{
+  "name": "ModelRouteDecision",
+  "type": "object",
+  "description": "Records which model provider answered a CAMBRA Command step and why that one was chosen. Written for every routed call, including refusals: a step that produced no model call because the AI spend emergency was engaged is recorded with route_outcome REFUSED and provider_call_performed false, so 'no answer' is never indistinguishable from 'never asked'.",
+  "properties": {
+    "decision_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "conversation_id": { "type": "string" },
+    "receipt_id": { "type": "string" },
+    "step_key": { "type": "string" },
+    "task_class": {
+      "type": "string",
+      "enum": ["PLANNING", "REASONING", "DRAFTING", "EXTRACTION", "CLASSIFICATION", "SUMMARISATION", "CODE", "OTHER"],
+      "description": "What the step needed, decided before a provider is picked. Routing reads this; it never reads the provider's own preference."
+    },
+    "requested_provider": { "type": "string", "description": "Provider explicitly requested by the caller, if any. A request is not a guarantee." },
+    "selected_provider": { "type": "string", "enum": ["anthropic", "openai", "none"] },
+    "selected_model": { "type": "string" },
+    "route_reason": {
+      "type": "string",
+      "enum": ["TASK_CLASS_DEFAULT", "EXPLICIT_REQUEST", "PRIMARY_UNAVAILABLE_FAILOVER", "COST_CEILING", "CAPABILITY_REQUIRED", "EMERGENCY_REFUSAL", "NO_PROVIDER_CONFIGURED"]
+    },
+    "route_outcome": {
+      "type": "string",
+      "enum": ["ANSWERED", "FAILED_OVER", "REFUSED", "ERRORED", "REVIEW_REQUIRED"]
+    },
+    "considered_providers": { "type": "array", "items": { "type": "string" } },
+    "rejected_providers_json": { "type": "object", "description": "provider -> reason it was not used. Kept so a routing complaint can be answered with the actual reason rather than a reconstruction." },
+    "failover_from_provider": { "type": "string" },
+    "failover_reason": { "type": "string" },
+    "provider_call_performed": { "type": "boolean", "default": false, "description": "Whether a paid provider call actually left the system. False on refusal — this is the field the AI spend coverage test asserts on." },
+    "emergency_control_revision": { "type": "number", "description": "Revision of the EmergencyControl consulted before spending. Absent means the control was never read, which is itself a defect." },
+    "emergency_blocked": { "type": "boolean", "default": false },
+    "cost_event_id": { "type": "string", "description": "The canonical CostUsageEvent. Cost is proven there, never by this row." },
+    "input_tokens": { "type": "number", "minimum": 0 },
+    "output_tokens": { "type": "number", "minimum": 0 },
+    "cost_minor": { "type": "number", "minimum": 0 },
+    "latency_ms": { "type": "number", "minimum": 0 },
+    "error_code": { "type": "string" },
+    "tenant_scope": { "type": "string" },
+    "decided_at": { "type": "string", "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["decision_id", "task_class", "selected_provider", "route_reason", "route_outcome", "provider_call_performed", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

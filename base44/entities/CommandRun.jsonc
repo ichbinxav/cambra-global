@@ -1,0 +1,47 @@
+{
+  "name": "CommandRun",
+  "type": "object",
+  "description": "Coordination record for one CAMBRA Command request. It COORDINATES work; it does not replace AgentTask, which remains the canonical unit of work and holds the real execution claim, lease and effect state. A run points at its AgentTasks rather than duplicating their lifecycle.",
+  "properties": {
+    "run_id": { "type": "string" },
+    "conversation_id": { "type": "string" },
+    "parent_run_id": { "type": "string" },
+    "root_run_id": { "type": "string" },
+    "trace_id": { "type": "string", "description": "Shared with the AgentTask lineage envelope so a chat turn is traceable end to end." },
+    "requested_by": { "type": "string" },
+    "request_text": { "type": "string" },
+    "objective": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["PLANNING", "AWAITING_PERMIT", "AWAITING_APPROVAL", "RUNNING", "PAUSED", "COMPLETED", "PARTIAL", "CANCELLED", "FAILED", "REVIEW_REQUIRED"],
+      "default": "PLANNING"
+    },
+    "permit_id": { "type": "string" },
+    "permit_hash": { "type": "string" },
+    "agent_task_ids": { "type": "array", "items": { "type": "string" }, "description": "The canonical work units. Their state is authoritative, not a copy kept here." },
+    "context_snapshot_hash": { "type": "string" },
+    "memory_snapshot_hash": { "type": "string" },
+    "plan_json": { "type": "object" },
+    "steps_completed": { "type": "number", "minimum": 0, "default": 0 },
+    "tool_calls_used": { "type": "number", "minimum": 0, "default": 0 },
+    "tokens_used": { "type": "number", "minimum": 0, "default": 0 },
+    "cost_minor_used": { "type": "number", "minimum": 0, "default": 0 },
+    "receipt_chain_key": { "type": "string" },
+    "last_receipt_hash": { "type": "string" },
+    "emergency_control_revision": { "type": "number" },
+    "cancellation_requested": { "type": "boolean", "default": false },
+    "cancellation_reason": { "type": "string" },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "final_result_json": { "type": "object" },
+    "run_revision": { "type": "number", "minimum": 0, "default": 0 },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["run_id", "conversation_id", "requested_by", "status", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

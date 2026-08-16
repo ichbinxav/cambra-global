@@ -49,7 +49,7 @@ export type PreflightInput = {
   emergencyAvailable?: boolean;
   budget?: { remaining_minor?: number | null; available?: boolean };
   /** FounderPermit authority does not exist on this tree — see C0. */
-  founderPermit?: { present?: boolean; authority_available?: boolean } | null;
+  founderPermit?: { present?: boolean; authority_available?: boolean; blockers?: string[] } | null;
 };
 
 /**
@@ -200,14 +200,24 @@ export function buildCampaignPreflight(input: PreflightInput) {
   }
 
   // --- Founder permit ---------------------------------------------------
-  // CAMBRA Command's FounderPermit authority does not exist on this tree (C0).
-  // It is reported UNKNOWN — which blocks approval — rather than skipped.
+  // COMMAND-C1: the FounderPermit authority now exists, and campaignAdminCore
+  // consults it. UNKNOWN is still the honest answer for a caller that has no
+  // authority wired in at all — a missing authority is not a granted permit.
+  const permitBlockers = Array.isArray(input.founderPermit?.blockers)
+    ? input.founderPermit.blockers.filter(Boolean).map(String)
+    : [];
   if (!input.founderPermit || input.founderPermit.authority_available !== true) {
     dimensions.push(dimension('founder_permit', 'UNKNOWN',
-      'FounderPermit authority is not implemented on this tree; approval cannot claim permit coverage.',
+      'FounderPermit authority is not wired into this caller; approval cannot claim permit coverage.',
       { configuration_required: true }));
   } else if (input.founderPermit.present !== true) {
-    dimensions.push(dimension('founder_permit', 'BLOCKED', 'No FounderPermit covers this campaign.'));
+    // The authority answered "no". Carry its reasons so the founder is told
+    // what to fix rather than just that something is missing.
+    dimensions.push(dimension('founder_permit', 'BLOCKED',
+      permitBlockers.length
+        ? `No FounderPermit covers this campaign: ${permitBlockers.join(', ')}.`
+        : 'No FounderPermit covers this campaign.',
+      { permit_blockers: permitBlockers }));
   } else {
     dimensions.push(dimension('founder_permit', 'PASS', 'A FounderPermit covers this campaign.'));
   }

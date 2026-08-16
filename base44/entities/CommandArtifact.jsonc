@@ -1,0 +1,42 @@
+{
+  "name": "CommandArtifact",
+  "type": "object",
+  "description": "A durable output produced by a CAMBRA Command run: a draft, a plan, an analysis, an export, a diff. Artifacts carry the content; CommandReceipt carries only its hash. That split is deliberate — it lets content be purged on the retention schedule without breaking the receipt chain, because the chain never hashed the raw text.",
+  "properties": {
+    "artifact_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "conversation_id": { "type": "string" },
+    "receipt_id": { "type": "string", "description": "The receipt that recorded producing this artifact." },
+    "kind": {
+      "type": "string",
+      "enum": ["PLAN", "DRAFT", "ANALYSIS", "EXPORT", "DIFF", "SUMMARY", "TABLE", "OTHER"]
+    },
+    "title": { "type": "string" },
+    "format": { "type": "string", "enum": ["text/markdown", "text/plain", "application/json", "text/csv"] },
+    "content": { "type": "string", "description": "The artifact body. Purgeable: see the command_conversation_content retention category." },
+    "content_json": { "type": "object" },
+    "content_hash": { "type": "string", "description": "Hash of the content as produced. Survives purge so a receipt referencing this artifact stays verifiable as a reference even when the body is gone." },
+    "content_purged": { "type": "boolean", "default": false, "description": "True once the body was purged on schedule. The row is kept so history reads as 'produced, then purged' rather than 'never existed'." },
+    "content_purged_at": { "type": "string", "format": "date-time" },
+    "supersedes_artifact_id": { "type": "string" },
+    "superseded_by_artifact_id": { "type": "string" },
+    "version": { "type": "number", "minimum": 1, "default": 1 },
+    "epistemic_state": {
+      "type": "string",
+      "enum": ["OBSERVED", "DERIVED", "INFERRED", "UNVERIFIED", "CONFLICTED", "UNKNOWN", "REVIEW_REQUIRED"],
+      "description": "How much the artifact's claims are backed. A DRAFT built from an INFERRED context is not evidence of anything."
+    },
+    "source_refs": { "type": "array", "items": { "type": "string" }, "description": "Canonical rows this artifact was built from, as entity:id. An artifact with no source_refs may not be presented as OBSERVED." },
+    "external_effect_performed": { "type": "boolean", "default": false, "description": "Always false for an artifact. Producing a draft is never sending it." },
+    "tenant_scope": { "type": "string" },
+    "market_scope": { "type": "string" },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["artifact_id", "run_id", "kind", "content_hash", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

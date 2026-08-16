@@ -1,0 +1,71 @@
+{
+  "name": "FounderPermit",
+  "type": "object",
+  "description": "Durable, objective-scoped, hash-bound and time-limited authority issued by the founder to CAMBRA Command. A permit authorises a CLASS of work toward one objective; it never replaces Approval, which still resolves individual material actions where policy demands it. No permit can lift tenant isolation, secret controls, Emergency/SOS, suppression, market protection or a legal prohibition.",
+  "properties": {
+    "permit_id": { "type": "string" },
+    "objective": { "type": "string", "description": "What the founder actually asked for, in their words. Bound into permit_hash." },
+    "issued_by": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "ACTIVE", "EXPIRED", "REVOKED", "CONSUMED"],
+      "default": "DRAFT"
+    },
+    "preset": {
+      "type": "string",
+      "enum": ["READ", "PREPARE", "OPERATE", "FOUNDER_ROOT"],
+      "description": "Coarse capability band. FOUNDER_ROOT is broad and temporary; it is still subject to every hard control."
+    },
+    "allowed_domains": { "type": "array", "items": { "type": "string" } },
+    "allowed_tool_ids": { "type": "array", "items": { "type": "string" } },
+    "allowed_effect_classes": { "type": "array", "items": { "type": "string" } },
+    "allowed_entity_types": { "type": "array", "items": { "type": "string" } },
+    "allowed_entity_ids": { "type": "array", "items": { "type": "string" } },
+    "allowed_tenants": { "type": "array", "items": { "type": "string" } },
+    "allowed_markets": { "type": "array", "items": { "type": "string" } },
+    "allowed_environments": { "type": "array", "items": { "type": "string" } },
+    "allowed_repositories": { "type": "array", "items": { "type": "string" } },
+    "allowed_branch_patterns": { "type": "array", "items": { "type": "string" } },
+    "allowed_network_domains": { "type": "array", "items": { "type": "string" } },
+    "allowed_data_classes": { "type": "array", "items": { "type": "string" } },
+    "explicit_denials": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Always wins over any allow entry, including under FOUNDER_ROOT."
+    },
+    "max_cost_minor": { "type": "number", "minimum": 0 },
+    "max_tokens": { "type": "number", "minimum": 0 },
+    "max_tool_calls": { "type": "number", "minimum": 0 },
+    "max_records_affected": { "type": "number", "minimum": 0 },
+    "max_external_messages": { "type": "number", "minimum": 0 },
+    "max_parallel_workers": { "type": "number", "minimum": 0 },
+    "max_runtime_seconds": { "type": "number", "minimum": 0 },
+    "consumed_cost_minor": { "type": "number", "minimum": 0, "default": 0 },
+    "consumed_tokens": { "type": "number", "minimum": 0, "default": 0 },
+    "consumed_tool_calls": { "type": "number", "minimum": 0, "default": 0 },
+    "consumed_records_affected": { "type": "number", "minimum": 0, "default": 0 },
+    "consumed_external_messages": { "type": "number", "minimum": 0, "default": 0 },
+    "consumption_revision": { "type": "number", "minimum": 0, "default": 0, "description": "Optimistic-concurrency guard so two runs cannot spend the same headroom twice." },
+    "valid_from": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "auto_approval_policy": { "type": "object", "description": "When a permit may auto-resolve an Approval. Absent means never." },
+    "rollback_policy": { "type": "object" },
+    "policy_snapshot_refs": { "type": "array", "items": { "type": "string" } },
+    "emergency_control_ref": { "type": "string" },
+    "emergency_control_revision": { "type": "number", "description": "Emergency epoch at issue time. A later revision invalidates auto-approval and forces revalidation." },
+    "requires_strong_reauth": { "type": "boolean", "default": false },
+    "permit_hash": { "type": "string", "description": "Hash over the full authorised scope. Any change to scope, limits, actor or expiry produces a different hash and invalidates prior binding." },
+    "issue_command_key": { "type": "string", "description": "Binds issuance to the founderOSCommand preview to confirm flow." },
+    "issue_nonce": { "type": "string" },
+    "revoked_at": { "type": "string", "format": "date-time" },
+    "revoked_by": { "type": "string" },
+    "revocation_reason": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["permit_id", "objective", "issued_by", "status", "preset", "permit_hash", "created_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}
