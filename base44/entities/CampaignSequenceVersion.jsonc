@@ -1,0 +1,42 @@
+{
+  "name": "CampaignSequenceVersion",
+  "type": "object",
+  "description": "Immutable, versioned sequence (steps, delays, business-hours policy, stop conditions, frequency caps) for a CommercialCampaign. Supersedes the inline CommercialCampaign.sequence_json for evolved campaigns.",
+  "properties": {
+    "sequence_version_id": { "type": "string" },
+    "campaign_id": { "type": "string" },
+    "version": { "type": "number", "minimum": 1 },
+    "steps_json": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Each step: step_key, ordinal, channel, content_version_ref/variant, delay_amount, delay_unit, business_days_only, send_window, condition, sender_policy, variant_key, max_attempts."
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Mandatory set includes: any human reply, unsubscribe, hard bounce, complaint, meeting booked, connection started/completed, Analyzer completed, lead converted, suppression, founder pause, policy pause, market protected, Emergency stop."
+    },
+    "business_hours_policy_json": { "type": "object" },
+    "timezone_policy": { "type": "string" },
+    "company_frequency_policy_json": { "type": "object" },
+    "person_frequency_policy_json": { "type": "object" },
+    "out_of_office_policy_json": { "type": "object", "description": "OOO is classified without counting as negative; reschedule is bounded — never an infinite loop." },
+    "bounce_policy_json": { "type": "object" },
+    "reply_policy_json": { "type": "object" },
+    "meeting_policy_json": { "type": "object" },
+    "connection_policy_json": { "type": "object" },
+    "max_followups": { "type": "number", "minimum": 0 },
+    "sequence_hash": { "type": "string" },
+    "status": { "type": "string", "enum": ["DRAFT", "VALIDATED", "APPROVED", "SUPERSEDED", "REVIEW_REQUIRED"], "default": "DRAFT" },
+    "source": { "type": "string", "description": "LEGACY_BACKFILL when migrated from CommercialCampaign.sequence_json." },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "approved_by": { "type": "string" },
+    "approved_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["sequence_version_id", "campaign_id", "version", "status"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

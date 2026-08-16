@@ -320,7 +320,48 @@
         "production"
       ],
       "default": "legacy"
-    }
+    },
+    "campaign_id": { "type": "string" },
+    "enrollment_id": { "type": "string" },
+    "commercial_status": {
+      "type": "string",
+      "enum": [
+        "NEW_REPLY", "INTERESTED", "QUESTION", "OBJECTION", "NOT_NOW",
+        "WRONG_CONTACT", "MEETING_PROPOSED", "MEETING_BOOKED",
+        "CONNECTION_REQUESTED", "CONNECTION_STARTED", "QUALIFIED",
+        "OPPORTUNITY", "NOT_INTERESTED", "UNSUBSCRIBED", "CLOSED_WON",
+        "CLOSED_LOST"
+      ]
+    },
+    "operational_status": {
+      "type": "string",
+      "enum": [
+        "AI_TRIAGE", "AI_HANDLING", "NEEDS_HUMAN", "WAITING_ON_US",
+        "WAITING_ON_COUNTERPARTY", "FOLLOW_UP_SCHEDULED", "PAUSED_BY_FOUNDER",
+        "PAUSED_BY_POLICY", "ESCALATED", "REVIEW_REQUIRED", "COMPLETED"
+      ]
+    },
+    "owner_type": { "type": "string", "enum": ["CAMBRA", "HUMAN"] },
+    "owner_id": { "type": "string" },
+    "assignment_status": { "type": "string" },
+    "unread_count": { "type": "number", "minimum": 0 },
+    "last_read_at": { "type": "string", "format": "date-time" },
+    "sla_policy_version": { "type": "string" },
+    "first_response_due_at": { "type": "string", "format": "date-time" },
+    "next_action_due_at": { "type": "string", "format": "date-time" },
+    "stale_at": { "type": "string", "format": "date-time" },
+    "ai_mode": { "type": "string", "enum": ["AUTONOMOUS", "DRAFT_ONLY", "OFF"] },
+    "ai_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "human_takeover_at": { "type": "string", "format": "date-time" },
+    "human_takeover_by": { "type": "string" },
+    "resume_eligible": { "type": "boolean" },
+    "summary_version": { "type": "number", "minimum": 0 },
+    "summary_source_message_id": { "type": "string" },
+    "last_classification_at": { "type": "string", "format": "date-time" },
+    "last_classification_model": { "type": "string" },
+    "last_classification_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "pipeline_entity_id": { "type": "string" },
+    "pipeline_stage": { "type": "string" }
   },
   "required": [
     "thread_key",

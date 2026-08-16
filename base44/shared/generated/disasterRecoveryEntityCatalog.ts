@@ -33,6 +33,10 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "BillingRule",
   "Brand",
   "BrandSavings",
+  "CampaignAudienceVersion",
+  "CampaignContentVersion",
+  "CampaignEnrollment",
+  "CampaignSequenceVersion",
   "CanonicalProvider",
   "CardScope",
   "ChatMessage",
@@ -254,4 +258,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:253';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:257';

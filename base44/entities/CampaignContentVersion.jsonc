@@ -1,0 +1,40 @@
+{
+  "name": "CampaignContentVersion",
+  "type": "object",
+  "description": "Immutable, versioned message content for a CommercialCampaign (per language/variant). Records variable schema with truth-state fallbacks, claims-gate results and provenance (human/model). Supersedes the inline CommercialCampaign.message_json for evolved campaigns.",
+  "properties": {
+    "content_version_id": { "type": "string" },
+    "campaign_id": { "type": "string" },
+    "version": { "type": "number", "minimum": 1 },
+    "language": { "type": "string" },
+    "subject": { "type": "string" },
+    "preview_text": { "type": "string" },
+    "text_body": { "type": "string" },
+    "html_body": { "type": "string" },
+    "cta": { "type": "string" },
+    "signature_id": { "type": "string" },
+    "attachment_refs": { "type": "array", "items": { "type": "string" } },
+    "variable_schema_json": { "type": "object", "description": "Per variable: source, truth state, freshness, fallback, required/optional. A required variable without resolution blocks enrollment — never invents." },
+    "variable_fallbacks_json": { "type": "object" },
+    "claim_refs": { "type": "array", "items": { "type": "string" } },
+    "claims_policy_version": { "type": "string" },
+    "style_policy_version": { "type": "string" },
+    "content_source": { "type": "string", "enum": ["HUMAN", "GPT", "CLAUDE", "TEMPLATE", "HYBRID", "LEGACY_BACKFILL"] },
+    "model_route_decision_id": { "type": "string" },
+    "prompt_hash": { "type": "string" },
+    "quality_gate_json": { "type": "object" },
+    "unresolved_variables": { "type": "array", "items": { "type": "string" } },
+    "blocked_claims": { "type": "array", "items": { "type": "string" } },
+    "content_hash": { "type": "string" },
+    "status": { "type": "string", "enum": ["DRAFT", "VALIDATED", "APPROVED", "SUPERSEDED", "REVIEW_REQUIRED"], "default": "DRAFT" },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "approved_by": { "type": "string" },
+    "approved_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["content_version_id", "campaign_id", "version", "language", "status"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

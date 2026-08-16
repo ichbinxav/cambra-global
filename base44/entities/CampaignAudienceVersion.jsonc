@@ -1,0 +1,47 @@
+{
+  "name": "CampaignAudienceVersion",
+  "type": "object",
+  "description": "Immutable, versioned audience for a CommercialCampaign. Records source, canonical filters, dedupe/exclusion reconciliation counts and the canonical subject references. Never stores provider-only list identities as the audience authority.",
+  "properties": {
+    "audience_version_id": { "type": "string" },
+    "campaign_id": { "type": "string" },
+    "version": { "type": "number", "minimum": 1 },
+    "mode": { "type": "string", "enum": ["SNAPSHOT", "DYNAMIC_UNTIL_LAUNCH"], "default": "SNAPSHOT" },
+    "source_type": {
+      "type": "string",
+      "enum": ["DISCOVERY_SAVED_SEARCH", "FILTERS", "EXPLICIT_IDS", "CSV", "DERIVED_CAMPAIGN", "MERCHANT_SEGMENT", "PARTNER_SEGMENT", "PROVIDER_CONTACTS", "LEGACY_BACKFILL"]
+    },
+    "source_refs": { "type": "array", "items": { "type": "string" } },
+    "canonical_filter_json": { "type": "object" },
+    "filter_schema_version": { "type": "string" },
+    "inclusion_rules_json": { "type": "object" },
+    "exclusion_rules_json": { "type": "object" },
+    "contact_strategy_snapshot_json": { "type": "object" },
+    "market_scope_version": { "type": "string" },
+    "policy_snapshot_hash": { "type": "string" },
+    "selected_count": { "type": "number", "minimum": 0 },
+    "deduplicated_person_count": { "type": "number", "minimum": 0 },
+    "deduplicated_company_count": { "type": "number", "minimum": 0 },
+    "recently_contacted_excluded_count": { "type": "number", "minimum": 0 },
+    "suppressed_count": { "type": "number", "minimum": 0 },
+    "invalid_email_count": { "type": "number", "minimum": 0 },
+    "protected_market_count": { "type": "number", "minimum": 0 },
+    "existing_merchant_excluded_count": { "type": "number", "minimum": 0 },
+    "policy_blocked_count": { "type": "number", "minimum": 0 },
+    "final_eligible_count": { "type": "number", "minimum": 0 },
+    "exclusion_reasons_json": { "type": "object", "description": "Per-subject exclusion reasons so every reconciliation row is inspectable." },
+    "canonical_subject_ids": { "type": "array", "items": { "type": "string" } },
+    "canonical_company_keys": { "type": "array", "items": { "type": "string" } },
+    "content_hash": { "type": "string", "description": "Reproducible hash over the canonical membership; approval binds to it." },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "captured_by": { "type": "string" },
+    "frozen_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["DRAFT", "BUILDING", "READY", "FROZEN", "SUPERSEDED", "REVIEW_REQUIRED"], "default": "DRAFT" },
+    "source": { "type": "string", "description": "LEGACY_BACKFILL when migrated from CommercialCampaign.lead_ids/audience_snapshot_json." }
+  },
+  "required": ["audience_version_id", "campaign_id", "version", "source_type", "status"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

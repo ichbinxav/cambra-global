@@ -40,7 +40,21 @@
     },
     "notes": {
       "type": "string"
-    }
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": ["EMAIL", "PERSON", "COMPANY", "DOMAIN", "CAMPAIGN"],
+      "default": "EMAIL"
+    },
+    "scope_value": { "type": "string", "description": "Normalized value the scope matches on (email, contact id, company key, domain, campaign id)." },
+    "contact_id": { "type": "string" },
+    "company_key": { "type": "string" },
+    "domain": { "type": "string" },
+    "campaign_id": { "type": "string" },
+    "source_provider": { "type": "string" },
+    "source_event_id": { "type": "string" },
+    "legal_basis_or_policy_ref": { "type": "string" },
+    "created_by": { "type": "string" }
   },
   "required": [
     "email",

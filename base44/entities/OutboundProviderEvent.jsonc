@@ -20,7 +20,27 @@
     "processed_at": { "type": "string", "format": "date-time" },
     "last_error_code": { "type": "string" },
     "related_thread_id": { "type": "string" },
-    "related_message_id": { "type": "string" }
+    "related_message_id": { "type": "string" },
+    "signature_verified": { "type": "boolean" },
+    "webhook_version": { "type": "string" },
+    "normalized_event_type": {
+      "type": "string",
+      "enum": [
+        "SEND_REQUESTED", "PROVIDER_ACCEPTED", "DELIVERED", "DEFERRED",
+        "SOFT_BOUNCE", "HARD_BOUNCE", "OPENED", "CLICKED", "REPLY_RECEIVED",
+        "COMPLAINT", "UNSUBSCRIBE", "ACCOUNT_ERROR", "AUTH_ERROR",
+        "WEBHOOK_ERROR", "UNKNOWN"
+      ]
+    },
+    "event_observed_at": { "type": "string", "format": "date-time" },
+    "provider_received_at": { "type": "string", "format": "date-time" },
+    "processing_claim": { "type": "string" },
+    "processing_fence": { "type": "string" },
+    "processing_receipt_json": { "type": "object" },
+    "reconciliation_status": { "type": "string", "enum": ["NOT_REQUIRED", "PENDING", "RECONCILED", "REVIEW_REQUIRED"] },
+    "related_campaign_id": { "type": "string" },
+    "related_enrollment_id": { "type": "string" },
+    "sanitized_payload_hash": { "type": "string" }
   },
   "required": ["event_key", "provider", "event_type", "raw_event_json", "normalized_event_json", "status", "attempts", "first_received_at"],
   "rls": {

@@ -5,7 +5,18 @@
   "properties": {
     "campaign_key": { "type": "string" },
     "name": { "type": "string" },
-    "status": { "type": "string", "enum": ["DRAFT", "READY_FOR_PILOT", "PILOT", "PAUSED", "ACTIVE", "COMPLETED", "ARCHIVED"], "default": "DRAFT" },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT", "AUDIENCE_BUILDING", "AUDIENCE_READY", "CONTENT_INCOMPLETE",
+        "SEQUENCE_INCOMPLETE", "SENDING_CONFIGURATION_REQUIRED",
+        "PREFLIGHT_BLOCKED", "READY_FOR_APPROVAL", "APPROVED", "SCHEDULED",
+        "RUNNING", "PAUSED", "COMPLETED", "STOPPED", "REVIEW_REQUIRED",
+        "ARCHIVED",
+        "READY_FOR_PILOT", "PILOT", "ACTIVE"
+      ],
+      "default": "DRAFT"
+    },
     "target_profile_id": { "type": "string", "description": "CommercialPolicy id whose icp_json defines the portable audience." },
     "policy_key": { "type": "string" },
     "policy_version": { "type": "string" },
@@ -26,7 +37,32 @@
     "pilot_authorized_at": { "type": "string", "format": "date-time" },
     "launched_at": { "type": "string", "format": "date-time" },
     "paused_at": { "type": "string", "format": "date-time" },
-    "metrics_json": { "type": "object" }
+    "metrics_json": { "type": "object" },
+    "lane": { "type": "string", "enum": ["MERCHANT_ACQUISITION", "PARTNER_ACQUISITION", "PROVIDER_RELATIONS", "MERCHANT_LIFECYCLE"] },
+    "objective_type": { "type": "string" },
+    "primary_cta": { "type": "string" },
+    "description": { "type": "string" },
+    "owner_actor_id": { "type": "string" },
+    "market_scope": { "type": "array", "items": { "type": "string" } },
+    "language_scope": { "type": "array", "items": { "type": "string" } },
+    "start_at": { "type": "string", "format": "date-time" },
+    "end_at": { "type": "string", "format": "date-time" },
+    "timezone_policy": { "type": "string" },
+    "founder_permit_id": { "type": "string", "description": "Reserved for CAMBRA Command's FounderPermit; absent until that authority exists (fail-closed preflight dimension, never skipped)." },
+    "audience_mode": { "type": "string", "enum": ["SNAPSHOT", "DYNAMIC_UNTIL_LAUNCH"] },
+    "audience_current_version_id": { "type": "string" },
+    "content_current_version_id": { "type": "string" },
+    "sequence_current_version_id": { "type": "string" },
+    "budget_limit_minor": { "type": "number", "minimum": 0 },
+    "contact_limit": { "type": "number", "minimum": 0 },
+    "company_contact_limit": { "type": "number", "minimum": 0 },
+    "approved_by": { "type": "string" },
+    "approved_at": { "type": "string", "format": "date-time" },
+    "approval_binding_json": { "type": "object", "description": "Hash-bound approval scope: audience/content/sequence version hashes, policy version, limits, expiry, actor, nonce. Changing any dimension invalidates the approval." },
+    "scheduled_at": { "type": "string", "format": "date-time" },
+    "stopped_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "latest_metrics_snapshot_json": { "type": "object" }
   },
   "required": ["campaign_key", "name", "status", "provider_mode", "lead_ids", "created_at"],
   "rls": {
