@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-16T20:11:12.011Z",
+  "generatedAt": "2026-08-16T20:16:00.091Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "2d7ffa7adb19995112d2d7f3f5d2f0a4329750ce72be051e5b212aa2011db685",
+      "sha256": "10a2c027f6a0a0b6e7067d333833f2882246885026793417f96aaed6bcecf5c9",
       "bytes": 42987
     },
     {
