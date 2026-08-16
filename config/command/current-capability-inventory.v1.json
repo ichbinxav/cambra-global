@@ -1,0 +1,148 @@
+{
+  "schema_version": "cambra-command-capability-inventory-v1",
+  "generated_by": "hand-maintained — C0 of PROMPT_CAMBRA_COMMAND_V1. Narrative and evidence in src/docs/Decision_Log_COMMAND_C0.md",
+  "recalculated_at": "2026-08-17",
+  "baseline": {
+    "note": "Recalculated from the tree with the project's own scripts. RELEASE.json and .release-evidence/tests.json were NOT regenerated after the Discovery V2 / Campaigns work and are stale — do not read baseline numbers from them.",
+    "tree_commit": "1334820d",
+    "working_tree_clean": true,
+    "node": "24.19.0",
+    "npm": "11.17.0",
+    "physical_functions_canonical": 276,
+    "logical_routes": 29,
+    "bundle_staged_files": 2885,
+    "entities": 257,
+    "git_tracked_files": 1907,
+    "test_files": 276,
+    "tests_passing": 3682,
+    "tests_skipped": 0,
+    "release_json_is_stale": true,
+    "release_json_claims_logical_routes": 27
+  },
+  "existing_reusable": {
+    "chat_control_plane": {
+      "path": "base44/functions/chatChiefOrchestrator/entry.ts",
+      "tools_declared": 48,
+      "risk_split": { "L1": 31, "L2": 11, "L3": 6 },
+      "gates": [
+        "GATE 3 whitelist (only declared tools dispatchable)",
+        "GATE 2 bulk confirmation, BULK_THRESHOLD=5, declared on 4 of 48 tools",
+        "GATE 1 risk forcing: risk_level>=2 coerces mode='draft'",
+        "fixed_input overrides model-supplied input server-side"
+      ],
+      "verdict": "REUSE — this is the control plane. Extend it; do not build a second orchestrator."
+    },
+    "model_call": {
+      "path": "base44/functions/chatChiefOrchestrator/entry.ts:620-645",
+      "provider": "anthropic",
+      "wrapper": "paidProviderFetch (cost-governed, emergency-epoch fenced)",
+      "verdict": "REUSE as the model boundary"
+    },
+    "work_state_machine": {
+      "entity": "base44/entities/AgentTask.jsonc",
+      "helper": "base44/shared/agentTaskEnvelope.ts",
+      "what": "Full lifecycle + lineage envelope (trace_id, root/parent task, attempt/fence tokens, effect_state, ambiguity_state, execution claim with lease) already consumed by 8 orchestrators.",
+      "verdict": "REUSE — AgentTask stays the canonical unit of work. CommandRun coordinates, it does not replace it."
+    },
+    "governed_action_gateway": {
+      "path": "base44/functions/founderOSCommand/entry.ts",
+      "what": "Two-phase preview->confirm keyed by command_key + confirmation_nonce, 10-minute preview expiry, execution claim on AgentTask, FounderCommandAudit trail.",
+      "verdict": "REUSE — this is the hash-bound confirmation pattern a permit must extend, not replace."
+    },
+    "cost_ledger": {
+      "primitive": "base44/shared/costGovernance.ts paidProviderFetch",
+      "entity": "base44/entities/CostUsageEvent.jsonc",
+      "verdict": "REUSE — every Command LLM call must route through it"
+    },
+    "emergency_authority": {
+      "core": "base44/shared/emergencyControlAdminCore.ts",
+      "entity": "base44/entities/EmergencyControl.jsonc",
+      "verdict": "REUSE — Command must check the epoch around every effect"
+    },
+    "campaign_primitives_built_after_the_spec": {
+      "paths": [
+        "base44/shared/campaignAdminCore.ts",
+        "base44/shared/campaignPreflight.ts",
+        "base44/shared/campaignExecutionEngine.ts"
+      ],
+      "verdict": "WRAP, do not reinvent. campaignPreflight's founder_permit dimension is the exact socket this prompt fills."
+    }
+  },
+  "verified_blockers": [
+    {
+      "id": "AI_SPEND_NOT_COVERED_BY_EMERGENCY_STOP",
+      "severity": "critical",
+      "claim": "The cost category 'ai' maps to NO EmergencyControl capability, so a global emergency stop does not pause LLM spend.",
+      "evidence": "base44/shared/costGovernance.ts:54-61 — the capability map covers category 'email' -> communications and 'api'/'enrichment' -> paid_discovery. 'ai' returns an empty capability array.",
+      "why_it_matters_for_command": "CAMBRA Command will be by far the largest LLM spender in the system. Building it on top of this means the emergency stop would not stop it. Must be closed before Command can run autonomously.",
+      "verified_by": "direct read, C0"
+    },
+    {
+      "id": "FOUNDER_PERMIT_DOES_NOT_EXIST",
+      "severity": "blocking",
+      "claim": "FounderPermit exists only as a named absence and one dead reserved foreign key.",
+      "evidence": "No entity file matches *Permit* in base44/entities/. CommercialCampaign.jsonc:51 declares founder_permit_id with no reader or writer. campaignPreflight.ts:203-207 hardcodes the dimension to UNKNOWN. conversationAdminCore.ts:116 hardcodes founder_permit_available:false.",
+      "consequence_today": "No campaign can reach APPROVED and CAMBRA can never reply autonomously — both are blocked by construction, not by policy.",
+      "verified_by": "direct read, C0"
+    },
+    {
+      "id": "CHAT_HAS_NO_TOOL_LOOP",
+      "severity": "blocking",
+      "claim": "The model is called exactly once per request and NEVER sees the tool's output.",
+      "evidence": "chatChiefOrchestrator/entry.ts:720 is the only callClaude call site; no tool_result block is ever constructed or sent back. The assistant reply after a tool run is a hand-written template.",
+      "consequence_today": "The current Ask CAMBRA cannot do multi-step work: it can fire one tool and describe it, but cannot read the result and decide what to do next. This is the single biggest functional gap between what exists and the Command described in the spec.",
+      "verified_by": "direct read, C0"
+    },
+    {
+      "id": "NO_DURABLE_CONVERSATION",
+      "severity": "blocking",
+      "claim": "Conversation identity is a client-generated sessionStorage string; there is no durable Conversation entity.",
+      "consequence_today": "Conversations cannot be listed, resumed on another device, branched or audited.",
+      "verified_by": "inventory agent, chat-orchestration domain"
+    },
+    {
+      "id": "ROUTER_IS_ANTHROPIC_ONLY_WITH_NO_SEAM",
+      "severity": "decision-blocking",
+      "claim": "Anthropic is hardcoded at several independent layers; response parsing is Anthropic-Messages-shaped only.",
+      "evidence": "base44/shared/commercialModelRouter.ts; the only OpenAI code in the tree is in base44/functions/processUploadedFile/entry.ts, which is FROZEN (config/pre-ecl-freeze.json entries).",
+      "consequence": "Adding a second provider is a founder decision with a freeze implication, not a refactor.",
+      "verified_by": "direct read, C0"
+    },
+    {
+      "id": "NO_EXECUTION_SANDBOX",
+      "severity": "scope",
+      "claim": "There is no sandbox, container or isolated execution environment anywhere. Nothing in the repo can execute code, run a build or run a test.",
+      "evidence": "Repo-wide search for sandbox/docker/firecracker/e2b/devcontainer returns only false positives (a filename regex, Stripe sandbox account comments, DR environment strings).",
+      "consequence": "The Python/SQL analysis sandbox (spec C7) and code execution are greenfield, not an integration.",
+      "verified_by": "inventory agent, developer-github domain"
+    },
+    {
+      "id": "NO_RETENTION_ENFORCEMENT_FOR_NEW_ENTITIES",
+      "severity": "process",
+      "claim": "Nothing forces a new entity to appear in the retention matrix; registration is voluntary and the entity<->category link is a free-text convention.",
+      "consequence": "New Command entities (run, receipt, permit) can pass verify while being invisible to retention. Must be registered deliberately.",
+      "verified_by": "inventory agent, entities-retention-rls domain"
+    },
+    {
+      "id": "OUTLOOK_IS_DELEGATED_SINGLE_MAILBOX",
+      "severity": "scope",
+      "claim": "The only Outlook auth is delegated personal-account auth against one app-global mailbox; every Graph call is /me. Credentials live outside the IntegrationCredential control plane.",
+      "consequence": "Per-founder or per-tenant mailbox access is not available today; Command email reads inherit this single-mailbox limitation.",
+      "verified_by": "inventory agent, connectors-secrets domain"
+    }
+  ],
+  "inventory_coverage": {
+    "domains_completed": [
+      "chat-orchestration",
+      "model-routing-cost",
+      "authority-permits",
+      "entities-retention-rls",
+      "developer-github",
+      "connectors-secrets",
+      "command-hosting-capacity"
+    ],
+    "domains_not_completed": ["agenttask-workforce", "knowledge-evidence"],
+    "not_completed_reason": "Session limit reached mid-run. AgentTask was covered in depth by the chat-orchestration reader (entity + envelope helper read fully); the knowledge/evidence plane remains the one genuine coverage gap in this C0 and must be inventoried before C3 (assertion/citation layer).",
+    "adversarial_verification": "The planned refute-every-gap pass did not run (session limit). The blockers listed above were instead verified directly by the primary agent with file:line reads. Gaps not in that list carry inventory-agent evidence only and are marked UNVERIFIED in the gap map."
+  }
+}

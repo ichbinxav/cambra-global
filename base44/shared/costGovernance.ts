@@ -40,6 +40,18 @@ const READ_ONLY_RECONCILIATION_SOURCES = new Set([
  * new/future provider from silently bypassing the pause through a missing
  * allow-list entry. Communication providers additionally retain their stricter
  * transport boundary.
+ *
+ * COMMAND-PRE-C1 (2026-08-17): the `ai` category used to map to NO capability,
+ * so a global emergency stop did not pause LLM spend at all. That was tolerable
+ * while the only LLM caller was a single-shot chat; it is not tolerable for
+ * CAMBRA Command, which is designed to be the largest LLM spender in the system.
+ *
+ * `ai` is mapped onto `paid_discovery` rather than onto a NEW capability
+ * deliberately: a new field would be absent on every EmergencyControl row that
+ * already exists, so an emergency already in force would read it as false and
+ * fail OPEN. Reusing paid_discovery means every safe-mode row ever written
+ * already covers AI spend from the moment this ships. Legitimate read-only
+ * reconciliation keeps its existing escape hatch above.
  */
 export function paidProviderEmergencyCapabilities(
   input: any,
@@ -55,7 +67,7 @@ export function paidProviderEmergencyCapabilities(
   if (category === "email" || COMMUNICATION_PROVIDERS.has(provider)) {
     capabilities.push("communications");
   }
-  if (category === "api" || category === "enrichment") {
+  if (category === "api" || category === "enrichment" || category === "ai") {
     capabilities.push("paid_discovery");
   }
   return [...new Set(capabilities)];

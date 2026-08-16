@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "664038166107d797efdea4eedb1403a16496ca2baeca9832ce91a922e8ac6c95",
+  "input_fingerprint_sha256": "ed614a5d478d9042e378a47a35bed0a10b5f25c96976952f7e52a2e1fcfc563b",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -1248,8 +1248,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         }
       ]
     },
@@ -1305,8 +1305,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         }
       ]
     },
@@ -1359,8 +1359,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         }
       ]
     },
@@ -2107,8 +2107,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         },
         {
           "path": "base44/shared/recoverContractState.ts",
@@ -2955,8 +2955,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         }
       ]
     },
@@ -3236,8 +3236,8 @@
         },
         {
           "path": "base44/shared/costGovernance.ts",
-          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
-          "bytes": 46379
+          "sha256": "d51fc1f7357be21bfe75f9f26b509d40bc83480bd5e425d958d408eb7b1d5201",
+          "bytes": 47168
         },
         {
           "path": "base44/shared/operationalControl.ts",
