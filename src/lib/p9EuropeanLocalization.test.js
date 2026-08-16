@@ -14,7 +14,7 @@ describe('P9 European localization and productization', () => {
     // I18N-30M (2026-08-15) — deliberately widened from the fixed launch
     // trio: the 30-market rollout adds native product locales in rollout
     // order. The list stays EXACT so an unregistered locale still fails.
-    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE']);
+    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE', 'da-DK']);
     for (const market of LOCALE_MARKETS) {
       expect(market.market_code).toMatch(/^[A-Z]{2}$/);
       expect(market.currency).toMatch(/^[A-Z]{3}$/);
@@ -37,10 +37,11 @@ describe('P9 European localization and productization', () => {
     expect(resolveLocale({ market_code: 'PT' })).toMatchObject({ locale: 'pt-PT', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'GR' })).toMatchObject({ locale: 'el-GR', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'SE' })).toMatchObject({ locale: 'sv-SE', source: 'market_default', fallback_used: false });
+    expect(resolveLocale({ market_code: 'DK' })).toMatchObject({ locale: 'da-DK', source: 'market_default', fallback_used: false });
     // The honest-fallback invariant itself is unchanged — it now bites on a
-    // market whose native language is still pending (Denmark until `da` lands).
-    expect(resolveLocale({ market_code: 'DK' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
-    expect(localizationReadiness('DK')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
+    // market whose native language is still pending (Czechia until `cs` lands).
+    expect(resolveLocale({ market_code: 'CZ' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
+    expect(localizationReadiness('CZ')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
   });
 
   it('formats non-EUR market money and locale plurals without string concatenation', () => {
