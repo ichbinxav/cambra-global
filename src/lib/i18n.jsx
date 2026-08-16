@@ -21,6 +21,7 @@ import bg from "@/lib/locales/bg";
 import hr from "@/lib/locales/hr";
 import et from "@/lib/locales/et";
 import lv from "@/lib/locales/lv";
+import lt from "@/lib/locales/lt";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -52,14 +53,15 @@ export const LANGUAGES = [
   { code: "hr", locale: "hr-HR", label: "Hrvatski", short: "HR" },
   { code: "et", locale: "et-EE", label: "Eesti", short: "ET" },
   { code: "lv", locale: "lv-LV", label: "Latviešu", short: "LV" },
+  { code: "lt", locale: "lt-LT", label: "Lietuvių", short: "LT" },
 ];
 
 const STORAGE_KEY = "cambra_lang";
 const LEGACY_KEYS = ["node_lang"];
 
 /* ── locale helpers ───────────────────────────────────────── */
-const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU", bg: "bg-BG", hr: "hr-HR", et: "et-EE", lv: "lv-LV" };
-const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU", bg: "bg-BG", hr: "hr-HR", et: "et-EE", lv: "lv-LV" };
+const CURRENCY_LOCALES = { en: "en-IE", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU", bg: "bg-BG", hr: "hr-HR", et: "et-EE", lv: "lv-LV", lt: "lt-LT" };
+const DATE_LOCALES     = { en: "en-GB", fr: "fr-FR", es: "es-ES", de: "de-DE", it: "it-IT", pl: "pl-PL", pt: "pt-PT", el: "el-GR", sv: "sv-SE", da: "da-DK", fi: "fi-FI", cs: "cs-CZ", ro: "ro-RO", hu: "hu-HU", bg: "bg-BG", hr: "hr-HR", et: "et-EE", lv: "lv-LV", lt: "lt-LT" };
 
 export function formatCurrency(amount, lang = "en", currency = "EUR") {
   const locale = CURRENCY_LOCALES[lang] || localeForLanguage(lang);
@@ -81,7 +83,7 @@ export function formatDate(date, lang = "en") {
 }
 
 /* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro, hu, bg, hr, et, lv };
+const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro, hu, bg, hr, et, lv, lt };
 
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {
