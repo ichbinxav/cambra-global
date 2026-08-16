@@ -1,0 +1,649 @@
+{
+  "schema_version": "cambra-research-corpus-inventory-v1",
+  "status": "FOUNDER_CORPUS_PRESENT_UNTRUSTED_INTEGRATED",
+  "truth_boundary": "Research is untrusted candidate evidence. Exact duplicates do not inflate coverage; no source is executable or training-eligible without later governed verification.",
+  "canonical_corpus": {
+    "authority": "FOUNDER_DECISION",
+    "scope": "EXACT_DECLARED_CORPUS",
+    "complete_as_declared": true,
+    "physical_files": 11,
+    "unique_sha256": 9,
+    "exact_duplicates": 2
+  },
+  "research_policy": {
+    "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+    "execution_eligible": false,
+    "training_eligible": false,
+    "model_input_eligible": false,
+    "calibration_eligible": false,
+    "auto_promote_eligible": false
+  },
+  "external_source_reverification": "NOT_RUN",
+  "near_duplicate_detection": "NOT_RUN",
+  "deduplication_key": "sha256",
+  "line_count_algorithm": "count of LF bytes (POSIX wc -l semantics)",
+  "input_fingerprint_sha256": "b159a60ed1ae4c76937078c1d0095bca6aef0cde414ed0697da687d556ff5332",
+  "physical": {
+    "physical_files": 11,
+    "unique_sha256": 9,
+    "exact_duplicates": 2,
+    "bytes_physical": 516994,
+    "bytes_unique": 419567,
+    "lf_count_physical": 5309,
+    "chunks_manifested": 260,
+    "valid_source_urls_manifested": 36,
+    "opaque_citations_manifested": 323
+  },
+  "r6_gate": {
+    "status": "REPO_INTEGRATED_RUNTIME_REVERIFICATION_PENDING",
+    "reason": "FOUNDER_CANONICAL_CORPUS_BOUND_AS_UNTRUSTED_INPUT",
+    "closure_scope": "REPOSITORY_INTAKE_ONLY",
+    "may_mark_pass": true,
+    "production_seal_eligible": false
+  },
+  "country_payments_economics_gate": {
+    "status": "INCOMPLETE",
+    "exact_33_of_33_demonstrated": false,
+    "missing_markets": "UNKNOWN_INPUT_ARTIFACT_MISSING",
+    "reason": "R9 references a package/dossiers that are not retained; country-universe conflicts are still open."
+  },
+  "manifest_verification": {
+    "path": "config/intelligence/research-source-manifest.v1.json",
+    "matches_physical_hashes_and_bytes": true,
+    "declared_default_truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+    "generation_contract": {
+      "originals_glob": "research/external/YYYY-MM-DD/originals/*.md",
+      "originals_are_byte_immutable": true,
+      "deduplication_key": "sha256",
+      "canonicalization_key": "canonical_sha256",
+      "chunk_boundary": "markdown_headings_then_bounded_paragraphs",
+      "max_chunk_characters": 6000,
+      "future_import_command": "node scripts/import-research-knowledge.mjs --capture-date YYYY-MM-DD --source /path/to/file-or-directory",
+      "reproducibility_check": "node scripts/import-research-knowledge.mjs --check"
+    }
+  },
+  "normalized_knowledge_snapshot": {
+    "path": "config/intelligence/research-knowledge.v1.json",
+    "candidate_records": 31,
+    "domain_counts": {
+      "country_economics": 2,
+      "deliverability": 2,
+      "evaluation_corpus": 2,
+      "go_to_market": 3,
+      "legal": 18,
+      "negotiation": 3,
+      "payments_pricing": 1
+    },
+    "target_counts": {
+      "AgentRetrieval": 31,
+      "CountryPaymentsEconomics": 2,
+      "CPICPriorCandidate": 10,
+      "NegotiationPrior": 3,
+      "PaymentsRateTableCandidate": 1,
+      "RegulatoryEvidenceQueue": 18
+    }
+  },
+  "conflict_snapshot": {
+    "path": "config/intelligence/research-conflicts.v1.json",
+    "conflict_count": 9,
+    "conflicts": [
+      {
+        "conflict_id": "research-conflict:exact-duplicate-r4-r10",
+        "status": "RESOLVED_BY_CONTENT_HASH_ALIAS"
+      },
+      {
+        "conflict_id": "research-conflict:exact-duplicate-r1-r7",
+        "status": "RESOLVED_BY_CONTENT_HASH_ALIAS"
+      },
+      {
+        "conflict_id": "research-conflict:country-universe-33",
+        "status": "OPEN_REQUIRES_CANONICAL_MARKET_REGISTRY"
+      },
+      {
+        "conflict_id": "research-conflict:icp-policy",
+        "status": "OPEN_FOUNDER_POLICY_DECISION_REQUIRED"
+      },
+      {
+        "conflict_id": "research-conflict:corpus-scope-and-scale",
+        "status": "OPEN_PROGRAM_SCOPE_DECISION_REQUIRED"
+      },
+      {
+        "conflict_id": "research-conflict:ifr-is-not-mdr",
+        "status": "RESOLVED_BY_TYPE_SEPARATION"
+      },
+      {
+        "conflict_id": "research-conflict:opaque-citations",
+        "status": "OPEN_SOURCE_URL_RECOVERY_REQUIRED"
+      },
+      {
+        "conflict_id": "research-conflict:r9-missing-package",
+        "status": "OPEN_ARTIFACT_RECOVERY_REQUIRED"
+      },
+      {
+        "conflict_id": "research-conflict:official-url-is-not-reviewed-truth",
+        "status": "OPEN_DIRECT_LEGAL_REVIEW_REQUIRED"
+      }
+    ]
+  },
+  "physical_sources": [
+    {
+      "file_name": "CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
+      "stored_path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
+      "document_id": "GTM-FINAL",
+      "title": "Bloque 5 — GTM y deliverability",
+      "sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+      "bytes": 42185,
+      "lf_count": 886,
+      "manifest_line_count": 887,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "deliverability",
+        "go_to_market",
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": 0,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 10.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 10.md",
+      "document_id": "R10",
+      "title": "Evidencia regulatoria para Block 3 — P10 FR/ES y marco de 33 jurisdicciones",
+      "sha256": "26cfe1693620c1509137f83e8cd1ae2779e6aed16b0f0f069e113ed56c4abc5c",
+      "bytes": 53834,
+      "lf_count": 297,
+      "manifest_line_count": 298,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "go_to_market",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "risk_operations"
+      ],
+      "source_url_count": 18,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 2.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 2.md",
+      "document_id": "R2",
+      "title": "Diseño de un corpus gold FR/ES/EN de extractos, liquidaciones y recibos de pago reales anonimizados",
+      "sha256": "4d4e027cb783ee3e8f9f3f6260560524e650495465a232675abb056cccae9b11",
+      "bytes": 58668,
+      "lf_count": 567,
+      "manifest_line_count": 568,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "go_to_market",
+        "provider_coverage",
+        "country_economics",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 3.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 3.md",
+      "document_id": "R3",
+      "title": "Diseño pan‑europeo del corpus gold de extractos, liquidaciones y recibos para los 33 países del perímetro histórico SEPA",
+      "sha256": "de0884b534929693bd624dea34182a673e984be627bb0fe32de32e5be36a847f",
+      "bytes": 51950,
+      "lf_count": 870,
+      "manifest_line_count": 871,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 4.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 4.md",
+      "document_id": "R4",
+      "title": "Evidencia regulatoria para Block 3 — P10 FR/ES y marco de 33 jurisdicciones",
+      "sha256": "26cfe1693620c1509137f83e8cd1ae2779e6aed16b0f0f069e113ed56c4abc5c",
+      "bytes": 53834,
+      "lf_count": 297,
+      "manifest_line_count": 298,
+      "duplicate_of_document_id": "R10",
+      "topics": [
+        "go_to_market",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "risk_operations"
+      ],
+      "source_url_count": 18,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": "research/external/2026-08-13/originals/deep-research-report 10.md"
+    },
+    {
+      "file_name": "deep-research-report 5.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 5.md",
+      "document_id": "R5",
+      "title": "Descuentos y pricing negociable de PSPs: priors, evidencia pública y playbooks de negociación",
+      "sha256": "d7bef612059b08b814c7073c717fda658b29fe286b4dba371d2fa7b8323f0f58",
+      "bytes": 54819,
+      "lf_count": 393,
+      "manifest_line_count": 394,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "deliverability",
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 18,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 6.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 6.md",
+      "document_id": "R6",
+      "title": "Negociación de PSPs en los 33 mercados europeos de CAMBRA: descuentos documentados, thresholds negociables y playbooks",
+      "sha256": "071e6bedddcda4d7138c36e736424869ef3b2c88d8fb113cfe96da3d4ea80a9f",
+      "bytes": 61418,
+      "lf_count": 504,
+      "manifest_line_count": 505,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 7.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 7.md",
+      "document_id": "R7",
+      "title": "Bloque 5 — GTM, deliverability y proof-of-demand para 33 mercados europeos",
+      "sha256": "bf75fe0b6767e9729b16b189d1d0d157e3540b7ccb0a56460f733d9e53af9853",
+      "bytes": 43593,
+      "lf_count": 552,
+      "manifest_line_count": 553,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "deliverability",
+        "go_to_market",
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 8.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 8.md",
+      "document_id": "R8",
+      "title": "CAMBRA: tarifas y proveedores en los mercados europeos",
+      "sha256": "d4025627611240f5825a3f8cf563b822c886525c86bcd8dedb91380fce9ddebc",
+      "bytes": 40402,
+      "lf_count": 317,
+      "manifest_line_count": 318,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report 9.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report 9.md",
+      "document_id": "R9",
+      "title": "Investigación avanzada CAMBRA/E33 — Country Payments Economics",
+      "sha256": "f7d29354b8f9d6ba383961cebfbf3c92ec17e0e6ce2e3ba7f459c8778aebbf95",
+      "bytes": 12698,
+      "lf_count": 74,
+      "manifest_line_count": 75,
+      "duplicate_of_document_id": null,
+      "topics": [
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": null
+    },
+    {
+      "file_name": "deep-research-report.md",
+      "stored_path": "research/external/2026-08-13/originals/deep-research-report.md",
+      "document_id": "R1",
+      "title": "Bloque 5 — GTM, deliverability y proof-of-demand para 33 mercados europeos",
+      "sha256": "bf75fe0b6767e9729b16b189d1d0d157e3540b7ccb0a56460f733d9e53af9853",
+      "bytes": 43593,
+      "lf_count": 552,
+      "manifest_line_count": 553,
+      "duplicate_of_document_id": "R7",
+      "topics": [
+        "deliverability",
+        "go_to_market",
+        "payments_pricing",
+        "provider_coverage",
+        "country_economics",
+        "negotiation",
+        "regulation",
+        "document_intelligence",
+        "evaluation_corpus",
+        "privacy_security",
+        "risk_operations"
+      ],
+      "source_url_count": 0,
+      "opaque_citation_count": null,
+      "capture_date": "2026-08-13",
+      "truth_level": "UNVERIFIED_EXTERNAL_RESEARCH",
+      "duplicate_of_path": "research/external/2026-08-13/originals/deep-research-report 7.md"
+    }
+  ],
+  "expected_topic_coverage": [
+    {
+      "topic_id": "provider_pricing_intelligence",
+      "label": "Provider Pricing Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R5",
+        "R6",
+        "R8",
+        "R9"
+      ],
+      "gap": "Public/candidate pricing is present, but it is not a complete verified provider-rate universe."
+    },
+    {
+      "topic_id": "country_payments_economics",
+      "label": "Country Payments Economics",
+      "status": "ARTIFACT_MISSING",
+      "source_document_ids": [
+        "R9"
+      ],
+      "gap": "R9 references a package/dossiers that are not retained; exact 33/33 coverage is not demonstrable."
+    },
+    {
+      "topic_id": "scheme_network_fee_intelligence",
+      "label": "Scheme & Network Fee Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R6",
+        "R8",
+        "R9"
+      ],
+      "gap": "Some components and regulatory caps are discussed; a complete current fee ledger is absent."
+    },
+    {
+      "topic_id": "real_achievable_rate_research",
+      "label": "Real Achievable Rate Research",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R5",
+        "R6",
+        "R8"
+      ],
+      "gap": "Negotiation priors and public rates are candidates, not verified achieved merchant outcomes."
+    },
+    {
+      "topic_id": "merchant_payments_benchmarks",
+      "label": "Merchant Payments Benchmarks",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical benchmark research source is present."
+    },
+    {
+      "topic_id": "dispute_chargeback_intelligence",
+      "label": "Dispute / Chargeback Intelligence",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical dispute/chargeback research source is present."
+    },
+    {
+      "topic_id": "provider_authorization_regulatory_intelligence",
+      "label": "Provider Authorization / Regulatory Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R10"
+      ],
+      "gap": "The retained legal report covers eIDAS and FR/ES/33-jurisdiction framing, not a complete provider authorization ledger."
+    },
+    {
+      "topic_id": "provider_capability_intelligence",
+      "label": "Provider Capability Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R5",
+        "R6",
+        "R8"
+      ],
+      "gap": "Provider capabilities appear incidentally; integration-grade capability coverage is incomplete."
+    },
+    {
+      "topic_id": "integration_intelligence",
+      "label": "Integration Intelligence",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical provider integration research source is present."
+    },
+    {
+      "topic_id": "merchant_discovery_signals",
+      "label": "Merchant Discovery Signals",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "GTM-FINAL",
+        "R7"
+      ],
+      "gap": "GTM/ICP and discovery guidance exists, but not a complete continuously verified signal corpus."
+    },
+    {
+      "topic_id": "commercial_conversion_benchmarks",
+      "label": "Commercial Conversion Benchmarks",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "GTM-FINAL",
+        "R7"
+      ],
+      "gap": "GTM priors exist; realized conversion benchmarks are not fully evidenced."
+    },
+    {
+      "topic_id": "decision_maker_intelligence",
+      "label": "Decision Maker Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "GTM-FINAL",
+        "R7"
+      ],
+      "gap": "Role and targeting guidance exists, but no complete verified decision-maker dataset is retained."
+    },
+    {
+      "topic_id": "negotiation_intelligence",
+      "label": "Negotiation Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R5",
+        "R6"
+      ],
+      "gap": "Negotiation priors/playbooks exist and remain non-executable external research."
+    },
+    {
+      "topic_id": "continuous_competitor_intelligence",
+      "label": "Continuous Competitor Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "GTM-FINAL",
+        "R7"
+      ],
+      "gap": "Only static captured research exists; continuous monitoring coverage is not a physical research dossier."
+    },
+    {
+      "topic_id": "competitor_pricing_packaging",
+      "label": "Competitor Pricing & Packaging",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "GTM-FINAL",
+        "R5",
+        "R8"
+      ],
+      "gap": "Static pricing/packaging candidates exist without complete current verification."
+    },
+    {
+      "topic_id": "verified_realised_value_methodology",
+      "label": "Verified/Realised Value Methodology",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical methodology research source is present."
+    },
+    {
+      "topic_id": "payment_leakage_taxonomy",
+      "label": "Payment Leakage Taxonomy",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical leakage taxonomy source is present."
+    },
+    {
+      "topic_id": "routing_economics_shadow_only",
+      "label": "Routing Economics — shadow only",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical routing-economics research source is present."
+    },
+    {
+      "topic_id": "fraud_authorization_conversion_tradeoffs",
+      "label": "Fraud / Authorization / Conversion Trade-offs",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical fraud/authorization/conversion source is present."
+    },
+    {
+      "topic_id": "merchant_switching_migration_intelligence",
+      "label": "Merchant Switching & Migration Intelligence",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R5",
+        "R6"
+      ],
+      "gap": "Negotiation and switching incentives are discussed; full migration intelligence is absent."
+    },
+    {
+      "topic_id": "regulation_scheme_change_monitor",
+      "label": "Regulation & Scheme Change Monitor",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R10"
+      ],
+      "gap": "A static regulatory baseline exists; continuous change-monitor research is not demonstrated."
+    },
+    {
+      "topic_id": "patents_ip_technical_literature",
+      "label": "Patents / IP / Technical Literature",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical patents/IP/technical-literature source is present."
+    },
+    {
+      "topic_id": "source_quality_research",
+      "label": "Source Quality Research",
+      "status": "PARTIAL",
+      "source_document_ids": [
+        "R2",
+        "R3"
+      ],
+      "gap": "Corpus/source methodology exists, while 323 opaque citations still require URL recovery."
+    },
+    {
+      "topic_id": "false_negative_research",
+      "label": "False Negative Research",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical false-negative research source is present."
+    },
+    {
+      "topic_id": "external_economic_outcomes_unit_economics",
+      "label": "External Economic Outcomes / Unit Economics",
+      "status": "MISSING",
+      "source_document_ids": [],
+      "gap": "No dedicated physical external-outcomes/unit-economics source is present."
+    }
+  ]
+}

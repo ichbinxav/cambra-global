@@ -23,7 +23,7 @@ The systemic cause is established: the archive file selector and the source-hash
 - Explicit data-retention matrix; non-automated, legal-review and platform-unknown categories remain visible.
 - Runtime incident alert delivery ledger with deduplication, retry and configuration-required states.
 - Scheduler inventory for every repository-declared automation. Exactly-once semantics are not claimed; Base44 triggers are treated as at-least-once and only workers with an explicit slot guard are labelled guarded.
-- Cross-merchant outcome calibration only for non-demo, same-currency cohorts with `k >= 10`; the output is advisory and never a public provider rate, promise, target, guarantee or authority grant.
+- Cross-merchant descriptive outcome heuristics only for non-demo, same-currency cohorts with `k >= 10` distinct merchants; the output is advisory, not statistically/probabilistically calibrated, and never a public provider rate, promise, target, guarantee or authority grant.
 - Removal of hardcoded operator identity from production sending logic. Automatic sends require an explicit, valid, policy-allowed sending profile.
 - Growth Path Engine V1: deterministic actual-versus-plan bridges, versioned targets/assumptions, bounded scenarios, evidence-labelled forecasts and recommendation-only authority.
 - Founder meeting control: deterministic policy parsing, explicit confirmation, truthful calendar state, structured outcomes and approval separation.

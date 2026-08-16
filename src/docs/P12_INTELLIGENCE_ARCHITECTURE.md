@@ -20,7 +20,7 @@ Existing `providerMonitorAgent` / `providerResearchAgent` are reused. External w
 
 `intelligenceAccess` is the canonical service boundary. Internal callers must present an allowed capability (`provider_intelligence`, `analyzer`, `negotiation`, `migration`, `verification`, `moat_curator`, `knowledge_integrity`) and can access only the actions assigned to that capability. Admin callers remain authenticated/authorized by the normal admin gate.
 
-Analyzer and negotiation benchmark reads return aggregates only and suppress cohorts with n < 5. Comparable outcome reads also suppress n < 5 and never return merchant identifiers or raw foreign-tenant records. Tenant-specific raw evidence remains admin/service internal; cross-tenant learning is through approved aggregates.
+Analyzer and negotiation benchmark reads return aggregates only and suppress cohorts with fewer than 10 distinct merchants. Comparable outcome reads use the same `k >= 10` distinct-merchant floor and never return merchant identifiers or raw foreign-tenant records. Tenant-specific raw evidence remains admin/service internal; cross-tenant learning is through approved aggregates.
 
 ## Decision snapshots
 
@@ -28,7 +28,9 @@ Analyzer and negotiation benchmark reads return aggregates only and suppress coh
 
 ## Outcomes and financial truth
 
-`outcomeLearningWorker` links fully verified `MonthlySavingsReport` rows to `IntelligenceOutcome`. It copies deterministic realized savings; it does not approve a report, calculate billing eligibility, create invoices, alter the baseline or invent financial truth. Zero/failed outcomes are retained as negative knowledge.
+`outcomeLearningWorker` links fully verified `MonthlySavingsReport` rows to `IntelligenceOutcome`. It copies deterministic realized savings; it does not approve a report, calculate billing eligibility, create invoices, alter the baseline or invent financial truth. An explicit measured zero is retained as negative knowledge; a missing amount remains unknown and is excluded from financial outcome aggregates.
+
+Comparable-outcome and lead-outcome outputs are bounded **descriptive aggregate heuristics** for advisory context. They consume only append-only `AnonymizedIntelligenceAggregate` snapshots whose source scan is explicitly `COMPLETE`, with one latest declared observation per distinct merchant and k ≥ 10. Financial cohorts include native currency in their identity; mixed or unknown currencies are suppressed and are never renamed EUR or silently converted. The legacy function/field names containing `Calibration` remain only for API compatibility. These outputs are not statistical or probabilistic calibration, probabilities, provider rates, promises, targets or authority grants.
 
 ## Integrity, conflicts and admin override
 
@@ -36,7 +38,7 @@ Analyzer and negotiation benchmark reads return aggregates only and suppress coh
 
 ## Moat and gaps
 
-`moatCuratorWorker` uses a transparent bounded formula over sample depth, coverage/diversity, freshness, source quality, verified outcomes, contradiction rate and a concentration penalty. `KnowledgeGap` ranks strategic value × uncertainty × expected reuse. The worker never contacts merchants/providers merely to farm data.
+`moatCuratorWorker` uses a transparent bounded formula over sample depth, coverage/diversity, freshness, source quality, verified outcomes, contradiction rate and a concentration penalty. It never reads raw tenant `IntelligenceOutcome` rows: financial-outcome depth comes exclusively from complete, native-currency, privacy-safe k ≥ 10 snapshots. An incomplete/capped aggregate read blocks publication and creates review evidence. `KnowledgeGap` ranks strategic value × uncertainty × expected reuse. The worker never contacts merchants/providers merely to farm data.
 
 The initial formula is deliberately simple and versioned (`moat-p12-1.0.0`). It is an internal decision aid, not a valuation metric. Future tuning must be sample-backed and bounded.
 
@@ -54,7 +56,7 @@ P12 separates three layers deliberately:
 
 1. **Tenant operational data** — identifiable merchant records needed to operate CAMBRA. Normal retention/deletion, tenant isolation and purpose limitation apply.
 2. **Pseudonymized benchmark contributions** — `BenchmarkContribution.source_anon_id = SHA-256(secret salt + brand_id)`. These are explicitly **not anonymous under GDPR while the salt/mapping capability exists**, remain admin/service internal, and are never treated as indefinitely retainable anonymous data.
-3. **Privacy-safe retained intelligence** — `privacySafeIntelligenceWorker` produces `AnonymizedIntelligenceAggregate` only when at least 10 distinct merchants contribute. Output is coarsened/rounded, contains no merchant ID, stable pseudonym, email, document/thread/source ID or reidentification mapping, and is checked by a forbidden-identifier policy before write. This layer is the only cross-tenant derived intelligence CAMBRA is designed to retain after merchant-level deletion where legally permitted.
+3. **Privacy-safe retained intelligence** — `privacySafeIntelligenceWorker` produces append-only, versioned `AnonymizedIntelligenceAggregate` snapshots only when at least 10 distinct merchants contribute. It paginates to a terminal page against a fixed snapshot and publishes nothing when coverage is incomplete. Outcome history collapses to one latest declared observation per merchant before metric-specific denominators are evaluated. Financial output retains one explicit native currency per cohort, records that no FX conversion occurred, and suppresses mixed/unknown currency. Output is coarsened/rounded, contains no merchant ID, stable pseudonym, email, document/thread/source ID or reidentification mapping, and is checked by a forbidden-identifier policy before write. This layer is the only cross-tenant derived intelligence CAMBRA is designed to retain after merchant-level deletion where legally permitted.
 
 The privacy policy reflects this distinction: merely pseudonymized data does not become anonymous by naming it so. Aggregates that do not pass the minimum-diversity/privacy gate are suppressed rather than retained as anonymous intelligence.
 

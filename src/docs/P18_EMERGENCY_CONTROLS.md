@@ -1,4 +1,4 @@
-# P18 EMERGENCY CONTROLS — v0.79.0
+# P18 EMERGENCY CONTROLS — v0.97.0
 
 This file inventories controls that ACTUALLY exist. A missing/unified control is marked PARTIAL/MISSING instead of being documented as imaginary capability.
 
@@ -12,6 +12,7 @@ SAFE MODE blocks:
 - new external communications through `commercialSendMessage`;
 - provider and Aggregate negotiation execution;
 - new payments migration starts;
+- paid Discovery/enrichment and new scheduled paid Discovery work;
 - new Recover invoice issuance.
 
 It additionally disables the existing global acquisition outbound control and pauses active commercial policies.
@@ -24,7 +25,16 @@ SAFE MODE deliberately DOES NOT stop:
 - obligations/economic rights already earned before the pause;
 - read-only Founder OS / documentation queries.
 
-Restoration requires exact confirmation `RESTORE_CAMBRA_AUTONOMY`. Restoration clears SAFE MODE and restores the P18 emergency flags to their previous values, but it DOES NOT automatically reactivate commercial policies or the OutboundControl sending switches that SAFE MODE conservatively paused. Those narrower commercial controls must be reviewed and explicitly reactivated after containment.
+There is no blind global restoration. Safe Resume first requires a fresh
+dependency preflight, an explicit subset of capabilities, a Founder reason and
+the exact confirmation `RESUME_SELECTED_CAPABILITIES`. The preflight checks the
+canonical authority record, critical incidents, duplicate/missed schedulers,
+budgets, suppression, Stripe and blocked migrations as applicable. A stale or
+failed check blocks the resume. Unselected capabilities remain paused.
+
+Safe Resume does not automatically reactivate commercial policies or any
+`OutboundControl` sending switch. Outbound requires its own fresh commercial
+preflight and explicit CANARY activation after containment.
 
 ## PAUSE ACQUISITION — IMPLEMENTED
 
@@ -49,6 +59,13 @@ P18 `billing_issuance_paused` / SAFE MODE blocks `createEligibleRecoverInvoices`
 new billing/payment effect. Reconciliation, processor-state observation and
 already-existing invoice/payment obligations continue. This is intentionally
 not a switch that falsifies or freezes financial truth.
+
+## PAUSE PAID DISCOVERY — IMPLEMENTED
+
+`paid_discovery_paused` blocks the start or continuation of a Discovery stage
+whose current plan can spend money, and blocks scheduled/autonomous paid
+Discovery. Manual zero-cost local intelligence remains available so emergency
+containment does not unnecessarily blind the Founder.
 
 ## DISABLE INTEGRATION — PARTIALLY_IMPLEMENTED
 
@@ -76,6 +93,7 @@ P13 routing is SHADOW ONLY. There is no production routing activation path to pa
 4. Revoke specific compromised access where necessary.
 5. Apply only canonical, verified recovery paths.
 6. Verify the original failure no longer reproduces.
-7. Restore SAFE MODE.
-8. Explicitly review/reactivate commercial policies and outbound sending controls as appropriate.
-9. Record the incident/postmortem and update troubleshooting/remediation documentation.
+7. Select only the capabilities required and run Safe Resume preflight.
+8. Resolve every blocker; confirm the same fresh preflight with a Founder reason.
+9. Explicitly review/reactivate commercial policies and outbound sending controls as a separate action where appropriate.
+10. Record the incident/postmortem and update troubleshooting/remediation documentation.

@@ -1,0 +1,655 @@
+{
+  "schema_version": "cambra-material-transition-saga-inventory-v1",
+  "catalog_version": "remediation-r4.2",
+  "generated_at": "2026-08-14T00:00:00.000Z",
+  "authority_rule": "This inventory describes existing domain authorities and never creates a second claim plane. Binary OTR closure remains NOT_MET without final-SHA deployed drills and receipts.",
+  "approval_inventory": {
+    "creator_file_count": 16,
+    "action_type_count": 20,
+    "external_executor_action_count": 7,
+    "creator_files": [
+      {
+        "function_name": "aggregateAgreementWorker",
+        "source_path": "base44/functions/aggregateAgreementWorker/entry.ts",
+        "action_types": [
+          "aggregate_contract_execution"
+        ],
+        "source_sha256": "f38007951bf2086ca64f2bfab34cbc0ddc99d1f2f0cb59384cc2368b6776e6b6"
+      },
+      {
+        "function_name": "blogAgent",
+        "source_path": "base44/functions/blogAgent/entry.ts",
+        "action_types": [
+          "publish_blog"
+        ],
+        "source_sha256": "98849cf4cc9d30d876a0ef53a00cd84090ab38309b5db162afc1e5136ac5cc8f"
+      },
+      {
+        "function_name": "collectiveNegotiationAgent",
+        "source_path": "base44/functions/collectiveNegotiationAgent/entry.ts",
+        "action_types": [
+          "aggregate_contract"
+        ],
+        "source_sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8"
+      },
+      {
+        "function_name": "commercialReplyAgent",
+        "source_path": "base44/functions/commercialReplyAgent/entry.ts",
+        "action_types": [
+          "aggregate_procurement_review",
+          "commercial_reply_exception",
+          "provider_negotiation_review",
+          "schedule_founder_meeting"
+        ],
+        "source_sha256": "412ec9949cb8371fdf8259d0ab31cb71ec196f2ceb6d6ab54439f36a9f80caf5"
+      },
+      {
+        "function_name": "developerMigrationEngine",
+        "source_path": "base44/functions/developerMigrationEngine/entry.ts",
+        "action_types": [
+          "developer_apply_patch",
+          "developer_rollback",
+          "migration_go_live"
+        ],
+        "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380"
+      },
+      {
+        "function_name": "followUpAgent",
+        "source_path": "base44/functions/followUpAgent/entry.ts",
+        "action_types": [
+          "send_follow_up_email"
+        ],
+        "source_sha256": "bb6f63802a65272f0d8c23980cd5d3229bbe830718961fdaa9a0b537944c91f9"
+      },
+      {
+        "function_name": "founderMeetingAdmin",
+        "source_path": "base44/functions/founderMeetingAdmin/entry.ts",
+        "action_types": [
+          "post_meeting_commitment_review"
+        ],
+        "source_sha256": "0726d27df3c53b8f322dbb3d533f3414a1d2eaad3db5629f27c9b63d180bf9c7"
+      },
+      {
+        "function_name": "investorUpdateAgent",
+        "source_path": "base44/functions/investorUpdateAgent/entry.ts",
+        "action_types": [
+          "send_investor_update"
+        ],
+        "source_sha256": "1432aa3653cf1cc7b59e536b34f64ddfb6398683be7fe7d98ea9d29b2f7e8703"
+      },
+      {
+        "function_name": "linkedinAgent",
+        "source_path": "base44/functions/linkedinAgent/entry.ts",
+        "action_types": [
+          "publish_linkedin_post"
+        ],
+        "source_sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998"
+      },
+      {
+        "function_name": "meetingAgent",
+        "source_path": "base44/functions/meetingAgent/entry.ts",
+        "action_types": [
+          "schedule_founder_meeting"
+        ],
+        "source_sha256": "ac2780b34c5490b4c5be49b7acbd6075e62faa603702c8e4a3528a0520ac0958"
+      },
+      {
+        "function_name": "newsletterAgent",
+        "source_path": "base44/functions/newsletterAgent/entry.ts",
+        "action_types": [
+          "send_newsletter"
+        ],
+        "source_sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061"
+      },
+      {
+        "function_name": "outreachAgent",
+        "source_path": "base44/functions/outreachAgent/entry.ts",
+        "action_types": [
+          "send_outreach_email"
+        ],
+        "source_sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b"
+      },
+      {
+        "function_name": "providerMonetizationAgent",
+        "source_path": "base44/functions/providerMonetizationAgent/entry.ts",
+        "action_types": [
+          "aggregate_contract"
+        ],
+        "source_sha256": "40245b0c322cdbb65744c7c480221f1fda1b0e175ffac20c9cd4add6d867905f"
+      },
+      {
+        "function_name": "providerNegotiationAgent",
+        "source_path": "base44/functions/providerNegotiationAgent/entry.ts",
+        "action_types": [
+          "final_provider_deal"
+        ],
+        "source_sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61"
+      },
+      {
+        "function_name": "reviewProviderContract",
+        "source_path": "base44/functions/reviewProviderContract/entry.ts",
+        "action_types": [
+          "contract_exception",
+          "contract_mismatch"
+        ],
+        "source_sha256": "b9d2696fe4bf61fa7d62a40b41ef7f5bb84ee81ba116519cc86c736c1f72f9b1"
+      },
+      {
+        "function_name": "xTwitterAgent",
+        "source_path": "base44/functions/xTwitterAgent/entry.ts",
+        "action_types": [
+          "publish_x_post"
+        ],
+        "source_sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb"
+      }
+    ],
+    "action_types": [
+      "aggregate_contract",
+      "aggregate_contract_execution",
+      "aggregate_procurement_review",
+      "commercial_reply_exception",
+      "contract_exception",
+      "contract_mismatch",
+      "developer_apply_patch",
+      "developer_rollback",
+      "final_provider_deal",
+      "migration_go_live",
+      "post_meeting_commitment_review",
+      "provider_negotiation_review",
+      "publish_blog",
+      "publish_linkedin_post",
+      "publish_x_post",
+      "schedule_founder_meeting",
+      "send_follow_up_email",
+      "send_investor_update",
+      "send_newsletter",
+      "send_outreach_email"
+    ],
+    "observed_creator_action_types": [
+      "aggregate_contract",
+      "aggregate_contract_execution",
+      "aggregate_procurement_review",
+      "commercial_reply_exception",
+      "contract_exception",
+      "contract_mismatch",
+      "developer_apply_patch",
+      "developer_rollback",
+      "final_provider_deal",
+      "migration_go_live",
+      "post_meeting_commitment_review",
+      "provider_negotiation_review",
+      "publish_blog",
+      "publish_linkedin_post",
+      "publish_x_post",
+      "schedule_founder_meeting",
+      "send_follow_up_email",
+      "send_investor_update",
+      "send_newsletter",
+      "send_outreach_email"
+    ],
+    "external_executor_action_types": [
+      "publish_blog",
+      "publish_linkedin_post",
+      "publish_x_post",
+      "schedule_founder_meeting",
+      "send_follow_up_email",
+      "send_newsletter",
+      "send_outreach_email"
+    ],
+    "registry_source": "base44/functions/founderOSCommand/entry.ts"
+  },
+  "summary": {
+    "saga_row_count": 7,
+    "local_status_counts": {
+      "PARTIAL": 2,
+      "REPO_REMEDIATED_RUNTIME_PENDING": 5
+    },
+    "binary_closed_count": 0,
+    "runtime_verified_count": 0,
+    "otr_status": {
+      "ROOT-OTR-009": {
+        "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+        "binary_closure_status": "NOT_MET"
+      },
+      "ROOT-OTR-010": {
+        "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+        "binary_closure_status": "NOT_MET"
+      },
+      "ROOT-OTR-011": {
+        "implementation_status": "PARTIAL",
+        "binary_closure_status": "NOT_MET"
+      }
+    }
+  },
+  "sagas": [
+    {
+      "saga_id": "approval_confirmation_binding",
+      "otr_ids": [
+        "ROOT-OTR-009"
+      ],
+      "domain": "approval",
+      "authority_and_claim": "Approval binding hash plus one-use nonce claimed by coherent CAS and exact readback",
+      "operation_or_effect_key": "confirmation_nonce + approval_binding_hash + resolution_command_key",
+      "immutable_receipt": "Approval binding snapshot/hash and consumed nonce; FounderCommandAudit binds the single confirmed command identity",
+      "compensation_or_reconciliation": "No effect before exact revalidation; stale, changed, expired, replayed or ambiguous authority is rejected",
+      "local_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "DEPLOYED_EXHAUSTIVE_TAMPER_AND_DUAL_CONFIRMATION_RECEIPTS_MISSING"
+      ],
+      "source_paths": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/FounderCommandAudit.jsonc",
+        "base44/shared/approvalAuthority.ts",
+        "base44/functions/founderOSCommand/entry.ts",
+        "base44/functions/chatChiefOrchestrator/entry.ts",
+        "src/components/admin/approvals/ApprovalCard.jsx",
+        "src/pages/admin/AdminChat.jsx"
+      ],
+      "test_paths": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/founderApprovalRegistry.test.js"
+      ],
+      "required_markers": [
+        "decision_status",
+        "confirmation_nonce",
+        "confirmation_preview_generation",
+        "resolution_binding_hash",
+        "resolution_command_key",
+        "resolution_actor_email",
+        "market_scope_version",
+        "emergency_control_revision"
+      ]
+    },
+    {
+      "saga_id": "approval_decision_and_external_execution",
+      "otr_ids": [
+        "ROOT-OTR-010"
+      ],
+      "domain": "approval",
+      "authority_and_claim": "Approval holds the decision; AgentTask holds the external execution lease/fence and receipt",
+      "operation_or_effect_key": "approval id + action type + artifact/content hash",
+      "immutable_receipt": "AgentTask execution receipt/reference and separate Approval decision projection",
+      "compensation_or_reconciliation": "Post-effect ambiguity is REVIEW_REQUIRED; APPROVED never implies EXECUTED",
+      "local_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "DEPLOYED_EXECUTOR_FAILURE_AND_RECEIPT_MATRIX_MISSING"
+      ],
+      "source_paths": [
+        "base44/entities/Approval.jsonc",
+        "base44/entities/AgentTask.jsonc",
+        "base44/entities/FounderCommandAudit.jsonc",
+        "base44/shared/approvalResolutionSaga.ts",
+        "base44/shared/externalApprovalExecution.ts"
+      ],
+      "test_paths": [
+        "src/lib/approvalAuthoritySaga.test.js",
+        "src/lib/externalApprovalExecution.test.js"
+      ],
+      "required_markers": [
+        "decision_status",
+        "execution_status",
+        "execution_receipt_ref",
+        "REVIEW_REQUIRED"
+      ]
+    },
+    {
+      "saga_id": "recover_acceptance_and_contract_delivery",
+      "otr_ids": [
+        "ROOT-OTR-011"
+      ],
+      "domain": "recover",
+      "authority_and_claim": "DealActivation/Mandate CAS for acceptance; mutable Mandate delivery lease for PDF/email",
+      "operation_or_effect_key": "mandate id + frozen acceptance snapshot hash + contract template/language",
+      "immutable_receipt": "Accepted snapshot/evidence attestation is hash-bound; contract delivery does not yet have one common immutable step chain",
+      "compensation_or_reconciliation": "Authorization can be compensated after mandate revocation; partial supersession and contract-upload crash windows remain review work",
+      "local_status": "PARTIAL",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "RECOVER_SUPERSESSION_PARTIAL_COMPENSATION_INCOMPLETE",
+        "CONTRACT_PDF_EMAIL_LEASE_AND_RECEIPT_CHAIN_INCOMPLETE",
+        "POST_ACCEPTANCE_FIRE_AND_FORGET_RECEIPT_MISSING"
+      ],
+      "source_paths": [
+        "base44/shared/recoverAcceptance.ts",
+        "base44/shared/recoverEconomicMandate.ts",
+        "base44/functions/acceptRecoverMandate/entry.ts",
+        "base44/shared/recoverContractState.ts",
+        "base44/functions/generateRecoverContractPdf/entry.ts",
+        "base44/functions/sendRecoverContractEmail/entry.ts"
+      ],
+      "test_paths": [
+        "src/lib/recoverFinancialHardening.test.js"
+      ],
+      "required_markers": [
+        "acceptance_commit_token",
+        "authorization_mandate_id",
+        "acceptance_snapshot_hash",
+        "contract_pdf_status"
+      ]
+    },
+    {
+      "saga_id": "recover_billing_issuance",
+      "otr_ids": [
+        "ROOT-OTR-011"
+      ],
+      "domain": "billing",
+      "authority_and_claim": "Activation/month report singleton proof plus MonthlySavingsReport invoice claim CAS/lease and Stripe idempotency",
+      "operation_or_effect_key": "activation/month report authority + recover report execution key + exact request descriptor fingerprint",
+      "immutable_receipt": "Hash-chained PaymentEvent STARTED/OBSERVED/REVIEW receipt per response-bound Stripe request and invoice-issued event",
+      "compensation_or_reconciliation": "Duplicate reports block; provider success resumes from OBSERVED receipt; Invoice/report projections are sandwiched and monotonic before terminal success",
+      "local_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "DEPLOYED_STRIPE_ISSUANCE_CRASH_WINDOW_AND_RECEIPTS_MISSING"
+      ],
+      "source_paths": [
+        "base44/shared/economicExecution.ts",
+        "base44/shared/recoverReportAuthority.ts",
+        "base44/functions/generateMonthlySavingsReport/entry.ts",
+        "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+        "base44/functions/createEligibleRecoverInvoices/entry.ts",
+        "base44/entities/Invoice.jsonc",
+        "base44/entities/MonthlySavingsReport.jsonc",
+        "base44/entities/PaymentEvent.jsonc"
+      ],
+      "test_paths": [
+        "src/lib/recoverBillingSaga.test.js",
+        "src/lib/recoverFinancialHardening.test.js",
+        "src/lib/financialEntityServiceRoleRls.test.js"
+      ],
+      "required_markers": [
+        "RECOVER_BILLING_SAGA_VERSION",
+        "response_binding",
+        "assertBillingAccount",
+        "requireCanonicalRecoverReport",
+        "REVIEW_REQUIRED",
+        "invoice_issued"
+      ]
+    },
+    {
+      "saga_id": "recover_billing_collection_reconciliation",
+      "otr_ids": [
+        "ROOT-OTR-011"
+      ],
+      "domain": "billing",
+      "authority_and_claim": "Signed Stripe event id plus current remote invoice state, local PaymentEvent dedupe and fair bounded reconciler selection",
+      "operation_or_effect_key": "Stripe event id + local invoice id",
+      "immutable_receipt": "PaymentEvent processor_event_id and current-state reconciliation projection",
+      "compensation_or_reconciliation": "Replay completes monotonic Invoice/report/activation projections even when the event receipt already exists; disputed/refunded/void cannot retain a paid report projection",
+      "local_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "DEPLOYED_SIGNED_WEBHOOK_CRASH_WINDOW_AND_CURRENT_STATE_RECEIPT_MISSING"
+      ],
+      "source_paths": [
+        "base44/functions/stripeBillingWebhook/entry.ts",
+        "base44/functions/reconcileRecoverBilling/entry.ts",
+        "base44/functions/onInvoiceStatusEvent/entry.ts",
+        "base44/shared/economicExecution.ts",
+        "base44/entities/Invoice.jsonc",
+        "base44/entities/MonthlySavingsReport.jsonc",
+        "base44/entities/PaymentEvent.jsonc"
+      ],
+      "test_paths": [
+        "src/lib/recoverBillingSaga.test.js",
+        "src/lib/recoverFinancialHardening.test.js",
+        "src/lib/recoverBillingReconcilerSelection.test.js",
+        "src/lib/financialEntityServiceRoleRls.test.js"
+      ],
+      "required_markers": [
+        "processor_event_id",
+        "reconciled_from_current_stripe_state",
+        "appendPaymentEventOnce",
+        "selectLeastRecentlyReconciledInvoices",
+        "recoverReportProjectionForInvoiceStatus",
+        "route_quarantined"
+      ]
+    },
+    {
+      "saga_id": "payments_migration_go_live",
+      "otr_ids": [
+        "ROOT-OTR-011"
+      ],
+      "domain": "migration",
+      "authority_and_claim": "MigrationTask.metadata_json CAS/fence plus exact Activation/Mandate/Approval authority binding",
+      "operation_or_effect_key": "task + activation + mandate + authority snapshot + material payload hash",
+      "immutable_receipt": "Hash-chained go-live receipt with Emergency/legal authority and exact activation readback",
+      "compensation_or_reconciliation": "Post-effect ambiguity becomes RECONCILING; epoch drift attempts fenced live-to-paused compensation",
+      "local_status": "PARTIAL",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "PAYMENTS_PLAN_MULTIROW_MATERIALIZATION_SAGA_INCOMPLETE",
+        "NON_GO_LIVE_TASK_IMMUTABLE_RECEIPTS_INCOMPLETE",
+        "PAYMENTS_GO_LIVE_APPROVAL_PRODUCER_AND_ADVANCED_E_SIGNATURE_MISSING"
+      ],
+      "source_paths": [
+        "base44/shared/paymentsMigrationSaga.ts",
+        "base44/functions/startPaymentsMigration/entry.ts",
+        "base44/functions/updatePaymentsMigrationTask/entry.ts",
+        "base44/shared/legalExecution.ts",
+        "src/components/admin/PaymentsMigrationOperations.jsx"
+      ],
+      "test_paths": [
+        "src/lib/paymentsMigrationSaga.test.js",
+        "src/lib/paymentsMigrationP9.test.js"
+      ],
+      "required_markers": [
+        "RECONCILING",
+        "receipts",
+        "authority_snapshot",
+        "emergency_control_revision"
+      ]
+    },
+    {
+      "saga_id": "developer_migration_github",
+      "otr_ids": [
+        "ROOT-OTR-011"
+      ],
+      "domain": "migration",
+      "authority_and_claim": "DeveloperMigrationRun lifecycle CAS/lease/fence with Approval/AgentTask/workspace hashes",
+      "operation_or_effect_key": "lifecycle + content-addressed step + GitHub idempotency/binding",
+      "immutable_receipt": "Each action has hash-chained lifecycle_steps; completed apply/cutover/rollback chains are archived in append-only prior_actions with an action hash/head",
+      "compensation_or_reconciliation": "GitHub branch/PR/ref/SHA reconciliation; post-effect ambiguity is REVIEW_REQUIRED",
+      "local_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "gaps": [
+        "DEPLOYED_GITHUB_APPLY_CUTOVER_ROLLBACK_RECEIPTS_MISSING"
+      ],
+      "source_paths": [
+        "base44/shared/developerMigrationLifecycle.ts",
+        "base44/functions/developerMigrationEngine/entry.ts"
+      ],
+      "test_paths": [
+        "src/lib/developerMigrationLifecycle.test.js"
+      ],
+      "required_markers": [
+        "lifecycle_steps",
+        "prior_actions",
+        "action_hash",
+        "receipt_hash",
+        "prior_receipt_hash",
+        "REVIEW_REQUIRED"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "path": "base44/entities/AgentTask.jsonc",
+      "sha256": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3"
+    },
+    {
+      "path": "base44/entities/Approval.jsonc",
+      "sha256": "49eb66923fdfc983097d5f91de0334b9b96a3a9f4d7733ea707e7e896d81374c"
+    },
+    {
+      "path": "base44/entities/FounderCommandAudit.jsonc",
+      "sha256": "3f7d6f75807fee6d0565d9a0060fb3b100f5e3fa26d3e9fbff45cde371412a09"
+    },
+    {
+      "path": "base44/entities/Invoice.jsonc",
+      "sha256": "6a9243a443e9d27d9b982c5ea2372e156d75c16e4ca0a3dea1175c7d70ce20e4"
+    },
+    {
+      "path": "base44/entities/MonthlySavingsReport.jsonc",
+      "sha256": "098836e9456a256f91e909edf91442bdb2b8d53f0511ad32fc7cb487ba513669"
+    },
+    {
+      "path": "base44/entities/PaymentEvent.jsonc",
+      "sha256": "07566d1a1cff76f26283122b10353910048126919d77b08fd8f67bf15e7da5ab"
+    },
+    {
+      "path": "base44/functions/acceptRecoverMandate/entry.ts",
+      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878"
+    },
+    {
+      "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+      "sha256": "e05714e264e375b9f60c779347d943d020761e10cdb3d710715a8de8bea9f21d"
+    },
+    {
+      "path": "base44/functions/chatChiefOrchestrator/entry.ts",
+      "sha256": "0904effe1116af028547e1c99fe208c7512e5e1f0f3ef56ea3d4f04451a71b48"
+    },
+    {
+      "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
+      "sha256": "5e700ca5d2b2e154bba22af869440c674ba5b7f65b1f875013f03be6ac646471"
+    },
+    {
+      "path": "base44/functions/developerMigrationEngine/entry.ts",
+      "sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380"
+    },
+    {
+      "path": "base44/functions/founderOSCommand/entry.ts",
+      "sha256": "286d21278f32d59bcf568c86eb74575a72bf596393a8cba2aa4b227ae04ead85"
+    },
+    {
+      "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
+      "sha256": "4bb6a0ea371ed843a2bb76e00b9e698c71f77627f885cf69f88baa320b7c6802"
+    },
+    {
+      "path": "base44/functions/generateRecoverContractPdf/entry.ts",
+      "sha256": "32fd5fa9fb56381bf49935ec51a8ae95cb0f6214896117b6105ebe3a133b528a"
+    },
+    {
+      "path": "base44/functions/onInvoiceStatusEvent/entry.ts",
+      "sha256": "4185bbd036b05f8b68ee1331b24dc8b4d3a7a8274d38fb25451cf0ddf612fdfd"
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+      "sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31"
+    },
+    {
+      "path": "base44/functions/sendRecoverContractEmail/entry.ts",
+      "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a"
+    },
+    {
+      "path": "base44/functions/startPaymentsMigration/entry.ts",
+      "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289"
+    },
+    {
+      "path": "base44/functions/stripeBillingWebhook/entry.ts",
+      "sha256": "af836e8e2d69c40a7db9ecfc8f5261fdf4e7d8562d2b03a2c545d16c82552a71"
+    },
+    {
+      "path": "base44/functions/updatePaymentsMigrationTask/entry.ts",
+      "sha256": "47c1f40d3147b4d65c1f03a7d5e03cc5657bcd646f5be5f6c73d5bbfc91024af"
+    },
+    {
+      "path": "base44/shared/approvalAuthority.ts",
+      "sha256": "3facdd9cc4dafe44c7191b638eef3cea013b37a682245f413e2bdf9467075781"
+    },
+    {
+      "path": "base44/shared/approvalResolutionSaga.ts",
+      "sha256": "ab604f94f03414343d70c90c24598af6ce7044498edbd8eb6795290c5d57635a"
+    },
+    {
+      "path": "base44/shared/developerMigrationLifecycle.ts",
+      "sha256": "c4d841d26ed15ba76c3506f757f310cef739edff2fe74dd1ad87c720bed84362"
+    },
+    {
+      "path": "base44/shared/economicExecution.ts",
+      "sha256": "346052a4039db3a4231b6f58b1efdd0901a0adc0b973869fe9627c554b03305a"
+    },
+    {
+      "path": "base44/shared/externalApprovalExecution.ts",
+      "sha256": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591"
+    },
+    {
+      "path": "base44/shared/legalExecution.ts",
+      "sha256": "b138b2ee78dea2d76b2f88cfa389345b3f9410aca130c91c19ef29d22d156a23"
+    },
+    {
+      "path": "base44/shared/paymentsMigrationSaga.ts",
+      "sha256": "5a1a70c84c19dc17b3d4ea9a997d17ce995fabb94a0df686cf3da9e31793ee01"
+    },
+    {
+      "path": "base44/shared/recoverAcceptance.ts",
+      "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b"
+    },
+    {
+      "path": "base44/shared/recoverContractState.ts",
+      "sha256": "86be58e73a6536e1a2841ef5abcb05e7f7f1aceaf8bf93f12c4e29021de45954"
+    },
+    {
+      "path": "base44/shared/recoverEconomicMandate.ts",
+      "sha256": "151f44d7edde2bacdab8cc89dbd3080567355e35b9c95d763466ef3f3073e311"
+    },
+    {
+      "path": "base44/shared/recoverReportAuthority.ts",
+      "sha256": "3b5f96cbb30238e1e53a62c93095938e5729f3aea1853aecc445665586253f5f"
+    },
+    {
+      "path": "src/components/admin/PaymentsMigrationOperations.jsx",
+      "sha256": "6a9d4dade825bdba8c8384f0236d8b8ac0ef7cef565d383774585681c0467afb"
+    },
+    {
+      "path": "src/components/admin/approvals/ApprovalCard.jsx",
+      "sha256": "7829e9f8f65fde313243431479ff52385e5c8ef4e51d3d22ec6f20624b1fddaf"
+    },
+    {
+      "path": "src/lib/approvalAuthoritySaga.test.js",
+      "sha256": "0d4bc51595fd3dbf6c22937ef6e7aba1549af2dbc057f303f894915bbd1447db"
+    },
+    {
+      "path": "src/lib/developerMigrationLifecycle.test.js",
+      "sha256": "9a84345914b716fb5ffce5e680094f659a6f4325ff829041eb4713a689f88bc8"
+    },
+    {
+      "path": "src/lib/externalApprovalExecution.test.js",
+      "sha256": "9d38ebd293f9c190a9bebe106b92a654c8479c139288c35b9517ddb23a70a16c"
+    },
+    {
+      "path": "src/lib/financialEntityServiceRoleRls.test.js",
+      "sha256": "d2badb6525473265843bc0a1de2eb369b31be8c8e2a04fa16d355bb69ca1ec89"
+    },
+    {
+      "path": "src/lib/founderApprovalRegistry.test.js",
+      "sha256": "e6d0bfdfe956ac65e906d9b4b78a81071f178c8adf2739d17e1b22e896938223"
+    },
+    {
+      "path": "src/lib/paymentsMigrationP9.test.js",
+      "sha256": "e58cf09ed6a3bfa2f732c9f79ec4b95acf324a77373986c0c91f8545aa32330f"
+    },
+    {
+      "path": "src/lib/paymentsMigrationSaga.test.js",
+      "sha256": "5dae26b8e63ff355fde3d67dfc2036fe240a6513f3f276e5845e8ff9ca16e2c5"
+    },
+    {
+      "path": "src/lib/recoverBillingReconcilerSelection.test.js",
+      "sha256": "d8d6f85bc6f008e0369f68554fd5ee2a576d60da4dbcc512f0379d523a2bb982"
+    },
+    {
+      "path": "src/lib/recoverBillingSaga.test.js",
+      "sha256": "ca2449b4a0310d984026297242a04d57bfd75d9fbfbe08d82543d1b7f648e23a"
+    },
+    {
+      "path": "src/lib/recoverFinancialHardening.test.js",
+      "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4"
+    },
+    {
+      "path": "src/pages/admin/AdminChat.jsx",
+      "sha256": "56a3f7bb2cec9102d6ef4c2853b44a608d5d422bc6202c7115ab1b0e26eb961d"
+    }
+  ]
+}

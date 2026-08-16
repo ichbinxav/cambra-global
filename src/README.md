@@ -23,21 +23,26 @@ approval gates.
 ## Quick start
 
 ```bash
-# 1. Install
-npm install
+# 1. Install from the pinned lockfile
+npm ci
 
-# 2. Configure environment
+# 2. Build and verify the Base44 deployment tree
+npm run base44:functions:bundle   # 276 physical functions / 28 logical routes
+
+# 3. Configure environment
 cp env.example .env          # fill in the frontend VITE_ vars
 # Backend secrets go into the Base44 dashboard, not this file.
 # (The template is named env.example without a leading dot because the
 #  Base44 sandbox silently drops dotfiles from the repo.)
 
-# 3. Run
+# 4. Run
 npm run dev                  # http://localhost:5173
 ```
 
-Publish changes from the Base44 dashboard (**Publish** button). Every push
-to the linked repo is picked up by the Base44 builder.
+The 300 directories under `base44/functions` are canonical source modules, not
+direct deployment units. `base44/config.jsonc` points Base44 at the ignored,
+generated `base44/.deploy/functions` tree. A clean checkout or release ZIP must
+build that tree before any deployment operation.
 
 ---
 
@@ -47,6 +52,8 @@ to the linked repo is picked up by the Base44 builder.
 |---------------------------|-----------------------------------------------------------|
 | `npm run dev`             | Vite dev server, hot reload                               |
 | `npm run build`           | Production build (Vite)                                   |
+| `npm run base44:functions:bundle` | Deterministically stage and verify 276 physical functions plus 28 logical routes |
+| `npm run base44:functions:deploy` | Rebuild first, then invoke only the locally installed Base44 CLI |
 | `npm run preview`         | Serve the production build locally                        |
 | `npm run lint`            | ESLint (errors only)                                      |
 | `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
@@ -92,7 +99,8 @@ every stored integration; do not rotate without a migration plan.
 │                    BACKEND (Base44 · Deno serverless)                 │
 │                                                                       │
 │  base44/entities/*.jsonc         JSON-schema data model + RLS         │
-│  base44/functions/*/entry.ts     HTTP handlers (Deno.serve)           │
+│  base44/functions/*/entry.ts     Canonical source handlers             │
+│  base44/.deploy/functions/*      Generated physical deploy tree        │
 │                                                                       │
 │  NOTE: there is no base44/agents/*.jsonc directory. The "agent"       │
 │  layer is implemented entirely as backend functions (38+ *Agent +     │
@@ -192,11 +200,13 @@ Run: `npm test`. Full suite completes in seconds.
 
 ## Deploy
 
-Deployment is handled by the Base44 builder — the linked repo is the source
-of truth, and pressing **Publish** in the dashboard promotes the current
-commit. There is no separate CI/CD pipeline to configure. Function code
-under `base44/functions/**` is auto-discovered and deployed as
-`{function-name}` for each subdirectory containing an `entry.ts`.
+Canonical source remains under `base44/functions/**`; Base44 discovers functions
+from `base44/.deploy/functions` through `base44/config.jsonc#functionsDir`.
+Use only `npm run base44:functions:deploy`: it always rebuilds first and calls
+the exact lockfile-pinned `base44@0.1.5` CLI through `npx --no-install`, so it
+never downloads an implicit version. The release ZIP and CI artifact contain
+the verified `.deploy` tree. Deployment and live smoke remain `RUNTIME_PENDING`
+until an authenticated operator performs the separately authorized run.
 
 ---
 
@@ -209,8 +219,8 @@ under `base44/functions/**` is auto-discovered and deployed as
   isolation relies on the per-function checks, now verified automatically
   by the static test above (KNOWN_DEBT BUG-6).
 - **Stored credentials are encrypted at rest**. OAuth `access_token` /
-  `refresh_token` and API-key blobs in `Integration.access_token` are
-  encrypted with AES-256-GCM using `INTEGRATION_TOKEN_KEY`. The plaintext
+  `refresh_token` and API-key blobs live only in server-role `IntegrationCredential` rows and
+  are encrypted with AES-256-GCM using `INTEGRATION_TOKEN_KEY`. The plaintext
   never leaves a function response — `getIntegrationStatus` and similar
   return only status metadata.
 - **Agent approval gates**: any agent action with `risk_level ≥ 2`

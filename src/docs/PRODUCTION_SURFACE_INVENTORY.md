@@ -265,19 +265,19 @@ La "agent architecture" se implementa como **backend functions** que:
 
 | Entidad | Propósito | ¿Viva? |
 |---|---|---|
-| AgentRun | Registro de cada ejecución | Sí — escrita por orquestadores |
-| AgentTask | Tareas derivadas de un run | Sí |
+| AgentRun | Historial legacy de compatibilidad | Solo lectura; cero writers de producción |
+| AgentTask | Ciclo de vida canónico de trabajo | Sí |
 | Approval | Gate humano para risk ≥ 2 | Sí |
 | AgentQuestion | Preguntas que un agente hace al admin | Sí |
 | ChatMessage | Conversación con copilot | Sí |
 
 ### approveAgentRun — estado
 
-`approveAgentRun` está en **CUARENTENA** (tag QUARANTINE). El flujo real de
-aprobación se hace **inline** en cada orquestador (no a través de un handler
-centralizado). Si se reactiva, crearía un segundo writer de Approval que
-podría colisionar. **No borrar** hasta confirmar que ningún orquestador lo
-llama — el probe de invocación lo dirá.
+`approveAgentRun` está en **CUARENTENA** (tag QUARANTINE) y devuelve `410 Gone`.
+No escribe `AgentRun`, `Recommendation` ni efectos externos. `AgentTask` y los
+resolvers canónicos de `Approval` son la única ruta viva. Se conserva el entry
+point físico para mantener la topología Base44 y detectar callers legacy; la
+evidencia runtime de ausencia de callers sigue pendiente.
 
 ---
 

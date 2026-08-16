@@ -1,3 +1,4 @@
+import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { sha256 } from '../../shared/intelligenceCore.ts';
 import {
@@ -12,6 +13,17 @@ import {
   selectAnonymousPaymentsClaimSession,
   transitionAnonymousPaymentsClaim,
 } from '../../shared/anonymousPaymentsClaim.ts';
+// DPA-1 (2026-08-16) — legal acceptance evidence. Hosted here as an ACTION
+// (logical route `recordLegalAcceptance`, see base44/deployment-topology.json)
+// because R5 forbids new physical function directories: the plan is sealed at
+// 276. This is the right host on the merits too — this endpoint is the point
+// where an anonymous visitor materialises into an account holder (it creates
+// the Brand), i.e. the registration moment the acceptance belongs to.
+import {
+  buildLegalAcceptanceRecord,
+  coversCurrentVersions,
+  validateLegalAcceptance,
+} from '../../shared/legalAcceptance.ts';
 
 // The PaymentsAnalysisSession CAS claim is the only ownership authority and
 // is acquired before any Brand, AnalyzerResult or snapshot materialization.
@@ -69,6 +81,77 @@ Deno.serve(async (req) => {
       }));
       return blocked();
     }
+    // ── DPA-1 — logical route `recordLegalAcceptance` ────────────────────
+    // Distinct action, distinct contract: it never touches an anonymous
+    // session. Errors are explicit (not the claim's deliberately opaque 404)
+    // because the caller is an authenticated user who must be able to act on
+    // the failure — and because the acceptance gate FAILS CLOSED: if this
+    // returns anything but ok, the UI blocks and shows the error instead of
+    // letting the user into an app they have not accepted the terms for.
+    if (body?.action === 'record_legal_acceptance') {
+      const validated = validateLegalAcceptance(body);
+      if (!validated.ok) {
+        return Response.json({ ok: false, error: validated.error, expected: validated.expected ?? null }, { status: 400 });
+      }
+      // Idempotency: re-accepting the same versions is a no-op, not a
+      // duplicate legal record.
+      const existing = await service.entities.LegalAcceptance.filter(
+        { user_email: userEmail },
+        '-accepted_at',
+        10,
+      ).catch((error: any) => safeBestEffort(error, {
+        operation: 'claimAnonPaymentsResult:record_legal_acceptance',
+        fallback: null,
+        severity: 'critical',
+      }));
+      if (!Array.isArray(existing)) {
+        // Authority unavailable — never report an acceptance we cannot verify.
+        return Response.json({ ok: false, error: 'legal_acceptance_unavailable' }, { status: 503 });
+      }
+      const already = existing.find((row: any) => coversCurrentVersions(row));
+      if (already) {
+        return Response.json({ ok: true, already_accepted: true, acceptance_id: already.id });
+      }
+      // brand_id is optional evidence (acceptance can legitimately precede
+      // brand creation), so a lookup failure degrades the record rather than
+      // failing it — but it is still reported, never swallowed.
+      const brands = await service.entities.Brand
+        .filter({ created_by: userEmail }, '-created_date', 1)
+        .catch((error: any) => safeBestEffort(error, {
+          operation: 'claimAnonPaymentsResult:record_legal_acceptance',
+          fallback: [],
+          severity: 'secondary',
+        }));
+      const record = buildLegalAcceptanceRecord({
+        user_email: userEmail,
+        accepted_at: new Date().toISOString(),
+        terms_version: validated.terms_version,
+        dpa_version: validated.dpa_version,
+        locale: validated.locale,
+        // Observed server-side. Never read from the request body.
+        ip_address: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
+        user_agent: req.headers.get('user-agent'),
+        brand_id: Array.isArray(brands) && brands[0]?.id ? brands[0].id : null,
+      });
+      let created: any = null;
+      try {
+        created = await service.entities.LegalAcceptance.create(record);
+      } catch (error) {
+        console.error(JSON.stringify({
+          event: 'legal_acceptance_persist_failed',
+          error_name: error instanceof Error ? error.name : typeof error,
+        }));
+        created = null;
+      }
+      if (!created?.id) {
+        // FAIL CLOSED. A "phantom acceptance" — the user believing they
+        // accepted while no evidence exists — is the exact failure this whole
+        // feature is meant to prevent.
+        return Response.json({ ok: false, error: 'legal_acceptance_not_persisted' }, { status: 503 });
+      }
+      return Response.json({ ok: true, already_accepted: false, acceptance_id: created.id });
+    }
+
     const anonymousSessionId = body?.anon_session_id || body?.session_id || null;
     if (typeof anonymousSessionId !== 'string' || !UUID_V4.test(anonymousSessionId)) {
       return blocked();

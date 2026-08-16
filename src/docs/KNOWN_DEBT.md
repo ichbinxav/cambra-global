@@ -78,9 +78,10 @@ así que hay una divergencia menor entre el response y el row persistido.
 No bloquea A2 (el materializer se comporta correctamente con o sin esos
 campos: el dedup upsert es independiente del cómputo de banking). Se
 audita en una sesión separada de la vertical Banking; hasta entonces
-`banking_savings` puede quedar en 0 para runs donde el input no tenga
-esos campos persistidos, y `total_savings` refleja solo las verticales
-completas.
+`banking_savings` puede quedar ausente (unknown/not measured) para runs donde
+el input no tenga esos campos persistidos; no se debe convertir esa ausencia
+en 0. Un 0 persistido explícitamente sí es un cero medido. `total_savings`
+refleja solo las verticales completas del run que lo produjo.
 **Origen:** FASE 5C (Auto-materialize, approach A2, frontend-only accumulative)
 
 ### Síntoma histórico

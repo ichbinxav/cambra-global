@@ -1,0 +1,54 @@
+{
+  "schema_version": "cambra-legal-status-v1",
+  "generated_by": "hand-maintained — this is a founder/legal control record, not a generated artifact",
+  "documents": [
+    {
+      "id": "dpa",
+      "title": "Data Processing Agreement (CAMBRA as processor)",
+      "published_at": "/Dpa",
+      "version": "1.0",
+      "source_draft": "DPA_MAESTRO_CAMBRA_ENCARGADO_ES.md",
+      "legal_review": "PENDING",
+      "legal_review_note": "Founder-supplied working draft. No qualified lawyer has signed this text off. It is published with the platform-wide review-status notice and an explicit version, and it is accepted by merchants as a v1.0 text; that acceptance is a valid mechanic, but the TEXT still requires review before the production seal.",
+      "blocking_for_production_seal": true
+    },
+    {
+      "id": "subprocessors",
+      "title": "Sub-processors list (Annex III of the DPA)",
+      "published_at": "/Subprocessors",
+      "version": "1.0",
+      "legal_review": "PENDING",
+      "legal_review_note": "Rows are derived from the sub-processor list already declared in src/content/legal/*/privacy.js section 5, corroborated against real call sites in the codebase. Unconfirmed points (Base44 hosting region and transfer instrument; the exact transfer instrument of each US provider; the controller/processor qualification of the prospecting providers) are published as PENDING_LEGAL_REVIEW rather than asserted.",
+      "blocking_for_production_seal": true
+    },
+    {
+      "id": "dpa_controller_master",
+      "title": "Data Processing Agreement (CAMBRA as controller, for suppliers)",
+      "published_at": null,
+      "version": "1.0",
+      "source_draft": "DPA_MAESTRO_CAMBRA_RESPONSABLE_ES.md",
+      "legal_review": "PENDING",
+      "legal_review_note": "INTERNAL — deliberately NOT published. This is the template CAMBRA makes its own suppliers sign; publishing it would misrepresent the customer relationship.",
+      "blocking_for_production_seal": false
+    }
+  ],
+  "accepted_versions": {
+    "terms": "2026-08-16",
+    "dpa": "1.0",
+    "authority": "base44/shared/legalAcceptance.ts (backend) mirrored in src/lib/legalVersions.js (frontend); both locked to the published content by src/lib/legalAcceptance.test.js"
+  },
+  "open_findings": [
+    {
+      "id": "privacy-resend-scope",
+      "severity": "review",
+      "finding": "src/content/legal/*/privacy.js section 5 describes Resend, Inc. as the provider of 'transactional email delivery'. In the code, merchant-facing email (welcome, newsletter, collective) is sent through Base44's Core.SendEmail integration, while Resend is called from commercialSendMessage and resendInboundWebhook (outbound commercial correspondence and inbound routing). The declaration is not false but is imprecise about which flow goes where.",
+      "action": "Legal review to confirm the correct wording; the sub-processors page already describes Base44 as covering platform-delivered transactional email and Resend as email delivery plus inbound routing."
+    },
+    {
+      "id": "base44-hosting-region",
+      "severity": "review",
+      "finding": "CAMBRA does not publish a hosting region for Base44. The 'EU-based infrastructure' claim was deliberately removed from Terms section 1 during LEGAL-1 as not demonstrable, so no transfer mechanism can be asserted for the hosting layer.",
+      "action": "Founder to obtain Base44's DPA and hosting-region statement; until then the sub-processors page carries 'Pending legal review' for that row rather than a guess."
+    }
+  ]
+}

@@ -11,7 +11,12 @@ import { useTranslation } from "@/lib/i18n.jsx";
  * (Terms, Privacy). One badge + h1 + last-updated date + a list of
  * { title, content } blocks. Cookies has a table so it uses the shell directly.
  */
-export default function LegalPageLayout({ badge, title, sections, lastUpdated, backLabel = "Back" }) {
+// DPA-1 (2026-08-16) — `relatedLinks` is optional and additive: the DPA needs a
+// real, clickable route to /Subprocessors because its Annex III delegates the
+// sub-processor list to that page. Section content stays a plain string (no
+// HTML injected into legal text); the links render as their own block after
+// the sections. Terms/Privacy pass nothing and render exactly as before.
+export default function LegalPageLayout({ badge, title, sections, lastUpdated, backLabel = "Back", relatedLinks = [] }) {
   const { t } = useTranslation();
   return (
     <PublicPageShell>
@@ -67,6 +72,16 @@ export default function LegalPageLayout({ badge, title, sections, lastUpdated, b
               </section>
             ))}
           </div>
+
+          {relatedLinks.length > 0 && (
+            <nav className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
+              {relatedLinks.map((link) => (
+                <Link key={link.to} to={link.to} className="underline" style={{ color: "var(--voltio)" }}>
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </motion.div>
         <style>{`@media print { header, footer { display:none !important; } main { background:#fff !important; } a { color:inherit !important; text-decoration:none !important; } }`}</style>
       </div>

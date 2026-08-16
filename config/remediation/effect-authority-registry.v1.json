@@ -1,0 +1,1997 @@
+{
+  "schema_version": "cambra-effect-authority-registry-v1",
+  "registry_version": "effect-authority-registry.v1",
+  "registry_status": "PARTIAL_LOCAL_WIRING_RUNTIME_PENDING",
+  "truth_boundary": "This generated projection reuses existing domain authorities and records local facade wiring. It creates no durable authority and proves neither universal route coverage nor deployed runtime authorization.",
+  "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
+  "material_registry_sha256": "4d01390613db72b79d3828d595320be803ca25765baba997b21ae89760221926",
+  "material_registry_input_fingerprint_sha256": "627a20db4b3510b41e85f4e9c7393d475721ab9f0ecae34ed5e2c9a2a9b60e72",
+  "input_fingerprint_sha256": "819c878ee84bf12db65d5ba7faead16a4ff298041df1b27ce4e0db758b3a3e07",
+  "facade": {
+    "source": "base44/shared/effectAuthority.ts",
+    "function": "requireEffectAuthority",
+    "batch_function": "requireEffectAuthorities",
+    "creates_entity_or_control_plane": false,
+    "failure_semantics": "unknown actor, tenant/subject mismatch, protected/unknown market, unavailable/stale policy or Emergency authority => non-2xx and effects=false"
+  },
+  "summary": {
+    "effect_class_count": 10,
+    "boundary_count": 42,
+    "locally_wired_boundary_count": 5,
+    "source_observed_only_boundary_count": 37,
+    "implementation_partial_count": 42,
+    "binary_closed_count": 0,
+    "runtime_verified_count": 0
+  },
+  "effect_classes": [
+    {
+      "key": "SEND",
+      "literal_label": "SEND",
+      "material_kinds": [
+        "send"
+      ],
+      "existing_authorities": [
+        "internal/user gate",
+        "tenant binding",
+        "commercial/communication policy",
+        "EmergencyControl communications",
+        "sender claim/receipt"
+      ],
+      "boundary_ids": [
+        "MB-SEND-COMMERCIAL",
+        "MB-SEND-CORE-EMAIL",
+        "MB-SEND-RESEND-PUBLIC-NOTIFY",
+        "MB-PUBLISH-SOCIAL-APPROVED",
+        "MB-WEBHOOK-DISPATCH",
+        "MB-WEBHOOK-DLQ-RETRY",
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-TERMS-APPROVAL-EXECUTION",
+        "MB-CONTRACT-EMAIL"
+      ],
+      "wired_boundary_ids": [
+        "MB-SEND-COMMERCIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "NEGOTIATE",
+      "literal_label": "NEGOTIATE",
+      "material_kinds": [
+        "negotiate"
+      ],
+      "existing_authorities": [
+        "internal/admin gate",
+        "tenant binding",
+        "legal execution",
+        "commercial policy",
+        "EmergencyControl negotiations"
+      ],
+      "boundary_ids": [
+        "MB-SEND-COMMERCIAL",
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-TERMS-APPROVAL-EXECUTION"
+      ],
+      "wired_boundary_ids": [
+        "MB-SEND-COMMERCIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "SCHEDULE_MATERIAL",
+      "literal_label": "SCHEDULE_MATERIAL",
+      "material_kinds": [
+        "material_schedule"
+      ],
+      "existing_authorities": [
+        "schedulerRun lease/fence",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability"
+      ],
+      "boundary_ids": [
+        "MB-SCHEDULE-MEETING",
+        "MB-WEBHOOK-DLQ-RETRY",
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-CONTRACT-PDF-STORAGE",
+        "MB-MIGRATE-PAYMENTS",
+        "MB-BILL-RECOVER-STRIPE",
+        "MB-BILL-API-OVERAGE",
+        "MB-BILL-PROVIDER-REVENUE",
+        "MB-PROVIDER-DR-SHAREPOINT",
+        "MB-SCHEDULER-BASE",
+        "MB-INTEL-OUTCOME-SCHEDULED",
+        "MB-INTEL-P3-LEGACY-PROMOTION",
+        "MB-INTEL-P3-SEED"
+      ],
+      "wired_boundary_ids": [
+        "MB-MIGRATE-PAYMENTS"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "EXECUTE",
+      "literal_label": "EXECUTE",
+      "material_kinds": [
+        "provider_effect"
+      ],
+      "existing_authorities": [
+        "provider/domain claim",
+        "actor/tenant policy",
+        "EmergencyControl epoch",
+        "provider idempotency/reconciliation"
+      ],
+      "boundary_ids": [
+        "MB-SEND-COMMERCIAL",
+        "MB-SEND-CORE-EMAIL",
+        "MB-SEND-RESEND-PUBLIC-NOTIFY",
+        "MB-PUBLISH-SOCIAL-APPROVED",
+        "MB-SCHEDULE-MEETING",
+        "MB-WEBHOOK-DISPATCH",
+        "MB-WEBHOOK-DLQ-RETRY",
+        "MB-CONTRACT-PDF-STORAGE",
+        "MB-MIGRATE-DEVELOPER-GITHUB",
+        "MB-BILL-INVOICE-PDF-STORAGE",
+        "MB-BILL-RECOVER-STRIPE",
+        "MB-BILL-PAYMENT-METHOD",
+        "MB-BILL-PAYMENT-LINK",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PAID-AI",
+        "MB-PROVIDER-DR-SHAREPOINT",
+        "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
+      ],
+      "wired_boundary_ids": [
+        "MB-SEND-COMMERCIAL",
+        "MB-BILL-PAYMENT-LINK"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "APPROVE",
+      "literal_label": "APPROVE",
+      "material_kinds": [
+        "terms"
+      ],
+      "existing_authorities": [
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "actor/tenant binding",
+        "domain policy"
+      ],
+      "boundary_ids": [
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-NEGOTIATE-COLLECTIVE",
+        "MB-TERMS-APPROVAL-EXECUTION",
+        "MB-LEGAL-AUTHORITY-ADMIN",
+        "MB-MANDATE-ACCEPT",
+        "MB-MANDATE-REVOKE",
+        "MB-CONDITIONS-ACTIVATION",
+        "MB-TERMS-PROVIDER-MONETIZATION-LEGAL",
+        "MB-CONTRACT-PDF-STORAGE",
+        "MB-CONTRACT-EMAIL"
+      ],
+      "wired_boundary_ids": [
+        "MB-MANDATE-ACCEPT"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "SIGN_MANDATE",
+      "literal_label": "SIGN/MANDATE",
+      "material_kinds": [
+        "sign_mandate"
+      ],
+      "existing_authorities": [
+        "legal execution",
+        "mandate/acceptance CAS",
+        "authenticated owner",
+        "market capability policy"
+      ],
+      "boundary_ids": [
+        "MB-TERMS-APPROVAL-EXECUTION",
+        "MB-LEGAL-AUTHORITY-ADMIN",
+        "MB-MANDATE-ACCEPT",
+        "MB-MANDATE-REVOKE"
+      ],
+      "wired_boundary_ids": [
+        "MB-MANDATE-ACCEPT"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "SPEND",
+      "literal_label": "SPEND",
+      "material_kinds": [
+        "paid_spend"
+      ],
+      "existing_authorities": [
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "actor/tenant binding",
+        "EmergencyControl inherited by provider effect"
+      ],
+      "boundary_ids": [
+        "MB-SEND-COMMERCIAL",
+        "MB-SEND-CORE-EMAIL",
+        "MB-SEND-RESEND-PUBLIC-NOTIFY",
+        "MB-PUBLISH-SOCIAL-APPROVED",
+        "MB-NEGOTIATE-PROVIDER",
+        "MB-CONTRACT-EMAIL",
+        "MB-PAID-API-ENRICHMENT",
+        "MB-PAID-AI"
+      ],
+      "wired_boundary_ids": [
+        "MB-SEND-COMMERCIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "BILL_CHARGE",
+      "literal_label": "BILL/CHARGE",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "existing_authorities": [
+        "economicExecution/domain billing authority",
+        "market BILL policy",
+        "EmergencyControl billing_issuance",
+        "immutable provider receipt"
+      ],
+      "boundary_ids": [
+        "MB-CONDITIONS-ACTIVATION",
+        "MB-TERMS-PROVIDER-MONETIZATION-LEGAL",
+        "MB-BILL-RECOVER-ELIGIBILITY",
+        "MB-BILL-RECOVER-REPORT-GENERATION",
+        "MB-BILL-INVOICE-PDF-STORAGE",
+        "MB-BILL-RECOVER-STRIPE",
+        "MB-BILL-PAYMENT-METHOD",
+        "MB-BILL-PAYMENT-LINK",
+        "MB-BILL-API-OVERAGE",
+        "MB-BILL-PROVIDER-REVENUE",
+        "MB-BILL-MANUAL-RECORD",
+        "MB-BILL-LOCAL-RECONCILE-OVERRIDE",
+        "MB-BILL-LEGACY-INVOICE-EVENT-QUARANTINE"
+      ],
+      "wired_boundary_ids": [
+        "MB-BILL-PAYMENT-LINK"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "MIGRATE_GO_LIVE",
+      "literal_label": "MIGRATE/GO_LIVE",
+      "material_kinds": [
+        "migrate_go_live"
+      ],
+      "existing_authorities": [
+        "migration saga/DealActivation CAS",
+        "legal execution",
+        "market MIGRATE policy",
+        "EmergencyControl migrations"
+      ],
+      "boundary_ids": [
+        "MB-MIGRATE-PAYMENTS",
+        "MB-MIGRATE-DEVELOPER-GITHUB"
+      ],
+      "wired_boundary_ids": [
+        "MB-MIGRATE-PAYMENTS"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    },
+    {
+      "key": "PROMOTE_LEARNING",
+      "literal_label": "PROMOTE_LEARNING",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "existing_authorities": [
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "admin/internal policy",
+        "non-executable CONTRACT_ONLY gate"
+      ],
+      "boundary_ids": [
+        "MB-BILL-RECOVER-REPORT-GENERATION",
+        "MB-INTEL-CLAIM-UPSERT",
+        "MB-INTEL-OUTCOME-RECORD",
+        "MB-INTEL-CLAIM-PROMOTE",
+        "MB-INTEL-OUTCOME-SCHEDULED",
+        "MB-INTEL-P3-LEGACY-PROMOTION",
+        "MB-INTEL-P3-SEED",
+        "MB-DATASET-PROMOTION-ABSENT"
+      ],
+      "wired_boundary_ids": [
+        "MB-INTEL-CLAIM-PROMOTE"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "blockers": [
+        "not every registered material route is wired to the facade",
+        "deployed final-SHA authority traces and zero-effect denial receipts are absent"
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "boundary_id": "MB-SEND-COMMERCIAL",
+      "logical_route": "commercialSendMessage",
+      "physical_host": "commercialSendMessage",
+      "effect_classes": [
+        "SEND",
+        "NEGOTIATE",
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "AgentAuthority CAN_SEND/CAN_NEGOTIATE",
+        "claimCommercialSendSlot CAS; CommunicationMessage outbound idempotency lookup",
+        "commercial policy",
+        "commercial/communication policy",
+        "CommercialPolicy exact key/version",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "Emergency: capture/inherit + pre-effect + post-effect",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "EmergencyControl negotiations",
+        "internal/admin gate",
+        "internal/user gate",
+        "legal execution",
+        "MarketCapability production rollout",
+        "OutboundControl, sending profile, caps, suppression",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "PARTIAL_ROUTE_WIRING",
+      "wired_route_members": [
+        "commercialSendMessage"
+      ],
+      "wired_effect_classes": [
+        "SEND",
+        "NEGOTIATE",
+        "SPEND",
+        "EXECUTE"
+      ],
+      "wired_source_evidence": [
+        {
+          "path": "base44/functions/commercialSendMessage/entry.ts",
+          "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+          "bytes": 76839
+        }
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "only the listed route members revalidate through requireEffectAuthority at the local commit/effect boundary",
+        "OUTLOOK_POST_SEND_RECONCILIATION_PARTIAL",
+        "OUTLOOK_PROVIDER_IDEMPOTENCY_PARTIAL"
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-CORE-EMAIL",
+      "logical_route": "sendCostGovernedEmail",
+      "physical_host": "shared/costGovernance",
+      "effect_classes": [
+        "SEND",
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "caller-specific communication policy",
+        "commercial/communication policy",
+        "CostBudgetControl",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "CostUsageEvent.event_key reservation and CostBudgetControl CAS",
+        "Emergency: capture + pre-effect + post-effect",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "internal/user gate",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_RECEIPT_MISSING",
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT"
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-RESEND-PUBLIC-NOTIFY",
+      "logical_route": "submitContactMessage|submitWaitlistSignup",
+      "physical_host": "submitContactMessage|submitWaitlistSignup",
+      "effect_classes": [
+        "SEND",
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "commercial/communication policy",
+        "CostBudgetControl",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "Emergency: captured by reservation and reused immediately before/after paidProviderFetch",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "internal/user gate",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "public form validation/rate limit",
+        "sender claim/receipt",
+        "Stable CostUsageEvent reservation keyed to the persisted Lead",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_RECEIPT_MISSING",
+        "RESEND_IDEMPOTENCY_WINDOW_RUNTIME_PROOF_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-PUBLISH-SOCIAL-APPROVED",
+      "logical_route": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "physical_host": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "effect_classes": [
+        "SEND",
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "commercial/communication policy",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "Emergency: paid-provider pre/post guard",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "exact approved artifact hash",
+        "External approval saga",
+        "ExternalTask approval execution lease + CostUsageEvent reservation",
+        "internal/user gate",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_COST_RECEIPT_PARTIAL"
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULE-MEETING",
+      "logical_route": "outlookMeetingCoordinator",
+      "physical_host": "outlookMeetingCoordinator",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "EXECUTE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "Emergency: capture + guarded provider effect",
+        "EmergencyControl epoch",
+        "Exact Approval/ExternalTask/thread binding",
+        "External approval saga; CommunicationThread.meeting_event_id",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "CALENDAR_CANCEL_RECONCILIATION_PARTIAL",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DISPATCH",
+      "logical_route": "dispatchWebhook",
+      "physical_host": "dispatchWebhook",
+      "effect_classes": [
+        "SEND",
+        "EXECUTE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "commercial/communication policy",
+        "Emergency: one captured epoch across fan-out; guarded immediately before and after each receiver effect",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "internal/user gate",
+        "per-event payload allowlist",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "public HTTPS egress",
+        "sender claim/receipt",
+        "Supported event allowlist",
+        "tenant binding",
+        "WebhookDeadLetter dispatch intent + token/revision CAS before transport; EFFECT_STARTED fence; exact receipt/finalization"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "ENDPOINT_HEALTH_PROJECTION_RECONCILIATION_PARTIAL",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DLQ-RETRY",
+      "logical_route": "processWebhookDeadLetters",
+      "physical_host": "processWebhookDeadLetters",
+      "effect_classes": [
+        "SEND",
+        "SCHEDULE_MATERIAL",
+        "EXECUTE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "commercial/communication policy",
+        "Emergency: captured after claim and guarded immediately before/after the receiver effect",
+        "EmergencyControl communications",
+        "EmergencyControl epoch",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "internal/user gate",
+        "Only due pending_retry rows; manual replay requires exhausted + explicit confirmation",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "SchedulerRun claim + claimWebhookDeadLetter CAS + effects_started fence",
+        "schedulerRun lease/fence",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "DEPLOYED_CONCURRENT_REPLAY_RECEIPT_MISSING",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-PROVIDER",
+      "logical_route": "startProviderNegotiation|providerNegotiationAgent",
+      "physical_host": "startProviderNegotiation|providerNegotiationAgent",
+      "effect_classes": [
+        "SEND",
+        "NEGOTIATE",
+        "APPROVE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "Active Mandate renegotiate_with_provider",
+        "actor/tenant binding",
+        "AgentAuthority",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "commercial policy",
+        "commercial/communication policy",
+        "CommercialPolicy provider_negotiation",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "domain policy",
+        "Emergency: captured/inherited across agent and send",
+        "EmergencyControl communications",
+        "EmergencyControl inherited by provider effect",
+        "EmergencyControl negotiations",
+        "internal/admin gate",
+        "internal/user gate",
+        "legal execution",
+        "LegalExecution NEGOTIATE_PRICING",
+        "Lookup of existing open NegotiationCase; no unique/CAS preclaim at start",
+        "Market NEGOTIATE",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_AI",
+        "NEGOTIATION_START_CAS_MISSING",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-COLLECTIVE",
+      "logical_route": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "physical_host": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "effect_classes": [
+        "SEND",
+        "NEGOTIATE",
+        "SCHEDULE_MATERIAL",
+        "APPROVE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "commercial policy",
+        "commercial/communication policy",
+        "domain policy",
+        "Emergency: scheduler claim plus negotiation/send epochs",
+        "EmergencyControl communications",
+        "EmergencyControl negotiations",
+        "exact pool/RFP/contract references",
+        "Founder-approved aggregate_procurement CommercialPolicy",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "internal/admin gate",
+        "internal/user gate",
+        "legal execution",
+        "SchedulerRun + negotiation case/task + commercial send claim",
+        "schedulerRun lease/fence",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_AI",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-APPROVAL-EXECUTION",
+      "logical_route": "resolveCommercialApproval",
+      "physical_host": "resolveCommercialApproval",
+      "effect_classes": [
+        "SEND",
+        "NEGOTIATE",
+        "APPROVE",
+        "SIGN_MANDATE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "Approval resolution CAS/lease/effects_started/finalize",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "authenticated owner",
+        "commercial policy",
+        "commercial/communication policy",
+        "decision/reason/content hash",
+        "domain policy",
+        "Emergency: approval resolution saga + branch epoch",
+        "EmergencyControl communications",
+        "EmergencyControl negotiations",
+        "exact contract/terms hash",
+        "expected authority hash",
+        "internal/admin gate",
+        "internal/user gate",
+        "legal execution",
+        "mandate/acceptance CAS",
+        "market capability policy",
+        "Resolution command key",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "AGGREGATE_EXECUTION_LEGAL_ENFORCEMENT_NOT_PROVEN",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-LEGAL-AUTHORITY-ADMIN",
+      "logical_route": "manageLegalExecution",
+      "physical_host": "marketPolicyAdmin",
+      "effect_classes": [
+        "APPROVE",
+        "SIGN_MANDATE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "authenticated owner",
+        "domain policy",
+        "Emergency: none",
+        "legal execution",
+        "Legal execution policy/kill switch/signer capacity/authority grant",
+        "mandate/acceptance CAS",
+        "market capability policy",
+        "No durable command-idempotency/CAS claim proven"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-ACCEPT",
+      "logical_route": "startRecoverAcceptance|acceptRecoverMandate",
+      "physical_host": "startRecoverAcceptance|acceptRecoverMandate",
+      "effect_classes": [
+        "APPROVE",
+        "SIGN_MANDATE"
+      ],
+      "existing_authority_primitives": [
+        "active-mandate invariant",
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "authenticated owner",
+        "domain policy",
+        "Emergency: none",
+        "legal execution",
+        "LegalExecution ACCEPT_RECOVER_MANDATE",
+        "mandate/acceptance CAS",
+        "market capability policy",
+        "Market MANDATE/CONTRACT",
+        "product policy/ECL/contract snapshot",
+        "Start idempotency key; claimRecoverAcceptanceAuthority CAS; DealActivation authorization CAS"
+      ],
+      "wiring_status": "PARTIAL_ROUTE_WIRING",
+      "wired_route_members": [
+        "acceptRecoverMandate"
+      ],
+      "wired_effect_classes": [
+        "APPROVE",
+        "SIGN_MANDATE"
+      ],
+      "wired_source_evidence": [
+        {
+          "path": "base44/functions/acceptRecoverMandate/entry.ts",
+          "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
+          "bytes": 29825
+        }
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "only the listed route members revalidate through requireEffectAuthority at the local commit/effect boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-REVOKE",
+      "logical_route": "revokeMandate",
+      "physical_host": "revokeMandate",
+      "effect_classes": [
+        "APPROVE",
+        "SIGN_MANDATE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "authenticated owner",
+        "domain policy",
+        "Emergency: none",
+        "Explicit ownership",
+        "future-action-only revocation semantics",
+        "legal execution",
+        "Mandate status CAS, then DealActivation status/authority CAS with reread/retry",
+        "mandate/acceptance CAS",
+        "market capability policy"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONDITIONS-ACTIVATION",
+      "logical_route": "recordConditionsActivation",
+      "physical_host": "recordConditionsActivation",
+      "effect_classes": [
+        "APPROVE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "active Mandate",
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "domain policy",
+        "economicExecution/domain billing authority",
+        "Emergency: none",
+        "EmergencyControl billing_issuance",
+        "explicit correction confirmation",
+        "immutable provider receipt",
+        "live/monetizing activation",
+        "market BILL policy",
+        "named evidence source/note",
+        "No CAS claim; correction guard is value-based"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-PROVIDER-MONETIZATION-LEGAL",
+      "logical_route": "approveProviderMonetizationLegalReview",
+      "physical_host": "approveProviderMonetizationLegalReview",
+      "effect_classes": [
+        "APPROVE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "disclosure",
+        "domain policy",
+        "economicExecution/domain billing authority",
+        "Emergency: none",
+        "EmergencyControl billing_issuance",
+        "immutable provider receipt",
+        "jurisdiction",
+        "Legal opinion",
+        "market BILL policy",
+        "No CAS/idempotent command claim proven",
+        "settlement mode",
+        "tax treatment",
+        "vertical"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-PDF-STORAGE",
+      "logical_route": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "physical_host": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "EXECUTE",
+        "APPROVE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "CAMBRA legal identity",
+        "domain policy",
+        "Emergency: none",
+        "EmergencyControl epoch",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "Immutable accepted snapshot/hash/template",
+        "Mandate contract_pdf_status/timestamp lease; update is not proven CAS",
+        "private storage only",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "ATOMIC_LEASE_NOT_PROVEN",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-EMAIL",
+      "logical_route": "sendRecoverContractEmail",
+      "physical_host": "sendRecoverContractEmail",
+      "effect_classes": [
+        "SEND",
+        "APPROVE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "approvalAuthority hash/nonce",
+        "approvalResolutionSaga",
+        "commercial/communication policy",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "domain policy",
+        "Emergency: capture + pre/post send",
+        "EmergencyControl communications",
+        "EmergencyControl inherited by provider effect",
+        "Generated/hash-verified contract PDF",
+        "immutable contract economic view",
+        "internal/user gate",
+        "Mandate email lease/status plus CostUsageEvent reservation",
+        "sender claim/receipt",
+        "tenant binding"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-PAYMENTS",
+      "logical_route": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "physical_host": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "MIGRATE_GO_LIVE"
+      ],
+      "existing_authority_primitives": [
+        "active Mandate",
+        "AUTHORIZE_MIGRATION exact payload hash at go-live",
+        "DealActivation status CAS; MigrationTask CAS; go-live CAS with compensation",
+        "Emergency: point-in-time assertOperationAllowed only",
+        "EmergencyControl migrations",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "legal execution",
+        "LegalExecution COORDINATE_MIGRATION",
+        "Market MIGRATE",
+        "market MIGRATE policy",
+        "migration saga/DealActivation CAS",
+        "schedulerRun lease/fence",
+        "sequential tasks"
+      ],
+      "wiring_status": "PARTIAL_ROUTE_WIRING",
+      "wired_route_members": [
+        "startPaymentsMigration"
+      ],
+      "wired_effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "MIGRATE_GO_LIVE"
+      ],
+      "wired_source_evidence": [
+        {
+          "path": "base44/functions/startPaymentsMigration/entry.ts",
+          "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
+          "bytes": 31345
+        }
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "only the listed route members revalidate through requireEffectAuthority at the local commit/effect boundary",
+        "POINT_CHECK_NOT_EPOCH"
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-DEVELOPER-GITHUB",
+      "logical_route": "developerMigrationEngine",
+      "physical_host": "developerMigrationEngine",
+      "effect_classes": [
+        "EXECUTE",
+        "MIGRATE_GO_LIVE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "Emergency: capture and revalidate immediately around provider writes",
+        "EmergencyControl epoch",
+        "EmergencyControl migrations",
+        "Exact approval/task/run/workspace hashes",
+        "legal execution",
+        "Lifecycle CAS/lease/checkpoint/effects_started/singleton revision",
+        "market MIGRATE policy",
+        "migration lifecycle authority",
+        "migration saga/DealActivation CAS",
+        "provider idempotency/reconciliation",
+        "provider/domain claim"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-ELIGIBILITY",
+      "logical_route": "approveRecoverReportForInvoicing",
+      "physical_host": "approveRecoverReportForInvoicing",
+      "effect_classes": [
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "economicExecution/domain billing authority",
+        "Emergency: no provider effect; billing eligibility mutation has no epoch recorded in registry review",
+        "EmergencyControl billing_issuance",
+        "Exact report/activation/mandate/legal/contract/ECL gates",
+        "immutable provider receipt",
+        "market BILL policy",
+        "Report state transition checks; exact CAS must be verified per source revision"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "BILLING_ELIGIBILITY_EPOCH_NOT_PROVEN",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-REPORT-GENERATION",
+      "logical_route": "generateMonthlySavingsReport",
+      "physical_host": "generateMonthlySavingsReport",
+      "effect_classes": [
+        "BILL_CHARGE",
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "accepted Recover mandate/contract",
+        "admin/internal policy",
+        "Baseline/BillingRule provenance",
+        "economicExecution/domain billing authority",
+        "Emergency: no provider charge; financial evidence promotion has no universal Emergency epoch contract",
+        "EmergencyControl billing_issuance",
+        "immutable provider receipt",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "market BILL policy",
+        "non-executable CONTRACT_ONLY gate",
+        "non-void activation-month singleton",
+        "Product scope",
+        "readRecoverReportAuthority cap-two read plus mandatory post-create and pre-return singleton proof; duplicate rows fail closed"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "DUPLICATE_REPORT_RUNTIME_RECONCILIATION_PENDING",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "RECOVER_REPORT_CREATE_ATOMIC_CLAIM_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-INVOICE-PDF-STORAGE",
+      "logical_route": "generateInvoicePdf",
+      "physical_host": "generateInvoicePdf",
+      "effect_classes": [
+        "EXECUTE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "economicExecution/domain billing authority",
+        "Emergency: legacy external storage upload has no Emergency epoch wrapper",
+        "EmergencyControl billing_issuance",
+        "EmergencyControl epoch",
+        "Exact cap-two Invoice read; no durable upload lease/claim",
+        "immutable provider receipt",
+        "legacy non-Recover local invoice only",
+        "market BILL policy",
+        "positive invoice authority",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "Recover or Stripe-authoritative invoices are rejected"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-STRIPE",
+      "logical_route": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "physical_host": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "EXECUTE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "claimRecoverInvoiceDraft renew/finalize; Stripe event id dedupe; SchedulerRun for reconcile",
+        "ECL/contract",
+        "economicExecution/domain billing authority",
+        "Emergency: capture + guarded pre/post around every create/finalize effect",
+        "EmergencyControl billing_issuance",
+        "EmergencyControl epoch",
+        "frozen report economics",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "immutable provider receipt",
+        "LegalExecution AUTHORIZE_CAMBRA_BILLING",
+        "Market BILL",
+        "market BILL policy",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-METHOD",
+      "logical_route": "startPaymentMethodSetup",
+      "physical_host": "startPaymentMethodSetup",
+      "effect_classes": [
+        "EXECUTE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "Active Mandate and ownership",
+        "actor/tenant policy",
+        "economicExecution/domain billing authority",
+        "Emergency: capture + provider effect guard",
+        "EmergencyControl billing_issuance",
+        "EmergencyControl epoch",
+        "immutable provider receipt",
+        "Local Stripe ids/readback and deterministic provider keys",
+        "market BILL policy",
+        "provider idempotency/reconciliation",
+        "provider/domain claim"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "SETUP_INTENT_COMPLETION_RECONCILIATION_EXTERNAL"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-LINK",
+      "logical_route": "createPaymentLink",
+      "physical_host": "createPaymentLink",
+      "effect_classes": [
+        "EXECUTE",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "economicExecution/domain billing authority",
+        "Emergency: capture + guarded provider effect + local pre/post checks",
+        "EmergencyControl billing_issuance",
+        "EmergencyControl epoch",
+        "immutable provider receipt",
+        "market BILL policy",
+        "positive immutable invoice amount",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "Recover invoices rejected to prevent a second payable surface",
+        "Stripe provider idempotency plus Invoice binding"
+      ],
+      "wiring_status": "PARTIAL_ROUTE_WIRING",
+      "wired_route_members": [
+        "createPaymentLink"
+      ],
+      "wired_effect_classes": [
+        "EXECUTE",
+        "BILL_CHARGE"
+      ],
+      "wired_source_evidence": [
+        {
+          "path": "base44/functions/createPaymentLink/entry.ts",
+          "sha256": "1e897b7ecba6a4fe0f8977fc5ee4c8922c1818a3e770ae887a1653329dff54e1",
+          "bytes": 11790
+        }
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "only the listed route members revalidate through requireEffectAuthority at the local commit/effect boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-API-OVERAGE",
+      "logical_route": "billApiUsage",
+      "physical_host": "billApiUsage",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "ApiUsageRecord CAS on billing_claim_revision/billing_run_id; stale claim => review",
+        "economicExecution/domain billing authority",
+        "Emergency: capture + before/after invoice checks",
+        "EmergencyControl billing_issuance",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "immutable provider receipt",
+        "market BILL policy",
+        "Organization quota/pricing and exact closed period",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PROVIDER-REVENUE",
+      "logical_route": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "physical_host": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "DynamicAgreement compensation legal approval/activation",
+        "economicExecution/domain billing authority",
+        "Emergency: capture + before/after local issuance record",
+        "EmergencyControl billing_issuance",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "immutable provider receipt",
+        "Lookup by provider invoice key/external number/payment ref; no unique/CAS create claim",
+        "market BILL policy",
+        "schedulerRun lease/fence",
+        "settlement mode",
+        "tax/opinion references"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "LOCAL_INVOICE_CREATE_CAS_MISSING",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-MANUAL-RECORD",
+      "logical_route": "recordPayment",
+      "physical_host": "recordPayment",
+      "effect_classes": [
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "economicExecution/domain billing authority",
+        "Emergency: none",
+        "EmergencyControl billing_issuance",
+        "external_ref duplicate lookup; no CAS command claim",
+        "immutable provider receipt",
+        "Manual non-Stripe payment only",
+        "market BILL policy"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "LOCAL_PAYMENT_CAS_MISSING",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LOCAL-RECONCILE-OVERRIDE",
+      "logical_route": "reconcileInvoice",
+      "physical_host": "reconcileInvoice",
+      "effect_classes": [
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "draft-only amount adjustment",
+        "economicExecution/domain billing authority",
+        "Emergency: none",
+        "EmergencyControl billing_issuance",
+        "immutable provider receipt",
+        "market BILL policy",
+        "No CAS/idempotent command key",
+        "State transition allowlist",
+        "Stripe-authoritative Recover blocked"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LEGACY-INVOICE-EVENT-QUARANTINE",
+      "logical_route": "onInvoiceStatusEvent",
+      "physical_host": "onInvoiceStatusEvent",
+      "effect_classes": [
+        "BILL_CHARGE"
+      ],
+      "existing_authority_primitives": [
+        "economicExecution/domain billing authority",
+        "Emergency: not applicable because every invocation terminates before effects",
+        "EmergencyControl billing_issuance",
+        "immutable provider receipt",
+        "market BILL policy",
+        "NONE; hard quarantine before reads or writes",
+        "Unconditional HTTP 410 route_quarantined; canonical signed webhook/reconciliation routes only"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PURGE_2_RUNTIME_PENDING"
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-API-ENRICHMENT",
+      "logical_route": "paidProviderFetch|reservePaidOperation|guardReservedPaidProviderEffect",
+      "physical_host": "shared/costGovernance",
+      "effect_classes": [
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "CostBudgetControl",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "CostUsageEvent.event_key + CostBudgetControl CAS",
+        "Emergency: pre/post only when guarded helper is used",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "provider idempotency/reconciliation",
+        "provider/domain claim"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "GUARDED_PROVIDER_EFFECT_CALLER_DEPENDENT",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_RECEIPT_MISSING",
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT"
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-AI",
+      "logical_route": "callCambraClaude",
+      "physical_host": "shared/commercialModelRouter",
+      "effect_classes": [
+        "EXECUTE",
+        "SPEND"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant binding",
+        "actor/tenant policy",
+        "CostBudgetControl",
+        "CostBudgetControl CAS",
+        "CostUsageEvent reservation",
+        "CostUsageEvent reservation; router uses a new UUID for each attempt",
+        "Emergency: AI category is omitted by paidProviderEmergencyCapabilities",
+        "EmergencyControl epoch",
+        "EmergencyControl inherited by provider effect",
+        "provider idempotency/reconciliation",
+        "provider/domain claim"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "AI_RETRY_EFFECT_KEY_UNSTABLE",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_AI",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-DR-SHAREPOINT",
+      "logical_route": "disasterRecoveryBackup",
+      "physical_host": "maintenanceEngine",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "EXECUTE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "DR policy",
+        "Emergency: none",
+        "EmergencyControl epoch",
+        "encrypted payload only",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "schedulerRun lease/fence",
+        "SchedulerRun; deterministic backup path/manifest",
+        "SharePoint CAMBRA INFRASTRUCTURE/Production Backups"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-INTEGRATIONS-READ-AUTH",
+      "logical_route": "oauthConnector|stripeOAuthConnect|dataSyncAgent|stripeDataSync|computeStripeVerifiedGap|checkVatVies|rateIntelligenceWatchWorker",
+      "physical_host": "respective physical routes",
+      "effect_classes": [
+        "EXECUTE"
+      ],
+      "existing_authority_primitives": [
+        "actor/tenant policy",
+        "Connector scope/state",
+        "Emergency: none",
+        "EmergencyControl epoch",
+        "Integration/source-specific state; no common provider-effect claim",
+        "provider idempotency/reconciliation",
+        "provider/domain claim",
+        "read-only data sync where declared",
+        "source provenance"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULER-BASE",
+      "logical_route": "all Base44 scheduled automations",
+      "physical_host": "69 inventory rows across physical/logical hosts",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL"
+      ],
+      "existing_authority_primitives": [
+        "Emergency: not supplied by scheduler claim; downstream route must enforce",
+        "guardedScheduledServe/claimSchedulerRun run_key, lease, heartbeat, revision, effects_started, finalize",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "schedulerRun lease/fence",
+        "SchedulerRun slot/lease; downstream policy remains handler-specific"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "DOWNSTREAM_EFFECT_IDEMPOTENCY_REQUIRED",
+        "no executable requireEffectAuthority route wiring is present for this boundary",
+        "SCHEDULER_METADATA_UNKNOWN"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-UPSERT",
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "effect_classes": [
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "Claim dedupe/version/content hash",
+        "Emergency: none",
+        "inferred cannot promote",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "training/model/calibration flags false",
+        "Truth/lineage assessment"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-RECORD",
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "effect_classes": [
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "descriptive PENDING_PROVENANCE quarantine",
+        "Emergency: none",
+        "Exact verification source",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "no training/model/calibration",
+        "non-executable CONTRACT_ONLY gate",
+        "Outcome dedupe key",
+        "terminal state"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-PROMOTE",
+      "logical_route": "intelligenceAdmin",
+      "physical_host": "intelligenceAdmin",
+      "effect_classes": [
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "Claim state/version update; no emergency epoch",
+        "Emergency: none",
+        "inferred prohibited",
+        "intelligence tenant scope",
+        "learning flags remain false",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "Verified/active require eligible lineage"
+      ],
+      "wiring_status": "PARTIAL_ROUTE_WIRING",
+      "wired_route_members": [
+        "intelligenceAdmin:set_claim_state"
+      ],
+      "wired_effect_classes": [
+        "PROMOTE_LEARNING"
+      ],
+      "wired_source_evidence": [
+        {
+          "path": "base44/functions/intelligenceAdmin/entry.ts",
+          "sha256": "a1b63eae7a1774b1c7587d5b8e3f0da050dba1d5861755fec7ca8688abb769f9",
+          "bytes": 17471
+        }
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+        "only the listed route members revalidate through requireEffectAuthority at the local commit/effect boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-SCHEDULED",
+      "logical_route": "outcomeLearningWorker",
+      "physical_host": "outcomeLearningWorker",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "always descriptive PENDING_PROVENANCE quarantine",
+        "Emergency: none",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "Only verified/terminal sources",
+        "SchedulerRun + outcome dedupe key",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-LEGACY-PROMOTION",
+      "logical_route": "intelligenceMaintenanceWorker",
+      "physical_host": "intelligenceMaintenanceWorker",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "Emergency: none",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "intelligence tenant scope",
+        "legacy estimates never promote up",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "Only verified P3 ProviderPricingVersion+RateComponent projects down",
+        "SchedulerRun and exact canonical pricing identity",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-SEED",
+      "logical_route": "seedP3RateIntelligence",
+      "physical_host": "seedP3RateIntelligence",
+      "effect_classes": [
+        "SCHEDULE_MATERIAL",
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "Deterministic researched P3 bootstrap; temporary seed",
+        "Deterministic/idempotent canonical ledger keys",
+        "Emergency: none",
+        "handler-specific actor/tenant policy",
+        "handler-specific EmergencyControl capability",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "schedulerRun lease/fence"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    },
+    {
+      "boundary_id": "MB-DATASET-PROMOTION-ABSENT",
+      "logical_route": "NONE_FOUND",
+      "physical_host": "NONE_FOUND",
+      "effect_classes": [
+        "PROMOTE_LEARNING"
+      ],
+      "existing_authority_primitives": [
+        "admin/internal policy",
+        "Dataset/model registries remain CONTRACT_ONLY",
+        "Emergency: none",
+        "intelligence tenant scope",
+        "lineage/learning eligibility",
+        "non-executable CONTRACT_ONLY gate",
+        "NONE"
+      ],
+      "wiring_status": "SOURCE_OBSERVED_ONLY",
+      "wired_route_members": [],
+      "wired_effect_classes": [],
+      "wired_source_evidence": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "remaining_gaps": [
+        "DATASET_PROMOTION_ROUTE_ABSENT",
+        "deployed actor/tenant/policy/market authority trace is missing",
+        "LEARNING_ELIGIBILITY_CLEARED_RUNTIME_ISSUER_ABSENT",
+        "no executable requireEffectAuthority route wiring is present for this boundary"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "path": "base44/functions/acceptRecoverMandate/entry.ts",
+      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
+      "bytes": 29825
+    },
+    {
+      "path": "base44/functions/commercialSendMessage/entry.ts",
+      "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+      "bytes": 76839
+    },
+    {
+      "path": "base44/functions/createPaymentLink/entry.ts",
+      "sha256": "1e897b7ecba6a4fe0f8977fc5ee4c8922c1818a3e770ae887a1653329dff54e1",
+      "bytes": 11790
+    },
+    {
+      "path": "base44/functions/intelligenceAdmin/entry.ts",
+      "sha256": "a1b63eae7a1774b1c7587d5b8e3f0da050dba1d5861755fec7ca8688abb769f9",
+      "bytes": 17471
+    },
+    {
+      "path": "base44/functions/startPaymentsMigration/entry.ts",
+      "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
+      "bytes": 31345
+    },
+    {
+      "path": "base44/shared/effectAuthority.ts",
+      "sha256": "6bdc27ae5660b3f9256fabf05f94281ca762e3df1d6c8c5a8f9a6c0e00805f67",
+      "bytes": 11891
+    },
+    {
+      "path": "base44/shared/marketLaunchScope.ts",
+      "sha256": "d665a6d943b985aa4bdbbef777c48c921d1277a74cfeb906386586d3a2f0a9b8",
+      "bytes": 3476
+    },
+    {
+      "path": "base44/shared/operationalControl.ts",
+      "sha256": "fe30d3f24cd62163733d3a51bf22e61e85a5e27ee418afa937e95ff0e3e9d1a1",
+      "bytes": 17295
+    }
+  ]
+}

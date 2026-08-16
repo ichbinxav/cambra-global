@@ -18,6 +18,8 @@ export default function PublicFooter() {
     { to: "/Privacy", label: t("footer_privacy") },
     { to: "/Terms", label: t("footer_terms") },
     { to: "/Cookies", label: "Cookies" },
+    { to: "/Dpa", label: t("footer_dpa") },
+    { to: "/Subprocessors", label: t("footer_subprocessors") },
     { to: "/Contact", label: t("footer_contact") },
   ];
   return (

@@ -17,21 +17,27 @@ approval gates.
 ## Quick start
 
 ```bash
-# 1. Install
-npm install
+# 1. Install from the pinned lockfile
+npm ci
 
-# 2. Configure environment
+# 2. Build and verify the complete Base44 function deployment tree
+npm run base44:functions:bundle   # 276 physical functions / 28 logical routes
+
+# 3. Configure environment
 cp env.example .env          # fill in the frontend VITE_ vars
 # Backend secrets go into the Base44 dashboard, not this file.
 # (The template is named env.example without a leading dot because the
 #  Base44 sandbox silently drops dotfiles from the repo.)
 
-# 3. Run
+# 4. Run
 npm run dev                  # http://localhost:5173
 ```
 
-Publish changes from the Base44 dashboard (**Publish** button). Every push
-to the linked repo is picked up by the Base44 builder.
+The 300 directories under `base44/functions` are canonical source modules, not
+300 direct Base44 deployables. `base44/config.jsonc` deliberately points to the
+ignored, generated `base44/.deploy/functions` tree. A clean checkout or release
+ZIP must run `npm run base44:functions:bundle` before any deployment operation.
+Do not use a dashboard publish flow that skips this compiler boundary.
 
 ---
 
@@ -41,6 +47,9 @@ to the linked repo is picked up by the Base44 builder.
 |---------------------------|-----------------------------------------------------------|
 | `npm run dev`             | Vite dev server, hot reload                               |
 | `npm run build`           | Production build (Vite)                                   |
+| `npm run base44:functions:bundle` | Deterministically stage and verify 276 physical functions plus 28 logical routes under `base44/.deploy` |
+| `npm run base44:functions:deploy` | Rebuild first, then invoke only the locally installed Base44 CLI; never downloads `latest` |
+| `npm run release:package` | After canonical verification, create and re-extract a ZIP containing the exact Base44 bundle and separate source/topology/bundle identities |
 | `npm run preview`         | Serve the production build locally                        |
 | `npm run lint`            | ESLint (errors only)                                      |
 | `npm run lint:fix`        | ESLint with auto-fix (imports cleanup, safe transforms)   |
@@ -85,7 +94,8 @@ every stored integration; do not rotate without a migration plan.
 │                    BACKEND (Base44 · Deno serverless)                 │
 │                                                                       │
 │  base44/entities/*.jsonc         JSON-schema data model + RLS         │
-│  base44/functions/*/entry.ts     HTTP handlers (Deno.serve)           │
+│  base44/functions/*/entry.ts     Canonical source handlers             │
+│  base44/.deploy/functions/*      Generated physical deploy tree        │
 │                                                                       │
 │  NOTE: there is no base44/agents/*.jsonc directory. The "agent"       │
 │  layer is implemented entirely as backend functions (38+ *Agent +     │
@@ -158,11 +168,29 @@ Run: `npm test`. Full suite completes in seconds.
 
 ## Deploy
 
-Deployment is handled by the Base44 builder — the linked repo is the source
-of truth, and pressing **Publish** in the dashboard promotes the current
-commit. There is no separate CI/CD pipeline to configure. Function code
-under `base44/functions/**` is auto-discovered and deployed as
-`{function-name}` for each subdirectory containing an `entry.ts`.
+Canonical source remains under `base44/functions/**`, while Base44 discovers
+functions only from `base44/.deploy/functions` through
+`base44/config.jsonc#functionsDir`. The supported backend deployment entry point
+is therefore the guarded package script:
+
+```bash
+npm ci
+npm run base44:functions:bundle
+npm run base44:functions:deploy
+```
+
+`base44:functions:deploy` always rebuilds the bundle before it can execute
+`functions deploy --force`, and uses the exact lockfile-pinned
+`base44@0.1.5` CLI through `npx --no-install`; it never downloads an implicit
+version. Real deployment and the production smoke remain `RUNTIME_PENDING`
+until an authenticated operator performs the separately authorized run. This
+remediation performs no deploy.
+
+`npm run release:package` includes the ignored `.deploy` bundle in the ZIP,
+re-extracts it, verifies source-tree, topology, manifest and physical bundle
+hashes against `RELEASE.json`, rebuilds the extracted bundle, and requires the
+rebuild to be byte-identical. CI uploads both the release artifact and the raw
+`base44/.deploy` directory for independent inspection.
 
 ---
 

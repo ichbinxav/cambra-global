@@ -1,0 +1,3815 @@
+{
+  "schema_version": "cambra-material-boundary-registry-v1",
+  "registry_status": "COMPLETE_INVENTORY_WITH_DECLARED_GAPS",
+  "truth_boundary": "This is a repository-derived control inventory, not runtime proof. PARTIAL/ABSENT rows remain hard-gate gaps until their receipts and runtime evidence exist.",
+  "generated_from": [
+    "physical base44/functions entry sources",
+    "base44/deployment-topology.json",
+    "config/scheduler-inventory.json",
+    "shared claim/emergency/cost primitives"
+  ],
+  "input_fingerprint_sha256": "627a20db4b3510b41e85f4e9c7393d475721ab9f0ecae34ed5e2c9a2a9b60e72",
+  "input_file_count": 130,
+  "surface_snapshot": {
+    "source_function_directories": 300,
+    "source_entry_files": 300,
+    "physical_function_target": 276,
+    "logical_route_count": 28,
+    "stale_production_surface_inventory_declared_functions": 162,
+    "stale_production_surface_inventory_detected": true
+  },
+  "summary": {
+    "boundary_count": 42,
+    "status_counts": {
+      "ABSENT": 1,
+      "CONTROLLED": 4,
+      "CONTROLLED_NON_PROMOTING": 2,
+      "PARTIAL": 31,
+      "PARTIAL_HARD_GAP": 1,
+      "PARTIAL_INACTIVE": 1,
+      "QUARANTINED": 1,
+      "QUARANTINED_PARTIAL": 1
+    },
+    "material_kind_counts": {
+      "billing_charge": 13,
+      "claim_outcome_dataset_promotion": 8,
+      "material_schedule": 13,
+      "migrate_go_live": 2,
+      "negotiate": 4,
+      "paid_spend": 8,
+      "provider_effect": 17,
+      "send": 10,
+      "sign_mandate": 4,
+      "terms": 10
+    },
+    "declared_gap_codes": [
+      "AGGREGATE_EXECUTION_LEGAL_ENFORCEMENT_NOT_PROVEN",
+      "AI_RETRY_EFFECT_KEY_UNSTABLE",
+      "ATOMIC_LEASE_NOT_PROVEN",
+      "BILLING_ELIGIBILITY_EPOCH_NOT_PROVEN",
+      "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+      "CALENDAR_CANCEL_RECONCILIATION_PARTIAL",
+      "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+      "COMMON_PROVIDER_RECONCILIATION_MISSING",
+      "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+      "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+      "DATASET_PROMOTION_ROUTE_ABSENT",
+      "DEPLOYED_CONCURRENT_REPLAY_RECEIPT_MISSING",
+      "DOWNSTREAM_EFFECT_IDEMPOTENCY_REQUIRED",
+      "DUPLICATE_REPORT_RUNTIME_RECONCILIATION_PENDING",
+      "EMERGENCY_CAPABILITY_MISSING_AI",
+      "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+      "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+      "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+      "ENDPOINT_HEALTH_PROJECTION_RECONCILIATION_PARTIAL",
+      "GUARDED_PROVIDER_EFFECT_CALLER_DEPENDENT",
+      "LEARNING_ELIGIBILITY_CLEARED_RUNTIME_ISSUER_ABSENT",
+      "LOCAL_INVOICE_CREATE_CAS_MISSING",
+      "LOCAL_PAYMENT_CAS_MISSING",
+      "NEGOTIATION_START_CAS_MISSING",
+      "OUTLOOK_POST_SEND_RECONCILIATION_PARTIAL",
+      "OUTLOOK_PROVIDER_IDEMPOTENCY_PARTIAL",
+      "POINT_CHECK_NOT_EPOCH",
+      "PRE_EFFECT_CLAIM_MISSING",
+      "PROVIDER_FINAL_COST_RECEIPT_PARTIAL",
+      "PROVIDER_FINAL_RECEIPT_MISSING",
+      "PURGE_2_RUNTIME_PENDING",
+      "RECOVER_REPORT_CREATE_ATOMIC_CLAIM_MISSING",
+      "RESEND_IDEMPOTENCY_WINDOW_RUNTIME_PROOF_MISSING",
+      "SCHEDULER_METADATA_UNKNOWN",
+      "SETUP_INTENT_COMPLETION_RECONCILIATION_EXTERNAL",
+      "STABLE_EFFECT_KEY_CALLER_DEPENDENT"
+    ]
+  },
+  "paid_ai_inventory": {
+    "primitive": "callCambraClaude",
+    "caller_count": 38,
+    "callers": [
+      "autonomousCommercialWorker",
+      "autonomousPartnerWorker",
+      "blogAgent",
+      "codeReviewAgent",
+      "collectiveNegotiationAgent",
+      "commercialFollowUpWorker",
+      "commercialReplyAgent",
+      "competitorMonitorAgent",
+      "complianceAgent",
+      "contractIPAgent",
+      "developerMigrationEngine",
+      "discoveryTechStackAgent",
+      "fixValidatorAgent",
+      "followUpAgent",
+      "founderChiefOfStaff",
+      "founderCopilotAgent",
+      "gdprAgent",
+      "investorUpdateAgent",
+      "leadScoringAgent",
+      "legalReviewAgent",
+      "linkedinAgent",
+      "newsletterAgent",
+      "onboardingConciergeWorker",
+      "outboundVolumeWorker",
+      "outreachAgent",
+      "postMeetingWorker",
+      "providerMonetizationAgent",
+      "providerMonitorAgent",
+      "providerNegotiationAgent",
+      "providerResearchAgent",
+      "qaAgent",
+      "qaMonitorAgent",
+      "recommendationEngineAgent",
+      "reviewProviderContract",
+      "securityAgent",
+      "seoAgent",
+      "spendIntelligenceAgent",
+      "xTwitterAgent"
+    ],
+    "cost_category": "ai",
+    "emergency_capability": "NONE",
+    "gap_codes": [
+      "EMERGENCY_CAPABILITY_MISSING_AI",
+      "AI_RETRY_EFFECT_KEY_UNSTABLE",
+      "PROVIDER_FINAL_RECEIPT_MISSING"
+    ]
+  },
+  "paid_primitive_inventory": {
+    "primitives": [
+      "paidProviderFetch",
+      "sendCostGovernedEmail",
+      "reservePaidOperation"
+    ],
+    "caller_count": 31,
+    "callers": [
+      "autonomousPartnerWorker",
+      "blogAgent",
+      "chatChiefOrchestrator",
+      "commercialSendMessage",
+      "competitorMonitorAgent",
+      "copilotChat",
+      "crmAgent",
+      "goLiveControlAdmin",
+      "instantlyProviderAdmin",
+      "instantlyReconciliationWorker",
+      "joinCollective",
+      "leadDiscoveryAgent",
+      "leadEnrichmentAgent",
+      "linkedinAgent",
+      "newsletterAgent",
+      "onBrandCreated",
+      "outboundControlAdmin",
+      "processUploadedFile",
+      "providerContactResolver",
+      "providerMonitorAgent",
+      "providerResearchAgent",
+      "recoverBillingDigest",
+      "requestP4Estimate",
+      "resendInboundWebhook",
+      "sendMonthlySavingsSummary",
+      "sendRecoverContractEmail",
+      "seoAgent",
+      "submitCallRequest",
+      "submitContactMessage",
+      "submitWaitlistSignup",
+      "xTwitterAgent"
+    ]
+  },
+  "scheduler_inventory": {
+    "schema_version": "cambra-scheduler-inventory-v3",
+    "scheduled_automation_count": 69,
+    "active_count": 67,
+    "guarded_count": 67,
+    "unguarded_active": [],
+    "active_worker_keys": [
+      "acquisitionAttributionWorker",
+      "acquisitionLearningWorker",
+      "agentPerformanceWorker",
+      "aggregateAgreementWorker",
+      "aggregateDemandWorker",
+      "aggregateEligibilityWorker",
+      "aggregateProcurementWorker",
+      "alwaysOnLeadDiscoveryWorker",
+      "autonomousOperationsSupervisor",
+      "autonomousCompanyOrchestrator",
+      "autonomousPartnerWorker",
+      "billApiUsage",
+      "collectionOperationsWorker",
+      "commercialFollowUpWorker",
+      "customerSuccessWorker",
+      "dependencySecurityWorker",
+      "developerSignalWorker",
+      "documentationMaintenanceWorker",
+      "eclLifecycleScheduler",
+      "eclProductionHealth",
+      "executiveDigestWorker",
+      "getEuropeMarketsCommandCenter",
+      "intelligenceMaintenanceWorker",
+      "knowledgeIntegrityWorker",
+      "maintenanceEngine",
+      "costGovernanceWorker",
+      "productionReadinessWorker",
+      "disasterRecoveryBackup",
+      "regulatoryMonitoringWorker",
+      "missingInformationWorker",
+      "moatCuratorWorker",
+      "negotiationMemoryWorker",
+      "onboardingConciergeWorker",
+      "operatingHealthWorker",
+      "outboundDeliverabilityManager",
+      "outboundVolumeWorker",
+      "outcomeLearningWorker",
+      "outlookInboundRouter",
+      "outreachExperimentLearningWorker",
+      "postMeetingWorker",
+      "privacySafeIntelligenceWorker",
+      "processWebhookDeadLetters",
+      "providerEconomicsAssessmentWorker",
+      "providerEconomicsIntelligenceWorker",
+      "providerMonitorAgent",
+      "providerRevenueAttributionWorker",
+      "providerRevenueBillingWorker",
+      "providerRevenueLifecycleWorker",
+      "providerRevenueReconciliationWorker",
+      "providerRevenueTierWorker",
+      "purgeInactiveLeads",
+      "purgePaymentsAnalysisSessions",
+      "rateIntelligenceWatchWorker",
+      "realWorldValidationWorker",
+      "reconcileRecoverBilling",
+      "recoverAutopilotWorker",
+      "recoverBillingDigest",
+      "retryPendingRecoverContracts",
+      "revenueGoldenPathSelfTest",
+      "revenueLifecycleWorker",
+      "routingHistoricalBackfill",
+      "routingPerformanceWorker",
+      "routingReadinessWorker",
+      "salesPipelineWorker",
+      "scheduledBenchmarkRecompute",
+      "shadowRoutingEngine",
+      "unitEconomicsWorker"
+    ],
+    "inactive_worker_keys": [
+      "autonomousCommercialWorker",
+      "seedP3RateIntelligence"
+    ],
+    "metadata_gap": "Existing inventory leaves tenant_scope and much authority/retry/reconciliation metadata UNKNOWN; scheduler claim does not prove downstream idempotency.",
+    "material_scheduled_routes": [
+      {
+        "worker_key": "aggregateAgreementWorker",
+        "material_kinds": [
+          "negotiate",
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "aggregateAgreementWorker",
+        "config_path": "base44/functions/aggregateAgreementWorker/function.jsonc"
+      },
+      {
+        "worker_key": "aggregateProcurementWorker",
+        "material_kinds": [
+          "negotiate",
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "aggregateProcurementWorker",
+        "config_path": "base44/functions/aggregateProcurementWorker/function.jsonc"
+      },
+      {
+        "worker_key": "alwaysOnLeadDiscoveryWorker",
+        "material_kinds": [
+          "paid_spend",
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "alwaysOnLeadDiscoveryWorker",
+        "config_path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc"
+      },
+      {
+        "worker_key": "autonomousPartnerWorker",
+        "material_kinds": [
+          "paid_spend",
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "autonomousPartnerWorker",
+        "config_path": "base44/functions/autonomousPartnerWorker/function.jsonc"
+      },
+      {
+        "worker_key": "billApiUsage",
+        "material_kinds": [
+          "billing_charge"
+        ],
+        "is_active": true,
+        "function_directory": "billApiUsage",
+        "config_path": "base44/functions/billApiUsage/function.jsonc"
+      },
+      {
+        "worker_key": "collectionOperationsWorker",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "collectionOperationsWorker",
+        "config_path": "base44/functions/collectionOperationsWorker/function.jsonc"
+      },
+      {
+        "worker_key": "commercialFollowUpWorker",
+        "material_kinds": [
+          "send",
+          "negotiate"
+        ],
+        "is_active": true,
+        "function_directory": "commercialFollowUpWorker",
+        "config_path": "base44/functions/commercialFollowUpWorker/function.jsonc"
+      },
+      {
+        "worker_key": "disasterRecoveryBackup",
+        "material_kinds": [
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc"
+      },
+      {
+        "worker_key": "intelligenceMaintenanceWorker",
+        "material_kinds": [
+          "claim_outcome_dataset_promotion"
+        ],
+        "is_active": true,
+        "function_directory": "intelligenceMaintenanceWorker",
+        "config_path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc"
+      },
+      {
+        "worker_key": "missingInformationWorker",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "missingInformationWorker",
+        "config_path": "base44/functions/missingInformationWorker/function.jsonc"
+      },
+      {
+        "worker_key": "onboardingConciergeWorker",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "onboardingConciergeWorker",
+        "config_path": "base44/functions/onboardingConciergeWorker/function.jsonc"
+      },
+      {
+        "worker_key": "outboundVolumeWorker",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "outboundVolumeWorker",
+        "config_path": "base44/functions/outboundVolumeWorker/function.jsonc"
+      },
+      {
+        "worker_key": "outcomeLearningWorker",
+        "material_kinds": [
+          "claim_outcome_dataset_promotion"
+        ],
+        "is_active": true,
+        "function_directory": "outcomeLearningWorker",
+        "config_path": "base44/functions/outcomeLearningWorker/function.jsonc"
+      },
+      {
+        "worker_key": "postMeetingWorker",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "postMeetingWorker",
+        "config_path": "base44/functions/postMeetingWorker/function.jsonc"
+      },
+      {
+        "worker_key": "processWebhookDeadLetters",
+        "material_kinds": [
+          "provider_effect",
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "processWebhookDeadLetters",
+        "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc"
+      },
+      {
+        "worker_key": "providerMonitorAgent",
+        "material_kinds": [
+          "paid_spend",
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "providerMonitorAgent",
+        "config_path": "base44/functions/providerMonitorAgent/function.jsonc"
+      },
+      {
+        "worker_key": "providerRevenueBillingWorker",
+        "material_kinds": [
+          "billing_charge"
+        ],
+        "is_active": true,
+        "function_directory": "providerRevenueBillingWorker",
+        "config_path": "base44/functions/providerRevenueBillingWorker/function.jsonc"
+      },
+      {
+        "worker_key": "rateIntelligenceWatchWorker",
+        "material_kinds": [
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "rateIntelligenceWatchWorker",
+        "config_path": "base44/functions/rateIntelligenceWatchWorker/function.jsonc"
+      },
+      {
+        "worker_key": "reconcileRecoverBilling",
+        "material_kinds": [
+          "billing_charge",
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "reconcileRecoverBilling",
+        "config_path": "base44/functions/reconcileRecoverBilling/function.jsonc"
+      },
+      {
+        "worker_key": "recoverAutopilotWorker",
+        "material_kinds": [
+          "billing_charge"
+        ],
+        "is_active": true,
+        "function_directory": "recoverAutopilotWorker",
+        "config_path": "base44/functions/recoverAutopilotWorker/function.jsonc"
+      },
+      {
+        "worker_key": "recoverBillingDigest",
+        "material_kinds": [
+          "send"
+        ],
+        "is_active": true,
+        "function_directory": "recoverBillingDigest",
+        "config_path": "base44/functions/recoverBillingDigest/function.jsonc"
+      },
+      {
+        "worker_key": "regulatoryMonitoringWorker",
+        "material_kinds": [
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "marketPolicyAdmin",
+        "config_path": "base44/functions/marketPolicyAdmin/function.jsonc"
+      },
+      {
+        "worker_key": "retryPendingRecoverContracts",
+        "material_kinds": [
+          "send",
+          "provider_effect"
+        ],
+        "is_active": true,
+        "function_directory": "retryPendingRecoverContracts",
+        "config_path": "base44/functions/retryPendingRecoverContracts/function.jsonc"
+      }
+    ],
+    "automations": [
+      {
+        "worker_key": "acquisitionAttributionWorker",
+        "function_directory": "acquisitionAttributionWorker",
+        "config_path": "base44/functions/acquisitionAttributionWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "acquisitionLearningWorker",
+        "function_directory": "acquisitionLearningWorker",
+        "config_path": "base44/functions/acquisitionLearningWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "agentPerformanceWorker",
+        "function_directory": "agentPerformanceWorker",
+        "config_path": "base44/functions/agentPerformanceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "aggregateAgreementWorker",
+        "function_directory": "aggregateAgreementWorker",
+        "config_path": "base44/functions/aggregateAgreementWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "aggregateDemandWorker",
+        "function_directory": "aggregateDemandWorker",
+        "config_path": "base44/functions/aggregateDemandWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "aggregateEligibilityWorker",
+        "function_directory": "aggregateEligibilityWorker",
+        "config_path": "base44/functions/aggregateEligibilityWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "aggregateProcurementWorker",
+        "function_directory": "aggregateProcurementWorker",
+        "config_path": "base44/functions/aggregateProcurementWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "alwaysOnLeadDiscoveryWorker",
+        "function_directory": "alwaysOnLeadDiscoveryWorker",
+        "config_path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "autonomousCommercialWorker",
+        "function_directory": "autonomousCommercialWorker",
+        "config_path": "base44/functions/autonomousCommercialWorker/function.jsonc",
+        "is_active": false,
+        "protection_classification": "UNKNOWN",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "UNKNOWN"
+      },
+      {
+        "worker_key": "autonomousOperationsSupervisor",
+        "function_directory": "autonomousOperationsSupervisor",
+        "config_path": "base44/functions/autonomousOperationsSupervisor/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "autonomousCompanyOrchestrator",
+        "function_directory": "autonomousOperationsSupervisor",
+        "config_path": "base44/functions/autonomousOperationsSupervisor/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "autonomousPartnerWorker",
+        "function_directory": "autonomousPartnerWorker",
+        "config_path": "base44/functions/autonomousPartnerWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "billApiUsage",
+        "function_directory": "billApiUsage",
+        "config_path": "base44/functions/billApiUsage/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "collectionOperationsWorker",
+        "function_directory": "collectionOperationsWorker",
+        "config_path": "base44/functions/collectionOperationsWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "commercialFollowUpWorker",
+        "function_directory": "commercialFollowUpWorker",
+        "config_path": "base44/functions/commercialFollowUpWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "customerSuccessWorker",
+        "function_directory": "customerSuccessWorker",
+        "config_path": "base44/functions/customerSuccessWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "dependencySecurityWorker",
+        "function_directory": "dependencySecurityWorker",
+        "config_path": "base44/functions/dependencySecurityWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "developerSignalWorker",
+        "function_directory": "developerSignalWorker",
+        "config_path": "base44/functions/developerSignalWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "documentationMaintenanceWorker",
+        "function_directory": "documentationMaintenanceWorker",
+        "config_path": "base44/functions/documentationMaintenanceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "eclLifecycleScheduler",
+        "function_directory": "eclLifecycleScheduler",
+        "config_path": "base44/functions/eclLifecycleScheduler/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "eclProductionHealth",
+        "function_directory": "eclProductionHealth",
+        "config_path": "base44/functions/eclProductionHealth/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "executiveDigestWorker",
+        "function_directory": "executiveDigestWorker",
+        "config_path": "base44/functions/executiveDigestWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "getEuropeMarketsCommandCenter",
+        "function_directory": "getEuropeMarketsCommandCenter",
+        "config_path": "base44/functions/getEuropeMarketsCommandCenter/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "intelligenceMaintenanceWorker",
+        "function_directory": "intelligenceMaintenanceWorker",
+        "config_path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "knowledgeIntegrityWorker",
+        "function_directory": "knowledgeIntegrityWorker",
+        "config_path": "base44/functions/knowledgeIntegrityWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "maintenanceEngine",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "costGovernanceWorker",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "productionReadinessWorker",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "disasterRecoveryBackup",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "regulatoryMonitoringWorker",
+        "function_directory": "marketPolicyAdmin",
+        "config_path": "base44/functions/marketPolicyAdmin/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "missingInformationWorker",
+        "function_directory": "missingInformationWorker",
+        "config_path": "base44/functions/missingInformationWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "moatCuratorWorker",
+        "function_directory": "moatCuratorWorker",
+        "config_path": "base44/functions/moatCuratorWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "negotiationMemoryWorker",
+        "function_directory": "negotiationMemoryWorker",
+        "config_path": "base44/functions/negotiationMemoryWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "onboardingConciergeWorker",
+        "function_directory": "onboardingConciergeWorker",
+        "config_path": "base44/functions/onboardingConciergeWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "operatingHealthWorker",
+        "function_directory": "operatingHealthWorker",
+        "config_path": "base44/functions/operatingHealthWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "outboundDeliverabilityManager",
+        "function_directory": "outboundDeliverabilityManager",
+        "config_path": "base44/functions/outboundDeliverabilityManager/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "outboundVolumeWorker",
+        "function_directory": "outboundVolumeWorker",
+        "config_path": "base44/functions/outboundVolumeWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "outcomeLearningWorker",
+        "function_directory": "outcomeLearningWorker",
+        "config_path": "base44/functions/outcomeLearningWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "outlookInboundRouter",
+        "function_directory": "outlookInboundRouter",
+        "config_path": "base44/functions/outlookInboundRouter/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "outreachExperimentLearningWorker",
+        "function_directory": "outreachExperimentLearningWorker",
+        "config_path": "base44/functions/outreachExperimentLearningWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "postMeetingWorker",
+        "function_directory": "postMeetingWorker",
+        "config_path": "base44/functions/postMeetingWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "privacySafeIntelligenceWorker",
+        "function_directory": "privacySafeIntelligenceWorker",
+        "config_path": "base44/functions/privacySafeIntelligenceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "processWebhookDeadLetters",
+        "function_directory": "processWebhookDeadLetters",
+        "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerEconomicsAssessmentWorker",
+        "function_directory": "providerEconomicsAssessmentWorker",
+        "config_path": "base44/functions/providerEconomicsAssessmentWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerEconomicsIntelligenceWorker",
+        "function_directory": "providerEconomicsIntelligenceWorker",
+        "config_path": "base44/functions/providerEconomicsIntelligenceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerMonitorAgent",
+        "function_directory": "providerMonitorAgent",
+        "config_path": "base44/functions/providerMonitorAgent/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerRevenueAttributionWorker",
+        "function_directory": "providerRevenueAttributionWorker",
+        "config_path": "base44/functions/providerRevenueAttributionWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerRevenueBillingWorker",
+        "function_directory": "providerRevenueBillingWorker",
+        "config_path": "base44/functions/providerRevenueBillingWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerRevenueLifecycleWorker",
+        "function_directory": "providerRevenueLifecycleWorker",
+        "config_path": "base44/functions/providerRevenueLifecycleWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerRevenueReconciliationWorker",
+        "function_directory": "providerRevenueReconciliationWorker",
+        "config_path": "base44/functions/providerRevenueReconciliationWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "providerRevenueTierWorker",
+        "function_directory": "providerRevenueTierWorker",
+        "config_path": "base44/functions/providerRevenueTierWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "purgeInactiveLeads",
+        "function_directory": "purgeInactiveLeads",
+        "config_path": "base44/functions/purgeInactiveLeads/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "purgePaymentsAnalysisSessions",
+        "function_directory": "purgePaymentsAnalysisSessions",
+        "config_path": "base44/functions/purgePaymentsAnalysisSessions/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "rateIntelligenceWatchWorker",
+        "function_directory": "rateIntelligenceWatchWorker",
+        "config_path": "base44/functions/rateIntelligenceWatchWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "realWorldValidationWorker",
+        "function_directory": "realWorldValidationWorker",
+        "config_path": "base44/functions/realWorldValidationWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "reconcileRecoverBilling",
+        "function_directory": "reconcileRecoverBilling",
+        "config_path": "base44/functions/reconcileRecoverBilling/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "recoverAutopilotWorker",
+        "function_directory": "recoverAutopilotWorker",
+        "config_path": "base44/functions/recoverAutopilotWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "recoverBillingDigest",
+        "function_directory": "recoverBillingDigest",
+        "config_path": "base44/functions/recoverBillingDigest/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "retryPendingRecoverContracts",
+        "function_directory": "retryPendingRecoverContracts",
+        "config_path": "base44/functions/retryPendingRecoverContracts/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "revenueGoldenPathSelfTest",
+        "function_directory": "revenueGoldenPathSelfTest",
+        "config_path": "base44/functions/revenueGoldenPathSelfTest/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "revenueLifecycleWorker",
+        "function_directory": "revenueLifecycleWorker",
+        "config_path": "base44/functions/revenueLifecycleWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "routingHistoricalBackfill",
+        "function_directory": "routingHistoricalBackfill",
+        "config_path": "base44/functions/routingHistoricalBackfill/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "routingPerformanceWorker",
+        "function_directory": "routingPerformanceWorker",
+        "config_path": "base44/functions/routingPerformanceWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "routingReadinessWorker",
+        "function_directory": "routingReadinessWorker",
+        "config_path": "base44/functions/routingReadinessWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "salesPipelineWorker",
+        "function_directory": "salesPipelineWorker",
+        "config_path": "base44/functions/salesPipelineWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "scheduledBenchmarkRecompute",
+        "function_directory": "scheduledBenchmarkRecompute",
+        "config_path": "base44/functions/scheduledBenchmarkRecompute/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "seedP3RateIntelligence",
+        "function_directory": "seedP3RateIntelligence",
+        "config_path": "base44/functions/seedP3RateIntelligence/function.jsonc",
+        "is_active": false,
+        "protection_classification": "UNKNOWN",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "UNKNOWN"
+      },
+      {
+        "worker_key": "shadowRoutingEngine",
+        "function_directory": "shadowRoutingEngine",
+        "config_path": "base44/functions/shadowRoutingEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "unitEconomicsWorker",
+        "function_directory": "unitEconomicsWorker",
+        "config_path": "base44/functions/unitEconomicsWorker/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      }
+    ]
+  },
+  "global_gap_codes": [
+    "EMERGENCY_CAPABILITY_MISSING_AI",
+    "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+    "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION",
+    "MATERIAL_BOUNDARY_REGISTRY_WAS_MISSING",
+    "PROVIDER_FINAL_RECEIPT_MISSING",
+    "SCHEDULER_METADATA_UNKNOWN",
+    "STALE_SURFACE_INVENTORY"
+  ],
+  "boundaries": [
+    {
+      "boundary_id": "MB-SEND-COMMERCIAL",
+      "material_kinds": [
+        "send",
+        "negotiate",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "commercialSendMessage",
+      "physical_host": "commercialSendMessage",
+      "route_selector": null,
+      "callers": [
+        "aggregateAgreementWorker",
+        "autonomousCommercialWorker",
+        "autonomousPartnerWorker",
+        "collectionOperationsWorker",
+        "collectiveNegotiationAgent",
+        "commercialFollowUpWorker",
+        "commercialReplyAgent",
+        "createMerchantInformationRequest",
+        "followUpAgent",
+        "missingInformationWorker",
+        "onboardingConciergeWorker",
+        "outboundVolumeWorker",
+        "outreachAgent",
+        "postMeetingWorker",
+        "providerMonetizationAgent",
+        "providerNegotiationAgent",
+        "providerRevenueRecoveryAgent",
+        "resolveCommercialApproval"
+      ],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "CommunicationThread.brand_id; _platform only for explicitly platform-scoped negotiation",
+      "policy": [
+        "CommercialPolicy exact key/version",
+        "MarketCapability production rollout",
+        "AgentAuthority CAN_SEND/CAN_NEGOTIATE",
+        "OutboundControl, sending profile, caps, suppression"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications",
+          "negotiations_when_negotiating"
+        ],
+        "epoch": "capture/inherit + pre-effect + post-effect"
+      },
+      "claim_primitive": "claimCommercialSendSlot CAS; CommunicationMessage outbound idempotency lookup",
+      "effect_key": "email:${idempotency_key}",
+      "provider_idempotency": "Resend Idempotency-Key; local claim for Outlook/Instantly",
+      "provider_reconciliation": "Instantly reconciliation workers; Outlook post-send reconciliation is not conclusive",
+      "receipt": [
+        "CommunicationMessage provider/provider_message_id/idempotency_key",
+        "CostUsageEvent",
+        "send-slot state",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "OUTLOOK_PROVIDER_IDEMPOTENCY_PARTIAL",
+        "OUTLOOK_POST_SEND_RECONCILIATION_PARTIAL"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/commercialSendMessage/entry.ts",
+          "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+          "bytes": 76839
+        },
+        {
+          "path": "base44/shared/commercialSendSafety.ts",
+          "sha256": "abf7c435dd11e444d13f750ebc32ea1211a9f2ffa4b91dabbf293e7acbfebe52",
+          "bytes": 30425
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-CORE-EMAIL",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "sendCostGovernedEmail",
+      "physical_host": "shared/costGovernance",
+      "route_selector": null,
+      "callers": [
+        "joinCollective",
+        "newsletterAgent",
+        "onBrandCreated",
+        "recoverBillingDigest",
+        "sendMonthlySavingsSummary",
+        "sendRecoverContractEmail",
+        "submitCallRequest"
+      ],
+      "actor": "Inherited from each physical caller",
+      "tenant_key": "Caller entity brand_id or _platform",
+      "policy": [
+        "CostBudgetControl",
+        "caller-specific communication policy"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "capture + pre-effect + post-effect"
+      },
+      "claim_primitive": "CostUsageEvent.event_key reservation and CostBudgetControl CAS",
+      "effect_key": "Caller-supplied stable key, otherwise UUID-suffixed key",
+      "provider_idempotency": "Base44 Core.SendEmail exposes no independently proven idempotency key",
+      "provider_reconciliation": "No durable provider-final delivery reconciliation in shared primitive",
+      "receipt": [
+        "CostUsageEvent",
+        "caller domain log; provider message id only when returned"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/sendRecoverContractEmail/entry.ts",
+          "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a",
+          "bytes": 9559
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-RESEND-PUBLIC-NOTIFY",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "submitContactMessage|submitWaitlistSignup",
+      "physical_host": "submitContactMessage|submitWaitlistSignup",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Public form caller after validation/rate limit",
+      "tenant_key": "_platform",
+      "policy": [
+        "CostBudgetControl",
+        "public form validation/rate limit"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "captured by reservation and reused immediately before/after paidProviderFetch"
+      },
+      "claim_primitive": "Stable CostUsageEvent reservation keyed to the persisted Lead",
+      "effect_key": "Stable email:<form-notification>:<lead.id> plus deterministic Resend Idempotency-Key",
+      "provider_idempotency": "Stable Resend key and identical payload for the same persisted Lead; guarantee remains limited to the provider window",
+      "provider_reconciliation": "CostUsageEvent stores HTTP observation but generic paidProviderFetch does not yet retain the Resend response ID",
+      "receipt": [
+        "CostUsageEvent",
+        "Lead/contact row"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "PROVIDER_FINAL_RECEIPT_MISSING",
+        "RESEND_IDEMPOTENCY_WINDOW_RUNTIME_PROOF_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/submitContactMessage/entry.ts",
+          "sha256": "d691d9509860c2be0af6d299d3edb78bad233a453c97752587cf3b6847724edd",
+          "bytes": 9326
+        },
+        {
+          "path": "base44/functions/submitWaitlistSignup/entry.ts",
+          "sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
+          "bytes": 8864
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-PUBLISH-SOCIAL-APPROVED",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "physical_host": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "route_selector": "approved external task artifact",
+      "callers": [],
+      "actor": "requireAdminOrInternal and finalized founder approval",
+      "tenant_key": "Approval/ExternalTask.brand_id or _platform",
+      "policy": [
+        "External approval saga",
+        "exact approved artifact hash"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "paid-provider pre/post guard"
+      },
+      "claim_primitive": "ExternalTask approval execution lease + CostUsageEvent reservation",
+      "effect_key": "api:taplio:publish:${approval.id}; api:typefully:publish:${approval.id}; email approval+recipient",
+      "provider_idempotency": "Stable local event key; provider behavior varies",
+      "provider_reconciliation": "Provider response id stored in ExternalTask/CostUsageEvent; final-cost reconciliation partial",
+      "receipt": [
+        "ExternalTask",
+        "Approval",
+        "CostUsageEvent",
+        "provider response id when returned"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "PROVIDER_FINAL_COST_RECEIPT_PARTIAL"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/linkedinAgent/entry.ts",
+          "sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998",
+          "bytes": 9474
+        },
+        {
+          "path": "base44/functions/newsletterAgent/entry.ts",
+          "sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061",
+          "bytes": 13518
+        },
+        {
+          "path": "base44/functions/xTwitterAgent/entry.ts",
+          "sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb",
+          "bytes": 9618
+        },
+        {
+          "path": "base44/shared/externalApprovalExecution.ts",
+          "sha256": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591",
+          "bytes": 23170
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULE-MEETING",
+      "material_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "logical_route": "outlookMeetingCoordinator",
+      "physical_host": "outlookMeetingCoordinator",
+      "route_selector": "mode=execute after meetingAgent approval",
+      "callers": [
+        "meetingAgent"
+      ],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "CommunicationThread.brand_id",
+      "policy": [
+        "Exact Approval/ExternalTask/thread binding"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "capture + guarded provider effect"
+      },
+      "claim_primitive": "External approval saga; CommunicationThread.meeting_event_id",
+      "effect_key": "Graph calendar transactionId for create; event id for cancel",
+      "provider_idempotency": "Microsoft Graph transactionId on create; DELETE by event id on cancel",
+      "provider_reconciliation": "Graph event id persisted; cancel reconciliation is partial",
+      "receipt": [
+        "CommunicationThread.meeting_event_id",
+        "ExternalTask",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "CALENDAR_CANCEL_RECONCILIATION_PARTIAL"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/meetingAgent/entry.ts",
+          "sha256": "ac2780b34c5490b4c5be49b7acbd6075e62faa603702c8e4a3528a0520ac0958",
+          "bytes": 7807
+        },
+        {
+          "path": "base44/functions/outlookMeetingCoordinator/entry.ts",
+          "sha256": "5776f2baa029e125dd1955b17f152da760fb4d885574e10777cd916e8fd08b53",
+          "bytes": 19873
+        },
+        {
+          "path": "base44/shared/externalApprovalExecution.ts",
+          "sha256": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591",
+          "bytes": 23170
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DISPATCH",
+      "material_kinds": [
+        "send",
+        "provider_effect"
+      ],
+      "logical_route": "dispatchWebhook",
+      "physical_host": "dispatchWebhook",
+      "route_selector": null,
+      "callers": [
+        "sendTestWebhook (legacy compatibility endpoint quarantined with HTTP 410 and zero provider effect)"
+      ],
+      "actor": "Admin or timing-safe INTERNAL_CALL_SECRET; route is PURGE-2 quarantined but callable; legacy sendTestWebhook is hard-quarantined HTTP 410",
+      "tenant_key": "_platform fan-out to active WebhookEndpoint rows",
+      "policy": [
+        "Supported event allowlist",
+        "per-event payload allowlist",
+        "public HTTPS egress"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "one captured epoch across fan-out; guarded immediately before and after each receiver effect"
+      },
+      "claim_primitive": "WebhookDeadLetter dispatch intent + token/revision CAS before transport; EFFECT_STARTED fence; exact receipt/finalization",
+      "effect_key": "Deterministic operation + endpoint + event + payload hash; mandatory caller idempotency key; stable delivery ID",
+      "provider_idempotency": "X-CAMBRA-Delivery is advisory because arbitrary receivers offer no universal idempotency contract; ambiguity is REVIEW_REQUIRED with no replay",
+      "provider_reconciliation": "WebhookDelivery is persisted before terminal EXECUTED; receipt/finalizer ambiguity quarantines the intent; endpoint health projection remains independently repairable",
+      "receipt": [
+        "WebhookDelivery",
+        "WebhookDeadLetter on failure",
+        "quarantine_probe"
+      ],
+      "status": "QUARANTINED_PARTIAL",
+      "gap_codes": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "ENDPOINT_HEALTH_PROJECTION_RECONCILIATION_PARTIAL"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/dispatchWebhook/entry.ts",
+          "sha256": "358417e87fb89883149f9b1431126ceef51d28461971cb59551edb03ad3100f1",
+          "bytes": 15691
+        },
+        {
+          "path": "base44/functions/sendTestWebhook/entry.ts",
+          "sha256": "60392b609e387171425284270fc2b523ff95b14c912a761e49998f1302a4af34",
+          "bytes": 1131
+        },
+        {
+          "path": "base44/shared/webhookPublicPayload.ts",
+          "sha256": "25c8dbfb057294630610e399d55783f66448b60542290ea4c6626f1930fcdc63",
+          "bytes": 1942
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DLQ-RETRY",
+      "material_kinds": [
+        "send",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "logical_route": "processWebhookDeadLetters",
+      "physical_host": "processWebhookDeadLetters",
+      "route_selector": null,
+      "callers": [
+        "maintenanceEngine"
+      ],
+      "actor": "requireAdminOrInternal plus SchedulerRun",
+      "tenant_key": "_platform; WebhookEndpoint.id",
+      "policy": [
+        "Only due pending_retry rows; manual replay requires exhausted + explicit confirmation"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "captured after claim and guarded immediately before/after the receiver effect"
+      },
+      "claim_primitive": "SchedulerRun claim + claimWebhookDeadLetter CAS + effects_started fence",
+      "effect_key": "Stable claim_attempt_key + operation/effect binding; manual replay reuses the same durable identity",
+      "provider_idempotency": "Stable delivery/attempt headers; arbitrary receiver enforcement remains external",
+      "provider_reconciliation": "WebhookDelivery plus terminal DLQ state; any post-effect uncertainty is REVIEW_REQUIRED and is never rescheduled",
+      "receipt": [
+        "WebhookDelivery",
+        "WebhookDeadLetter final state",
+        "AgentTask",
+        "SchedulerRun"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "DEPLOYED_CONCURRENT_REPLAY_RECEIPT_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+          "sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+          "bytes": 21758
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        },
+        {
+          "path": "base44/shared/webhookDeadLetterClaim.ts",
+          "sha256": "7e1dee08442e9e69a5b318606180b83919ac108a5ff19537634d502a91e623bf",
+          "bytes": 19158
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-PROVIDER",
+      "material_kinds": [
+        "negotiate",
+        "terms",
+        "send",
+        "paid_spend"
+      ],
+      "logical_route": "startProviderNegotiation|providerNegotiationAgent",
+      "physical_host": "startProviderNegotiation|providerNegotiationAgent",
+      "route_selector": null,
+      "callers": [],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "DealActivation.brand_id",
+      "policy": [
+        "Active Mandate renegotiate_with_provider",
+        "Market NEGOTIATE",
+        "LegalExecution NEGOTIATE_PRICING",
+        "CommercialPolicy provider_negotiation",
+        "AgentAuthority"
+      ],
+      "emergency": {
+        "capabilities": [
+          "negotiations",
+          "communications_on_send"
+        ],
+        "epoch": "captured/inherited across agent and send"
+      },
+      "claim_primitive": "Lookup of existing open NegotiationCase; no unique/CAS preclaim at start",
+      "effect_key": "Commercial send idempotency key; AI event key per model attempt",
+      "provider_idempotency": "Delegated to commercialSendMessage; AI provider has no proven idempotency",
+      "provider_reconciliation": "CommunicationMessage/provider receipt; NegotiationCase/Offer state",
+      "receipt": [
+        "NegotiationCase",
+        "IntelligenceSnapshot",
+        "AgentTask",
+        "NegotiationOffer",
+        "CommunicationMessage",
+        "Approval(final_provider_deal)"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "NEGOTIATION_START_CAS_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_AI"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/commercialSendMessage/entry.ts",
+          "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+          "bytes": 76839
+        },
+        {
+          "path": "base44/functions/providerNegotiationAgent/entry.ts",
+          "sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
+          "bytes": 23968
+        },
+        {
+          "path": "base44/functions/startProviderNegotiation/entry.ts",
+          "sha256": "dad15483fe08f29d798ce019ad5d61bec10b9214f7a1cc7700c9c94a732856a8",
+          "bytes": 11921
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-COLLECTIVE",
+      "material_kinds": [
+        "negotiate",
+        "terms",
+        "send",
+        "material_schedule"
+      ],
+      "logical_route": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "physical_host": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal scheduler",
+      "tenant_key": "_platform",
+      "policy": [
+        "Founder-approved aggregate_procurement CommercialPolicy",
+        "exact pool/RFP/contract references"
+      ],
+      "emergency": {
+        "capabilities": [
+          "negotiations",
+          "communications_on_send"
+        ],
+        "epoch": "scheduler claim plus negotiation/send epochs"
+      },
+      "claim_primitive": "SchedulerRun + negotiation case/task + commercial send claim",
+      "effect_key": "Negotiation case/task ids and commercial send idempotency key",
+      "provider_idempotency": "Delegated to commercialSendMessage",
+      "provider_reconciliation": "Aggregate/Negotiation/Communication state",
+      "receipt": [
+        "AggregatePool/RFP",
+        "NegotiationCase",
+        "AgentTask",
+        "Approval",
+        "CommunicationMessage",
+        "SchedulerRun"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_AI"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/aggregateAgreementWorker/entry.ts",
+          "sha256": "f38007951bf2086ca64f2bfab34cbc0ddc99d1f2f0cb59384cc2368b6776e6b6",
+          "bytes": 9365
+        },
+        {
+          "path": "base44/functions/aggregateProcurementWorker/entry.ts",
+          "sha256": "6e3c8180e65d71f38558e2b372be0862e97e4c563c0651b792fdb7dff5025be8",
+          "bytes": 10810
+        },
+        {
+          "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
+          "sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+          "bytes": 21723
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-APPROVAL-EXECUTION",
+      "material_kinds": [
+        "terms",
+        "sign_mandate",
+        "negotiate",
+        "send"
+      ],
+      "logical_route": "resolveCommercialApproval",
+      "physical_host": "resolveCommercialApproval",
+      "route_selector": "approval_type branch",
+      "callers": [],
+      "actor": "Strict admin plus founder-command-created Approval",
+      "tenant_key": "Approval.brand_id or _platform",
+      "policy": [
+        "Resolution command key",
+        "expected authority hash",
+        "decision/reason/content hash",
+        "exact contract/terms hash"
+      ],
+      "emergency": {
+        "capabilities": [
+          "negotiations",
+          "communications_for_send_branches"
+        ],
+        "epoch": "approval resolution saga + branch epoch"
+      },
+      "claim_primitive": "Approval resolution CAS/lease/effects_started/finalize",
+      "effect_key": "resolution_command_key and downstream commercial send key",
+      "provider_idempotency": "Downstream send provider-specific; local term activation hash-bound",
+      "provider_reconciliation": "Approval finalization and postcondition reads",
+      "receipt": [
+        "Approval",
+        "DynamicAgreement/NegotiationCase/Aggregate postconditions",
+        "OperationalLog",
+        "CommunicationMessage when sent"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "AGGREGATE_EXECUTION_LEGAL_ENFORCEMENT_NOT_PROVEN"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/resolveCommercialApproval/entry.ts",
+          "sha256": "90be2ff852ea0b7b5379452ecf51fc416cce68847920ad59a6a59a5e608bc9ee",
+          "bytes": 57861
+        },
+        {
+          "path": "base44/shared/approvalResolutionSaga.ts",
+          "sha256": "ab604f94f03414343d70c90c24598af6ce7044498edbd8eb6795290c5d57635a",
+          "bytes": 20395
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-LEGAL-AUTHORITY-ADMIN",
+      "material_kinds": [
+        "terms",
+        "sign_mandate"
+      ],
+      "logical_route": "manageLegalExecution",
+      "physical_host": "marketPolicyAdmin",
+      "route_selector": {
+        "action": "manage_legal_execution"
+      },
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "Jurisdiction/global/_platform or Mandate.brand_id",
+      "policy": [
+        "Legal execution policy/kill switch/signer capacity/authority grant"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "No durable command-idempotency/CAS claim proven",
+      "effect_key": "Action + legal authority/policy entity id",
+      "provider_idempotency": "Not applicable; local authority mutation",
+      "provider_reconciliation": "Entity readback/Event only",
+      "receipt": [
+        "Legal authority/policy entity",
+        "Event"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/deployment-topology.json",
+          "sha256": "9127557e0bd7aa9ed7c71ea536a24297b633201f29eb1af8c861c996ad8afd94",
+          "bytes": 6248
+        },
+        {
+          "path": "base44/functions/marketPolicyAdmin/entry.ts",
+          "sha256": "7d5dd151020edcdffe49fe2e26a07915c2a72109b2daf74160367f4a951867d6",
+          "bytes": 6827
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-ACCEPT",
+      "material_kinds": [
+        "terms",
+        "sign_mandate"
+      ],
+      "logical_route": "startRecoverAcceptance|acceptRecoverMandate",
+      "physical_host": "startRecoverAcceptance|acceptRecoverMandate",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Authenticated owner; session email binds signature",
+      "tenant_key": "DealActivation.brand_id",
+      "policy": [
+        "Market MANDATE/CONTRACT",
+        "product policy/ECL/contract snapshot",
+        "LegalExecution ACCEPT_RECOVER_MANDATE",
+        "active-mandate invariant"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Start idempotency key; claimRecoverAcceptanceAuthority CAS; DealActivation authorization CAS",
+      "effect_key": "Mandate id + immutable acceptance_snapshot_hash",
+      "provider_idempotency": "Not applicable; local legal acceptance",
+      "provider_reconciliation": "Mandate and DealActivation readback/attestation",
+      "receipt": [
+        "Mandate.acceptance_snapshot_hash",
+        "DealActivation",
+        "OperationalLog/attestation"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/acceptRecoverMandate/entry.ts",
+          "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
+          "bytes": 29825
+        },
+        {
+          "path": "base44/functions/startRecoverAcceptance/entry.ts",
+          "sha256": "56e5a993a4ba0aea38ffd0d5b1211a5b7b7a58b677cf6273ca5b86b8995d0006",
+          "bytes": 9174
+        },
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-REVOKE",
+      "material_kinds": [
+        "sign_mandate",
+        "terms"
+      ],
+      "logical_route": "revokeMandate",
+      "physical_host": "revokeMandate",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Authenticated owner/signer/brand contact or admin",
+      "tenant_key": "Mandate -> DealActivation.brand_id",
+      "policy": [
+        "Explicit ownership",
+        "future-action-only revocation semantics"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Mandate status CAS, then DealActivation status/authority CAS with reread/retry",
+      "effect_key": "Mandate.id",
+      "provider_idempotency": "Not applicable; local legal revocation",
+      "provider_reconciliation": "Mandate and DealActivation readback",
+      "receipt": [
+        "Mandate",
+        "DealActivation",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/revokeMandate/entry.ts",
+          "sha256": "d41f5ac3378bb20a8f34c42cf2bcf822ed18d78c40ac0818b8b52800735284de",
+          "bytes": 8889
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-CONDITIONS-ACTIVATION",
+      "material_kinds": [
+        "terms",
+        "billing_charge"
+      ],
+      "logical_route": "recordConditionsActivation",
+      "physical_host": "recordConditionsActivation",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "DealActivation.brand_id",
+      "policy": [
+        "live/monetizing activation",
+        "active Mandate",
+        "named evidence source/note",
+        "explicit correction confirmation"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "No CAS claim; correction guard is value-based",
+      "effect_key": "DealActivation.id + conditions_activated_at",
+      "provider_idempotency": "Not applicable; local contractual calendar",
+      "provider_reconciliation": "DealActivation state and OperationalLog",
+      "receipt": [
+        "DealActivation contractual calendar",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "PRE_EFFECT_CLAIM_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/recordConditionsActivation/entry.ts",
+          "sha256": "ab9be731f44d8f4e6baffcf7caca3ba412a8523744f98fff8f4291de512ba81c",
+          "bytes": 8165
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-PROVIDER-MONETIZATION-LEGAL",
+      "material_kinds": [
+        "terms",
+        "billing_charge"
+      ],
+      "logical_route": "approveProviderMonetizationLegalReview",
+      "physical_host": "approveProviderMonetizationLegalReview",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin and approved=true",
+      "tenant_key": "_platform DynamicAgreement.provider_id",
+      "policy": [
+        "Legal opinion",
+        "jurisdiction",
+        "vertical",
+        "disclosure",
+        "tax treatment",
+        "settlement mode"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "No CAS/idempotent command claim proven",
+      "effect_key": "DynamicAgreement.id",
+      "provider_idempotency": "Not applicable; local agreement/provider activation",
+      "provider_reconciliation": "DynamicAgreement/Provider readback and OperationalLog",
+      "receipt": [
+        "DynamicAgreement legal_review",
+        "Provider monetization state",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "PRE_EFFECT_CLAIM_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/approveProviderMonetizationLegalReview/entry.ts",
+          "sha256": "1abff038c343668a0d90259cadce661689148e47d2586c1885ad7bdd9f1a89f4",
+          "bytes": 3284
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-PDF-STORAGE",
+      "material_kinds": [
+        "terms",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "logical_route": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "physical_host": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal; retry worker additionally SchedulerRun",
+      "tenant_key": "Mandate.brand_id",
+      "policy": [
+        "Immutable accepted snapshot/hash/template",
+        "CAMBRA legal identity",
+        "private storage only"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Mandate contract_pdf_status/timestamp lease; update is not proven CAS",
+      "effect_key": "Opaque deterministic storage filename and contract delivery idempotency key",
+      "provider_idempotency": "Private-file upload behavior not proven idempotent",
+      "provider_reconciliation": "Signed-URL readback and SHA-256 comparison before generated state",
+      "receipt": [
+        "Mandate storage URI/SHA-256/size/template",
+        "contract events",
+        "SchedulerRun on retry"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+        "ATOMIC_LEASE_NOT_PROVEN"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/generateRecoverContractPdf/entry.ts",
+          "sha256": "32fd5fa9fb56381bf49935ec51a8ae95cb0f6214896117b6105ebe3a133b528a",
+          "bytes": 12121
+        },
+        {
+          "path": "base44/functions/retryPendingRecoverContracts/entry.ts",
+          "sha256": "a37ef0d827aa0f7589449b87b716b3f61234aeb614015dd55096f72944504cd1",
+          "bytes": 4270
+        },
+        {
+          "path": "base44/shared/recoverContractState.ts",
+          "sha256": "86be58e73a6536e1a2841ef5abcb05e7f7f1aceaf8bf93f12c4e29021de45954",
+          "bytes": 5321
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-EMAIL",
+      "material_kinds": [
+        "send",
+        "terms",
+        "paid_spend"
+      ],
+      "logical_route": "sendRecoverContractEmail",
+      "physical_host": "sendRecoverContractEmail",
+      "route_selector": null,
+      "callers": [
+        "generateRecoverContractPdf",
+        "retryPendingRecoverContracts"
+      ],
+      "actor": "Admin/internal; resend only admin",
+      "tenant_key": "Mandate.brand_id and signed_by_email",
+      "policy": [
+        "Generated/hash-verified contract PDF",
+        "immutable contract economic view"
+      ],
+      "emergency": {
+        "capabilities": [
+          "communications"
+        ],
+        "epoch": "capture + pre/post send"
+      },
+      "claim_primitive": "Mandate email lease/status plus CostUsageEvent reservation",
+      "effect_key": "email:recover-contract:${mandate.id}:${contract_version}",
+      "provider_idempotency": "Stable local cost key; Base44 Core provider idempotency not independently proven",
+      "provider_reconciliation": "Mandate provider_message_id when returned; ambiguity becomes permanent review",
+      "receipt": [
+        "Mandate contract email state/provider id",
+        "CostUsageEvent",
+        "contract event"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/sendRecoverContractEmail/entry.ts",
+          "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a",
+          "bytes": 9559
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        },
+        {
+          "path": "base44/shared/recoverContractState.ts",
+          "sha256": "86be58e73a6536e1a2841ef5abcb05e7f7f1aceaf8bf93f12c4e29021de45954",
+          "bytes": 5321
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-PAYMENTS",
+      "material_kinds": [
+        "migrate_go_live",
+        "material_schedule"
+      ],
+      "logical_route": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "physical_host": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Owner/admin/internal at start; admin for task/go-live update",
+      "tenant_key": "DealActivation.brand_id",
+      "policy": [
+        "Market MIGRATE",
+        "active Mandate",
+        "LegalExecution COORDINATE_MIGRATION",
+        "AUTHORIZE_MIGRATION exact payload hash at go-live",
+        "sequential tasks"
+      ],
+      "emergency": {
+        "capabilities": [
+          "migrations"
+        ],
+        "epoch": "point-in-time assertOperationAllowed only"
+      },
+      "claim_primitive": "DealActivation status CAS; MigrationTask CAS; go-live CAS with compensation",
+      "effect_key": "DealActivation.id + MigrationTask.id",
+      "provider_idempotency": "Not applicable; no provider mutation in these routes",
+      "provider_reconciliation": "MigrationTask/DealActivation readback and OperationalLog",
+      "receipt": [
+        "MigrationPlan/Task",
+        "DealActivation",
+        "snapshots",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "POINT_CHECK_NOT_EPOCH"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/startPaymentsMigration/entry.ts",
+          "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
+          "bytes": 31345
+        },
+        {
+          "path": "base44/functions/updatePaymentsMigrationTask/entry.ts",
+          "sha256": "47c1f40d3147b4d65c1f03a7d5e03cc5657bcd646f5be5f6c73d5bbfc91024af",
+          "bytes": 44563
+        },
+        {
+          "path": "base44/shared/operationalControl.ts",
+          "sha256": "fe30d3f24cd62163733d3a51bf22e61e85a5e27ee418afa937e95ff0e3e9d1a1",
+          "bytes": 17295
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-DEVELOPER-GITHUB",
+      "material_kinds": [
+        "migrate_go_live",
+        "provider_effect"
+      ],
+      "logical_route": "developerMigrationEngine",
+      "physical_host": "developerMigrationEngine",
+      "route_selector": "apply_plan|cutover|rollback",
+      "callers": [],
+      "actor": "Strict admin with finalized Approval/AgentTask",
+      "tenant_key": "DeveloperMigrationRun workspace/brand binding",
+      "policy": [
+        "Exact approval/task/run/workspace hashes",
+        "migration lifecycle authority"
+      ],
+      "emergency": {
+        "capabilities": [
+          "migrations"
+        ],
+        "epoch": "capture and revalidate immediately around provider writes"
+      },
+      "claim_primitive": "Lifecycle CAS/lease/checkpoint/effects_started/singleton revision",
+      "effect_key": "DeveloperMigrationRun lifecycle key + stable step key",
+      "provider_idempotency": "GitHub refs/SHA/PR identity and step checkpoints",
+      "provider_reconciliation": "GitHub refs, head SHA, PR and checks; ambiguous network result => REVIEW_REQUIRED without blind retry",
+      "receipt": [
+        "DeveloperMigrationRun.lifecycle_steps",
+        "GitHub refs/SHA/PR/check ids",
+        "Approval",
+        "AgentTask"
+      ],
+      "status": "CONTROLLED",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/developerMigrationEngine/entry.ts",
+          "sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+          "bytes": 71410
+        },
+        {
+          "path": "base44/shared/developerMigrationLifecycle.ts",
+          "sha256": "c4d841d26ed15ba76c3506f757f310cef739edff2fe74dd1ad87c720bed84362",
+          "bytes": 41407
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-ELIGIBILITY",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "logical_route": "approveRecoverReportForInvoicing",
+      "physical_host": "approveRecoverReportForInvoicing",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "MonthlySavingsReport/DealActivation.brand_id",
+      "policy": [
+        "Exact report/activation/mandate/legal/contract/ECL gates"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "no provider effect; billing eligibility mutation has no epoch recorded in registry review"
+      },
+      "claim_primitive": "Report state transition checks; exact CAS must be verified per source revision",
+      "effect_key": "MonthlySavingsReport.id",
+      "provider_idempotency": "Not applicable; eligibility only",
+      "provider_reconciliation": "Report readback and OperationalLog",
+      "receipt": [
+        "MonthlySavingsReport billing eligibility",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "BILLING_ELIGIBILITY_EPOCH_NOT_PROVEN"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
+          "sha256": "e05714e264e375b9f60c779347d943d020761e10cdb3d710715a8de8bea9f21d",
+          "bytes": 28822
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-REPORT-GENERATION",
+      "material_kinds": [
+        "billing_charge",
+        "claim_outcome_dataset_promotion"
+      ],
+      "logical_route": "generateMonthlySavingsReport",
+      "physical_host": "generateMonthlySavingsReport",
+      "route_selector": null,
+      "callers": [
+        "recoverAutopilotWorker"
+      ],
+      "actor": "Admin/internal/scheduler",
+      "tenant_key": "DealActivation.brand_id + activation/month report scope",
+      "policy": [
+        "Product scope",
+        "accepted Recover mandate/contract",
+        "Baseline/BillingRule provenance",
+        "non-void activation-month singleton"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "no provider charge; financial evidence promotion has no universal Emergency epoch contract"
+      },
+      "claim_primitive": "readRecoverReportAuthority cap-two read plus mandatory post-create and pre-return singleton proof; duplicate rows fail closed",
+      "effect_key": "recover-report:${deal_activation_id}:${month}",
+      "provider_idempotency": "Not applicable to the local report write; no datastore uniqueness guarantee is assumed",
+      "provider_reconciliation": "Duplicate non-void reports block approval and all Stripe effects until explicit reconciliation",
+      "receipt": [
+        "MonthlySavingsReport",
+        "IntelligenceSnapshot report snapshot/hash",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "RECOVER_REPORT_CREATE_ATOMIC_CLAIM_MISSING",
+        "DUPLICATE_REPORT_RUNTIME_RECONCILIATION_PENDING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
+          "sha256": "4bb6a0ea371ed843a2bb76e00b9e698c71f77627f885cf69f88baa320b7c6802",
+          "bytes": 23220
+        },
+        {
+          "path": "base44/shared/recoverReportAuthority.ts",
+          "sha256": "3b5f96cbb30238e1e53a62c93095938e5729f3aea1853aecc445665586253f5f",
+          "bytes": 5711
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-INVOICE-PDF-STORAGE",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "logical_route": "generateInvoicePdf",
+      "physical_host": "generateInvoicePdf",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "policy": [
+        "Recover or Stripe-authoritative invoices are rejected",
+        "legacy non-Recover local invoice only",
+        "positive invoice authority"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "legacy external storage upload has no Emergency epoch wrapper"
+      },
+      "claim_primitive": "Exact cap-two Invoice read; no durable upload lease/claim",
+      "effect_key": "invoice_pdf:${invoice.id}:${rendered_content_hash}",
+      "provider_idempotency": "Base44 UploadFile idempotency is not proven",
+      "provider_reconciliation": "Invoice PDF URL readback only; upload-success/local-write-failure cannot be universally reconciled",
+      "receipt": [
+        "Invoice PDF URL for non-Recover legacy invoices"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/generateInvoicePdf/entry.ts",
+          "sha256": "cf409f3702c45060648475e5eb1c0288075e28043fc6d0e6d83629d3c0aabdc3",
+          "bytes": 6321
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-STRIPE",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "logical_route": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "physical_host": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "route_selector": null,
+      "callers": [
+        "recoverAutopilotWorker"
+      ],
+      "actor": "Admin/internal/scheduler; webhook authenticated by Stripe signature",
+      "tenant_key": "MonthlySavingsReport/DealActivation/Invoice.brand_id",
+      "policy": [
+        "Market BILL",
+        "LegalExecution AUTHORIZE_CAMBRA_BILLING",
+        "ECL/contract",
+        "frozen report economics"
+      ],
+      "emergency": {
+        "capabilities": [
+          "billing_issuance"
+        ],
+        "epoch": "capture + guarded pre/post around every create/finalize effect"
+      },
+      "claim_primitive": "claimRecoverInvoiceDraft renew/finalize; Stripe event id dedupe; SchedulerRun for reconcile",
+      "effect_key": "recoverExecutionKey(report.id)",
+      "provider_idempotency": "Deterministic Stripe keys r4:*:${report.id}",
+      "provider_reconciliation": "Fresh Stripe GET validates invoice/customer/currency/amount/metadata binding",
+      "receipt": [
+        "Invoice frozen snapshot/hash/Stripe ids/legal number",
+        "PaymentEvent once",
+        "OperationalLog",
+        "SchedulerRun"
+      ],
+      "status": "CONTROLLED",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
+          "sha256": "5e700ca5d2b2e154bba22af869440c674ba5b7f65b1f875013f03be6ac646471",
+          "bytes": 44328
+        },
+        {
+          "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+          "sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31",
+          "bytes": 18063
+        },
+        {
+          "path": "base44/functions/stripeBillingWebhook/entry.ts",
+          "sha256": "af836e8e2d69c40a7db9ecfc8f5261fdf4e7d8562d2b03a2c545d16c82552a71",
+          "bytes": 21696
+        },
+        {
+          "path": "base44/shared/economicExecution.ts",
+          "sha256": "346052a4039db3a4231b6f58b1efdd0901a0adc0b973869fe9627c554b03305a",
+          "bytes": 88685
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-METHOD",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "logical_route": "startPaymentMethodSetup",
+      "physical_host": "startPaymentMethodSetup",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Authenticated owner",
+      "tenant_key": "Brand/DealActivation.brand_id",
+      "policy": [
+        "Active Mandate and ownership"
+      ],
+      "emergency": {
+        "capabilities": [
+          "billing_issuance"
+        ],
+        "epoch": "capture + provider effect guard"
+      },
+      "claim_primitive": "Local Stripe ids/readback and deterministic provider keys",
+      "effect_key": "Brand/deal activation customer and setup-intent identity",
+      "provider_idempotency": "Deterministic Stripe Customer/SetupIntent idempotency keys",
+      "provider_reconciliation": "Local Stripe ids plus ambiguity OperationalLog; webhook completion remains external",
+      "receipt": [
+        "Brand/DealActivation Stripe ids",
+        "OperationalLog"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "SETUP_INTENT_COMPLETION_RECONCILIATION_EXTERNAL"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/startPaymentMethodSetup/entry.ts",
+          "sha256": "972624524a519b5eb880d44cf90472a8a4761e3e45ad5796c3821e7ca9bad271",
+          "bytes": 8454
+        },
+        {
+          "path": "base44/shared/operationalControl.ts",
+          "sha256": "fe30d3f24cd62163733d3a51bf22e61e85a5e27ee418afa937e95ff0e3e9d1a1",
+          "bytes": 17295
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-LINK",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "logical_route": "createPaymentLink",
+      "physical_host": "createPaymentLink",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "policy": [
+        "Recover invoices rejected to prevent a second payable surface",
+        "positive immutable invoice amount"
+      ],
+      "emergency": {
+        "capabilities": [
+          "billing_issuance"
+        ],
+        "epoch": "capture + guarded provider effect + local pre/post checks"
+      },
+      "claim_primitive": "Stripe provider idempotency plus Invoice binding",
+      "effect_key": "stripe_checkout_session:${invoice.id}",
+      "provider_idempotency": "cambra-payment-link-${invoice.id}",
+      "provider_reconciliation": "Session id stored in Invoice snapshot; ambiguity marks reconciliation error/review",
+      "receipt": [
+        "Invoice",
+        "PaymentEvent",
+        "Stripe Checkout Session id/url"
+      ],
+      "status": "CONTROLLED",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/createPaymentLink/entry.ts",
+          "sha256": "1e897b7ecba6a4fe0f8977fc5ee4c8922c1818a3e770ae887a1653329dff54e1",
+          "bytes": 11790
+        },
+        {
+          "path": "base44/shared/operationalControl.ts",
+          "sha256": "fe30d3f24cd62163733d3a51bf22e61e85a5e27ee418afa937e95ff0e3e9d1a1",
+          "bytes": 17295
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-API-OVERAGE",
+      "material_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "logical_route": "billApiUsage",
+      "physical_host": "billApiUsage",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Organization.id + period_month",
+      "policy": [
+        "Organization quota/pricing and exact closed period"
+      ],
+      "emergency": {
+        "capabilities": [
+          "billing_issuance"
+        ],
+        "epoch": "capture + before/after invoice checks"
+      },
+      "claim_primitive": "ApiUsageRecord CAS on billing_claim_revision/billing_run_id; stale claim => review",
+      "effect_key": "api-overage-invoice:${organizationId}:${periodMonth}",
+      "provider_idempotency": "Not applicable; creates local Invoice only",
+      "provider_reconciliation": "Invoice execution_key/snapshot and closed usage-row readback",
+      "receipt": [
+        "Invoice.billing_snapshot_json",
+        "closed ApiUsageRecord rows",
+        "SchedulerRun"
+      ],
+      "status": "CONTROLLED",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/billApiUsage/entry.ts",
+          "sha256": "27e9149a3b4da3b34f751d919168e3b94851b2e94777696b613b15e60c3b3e53",
+          "bytes": 3670
+        },
+        {
+          "path": "base44/shared/apiUsageBilling.ts",
+          "sha256": "0111bac93cd5c6ae05c19e15a6e8ec0d9fa22be2b080ebaf7096aaa19f854687",
+          "bytes": 18387
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PROVIDER-REVENUE",
+      "material_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "logical_route": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "physical_host": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal; billing preparation also SchedulerRun",
+      "tenant_key": "_platform agreement_id/provider_id/period/currency",
+      "policy": [
+        "DynamicAgreement compensation legal approval/activation",
+        "settlement mode",
+        "tax/opinion references"
+      ],
+      "emergency": {
+        "capabilities": [
+          "billing_issuance"
+        ],
+        "epoch": "capture + before/after local issuance record"
+      },
+      "claim_primitive": "Lookup by provider invoice key/external number/payment ref; no unique/CAS create claim",
+      "effect_key": "provider-invoice:${agreement}|${provider}|${period}|${currency}",
+      "provider_idempotency": "No external issuance call; local duplicate checks only",
+      "provider_reconciliation": "Reconciled provider statement or manually supplied external invoice/payment evidence",
+      "receipt": [
+        "ProviderRevenueInvoice",
+        "ProviderRevenueLedger",
+        "ProviderRevenuePayment",
+        "Event",
+        "SchedulerRun"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "LOCAL_INVOICE_CREATE_CAS_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/providerRevenueBillingWorker/entry.ts",
+          "sha256": "fedec3bbb5ed1596b9029db5efa674174caf7d67406b6fd17811e65376e15af0",
+          "bytes": 6347
+        },
+        {
+          "path": "base44/functions/recordProviderRevenueInvoiceIssued/entry.ts",
+          "sha256": "beac1046f30ef440f64fce0934aaf6dd7635df49cad7fd88fd0228f5d65890e1",
+          "bytes": 4755
+        },
+        {
+          "path": "base44/functions/recordProviderRevenuePayment/entry.ts",
+          "sha256": "134091804d0f1cb1ee0090121ef0bc81987afabdbc5aaadbf3d17d2f32e6a38d",
+          "bytes": 4953
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-MANUAL-RECORD",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "logical_route": "recordPayment",
+      "physical_host": "recordPayment",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal",
+      "tenant_key": "Invoice.brand_id",
+      "policy": [
+        "Manual non-Stripe payment only"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "external_ref duplicate lookup; no CAS command claim",
+      "effect_key": "external_ref",
+      "provider_idempotency": "Not applicable; records already-observed payment",
+      "provider_reconciliation": "Invoice/PaymentEvent local readback",
+      "receipt": [
+        "Invoice",
+        "PaymentEvent"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "LOCAL_PAYMENT_CAS_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/recordPayment/entry.ts",
+          "sha256": "970c212f5d0f12e6632090a5e864aa8e0c65eae0d0391c29c00743358d11e528",
+          "bytes": 6287
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LOCAL-RECONCILE-OVERRIDE",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "logical_route": "reconcileInvoice",
+      "physical_host": "reconcileInvoice",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "policy": [
+        "State transition allowlist",
+        "Stripe-authoritative Recover blocked",
+        "draft-only amount adjustment"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "No CAS/idempotent command key",
+      "effect_key": "Invoice.id + target_status",
+      "provider_idempotency": "Not applicable; local override",
+      "provider_reconciliation": "Invoice state and PaymentEvent(status_overridden)",
+      "receipt": [
+        "Invoice",
+        "PaymentEvent"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/reconcileInvoice/entry.ts",
+          "sha256": "9dc543c8cc20f2d1e563d9d4855ce10198ee8f5ff15653000750376c496f6a1c",
+          "bytes": 4397
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LEGACY-INVOICE-EVENT-QUARANTINE",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "logical_route": "onInvoiceStatusEvent",
+      "physical_host": "onInvoiceStatusEvent",
+      "route_selector": "terminal PURGE-2 quarantine",
+      "callers": [],
+      "actor": "DENIED_FOR_ALL",
+      "tenant_key": "No tenant is resolved because the route terminates before request parsing",
+      "policy": [
+        "Unconditional HTTP 410 route_quarantined; canonical signed webhook/reconciliation routes only"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "not applicable because every invocation terminates before effects"
+      },
+      "claim_primitive": "NONE; hard quarantine before reads or writes",
+      "effect_key": "NONE; effects_committed=false",
+      "provider_idempotency": "NOT_APPLICABLE",
+      "provider_reconciliation": "NOT_APPLICABLE",
+      "receipt": [
+        "HTTP 410 route_quarantined response"
+      ],
+      "status": "QUARANTINED",
+      "gap_codes": [
+        "PURGE_2_RUNTIME_PENDING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/onInvoiceStatusEvent/entry.ts",
+          "sha256": "4185bbd036b05f8b68ee1331b24dc8b4d3a7a8274d38fb25451cf0ddf612fdfd",
+          "bytes": 666
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-API-ENRICHMENT",
+      "material_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "paidProviderFetch|reservePaidOperation|guardReservedPaidProviderEffect",
+      "physical_host": "shared/costGovernance",
+      "route_selector": "category api|enrichment|email",
+      "callers": [
+        "autonomousPartnerWorker",
+        "blogAgent",
+        "chatChiefOrchestrator",
+        "commercialSendMessage",
+        "competitorMonitorAgent",
+        "copilotChat",
+        "crmAgent",
+        "goLiveControlAdmin",
+        "instantlyProviderAdmin",
+        "instantlyReconciliationWorker",
+        "joinCollective",
+        "leadDiscoveryAgent",
+        "leadEnrichmentAgent",
+        "linkedinAgent",
+        "newsletterAgent",
+        "onBrandCreated",
+        "outboundControlAdmin",
+        "processUploadedFile",
+        "providerContactResolver",
+        "providerMonitorAgent",
+        "providerResearchAgent",
+        "recoverBillingDigest",
+        "requestP4Estimate",
+        "resendInboundWebhook",
+        "sendMonthlySavingsSummary",
+        "sendRecoverContractEmail",
+        "seoAgent",
+        "submitCallRequest",
+        "submitContactMessage",
+        "submitWaitlistSignup",
+        "xTwitterAgent"
+      ],
+      "actor": "Inherited from physical caller",
+      "tenant_key": "Caller brand/entity or _platform",
+      "policy": [
+        "CostBudgetControl",
+        "CostUsageEvent reservation"
+      ],
+      "emergency": {
+        "capabilities": [
+          "paid_discovery_for_api_enrichment",
+          "communications_for_email"
+        ],
+        "epoch": "pre/post only when guarded helper is used"
+      },
+      "claim_primitive": "CostUsageEvent.event_key + CostBudgetControl CAS",
+      "effect_key": "Caller event_key; UUID suffix unless stable_event_key=true",
+      "provider_idempotency": "Provider-specific and caller-dependent",
+      "provider_reconciliation": "Provider-final only when reconciled=true + PROVIDER_FINAL_RECEIPT + reconciliation_ref",
+      "receipt": [
+        "CostUsageEvent; commonly OBSERVED rather than provider-final"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT",
+        "GUARDED_PROVIDER_EFFECT_CALLER_DEPENDENT",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/autonomousPartnerWorker/entry.ts",
+          "sha256": "6821e2d0cf81c9488eb9ac4c89583cba35761220ab5f00e25443db254c96f638",
+          "bytes": 14848
+        },
+        {
+          "path": "base44/functions/blogAgent/entry.ts",
+          "sha256": "98849cf4cc9d30d876a0ef53a00cd84090ab38309b5db162afc1e5136ac5cc8f",
+          "bytes": 10532
+        },
+        {
+          "path": "base44/functions/chatChiefOrchestrator/entry.ts",
+          "sha256": "0904effe1116af028547e1c99fe208c7512e5e1f0f3ef56ea3d4f04451a71b48",
+          "bytes": 47549
+        },
+        {
+          "path": "base44/functions/commercialSendMessage/entry.ts",
+          "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+          "bytes": 76839
+        },
+        {
+          "path": "base44/functions/competitorMonitorAgent/entry.ts",
+          "sha256": "36c55ff362bd221899c3a00e4aca38d7a2be9b9a0dfac939f0b80a2fa04fe851",
+          "bytes": 5633
+        },
+        {
+          "path": "base44/functions/copilotChat/entry.ts",
+          "sha256": "15049214b2a8c08c2141deae0b25b60ef2ca1307590004a3ba819aa72bb7f006",
+          "bytes": 19013
+        },
+        {
+          "path": "base44/functions/crmAgent/entry.ts",
+          "sha256": "86aa3eb8604fb135bbc24be0f4189d817e140f8d79c92c4495bdaf30d985802d",
+          "bytes": 6397
+        },
+        {
+          "path": "base44/functions/goLiveControlAdmin/entry.ts",
+          "sha256": "e5572a6ec47ac6882be88e75b103f488dc0c3c21ef67a52a077086b48d96dd42",
+          "bytes": 56496
+        },
+        {
+          "path": "base44/functions/instantlyProviderAdmin/entry.ts",
+          "sha256": "a4b5df262478b4050a2edd8ac520d000f155b2c4ba5fad4d00de8df9a5febded",
+          "bytes": 30086
+        },
+        {
+          "path": "base44/functions/instantlyReconciliationWorker/entry.ts",
+          "sha256": "7207718d5f4fe2dfa392507827150b6e756e287f43448cd3f682a6342d00be25",
+          "bytes": 10030
+        },
+        {
+          "path": "base44/functions/joinCollective/entry.ts",
+          "sha256": "c8f28710cbc9cabc582ed619036ebae76bb6eb4c2b6c44379332bcdbe8ff36d8",
+          "bytes": 9883
+        },
+        {
+          "path": "base44/functions/leadDiscoveryAgent/entry.ts",
+          "sha256": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
+          "bytes": 41173
+        },
+        {
+          "path": "base44/functions/leadEnrichmentAgent/entry.ts",
+          "sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
+          "bytes": 50549
+        },
+        {
+          "path": "base44/functions/linkedinAgent/entry.ts",
+          "sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998",
+          "bytes": 9474
+        },
+        {
+          "path": "base44/functions/newsletterAgent/entry.ts",
+          "sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061",
+          "bytes": 13518
+        },
+        {
+          "path": "base44/functions/onBrandCreated/entry.ts",
+          "sha256": "7bfd831e23a74a631ec18b184c2356743d2165269fabdcca1394ea777ba59fab",
+          "bytes": 3604
+        },
+        {
+          "path": "base44/functions/outboundControlAdmin/entry.ts",
+          "sha256": "a36870e6799a9389a208362c391ef53cbecf3b0be15f91776e47c0b3b7da5022",
+          "bytes": 34316
+        },
+        {
+          "path": "base44/functions/processUploadedFile/entry.ts",
+          "sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
+          "bytes": 21831
+        },
+        {
+          "path": "base44/functions/providerContactResolver/entry.ts",
+          "sha256": "8814751b8099d1e2360eb5dd338577a830e386b8d17a5ce9da8f9d6b230fcb02",
+          "bytes": 10375
+        },
+        {
+          "path": "base44/functions/providerMonitorAgent/entry.ts",
+          "sha256": "6dce0368f6a81ea2fbda1fa3939a43f6f2c5d30aaf3ee68c0372b9e3db3a25e8",
+          "bytes": 9633
+        },
+        {
+          "path": "base44/functions/providerResearchAgent/entry.ts",
+          "sha256": "89500d2cbc4d7937a93dac1be881f7a667d23c5df62c3d2e14ea4fa684f97fc3",
+          "bytes": 10666
+        },
+        {
+          "path": "base44/functions/recoverBillingDigest/entry.ts",
+          "sha256": "9957a69d76420ce318e10e1bd149a1fa887fb9cd8aa4875fa891d29302024973",
+          "bytes": 14807
+        },
+        {
+          "path": "base44/functions/requestP4Estimate/entry.ts",
+          "sha256": "7a283bd76824942ac7602e24aa96c4dd89302748fa6f4d4796054b1ffc05a152",
+          "bytes": 19398
+        },
+        {
+          "path": "base44/functions/resendInboundWebhook/entry.ts",
+          "sha256": "93d4151d3d4f3ccdc69b8bf692988945628c2b23a162e28010c4e6359dd33327",
+          "bytes": 11204
+        },
+        {
+          "path": "base44/functions/sendMonthlySavingsSummary/entry.ts",
+          "sha256": "6112533fde5827184ac59986604bd342ae5016c5eb1e0f4e9c1e578e6655a6e2",
+          "bytes": 7008
+        },
+        {
+          "path": "base44/functions/sendRecoverContractEmail/entry.ts",
+          "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a",
+          "bytes": 9559
+        },
+        {
+          "path": "base44/functions/seoAgent/entry.ts",
+          "sha256": "c48bfd72f3eb4fbe4edda74c342b4b9a33b037608e76ef7034badb634e90f4af",
+          "bytes": 4925
+        },
+        {
+          "path": "base44/functions/submitCallRequest/entry.ts",
+          "sha256": "d70db59ee35ffddce4605447f6f792ef7c4f2b3842d26c4dcda0f58a82b97cfe",
+          "bytes": 8991
+        },
+        {
+          "path": "base44/functions/submitContactMessage/entry.ts",
+          "sha256": "d691d9509860c2be0af6d299d3edb78bad233a453c97752587cf3b6847724edd",
+          "bytes": 9326
+        },
+        {
+          "path": "base44/functions/submitWaitlistSignup/entry.ts",
+          "sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
+          "bytes": 8864
+        },
+        {
+          "path": "base44/functions/xTwitterAgent/entry.ts",
+          "sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb",
+          "bytes": 9618
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-AI",
+      "material_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "logical_route": "callCambraClaude",
+      "physical_host": "shared/commercialModelRouter",
+      "route_selector": "category=ai",
+      "callers": [
+        "autonomousCommercialWorker",
+        "autonomousPartnerWorker",
+        "blogAgent",
+        "codeReviewAgent",
+        "collectiveNegotiationAgent",
+        "commercialFollowUpWorker",
+        "commercialReplyAgent",
+        "competitorMonitorAgent",
+        "complianceAgent",
+        "contractIPAgent",
+        "developerMigrationEngine",
+        "discoveryTechStackAgent",
+        "fixValidatorAgent",
+        "followUpAgent",
+        "founderChiefOfStaff",
+        "founderCopilotAgent",
+        "gdprAgent",
+        "investorUpdateAgent",
+        "leadScoringAgent",
+        "legalReviewAgent",
+        "linkedinAgent",
+        "newsletterAgent",
+        "onboardingConciergeWorker",
+        "outboundVolumeWorker",
+        "outreachAgent",
+        "postMeetingWorker",
+        "providerMonetizationAgent",
+        "providerMonitorAgent",
+        "providerNegotiationAgent",
+        "providerResearchAgent",
+        "qaAgent",
+        "qaMonitorAgent",
+        "recommendationEngineAgent",
+        "reviewProviderContract",
+        "securityAgent",
+        "seoAgent",
+        "spendIntelligenceAgent",
+        "xTwitterAgent"
+      ],
+      "actor": "Inherited from 38 physical callers",
+      "tenant_key": "Caller brand/entity or _platform",
+      "policy": [
+        "CostBudgetControl",
+        "CostUsageEvent reservation"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "AI category is omitted by paidProviderEmergencyCapabilities"
+      },
+      "claim_primitive": "CostUsageEvent reservation; router uses a new UUID for each attempt",
+      "effect_key": "ai:${source}:${logicalKey}:${attempt}:${uuid}",
+      "provider_idempotency": "No provider idempotency proven",
+      "provider_reconciliation": "Cost settlement is generally OBSERVED, not provider-final",
+      "receipt": [
+        "CostUsageEvent",
+        "caller AgentTask/domain output"
+      ],
+      "status": "PARTIAL_HARD_GAP",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_AI",
+        "AI_RETRY_EFFECT_KEY_UNSTABLE",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/autonomousCommercialWorker/entry.ts",
+          "sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
+          "bytes": 10840
+        },
+        {
+          "path": "base44/functions/autonomousPartnerWorker/entry.ts",
+          "sha256": "6821e2d0cf81c9488eb9ac4c89583cba35761220ab5f00e25443db254c96f638",
+          "bytes": 14848
+        },
+        {
+          "path": "base44/functions/blogAgent/entry.ts",
+          "sha256": "98849cf4cc9d30d876a0ef53a00cd84090ab38309b5db162afc1e5136ac5cc8f",
+          "bytes": 10532
+        },
+        {
+          "path": "base44/functions/codeReviewAgent/entry.ts",
+          "sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
+          "bytes": 5860
+        },
+        {
+          "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
+          "sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+          "bytes": 21723
+        },
+        {
+          "path": "base44/functions/commercialFollowUpWorker/entry.ts",
+          "sha256": "c9d1ac1365acde3b81f2d73af87f400baab6969b4ce50c7066ad4759453cd879",
+          "bytes": 15877
+        },
+        {
+          "path": "base44/functions/commercialReplyAgent/entry.ts",
+          "sha256": "412ec9949cb8371fdf8259d0ab31cb71ec196f2ceb6d6ab54439f36a9f80caf5",
+          "bytes": 28844
+        },
+        {
+          "path": "base44/functions/competitorMonitorAgent/entry.ts",
+          "sha256": "36c55ff362bd221899c3a00e4aca38d7a2be9b9a0dfac939f0b80a2fa04fe851",
+          "bytes": 5633
+        },
+        {
+          "path": "base44/functions/complianceAgent/entry.ts",
+          "sha256": "3550cb8b0003ff16dbded186496035650d97264431b6ece4d42e807165b7edb0",
+          "bytes": 6986
+        },
+        {
+          "path": "base44/functions/contractIPAgent/entry.ts",
+          "sha256": "92109cd5be6afb1b8a1e6f8514168bf22dab076b0abe36603d1f59677f0bf041",
+          "bytes": 7147
+        },
+        {
+          "path": "base44/functions/developerMigrationEngine/entry.ts",
+          "sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+          "bytes": 71410
+        },
+        {
+          "path": "base44/functions/discoveryTechStackAgent/entry.ts",
+          "sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
+          "bytes": 12530
+        },
+        {
+          "path": "base44/functions/fixValidatorAgent/entry.ts",
+          "sha256": "efad3655d03b3415ee57bcf3ac67235ab778cf6002fae2d7a39bd9a62dbe862d",
+          "bytes": 14746
+        },
+        {
+          "path": "base44/functions/followUpAgent/entry.ts",
+          "sha256": "bb6f63802a65272f0d8c23980cd5d3229bbe830718961fdaa9a0b537944c91f9",
+          "bytes": 12203
+        },
+        {
+          "path": "base44/functions/founderChiefOfStaff/entry.ts",
+          "sha256": "710eb3ef76c62d2649613bd78e18439be483c216e1e972c27b0e4a897aaca5df",
+          "bytes": 4366
+        },
+        {
+          "path": "base44/functions/founderCopilotAgent/entry.ts",
+          "sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
+          "bytes": 5486
+        },
+        {
+          "path": "base44/functions/gdprAgent/entry.ts",
+          "sha256": "5cebcb4bc88ce2bc16df7710b3e768aad03d53e4c5cf35227e211a54947365c7",
+          "bytes": 7881
+        },
+        {
+          "path": "base44/functions/investorUpdateAgent/entry.ts",
+          "sha256": "1432aa3653cf1cc7b59e536b34f64ddfb6398683be7fe7d98ea9d29b2f7e8703",
+          "bytes": 6565
+        },
+        {
+          "path": "base44/functions/leadScoringAgent/entry.ts",
+          "sha256": "de3b6a69c4e36c9f5ea1aafab8fb2c789d174dff4c658f0d215eb5b230b1ba11",
+          "bytes": 23143
+        },
+        {
+          "path": "base44/functions/legalReviewAgent/entry.ts",
+          "sha256": "95f8ed79cd66188d1ce6187ec48a4128f114f97acfc1dec038ddbb8338a031d3",
+          "bytes": 6870
+        },
+        {
+          "path": "base44/functions/linkedinAgent/entry.ts",
+          "sha256": "b4daff3d180e447ff0d23d360facfab18922c02ca4f6ecf462afa7db510af998",
+          "bytes": 9474
+        },
+        {
+          "path": "base44/functions/newsletterAgent/entry.ts",
+          "sha256": "87e65d3e9b401ac42da512187028c863968cb246b91492ad321900e63866f061",
+          "bytes": 13518
+        },
+        {
+          "path": "base44/functions/onboardingConciergeWorker/entry.ts",
+          "sha256": "a2c4080ba68b1785f4e695b67a2e9da452573888897d04ffc89b730c7b656430",
+          "bytes": 5174
+        },
+        {
+          "path": "base44/functions/outboundVolumeWorker/entry.ts",
+          "sha256": "c93e2e1aa9c68eb771f9ab79e2e9334ca4de7ec19c191b51d93dcb298f62d123",
+          "bytes": 22327
+        },
+        {
+          "path": "base44/functions/outreachAgent/entry.ts",
+          "sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b",
+          "bytes": 12149
+        },
+        {
+          "path": "base44/functions/postMeetingWorker/entry.ts",
+          "sha256": "de56c0507bcd1752c4723c0515b4719f86a93c6dfd8dee7662cc846cc7882719",
+          "bytes": 9323
+        },
+        {
+          "path": "base44/functions/processUploadedFile/entry.ts",
+          "sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
+          "bytes": 21831
+        },
+        {
+          "path": "base44/functions/providerMonetizationAgent/entry.ts",
+          "sha256": "40245b0c322cdbb65744c7c480221f1fda1b0e175ffac20c9cd4add6d867905f",
+          "bytes": 16387
+        },
+        {
+          "path": "base44/functions/providerMonitorAgent/entry.ts",
+          "sha256": "6dce0368f6a81ea2fbda1fa3939a43f6f2c5d30aaf3ee68c0372b9e3db3a25e8",
+          "bytes": 9633
+        },
+        {
+          "path": "base44/functions/providerNegotiationAgent/entry.ts",
+          "sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
+          "bytes": 23968
+        },
+        {
+          "path": "base44/functions/providerResearchAgent/entry.ts",
+          "sha256": "89500d2cbc4d7937a93dac1be881f7a667d23c5df62c3d2e14ea4fa684f97fc3",
+          "bytes": 10666
+        },
+        {
+          "path": "base44/functions/qaAgent/entry.ts",
+          "sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
+          "bytes": 3540
+        },
+        {
+          "path": "base44/functions/qaMonitorAgent/entry.ts",
+          "sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
+          "bytes": 7281
+        },
+        {
+          "path": "base44/functions/recommendationEngineAgent/entry.ts",
+          "sha256": "3a9ee071c11a9b539568a8e28138e410fddcbe736e8842c1231b80bf596b9cdf",
+          "bytes": 21137
+        },
+        {
+          "path": "base44/functions/reviewProviderContract/entry.ts",
+          "sha256": "b9d2696fe4bf61fa7d62a40b41ef7f5bb84ee81ba116519cc86c736c1f72f9b1",
+          "bytes": 7396
+        },
+        {
+          "path": "base44/functions/securityAgent/entry.ts",
+          "sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
+          "bytes": 5536
+        },
+        {
+          "path": "base44/functions/seoAgent/entry.ts",
+          "sha256": "c48bfd72f3eb4fbe4edda74c342b4b9a33b037608e76ef7034badb634e90f4af",
+          "bytes": 4925
+        },
+        {
+          "path": "base44/functions/spendIntelligenceAgent/entry.ts",
+          "sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
+          "bytes": 18637
+        },
+        {
+          "path": "base44/functions/xTwitterAgent/entry.ts",
+          "sha256": "c15e3313e8f2baff5f69dabdd27bc2a811d015bcd7b7d097865f6c6b76c09abb",
+          "bytes": 9618
+        },
+        {
+          "path": "base44/shared/commercialModelRouter.ts",
+          "sha256": "a46d99dd01265b5b585c80f5a6723590821dc56523c578ffbb0bf3a6a2109448",
+          "bytes": 5305
+        },
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        },
+        {
+          "path": "base44/shared/operationalControl.ts",
+          "sha256": "fe30d3f24cd62163733d3a51bf22e61e85a5e27ee418afa937e95ff0e3e9d1a1",
+          "bytes": 17295
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-DR-SHAREPOINT",
+      "material_kinds": [
+        "provider_effect",
+        "material_schedule"
+      ],
+      "logical_route": "disasterRecoveryBackup",
+      "physical_host": "maintenanceEngine",
+      "route_selector": {
+        "host_action": "disaster_recovery_backup"
+      },
+      "callers": [],
+      "actor": "Internal scheduler or strict admin",
+      "tenant_key": "_platform release identity",
+      "policy": [
+        "DR policy",
+        "SharePoint CAMBRA INFRASTRUCTURE/Production Backups",
+        "encrypted payload only"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "SchedulerRun; deterministic backup path/manifest",
+      "effect_key": "Backup id/path in SharePoint",
+      "provider_idempotency": "Microsoft Graph upload path with conflictBehavior=replace/upload session",
+      "provider_reconciliation": "Upload/read manifest and restore-evidence flow",
+      "receipt": [
+        "Encrypted backup object",
+        "manifest",
+        "OperationalLog",
+        "Restore Evidence for restore"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/deployment-topology.json",
+          "sha256": "9127557e0bd7aa9ed7c71ea536a24297b633201f29eb1af8c861c996ad8afd94",
+          "bytes": 6248
+        },
+        {
+          "path": "base44/functions/maintenanceEngine/entry.ts",
+          "sha256": "ba878883d3924be5c5d33081f285f4fd37b1ab42d5ab412a1e64184980f1c644",
+          "bytes": 23742
+        },
+        {
+          "path": "base44/shared/disasterRecoveryRuntime.ts",
+          "sha256": "a9794f85508a80c1ce7858df391424c4182584982e6e401868fa21cc62085195",
+          "bytes": 39415
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-INTEGRATIONS-READ-AUTH",
+      "material_kinds": [
+        "provider_effect"
+      ],
+      "logical_route": "oauthConnector|stripeOAuthConnect|dataSyncAgent|stripeDataSync|computeStripeVerifiedGap|checkVatVies|rateIntelligenceWatchWorker",
+      "physical_host": "respective physical routes",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Authenticated/admin/internal according to route",
+      "tenant_key": "Integration.brand_id or provider/brand binding",
+      "policy": [
+        "Connector scope/state",
+        "source provenance",
+        "read-only data sync where declared"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Integration/source-specific state; no common provider-effect claim",
+      "effect_key": "Provider/account/integration-specific; no common key",
+      "provider_idempotency": "OAuth token exchanges and read calls are provider-specific",
+      "provider_reconciliation": "Integration/observation/candidate evidence and logs; no common reconciliation primitive",
+      "receipt": [
+        "Integration state",
+        "PaymentObservation/candidate evidence",
+        "OperationalLog as route-specific"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/checkVatVies/entry.ts",
+          "sha256": "4f6697f8923c95ed4d96bb9f39931da6ef722495c382e8e3592ebdb7ab5a4b95",
+          "bytes": 6222
+        },
+        {
+          "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
+          "sha256": "e5873034e539f832d11509a4390e33ba1d419dc92c2f3890de0bffce6712cfb1",
+          "bytes": 105701
+        },
+        {
+          "path": "base44/functions/dataSyncAgent/entry.ts",
+          "sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
+          "bytes": 112389
+        },
+        {
+          "path": "base44/functions/oauthConnector/entry.ts",
+          "sha256": "d0424c4429aa8002e7384fe61f070e54e5d0dae637da49da57b6e3dbb9c8b118",
+          "bytes": 82168
+        },
+        {
+          "path": "base44/functions/rateIntelligenceWatchWorker/entry.ts",
+          "sha256": "2458124b88b2a09415c557ea9a8cb727c47b8069d814cc92802878c498247781",
+          "bytes": 7390
+        },
+        {
+          "path": "base44/functions/stripeDataSync/entry.ts",
+          "sha256": "568ca5e2dc3aeaa5c76873bb3780bfc06ef807b3d3a9542f64c867dc91871bb3",
+          "bytes": 15899
+        },
+        {
+          "path": "base44/functions/stripeOAuthConnect/entry.ts",
+          "sha256": "6f5ac289f1c91c80b2e5545ff60a59093473e54b4666074657e862c7f7a3e513",
+          "bytes": 4971
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULER-BASE",
+      "material_kinds": [
+        "material_schedule"
+      ],
+      "logical_route": "all Base44 scheduled automations",
+      "physical_host": "69 inventory rows across physical/logical hosts",
+      "route_selector": "function.jsonc automation",
+      "callers": [
+        "acquisitionAttributionWorker",
+        "acquisitionLearningWorker",
+        "agentPerformanceWorker",
+        "aggregateAgreementWorker",
+        "aggregateDemandWorker",
+        "aggregateEligibilityWorker",
+        "aggregateProcurementWorker",
+        "alwaysOnLeadDiscoveryWorker",
+        "autonomousCommercialWorker",
+        "autonomousCompanyOrchestrator",
+        "autonomousOperationsSupervisor",
+        "autonomousPartnerWorker",
+        "billApiUsage",
+        "collectionOperationsWorker",
+        "commercialFollowUpWorker",
+        "costGovernanceWorker",
+        "customerSuccessWorker",
+        "dependencySecurityWorker",
+        "developerSignalWorker",
+        "disasterRecoveryBackup",
+        "documentationMaintenanceWorker",
+        "eclLifecycleScheduler",
+        "eclProductionHealth",
+        "executiveDigestWorker",
+        "getEuropeMarketsCommandCenter",
+        "intelligenceMaintenanceWorker",
+        "knowledgeIntegrityWorker",
+        "maintenanceEngine",
+        "missingInformationWorker",
+        "moatCuratorWorker",
+        "negotiationMemoryWorker",
+        "onboardingConciergeWorker",
+        "operatingHealthWorker",
+        "outboundDeliverabilityManager",
+        "outboundVolumeWorker",
+        "outcomeLearningWorker",
+        "outlookInboundRouter",
+        "outreachExperimentLearningWorker",
+        "postMeetingWorker",
+        "privacySafeIntelligenceWorker",
+        "processWebhookDeadLetters",
+        "productionReadinessWorker",
+        "providerEconomicsAssessmentWorker",
+        "providerEconomicsIntelligenceWorker",
+        "providerMonitorAgent",
+        "providerRevenueAttributionWorker",
+        "providerRevenueBillingWorker",
+        "providerRevenueLifecycleWorker",
+        "providerRevenueReconciliationWorker",
+        "providerRevenueTierWorker",
+        "purgeInactiveLeads",
+        "purgePaymentsAnalysisSessions",
+        "rateIntelligenceWatchWorker",
+        "realWorldValidationWorker",
+        "reconcileRecoverBilling",
+        "recoverAutopilotWorker",
+        "recoverBillingDigest",
+        "regulatoryMonitoringWorker",
+        "retryPendingRecoverContracts",
+        "revenueGoldenPathSelfTest",
+        "revenueLifecycleWorker",
+        "routingHistoricalBackfill",
+        "routingPerformanceWorker",
+        "routingReadinessWorker",
+        "salesPipelineWorker",
+        "scheduledBenchmarkRecompute",
+        "seedP3RateIntelligence",
+        "shadowRoutingEngine",
+        "unitEconomicsWorker"
+      ],
+      "actor": "Handler-specific admin/internal gate; existing scheduler inventory has UNKNOWN for many rows",
+      "tenant_key": "Handler-specific; existing scheduler inventory records UNKNOWN",
+      "policy": [
+        "SchedulerRun slot/lease; downstream policy remains handler-specific"
+      ],
+      "emergency": {
+        "capabilities": [
+          "handler-specific"
+        ],
+        "epoch": "not supplied by scheduler claim; downstream route must enforce"
+      },
+      "claim_primitive": "guardedScheduledServe/claimSchedulerRun run_key, lease, heartbeat, revision, effects_started, finalize",
+      "effect_key": "SchedulerRun key only; not a substitute for downstream effect idempotency",
+      "provider_idempotency": "Downstream route-specific",
+      "provider_reconciliation": "SchedulerRun plus downstream receipt",
+      "receipt": [
+        "SchedulerRun",
+        "downstream domain/provider receipt"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "SCHEDULER_METADATA_UNKNOWN",
+        "DOWNSTREAM_EFFECT_IDEMPOTENCY_REQUIRED"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        },
+        {
+          "path": "config/scheduler-inventory.json",
+          "sha256": "8a2b7ca8442bfbcbcbd383f84323d5ecbebb78c254dfb208cb5d1caf37c39229",
+          "bytes": 178840
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-UPSERT",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "route_selector": {
+        "action": "upsert_claim"
+      },
+      "callers": [],
+      "actor": "Admin/internal plus actor capability",
+      "tenant_key": "Exact request tenant; evidence/observations must bind to same tenant",
+      "policy": [
+        "Truth/lineage assessment",
+        "inferred cannot promote",
+        "training/model/calibration flags false"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Claim dedupe/version/content hash",
+      "effect_key": "Claim identity/content hash",
+      "provider_idempotency": "Not applicable; local intelligence ledger",
+      "provider_reconciliation": "Claim/evidence lineage readback",
+      "receipt": [
+        "IntelligenceClaim",
+        "evidence lineage",
+        "log"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/intelligenceAccess/entry.ts",
+          "sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
+          "bytes": 25815
+        },
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-RECORD",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "route_selector": {
+        "action": "record_outcome"
+      },
+      "callers": [],
+      "actor": "Admin/internal plus actor capability",
+      "tenant_key": "Terminal MonthlySavingsReport/NegotiationCase/MigrationTask tenant",
+      "policy": [
+        "Exact verification source",
+        "terminal state",
+        "descriptive PENDING_PROVENANCE quarantine",
+        "no training/model/calibration"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Outcome dedupe key",
+      "effect_key": "Outcome key",
+      "provider_idempotency": "Not applicable; local intelligence ledger",
+      "provider_reconciliation": "Outcome/source binding readback",
+      "receipt": [
+        "IntelligenceOutcome"
+      ],
+      "status": "CONTROLLED_NON_PROMOTING",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/intelligenceAccess/entry.ts",
+          "sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
+          "bytes": 25815
+        },
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-PROMOTE",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "logical_route": "intelligenceAdmin",
+      "physical_host": "intelligenceAdmin",
+      "route_selector": {
+        "action": "set_claim_state"
+      },
+      "callers": [],
+      "actor": "Strict admin with reason",
+      "tenant_key": "Exact claim tenant",
+      "policy": [
+        "Verified/active require eligible lineage",
+        "inferred prohibited",
+        "learning flags remain false"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Claim state/version update; no emergency epoch",
+      "effect_key": "Claim.id + target state",
+      "provider_idempotency": "Not applicable; local intelligence ledger",
+      "provider_reconciliation": "Claim readback and intelligence_override log",
+      "receipt": [
+        "IntelligenceClaim version/state",
+        "OperationalLog intelligence_override"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/intelligenceAdmin/entry.ts",
+          "sha256": "a1b63eae7a1774b1c7587d5b8e3f0da050dba1d5861755fec7ca8688abb769f9",
+          "bytes": 17471
+        },
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-SCHEDULED",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "logical_route": "outcomeLearningWorker",
+      "physical_host": "outcomeLearningWorker",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Verified terminal source entity tenant",
+      "policy": [
+        "Only verified/terminal sources",
+        "always descriptive PENDING_PROVENANCE quarantine"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "SchedulerRun + outcome dedupe key",
+      "effect_key": "Outcome key",
+      "provider_idempotency": "Not applicable; local outcome ledger",
+      "provider_reconciliation": "Outcome/source binding readback",
+      "receipt": [
+        "IntelligenceOutcome",
+        "SchedulerRun"
+      ],
+      "status": "CONTROLLED_NON_PROMOTING",
+      "gap_codes": [],
+      "source_evidence": [
+        {
+          "path": "base44/functions/outcomeLearningWorker/entry.ts",
+          "sha256": "95ac64029c9e2762dad44b16d720df1d779bdb31c75d9c02733ec24da965c683",
+          "bytes": 7823
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-LEGACY-PROMOTION",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "logical_route": "intelligenceMaintenanceWorker",
+      "physical_host": "intelligenceMaintenanceWorker",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Exact provider/country key",
+      "policy": [
+        "Only verified P3 ProviderPricingVersion+RateComponent projects down",
+        "legacy estimates never promote up"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "SchedulerRun and exact canonical pricing identity",
+      "effect_key": "Provider/country pricing version",
+      "provider_idempotency": "Not applicable; local compatibility projection",
+      "provider_reconciliation": "P3 version/change/conflict and exact legacy row readback",
+      "receipt": [
+        "ProviderPricingVersion/RateComponent change/conflict",
+        "PaymentsRateTable compatibility update",
+        "SchedulerRun"
+      ],
+      "status": "PARTIAL",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
+          "sha256": "4543ac82bd1328eca767f5f5ee0ae29bafa3ca9be9a79dfb7c1e46a205202350",
+          "bytes": 8646
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        },
+        {
+          "path": "src/docs/PRODUCTION_FUNCTIONS.md",
+          "sha256": "277c882a428333159948ecbf9c9a64dbe767e78ba9a5a4621242951b8693b8c4",
+          "bytes": 58320
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-SEED",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "logical_route": "seedP3RateIntelligence",
+      "physical_host": "seedP3RateIntelligence",
+      "route_selector": null,
+      "callers": [],
+      "actor": "Admin/internal; scheduled automation currently inactive",
+      "tenant_key": "_platform provider/country evidence universe",
+      "policy": [
+        "Deterministic researched P3 bootstrap; temporary seed"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "Deterministic/idempotent canonical ledger keys",
+      "effect_key": "P3 provider/country/source identity",
+      "provider_idempotency": "Not applicable; local seed",
+      "provider_reconciliation": "Canonical ledger readback",
+      "receipt": [
+        "ProviderPricingVersion",
+        "RateComponent",
+        "evidence rows"
+      ],
+      "status": "PARTIAL_INACTIVE",
+      "gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/functions/seedP3RateIntelligence/entry.ts",
+          "sha256": "da2f24be30efbead7ab029f95519fa2e070bebf1e9b308775da09c46c7e0d8bd",
+          "bytes": 16426
+        },
+        {
+          "path": "base44/functions/seedP3RateIntelligence/function.jsonc",
+          "sha256": "59d10dbeab2b05f006f92603e402978627de8e498b428cfcdb572ce20f3cff32",
+          "bytes": 588
+        }
+      ]
+    },
+    {
+      "boundary_id": "MB-DATASET-PROMOTION-ABSENT",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "logical_route": "NONE_FOUND",
+      "physical_host": "NONE_FOUND",
+      "route_selector": null,
+      "callers": [],
+      "actor": "NONE",
+      "tenant_key": "NONE",
+      "policy": [
+        "Dataset/model registries remain CONTRACT_ONLY"
+      ],
+      "emergency": {
+        "capabilities": [],
+        "epoch": "none"
+      },
+      "claim_primitive": "NONE",
+      "effect_key": "NONE",
+      "provider_idempotency": "NOT_APPLICABLE",
+      "provider_reconciliation": "NOT_APPLICABLE",
+      "receipt": [
+        "NONE"
+      ],
+      "status": "ABSENT",
+      "gap_codes": [
+        "DATASET_PROMOTION_ROUTE_ABSENT",
+        "LEARNING_ELIGIBILITY_CLEARED_RUNTIME_ISSUER_ABSENT"
+      ],
+      "source_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "config/intelligence/model-registry.v1.json",
+          "sha256": "e358558904b7f3e22d49245e457973b1f0245b1d66301f776e16b8339a696082",
+          "bytes": 2699
+        }
+      ]
+    }
+  ]
+}

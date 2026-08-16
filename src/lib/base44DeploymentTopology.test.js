@@ -17,8 +17,14 @@ const logicalSource = (name, route) => route.source_module
 const config = (name) => JSON.parse(fs.readFileSync(path.join(functionsRoot, name, 'function.jsonc'), 'utf8'));
 
 describe('Base44 quota-safe backend deployment topology', () => {
-  it('consolidates exactly 25 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(25);
+  // DPA-1 (2026-08-16) — deliberately 27 -> 28: `recordLegalAcceptance`
+  // (host claimAnonPaymentsResult, source_module base44/shared/legalAcceptance.ts).
+  // R4: this number is an invariant, so it is raised on purpose and never
+  // loosened into an inequality. The PHYSICAL count is what protects the quota
+  // and it is unchanged at 276 — a logical route adds an action to an already
+  // deployed entry point, not a new deployment unit.
+  it('consolidates exactly 28 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(28);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {
@@ -58,6 +64,7 @@ describe('Base44 quota-safe backend deployment topology', () => {
       'instantlyReconciliationWorker',
       'europeanGrowthIntelligenceWorker',
       'getEuropeanGrowthCommandCenter',
+      'disasterRecoveryBackup',
     ]));
   });
 
@@ -85,7 +92,7 @@ describe('Base44 quota-safe backend deployment topology', () => {
     expect(source('getEuropeMarketsCommandCenter')).toContain('compactGrowthPayload');
     const runtimeSource = fs.readFileSync(path.join(root, 'base44/shared/goLiveRuntime.ts'), 'utf8');
     expect(runtimeSource).toContain('const compactDecision');
-    expect(runtimeSource).toContain('open_incident_count:openIncidents.length');
+    expect(runtimeSource).toContain('open_incident_count:incidentRows.length');
     expect(runtimeSource).toContain('pending_approval_count:pendingApprovals.length');
     expect(runtimeSource).not.toContain('gates:decision.gates,');
   });

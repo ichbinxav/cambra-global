@@ -1,0 +1,1044 @@
+{
+  "schema_version": "agent-workforce-catalog-v1.0.0",
+  "generation": {
+    "mode": "SOURCE_DERIVED",
+    "sources": [
+      {
+        "path": "src/lib/agentRegistry.js",
+        "sha256": "68ca8ac77ec9e076cef25979980a3d7b4c4449e53dd397eec70c98f0de981199"
+      },
+      {
+        "path": "base44/shared/agentAuthority.ts",
+        "sha256": "fd9723f665149845773e7da55343b29e50123747b37f8709475dd965cf24b92a"
+      },
+      {
+        "path": "package.json",
+        "sha256": "8288eb56a68f1aecb454a3136c2fd1799d7c8d238bce2708ce2e9fa577baaad3"
+      }
+    ]
+  },
+  "release_identity": {
+    "package_version": "0.98.0",
+    "release_name": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal)"
+  },
+  "counts": {
+    "declared_agents": 34,
+    "declared_orchestrators": 5,
+    "authority_rows": 33,
+    "quarantined_compatibility_agents": 1,
+    "material_authority_rows": 0
+  },
+  "health_plane_relationships": {
+    "canonical_general_supervisor": "autonomousOperationsSupervisor",
+    "advisory_projection": "operatingHealthWorker",
+    "release_readiness_evaluator": "productionReadinessWorker",
+    "quarantined_compatibility_surface": "systemHealthAgent",
+    "active_general_supervisor_count": 1
+  },
+  "agents": [
+    {
+      "cluster_key": "founder_os",
+      "cluster_label": "Founder OS",
+      "name": "Founder Copilot",
+      "function_name": "founderCopilotAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Resumen diario · briefing del estado de la máquina."
+    },
+    {
+      "cluster_key": "founder_os",
+      "cluster_label": "Founder OS",
+      "name": "Investor Update",
+      "function_name": "investorUpdateAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Borrador de updates mensuales para inversores (draft Approval L2)."
+    },
+    {
+      "cluster_key": "founder_os",
+      "cluster_label": "Founder OS",
+      "name": "QA",
+      "function_name": "qaAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Auditoría puntual sobre una pregunta del founder."
+    },
+    {
+      "cluster_key": "lead_engine",
+      "cluster_label": "Lead Engine",
+      "name": "Lead Discovery",
+      "function_name": "leadDiscoveryAgent",
+      "level": 1,
+      "tool": "Apollo",
+      "secret_name": "APOLLO_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Busca prospectos en Apollo (fallback: heurística)."
+    },
+    {
+      "cluster_key": "lead_engine",
+      "cluster_label": "Lead Engine",
+      "name": "Lead Enrichment",
+      "function_name": "leadEnrichmentAgent",
+      "level": 1,
+      "tool": "Clay",
+      "secret_name": "CLAY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Enriquece leads con Clay."
+    },
+    {
+      "cluster_key": "lead_engine",
+      "cluster_label": "Lead Engine",
+      "name": "Lead Scoring",
+      "function_name": "leadScoringAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Asigna fit score 0-100 con explicación."
+    },
+    {
+      "cluster_key": "lead_engine",
+      "cluster_label": "Lead Engine",
+      "name": "CRM",
+      "function_name": "crmAgent",
+      "level": 0,
+      "tool": "Attio",
+      "secret_name": "ATTIO_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Sincroniza leads con el CRM."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Acquisition Loop",
+      "function_name": "autonomousCommercialWorker",
+      "level": 3,
+      "tool": "Claude + Resend",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Hourly policy-gated lead outreach; suppression, business-hours and daily caps are deterministic."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Reply Operator",
+      "function_name": "commercialReplyAgent",
+      "level": 3,
+      "tool": "Claude + Resend",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Classifies inbound replies and continues routine threads; opt-out stops immediately and L4 escalates."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Provider Negotiation",
+      "function_name": "providerNegotiationAgent",
+      "level": 3,
+      "tool": "Claude + Resend",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Persistent multi-round pricing negotiation inside a Recover mandate; never auto-accepts a final/material deal."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Outreach Legacy",
+      "function_name": "outreachAgent",
+      "level": 3,
+      "tool": "Resend",
+      "secret_name": "RESEND_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Legacy per-email approval path retained for controlled/manual outreach."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Follow Up Legacy",
+      "function_name": "followUpAgent",
+      "level": 3,
+      "tool": "Instantly",
+      "secret_name": "INSTANTLY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Legacy approval-gated follow-up path; autonomous threads use Commercial Autonomy instead."
+    },
+    {
+      "cluster_key": "outreach",
+      "cluster_label": "Commercial Autonomy",
+      "name": "Meeting",
+      "function_name": "meetingAgent",
+      "level": 3,
+      "tool": "Cal.com",
+      "secret_name": "CAL_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Uses real Cal.com availability only; missing calendar data is a blocker, never fabricated slots."
+    },
+    {
+      "cluster_key": "marketing",
+      "cluster_label": "Marketing",
+      "name": "Blog",
+      "function_name": "blogAgent",
+      "level": 2,
+      "tool": "Claude + SurferSEO",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Drafts de artículos largos."
+    },
+    {
+      "cluster_key": "marketing",
+      "cluster_label": "Marketing",
+      "name": "Newsletter",
+      "function_name": "newsletterAgent",
+      "level": 2,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Draft del newsletter mensual."
+    },
+    {
+      "cluster_key": "marketing",
+      "cluster_label": "Marketing",
+      "name": "LinkedIn",
+      "function_name": "linkedinAgent",
+      "level": 2,
+      "tool": "Taplio",
+      "secret_name": "TAPLIO_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Drafts de posts de LinkedIn."
+    },
+    {
+      "cluster_key": "marketing",
+      "cluster_label": "Marketing",
+      "name": "X / Twitter",
+      "function_name": "xTwitterAgent",
+      "level": 2,
+      "tool": "Typefully",
+      "secret_name": "TYPEFULLY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Drafts de threads de X."
+    },
+    {
+      "cluster_key": "marketing",
+      "cluster_label": "Marketing",
+      "name": "SEO",
+      "function_name": "seoAgent",
+      "level": 1,
+      "tool": "SurferSEO",
+      "secret_name": "SURFERSEO_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Investigación de keywords."
+    },
+    {
+      "cluster_key": "research",
+      "cluster_label": "Research",
+      "name": "Competitor Monitor",
+      "function_name": "competitorMonitorAgent",
+      "level": 1,
+      "tool": "Perplexity",
+      "secret_name": "PERPLEXITY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Detecta movimientos de competidores."
+    },
+    {
+      "cluster_key": "research",
+      "cluster_label": "Research",
+      "name": "Provider Research",
+      "function_name": "providerResearchAgent",
+      "level": 1,
+      "tool": "Perplexity",
+      "secret_name": "PERPLEXITY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Investiga proveedores antes de proponerlos."
+    },
+    {
+      "cluster_key": "research",
+      "cluster_label": "Research",
+      "name": "Provider Monitor",
+      "function_name": "providerMonitorAgent",
+      "level": 1,
+      "tool": "Perplexity",
+      "secret_name": "PERPLEXITY_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Vigila cambios en proveedores activos."
+    },
+    {
+      "cluster_key": "legal",
+      "cluster_label": "Legal & Compliance",
+      "name": "GDPR",
+      "function_name": "gdprAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Vigila manejo de datos personales (24h)."
+    },
+    {
+      "cluster_key": "legal",
+      "cluster_label": "Legal & Compliance",
+      "name": "Compliance",
+      "function_name": "complianceAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Audita controles operativos del sistema."
+    },
+    {
+      "cluster_key": "legal",
+      "cluster_label": "Legal & Compliance",
+      "name": "Legal Review",
+      "function_name": "legalReviewAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Analiza contratos puntuales (input: texto)."
+    },
+    {
+      "cluster_key": "legal",
+      "cluster_label": "Legal & Compliance",
+      "name": "Contract & IP",
+      "function_name": "contractIPAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Checklist de acuerdos pendientes."
+    },
+    {
+      "cluster_key": "analyzer_brain",
+      "cluster_label": "Analyzer Brain",
+      "name": "Discovery (Tech Stack)",
+      "function_name": "discoveryTechStackAgent",
+      "level": 1,
+      "tool": "Deterministic + Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": "url",
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Escanea web pública y detecta tools del stack."
+    },
+    {
+      "cluster_key": "analyzer_brain",
+      "cluster_label": "Analyzer Brain",
+      "name": "Spend Intelligence",
+      "function_name": "spendIntelligenceAgent",
+      "level": 1,
+      "tool": "scoreEngine + Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": "brand",
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Estima gasto por tool con benchmarks tier+EU."
+    },
+    {
+      "cluster_key": "analyzer_brain",
+      "cluster_label": "Analyzer Brain",
+      "name": "Recommendation Engine",
+      "function_name": "recommendationEngineAgent",
+      "level": 1,
+      "tool": "scoreEngine + Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": "brand",
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Detecta oportunidades vs benchmark (savings + confidence + effort + priority)."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "Code Review",
+      "function_name": "codeReviewAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Bugs, code smells, Architecture Bible."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "Security",
+      "function_name": "securityAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Tenant isolation, secrets, GDPR."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "QA Monitor",
+      "function_name": "qaMonitorAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Vigila runtime (fallos, regresiones)."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "Engineering Report",
+      "function_name": "engineeringReportAgent",
+      "level": 1,
+      "tool": "—",
+      "secret_name": null,
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Consolida 2x/día con prompts listos."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "Fix Validator",
+      "function_name": "fixValidatorAgent",
+      "level": 1,
+      "tool": "Claude",
+      "secret_name": "ANTHROPIC_API_KEY",
+      "input_requirement": null,
+      "status": "DECLARED_ACTIVE",
+      "canonical_replacement": null,
+      "description": "Valida fixes aplicados (rescan + review)."
+    },
+    {
+      "cluster_key": "engineering",
+      "cluster_label": "Engineering",
+      "name": "System Health",
+      "function_name": "systemHealthAgent",
+      "level": 1,
+      "tool": "Deterministic",
+      "secret_name": null,
+      "input_requirement": null,
+      "status": "QUARANTINED_COMPATIBILITY",
+      "canonical_replacement": "autonomousOperationsSupervisor",
+      "description": "Quarantined compatibility surface (410; no supervisor, incident, AgentTask or Event writes). A bounded quarantine access audit may be recorded. General supervision is owned exclusively by autonomousOperationsSupervisor."
+    }
+  ],
+  "orchestrators": [
+    {
+      "name": "Brain Chain",
+      "function_name": "brainOrchestrator",
+      "input_requirement": "url",
+      "description": "Discovery → Spend → Recommendation. Mete una URL, corre el loop entero."
+    },
+    {
+      "name": "Lead Chain",
+      "function_name": "leadOrchestrator",
+      "input_requirement": null,
+      "description": "Discovery → Enrichment → Scoring → CRM."
+    },
+    {
+      "name": "Outreach Chain (legacy)",
+      "function_name": "outreachOrchestrator",
+      "input_requirement": null,
+      "description": "Legacy per-message approval chain retained for controlled/manual use; policy-gated autonomous acquisition uses autonomousCommercialWorker."
+    },
+    {
+      "name": "Marketing Chain",
+      "function_name": "marketingOrchestrator",
+      "input_requirement": null,
+      "description": "Ejecuta una selección de agentes de marketing sobre un mismo topic."
+    },
+    {
+      "name": "Research Chain",
+      "function_name": "researchOrchestrator",
+      "input_requirement": null,
+      "description": "Competitor → Provider Research → Provider Monitor."
+    }
+  ],
+  "authority_rows": [
+    {
+      "agent_key": "aggregate_demand",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "aggregate_procurement",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": true,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "autonomous_commercial",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "autonomous_operations_supervisor",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "autonomous_partner_worker",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "collection_operations",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "collective_negotiation",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": true,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "commercial_followup_worker",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "commercial_reply",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "developer_migration",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "documentation_maintenance",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "founder_copilot",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": false,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": false,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "knowledge_integrity",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "lead_discovery",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": false,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "lead_enrichment",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": false,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "lead_scoring",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": false,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "maintenance_engine",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "missing_information_engine",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "missing_information_worker",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "moat_curator",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "onboarding_concierge",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "outbound_volume_worker",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "post_meeting_worker",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_economics_intelligence",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_monetization",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": true,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_negotiation",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": true,
+        "CAN_SCHEDULE": true,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_revenue_lifecycle",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_revenue_reconciliation",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "provider_revenue_recovery",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": true,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "recover_autopilot",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "routing_performance",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "shadow_routing",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": false,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    },
+    {
+      "agent_key": "tier_progression",
+      "capabilities": {
+        "CAN_READ": true,
+        "CAN_WRITE": true,
+        "CAN_SEND": true,
+        "CAN_NEGOTIATE": false,
+        "CAN_SCHEDULE": false,
+        "CAN_EXECUTE": true,
+        "CAN_APPROVE": false,
+        "CAN_SIGN": false,
+        "CAN_SPEND": false,
+        "CAN_CHARGE": false
+      },
+      "material_authority": "NONE"
+    }
+  ]
+}

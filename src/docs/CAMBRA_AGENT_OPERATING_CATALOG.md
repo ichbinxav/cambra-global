@@ -1,4 +1,4 @@
-# CAMBRA AI WORKFORCE — SOURCE-DERIVED OPERATING CATALOG — v0.92.0
+# CAMBRA AI WORKFORCE — SOURCE-DERIVED OPERATING CATALOG — v0.98.0
 
 Derived from `src/lib/agentRegistry.js` and `base44/shared/agentAuthority.ts`. Backend deterministic/scheduled workers are catalogued separately in `src/docs/PRODUCTION_FUNCTIONS.md`. Missing authority mappings are never inferred.
 
@@ -39,7 +39,17 @@ Derived from `src/lib/agentRegistry.js` and `base44/shared/agentAuthority.ts`. B
 | QA Monitor | `qaMonitorAgent` | L1 | Vigila runtime (fallos, regresiones). | context/domain state | Claude |
 | Engineering Report | `engineeringReportAgent` | L1 | Consolida 2x/día con prompts listos. | context/domain state | — |
 | Fix Validator | `fixValidatorAgent` | L1 | Valida fixes aplicados (rescan + review). | context/domain state | Claude |
-| System Health | `systemHealthAgent` | L1 | Meta-vigilante read-only: agentes fallando, tasks colgados, schedules, loop del Brain, events huérfanos. | context/domain state | Deterministic |
+| System Health (quarantined compatibility) | `systemHealthAgent` | L1 | Endpoint legacy 410; no es un supervisor activo. La autoridad general es `autonomousOperationsSupervisor`. | context/domain state | None |
+
+## Declared orchestrators
+
+| Name | Function | Role | Input |
+|---|---|---|---|
+| Brain Chain | `brainOrchestrator` | Discovery → Spend → Recommendation under each domain gate. | `url` |
+| Lead Chain | `leadOrchestrator` | Discovery → Enrichment → Scoring → CRM coordination. | domain context |
+| Outreach Chain (legacy) | `outreachOrchestrator` | Controlled/manual compatibility chain; autonomous acquisition remains policy-gated elsewhere. | domain context |
+| Marketing Chain | `marketingOrchestrator` | Coordinates selected marketing agents for one topic. | topic |
+| Research Chain | `researchOrchestrator` | Competitor → Provider Research → Provider Monitor coordination. | domain context |
 
 ## Explicit authority matrix
 

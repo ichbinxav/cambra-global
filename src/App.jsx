@@ -11,6 +11,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { base44 } from '@/api/base44Client';
 
 import LoadingScreen from '@/components/shared/LoadingScreen';
+import LegalAcceptanceGate from '@/components/shared/LegalAcceptanceGate';
 const Landing = lazy(() => import('@/pages/Landing'));
 const Onboarding = lazy(() => import('@/pages/Onboarding.jsx'));
 // Chunk 6 CUTOVER — /Analyzer and /Results now serve the Payments-only
@@ -39,6 +40,8 @@ const Account = lazy(() => import('@/pages/Account'));
 // longer ship in the bundle. Restore by re-importing when negotiation ships.
 const Privacy = lazy(() => import('@/pages/Privacy'));
 const Terms = lazy(() => import('@/pages/Terms'));
+const Dpa = lazy(() => import('@/pages/Dpa'));
+const Subprocessors = lazy(() => import('@/pages/Subprocessors'));
 const Cookies = lazy(() => import('@/pages/Cookies'));
 // FASE 1.2 — /StripeAnalyzer deprecated (superseded by /Analyzer + /ConnectTools + /Results).
 const DevExport = lazy(() => import('@/pages/DevExport'));
@@ -51,6 +54,7 @@ const AdminBenchmarks = lazy(() => import('@/pages/admin/AdminBenchmarks'));
 // pesados (recharts, tablas) al chunk inicial de cualquier visitante anónimo.
 // El <Suspense> con LazyFallback ya envolvía <Routes>.
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
+const AdminMerchants = lazy(() => import('@/pages/admin/AdminMerchants'));
 const AdminUserDetail = lazy(() => import('@/pages/admin/AdminUserDetail'));
 const AdminApplications = lazy(() => import('@/pages/admin/AdminApplications'));
 const AdminPipeline = lazy(() => import('@/pages/admin/AdminPipeline'));
@@ -83,6 +87,7 @@ const AdminAggregate = lazy(() => import('@/pages/admin/AdminAggregate'));
 const AdminFinance = lazy(() => import('@/pages/admin/AdminFinance'));
 const AdminProviderEconomics = lazy(() => import('@/pages/admin/AdminProviderEconomics'));
 const AdminFounderControl = lazy(() => import('@/pages/admin/AdminFounderControl'));
+const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 const AdminMaintenance = lazy(() => import('@/pages/admin/AdminMaintenance'));
 const AdminDocumentation = lazy(() => import('@/pages/admin/AdminDocumentation'));
 const ReviewQueue = lazy(() => import('@/pages/admin/ReviewQueue'));
@@ -146,7 +151,13 @@ const ProtectedRoute = ({ children }) => {
     }
   }
 
-  return children;
+  // DPA-1 (2026-08-16) — every authenticated entry passes the legal acceptance
+  // gate. It renders nothing while it checks and returns `children` untouched
+  // once acceptance for the CURRENT document versions exists, so the normal
+  // path is unchanged; only a user who has never accepted (or whose accepted
+  // versions are stale) is stopped. Admin routes have their own wrapper and
+  // are covered through the same component below.
+  return <LegalAcceptanceGate>{children}</LegalAcceptanceGate>;
 };
 
 const AdminRoute = ({ children }) => {
@@ -261,6 +272,13 @@ const AuthenticatedApp = () => {
         <Route path="/terms" element={<Navigate to="/Terms" replace />} />
         <Route path="/Cookies" element={withBoundary(<Cookies />)} />
         <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
+        {/* DPA-1 (2026-08-16) — Data Processing Agreement + its Annex III
+            (sub-processor list). Public, same shape as the other legal
+            routes: canonical capitalised path + lowercase redirect. */}
+        <Route path="/Dpa" element={withBoundary(<Dpa />)} />
+        <Route path="/dpa" element={<Navigate to="/Dpa" replace />} />
+        <Route path="/Subprocessors" element={withBoundary(<Subprocessors />)} />
+        <Route path="/subprocessors" element={<Navigate to="/Subprocessors" replace />} />
         {/* FASE 1.2 — payments-only phase: deprecated routes redirect to home.
             Components kept dormant in src/pages/, restore by re-importing. */}
         <Route path="/Deals" element={<Navigate to="/" replace />} />
@@ -342,12 +360,14 @@ const AuthenticatedApp = () => {
           <Route path="/admin/finance" element={withBoundary(<AdminFinance />)} />
           <Route path="/admin/provider-economics" element={withBoundary(<AdminProviderEconomics />)} />
           <Route path="/admin/founder-control" element={withBoundary(<AdminFounderControl />)} />
+          <Route path="/admin/settings" element={withBoundary(<AdminSettings />)} />
           <Route path="/admin/maintenance" element={withBoundary(<AdminMaintenance />)} />
           <Route path="/admin/documentation" element={withBoundary(<AdminDocumentation />)} />
           <Route path="/admin/evidence-review" element={withBoundary(<ReviewQueue />)} />
           <Route path="/admin/ecl-operations" element={withBoundary(<EclOperations />)} />
           <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />
           <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
+          <Route path="/admin/merchants" element={withBoundary(<AdminMerchants />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
           <Route path="/admin/pipeline" element={withBoundary(<AdminPipeline />)} />

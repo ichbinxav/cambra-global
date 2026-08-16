@@ -1,0 +1,76 @@
+{
+  "name": "LegalAcceptance",
+  "type": "object",
+  "description": "DPA-1 (2026-08-16) — durable evidence that a specific user accepted specific VERSIONS of the public legal documents at a specific moment. Before this entity the platform recorded nothing: LoginGate showed passive browsewrap text and no acceptance was ever persisted, so the question 'which version did this customer accept and when' had no answer. Evidence shape mirrors the Recover mandate acceptance (signed_by_email / signed_at / ip_address / user_agent / document_version) rather than creating a second evidence plane. Written only by the recordLegalAcceptance action hosted in claimAnonPaymentsResult; never by the client directly.",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Lowercased email of the accepting user, taken from the authenticated session server-side — never from the request body."
+    },
+    "brand_id": {
+      "type": "string",
+      "description": "Brand the user was operating when accepting, when one already exists. Optional: acceptance can legitimately precede brand creation."
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server timestamp of the acceptance."
+    },
+    "terms_version": {
+      "type": "string",
+      "description": "Version of the Terms & Conditions accepted, verbatim as published (date-based; Terms carried no version number before DPA-1)."
+    },
+    "dpa_version": {
+      "type": "string",
+      "description": "Version of the Data Processing Agreement accepted, verbatim as published."
+    },
+    "document_versions_json": {
+      "type": "object",
+      "description": "Full map of document versions plus the acceptance policy version, so the record stays interpretable if the field set changes later."
+    },
+    "acceptance_method": {
+      "type": "string",
+      "enum": [
+        "in_app_checkbox"
+      ],
+      "description": "How the acceptance was collected. Enumerated so a future channel (e.g. countersigned paper) cannot be recorded as if it were the same act."
+    },
+    "locale": {
+      "type": "string",
+      "description": "UI language in which the documents were displayed at the moment of acceptance — material, because the binding language differs by jurisdiction."
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP observed server-side at acceptance."
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "User agent observed server-side at acceptance, truncated to 500 characters."
+    }
+  },
+  "required": [
+    "user_email",
+    "accepted_at",
+    "terms_version",
+    "dpa_version"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

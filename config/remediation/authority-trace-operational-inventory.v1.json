@@ -1,0 +1,344 @@
+{
+  "schema_version": "cambra-remediation-r5-inventory-v1",
+  "catalog_version": "remediation-r5.1",
+  "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
+  "input_fingerprint_sha256": "0170746fed82a8d8f24ea78856d0a0c39fb54859304ca993ecb5f5d41a306d1a",
+  "components": [
+    {
+      "key": "effect_authority",
+      "path": "config/remediation/effect-authority-registry.v1.json",
+      "sha256": "ddf4413bf817409633034bd7f298b9c82a85fc4dc14905b793658abfa5ebe7f6",
+      "schema_version": "cambra-effect-authority-registry-v1"
+    },
+    {
+      "key": "agent_task_trace",
+      "path": "config/agenttask-creator-inventory.json",
+      "sha256": "15fa0b3b5ef970abc6937bab8af656e21f83cda3a2f28e2af5ea6b621387f685",
+      "schema_version": "agenttask-creator-inventory-v2.0.0"
+    },
+    {
+      "key": "workforce",
+      "path": "config/agent-workforce-catalog.v1.json",
+      "sha256": "5e421abb314d4562ba95287bc6374eead6b22b09c28ff45b5af96a231ee9358a",
+      "schema_version": "agent-workforce-catalog-v1.0.0"
+    },
+    {
+      "key": "operational_planes",
+      "path": "config/operational-plane-inventory.v1.json",
+      "sha256": "855b659adc042f4e35fc0604401f998d1e60ad8f36ce81e26bdcb04d6bd3d11b",
+      "schema_version": "operational-plane-inventory-v1.0.0"
+    }
+  ],
+  "summary": {
+    "otr_count": 5,
+    "implementation_partial_count": 2,
+    "implementation_repo_remediated_runtime_pending_count": 3,
+    "binary_not_met_count": 5,
+    "binary_closed_count": 0,
+    "runtime_verified_count": 0,
+    "effect_class_count": 10,
+    "material_boundary_count": 42,
+    "material_boundary_facade_wired_count": 5,
+    "material_trace_adapted_creator_count": 0,
+    "active_general_supervisor_count": 1,
+    "health_plane_surface_count": 5,
+    "authoritative_specialized_sweep_count": 1,
+    "incident_entity_count": 3,
+    "third_incident_entity_count": 0,
+    "agent_run_writer_count": 0,
+    "declared_agent_count": 34,
+    "declared_orchestrator_count": 5
+  },
+  "closure_rule": "REPO_REMEDIATED_RUNTIME_PENDING means the local criterion is failure-injected and source-bound; binary closure still requires deployed final-SHA drills, receipts or runtime evidence.",
+  "otr_rows": [
+    {
+      "otr_id": "ROOT-OTR-012",
+      "implementation_status": "PARTIAL",
+      "local_test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "evidence_component": "effect_authority",
+      "blockers": [
+        "37 of 42 material boundaries remain SOURCE_OBSERVED_ONLY and are not wired to the common facade",
+        "deployed final-SHA authority denials and zero-effect receipts are absent"
+      ]
+    },
+    {
+      "otr_id": "ROOT-OTR-013",
+      "implementation_status": "PARTIAL",
+      "local_test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "evidence_component": "agent_task_trace",
+      "blockers": [
+        "46 material creator file(s) lack a complete local terminal envelope",
+        "65 material route file(s) have no local AgentTask creator",
+        "111 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
+        "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
+      ]
+    },
+    {
+      "otr_id": "ROOT-OTR-014",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "evidence_component": "operational_planes",
+      "blockers": [
+        "deployed dependency outage, ambiguous-read and recovery containment drills are absent",
+        "real supervisor windows and denominator sufficiency are not observed"
+      ]
+    },
+    {
+      "otr_id": "ROOT-OTR-015",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "evidence_component": "operational_planes",
+      "blockers": [
+        "live AutonomyIncident/OperationalIncident parity and dedupe reconciliation have not run",
+        "incident adapter and command-center linkage are not verified on deployed final-SHA rows"
+      ]
+    },
+    {
+      "otr_id": "ROOT-OTR-020",
+      "implementation_status": "REPO_REMEDIATED_RUNTIME_PENDING",
+      "local_test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "binary_closure_status": "NOT_MET",
+      "runtime_verified": false,
+      "evidence_component": "workforce",
+      "blockers": [
+        "deployed workforce/catalog parity and stale legacy caller behavior are not observed",
+        "AgentRun zero-writer and systemHealthAgent quarantine claims are source-local only"
+      ]
+    }
+  ],
+  "runtime_pending": [
+    "deployed final-SHA effect-authority denial receipts for every registered material route",
+    "production trace completeness and orphan/ambiguity denominator windows",
+    "real CostUsageEvent and provider/domain receipt linkage for material AgentTask runs",
+    "deployed supervisor dependency outage and containment drills",
+    "live AutonomyIncident/OperationalIncident parity and dedupe reconciliation",
+    "deployed systemHealthAgent stale-caller quarantine behavior",
+    "deployed workforce catalog and AgentRun zero-writer parity",
+    "legacy AgentTask/Event/AgentRun reconciliation or backfill decision"
+  ],
+  "evidence": [
+    {
+      "path": "base44/entities/AgentRun.jsonc",
+      "sha256": "d86c378ad7d52d7ee4fda90bea44f3959f24d531b45b06716a3790e1f7b53b27",
+      "bytes": 3138
+    },
+    {
+      "path": "base44/entities/AgentTask.jsonc",
+      "sha256": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
+      "bytes": 14829
+    },
+    {
+      "path": "base44/entities/AutonomyIncident.jsonc",
+      "sha256": "f0f55af0a800d875652e2527c2e31584c635b0c86621e339d0e98aa493791bcf",
+      "bytes": 2626
+    },
+    {
+      "path": "base44/entities/Event.jsonc",
+      "sha256": "08a443b4d91669a19beb93f9e41b2f27d93ccdbe171d551a008903ddd7138a10",
+      "bytes": 9597
+    },
+    {
+      "path": "base44/entities/IncidentAlertDelivery.jsonc",
+      "sha256": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
+      "bytes": 2700
+    },
+    {
+      "path": "base44/entities/OperationalIncident.jsonc",
+      "sha256": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
+      "bytes": 3410
+    },
+    {
+      "path": "base44/functions/acceptRecoverMandate/entry.ts",
+      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
+      "bytes": 29825
+    },
+    {
+      "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
+      "sha256": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
+      "bytes": 33750
+    },
+    {
+      "path": "base44/functions/commercialSendMessage/entry.ts",
+      "sha256": "7ffc4be8abaf3c8d023bc55efe26cc44d2ec246e589b23404007794fe1325d97",
+      "bytes": 76839
+    },
+    {
+      "path": "base44/functions/createPaymentLink/entry.ts",
+      "sha256": "1e897b7ecba6a4fe0f8977fc5ee4c8922c1818a3e770ae887a1653329dff54e1",
+      "bytes": 11790
+    },
+    {
+      "path": "base44/functions/eclIncidentWorkflow/entry.ts",
+      "sha256": "a671239302e59b6024ca8335b03d33104bbb19b964daaf3b322c3683e6dc200e",
+      "bytes": 7978
+    },
+    {
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "sha256": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "bytes": 14523
+    },
+    {
+      "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
+      "sha256": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
+      "bytes": 10477
+    },
+    {
+      "path": "base44/functions/intelligenceAdmin/entry.ts",
+      "sha256": "a1b63eae7a1774b1c7587d5b8e3f0da050dba1d5861755fec7ca8688abb769f9",
+      "bytes": 17471
+    },
+    {
+      "path": "base44/functions/operatingHealthWorker/entry.ts",
+      "sha256": "28bdf08e2772ccd166fc7bd9a91e38cfa178503f42baf577a866820409bf7bc6",
+      "bytes": 10908
+    },
+    {
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "bytes": 21758
+    },
+    {
+      "path": "base44/functions/productionReadinessWorker/entry.ts",
+      "sha256": "7a800a744903e53d4573cbb2c97dbc0884bdf998ced2c3d8fb49d678cfca5bfa",
+      "bytes": 15981
+    },
+    {
+      "path": "base44/functions/reconcileRecoverBilling/entry.ts",
+      "sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31",
+      "bytes": 18063
+    },
+    {
+      "path": "base44/functions/recoverAutopilotWorker/entry.ts",
+      "sha256": "5882931b6301979f9c4e91e24e4e9b72a9a9d7b8f07e1e403ed2fff05c9bd2f6",
+      "bytes": 7507
+    },
+    {
+      "path": "base44/functions/startPaymentsMigration/entry.ts",
+      "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
+      "bytes": 31345
+    },
+    {
+      "path": "base44/functions/systemHealthAgent/entry.ts",
+      "sha256": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",
+      "bytes": 2063
+    },
+    {
+      "path": "base44/shared/agentAuthority.ts",
+      "sha256": "fd9723f665149845773e7da55343b29e50123747b37f8709475dd965cf24b92a",
+      "bytes": 3802
+    },
+    {
+      "path": "base44/shared/agentTaskEnvelope.ts",
+      "sha256": "e04b385dc4bba35179ea2efb4562ce2161b0a7ac6896af44ff74797c7886d6de",
+      "bytes": 40265
+    },
+    {
+      "path": "base44/shared/canonicalIncident.ts",
+      "sha256": "2d346d22341c8be10b4a5ac2b9d9946a070f8ca7cd55b0eabbfcea42b712e8b4",
+      "bytes": 10659
+    },
+    {
+      "path": "base44/shared/effectAuthority.ts",
+      "sha256": "6bdc27ae5660b3f9256fabf05f94281ca762e3df1d6c8c5a8f9a6c0e00805f67",
+      "bytes": 11891
+    },
+    {
+      "path": "base44/shared/supervisorObservation.ts",
+      "sha256": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006",
+      "bytes": 6893
+    },
+    {
+      "path": "config/freeze-change-log.json",
+      "sha256": "7a675c62b9e4f4dcf0b776523f309d90bd75c950dc5a9f573c7860a91356ad36",
+      "bytes": 41599
+    },
+    {
+      "path": "config/pre-ecl-freeze.json",
+      "sha256": "fb61148630171697818fe348ecc9192ec3604cada631ae0fa9dbbe133c28538f",
+      "bytes": 8554
+    },
+    {
+      "path": "scripts/generate-agent-workforce-catalog.mjs",
+      "sha256": "c34ac635d6b5d0fd3c2317789004c03233afe3e051894783ca1498d1fcc8fee3",
+      "bytes": 4026
+    },
+    {
+      "path": "scripts/generate-agenttask-creator-inventory.mjs",
+      "sha256": "746384cc11102bf10ae13c45b3bd76652da8effd1c461ea58cc2b08ec93ac4ed",
+      "bytes": 11327
+    },
+    {
+      "path": "scripts/generate-operational-plane-inventory.mjs",
+      "sha256": "e4fb5c5639b2f931498b1e7fc94299c068c4ba9d9ef93db2194bb1e72478e3fe",
+      "bytes": 10253
+    },
+    {
+      "path": "scripts/generate-remediation-r0.mjs",
+      "sha256": "220a4f7bf9cf7082631e5084509f4ddfe4478d2ccb966ca2ad2c0de6cd8ba231",
+      "bytes": 129784
+    },
+    {
+      "path": "scripts/lib/preEclFreeze.mjs",
+      "sha256": "b1aca1670326f42c3e5634da03a0e8a5ca772e68f3f64389d5309d08cc225272",
+      "bytes": 16677
+    },
+    {
+      "path": "src/lib/agentRegistry.js",
+      "sha256": "68ca8ac77ec9e076cef25979980a3d7b4c4449e53dd397eec70c98f0de981199",
+      "bytes": 11152
+    },
+    {
+      "path": "src/lib/agentTaskCanonicalWork.test.js",
+      "sha256": "043f279904faff2607dd7042ed1ceee7ef98a4c955451759692e12e7b7cbcc33",
+      "bytes": 2448
+    },
+    {
+      "path": "src/lib/agentTaskEnvelope.test.js",
+      "sha256": "19c950b8d476c9def80ab63fb1d68b327d5df1697dbea09157c4940f6365589e",
+      "bytes": 26057
+    },
+    {
+      "path": "src/lib/autonomousSupervisorFailClosed.test.js",
+      "sha256": "237e447cc178501d5aba46c8d0c0f7c193c4cb14551d0825962f669f131c1c09",
+      "bytes": 15452
+    },
+    {
+      "path": "src/lib/effectAuthority.test.js",
+      "sha256": "0c072a6cd7889276084b1f30713b9cb393029b925c479307802cdde88af7e65f",
+      "bytes": 10484
+    },
+    {
+      "path": "src/lib/eclP1Gate.test.js",
+      "sha256": "090bee24f294e9d5f00c41769066627363e47d3e52c2c7123bd4cf226ab7cb07",
+      "bytes": 14567
+    },
+    {
+      "path": "src/lib/operationalPlaneReconciliation.test.js",
+      "sha256": "e2fb14b64c69ef096c8107796759376a03e56ca223cb4b79b53542f54598dba3",
+      "bytes": 10399
+    },
+    {
+      "path": "src/lib/preEclFreeze.test.js",
+      "sha256": "3e75a24fc6cea5de26ba7828f090873bca0031ab58b0e5469c6308a3ab6cc175",
+      "bytes": 3836
+    },
+    {
+      "path": "src/lib/remediationR0Artifacts.test.js",
+      "sha256": "13c218b2e9848055822f3b9f1ea8634a61a9abbfb0ee1127d26bcb1cc6766d08",
+      "bytes": 16659
+    }
+  ]
+}

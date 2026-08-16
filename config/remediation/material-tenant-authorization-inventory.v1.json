@@ -1,0 +1,2498 @@
+{
+  "schema_version": "cambra-material-tenant-authorization-inventory-v1",
+  "inventory_status": "PARTIAL_LOCAL_PROOF_RUNTIME_PENDING",
+  "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
+  "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
+  "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
+  "material_registry_sha256": "4d01390613db72b79d3828d595320be803ca25765baba997b21ae89760221926",
+  "material_registry_input_fingerprint_sha256": "627a20db4b3510b41e85f4e9c7393d475721ab9f0ecae34ed5e2c9a2a9b60e72",
+  "input_fingerprint_sha256": "3b54b5ac308759b5fb44be7bfeb98883b8d8f358e95c79fb6ee3560880670c78",
+  "reproducible_local_test_run": {
+    "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
+    "test_files": [
+      "src/lib/apiUsageBillingConcurrency.test.js",
+      "src/lib/approvalAuthoritySaga.test.js",
+      "src/lib/commercialSendSafety.test.js",
+      "src/lib/contractPolicyE2E.test.js",
+      "src/lib/developerMigrationLifecycle.test.js",
+      "src/lib/disasterRecovery.test.js",
+      "src/lib/externalApprovalExecution.test.js",
+      "src/lib/financialEntityServiceRoleRls.test.js",
+      "src/lib/intelligenceFoundationContracts.test.js",
+      "src/lib/intelligenceTenantScope.test.js",
+      "src/lib/materialTenantAuthorization.test.js",
+      "src/lib/p4CostGovernance.test.js",
+      "src/lib/recoverFinancialHardening.test.js",
+      "src/lib/schedulerLeaseFencing.test.js",
+      "src/lib/tenantOwnership.test.js",
+      "src/lib/webhookDeadLetterClaim.test.js"
+    ],
+    "test_file_count": 16,
+    "test_status": "PASSED_LOCAL",
+    "local_test_scope": "PARTIAL_CRITERION_ONLY",
+    "limitation": "The command exercises mapped gates and failure fixtures; it does not invoke all Base44 HTTP handlers or establish runtime closure."
+  },
+  "summary": {
+    "route_count": 42,
+    "proof_class_counts": {
+      "NO_PHYSICAL_ROUTE": 1,
+      "REAL_PURE_GATE_EXECUTION": 6,
+      "REAL_SHARED_GATE_EXECUTION": 21,
+      "SOURCE_OBSERVED_ONLY": 14
+    },
+    "test_status_counts": {
+      "NOT_RUN": 15,
+      "PASSED_LOCAL": 27
+    },
+    "actor_denial_equivalence_counts": {
+      "NOT_PROVEN": 28,
+      "PASSED_LOCAL": 14
+    },
+    "authority_unavailable_counts": {
+      "NOT_APPLICABLE": 6,
+      "NOT_PROVEN": 17,
+      "PASSED_LOCAL": 19
+    },
+    "authority_ambiguous_counts": {
+      "NOT_APPLICABLE": 8,
+      "NOT_PROVEN": 28,
+      "PASSED_LOCAL": 6
+    },
+    "implementation_partial_count": 42,
+    "binary_closed_count": 0,
+    "runtime_verified_count": 0
+  },
+  "routes": [
+    {
+      "boundary_id": "MB-SEND-COMMERCIAL",
+      "logical_route": "commercialSendMessage",
+      "physical_host": "commercialSendMessage",
+      "material_kinds": [
+        "send",
+        "negotiate",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "CommunicationThread.brand_id; _platform only for explicitly platform-scoped negotiation",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "OUTLOOK_PROVIDER_IDEMPOTENCY_PARTIAL",
+        "OUTLOOK_POST_SEND_RECONCILIATION_PARTIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/commercialSendMessage/entry.ts",
+        "base44/shared/commercialSendSafety.ts",
+        "base44/shared/costGovernance.ts"
+      ],
+      "covered_route_members": [
+        "commercialSendMessage",
+        "providerNegotiationAgent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "communication tenant is derived from durable related entities and persisted before send",
+          "unresolved, unavailable, conflicting or ambiguous tenant evidence pauses automation and denies the send path"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/commercialSendSafety.ts",
+          "sha256": "abf7c435dd11e444d13f750ebc32ea1211a9f2ffa4b91dabbf293e7acbfebe52",
+          "bytes": 30425
+        },
+        {
+          "path": "base44/shared/communicationTenant.ts",
+          "sha256": "4714c8f149b0a5407f5a5111557b736e28448da97046b18a1d577b33e8b2fc17",
+          "bytes": 9334
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/approvalAuthoritySaga.test.js",
+          "sha256": "0d4bc51595fd3dbf6c22937ef6e7aba1549af2dbc057f303f894915bbd1447db",
+          "bytes": 30353
+        },
+        {
+          "path": "src/lib/commercialSendSafety.test.js",
+          "sha256": "6158589d51b46167ed3c596f7e6a779860a1afc869c052886f8d839ae4a58335",
+          "bytes": 23283
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner versus unknown-actor response equivalence is not exercised through the complete route",
+        "Outlook provider-final reconciliation remains partial in the material registry"
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-CORE-EMAIL",
+      "logical_route": "sendCostGovernedEmail",
+      "physical_host": "shared/costGovernance",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "Inherited from each physical caller",
+      "tenant_key": "Caller entity brand_id or _platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/sendRecoverContractEmail/entry.ts",
+        "base44/shared/costGovernance.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-SEND-RESEND-PUBLIC-NOTIFY",
+      "logical_route": "submitContactMessage|submitWaitlistSignup",
+      "physical_host": "submitContactMessage|submitWaitlistSignup",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "Public form caller after validation/rate limit",
+      "tenant_key": "_platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "PROVIDER_FINAL_RECEIPT_MISSING",
+        "RESEND_IDEMPOTENCY_WINDOW_RUNTIME_PROOF_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/submitContactMessage/entry.ts",
+        "base44/functions/submitWaitlistSignup/entry.ts",
+        "base44/shared/costGovernance.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-PUBLISH-SOCIAL-APPROVED",
+      "logical_route": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "physical_host": "linkedinAgent|xTwitterAgent|newsletterAgent",
+      "material_kinds": [
+        "send",
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "requireAdminOrInternal and finalized founder approval",
+      "tenant_key": "Approval/ExternalTask.brand_id or _platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "PROVIDER_FINAL_COST_RECEIPT_PARTIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/linkedinAgent/entry.ts",
+        "base44/functions/newsletterAgent/entry.ts",
+        "base44/functions/xTwitterAgent/entry.ts",
+        "base44/shared/externalApprovalExecution.ts"
+      ],
+      "covered_route_members": [
+        "linkedinAgent",
+        "meetingAgent",
+        "newsletterAgent",
+        "xTwitterAgent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "different and missing actors are rejected by the same external_execution_actor_mismatch gate",
+          "approval/task tenant mismatch, immutable-content mismatch and stale execution ownership deny before the provider effect"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/approvalAuthority.ts",
+          "sha256": "3facdd9cc4dafe44c7191b638eef3cea013b37a682245f413e2bdf9467075781",
+          "bytes": 14285
+        },
+        {
+          "path": "base44/shared/externalApprovalExecution.ts",
+          "sha256": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591",
+          "bytes": 23170
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/externalApprovalExecution.test.js",
+          "sha256": "9d38ebd293f9c190a9bebe106b92a654c8479c139288c35b9517ddb23a70a16c",
+          "bytes": 14905
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "physical handler invocation with Base44 auth and provider adapters is not executed locally",
+        "provider-final receipt and cost reconciliation remain partial"
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULE-MEETING",
+      "logical_route": "outlookMeetingCoordinator",
+      "physical_host": "outlookMeetingCoordinator",
+      "material_kinds": [
+        "material_schedule",
+        "provider_effect"
+      ],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "CommunicationThread.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "CALENDAR_CANCEL_RECONCILIATION_PARTIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/meetingAgent/entry.ts",
+        "base44/functions/outlookMeetingCoordinator/entry.ts",
+        "base44/shared/externalApprovalExecution.ts"
+      ],
+      "covered_route_members": [
+        "linkedinAgent",
+        "meetingAgent",
+        "newsletterAgent",
+        "xTwitterAgent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "different and missing actors are rejected by the same external_execution_actor_mismatch gate",
+          "approval/task tenant mismatch, immutable-content mismatch and stale execution ownership deny before the provider effect"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/approvalAuthority.ts",
+          "sha256": "3facdd9cc4dafe44c7191b638eef3cea013b37a682245f413e2bdf9467075781",
+          "bytes": 14285
+        },
+        {
+          "path": "base44/shared/externalApprovalExecution.ts",
+          "sha256": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591",
+          "bytes": 23170
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/externalApprovalExecution.test.js",
+          "sha256": "9d38ebd293f9c190a9bebe106b92a654c8479c139288c35b9517ddb23a70a16c",
+          "bytes": 14905
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "physical handler invocation with Base44 auth and provider adapters is not executed locally",
+        "provider-final receipt and cost reconciliation remain partial"
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DISPATCH",
+      "logical_route": "dispatchWebhook",
+      "physical_host": "dispatchWebhook",
+      "material_kinds": [
+        "send",
+        "provider_effect"
+      ],
+      "actor": "Admin or timing-safe INTERNAL_CALL_SECRET; route is PURGE-2 quarantined but callable; legacy sendTestWebhook is hard-quarantined HTTP 410",
+      "tenant_key": "_platform fan-out to active WebhookEndpoint rows",
+      "material_registry_status": "QUARANTINED_PARTIAL",
+      "material_registry_gap_codes": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "ENDPOINT_HEALTH_PROJECTION_RECONCILIATION_PARTIAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/dispatchWebhook/entry.ts",
+        "base44/functions/sendTestWebhook/entry.ts",
+        "base44/shared/webhookPublicPayload.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-WEBHOOK-DLQ-RETRY",
+      "logical_route": "processWebhookDeadLetters",
+      "physical_host": "processWebhookDeadLetters",
+      "material_kinds": [
+        "send",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "actor": "requireAdminOrInternal plus SchedulerRun",
+      "tenant_key": "_platform; WebhookEndpoint.id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "CUSTOM_RECEIVER_IDEMPOTENCY_NOT_PROVEN",
+        "CUSTOM_RECEIVER_RECONCILIATION_UNAVAILABLE",
+        "DEPLOYED_CONCURRENT_REPLAY_RECEIPT_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/processWebhookDeadLetters/entry.ts",
+        "base44/shared/schedulerRun.ts",
+        "base44/shared/webhookDeadLetterClaim.ts"
+      ],
+      "covered_route_members": [
+        "processWebhookDeadLetters"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "admin/internal actor gate denies non-admin and unknown actors identically",
+          "dead-letter ownership is CAS-claimed and ambiguous post-effect work is fenced"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        },
+        {
+          "path": "base44/shared/webhookDeadLetterClaim.ts",
+          "sha256": "7e1dee08442e9e69a5b318606180b83919ac108a5ff19537634d502a91e623bf",
+          "bytes": 19158
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        },
+        {
+          "path": "src/lib/webhookDeadLetterClaim.test.js",
+          "sha256": "ae89d58fee2f77a5949e9d41765203e85a9a41fbb5146067994e902224032d38",
+          "bytes": 20883
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "receiver-side webhook idempotency and deployed authorization traces are external"
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-PROVIDER",
+      "logical_route": "startProviderNegotiation|providerNegotiationAgent",
+      "physical_host": "startProviderNegotiation|providerNegotiationAgent",
+      "material_kinds": [
+        "negotiate",
+        "terms",
+        "send",
+        "paid_spend"
+      ],
+      "actor": "requireAdminOrInternal",
+      "tenant_key": "DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "NEGOTIATION_START_CAS_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_AI"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/commercialSendMessage/entry.ts",
+        "base44/functions/providerNegotiationAgent/entry.ts",
+        "base44/functions/startProviderNegotiation/entry.ts"
+      ],
+      "covered_route_members": [
+        "commercialSendMessage",
+        "providerNegotiationAgent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "communication tenant is derived from durable related entities and persisted before send",
+          "unresolved, unavailable, conflicting or ambiguous tenant evidence pauses automation and denies the send path"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/commercialSendSafety.ts",
+          "sha256": "abf7c435dd11e444d13f750ebc32ea1211a9f2ffa4b91dabbf293e7acbfebe52",
+          "bytes": 30425
+        },
+        {
+          "path": "base44/shared/communicationTenant.ts",
+          "sha256": "4714c8f149b0a5407f5a5111557b736e28448da97046b18a1d577b33e8b2fc17",
+          "bytes": 9334
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/approvalAuthoritySaga.test.js",
+          "sha256": "0d4bc51595fd3dbf6c22937ef6e7aba1549af2dbc057f303f894915bbd1447db",
+          "bytes": 30353
+        },
+        {
+          "path": "src/lib/commercialSendSafety.test.js",
+          "sha256": "6158589d51b46167ed3c596f7e6a779860a1afc869c052886f8d839ae4a58335",
+          "bytes": 23283
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner versus unknown-actor response equivalence is not exercised through the complete route",
+        "Outlook provider-final reconciliation remains partial in the material registry"
+      ]
+    },
+    {
+      "boundary_id": "MB-NEGOTIATE-COLLECTIVE",
+      "logical_route": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "physical_host": "aggregateProcurementWorker|collectiveNegotiationAgent|aggregateAgreementWorker",
+      "material_kinds": [
+        "negotiate",
+        "terms",
+        "send",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal scheduler",
+      "tenant_key": "_platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_AI"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/aggregateAgreementWorker/entry.ts",
+        "base44/functions/aggregateProcurementWorker/entry.ts",
+        "base44/functions/collectiveNegotiationAgent/entry.ts",
+        "base44/shared/schedulerRun.ts"
+      ],
+      "covered_route_members": [
+        "requireAdminOrInternal"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "non-admin and unknown actors receive the same 403 forbidden response",
+          "authentication-authority read failure returns 503 and does not authorize"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "route wiring is source-observed, not a dynamic invocation of every physical handler",
+        "route-specific tenant/entity binding beyond the shared admin/internal gate is not universally proven"
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-APPROVAL-EXECUTION",
+      "logical_route": "resolveCommercialApproval",
+      "physical_host": "resolveCommercialApproval",
+      "material_kinds": [
+        "terms",
+        "sign_mandate",
+        "negotiate",
+        "send"
+      ],
+      "actor": "Strict admin plus founder-command-created Approval",
+      "tenant_key": "Approval.brand_id or _platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "AGGREGATE_EXECUTION_LEGAL_ENFORCEMENT_NOT_PROVEN"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/resolveCommercialApproval/entry.ts",
+        "base44/shared/approvalResolutionSaga.ts"
+      ],
+      "covered_route_members": [
+        "resolveCommercialApproval"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "resolution actor, authority hash, command key and approval tenant bindings are checked before effects",
+          "stale or conflicting saga ownership is denied and post-effect ambiguity becomes review-required"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/approvalAuthority.ts",
+          "sha256": "3facdd9cc4dafe44c7191b638eef3cea013b37a682245f413e2bdf9467075781",
+          "bytes": 14285
+        },
+        {
+          "path": "base44/shared/approvalResolutionSaga.ts",
+          "sha256": "ab604f94f03414343d70c90c24598af6ce7044498edbd8eb6795290c5d57635a",
+          "bytes": 20395
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/approvalAuthoritySaga.test.js",
+          "sha256": "0d4bc51595fd3dbf6c22937ef6e7aba1549af2dbc057f303f894915bbd1447db",
+          "bytes": 30353
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner and unknown-actor HTTP response equivalence is not exercised through resolveCommercialApproval"
+      ]
+    },
+    {
+      "boundary_id": "MB-LEGAL-AUTHORITY-ADMIN",
+      "logical_route": "manageLegalExecution",
+      "physical_host": "marketPolicyAdmin",
+      "material_kinds": [
+        "terms",
+        "sign_mandate"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "Jurisdiction/global/_platform or Mandate.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/deployment-topology.json",
+        "base44/functions/marketPolicyAdmin/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-ACCEPT",
+      "logical_route": "startRecoverAcceptance|acceptRecoverMandate",
+      "physical_host": "startRecoverAcceptance|acceptRecoverMandate",
+      "material_kinds": [
+        "terms",
+        "sign_mandate"
+      ],
+      "actor": "Authenticated owner; session email binds signature",
+      "tenant_key": "DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/acceptRecoverMandate/entry.ts",
+        "base44/functions/startRecoverAcceptance/entry.ts",
+        "base44/shared/recoverAcceptance.ts"
+      ],
+      "covered_route_members": [
+        "acceptRecoverMandate",
+        "startPaymentMethodSetup",
+        "startRecoverAcceptance"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "owner succeeds while non-owner, missing actor and unknown activation receive the same non-enumerable denial",
+          "unavailable and duplicate activation/brand authority reads fail closed before material work"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/contractPolicyE2E.test.js",
+          "sha256": "207776c4efab6cd736f724a632d4ebbad797fc1c71b1801b66924c069e9e426f",
+          "bytes": 27400
+        }
+      ],
+      "remaining_gaps": [
+        "Base44 request/auth and provider-effect handlers are not executed end-to-end locally",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-MANDATE-REVOKE",
+      "logical_route": "revokeMandate",
+      "physical_host": "revokeMandate",
+      "material_kinds": [
+        "sign_mandate",
+        "terms"
+      ],
+      "actor": "Authenticated owner/signer/brand contact or admin",
+      "tenant_key": "Mandate -> DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/revokeMandate/entry.ts"
+      ],
+      "covered_route_members": [
+        "approveRecoverReportForInvoicing",
+        "createEligibleRecoverInvoices",
+        "revokeMandate"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "financial authority reads and CAS ownership are exercised with injected failures and concurrency",
+          "lost claim ownership denies the provider effect"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/economicExecution.ts",
+          "sha256": "346052a4039db3a4231b6f58b1efdd0901a0adc0b973869fe9627c554b03305a",
+          "bytes": 88685
+        },
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/recoverFinancialHardening.test.js",
+          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
+          "bytes": 22187
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner and unknown-actor HTTP response equivalence is not proven for every route member"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONDITIONS-ACTIVATION",
+      "logical_route": "recordConditionsActivation",
+      "physical_host": "recordConditionsActivation",
+      "material_kinds": [
+        "terms",
+        "billing_charge"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "PRE_EFFECT_CLAIM_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/recordConditionsActivation/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-TERMS-PROVIDER-MONETIZATION-LEGAL",
+      "logical_route": "approveProviderMonetizationLegalReview",
+      "physical_host": "approveProviderMonetizationLegalReview",
+      "material_kinds": [
+        "terms",
+        "billing_charge"
+      ],
+      "actor": "Strict admin and approved=true",
+      "tenant_key": "_platform DynamicAgreement.provider_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "PRE_EFFECT_CLAIM_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_SIGN_MANDATE"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/approveProviderMonetizationLegalReview/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-PDF-STORAGE",
+      "logical_route": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "physical_host": "generateRecoverContractPdf|retryPendingRecoverContracts",
+      "material_kinds": [
+        "terms",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal; retry worker additionally SchedulerRun",
+      "tenant_key": "Mandate.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT",
+        "ATOMIC_LEASE_NOT_PROVEN"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/generateRecoverContractPdf/entry.ts",
+        "base44/functions/retryPendingRecoverContracts/entry.ts",
+        "base44/shared/recoverContractState.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-CONTRACT-EMAIL",
+      "logical_route": "sendRecoverContractEmail",
+      "physical_host": "sendRecoverContractEmail",
+      "material_kinds": [
+        "send",
+        "terms",
+        "paid_spend"
+      ],
+      "actor": "Admin/internal; resend only admin",
+      "tenant_key": "Mandate.brand_id and signed_by_email",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/sendRecoverContractEmail/entry.ts",
+        "base44/shared/costGovernance.ts",
+        "base44/shared/recoverContractState.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-PAYMENTS",
+      "logical_route": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "physical_host": "startPaymentsMigration|updatePaymentsMigrationTask",
+      "material_kinds": [
+        "migrate_go_live",
+        "material_schedule"
+      ],
+      "actor": "Owner/admin/internal at start; admin for task/go-live update",
+      "tenant_key": "DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "POINT_CHECK_NOT_EPOCH"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/startPaymentsMigration/entry.ts",
+        "base44/functions/updatePaymentsMigrationTask/entry.ts",
+        "base44/shared/operationalControl.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-MIGRATE-DEVELOPER-GITHUB",
+      "logical_route": "developerMigrationEngine",
+      "physical_host": "developerMigrationEngine",
+      "material_kinds": [
+        "migrate_go_live",
+        "provider_effect"
+      ],
+      "actor": "Strict admin with finalized Approval/AgentTask",
+      "tenant_key": "DeveloperMigrationRun workspace/brand binding",
+      "material_registry_status": "CONTROLLED",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/developerMigrationEngine/entry.ts",
+        "base44/shared/developerMigrationLifecycle.ts"
+      ],
+      "covered_route_members": [
+        "developerMigrationEngine"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "workspace/run ownership, lease fencing and emergency epoch changes deny stale commits"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/developerMigrationLifecycle.ts",
+          "sha256": "c4d841d26ed15ba76c3506f757f310cef739edff2fe74dd1ad87c720bed84362",
+          "bytes": 41407
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/developerMigrationLifecycle.test.js",
+          "sha256": "9a84345914b716fb5ffce5e680094f659a6f4325ff829041eb4713a689f88bc8",
+          "bytes": 21965
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner and unknown-actor route responses are not proven identical"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-ELIGIBILITY",
+      "logical_route": "approveRecoverReportForInvoicing",
+      "physical_host": "approveRecoverReportForInvoicing",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "MonthlySavingsReport/DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "BILLING_ELIGIBILITY_EPOCH_NOT_PROVEN"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/approveRecoverReportForInvoicing/entry.ts"
+      ],
+      "covered_route_members": [
+        "approveRecoverReportForInvoicing",
+        "createEligibleRecoverInvoices",
+        "revokeMandate"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "financial authority reads and CAS ownership are exercised with injected failures and concurrency",
+          "lost claim ownership denies the provider effect"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/economicExecution.ts",
+          "sha256": "346052a4039db3a4231b6f58b1efdd0901a0adc0b973869fe9627c554b03305a",
+          "bytes": 88685
+        },
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/recoverFinancialHardening.test.js",
+          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
+          "bytes": 22187
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner and unknown-actor HTTP response equivalence is not proven for every route member"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-REPORT-GENERATION",
+      "logical_route": "generateMonthlySavingsReport",
+      "physical_host": "generateMonthlySavingsReport",
+      "material_kinds": [
+        "billing_charge",
+        "claim_outcome_dataset_promotion"
+      ],
+      "actor": "Admin/internal/scheduler",
+      "tenant_key": "DealActivation.brand_id + activation/month report scope",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "RECOVER_REPORT_CREATE_ATOMIC_CLAIM_MISSING",
+        "DUPLICATE_REPORT_RUNTIME_RECONCILIATION_PENDING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/generateMonthlySavingsReport/entry.ts",
+        "base44/shared/recoverReportAuthority.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-INVOICE-PDF-STORAGE",
+      "logical_route": "generateInvoicePdf",
+      "physical_host": "generateInvoicePdf",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING",
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/generateInvoicePdf/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-RECOVER-STRIPE",
+      "logical_route": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "physical_host": "createEligibleRecoverInvoices|reconcileRecoverBilling|stripeBillingWebhook",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal/scheduler; webhook authenticated by Stripe signature",
+      "tenant_key": "MonthlySavingsReport/DealActivation/Invoice.brand_id",
+      "material_registry_status": "CONTROLLED",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/createEligibleRecoverInvoices/entry.ts",
+        "base44/functions/reconcileRecoverBilling/entry.ts",
+        "base44/functions/stripeBillingWebhook/entry.ts",
+        "base44/shared/economicExecution.ts"
+      ],
+      "covered_route_members": [
+        "approveRecoverReportForInvoicing",
+        "createEligibleRecoverInvoices",
+        "revokeMandate"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "financial authority reads and CAS ownership are exercised with injected failures and concurrency",
+          "lost claim ownership denies the provider effect"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/economicExecution.ts",
+          "sha256": "346052a4039db3a4231b6f58b1efdd0901a0adc0b973869fe9627c554b03305a",
+          "bytes": 88685
+        },
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/recoverFinancialHardening.test.js",
+          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
+          "bytes": 22187
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "non-owner and unknown-actor HTTP response equivalence is not proven for every route member"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-METHOD",
+      "logical_route": "startPaymentMethodSetup",
+      "physical_host": "startPaymentMethodSetup",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "actor": "Authenticated owner",
+      "tenant_key": "Brand/DealActivation.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "SETUP_INTENT_COMPLETION_RECONCILIATION_EXTERNAL"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/startPaymentMethodSetup/entry.ts",
+        "base44/shared/operationalControl.ts"
+      ],
+      "covered_route_members": [
+        "acceptRecoverMandate",
+        "startPaymentMethodSetup",
+        "startRecoverAcceptance"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "owner succeeds while non-owner, missing actor and unknown activation receive the same non-enumerable denial",
+          "unavailable and duplicate activation/brand authority reads fail closed before material work"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/recoverAcceptance.ts",
+          "sha256": "fb5e3120f3e40bed636262e8f40614232cf8a6382cdb0ee717ad447980db811b",
+          "bytes": 14366
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/contractPolicyE2E.test.js",
+          "sha256": "207776c4efab6cd736f724a632d4ebbad797fc1c71b1801b66924c069e9e426f",
+          "bytes": 27400
+        }
+      ],
+      "remaining_gaps": [
+        "Base44 request/auth and provider-effect handlers are not executed end-to-end locally",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PAYMENT-LINK",
+      "logical_route": "createPaymentLink",
+      "physical_host": "createPaymentLink",
+      "material_kinds": [
+        "billing_charge",
+        "provider_effect"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "material_registry_status": "CONTROLLED",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/createPaymentLink/entry.ts",
+        "base44/shared/operationalControl.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-API-OVERAGE",
+      "logical_route": "billApiUsage",
+      "physical_host": "billApiUsage",
+      "material_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Organization.id + period_month",
+      "material_registry_status": "CONTROLLED",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/billApiUsage/entry.ts",
+        "base44/shared/apiUsageBilling.ts",
+        "base44/shared/schedulerRun.ts"
+      ],
+      "covered_route_members": [
+        "billApiUsage"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "admin/internal denial equivalence is executed",
+          "organization-period authority is bounded, fail-closed and single-winner under concurrency"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/apiUsageBilling.ts",
+          "sha256": "0111bac93cd5c6ae05c19e15a6e8ec0d9fa22be2b080ebaf7096aaa19f854687",
+          "bytes": 18387
+        },
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/apiUsageBillingConcurrency.test.js",
+          "sha256": "558416209d29707f0d363b6240634fde2aa29e71cc42be8bb23f149328bd6aa3",
+          "bytes": 7752
+        },
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "deployed scheduler identity and organization tenancy are not runtime-verified",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-PROVIDER-REVENUE",
+      "logical_route": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "physical_host": "providerRevenueBillingWorker|recordProviderRevenueInvoiceIssued|recordProviderRevenuePayment",
+      "material_kinds": [
+        "billing_charge",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal; billing preparation also SchedulerRun",
+      "tenant_key": "_platform agreement_id/provider_id/period/currency",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "LOCAL_INVOICE_CREATE_CAS_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/providerRevenueBillingWorker/entry.ts",
+        "base44/functions/recordProviderRevenueInvoiceIssued/entry.ts",
+        "base44/functions/recordProviderRevenuePayment/entry.ts"
+      ],
+      "covered_route_members": [
+        "requireAdminOrInternal"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "non-admin and unknown actors receive the same 403 forbidden response",
+          "authentication-authority read failure returns 503 and does not authorize"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "route wiring is source-observed, not a dynamic invocation of every physical handler",
+        "route-specific tenant/entity binding beyond the shared admin/internal gate is not universally proven"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-MANUAL-RECORD",
+      "logical_route": "recordPayment",
+      "physical_host": "recordPayment",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "actor": "Admin/internal",
+      "tenant_key": "Invoice.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "LOCAL_PAYMENT_CAS_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/recordPayment/entry.ts"
+      ],
+      "covered_route_members": [
+        "requireAdminOrInternal"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "non-admin and unknown actors receive the same 403 forbidden response",
+          "authentication-authority read failure returns 503 and does not authorize"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "route wiring is source-observed, not a dynamic invocation of every physical handler",
+        "route-specific tenant/entity binding beyond the shared admin/internal gate is not universally proven"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LOCAL-RECONCILE-OVERRIDE",
+      "logical_route": "reconcileInvoice",
+      "physical_host": "reconcileInvoice",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "actor": "Strict admin",
+      "tenant_key": "Invoice.brand_id",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "BILLING_TRUTH_MUTATION_EPOCH_MISSING",
+        "PRE_EFFECT_CLAIM_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/reconcileInvoice/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-BILL-LEGACY-INVOICE-EVENT-QUARANTINE",
+      "logical_route": "onInvoiceStatusEvent",
+      "physical_host": "onInvoiceStatusEvent",
+      "material_kinds": [
+        "billing_charge"
+      ],
+      "actor": "DENIED_FOR_ALL",
+      "tenant_key": "No tenant is resolved because the route terminates before request parsing",
+      "material_registry_status": "QUARANTINED",
+      "material_registry_gap_codes": [
+        "PURGE_2_RUNTIME_PENDING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/onInvoiceStatusEvent/entry.ts"
+      ],
+      "covered_route_members": [
+        "onInvoiceStatusEvent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "every actor and payload receives HTTP 410 before parsing, authority reads, or financial writes",
+          "the legacy route cannot create PaymentEvent or mutate Invoice/MonthlySavingsReport"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/functions/onInvoiceStatusEvent/entry.ts",
+          "sha256": "4185bbd036b05f8b68ee1331b24dc8b4d3a7a8274d38fb25451cf0ddf612fdfd",
+          "bytes": 666
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/financialEntityServiceRoleRls.test.js",
+          "sha256": "d2badb6525473265843bc0a1de2eb369b31be8c8e2a04fa16d355bb69ca1ec89",
+          "bytes": 5638
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "physical removal and production log verification belong to PURGE-2 and were not executed"
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-API-ENRICHMENT",
+      "logical_route": "paidProviderFetch|reservePaidOperation|guardReservedPaidProviderEffect",
+      "physical_host": "shared/costGovernance",
+      "material_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "Inherited from physical caller",
+      "tenant_key": "Caller brand/entity or _platform",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "STABLE_EFFECT_KEY_CALLER_DEPENDENT",
+        "GUARDED_PROVIDER_EFFECT_CALLER_DEPENDENT",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/autonomousPartnerWorker/entry.ts",
+        "base44/functions/blogAgent/entry.ts",
+        "base44/functions/chatChiefOrchestrator/entry.ts",
+        "base44/functions/commercialSendMessage/entry.ts",
+        "base44/functions/competitorMonitorAgent/entry.ts",
+        "base44/functions/copilotChat/entry.ts",
+        "base44/functions/crmAgent/entry.ts",
+        "base44/functions/goLiveControlAdmin/entry.ts",
+        "base44/functions/instantlyProviderAdmin/entry.ts",
+        "base44/functions/instantlyReconciliationWorker/entry.ts",
+        "base44/functions/joinCollective/entry.ts",
+        "base44/functions/leadDiscoveryAgent/entry.ts",
+        "base44/functions/leadEnrichmentAgent/entry.ts",
+        "base44/functions/linkedinAgent/entry.ts",
+        "base44/functions/newsletterAgent/entry.ts",
+        "base44/functions/onBrandCreated/entry.ts",
+        "base44/functions/outboundControlAdmin/entry.ts",
+        "base44/functions/processUploadedFile/entry.ts",
+        "base44/functions/providerContactResolver/entry.ts",
+        "base44/functions/providerMonitorAgent/entry.ts",
+        "base44/functions/providerResearchAgent/entry.ts",
+        "base44/functions/recoverBillingDigest/entry.ts",
+        "base44/functions/requestP4Estimate/entry.ts",
+        "base44/functions/resendInboundWebhook/entry.ts",
+        "base44/functions/sendMonthlySavingsSummary/entry.ts",
+        "base44/functions/sendRecoverContractEmail/entry.ts",
+        "base44/functions/seoAgent/entry.ts",
+        "base44/functions/submitCallRequest/entry.ts",
+        "base44/functions/submitContactMessage/entry.ts",
+        "base44/functions/submitWaitlistSignup/entry.ts",
+        "base44/functions/xTwitterAgent/entry.ts",
+        "base44/shared/costGovernance.ts"
+      ],
+      "covered_route_members": [
+        "guardReservedPaidProviderEffect",
+        "paidProviderFetch",
+        "reservePaidOperation"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "cost authority and reservation behavior are executed against local failure/concurrency fixtures"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/p4CostGovernance.test.js",
+          "sha256": "2180cea5b57898cec93964383a632a703aadb3d814eb2a5767f0f1a17a3fc1f7",
+          "bytes": 11963
+        }
+      ],
+      "remaining_gaps": [
+        "caller-specific tenant ownership is not proven for the complete dynamic caller census",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-PAID-AI",
+      "logical_route": "callCambraClaude",
+      "physical_host": "shared/commercialModelRouter",
+      "material_kinds": [
+        "paid_spend",
+        "provider_effect"
+      ],
+      "actor": "Inherited from 38 physical callers",
+      "tenant_key": "Caller brand/entity or _platform",
+      "material_registry_status": "PARTIAL_HARD_GAP",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_AI",
+        "AI_RETRY_EFFECT_KEY_UNSTABLE",
+        "PROVIDER_FINAL_RECEIPT_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/autonomousCommercialWorker/entry.ts",
+        "base44/functions/autonomousPartnerWorker/entry.ts",
+        "base44/functions/blogAgent/entry.ts",
+        "base44/functions/codeReviewAgent/entry.ts",
+        "base44/functions/collectiveNegotiationAgent/entry.ts",
+        "base44/functions/commercialFollowUpWorker/entry.ts",
+        "base44/functions/commercialReplyAgent/entry.ts",
+        "base44/functions/competitorMonitorAgent/entry.ts",
+        "base44/functions/complianceAgent/entry.ts",
+        "base44/functions/contractIPAgent/entry.ts",
+        "base44/functions/developerMigrationEngine/entry.ts",
+        "base44/functions/discoveryTechStackAgent/entry.ts",
+        "base44/functions/fixValidatorAgent/entry.ts",
+        "base44/functions/followUpAgent/entry.ts",
+        "base44/functions/founderChiefOfStaff/entry.ts",
+        "base44/functions/founderCopilotAgent/entry.ts",
+        "base44/functions/gdprAgent/entry.ts",
+        "base44/functions/investorUpdateAgent/entry.ts",
+        "base44/functions/leadScoringAgent/entry.ts",
+        "base44/functions/legalReviewAgent/entry.ts",
+        "base44/functions/linkedinAgent/entry.ts",
+        "base44/functions/newsletterAgent/entry.ts",
+        "base44/functions/onboardingConciergeWorker/entry.ts",
+        "base44/functions/outboundVolumeWorker/entry.ts",
+        "base44/functions/outreachAgent/entry.ts",
+        "base44/functions/postMeetingWorker/entry.ts",
+        "base44/functions/processUploadedFile/entry.ts",
+        "base44/functions/providerMonetizationAgent/entry.ts",
+        "base44/functions/providerMonitorAgent/entry.ts",
+        "base44/functions/providerNegotiationAgent/entry.ts",
+        "base44/functions/providerResearchAgent/entry.ts",
+        "base44/functions/qaAgent/entry.ts",
+        "base44/functions/qaMonitorAgent/entry.ts",
+        "base44/functions/recommendationEngineAgent/entry.ts",
+        "base44/functions/reviewProviderContract/entry.ts",
+        "base44/functions/securityAgent/entry.ts",
+        "base44/functions/seoAgent/entry.ts",
+        "base44/functions/spendIntelligenceAgent/entry.ts",
+        "base44/functions/xTwitterAgent/entry.ts",
+        "base44/shared/commercialModelRouter.ts",
+        "base44/shared/costGovernance.ts",
+        "base44/shared/operationalControl.ts"
+      ],
+      "covered_route_members": [
+        "discoveryTechStackAgent",
+        "recommendationEngineAgent",
+        "spendIntelligenceAgent"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "canonical Brand ownership returns byte-equivalent denial for non-owner, unknown actor and unknown target",
+          "Brand authority outage/non-array/duplicates fail closed before the covered AI task writes"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "PASSED_LOCAL"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/costGovernance.ts",
+          "sha256": "64bf59a4f2b7dd25d55e1a9bc9f13516e168707d2d8d27b0684edbdf58e7108e",
+          "bytes": 46379
+        },
+        {
+          "path": "base44/shared/tenantOwnership.ts",
+          "sha256": "b4bc469798c620450bd692c394dbe4ac2b6b74958961972de0ca006b84a0504c",
+          "bytes": 2985
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/p4CostGovernance.test.js",
+          "sha256": "2180cea5b57898cec93964383a632a703aadb3d814eb2a5767f0f1a17a3fc1f7",
+          "bytes": 11963
+        },
+        {
+          "path": "src/lib/tenantOwnership.test.js",
+          "sha256": "856bb3ada1cdca1ab5c5099059c1e1da9468e9c73824705f8677500ea5dffe7e",
+          "bytes": 4843
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "only 3 of the dynamically inventoried AI callers are wired to the canonical owner gate",
+        "the material registry still records paid-AI emergency and provider-receipt hard gaps"
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-DR-SHAREPOINT",
+      "logical_route": "disasterRecoveryBackup",
+      "physical_host": "maintenanceEngine",
+      "material_kinds": [
+        "provider_effect",
+        "material_schedule"
+      ],
+      "actor": "Internal scheduler or strict admin",
+      "tenant_key": "_platform release identity",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_PROVIDER_EFFECT"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/deployment-topology.json",
+        "base44/functions/maintenanceEngine/entry.ts",
+        "base44/shared/disasterRecoveryRuntime.ts"
+      ],
+      "covered_route_members": [
+        "disasterRecoveryBackup"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "admin/internal actor denial and repository DR gate behavior are locally exercised"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/disasterRecoveryRuntime.ts",
+          "sha256": "a9794f85508a80c1ce7858df391424c4182584982e6e401868fa21cc62085195",
+          "bytes": 39415
+        },
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/disasterRecovery.test.js",
+          "sha256": "185f0bc9bec7d7f6183e0e9baec4f1e9f5b9f6e4404a599e2b050479b3d105b3",
+          "bytes": 6278
+        },
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "SharePoint/Entra runtime authorization and real backup/restore evidence remain runtime-pending"
+      ]
+    },
+    {
+      "boundary_id": "MB-PROVIDER-INTEGRATIONS-READ-AUTH",
+      "logical_route": "oauthConnector|stripeOAuthConnect|dataSyncAgent|stripeDataSync|computeStripeVerifiedGap|checkVatVies|rateIntelligenceWatchWorker",
+      "physical_host": "respective physical routes",
+      "material_kinds": [
+        "provider_effect"
+      ],
+      "actor": "Authenticated/admin/internal according to route",
+      "tenant_key": "Integration.brand_id or provider/brand binding",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "COMMON_PROVIDER_EFFECT_CLAIM_MISSING",
+        "COMMON_PROVIDER_RECONCILIATION_MISSING"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "SOURCE_OBSERVED_ONLY",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/checkVatVies/entry.ts",
+        "base44/functions/computeStripeVerifiedGap/entry.ts",
+        "base44/functions/dataSyncAgent/entry.ts",
+        "base44/functions/oauthConnector/entry.ts",
+        "base44/functions/rateIntelligenceWatchWorker/entry.ts",
+        "base44/functions/stripeDataSync/entry.ts",
+        "base44/functions/stripeOAuthConnect/entry.ts"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no executable route-specific tenant authorization proof is mapped"
+      ]
+    },
+    {
+      "boundary_id": "MB-SCHEDULER-BASE",
+      "logical_route": "all Base44 scheduled automations",
+      "physical_host": "69 inventory rows across physical/logical hosts",
+      "material_kinds": [
+        "material_schedule"
+      ],
+      "actor": "Handler-specific admin/internal gate; existing scheduler inventory has UNKNOWN for many rows",
+      "tenant_key": "Handler-specific; existing scheduler inventory records UNKNOWN",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "SCHEDULER_METADATA_UNKNOWN",
+        "DOWNSTREAM_EFFECT_IDEMPOTENCY_REQUIRED"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/shared/schedulerRun.ts",
+        "config/scheduler-inventory.json"
+      ],
+      "covered_route_members": [
+        "all Base44 scheduled automations"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "admin/internal denial and scheduler lease/fence/review transitions are locally exercised"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        },
+        {
+          "path": "base44/shared/schedulerRun.ts",
+          "sha256": "c3a3b951244f2c249e955aee726ea250674cffe5be0bc36721c8488a12cb1408",
+          "bytes": 60242
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        },
+        {
+          "path": "src/lib/schedulerLeaseFencing.test.js",
+          "sha256": "ccd40bc8983d4d61b824683fa6b6765173b78a9bcdce73c6caa9b9e2350dbf39",
+          "bytes": 36180
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "per-worker tenant scope and complete downstream material-effect authorization remain partial"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-UPSERT",
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "actor": "Admin/internal plus actor capability",
+      "tenant_key": "Exact request tenant; evidence/observations must bind to same tenant",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/intelligenceAccess/entry.ts",
+        "base44/shared/intelligenceFoundationContracts.ts"
+      ],
+      "covered_route_members": [
+        "intelligenceAccess",
+        "intelligenceMaintenanceWorker",
+        "outcomeLearningWorker"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "missing, global-forbidden and cross-tenant bindings are rejected by executable tenant-scope gates",
+          "same-tenant lineage is required before governed writes and learning eligibility"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "base44/shared/intelligenceTenantScope.ts",
+          "sha256": "b672944a90167d30ddc56316b4e4392ffb8cbc3ac662b00fca8c3ccb0223fb24",
+          "bytes": 8441
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/intelligenceFoundationContracts.test.js",
+          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
+          "bytes": 38035
+        },
+        {
+          "path": "src/lib/intelligenceTenantScope.test.js",
+          "sha256": "9249596c53e33d89c57688336b8ff2bf709c7bcfb6e093dc86f186984ae3439c",
+          "bytes": 8046
+        }
+      ],
+      "remaining_gaps": [
+        "actor ownership and deployed service-role row reads are not exercised for every physical writer",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-RECORD",
+      "logical_route": "intelligenceAccess",
+      "physical_host": "intelligenceAccess",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "actor": "Admin/internal plus actor capability",
+      "tenant_key": "Terminal MonthlySavingsReport/NegotiationCase/MigrationTask tenant",
+      "material_registry_status": "CONTROLLED_NON_PROMOTING",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/intelligenceAccess/entry.ts",
+        "base44/shared/intelligenceFoundationContracts.ts"
+      ],
+      "covered_route_members": [
+        "intelligenceAccess",
+        "intelligenceMaintenanceWorker",
+        "outcomeLearningWorker"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "missing, global-forbidden and cross-tenant bindings are rejected by executable tenant-scope gates",
+          "same-tenant lineage is required before governed writes and learning eligibility"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "base44/shared/intelligenceTenantScope.ts",
+          "sha256": "b672944a90167d30ddc56316b4e4392ffb8cbc3ac662b00fca8c3ccb0223fb24",
+          "bytes": 8441
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/intelligenceFoundationContracts.test.js",
+          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
+          "bytes": 38035
+        },
+        {
+          "path": "src/lib/intelligenceTenantScope.test.js",
+          "sha256": "9249596c53e33d89c57688336b8ff2bf709c7bcfb6e093dc86f186984ae3439c",
+          "bytes": 8046
+        }
+      ],
+      "remaining_gaps": [
+        "actor ownership and deployed service-role row reads are not exercised for every physical writer",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-CLAIM-PROMOTE",
+      "logical_route": "intelligenceAdmin",
+      "physical_host": "intelligenceAdmin",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "actor": "Strict admin with reason",
+      "tenant_key": "Exact claim tenant",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/intelligenceAdmin/entry.ts",
+        "base44/shared/intelligenceFoundationContracts.ts"
+      ],
+      "covered_route_members": [
+        "intelligenceAccess",
+        "intelligenceMaintenanceWorker",
+        "outcomeLearningWorker"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "missing, global-forbidden and cross-tenant bindings are rejected by executable tenant-scope gates",
+          "same-tenant lineage is required before governed writes and learning eligibility"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "base44/shared/intelligenceTenantScope.ts",
+          "sha256": "b672944a90167d30ddc56316b4e4392ffb8cbc3ac662b00fca8c3ccb0223fb24",
+          "bytes": 8441
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/intelligenceFoundationContracts.test.js",
+          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
+          "bytes": 38035
+        },
+        {
+          "path": "src/lib/intelligenceTenantScope.test.js",
+          "sha256": "9249596c53e33d89c57688336b8ff2bf709c7bcfb6e093dc86f186984ae3439c",
+          "bytes": 8046
+        }
+      ],
+      "remaining_gaps": [
+        "actor ownership and deployed service-role row reads are not exercised for every physical writer",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-OUTCOME-SCHEDULED",
+      "logical_route": "outcomeLearningWorker",
+      "physical_host": "outcomeLearningWorker",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Verified terminal source entity tenant",
+      "material_registry_status": "CONTROLLED_NON_PROMOTING",
+      "material_registry_gap_codes": [],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/outcomeLearningWorker/entry.ts",
+        "base44/shared/schedulerRun.ts"
+      ],
+      "covered_route_members": [
+        "intelligenceAccess",
+        "intelligenceMaintenanceWorker",
+        "outcomeLearningWorker"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "missing, global-forbidden and cross-tenant bindings are rejected by executable tenant-scope gates",
+          "same-tenant lineage is required before governed writes and learning eligibility"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "base44/shared/intelligenceTenantScope.ts",
+          "sha256": "b672944a90167d30ddc56316b4e4392ffb8cbc3ac662b00fca8c3ccb0223fb24",
+          "bytes": 8441
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/intelligenceFoundationContracts.test.js",
+          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
+          "bytes": 38035
+        },
+        {
+          "path": "src/lib/intelligenceTenantScope.test.js",
+          "sha256": "9249596c53e33d89c57688336b8ff2bf709c7bcfb6e093dc86f186984ae3439c",
+          "bytes": 8046
+        }
+      ],
+      "remaining_gaps": [
+        "actor ownership and deployed service-role row reads are not exercised for every physical writer",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-LEGACY-PROMOTION",
+      "logical_route": "intelligenceMaintenanceWorker",
+      "physical_host": "intelligenceMaintenanceWorker",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal plus SchedulerRun",
+      "tenant_key": "Exact provider/country key",
+      "material_registry_status": "PARTIAL",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_PURE_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/intelligenceMaintenanceWorker/entry.ts",
+        "base44/shared/schedulerRun.ts",
+        "src/docs/PRODUCTION_FUNCTIONS.md"
+      ],
+      "covered_route_members": [
+        "intelligenceAccess",
+        "intelligenceMaintenanceWorker",
+        "outcomeLearningWorker"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "missing, global-forbidden and cross-tenant bindings are rejected by executable tenant-scope gates",
+          "same-tenant lineage is required before governed writes and learning eligibility"
+        ],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_APPLICABLE",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/intelligenceFoundationContracts.ts",
+          "sha256": "3522909265ec8dc30898822372be0bdecdbbb04af7c2195db6696844e05a8e48",
+          "bytes": 81176
+        },
+        {
+          "path": "base44/shared/intelligenceTenantScope.ts",
+          "sha256": "b672944a90167d30ddc56316b4e4392ffb8cbc3ac662b00fca8c3ccb0223fb24",
+          "bytes": 8441
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/intelligenceFoundationContracts.test.js",
+          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
+          "bytes": 38035
+        },
+        {
+          "path": "src/lib/intelligenceTenantScope.test.js",
+          "sha256": "9249596c53e33d89c57688336b8ff2bf709c7bcfb6e093dc86f186984ae3439c",
+          "bytes": 8046
+        }
+      ],
+      "remaining_gaps": [
+        "actor ownership and deployed service-role row reads are not exercised for every physical writer",
+        "no deployed Base44 authorization trace proves this complete material path"
+      ]
+    },
+    {
+      "boundary_id": "MB-INTEL-P3-SEED",
+      "logical_route": "seedP3RateIntelligence",
+      "physical_host": "seedP3RateIntelligence",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion",
+        "material_schedule"
+      ],
+      "actor": "Admin/internal; scheduled automation currently inactive",
+      "tenant_key": "_platform provider/country evidence universe",
+      "material_registry_status": "PARTIAL_INACTIVE",
+      "material_registry_gap_codes": [
+        "EMERGENCY_CAPABILITY_MISSING_KNOWLEDGE_PROMOTION"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "PASSED_LOCAL",
+      "verification_level": "LOCAL_FAILURE_INJECTION",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "REAL_SHARED_GATE_EXECUTION",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/functions/seedP3RateIntelligence/entry.ts",
+        "base44/functions/seedP3RateIntelligence/function.jsonc"
+      ],
+      "covered_route_members": [
+        "requireAdminOrInternal"
+      ],
+      "gate_coverage": {
+        "assertions": [
+          "non-admin and unknown actors receive the same 403 forbidden response",
+          "authentication-authority read failure returns 503 and does not authorize"
+        ],
+        "actor_denial_equivalence": "PASSED_LOCAL",
+        "authority_unavailable": "PASSED_LOCAL",
+        "authority_ambiguous": "NOT_APPLICABLE"
+      },
+      "gate_evidence": [
+        {
+          "path": "base44/shared/internalGate.ts",
+          "sha256": "4b9e6d40497c80a011310305ce126018c4ab0e6a944a1f2898fd7c78670237f6",
+          "bytes": 4607
+        }
+      ],
+      "test_evidence": [
+        {
+          "path": "src/lib/materialTenantAuthorization.test.js",
+          "sha256": "c4de3d507df52b35d1f2b0d9f622622f59c33c528cf60850fdb504409183995d",
+          "bytes": 1497
+        }
+      ],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "route wiring is source-observed, not a dynamic invocation of every physical handler",
+        "route-specific tenant/entity binding beyond the shared admin/internal gate is not universally proven"
+      ]
+    },
+    {
+      "boundary_id": "MB-DATASET-PROMOTION-ABSENT",
+      "logical_route": "NONE_FOUND",
+      "physical_host": "NONE_FOUND",
+      "material_kinds": [
+        "claim_outcome_dataset_promotion"
+      ],
+      "actor": "NONE",
+      "tenant_key": "NONE",
+      "material_registry_status": "ABSENT",
+      "material_registry_gap_codes": [
+        "DATASET_PROMOTION_ROUTE_ABSENT",
+        "LEARNING_ELIGIBILITY_CLEARED_RUNTIME_ISSUER_ABSENT"
+      ],
+      "implementation_status": "PARTIAL",
+      "binary_closure_status": "NOT_MET",
+      "test_status": "NOT_RUN",
+      "verification_level": "SOURCE_OBSERVED",
+      "local_test_scope": "PARTIAL_CRITERION_ONLY",
+      "runtime_verified": false,
+      "proof_class": "NO_PHYSICAL_ROUTE",
+      "route_wiring_status": "SOURCE_OBSERVED",
+      "route_source_refs": [
+        "base44/shared/intelligenceFoundationContracts.ts",
+        "config/intelligence/model-registry.v1.json"
+      ],
+      "covered_route_members": [],
+      "gate_coverage": {
+        "assertions": [],
+        "actor_denial_equivalence": "NOT_PROVEN",
+        "authority_unavailable": "NOT_PROVEN",
+        "authority_ambiguous": "NOT_PROVEN"
+      },
+      "gate_evidence": [],
+      "test_evidence": [],
+      "remaining_gaps": [
+        "no deployed Base44 authorization trace proves this complete material path",
+        "no physical material route exists to authorize or execute"
+      ]
+    }
+  ]
+}
