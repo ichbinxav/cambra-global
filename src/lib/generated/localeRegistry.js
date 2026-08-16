@@ -59,6 +59,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "sv-SE",
+      "language": "sv",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -244,10 +251,11 @@ export const LOCALE_REGISTRY={
         "sv-FI"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "sv-SE"
       ],
       "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "translation_readiness": "PARTIAL_NATIVE",
       "fallback_locale": "en-GB",
       "currency": "EUR",
       "timezone": "Europe/Helsinki",
@@ -635,10 +643,11 @@ export const LOCALE_REGISTRY={
         "sv-SE"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "sv-SE"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "sv-SE",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "SEK",
       "timezone": "Europe/Stockholm",

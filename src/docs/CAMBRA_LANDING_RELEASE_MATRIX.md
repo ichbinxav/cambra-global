@@ -23,7 +23,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | CZ | Czechia | CZK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DK | Denmark | DKK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | EE | Estonia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| FI | Finland | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| FI | Finland | EUR | en-GB | PARTIAL_NATIVE | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | FR | France | EUR | fr-FR | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | DE | Germany | EUR | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | GR | Greece | EUR | el-GR | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -41,7 +41,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | SK | Slovakia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SI | Slovenia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | ES | Spain | EUR | es-ES | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| SE | Sweden | SEK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| SE | Sweden | SEK | sv-SE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | NO | Norway | NOK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | IS | Iceland | ISK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | LI | Liechtenstein | CHF | de-DE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -61,6 +61,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | pl-PL | pl | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | pt-PT | pt | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | el-GR | el | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| sv-SE | sv | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 

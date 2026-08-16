@@ -63,6 +63,13 @@
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "sv-SE",
+      "language": "sv",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "market_rows": [
@@ -167,7 +174,7 @@
       "market_name": "Finland",
       "currency": "EUR",
       "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "translation_readiness": "PARTIAL_NATIVE",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
@@ -382,8 +389,8 @@
       "market_code": "SE",
       "market_name": "Sweden",
       "currency": "SEK",
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "sv-SE",
+      "translation_readiness": "NATIVE_PRODUCT",
       "landing_status": "AVAILABLE",
       "analyzer_status": "LIMITED",
       "recovery_status": "REVIEW_REQUIRED",
