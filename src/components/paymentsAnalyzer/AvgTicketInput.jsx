@@ -4,18 +4,21 @@
 // matters (a €48 ticket is materially different from €52 when amortizing a
 // €0.25 fixed fee). Chips give a one-tap common-case; typing gives precision.
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 const QUICK_TICKETS = [25, 50, 80, 150];
 
 export default function AvgTicketInput({ value, onChange }) {
+  const { t, formatCurrency } = useTranslation();
   const active = (chip) => Number(value) === chip;
 
   return (
     <div className="space-y-2.5">
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          Average ticket (EUR)
+          {t("az_lbl_ticket")}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Tap a preset or type</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_hint_preset_or_type")}</span>
       </div>
 
       <input
@@ -25,7 +28,7 @@ export default function AvgTicketInput({ value, onChange }) {
         inputMode="decimal"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="e.g. 80"
+        placeholder={t("az_ticket_placeholder")}
         className="cambra-num-input w-full h-11 rounded-md px-3 text-sm focus:outline-none transition-colors"
         style={{ color: "#ffffff", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
       />
@@ -51,13 +54,13 @@ export default function AvgTicketInput({ value, onChange }) {
                   }
             }
           >
-            €{v}
+            {formatCurrency(v)}
           </button>
         ))}
       </div>
 
       <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-        The fixed fee (e.g. €0.25) hits low-ticket merchants much harder — this changes the answer.
+        {t("az_ticket_help")}
       </p>
     </div>
   );

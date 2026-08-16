@@ -4,25 +4,28 @@
 // gets a plain-language read of what they picked. The percentage is always
 // the source of truth for the payload.
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 export default function IntlSlider({ value, onChange }) {
+  const { t } = useTranslation();
   const raw = Number(value);
   const pct = isFinite(raw) && raw >= 0 && raw <= 100 ? raw : 0;
   const isSet = value !== "" && value !== null && value !== undefined;
 
   const contextLabel = (() => {
-    if (!isSet) return "Move the slider to set it (0 is valid)";
-    if (pct === 0)    return "Domestic only";
-    if (pct <= 15)    return "Mostly domestic";
-    if (pct <= 50)    return "Mixed markets";
-    if (pct <= 85)    return "Mostly international";
-    return "Almost entirely international";
+    if (!isSet) return t("az_intl_ctx_unset");
+    if (pct === 0)    return t("az_intl_ctx_domestic");
+    if (pct <= 15)    return t("az_intl_ctx_mostly_domestic");
+    if (pct <= 50)    return t("az_intl_ctx_mixed");
+    if (pct <= 85)    return t("az_intl_ctx_mostly_intl");
+    return t("az_intl_ctx_almost_all_intl");
   })();
 
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          International share
+          {t("az_intl_title")}
         </span>
         <span
           className="tabular-nums font-bold"
@@ -40,7 +43,7 @@ export default function IntlSlider({ value, onChange }) {
         value={isSet ? pct : 0}
         onChange={(e) => onChange(e.target.value)}
         className="cambra-range w-full"
-        aria-label="International sales share"
+        aria-label={t("az_intl_aria")}
       />
 
       <div className="flex items-center justify-between text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>

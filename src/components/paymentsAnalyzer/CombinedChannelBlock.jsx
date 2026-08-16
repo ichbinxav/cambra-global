@@ -17,6 +17,7 @@
 //     backend allowlist). Country lives at the top level (parent), not per
 //     channel — a merchant is in one country.
 
+import { useTranslation } from "@/lib/i18n.jsx";
 import GmvSlider from "@/components/paymentsAnalyzer/GmvSlider";
 import AvgTicketInput from "@/components/paymentsAnalyzer/AvgTicketInput";
 import IntlSlider from "@/components/paymentsAnalyzer/IntlSlider";
@@ -62,6 +63,7 @@ export default function CombinedChannelBlock({
   onlineProviders,
   inStoreProviders,
 }) {
+  const { t } = useTranslation();
   const patchOnline = (patch) => onOnlineChange({ ...onlineValue, ...patch });
   const patchInStore = (patch) => onInStoreChange({ ...inStoreValue, ...patch });
 
@@ -69,8 +71,8 @@ export default function CombinedChannelBlock({
     <div className="space-y-4">
       {/* ONLINE block */}
       <ChannelPanel
-        title="Online"
-        subtitle="Card-not-present · your PSP (Stripe, PayPal…)"
+        title={t("analyzer_channel_online")}
+        subtitle={t("az_ch_online_sub")}
         accentColor="var(--voltio)"
       >
         <GmvSlider
@@ -90,9 +92,9 @@ export default function CombinedChannelBlock({
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-              Online provider
+              {t("az_online_provider_label")}
             </span>
-            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_one_tap")}</span>
           </div>
           <ProviderGrid
             options={onlineProviders}
@@ -104,8 +106,8 @@ export default function CombinedChannelBlock({
 
       {/* IN-STORE block */}
       <ChannelPanel
-        title="In-store"
-        subtitle="Card-present · your TPV / physical terminal"
+        title={t("analyzer_channel_in_store")}
+        subtitle={t("az_ch_instore_sub")}
         accentColor="var(--voltio-2)"
       >
         <GmvSlider
@@ -119,9 +121,9 @@ export default function CombinedChannelBlock({
         <div className="space-y-2.5">
           <div className="flex items-baseline justify-between">
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-              In-store terminal (TPV)
+              {t("az_tpv_label")}
             </span>
-            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>One tap</span>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_one_tap")}</span>
           </div>
           <ProviderGrid
             options={inStoreProviders}

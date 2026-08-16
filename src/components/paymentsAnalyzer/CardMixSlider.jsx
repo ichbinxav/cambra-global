@@ -4,7 +4,10 @@
 // left = 100% credit, right = 100% debit. The two-way split label makes it
 // obvious what's implied. Optional field — parent handles empty state.
 
+import { useTranslation } from "@/lib/i18n.jsx";
+
 export default function CardMixSlider({ value, onChange }) {
+  const { t } = useTranslation();
   const raw = Number(value);
   const isSet = value !== "" && value !== null && value !== undefined;
   const debitPct = isSet && isFinite(raw) && raw >= 0 && raw <= 100 ? raw : 50;
@@ -14,7 +17,7 @@ export default function CardMixSlider({ value, onChange }) {
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          Debit vs credit
+          {t("az_cardmix_title")}
         </span>
         <span
           className="tabular-nums font-bold"
@@ -40,16 +43,16 @@ export default function CardMixSlider({ value, onChange }) {
         value={debitPct}
         onChange={(e) => onChange(e.target.value)}
         className="cambra-range w-full"
-        aria-label="Debit card share"
+        aria-label={t("az_cardmix_aria")}
       />
 
       <div className="flex items-center justify-between text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-        <span>100% credit</span>
-        <span>100% debit</span>
+        <span>{t("az_cardmix_all_credit")}</span>
+        <span>{t("az_cardmix_all_debit")}</span>
       </div>
 
       <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-        Leave blank if unsure — today's engine doesn't consume this yet, but we store it for future rate refinements.
+        {t("az_cardmix_help")}
       </p>
     </div>
   );

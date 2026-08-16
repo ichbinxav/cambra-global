@@ -10,6 +10,7 @@
 // Contract: min 500, max 10,000,000. Any value inside this range is valid.
 
 import { useMemo } from "react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // Anchor points shown as tick labels. Slider still moves continuously along
 // the log curve — anchors are purely visual guides.
@@ -41,10 +42,20 @@ function eurToPosition(eur) {
   return Math.round(t * 1000);
 }
 
-function formatEur(n) {
+// i18n (2026-08-16): this used to be `"€" + n.toLocaleString("en-US")`, which
+// showed a German merchant "€25,000" instead of "25.000 €" — wrong separators
+// AND wrong symbol placement. Formatting now goes through the active language's
+// currency formatter, so grouping, decimals and symbol position all follow the
+// merchant's locale.
+function formatAmount(n, formatCurrency) {
   if (!isFinite(n) || n <= 0) return "—";
-  return "€" + Math.round(n).toLocaleString("en-US");
+  return formatCurrency(Math.round(n));
 }
+
+// Tick labels under the slider. Built from the same locale-aware formatter
+// rather than the hardcoded "€500 / €10k / €1M" strings, which were English
+// abbreviations glued to a euro sign.
+const TICK_VALUES = [500, 10_000, 100_000, 1_000_000, 10_000_000];
 
 // Default seed value shown while the user hasn't touched the slider yet.
 // Chosen to be a plausible mid-size merchant — big enough to feel real,
@@ -54,6 +65,24 @@ function formatEur(n) {
 const DEFAULT_DISPLAY_EUR = 25_000;
 
 export default function GmvSlider({ value, onChange }) {
+  const { t, locale, formatCurrency } = useTranslation();
+
+  // Compact, locale-aware tick labels ("€10K" in en, "10 Mio. €" in de).
+  // formatCurrency is not used here because it has no compact notation and a
+  // full "10.000.000 €" does not fit under a slider tick.
+  const tickLabels = useMemo(() => {
+    let fmt;
+    try {
+      fmt = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 0 });
+    } catch {
+      fmt = null;
+    }
+    // Fallback is the locale-aware full formatter, never a hardcoded "€" —
+    // an exotic-but-valid locale tag must not regress a German merchant to
+    // "€25000" with the symbol on the wrong side.
+    return TICK_VALUES.map((v) => (fmt ? fmt.format(v) : formatCurrency(v)));
+  }, [locale, formatCurrency]);
+
   // isSet distinguishes "user hasn't touched it" (show default in the big
   // number so the slider position matches) from "user typed / dragged".
   // The parent's payload still tracks the raw `value` string exactly.
@@ -82,10 +111,16 @@ export default function GmvSlider({ value, onChange }) {
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          Monthly card sales
+          {t("az_lbl_gmv")}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Slide or type</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_hint_slide_or_type")}</span>
       </div>
+
+      {/* The single most consequential clarification in the form: this figure
+          must be CARD sales only. A merchant who includes cash inflates the
+          divisor, understates their effective rate and doubles the apparent
+          saving — and nothing downstream can detect it. */}
+      <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_gmv_help")}</p>
 
       {/* Hero value + exact input, side by side */}
       <div className="flex items-baseline gap-3">
@@ -101,11 +136,11 @@ export default function GmvSlider({ value, onChange }) {
             color: isSet ? "#ffffff" : "rgba(255,255,255,0.45)",
           }}
         >
-          {formatEur(displayValue)}
+          {formatAmount(displayValue, formatCurrency)}
         </div>
-        <span className="text-[12px] shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>/ mo</span>
+        <span className="text-[12px] shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_per_month_suffix")}</span>
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>exact</span>
+          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_exact")}</span>
           <input
             type="number"
             min={SLIDER_MIN}
@@ -113,10 +148,10 @@ export default function GmvSlider({ value, onChange }) {
             inputMode="numeric"
             value={value}
             onChange={handleInputChange}
-            placeholder="e.g. 100000"
+            placeholder={t("az_gmv_placeholder")}
             className="cambra-num-input w-28 h-9 rounded-md px-2.5 text-sm text-right focus:outline-none transition-colors"
             style={{ color: "#ffffff", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
-            aria-label="Monthly card sales exact value"
+            aria-label={t("az_gmv_aria_exact")}
           />
         </div>
       </div>
@@ -129,16 +164,12 @@ export default function GmvSlider({ value, onChange }) {
         value={sliderPosition}
         onChange={handleSliderChange}
         className="cambra-range w-full"
-        aria-label="Monthly card sales slider"
+        aria-label={t("az_gmv_aria_slider")}
       />
 
       {/* Anchor tick labels — decorative, help calibrate the log scale */}
       <div className="flex justify-between text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
-        <span>€500</span>
-        <span>€10k</span>
-        <span>€100k</span>
-        <span>€1M</span>
-        <span>€10M</span>
+        {tickLabels.map((label, i) => <span key={TICK_VALUES[i]}>{label}</span>)}
       </div>
       {/* Anchor points kept in a const so lint doesn't flag it as unused —
           could power a future tick-snap UX. */}
