@@ -14,7 +14,7 @@ describe('P9 European localization and productization', () => {
     // I18N-30M (2026-08-15) — deliberately widened from the fixed launch
     // trio: the 30-market rollout adds native product locales in rollout
     // order. The list stays EXACT so an unregistered locale still fails.
-    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE', 'da-DK', 'fi-FI', 'cs-CZ', 'ro-RO', 'hu-HU', 'bg-BG', 'hr-HR', 'et-EE', 'lv-LV', 'lt-LT', 'sk-SK']);
+    expect(PRODUCT_LOCALES.map((x) => x.locale)).toEqual(['en-GB', 'fr-FR', 'es-ES', 'de-DE', 'it-IT', 'pl-PL', 'pt-PT', 'el-GR', 'sv-SE', 'da-DK', 'fi-FI', 'cs-CZ', 'ro-RO', 'hu-HU', 'bg-BG', 'hr-HR', 'et-EE', 'lv-LV', 'lt-LT', 'sk-SK', 'sl-SI']);
     for (const market of LOCALE_MARKETS) {
       expect(market.market_code).toMatch(/^[A-Z]{2}$/);
       expect(market.currency).toMatch(/^[A-Z]{3}$/);
@@ -48,10 +48,11 @@ describe('P9 European localization and productization', () => {
     expect(resolveLocale({ market_code: 'LV' })).toMatchObject({ locale: 'lv-LV', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'LT' })).toMatchObject({ locale: 'lt-LT', source: 'market_default', fallback_used: false });
     expect(resolveLocale({ market_code: 'SK' })).toMatchObject({ locale: 'sk-SK', source: 'market_default', fallback_used: false });
+    expect(resolveLocale({ market_code: 'SI' })).toMatchObject({ locale: 'sl-SI', source: 'market_default', fallback_used: false });
     // The honest-fallback invariant itself is unchanged — it now bites on a
-    // market whose native language is still pending (Slovenia until `sl` lands).
-    expect(resolveLocale({ market_code: 'SI' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
-    expect(localizationReadiness('SI')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
+    // market whose native language is still pending (Norway until `nb` lands).
+    expect(resolveLocale({ market_code: 'NO' })).toMatchObject({ locale: 'en-GB', source: 'market_default', fallback_used: true });
+    expect(localizationReadiness('NO')).toMatchObject({ status: 'LIMITED', launch_gate: 'BLOCK_FULL_LAUNCH' });
   });
 
   it('formats non-EUR market money and locale plurals without string concatenation', () => {

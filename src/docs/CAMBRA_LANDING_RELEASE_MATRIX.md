@@ -39,7 +39,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | PT | Portugal | EUR | pt-PT | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | RO | Romania | RON | ro-RO | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SK | Slovakia | EUR | sk-SK | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
-| SI | Slovenia | EUR | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
+| SI | Slovenia | EUR | sl-SI | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | ES | Spain | EUR | es-ES | NATIVE_PRODUCT | ENABLED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | SE | Sweden | SEK | sv-SE | NATIVE_PRODUCT | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
 | NO | Norway | NOK | en-GB | FALLBACK_ONLY | LIMITED | REVIEW_REQUIRED | LEGAL_REVIEW_REQUIRED |
@@ -73,6 +73,7 @@ Generated 2026-08-12 from the canonical P1/P9 registries. This is an engineering
 | lv-LV | lv | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | lt-LT | lt | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 | sk-SK | sk | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
+| sl-SI | sl | IMPLEMENTED | AUTOMATED_QA | LEGAL_REVIEW_REQUIRED |
 
 Language choice and operating market are separate. Browser locale/timezone provides only a suggestion. An explicit market selection is authoritative for the public experience, but never grants legal or execution authority.
 
