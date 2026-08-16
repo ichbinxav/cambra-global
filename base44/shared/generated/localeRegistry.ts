@@ -108,6 +108,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "hr-HR",
+      "language": "hr",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -186,10 +193,11 @@ export const LOCALE_REGISTRY={
         "hr-HR"
       ],
       "supported_product_locales": [
-        "en-GB"
+        "en-GB",
+        "hr-HR"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "FALLBACK_ONLY",
+      "default_locale": "hr-HR",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "EUR",
       "timezone": "Europe/Zagreb",
