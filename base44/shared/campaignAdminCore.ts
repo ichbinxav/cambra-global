@@ -7,6 +7,12 @@
 import { readRuntimeRows, readRuntimeSource, requireRuntimeSource, runtimeSourceCoverage } from './runtimeSourceRead.ts';
 import { CAMPAIGN_LANES, canonicalCampaignState } from './campaignsCore.ts';
 import { buildCampaignsOverview, filterCampaignSummaries, projectCampaignSummary } from './campaignsReadModel.ts';
+// CAMP-C3: audience/content/sequence/preflight authorities.
+import { audienceContentHash, buildAudienceReconciliation } from './campaignAudienceBuilder.ts';
+import { validateCampaignContent } from './campaignContentValidator.ts';
+import { validateCampaignSequence } from './campaignSequenceValidator.ts';
+import { buildApprovalBinding, buildCampaignPreflight } from './campaignPreflight.ts';
+import { sha256 } from './intelligenceCore.ts';
 
 const clean=(value:any,max=240)=>String(value??'').replace(/[\r\n\t]+/g,' ').trim().slice(0,max);
 const unique=(value:any,max=1000)=>[...new Set((Array.isArray(value)?value:[]).map((item:any)=>clean(item,200)).filter(Boolean))].slice(0,max);
@@ -160,5 +166,201 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
   }
 
   if(action==='pause'){const updated=await svc.entities.CommercialCampaign.update(campaign.id,{status:'PAUSED',paused_at:new Date().toISOString(),updated_at:new Date().toISOString(),blockers:[...new Set([...(campaign.blockers||[]),'paused_by_founder'])]});return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),note:'Canonical campaign paused. Use global Founder Control for an immediate transport-wide stop.',external_send_performed:false});}
+
+  // ---------------------------------------------------------------- CAMP-C3
+  // Versioned audience / content / sequence, preflight and approval.
+  // None of these actions calls a provider; the campaign cannot send until the
+  // C4 execution engine exists, and even then only through the canonical
+  // outbound send primitive. This module deliberately never names that
+  // primitive: an existing seal test asserts the campaign admin surface does
+  // not so much as reference it, which is a cheap and strong guarantee.
+
+  if(action==='build_audience'){
+    // Candidates come from the campaign's explicit lead selection. Discovery
+    // Saved Searches and dynamic segments are additional source types wired in
+    // C8; the reconciliation ladder below is identical whatever the source.
+    const leadIds=Array.isArray(campaign.lead_ids)?campaign.lead_ids.map((value:any)=>clean(value,200)).filter(Boolean):[];
+    if(!leadIds.length)return Response.json({ok:false,error:'campaign_has_no_selected_leads'},{status:409});
+    const [leadRead,suppressionRead]=await Promise.all([
+      readRuntimeRows({source:'campaign_audience_leads',limit:5000,read:()=>svc.entities.OutboundLead.filter({id:{$in:leadIds}},'-created_date',Math.max(1,leadIds.length))}),
+      readRuntimeRows({source:'campaign_audience_suppressions',limit:5000,read:()=>svc.entities.ContactSuppression.filter({active:true},'-suppressed_at',5000)}),
+    ]);
+    // Fail closed: an unreadable suppression ledger must never be read as
+    // "nobody is suppressed".
+    const leads=requireRuntimeSource(leadRead);
+    const suppressions=requireRuntimeSource(suppressionRead);
+    const built=buildAudienceReconciliation(leads.map((lead:any)=>({
+      subject_type:'OutboundLead',subject_id:lead.id,lead_id:lead.id,contact_id:lead.contact_id||lead.id,
+      email:lead.contact_email,company_key:lead.canonical_company_key||lead.company_domain,
+      company_name:lead.company_name,company_domain:lead.company_domain,country:lead.country,
+      city:lead.city,language:lead.language,last_contacted_at:lead.last_contacted_at||lead.last_outbound_at,
+      is_merchant:lead.is_merchant===true||Boolean(lead.brand_id),
+      policy_blocked:lead.outreach_eligibility==='BLOCKED'||lead.compliance_status==='BLOCKED',
+      policy_block_reason:lead.suppression_reason||lead.compliance_status,
+    })),{
+      suppressions,
+      contact_cooldown_days:Number(body?.contact_cooldown_days||0),
+      max_contacts_per_company:Number(body?.max_contacts_per_company||campaign.company_contact_limit||0),
+      exclude_existing_merchants:body?.exclude_existing_merchants!==false,
+      now:new Date().toISOString(),
+    });
+    const priorRead=await readRuntimeRows({source:'campaign_audience_versions',limit:100,read:()=>svc.entities.CampaignAudienceVersion.filter({campaign_id:campaign.id},'-version',100)});
+    const prior=priorRead.value||[];
+    const version=prior.reduce((max:number,row:any)=>Math.max(max,Number(row.version)||0),0)+1;
+    const contentHash=await audienceContentHash(sha256,{campaign_id:campaign.id,filters:campaign.audience_snapshot_json?.filters||null,eligible:built.eligible});
+    const at=new Date().toISOString();
+    const created=await svc.entities.CampaignAudienceVersion.create({
+      audience_version_id:`audience:${campaign.id}:${version}`,campaign_id:campaign.id,version,
+      mode:clean(body?.mode,40).toUpperCase()==='DYNAMIC_UNTIL_LAUNCH'?'DYNAMIC_UNTIL_LAUNCH':'SNAPSHOT',
+      source_type:'EXPLICIT_IDS',source_refs:leadIds.slice(0,1000),
+      canonical_filter_json:campaign.audience_snapshot_json?.filters||{},
+      exclusion_reasons_json:{rows:built.excluded.slice(0,5000)},
+      ...built.reconciliation,
+      canonical_subject_ids:built.eligible.map((row:any)=>String(row.subject_id)).slice(0,5000),
+      canonical_company_keys:[...new Set(built.eligible.map((row:any)=>String(row.company_key||'')).filter(Boolean))].slice(0,5000),
+      content_hash:contentHash,captured_at:at,captured_by:user.email||user.id,
+      status:built.reconciliation.final_eligible_count>0?'READY':'REVIEW_REQUIRED',
+    });
+    await svc.entities.CommercialCampaign.update(campaign.id,{audience_current_version_id:created.id,updated_at:at});
+    return Response.json({ok:true,audience_version:created,reconciliation:built.reconciliation,reconciles:built.reconciles,excluded_sample:built.excluded.slice(0,50),external_send_performed:false});
+  }
+
+  if(action==='freeze_audience'){
+    const versionId=clean(body?.audience_version_id)||clean(campaign.audience_current_version_id);
+    if(!versionId)return Response.json({ok:false,error:'audience_version_required'},{status:400});
+    const existing=await svc.entities.CampaignAudienceVersion.get(versionId);
+    if(!existing)return Response.json({ok:false,error:'audience_version_not_found'},{status:404});
+    if(String(existing.status)==='FROZEN')return Response.json({ok:true,audience_version:existing,already_frozen:true,external_send_performed:false});
+    if(String(existing.status)!=='READY')return Response.json({ok:false,error:'audience_version_not_ready',status:existing.status},{status:409});
+    const frozen=await svc.entities.CampaignAudienceVersion.update(existing.id,{status:'FROZEN',frozen_at:new Date().toISOString()});
+    return Response.json({ok:true,audience_version:frozen,external_send_performed:false});
+  }
+
+  if(action==='validate_content'){
+    const validation=validateCampaignContent({
+      content:body?.content&&typeof body.content==='object'?body.content:{},
+      sample:Array.isArray(body?.sample)?body.sample.slice(0,50):[],
+      require_unsubscribe:body?.require_unsubscribe!==false,
+    });
+    if(body?.persist===true){
+      const priorRead=await readRuntimeRows({source:'campaign_content_versions',limit:100,read:()=>svc.entities.CampaignContentVersion.filter({campaign_id:campaign.id},'-version',100)});
+      const version=(priorRead.value||[]).reduce((max:number,row:any)=>Math.max(max,Number(row.version)||0),0)+1;
+      const at=new Date().toISOString();
+      const created=await svc.entities.CampaignContentVersion.create({
+        content_version_id:`content:${campaign.id}:${version}`,campaign_id:campaign.id,version,
+        language:clean(body?.content?.language,20)||'en',subject:clean(body?.content?.subject,300),
+        preview_text:clean(body?.content?.preview_text,300),text_body:String(body?.content?.text_body||'').slice(0,20000),
+        html_body:String(body?.content?.html_body||'').slice(0,60000),cta:clean(body?.content?.cta,200),
+        variable_schema_json:body?.content?.variable_schema_json||{},
+        unresolved_variables:validation.unresolved_variables,
+        blocked_claims:validation.blocked_claims.map((row:any)=>String(row.claim_key)),
+        quality_gate_json:validation,content_source:clean(body?.content_source,40).toUpperCase()||'HUMAN',
+        content_hash:await sha256({campaign_id:campaign.id,version,subject:body?.content?.subject,text_body:body?.content?.text_body}),
+        status:validation.status,created_by:user.email||user.id,created_at:at,
+      });
+      // Only a clean version becomes the current one; a REVIEW_REQUIRED draft
+      // is stored as evidence but never promoted.
+      if(validation.status==='VALIDATED')await svc.entities.CommercialCampaign.update(campaign.id,{content_current_version_id:created.id,updated_at:at});
+      return Response.json({ok:true,validation,content_version:created,promoted:validation.status==='VALIDATED',external_send_performed:false});
+    }
+    return Response.json({ok:true,validation,persisted:false,external_send_performed:false});
+  }
+
+  if(action==='validate_sequence'){
+    const validation=validateCampaignSequence({
+      steps:Array.isArray(body?.sequence?.steps)?body.sequence.steps:[],
+      stop_conditions:Array.isArray(body?.sequence?.stop_conditions)?body.sequence.stop_conditions:[],
+      business_hours_policy_json:body?.sequence?.business_hours_policy_json,
+      timezone_policy:body?.sequence?.timezone_policy,
+      out_of_office_policy_json:body?.sequence?.out_of_office_policy_json,
+      max_followups:body?.sequence?.max_followups,
+    });
+    if(body?.persist===true){
+      const priorRead=await readRuntimeRows({source:'campaign_sequence_versions',limit:100,read:()=>svc.entities.CampaignSequenceVersion.filter({campaign_id:campaign.id},'-version',100)});
+      const version=(priorRead.value||[]).reduce((max:number,row:any)=>Math.max(max,Number(row.version)||0),0)+1;
+      const at=new Date().toISOString();
+      const created=await svc.entities.CampaignSequenceVersion.create({
+        sequence_version_id:`sequence:${campaign.id}:${version}`,campaign_id:campaign.id,version,
+        steps_json:Array.isArray(body?.sequence?.steps)?body.sequence.steps:[],
+        stop_conditions:Array.isArray(body?.sequence?.stop_conditions)?body.sequence.stop_conditions.map((value:any)=>clean(value,60).toUpperCase()):[],
+        business_hours_policy_json:body?.sequence?.business_hours_policy_json||{},
+        timezone_policy:clean(body?.sequence?.timezone_policy,60),
+        out_of_office_policy_json:body?.sequence?.out_of_office_policy_json||{},
+        max_followups:Number(body?.sequence?.max_followups||0),
+        sequence_hash:await sha256({campaign_id:campaign.id,version,steps:body?.sequence?.steps,stop_conditions:body?.sequence?.stop_conditions}),
+        status:validation.status,created_by:user.email||user.id,created_at:at,
+      });
+      if(validation.status==='VALIDATED')await svc.entities.CommercialCampaign.update(campaign.id,{sequence_current_version_id:created.id,updated_at:at});
+      return Response.json({ok:true,validation,sequence_version:created,promoted:validation.status==='VALIDATED',external_send_performed:false});
+    }
+    return Response.json({ok:true,validation,persisted:false,external_send_performed:false});
+  }
+
+  if(action==='preflight'||action==='request_approval'){
+    const [audienceRead,contentRead,sequenceRead,profileRead,policyRead,controlRead,emergencyRead]=await Promise.all([
+      campaign.audience_current_version_id?readRuntimeSource<any>({source:'campaign_preflight_audience',read:()=>svc.entities.CampaignAudienceVersion.get(campaign.audience_current_version_id),fallback:null}):null,
+      campaign.content_current_version_id?readRuntimeSource<any>({source:'campaign_preflight_content',read:()=>svc.entities.CampaignContentVersion.get(campaign.content_current_version_id),fallback:null}):null,
+      campaign.sequence_current_version_id?readRuntimeSource<any>({source:'campaign_preflight_sequence',read:()=>svc.entities.CampaignSequenceVersion.get(campaign.sequence_current_version_id),fallback:null}):null,
+      readRuntimeRows({source:'campaign_preflight_profiles',limit:500,read:()=>svc.entities.OutboundSendingProfile.list('-created_date',500)}),
+      campaign.target_profile_id?readRuntimeSource<any>({source:'campaign_preflight_policy',read:()=>svc.entities.CommercialPolicy.get(campaign.target_profile_id),fallback:null}):null,
+      readRuntimeRows({source:'campaign_preflight_control',limit:2,read:()=>svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',2)}),
+      readRuntimeRows({source:'campaign_preflight_emergency',limit:2,read:()=>svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_at',2)}),
+    ]);
+    const controls=controlRead.value||[];const emergencies=emergencyRead.value||[];
+    const audienceVersion=audienceRead?.value||null;
+    const contentVersion=contentRead?.value||null;
+    const sequenceVersion=sequenceRead?.value||null;
+    const allowedKeys=new Set(campaign.sending_profile_keys?.length?campaign.sending_profile_keys:[]);
+    const profiles=(profileRead.value||[]).filter((profile:any)=>!allowedKeys.size||allowedKeys.has(profile.profile_key));
+    const preflight=buildCampaignPreflight({
+      campaign,
+      audienceAvailable:!campaign.audience_current_version_id||audienceRead?.status!=='UNAVAILABLE',
+      audienceVersion,
+      contentValidation:contentVersion?{status:contentVersion.status,blockers:contentVersion.quality_gate_json?.blockers||[],blocked_claims:(contentVersion.blocked_claims||[]).map((key:any)=>({claim_key:key}))}:null,
+      sequenceValidation:sequenceVersion?{status:sequenceVersion.status,blockers:[]}:null,
+      sendingProfiles:profiles,
+      sendingProfilesAvailable:profileRead.status!=='UNAVAILABLE',
+      policy:policyRead?.value||null,
+      policyAvailable:!campaign.target_profile_id||policyRead?.status!=='UNAVAILABLE',
+      outboundControl:controls.length===1?controls[0]:null,
+      outboundControlAvailable:controlRead.status!=='UNAVAILABLE'&&controls.length===1,
+      emergency:emergencies.length===1?emergencies[0]:null,
+      emergencyAvailable:emergencyRead.status!=='UNAVAILABLE'&&emergencies.length===1,
+      budget:{available:Number.isFinite(Number(campaign.budget_limit_minor)),remaining_minor:Number(campaign.budget_limit_minor)},
+      // The FounderPermit authority does not exist on this tree (C0): reported
+      // UNKNOWN, which blocks approval, rather than silently skipped.
+      founderPermit:null,
+    });
+    if(action==='preflight'){
+      return Response.json({ok:true,preflight,source_coverage:runtimeSourceCoverage({sending_profiles:profileRead,outbound_control:controlRead,emergency_control:emergencyRead}),external_send_performed:false});
+    }
+    // request_approval: only a clean PASS produces a hash-bound approval scope.
+    if(!preflight.approvable){
+      return Response.json({ok:false,error:'preflight_not_passed',preflight,external_send_performed:false},{status:409});
+    }
+    const binding=await buildApprovalBinding(sha256,{
+      campaign_id:campaign.id,
+      audience_content_hash:audienceVersion?.content_hash||null,
+      content_hash:contentVersion?.content_hash||null,
+      sequence_hash:sequenceVersion?.sequence_hash||null,
+      policy_version:campaign.policy_version||null,
+      market_scope:campaign.market_scope||[],
+      sending_profile_keys:campaign.sending_profile_keys||[],
+      limits:{contact_limit:campaign.contact_limit??null,company_contact_limit:campaign.company_contact_limit??null},
+      budget_limit_minor:Number.isFinite(Number(campaign.budget_limit_minor))?Number(campaign.budget_limit_minor):null,
+      emergency_control_revision:emergencies.length===1?Number(emergencies[0].control_revision||0):null,
+      actor:String(user.email||user.id||'admin'),
+      nonce:crypto.randomUUID(),
+      expires_at:new Date(Date.now()+15*60*1000).toISOString(),
+    });
+    const at=new Date().toISOString();
+    const updated=await svc.entities.CommercialCampaign.update(campaign.id,{
+      status:'READY_FOR_APPROVAL',approval_binding_json:{...binding.scope,approval_hash:binding.approval_hash,preflight_verdict:preflight.verdict,requested_at:at},updated_at:at,
+    });
+    return Response.json({ok:true,preflight,approval:{approval_hash:binding.approval_hash,scope:binding.scope},campaign:updated,item:projectCampaignSummary(updated),
+      note:'Approving this configuration does not authorize any send. External sends require a separate authorization and the execution engine (C4).',
+      external_send_performed:false});
+  }
+
   return Response.json({ok:false,error:'unsupported_action'},{status:400});
 }
