@@ -120,5 +120,61 @@ antes de cada commit.
 - **Documentos legales** (`src/content/legal/{code}/`): segundo pase,
   deliberadamente NO mezclado con la traducción de producto (peso de
   cumplimiento distinto). Pendiente para todos los idiomas nuevos.
-- **Fase D (tarifas en moneda local)** y **Fase F (e-invoicing watch,
-  ver `docs/EINVOICING_COMPLIANCE_WATCH.md`)** se gestionan aparte.
+- **Fase F (e-invoicing watch)**: ver `docs/EINVOICING_COMPLIANCE_WATCH.md`.
+
+## Fase D — tarifas en moneda local: BLOQUEADA, hueco declarado
+
+**Resultado: NO se siembra ninguna fila en moneda local. No es pereza ni
+falta de fuentes — el motor actual las calcularía mal en silencio.**
+
+### La causa, con la línea de código exacta
+
+`src/lib/paymentsGap.js`, `computeEffectiveBps()`, comentario previo a la
+función (declaración explícita del propio motor):
+
+> *"The caller is responsible for currency alignment. We do NOT do FX
+> here: PaymentsRateTable stores the fixed fee in the provider's native
+> currency, but for a first-pass gap estimate we treat EUR/GBP/USD as
+> ~1:1 at the magnitudes involved (fees under €0.50)."*
+
+El cálculo es `fixedMajor = fixed_fee_minor_units / 100` y luego
+`amortizedBps = (fixedMajor / avg_ticket_eur) * 10000`. El divisor está
+en EUR; el numerador se toma **tal cual**, sin mirar
+`fixed_fee_currency`. La aproximación ~1:1 es defendible para EUR/GBP/USD
+(mismo orden de magnitud). Para las monedas de la Fase D no lo es.
+
+### Error que se introduciría (ticket de 40 EUR)
+
+| Moneda | Fijo hipotético | bps que calcularía el motor | bps reales | Error |
+|---|---|---|---|---|
+| EUR | 0,25 € | 62,5 | 62,5 | 1,0× (fila real, correcta) |
+| CHF | 0,30 CHF | 75,0 | 79,8 | 0,9× — dentro de tolerancia |
+| CZK | 6,00 CZK | 1.500,0 | 59,8 | **25×** |
+| ISK | 35,00 ISK | 8.750,0 | 59,1 | **148×** |
+| HUF | 90,00 HUF | 22.500,0 | 57,0 | **395×** |
+
+DKK (~7,5:1), SEK y NOK (~11:1), PLN (~4,3:1) y RON (~5:1) fallan igual,
+solo que con menor factor. Sembrar esas filas produciría una cifra de
+sobrecoste inventada de facto en la cara del comerciante — exactamente lo
+que la doctrina de evidencia del producto prohíbe.
+
+### Decisión
+
+1. **No se siembra ninguna fila CZK/DKK/HUF/PLN/RON/SEK/NOK/ISK.** El
+   hueco queda declarado aquí, no disimulado con una conversión silenciosa.
+2. **CH/LI (CHF) quedan igualmente sin sembrar** en este bloque: aunque
+   0,9× cae dentro de la tolerancia declarada del motor, sembrar solo esas
+   dos daría una cobertura engañosamente parcial de la Fase D y sigue
+   requiriendo `source_url` + cita verbatim aún no obtenida.
+3. **Invariante bloqueado por test** (`paymentsRateCurrency.test.js`): el
+   seeder no puede contener monedas fuera del conjunto que el motor trata
+   como ~1:1. Si alguien añade una fila CZK creyendo que ayuda, el test
+   falla y le apunta a esta sección.
+
+### Qué desbloquearía la Fase D (decisión de producto, no mecánica)
+
+Dar al motor una ruta FX explícita: o bien `avg_ticket` y fijo en la misma
+moneda evidenciada, o una conversión declarada con fuente y fecha en la
+propia fila. Es un cambio en el núcleo del cálculo del gap (protegido por
+la suite de `paymentsGap`), no un seed. Debe ir en su propio PR y con
+decisión previa del fundador sobre cómo se declara el FX al comerciante.
