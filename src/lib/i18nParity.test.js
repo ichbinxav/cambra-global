@@ -16,12 +16,13 @@ import pt from './locales/pt.js';
 import el from './locales/el.js';
 import sv from './locales/sv.js';
 import da from './locales/da.js';
+import fi from './locales/fi.js';
 
-const dictionaries = { en, fr, es, de, it: itDict, pl, pt, el, sv, da };
+const dictionaries = { en, fr, es, de, it: itDict, pl, pt, el, sv, da, fi };
 // The supported-language contract, extended deliberately per market rollout —
 // decisions in src/docs/Decision_Log_I18N_30_MERCADOS.md. Order: en first,
 // then launch locales, then 30-market additions in rollout order.
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de', 'it', 'pl', 'pt', 'el', 'sv', 'da'];
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de', 'it', 'pl', 'pt', 'el', 'sv', 'da', 'fi'];
 const keys = Object.fromEntries(Object.entries(dictionaries).map(([lang, dict]) => [lang, Object.keys(dict).sort()]));
 const INTENTIONAL_BLANKS = new Set(['ri_sub_post','su_badge_beta']);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');

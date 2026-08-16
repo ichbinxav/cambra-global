@@ -73,6 +73,13 @@ export const LOCALE_REGISTRY={
       "translation_status": "IMPLEMENTED",
       "quality_status": "AUTOMATED_QA",
       "legal_review_status": "LEGAL_REVIEW_REQUIRED"
+    },
+    {
+      "locale": "fi-FI",
+      "language": "fi",
+      "translation_status": "IMPLEMENTED",
+      "quality_status": "AUTOMATED_QA",
+      "legal_review_status": "LEGAL_REVIEW_REQUIRED"
     }
   ],
   "markets": [
@@ -260,10 +267,11 @@ export const LOCALE_REGISTRY={
       ],
       "supported_product_locales": [
         "en-GB",
-        "sv-SE"
+        "sv-SE",
+        "fi-FI"
       ],
-      "default_locale": "en-GB",
-      "translation_readiness": "PARTIAL_NATIVE",
+      "default_locale": "fi-FI",
+      "translation_readiness": "NATIVE_PRODUCT",
       "fallback_locale": "en-GB",
       "currency": "EUR",
       "timezone": "Europe/Helsinki",
