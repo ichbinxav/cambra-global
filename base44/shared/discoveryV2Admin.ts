@@ -30,6 +30,12 @@ import {
   requireRuntimeSource,
   runtimeSourceCoverage,
 } from "./runtimeSourceRead.ts";
+import {
+  APOLLO_PROVIDER_KEY,
+  INSTANTLY_SUPERSEARCH_PROVIDER_KEY,
+  selectLeadIntelligenceProvider,
+} from "./leadIntelligenceProvider.ts";
+import { safeBestEffort } from "./bestEffort.ts";
 
 const now = () => new Date().toISOString();
 const text = (value: any) => String(value ?? "").trim();
@@ -266,6 +272,25 @@ function merchantSummary(row: any, threshold = 70) {
         : null,
     },
     relationship_status: row.revenue_stage || row.stage || "discovered",
+    // DSCV2-F: explicit two-part enrichment state — firmography and contact
+    // are distinct facts, never one generic boolean. "Fully enriched" requires
+    // both (see stageScore / companyEnrichment.ts).
+    enrichment: {
+      firmography: row.enrichment_json?.company_enrichment
+        ? "ENRICHED"
+        : (row.employee_range || (row.detected_technologies || []).length
+          ? "OBSERVED_PRE_EXISTING"
+          : "NOT_ENRICHED"),
+      firmography_at: row.enrichment_json?.company_enrichment?.enriched_at ||
+        null,
+      contact: text(row.contact_email)
+        ? (row.contactability || "RESOLVED_UNVERIFIED")
+        : "NOT_RESOLVED",
+      fully_enriched: Boolean(
+        row.enrichment_json?.company_enrichment && text(row.contact_email),
+      ),
+      pipeline_stage: row.stage || null,
+    },
     source: row.source || null,
     reason: row.score_breakdown_json?.reasoning ||
       row.source_evidence_json?.pre_score_reasons?.slice?.(0, 2)?.join(" · ") ||
@@ -1421,16 +1446,72 @@ async function startRun(service: any, user: any, input: any) {
   }, 202);
 }
 
-async function stageDiscovery(service: any, run: any, claim: any) {
+// DSCV2-A/B (2026-08-16): the dashboard engine used to hardcode the provider
+// from run.selected_sources and never consulted selectLeadIntelligenceProvider,
+// so the Apollo→Instantly contract cutover (APOLLO_CONTRACT_EXPIRES_AT) could
+// never apply here. This helper asks the selector with the SAME availability
+// evidence runInstantlyPreviewDiscovery enforces at runtime: INSTANTLY_API_KEY
+// plus the founder-verified CommercialProviderState permission row. A run whose
+// founder explicitly chose INSTANTLY forces that provider; APOLLO means "paid
+// discovery" and follows the automatic cutover (mode AUTO), so no deploy is
+// needed on the cutover date.
+export async function resolveDiscoveryLeadProvider(service: any, requestedSource: string) {
+  const instantlyStates = await service.entities.CommercialProviderState.filter(
+    { provider_key: "instantly_supersearch", role: "lead_intelligence" },
+    "-last_checked_at",
+    1,
+  ).catch((error: any) =>
+    safeBestEffort(error, {
+      operation: "discoveryV2Admin.instantly_permission_read",
+      fallback: [],
+      severity: "secondary",
+    })
+  );
+  return selectLeadIntelligenceProvider({
+    mode: requestedSource === "INSTANTLY" ? "INSTANTLY" : "AUTO",
+    apolloConfigured: Boolean(Deno.env.get("APOLLO_API_KEY")),
+    instantlyConfigured: Boolean(Deno.env.get("INSTANTLY_API_KEY")),
+    instantlySuperSearchPermission:
+      instantlyStates?.[0]?.metrics_json?.supersearch_permission_verified ===
+        true,
+  });
+}
+
+const apolloAuthFailure = (value: any) =>
+  /(^|[^0-9])(401|403)([^0-9]|$)|auth|unauthorized|forbidden|api_key/i.test(
+    text(value),
+  );
+
+export async function stageDiscovery(service: any, run: any, claim: any) {
   const config = run.configuration_json || {};
   const internal = Deno.env.get("INTERNAL_CALL_SECRET") || "";
   let ids: string[] = [];
   let found = 0;
   let sourceLimited = false;
+  let providerSelectionEvidence: any = null;
   if (
     run.discovery_type === "MERCHANT" &&
     ["APOLLO", "INSTANTLY"].includes(run.selected_sources?.[0])
   ) {
+    const selection = await resolveDiscoveryLeadProvider(
+      service,
+      run.selected_sources[0],
+    );
+    // DSCV2-B.3: with no available provider (Apollo expired AND Instantly not
+    // verified/configured), fail loudly — never keep calling Apollo silently.
+    if (!selection.selected) {
+      throw Object.assign(
+        new Error(text(selection.reason) || "no_available_lead_provider"),
+        { code: (text(selection.reason) || "no_available_lead_provider").toUpperCase() },
+      );
+    }
+    let activeProviderKey = selection.selected;
+    let providerFailover = false;
+    providerSelectionEvidence = {
+      requested_source: run.selected_sources[0],
+      selected: activeProviderKey,
+      reason: selection.reason,
+    };
     const partitions = Array.isArray(run.execution_plan_json?.source_partitions)
       ? run.execution_plan_json.source_partitions
       : [];
@@ -1460,9 +1541,9 @@ async function stageDiscovery(service: any, run: any, claim: any) {
         partition_key: partition.key,
         partition_filters: native,
       });
-      const result = unwrap(
-        await service.functions.invoke("leadDiscoveryAgent", {
-          provider: run.selected_sources[0] === "INSTANTLY"
+      const invokeDiscovery = (providerKey: string) =>
+        service.functions.invoke("leadDiscoveryAgent", {
+          provider: providerKey === INSTANTLY_SUPERSEARCH_PROVIDER_KEY
             ? "instantly_supersearch"
             : "apollo",
           checkpoint_key: `discovery-v2:${run.id}:native:${partition.key}`,
@@ -1483,8 +1564,53 @@ async function stageDiscovery(service: any, run: any, claim: any) {
         }).catch((error: any) => ({
           ok: false,
           error: text(error?.message || error),
-        })),
-      );
+        }));
+      let result = unwrap(await invokeDiscovery(activeProviderKey));
+      // DSCV2-B.2: if Apollo fails with an auth-shaped error BEFORE its
+      // contract expiry, fall over to Instantly when it is genuinely
+      // available, and leave a founder-visible OperationalLog record that the
+      // cutover happened earlier than planned. Never fail over silently.
+      if (
+        result.ok === false && activeProviderKey === APOLLO_PROVIDER_KEY &&
+        apolloAuthFailure(result.error)
+      ) {
+        const fallback = await resolveDiscoveryLeadProvider(
+          service,
+          "INSTANTLY",
+        );
+        if (fallback.selected === INSTANTLY_SUPERSEARCH_PROVIDER_KEY) {
+          await service.entities.OperationalLog.create({
+            event_type: "lead_provider_failover",
+            message:
+              "Apollo failed before contract expiry; Discovery fell over to Instantly SuperSearch",
+            data_json: {
+              run_id: run.id,
+              partition_key: partition.key,
+              apollo_error: text(result.error),
+              failed_over_to: INSTANTLY_SUPERSEARCH_PROVIDER_KEY,
+            },
+            created_at: now(),
+          }).catch((error: any) =>
+            safeBestEffort(error, {
+              operation: "discoveryV2Admin.provider_failover_log",
+              fallback: null,
+              severity: "critical",
+            })
+          );
+          providerFailover = true;
+          activeProviderKey = INSTANTLY_SUPERSEARCH_PROVIDER_KEY;
+          providerSelectionEvidence = {
+            ...providerSelectionEvidence,
+            failover: {
+              at: now(),
+              from: APOLLO_PROVIDER_KEY,
+              to: INSTANTLY_SUPERSEARCH_PROVIDER_KEY,
+              apollo_error: text(result.error),
+            },
+          };
+          result = unwrap(await invokeDiscovery(activeProviderKey));
+        }
+      }
       if (result.ok === false) {
         throw Object.assign(
           new Error(result.error || "source_discovery_failed"),
@@ -1493,7 +1619,7 @@ async function stageDiscovery(service: any, run: any, claim: any) {
       }
       await checkpointDiscoveryMaterialEffect(service, claim, {
         partition_key: partition.key,
-        provider: run.selected_sources[0],
+        provider: activeProviderKey,
         task_id: result.task_id || null,
         checkpoint_id: result.checkpoint_id || null,
         created_ids: list(result.created_ids, 1000),
@@ -1509,6 +1635,11 @@ async function stageDiscovery(service: any, run: any, claim: any) {
         ["circuit_open", "provider_unavailable"].includes(text(result.status));
     }
     ids = list(ids, 1000).slice(0, run.target_count);
+    providerSelectionEvidence = {
+      ...providerSelectionEvidence,
+      effective_provider: activeProviderKey,
+      failover_occurred: providerFailover,
+    };
   } else if (run.discovery_type === "MERCHANT") {
     const rows = await service.entities.OutboundLead.list(
       "-created_date",
@@ -1583,6 +1714,9 @@ async function stageDiscovery(service: any, run: any, claim: any) {
       status: sourceLimited ? "SOURCE_LIMITED" : "COMPLETED",
       at,
       paid: ["APOLLO", "INSTANTLY"].includes(run.selected_sources?.[0]),
+      ...(providerSelectionEvidence
+        ? { provider_selection: providerSelectionEvidence }
+        : {}),
     }],
     errors_json: sourceLimited
       ? [...(run.errors_json || []), { code: "SOURCE_LIMITED", at }]
@@ -1590,7 +1724,7 @@ async function stageDiscovery(service: any, run: any, claim: any) {
   });
 }
 
-async function stagePrefit(service: any, run: any, claim: any) {
+export async function stagePrefit(service: any, run: any, claim: any) {
   const config = run.configuration_json || {};
   let rows: any[] = [];
   if (run.discovery_type === "MERCHANT") {
@@ -1669,7 +1803,7 @@ async function stagePrefit(service: any, run: any, claim: any) {
   });
 }
 
-async function stageEnrich(service: any, run: any, claim: any) {
+export async function stageEnrich(service: any, run: any, claim: any) {
   const config = run.configuration_json || {};
   const rows = await service.entities.OutboundLead.filter(
     { id: { $in: list(run.result_ids) } },
@@ -1739,19 +1873,21 @@ async function stageEnrich(service: any, run: any, claim: any) {
     },
     actual_stages_json: [...(run.actual_stages_json || []), {
       stage: "SELECTIVE_COMPANY_ENRICHMENT",
-      status: result.status === "NO_COMPANY_ENRICHMENT_ADAPTER_CONFIGURED"
-        ? "SKIPPED_NO_COMPANY_ADAPTER"
-        : "COMPLETED",
+      // DSCV2-C: COMPANY_ENRICHMENT is a real Apollo organizations/enrich
+      // adapter now. A partial outcome stays visible instead of pretending
+      // the whole batch enriched.
+      status: number(result.failed) > 0 ? "COMPLETED_PARTIAL" : "COMPLETED",
       at: now(),
       paid: number(result.provider_calls ?? result.contact_calls) > 0,
       requested: candidateIds.length,
       enriched: number(result.enriched),
       skipped: number(result.skipped),
+      failed: number(result.failed),
     }],
   });
 }
 
-async function stageScore(service: any, run: any, claim: any) {
+export async function stageScore(service: any, run: any, claim: any) {
   const scoringBatches: any[] = [];
   let scoringFailed = false;
   if (run.discovery_type === "MERCHANT" && list(run.result_ids).length) {
@@ -1780,6 +1916,80 @@ async function stageScore(service: any, run: any, claim: any) {
       if (result.ok === false || number(result.scored) !== batch.length) {
         scoringFailed = true;
       }
+    }
+  }
+  // DSCV2-C.3/D.2 (2026-08-16): contact resolution is deliberately
+  // contact-LAST — its eligibility gate (contactLast.ts) requires the governed
+  // scoring snapshot written by the batches above, so it cannot run inside
+  // SELECTIVE_COMPANY_ENRICHMENT. Immediately after scoring, resolve a real
+  // named contact (name, email, title) for the same leads the run selected
+  // for enrichment. A blocked/partial contact pass is recorded honestly and
+  // never terminates the run — the governed gates inside leadEnrichmentAgent
+  // are authoritative on which leads may spend contact budget.
+  let contactResolution: any = null;
+  if (run.discovery_type === "MERCHANT" && list(run.result_ids).length) {
+    const scoredRows = await service.entities.OutboundLead.filter(
+      { id: { $in: list(run.result_ids) } },
+      "-score",
+      Math.max(1, list(run.result_ids).length),
+    );
+    for (const row of scoredRows) {
+      if (
+        optionalNumber(row.score) !== null &&
+        ["lead", "enriched"].includes(text(row.stage))
+      ) {
+        await service.entities.OutboundLead.update(row.id, {
+          stage: "scored",
+        }).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "discoveryV2Admin.stage_scored_transition",
+            fallback: null,
+            severity: "secondary",
+          })
+        );
+      }
+    }
+    const scoreConfig = run.configuration_json || {};
+    const contactCandidates = scoredRows.filter((row: any) =>
+      row.enrichment_worthy === true ||
+      number(row.pre_score) >= scoreConfig.high_fit_threshold ||
+      number(row.score) >= scoreConfig.high_fit_threshold
+    ).slice(0, Math.min(100, Math.ceil(run.target_count * .25))).map((
+      row: any,
+    ) => row.id);
+    if (
+      contactCandidates.length && scoreConfig.enrichment_policy !== "NONE" &&
+      run.hard_cap_minor > 0
+    ) {
+      await assertDiscoveryClaimActive(service, claim);
+      const contactResult = unwrap(
+        await service.functions.invoke("leadEnrichmentAgent", {
+          operation: "CONTACT_RESOLUTION",
+          lead_ids: contactCandidates,
+          limit: contactCandidates.length,
+          discovery_run_id: run.id,
+          max_related_spend_minor: run.hard_cap_minor,
+          cost_stage: "CONTACT_RESOLUTION",
+          cost_reason:
+            "Scored Discovery V2 candidate cleared for governed contact-last resolution",
+          internal_secret: Deno.env.get("INTERNAL_CALL_SECRET") || "",
+        }).catch((error: any) => ({
+          ok: false,
+          error: text(error?.message || error),
+        })),
+      );
+      contactResolution = {
+        requested: contactCandidates.length,
+        ok: contactResult.ok !== false,
+        resolved: number(contactResult.resolved),
+        no_contact: number(contactResult.no_contact),
+        skipped: number(contactResult.skipped),
+        failed: number(contactResult.failed),
+        review_required: number(contactResult.review_required),
+        provider_calls: number(contactResult.provider_calls),
+        task_id: contactResult.task_id || null,
+        error: contactResult.ok === false ? text(contactResult.error) : null,
+      };
     }
   }
   let rows: any[] = [];
@@ -1901,6 +2111,18 @@ async function stageScore(service: any, run: any, claim: any) {
     completed_at: completedAt,
   };
   const terminalHash = await sha256(terminalSnapshot);
+  // DSCV2-C.4/D.2: "fully enriched" is firmography evidence AND a resolved
+  // contact on the same lead. Partial success is counted separately, never
+  // presented as complete.
+  const fullyEnriched = run.discovery_type === "MERCHANT"
+    ? rows.filter((row: any) =>
+      row?.enrichment_json?.company_enrichment &&
+      text(row?.contact_email)
+    ).length
+    : 0;
+  const contactsResolved = run.discovery_type === "MERCHANT"
+    ? rows.filter((row: any) => text(row?.contact_email)).length
+    : 0;
   return commitDiscoveryStage(service, claim, {
     status: rows.length
       ? scoringFailed || missing ? "COMPLETED_PARTIAL" : "COMPLETED"
@@ -1913,19 +2135,47 @@ async function stageScore(service: any, run: any, claim: any) {
       high_fit: high,
       medium_fit: medium,
       low_fit: Math.max(0, knownScores.length - high - medium),
+      contacts_resolved: contactsResolved,
+      fully_enriched: fullyEnriched,
     },
     scoring_coverage_json: coverage,
     result_snapshot_json: snapshots,
     terminal_snapshot_json: terminalSnapshot,
     terminal_snapshot_hash: terminalHash,
     quality_json: quality,
+    // DSCV2-G: this run's real contribution back to the intelligence layer —
+    // reconstructed quality, scoring coverage and the contact-last outcome.
+    // Populated at completion instead of staying an initialized-empty field.
+    intelligence_contribution_json: {
+      quality,
+      scoring_coverage: coverage,
+      contact_resolution: contactResolution,
+      contributed_at: completedAt,
+    },
     actual_stages_json: [...(run.actual_stages_json || []), {
       stage: "SCORING",
       status: scoringFailed || missing ? "COMPLETED_PARTIAL" : "COMPLETED",
       at: completedAt,
       paid: false,
       deterministic: true,
-    }],
+    }, ...(contactResolution
+      ? [{
+        stage: "CONTACT_RESOLUTION",
+        status: contactResolution.ok
+          ? (contactResolution.resolved >= contactResolution.requested
+            ? "COMPLETED"
+            : "COMPLETED_PARTIAL")
+          : "BLOCKED",
+        at: completedAt,
+        paid: contactResolution.provider_calls > 0,
+        requested: contactResolution.requested,
+        resolved: contactResolution.resolved,
+        no_contact: contactResolution.no_contact,
+        skipped: contactResolution.skipped,
+        review_required: contactResolution.review_required,
+        error: contactResolution.error,
+      }]
+      : [])],
     stop_reason: rows.length
       ? scoringFailed || missing ? "SCORING_COVERAGE_PARTIAL" : null
       : "NO_MATCHING_CANONICAL_RESULTS",
@@ -1933,7 +2183,7 @@ async function stageScore(service: any, run: any, claim: any) {
   });
 }
 
-async function advanceRun(service: any, input: any, options: any = {}) {
+export async function advanceRun(service: any, input: any, options: any = {}) {
   const run = await service.entities.DiscoveryExecutionRun.get(
     text(input.run_id),
   );
@@ -2301,7 +2551,7 @@ async function compareRuns(service: any, input: any) {
   });
 }
 
-async function resultAction(service: any, input: any) {
+export async function resultAction(service: any, input: any) {
   const type = text(input.discovery_type).toUpperCase(),
     id = text(input.id),
     action = text(input.result_action).toUpperCase();
@@ -2332,17 +2582,31 @@ async function resultAction(service: any, input: any) {
       error: "result_not_attributed_to_discovery_run",
     }, 409);
   }
+  // DSCV2-E (2026-08-16): founder actions now move the REAL OutboundLead.stage
+  // enum (lead → enriched → scored → outreach_ready → ... → won/lost), not
+  // only revenue_stage/reservoir_state, and every transition leaves immutable
+  // evidence in DiscoveryExecutionRun.pipeline_transition_json. Mapping:
+  //   ADD_TO_GROWTH → stage 'outreach_ready' (eligible for the governed
+  //     outreach worker; sending itself stays separately gated)
+  //   REJECT        → stage 'disqualified'
+  // Frontier with legacy workers: Discovery V2 owns stage up to
+  // outreach_ready/disqualified for leads attributed to a run;
+  // autonomousCommercialWorker takes over from there (scored/outreach_ready →
+  // contacted → ...) once outreach actually sends.
+  let stageTransition: any = null;
   if (type === "MERCHANT") {
     const row = await service.entities.OutboundLead.get(id);
     if (!row) return response({ ok: false, error: "merchant_not_found" }, 404);
     if (action === "ADD_TO_GROWTH") {
       await service.entities.OutboundLead.update(id, {
+        stage: "outreach_ready",
         revenue_stage: "qualified",
         next_action:
           "Founder accepted into Growth; outbound remains separately governed.",
         reservoir_state: "qualified",
         reservoir_updated_at: now(),
       });
+      stageTransition = { from: text(row.stage) || null, to: "outreach_ready" };
     } else if (action === "REJECT") {
       await service.entities.OutboundLead.update(id, {
         stage: "disqualified",
@@ -2350,6 +2614,7 @@ async function resultAction(service: any, input: any) {
         suppression_reason: "founder_rejected_discovery_result",
         reservoir_updated_at: now(),
       });
+      stageTransition = { from: text(row.stage) || null, to: "disqualified" };
     } else {return response(
         { ok: false, error: "unsupported_result_action" },
         400,
@@ -2357,18 +2622,55 @@ async function resultAction(service: any, input: any) {
   } else if (type === "PARTNER") {
     const row = await service.entities.PartnerProspect.get(id);
     if (!row) return response({ ok: false, error: "partner_not_found" }, 404);
-    await service.entities.PartnerProspect.update(id, {
-      stage: action === "ADD_TO_GROWTH"
-        ? "qualified"
-        : action === "REJECT"
-        ? "lost"
-        : row.stage,
-    });
+    const nextStage = action === "ADD_TO_GROWTH"
+      ? "qualified"
+      : action === "REJECT"
+      ? "lost"
+      : row.stage;
+    await service.entities.PartnerProspect.update(id, { stage: nextStage });
+    if (nextStage !== row.stage) {
+      stageTransition = { from: text(row.stage) || null, to: nextStage };
+    }
   } else {return response({
       ok: false,
       error: "provider_changes_require_intelligence_review",
     }, 409);}
-  return response({ ok: true, outbound_effect: "NONE" });
+  if (stageTransition) {
+    const at = now();
+    const priorTransitions = Array.isArray(
+        run.pipeline_transition_json?.transitions,
+      )
+      ? run.pipeline_transition_json.transitions
+      : [];
+    await service.entities.DiscoveryExecutionRun.update(run.id, {
+      pipeline_transition_json: {
+        transitions: [...priorTransitions, {
+          at,
+          action,
+          subject_type: type,
+          subject_id: id,
+          from_stage: stageTransition.from,
+          to_stage: stageTransition.to,
+        }].slice(-500),
+        last_transition_at: at,
+      },
+    }).catch((error: any) =>
+      safeBestEffort(error, {
+        operation: "discoveryV2Admin.pipeline_transition_evidence",
+        fallback: null,
+        severity: "critical",
+      })
+    );
+  }
+  return response({
+    ok: true,
+    outbound_effect: "NONE",
+    ...(stageTransition
+      ? {
+        stage_transition: stageTransition,
+      }
+      : {}),
+  });
 }
 
 async function benchmarkPreview(service: any, input: any) {

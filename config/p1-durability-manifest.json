@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-16T18:59:23.263Z",
+  "generatedAt": "2026-08-16T19:21:55.736Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -497,8 +497,8 @@
     },
     {
       "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-      "sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
-      "bytes": 10840
+      "sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
+      "bytes": 11166
     },
     {
       "path": "base44/functions/autonomousCompanyOrchestrator/entry.ts",
@@ -927,8 +927,8 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
-      "bytes": 50549
+      "sha256": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
+      "bytes": 53698
     },
     {
       "path": "base44/functions/leadOrchestrator/entry.ts",
@@ -1582,8 +1582,8 @@
     },
     {
       "path": "base44/shared/discoveryV2Admin.ts",
-      "sha256": "31630a70f52652d157b6edf9d7098bdc4b2050530ad516f7907b9a0a1131dd32",
-      "bytes": 106276
+      "sha256": "70b8c6f86862640e7e12b0dafdd0fa178bed34e606ca20d6ae1109d83f23c874",
+      "bytes": 118991
     },
     {
       "path": "base44/shared/discoveryV2Execution.ts",
@@ -1762,8 +1762,8 @@
     },
     {
       "path": "base44/shared/leadIntelligenceProvider.ts",
-      "sha256": "21f805d9af232e2f5b1e8a32f7f82aca0ccdfb8cd14fa6c98df25573db47c285",
-      "bytes": 7842
+      "sha256": "ed2e55718072fea49a45e12905b261fb25a640157d857d36710f39119bcbee10",
+      "bytes": 8497
     },
     {
       "path": "base44/shared/leadOutcomeCalibration.ts",
@@ -2017,7 +2017,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "15fa0b3b5ef970abc6937bab8af656e21f83cda3a2f28e2af5ea6b621387f685",
+      "sha256": "f0dd9b1a5b5df3e558e560922c339dad0adc6390108fd10b3959c5d813e14899",
       "bytes": 124138
     },
     {
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "2a002b2f353dbf52bb3137608be79cec88998022be121508e1ee633958862d9a",
+      "sha256": "d0ca625d8e38c1abb5e8cc5cee8c07bd0972be27534c5df3391c9cf92ea30fa9",
       "bytes": 42987
     },
     {
@@ -2187,22 +2187,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "4f860b507aac371d26918f1ad4422d8ae31bc9132a223829bcff6f0cfa0c2c9f",
+      "sha256": "e63df877401ea06bdd2975e43023109c6846d157992714cac3c0c3665c900978",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "ddf4413bf817409633034bd7f298b9c82a85fc4dc14905b793658abfa5ebe7f6",
+      "sha256": "3a3742df7ccf053840268c3b07019f523afd30881239bd78902ab97089bb2369",
       "bytes": 73528
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "4d01390613db72b79d3828d595320be803ca25765baba997b21ae89760221926",
+      "sha256": "78042b2b5c21a01d45ca66fbc982a68c3818fb97e4fc34a6a894a333c126d07a",
       "bytes": 143589
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "45a2cc9fe0163a6c477270ed591f1269daf5fb6a7dc70cb92329cdf224132e9e",
+      "sha256": "988c1c69f7677c765acce1a64d53fdb260f5fe53a34baef2adaf1ad10f12433f",
       "bytes": 98242
     },
     {
@@ -3007,8 +3007,8 @@
     },
     {
       "path": "src/lib/commercialOS.test.js",
-      "sha256": "4b28e0e979cd71daba914e06c99523773a2120fd2285a0ea307a08bc5ba54707",
-      "bytes": 4788
+      "sha256": "54a8c193a36e36f912b07307323ce01718a3ec00e9faa843a198fd177f38877b",
+      "bytes": 5128
     },
     {
       "path": "src/lib/commercialSendSafety.test.js",
@@ -3797,8 +3797,8 @@
     },
     {
       "path": "src/lib/v096CommercialOS.test.js",
-      "sha256": "b314fadf634bc26951f185f139615c54f85fbfacdb3b2f3a38506b9a9a5bf544",
-      "bytes": 3693
+      "sha256": "b31b79a9c5dcf08a1880e33f3ee3464a0fbcc557f94b04873fdf3372b8e84abf",
+      "bytes": 3990
     },
     {
       "path": "src/lib/webhookDeadLetterClaim.test.js",
@@ -3887,8 +3887,8 @@
     },
     {
       "path": "src/pages/admin/AdminDiscovery.jsx",
-      "sha256": "33518085a8d4d74f7044cb9b6c55275c81912abf7904c6d34668f2a461619299",
-      "bytes": 62292
+      "sha256": "9952fe5255df0cfe153e3c720f3d2e223a2845cb9864ca48f3f29e266211ac81",
+      "bytes": 62884
     },
     {
       "path": "src/pages/admin/AdminDiscovery.test.jsx",

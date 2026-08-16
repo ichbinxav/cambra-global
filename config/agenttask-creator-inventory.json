@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "b5b6606ce07b27a53a8e00a34503ea0d7bb19a214bb50a277ee9aea6df19b741",
+  "source_inventory_hash": "8d1d1f0654523311c1a5340c315f43488418c73b4563a81fc2f5e6e3d32b888c",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -318,7 +318,7 @@
     },
     {
       "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-      "source_sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
+      "source_sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -996,7 +996,7 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "source_sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
+      "source_sha256": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -2099,7 +2099,7 @@
     },
     {
       "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-      "source_sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
+      "source_sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -2691,7 +2691,7 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "source_sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
+      "source_sha256": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,

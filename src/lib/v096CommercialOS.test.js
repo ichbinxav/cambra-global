@@ -24,9 +24,13 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
     expect(read('src/pages/admin/AdminCommercialOS.jsx')).toContain('No message was sent');
   });
 
-  it('supports provider-portable ICPs and blocks unsafe Apollo sunset handoff',()=>{
+  // DSCV2-A (2026-08-16): the sunset handoff is no longer blocked — verified
+  // Instantly SuperSearch takes over after the Apollo contract expiry; the
+  // bundled-person-data discard lives in runInstantlyPreviewDiscovery.
+  // Behavior tests: src/lib/discoveryV2Stages.test.js.
+  it('supports provider-portable ICPs and the governed Apollo sunset handoff',()=>{
     const providers=read('base44/shared/leadIntelligenceProvider.ts');
-    for(const token of ['APOLLO_CONTRACT_EXPIRES_AT','instantlySuperSearchPayload','apollo_active_until_contract_expiry','contact_person_only_company_search_unsupported','apollo_expired_and_instantly_contact_person_only'])expect(providers).toContain(token);
+    for(const token of ['APOLLO_CONTRACT_EXPIRES_AT','instantlySuperSearchPayload','apollo_active_until_contract_expiry','supersearch_permission_not_verified','apollo_expired_and_instantly_unavailable','preview-leads-from-supersearch'])expect(providers).toContain(token);
     const worker=read('base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts');
     expect(worker).toContain('selectLeadIntelligenceProvider');
     expect(worker).toContain('selectedProvider');

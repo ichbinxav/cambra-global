@@ -29,6 +29,7 @@ import {
   reconcileCommittedAdaptiveLeadDecisionProjection,
   verifyCommittedAdaptiveLeadDecisionProjection,
 } from "../../shared/intelligenceFoundationContracts.ts";
+import { runCompanyEnrichmentOperation } from "../../shared/companyEnrichment.ts";
 
 const AGENT_NAME = "lead_enrichment";
 const TASK_TYPE = "enrich_leads";
@@ -66,7 +67,7 @@ async function apolloRequest(
   effectLabel:string,
   path: string,
   key: string,
-  options: { body?: any; query?: URLSearchParams } = {},
+  options: { method?: string; body?: any; query?: URLSearchParams } = {},
 ) {
   let lastError: any = null;
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -78,7 +79,7 @@ async function apolloRequest(
         category:'enrichment',provider:'apollo',source:'leadEnrichmentAgent',
         event_key:reservation?.event?.event_key,effect_key:`apollo_contact:${effectLabel}:attempt:${attempt+1}`,
       },()=>fetch(`${APOLLO_BASE}${path}${suffix}`, {
-        method: "POST",
+        method: options.method || "POST",
         headers: {
           "Content-Type": "application/json",
           "Cache-Control": "no-cache",
@@ -452,32 +453,111 @@ Deno.serve(async (req) => {
       started_at: now(),
     });
 
-    // The historical default used people/match as "company enrichment". That
-    // path is removed: a generic/enrichment run never acquires person data.
+    // DSCV2-C (2026-08-16): COMPANY_ENRICHMENT is now a REAL operation. The
+    // historical default abused people/match as "company enrichment" and was
+    // removed; the interim state returned NO_COMPANY_ENRICHMENT_ADAPTER_CONFIGURED
+    // without doing anything, which silently turned Discovery V2's
+    // SELECTIVE_COMPANY_ENRICHMENT stage into a no-op. The adapter is Apollo's
+    // Organization Enrichment endpoint (organizations/enrich) — organization
+    // data only, never person data; contact resolution remains the separate
+    // governed CONTACT_RESOLUTION operation below.
     if (operation !== "CONTACT_RESOLUTION") {
-      await service.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary:
-          "Company-only enrichment completed without a person endpoint; existing organization evidence remains available for scoring",
-        output_payload_json: {
+      const companyApolloKey = Deno.env.get("APOLLO_API_KEY") || "";
+      if (!companyApolloKey) {
+        await service.entities.AgentTask.update(task.id, {
+          status: "waiting_input",
+          output_summary:
+            "Company enrichment blocked: Apollo is not configured",
+          output_payload_json: {
+            count: 0,
+            enriched: 0,
+            skipped: 0,
+            company_only: true,
+            contact_calls: 0,
+            blocker: "APOLLO_NOT_CONFIGURED",
+          },
+          error: "APOLLO_NOT_CONFIGURED",
+          completed_at: now(),
+        });
+        return Response.json({
+          ok: false,
+          task_id: task.id,
+          error: "apollo_not_configured",
+          company_only: true,
+          contact_calls: 0,
+        }, { status: 409 });
+      }
+      const companyLeads: any[] = leadIds?.length
+        ? await service.entities.OutboundLead.filter(
+          { id: { $in: leadIds } },
+          "-pre_score",
+          leadIds.length,
+        ).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "leadEnrichmentAgent.company_leads_read",
+            fallback: [],
+            severity: "secondary",
+          })
+        )
+        : [];
+      if (!companyLeads.length) {
+        await service.entities.AgentTask.update(task.id, {
+          status: "completed",
+          output_summary:
+            "No candidate leads were supplied for company enrichment",
+          output_payload_json: {
+            count: 0,
+            enriched: 0,
+            skipped: 0,
+            company_only: true,
+            contact_calls: 0,
+            status: "NO_ELIGIBLE_CANDIDATES_SUPPLIED",
+          },
+          completed_at: now(),
+        });
+        return Response.json({
+          ok: true,
+          task_id: task.id,
           count: 0,
           enriched: 0,
           skipped: 0,
           company_only: true,
           contact_calls: 0,
-          status: "NO_COMPANY_ENRICHMENT_ADAPTER_CONFIGURED",
+          status: "NO_ELIGIBLE_CANDIDATES_SUPPLIED",
+        });
+      }
+      const companyResult = await runCompanyEnrichmentOperation(service, {
+        leads: companyLeads.slice(0, requestedLimit),
+        discovery_run_id: body?.discovery_run_id || null,
+        max_related_spend_minor: body?.max_related_spend_minor,
+        request: (reservation, label, path, options) =>
+          apolloRequest(service, reservation, label, path, companyApolloKey, options),
+      });
+      await service.entities.AgentTask.update(task.id, {
+        status: "completed",
+        output_summary:
+          `Company firmography enrichment: ${companyResult.enriched} enriched, ${companyResult.skipped} skipped, ${companyResult.failed} failed`,
+        output_payload_json: {
+          count: companyLeads.length,
+          ...companyResult,
+          company_only: true,
+          contact_calls: 0,
+          status: "COMPANY_ENRICHMENT_COMPLETED",
         },
         completed_at: now(),
       });
       return Response.json({
         ok: true,
         task_id: task.id,
-        count: 0,
-        enriched: 0,
-        skipped: 0,
+        count: companyLeads.length,
+        enriched: companyResult.enriched,
+        skipped: companyResult.skipped,
+        failed: companyResult.failed,
+        provider_calls: companyResult.provider_calls,
+        details: companyResult.details,
         company_only: true,
         contact_calls: 0,
-        status: "NO_COMPANY_ENRICHMENT_ADAPTER_CONFIGURED",
+        status: "COMPANY_ENRICHMENT_COMPLETED",
       });
     }
 

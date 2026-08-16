@@ -39,9 +39,13 @@ describe('CAMBRA Commercial Operating System', () => {
     expect(instantlySuperSearchPayload({countries:['France'],industries:['Retail'],titles:['CEO'],employee_ranges:['26 - 50'],technologies:['Shopify'],limit:200})).toMatchObject({search_filters:{locations:[{label:'France'}],industry:{include:['Retail'],exclude:[]},title:{include:['CEO'],exclude:[]},employeeCount:['26 - 50'],technologies:['Shopify'],show_one_lead_per_company:true},limit:200});
   });
 
-  it('keeps Apollo until September 7 and blocks an unsafe person-only handoff', () => {
+  // DSCV2-A (2026-08-16): the person-only block was the interim state while
+  // SuperSearch company discovery was unfinished. runInstantlyPreviewDiscovery
+  // now consumes the same preview endpoint and discards bundled person data,
+  // so a verified Instantly takes over automatically after the Apollo cutover.
+  it('keeps Apollo until September 7 and hands off to verified Instantly after the cutover', () => {
     expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-08-20T00:00:00Z')}).selected).toBe('apollo');
-    expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-09-08T00:00:00Z')})).toMatchObject({selected:null,reason:'apollo_expired_and_instantly_contact_person_only'});
+    expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:true,now:new Date('2026-09-08T00:00:00Z')})).toMatchObject({selected:'instantly_supersearch',reason:'instantly_company_source_runtime_verified'});
     expect(selectLeadIntelligenceProvider({mode:'AUTO',apolloConfigured:true,instantlyConfigured:true,instantlySuperSearchPermission:false,now:new Date('2026-09-08T00:00:00Z')})).toMatchObject({selected:null,reason:'apollo_expired_and_instantly_unavailable'});
   });
 

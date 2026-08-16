@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "627a20db4b3510b41e85f4e9c7393d475721ab9f0ecae34ed5e2c9a2a9b60e72",
+  "input_fingerprint_sha256": "18e59b32dd326a1920f12b95901466733a86dc0ef716e89ab351125ad80070c1",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2860,8 +2860,8 @@
         },
         {
           "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-          "sha256": "a538da23925db13196d6704e4d47446ef217bd5e9aab2fff50365809cefd99df",
-          "bytes": 50549
+          "sha256": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
+          "bytes": 53698
         },
         {
           "path": "base44/functions/linkedinAgent/entry.ts",
@@ -3036,8 +3036,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-          "sha256": "eb43f5ecd49f59c97322e317c086c3356967e5972a04e97e2d04dc34bf30e3d3",
-          "bytes": 10840
+          "sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
+          "bytes": 11166
         },
         {
           "path": "base44/functions/autonomousPartnerWorker/entry.ts",
