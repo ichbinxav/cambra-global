@@ -31,11 +31,12 @@ las 1.349 reales. Los 2 blancos intencionales (`ri_sub_post`,
 | 13 | hr (croata) | 8d48ffa0 | HR → NATIVE | ✅ verify verde |
 | 14 | et (estonio) | 0dfb8803 | EE → NATIVE | ✅ verify verde |
 | 15 | lv (letón) | b97c0514 | LV → NATIVE | ✅ verify verde |
-| 16 | lt (lituano) | — | LT → NATIVE | ✅ verify verde |
-| 17–20 | sk, sl, nb, is | — | SK SI NO IS | ⏳ pendientes |
+| 16 | lt (lituano) | 4080a76b | LT → NATIVE | ✅ verify verde |
+| 17 | sk (eslovaco) | — | SK → NATIVE | ✅ verify verde |
+| 18–20 | sl, nb, is | — | SI NO IS | ⏳ pendientes |
 
-Mercados en NATIVE_PRODUCT tras el bloque 16: **FR ES GB AT DE LI IT CH PL
-PT GR CY SE DK FI CZ RO HU BG HR EE LV LT (23 de 30 activos)**.
+Mercados en NATIVE_PRODUCT tras el bloque 17: **FR ES GB AT DE LI IT CH PL
+PT GR CY SE DK FI CZ RO HU BG HR EE LV LT SK (24 de 30 activos)**.
 
 ## Decisiones deliberadas (Fase A/B — no reabrir sin motivo)
 
@@ -66,7 +67,7 @@ PT GR CY SE DK FI CZ RO HU BG HR EE LV LT (23 de 30 activos)**.
   resolución Intl (NumberFormat/DateTimeFormat) por idioma.
 - `p9EuropeanLocalization.test.js`: la lista de product locales se amplía
   por bloque; el invariante de "fallback honesto" se conserva rotando el
-  mercado testigo al siguiente pendiente (actual: SK).
+  mercado testigo al siguiente pendiente (actual: SI).
 - `landingRelease.test.js`: el conteo de locales del readiness report se
   deriva del registro fuente (sin `3` mágico); el barrido de claims
   prohibidos en landing gana patrones por idioma (DSGVO-konform,
