@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp, Settings2
+  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp, Settings2, Megaphone
 } from "lucide-react";
 import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -19,6 +19,7 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Automations": "Automations",
     "nav.Ask CAMBRA": "Ask CAMBRA",
     "nav.Discovery": "Discovery",
+    "nav.Campaigns": "Campaigns",
     "nav.Commercial OS": "Commercial OS",
     "nav.Commercial Autonomy": "Commercial Autonomy",
     "nav.Intelligence": "Intelligence",
@@ -87,6 +88,7 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Automations": "Automatisations",
     "nav.Ask CAMBRA": "Demander à CAMBRA",
     "nav.Discovery": "Découverte",
+    "nav.Campaigns": "Campagnes",
     "nav.Commercial OS": "OS Commercial",
     "nav.Commercial Autonomy": "Autonomie commerciale",
     "nav.Intelligence": "Intelligence",
@@ -155,6 +157,7 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Automations": "Automatizaciones",
     "nav.Ask CAMBRA": "Preguntar a CAMBRA",
     "nav.Discovery": "Descubrimiento",
+    "nav.Campaigns": "Campañas",
     "nav.Commercial OS": "Sistema Comercial",
     "nav.Commercial Autonomy": "Autonomía comercial",
     "nav.Intelligence": "Inteligencia",
@@ -231,6 +234,7 @@ const NAV = [
   { path: "/admin/automations", label: "Automations", icon: Workflow },
   { path: "/admin/chat", label: "Ask CAMBRA", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
+  { path: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { path: "/admin/commercial", label: "Commercial OS", icon: Sparkles },
   { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
@@ -273,7 +277,7 @@ function navGroup(path) {
   if (["/admin/founder-control", "/admin/chat", "/admin/copilot"].includes(path)) return "Command";
   if (["/admin/inbox", "/admin/approvals"].includes(path)) return "Inbox";
   if (["/admin/intelligence", "/admin/markets", "/admin/growth", "/admin/routing-intelligence", "/admin/benchmarks", "/admin/recommendations"].includes(path)) return "Intelligence";
-  if (["/admin/discovery", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
+  if (["/admin/discovery", "/admin/campaigns", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
   if (["/admin/agents", "/admin/automations", "/admin/developer", "/admin/maintenance", "/admin/evidence-review", "/admin/ecl-operations", "/admin/activity"].includes(path)) return "Operations";
   if (["/admin/users", "/admin/merchants", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
   return "System";
@@ -281,7 +285,7 @@ function navGroup(path) {
 const GROUPED_NAV = [...NAV].sort((a, b) => GROUP_ORDER.indexOf(navGroup(a.path)) - GROUP_ORDER.indexOf(navGroup(b.path)) || NAV.indexOf(a) - NAV.indexOf(b));
 
 function documentationTopic(path) {
-  if (path.startsWith('/admin/discovery') || path.startsWith('/admin/commercial-autonomy') || path.startsWith('/admin/pipeline')) return 'acquisition';
+  if (path.startsWith('/admin/discovery') || path.startsWith('/admin/campaigns') || path.startsWith('/admin/commercial-autonomy') || path.startsWith('/admin/pipeline')) return 'acquisition';
   if (path.startsWith('/admin/markets') || path.startsWith('/admin/growth')) return 'markets';
   if (path.startsWith('/admin/intelligence')) return 'moat';
   if (path.startsWith('/admin/aggregate')) return 'aggregate';

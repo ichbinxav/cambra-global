@@ -17,7 +17,11 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
   });
 
   it('preserves a hard outbound lock while campaign drafting and readiness remain usable',()=>{
-    const backend=read('base44/shared/commercialCampaignAdmin.ts');
+    // CAMP-C2 (2026-08-16): the handler body lives in campaignAdminCore.ts; the
+    // admin file is a thin Deno.serve-side wrapper. The no-send invariant
+    // covers both, and is additionally proven by behavior tests in
+    // src/lib/campaignsAdminC2.test.js.
+    const backend=read('base44/shared/commercialCampaignAdmin.ts')+read('base44/shared/campaignAdminCore.ts');
     expect(backend).toContain('external_send_performed:false');
     expect(backend).toContain('founder_pilot_authorization_required');
     expect(backend).not.toMatch(/commercialSendMessage|queueInitial|sendReply/);
