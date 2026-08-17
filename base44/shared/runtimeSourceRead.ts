@@ -128,3 +128,52 @@ export function runtimeSourceCoverage(
     version: RUNTIME_SOURCE_READ_VERSION,
   };
 }
+
+/**
+ * COMMAND-C3 (2026-08-17) — projects a read result into the epistemic vocabulary
+ * CAMBRA Command uses for its own claims (`RECEIPT_STATES` in
+ * commandReceiptLedger.ts).
+ *
+ * This is the ONE place that bridge is allowed to happen, and it is deliberately
+ * one-way and demote-only:
+ *
+ *   COMPLETE   -> OBSERVED         the read happened and returned everything
+ *   INCOMPLETE -> DERIVED          real rows, but a truncated view; totals from
+ *                                  it are lower bounds, not observations
+ *   UNAVAILABLE-> UNKNOWN          nothing was read; not zero, not empty
+ *
+ * The repo already carries eight competing epistemic vocabularies. This function
+ * exists so C3 does not add a ninth: everything Command asserts is projected
+ * into the single closed set, and nothing is ever projected back out.
+ *
+ * It can never return a state stronger than the read supports, which is what
+ * makes it safe to call from an assertion path.
+ */
+export function epistemicStateForRead(result: {
+  status?: RuntimeSourceStatus;
+  records_read?: number | null;
+} | null | undefined): 'OBSERVED' | 'DERIVED' | 'UNKNOWN' {
+  const status = result?.status;
+  if (status === 'COMPLETE') return 'OBSERVED';
+  if (status === 'INCOMPLETE') return 'DERIVED';
+  // Anything else — UNAVAILABLE, absent, or a shape we do not recognise — is
+  // UNKNOWN. An unrecognised status must never be optimistically upgraded.
+  return 'UNKNOWN';
+}
+
+/**
+ * Folds several read results into the single weakest state, so a claim built
+ * from many sources can never be stronger than its weakest input.
+ */
+export function epistemicStateForReads(results: Array<{
+  status?: RuntimeSourceStatus;
+  records_read?: number | null;
+} | null | undefined>): 'OBSERVED' | 'DERIVED' | 'UNKNOWN' {
+  const rows = Array.isArray(results) ? results : [];
+  // No inputs at all cannot be an observation of anything.
+  if (!rows.length) return 'UNKNOWN';
+  const states = rows.map(epistemicStateForRead);
+  if (states.includes('UNKNOWN')) return 'UNKNOWN';
+  if (states.includes('DERIVED')) return 'DERIVED';
+  return 'OBSERVED';
+}

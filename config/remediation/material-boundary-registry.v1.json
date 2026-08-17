@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "f937e624a0e0a296de3985b70f47db3f62e9a1bd6e76ff8d293c0ec871368e23",
+  "input_fingerprint_sha256": "2f87930819d752591cb628a823575714eef41568255f622bbd6b721aeaab4e8e",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -3106,8 +3106,8 @@
         },
         {
           "path": "base44/functions/founderChiefOfStaff/entry.ts",
-          "sha256": "710eb3ef76c62d2649613bd78e18439be483c216e1e972c27b0e4a897aaca5df",
-          "bytes": 4366
+          "sha256": "35d397eadbdae684bee5708d67c62a64827aa43a421635bd3c34a56523f92232",
+          "bytes": 5340
         },
         {
           "path": "base44/functions/founderCopilotAgent/entry.ts",

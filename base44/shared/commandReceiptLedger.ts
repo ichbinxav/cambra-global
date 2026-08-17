@@ -194,3 +194,85 @@ export function validateStateTransition(input: { from: string; to: string }) {
   }
   return { allowed: true, reason: null };
 }
+
+/**
+ * COMMAND-C3 (2026-08-17) — resolves the rows a receipt cites.
+ *
+ * `buildNextReceipt` only checks that `domain_receipt_refs` is non-empty when an
+ * external effect is claimed. It checks that a STRING exists — never that the row
+ * does. A receipt citing `CostUsageEvent:does-not-exist` passes chain verification
+ * today, and the chain verifying cleanly makes it look proven.
+ *
+ * Refs use the `entity:id` convention already established by
+ * CommandArtifact.source_refs. Anything that does not parse is reported rather
+ * than skipped: a malformed citation is a failed citation, not an absent one.
+ *
+ * Returns the same shape family as verifyReceiptChain so an operator reads one
+ * vocabulary, not two.
+ */
+export async function resolveSourceRefs(
+  refs: unknown,
+  readRow: (entity: string, id: string) => Promise<any>,
+) {
+  const list = [...(Array.isArray(refs) ? refs : [])].map(text).filter(Boolean);
+  const resolved: string[] = [];
+  const unresolved: Array<{ ref: string; reason: string }> = [];
+
+  for (const ref of list) {
+    const separator = ref.indexOf(':');
+    if (separator <= 0 || separator === ref.length - 1) {
+      unresolved.push({ ref, reason: 'malformed_ref_expected_entity_colon_id' });
+      continue;
+    }
+    const entity = ref.slice(0, separator).trim();
+    const id = ref.slice(separator + 1).trim();
+    if (!entity || !id) {
+      unresolved.push({ ref, reason: 'malformed_ref_expected_entity_colon_id' });
+      continue;
+    }
+    let row: any = null;
+    try {
+      row = await readRow(entity, id);
+    } catch {
+      // A failed lookup is NOT a missing row. Saying "this citation is fake"
+      // when the store was merely down would be its own false claim.
+      unresolved.push({ ref, reason: 'referent_unreadable' });
+      continue;
+    }
+    if (!row) { unresolved.push({ ref, reason: 'referent_not_found' }); continue; }
+    resolved.push(ref);
+  }
+
+  return {
+    ok: unresolved.length === 0 && list.length > 0,
+    cited: list.length,
+    resolved,
+    unresolved,
+    // A claim with no citations at all is not "clean" — it is uncited, and the
+    // caller must not present it as backed.
+    reason: list.length === 0
+      ? 'no_source_refs'
+      : (unresolved.length ? 'unresolved_source_refs' : null),
+  };
+}
+
+/**
+ * The epistemic ceiling a set of citations permits.
+ *
+ * Demote-only by construction: this can lower a proposed state but never raise
+ * it, so an INFERRED claim with perfect citations stays INFERRED.
+ */
+export function stateForCitations(
+  proposed: string,
+  resolution: { ok: boolean; cited: number; unresolved: Array<unknown> },
+): string {
+  const state = text(proposed).toUpperCase();
+  if (!(RECEIPT_STATES as readonly string[]).includes(state)) return 'UNKNOWN';
+  // Nothing cited: cannot be presented as observed or derived from evidence.
+  if (!resolution || resolution.cited === 0) {
+    return NEVER_PROMOTABLE_TO.has(state) ? 'UNVERIFIED' : state;
+  }
+  // Some citation did not resolve: the claim and its evidence disagree.
+  if (resolution.unresolved?.length) return 'CONFLICTED';
+  return state;
+}
