@@ -101,6 +101,15 @@ export async function handleCommandRunAction(
       if (read.status === 'UNAVAILABLE') return json({ error: 'founder_permit_unreadable' }, 503);
       if (!read.value) return json({ error: 'founder_permit_not_found_or_inactive' }, 409);
       permit = read.value;
+      // AUDIT SEC-05 (2026-08-17): a permit is not a bearer token. The actor binding a
+      // run must be the permit's issuer (or in an explicit delegated_to list).
+      const issuer = String(permit.issued_by || '').trim().toLowerCase();
+      const delegated = (Array.isArray(permit.delegated_to) ? permit.delegated_to : [])
+        .map((entry: any) => String(entry || '').trim().toLowerCase());
+      const requester = String(actor || '').trim().toLowerCase();
+      if (issuer && requester !== issuer && !delegated.includes(requester)) {
+        return json({ error: 'actor_not_permitted' }, 403);
+      }
     }
 
     const created = await startCommandRun(svc, {

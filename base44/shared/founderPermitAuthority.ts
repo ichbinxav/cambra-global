@@ -49,6 +49,10 @@ export type PermitCheckInput = {
     read_or_write?: 'READ' | 'WRITE';
     entity_type?: string;
     entity_id?: string;
+    /** AUDIT SEC-05 (2026-08-17): the actor requesting to act under this permit. A
+     *  bearer permit is not enough — the actor must be the permit's issuer (or in a
+     *  future explicit delegated_to list). */
+    actor?: string;
     tenant?: string;
     market?: string;
     environment?: string;
@@ -136,6 +140,18 @@ export function evaluatePermit(input: PermitCheckInput) {
   if (input.presented_permit_hash !== undefined &&
       text(input.presented_permit_hash) !== text(permit.permit_hash)) {
     blockers.push('permit_hash_mismatch');
+  }
+
+  // AUDIT SEC-05 (2026-08-17): a permit is not a bearer token — the actor must be the
+  // issuer (or in an explicit delegated_to list). Without this, anybody who observes a
+  // permit_id can bind their run to it.
+  const actor = text(request.actor);
+  if (actor) {
+    const issuer = text(permit.issued_by);
+    const delegated = (Array.isArray(permit.delegated_to) ? permit.delegated_to : []).map(text);
+    if (issuer && lower(actor) !== lower(issuer) && !delegated.some((entry) => lower(entry) === lower(actor))) {
+      blockers.push('actor_not_permitted');
+    }
   }
 
   // ---- Explicit denials win over everything, including FOUNDER_ROOT --------
