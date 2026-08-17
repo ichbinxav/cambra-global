@@ -248,9 +248,15 @@
       "classification": "GAP",
       "area": "security",
       "what": "Replace direct browser CRUD on material entities with governed handlers",
-      "today": "5 sites. Worst: AdminProviders.jsx:36-42 sets provider revenue_share_pct from a browser form; AdminContracts.jsx:49 writes a whole contract form object.",
-      "chunk": "C7 for contracts, C11 for providers",
-      "verified_directly": true
+      "today": "11 write operations across 8 files. C0 found 5; the C1 gate found 6 more by scanning the whole admin surface. Worst two are CRITICAL: OAuthAppsPanel.jsx generates an OAuth client secret in the browser and writes it via generic CRUD; WebhooksTable.jsx creates and hard-deletes webhook delivery configuration from the browser.",
+      "chunk": "C12 for OAuth/webhooks (Advanced System), C7 for contracts, C11 for providers",
+      "verified_directly": true,
+      "severity_breakdown": {
+        "CRITICAL": 2,
+        "HIGH": 2,
+        "MEDIUM": 2,
+        "LOW": 2
+      }
     },
     {
       "id": "RT-1",
@@ -275,5 +281,6 @@
     "REUSE": 7,
     "RUNTIME_ONLY": 2
   },
-  "single_most_important_conclusion": "Four of the five workspaces need NO new persisted aggregate — they are server-side projections over authorities that already exist. Recover has a real root in DealActivation. Exactly ONE new durable entity is justified across the entire programme: the append-only pipeline stage-transition event (PIPE-1). Six of the fourteen legacy pages already use the correct single-aggregator architecture and must be consolidated, not rewritten."
+  "single_most_important_conclusion": "Four of the five workspaces need NO new persisted aggregate — they are server-side projections over authorities that already exist. Recover has a real root in DealActivation. Exactly ONE new durable entity is justified across the entire programme: the append-only pipeline stage-transition event (PIPE-1). Six of the fourteen legacy pages already use the correct single-aggregator architecture and must be consolidated, not rewritten.",
+  "c1_correction": "C0 undercounted the direct-CRUD defect class because its reader was scoped to the 16 named legacy pages. The C1 gate scans src/pages/admin and src/components/admin exhaustively and ratchets: known sites are reported, new ones fail the build."
 }

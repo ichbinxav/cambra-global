@@ -1,0 +1,57 @@
+{
+  "schema_version": "cambra-dashboard-navigation-v1",
+  "registry_version": "dashboard-navigation-1.0.0",
+  "generated_for": "DASHBOARD CORE C1",
+  "truth_boundary": "This registry is the SINGLE source of truth for admin navigation. AdminLayout renders from it and the redirect framework reads from it. It declares BOTH the current state and the target state on purpose: the sidebar is not cut to the target until C13, because prompt section 2.5 forbids retiring a legacy route before parity, redirect, deep-link preservation, data preservation, navigation tests and documentation are all demonstrated. A registry that only described the target would make the gap invisible.",
+  "target_group_order": ["COMMAND", "GROWTH", "CLIENTS", "BUSINESS", "SYSTEM"],
+  "target_navigation": [
+    { "order": 1, "group": "COMMAND", "path": "/admin", "label_key": "nav.founder_os", "label": "Founder OS", "exact": true, "state": "LIVE" },
+    { "order": 2, "group": "COMMAND", "path": "/admin/chat", "label_key": "nav.cambra_command", "label": "CAMBRA Command", "state": "LIVE" },
+    { "order": 3, "group": "GROWTH", "path": "/admin/discovery", "label_key": "nav.discovery", "label": "Discovery", "state": "LIVE" },
+    { "order": 4, "group": "GROWTH", "path": "/admin/campaigns", "label_key": "nav.campaigns", "label": "Campaigns", "state": "LIVE" },
+    { "order": 5, "group": "GROWTH", "path": "/admin/conversations", "label_key": "nav.conversations", "label": "Inbox & Conversations", "state": "LIVE" },
+    { "order": 6, "group": "GROWTH", "path": "/admin/pipeline", "label_key": "nav.pipeline", "label": "Pipeline", "state": "LIVE_PENDING_REPLACEMENT", "note": "Current page is a kanban over DealApplication, an entity with zero producers. Replaced in C2/C3." },
+    { "order": 7, "group": "CLIENTS", "path": "/admin/merchants", "label_key": "nav.merchants", "label": "Merchants", "state": "LIVE", "note": "Reference pattern. Activations & Connections consolidates inside this page, not as a sidebar entry." },
+    { "order": 8, "group": "CLIENTS", "path": "/admin/audits", "label_key": "nav.audits", "label": "Audits & Opportunities", "state": "NOT_BUILT", "chunk": "C4-C5" },
+    { "order": 9, "group": "CLIENTS", "path": "/admin/recover", "label_key": "nav.recover", "label": "Recover", "state": "NOT_BUILT", "chunk": "C6-C7" },
+    { "order": 10, "group": "BUSINESS", "path": "/admin/finance", "label_key": "nav.finance", "label": "Finance", "state": "LIVE_PENDING_CONSOLIDATION", "chunk": "C8-C9" },
+    { "order": 11, "group": "BUSINESS", "path": "/admin/intelligence", "label_key": "nav.intelligence", "label": "Intelligence", "state": "LIVE_PENDING_CONSOLIDATION", "chunk": "C10-C11" },
+    { "order": 12, "group": "SYSTEM", "path": "/admin/settings", "label_key": "nav.settings", "label": "Settings", "state": "LIVE_PENDING_CONSOLIDATION", "chunk": "C12" }
+  ],
+  "advanced_system_children": [
+    { "path": "/admin/agents", "label": "AI Operations" },
+    { "path": "/admin/automations", "label": "Automations" },
+    { "path": "/admin/maintenance", "label": "Maintenance" },
+    { "path": "/admin/developer", "label": "CAMBRA Developer" },
+    { "path": "/admin/ecl-operations", "label": "ECL Operations" },
+    { "path": "/admin/api-integrations", "label": "API & Webhooks" },
+    { "path": "/admin/activity", "label": "Activity Log" },
+    { "path": "/admin/documentation", "label": "Operating Bible" },
+    { "path": "/admin/evidence-review", "label": "Evidence Review" },
+    { "path": "/admin/compliance", "label": "Compliance" },
+    { "path": "/admin/integrations", "label": "Integrations" }
+  ],
+  "merchants_children": [
+    { "anchor": "activations-connections", "label": "Activations & Connections", "note": "Lives inside /admin/merchants. Merchants/Integration/ConnectionSession remain the authority; Pipeline may project the CONNECTED milestone but never owns it." }
+  ],
+  "legacy_redirects": [
+    { "from": "/admin/deals", "to": "/admin/pipeline", "query": { "tab": "merchant" }, "ready": false, "blocker": "Pipeline replacement lands in C3" },
+    { "from": "/admin/applications", "to": "/admin/pipeline", "query": { "tab": "merchant", "view": "applications" }, "ready": false, "blocker": "Pipeline replacement lands in C3" },
+    { "from": "/admin/contracts", "to": "/admin/recover", "query": { "tab": "contracts" }, "ready": false, "blocker": "AdminContracts.jsx:49 writes Contract directly from the browser; a governed handler must exist first (C7)" },
+    { "from": "/admin/revenue", "to": "/admin/finance", "query": { "tab": "overview" }, "ready": false, "blocker": "AdminRevenue sums five entity lists in the component; server-side computation lands in C8" },
+    { "from": "/admin/recover-billing", "to": "/admin/finance", "query": { "tab": "merchant-billing" }, "ready": false, "blocker": "FiscalIdentityCard.jsx:47 writes Brand directly from the browser (C9)" },
+    { "from": "/admin/provider-economics", "to": "/admin/finance", "query": { "tab": "provider-economics" }, "ready": false, "blocker": "Awaiting Finance tab shell (C9). Page architecture is already correct." },
+    { "from": "/admin/markets", "to": "/admin/intelligence", "query": { "tab": "markets" }, "ready": false, "blocker": "Awaiting Intelligence tab shell (C11). Page architecture is already correct." },
+    { "from": "/admin/growth", "to": "/admin/intelligence", "query": { "tab": "markets", "view": "growth" }, "ready": false, "blocker": "Awaiting Intelligence tab shell (C11). Page architecture is already correct." },
+    { "from": "/admin/routing-intelligence", "to": "/admin/intelligence", "query": { "tab": "routing" }, "ready": false, "blocker": "Awaiting Intelligence tab shell (C11). SHADOW ONLY must stay visible." },
+    { "from": "/admin/benchmarks", "to": "/admin/intelligence", "query": { "tab": "benchmarks" }, "ready": false, "blocker": "Page claims to control ranges but has no write path; the claim must be corrected, not carried over (C11)" },
+    { "from": "/admin/recommendations", "to": "/admin/intelligence", "query": { "tab": "recommendations" }, "ready": false, "blocker": "Awaiting Intelligence tab shell (C11)" },
+    { "from": "/admin/providers", "to": "/admin/intelligence", "query": { "tab": "providers" }, "ready": false, "blocker": "HIGHEST SEVERITY: AdminProviders.jsx:36-42 sets provider revenue_share_pct from a browser form and writes it via generic CRUD. A governed handler must exist first (C11)." }
+  ],
+  "invariants": {
+    "physical_function_target": 276,
+    "note": "Every workspace surface is a view+action on an existing host, so it is a LOGICAL route. This programme must not add a physical function.",
+    "reference_pattern": "src/pages/admin/AdminMerchants.jsx:118-124",
+    "no_direct_browser_crud": "A workspace page must contain zero base44.entities writes. Reads through a governed portfolio call only."
+  }
+}
