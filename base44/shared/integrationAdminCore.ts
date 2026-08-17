@@ -13,6 +13,12 @@ import {
   WEBHOOK_SERVER_OWNED, WEBHOOK_TOOLS,
 } from './integrationRegistryCore.ts';
 import { PRIVILEGED_SCOPES, VALID_SCOPES } from './apiScopeCatalog.ts';
+// DASHBOARD-C15: the last three direct browser writes — Organization plan terms, the
+// mislabelled "suspend", and admin notes with an unidentified author.
+import {
+  applyOrganization, cancelOrganization, planCatalogView, previewOrganization,
+  recordAdminNote, refuseDealApplicationWrite,
+} from './platformAdminCore.ts';
 
 export const INTEGRATION_ADMIN_VERSION = 'integration-admin-1.0.0';
 const text = (value: unknown) => String(value ?? '').trim();
@@ -100,6 +106,51 @@ export async function handleIntegrationAdminAction(user: any, body: any, svc: an
     // Answered rather than omitted, so a caller that used to hard-delete learns the
     // alternative instead of receiving "not implemented".
     return json(refuseWebhookDelete(body?.webhook_id), 409);
+  }
+
+  if (action === 'plan_catalog') return json(planCatalogView());
+
+  if (action === 'preview_organization') {
+    const result = await previewOrganization({ svc, patch: body?.patch || {}, now, sha256 });
+    return result.ok ? json(result) : json(result, 409);
+  }
+
+  if (action === 'create_organization') {
+    if (!text(body?.expected_preview_hash)) return json({ error: 'expected_preview_hash_required' }, 400);
+    const result = await applyOrganization({
+      svc, actor, patch: body?.patch || {},
+      expected_preview_hash: text(body.expected_preview_hash), now, sha256,
+    });
+    return result.ok ? json(result) : json(result, 409);
+  }
+
+  if (action === 'cancel_organization') {
+    const result = await cancelOrganization({
+      svc, actor, organization_id: text(body?.organization_id), reason: text(body?.reason), now,
+    });
+    return result.ok ? json(result) : json(result, 409);
+  }
+
+  if (action === 'suspend_organization') {
+    // Answered rather than omitted: the old button offered a suspend that did not exist.
+    return json({
+      ok: false, error: 'no_suspended_state',
+      reason: 'Organization.billing_status enumerates active, past_due, canceled and trial. There is no '
+        + 'suspended state, so a suspend would be a cancel wearing a reversible-sounding name.',
+      use_instead: 'integration_cancel_organization',
+    }, 409);
+  }
+
+  if (action === 'record_note') {
+    const result = await recordAdminNote({
+      svc, actor, target_type: text(body?.target_type), target_id: text(body?.target_id),
+      note: text(body?.note), now,
+    });
+    return result.ok ? json(result) : json(result, 409);
+  }
+
+  if (action === 'update_deal_application') {
+    return json(refuseDealApplicationWrite(body?.field), 409);
   }
 
   return json({ error: 'integration_action_not_implemented', action }, 400);

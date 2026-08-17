@@ -130,6 +130,60 @@ if (!registry.includes('secret_shown_once')) {
   fail('the plaintext secret must be returned once and declared as such');
 }
 
+
+// ---------------------------------------------------------------------------
+// DASHBOARD-C15 — the last three browser writes, and what each was really doing.
+// ---------------------------------------------------------------------------
+const platformText = fs.readFileSync('base44/shared/platformAdminCore.ts', 'utf8');
+const platform = strip(platformText);
+const orgPanel = strip(fs.readFileSync('src/components/admin/integrations/OrganizationsPanel.jsx', 'utf8'));
+const appDetail = strip(fs.readFileSync('src/components/admin/AdminApplicationDetail.jsx', 'utf8'));
+const userDetail = strip(fs.readFileSync('src/pages/admin/AdminUserDetail.jsx', 'utf8'));
+const organizationEntity = JSON.parse(fs.readFileSync('base44/entities/Organization.jsonc', 'utf8'));
+
+// 7. Plan terms are server-side, and the browser no longer holds the mapping. These three
+// fields are ENFORCED in production, so a caller-supplied value grants itself capacity.
+if (!platform.includes('PLAN_CATALOG')) fail('the plan catalogue must live server-side');
+for (const field of ['monthly_api_quota', 'overage_price_per_1k', 'rate_limit_per_minute']) {
+  if (!new RegExp(`field: '${field}'`).test(platform)) {
+    fail(`ORGANIZATION_SERVER_OWNED must claim ${field} — apiV1, mcpServer and apiUsageBilling enforce it`);
+  }
+}
+if (/quota:\s*\d/.test(orgPanel) || /overage:\s*[\d.]/.test(orgPanel)) {
+  fail('OrganizationsPanel.jsx holds plan terms in the browser again — those numbers gate API access and bill overage');
+}
+
+// 8. There is no suspended state. The panel used to offer one.
+const statuses = organizationEntity.properties?.billing_status?.enum || [];
+if (statuses.includes('suspended')) {
+  fail('Organization.billing_status now has a suspended state — re-derive this check and the cancel wording, which exists because it did NOT');
+}
+if (/Suspend this organization/.test(orgPanel)) {
+  fail('OrganizationsPanel.jsx offers a "suspend" again — billing_status has no suspended value, so it writes canceled');
+}
+if (!platform.includes('cancelOrganization') || !/reversible: false/.test(platform)) {
+  fail('cancelling must be named cancel and must state that it is terminal');
+}
+
+// 9. A note author is the authenticated actor, never a literal.
+if (!platform.includes('unidentified_author')) {
+  fail('recordAdminNote must refuse when there is no identified author');
+}
+for (const [name, source] of [['AdminApplicationDetail.jsx', appDetail], ['AdminUserDetail.jsx', userDetail]]) {
+  if (/author:\s*[a-zA-Z?.]*\s*\|\|\s*["']/.test(source)) {
+    fail(`${name} falls back to a literal note author again — an unknown author stored as a name is indistinguishable from a real one`);
+  }
+  if (/entities\.AdminNote\.create/.test(source)) fail(`${name} writes AdminNote directly again`);
+}
+
+// 10. DealApplication stays retired.
+if (/entities\.DealApplication\.(create|update)/.test(appDetail)) {
+  fail('AdminApplicationDetail.jsx writes DealApplication again — the pipeline registry declares it ZERO_PRODUCERS');
+}
+if (!platform.includes('deal_application_retired')) {
+  fail('a DealApplication write must be refused by name with the registry evidence');
+}
+
 if (failures) process.exit(1);
 console.log(
   'integration:check PASS — the server owns client_id, the secret, pkce_required, status, ' +
@@ -137,5 +191,8 @@ console.log(
   'oauthAuthorize reads; redirect and webhook URLs are https-only and refuse loopback, private and ' +
   'metadata hosts; scopes validate against the one shared catalog with privileged scopes refused; ' +
   'runApiSelfTests stays an independent second opinion that agrees with it; the webhook hard delete ' +
-  'is refused in favour of disable; neither panel writes an entity or mints a credential',
+  'is refused in favour of disable; neither panel writes an entity or mints a credential; ' +
+  'organization plan terms are server-side and the enforced fields are server-owned, cancelling is ' +
+  'named cancel and states it is terminal because there is no suspended state, a note author is the ' +
+  'authenticated actor with no literal fallback, and DealApplication stays retired',
 );

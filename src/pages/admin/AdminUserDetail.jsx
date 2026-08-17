@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+
+const payload = (response) => response?.data || response || {};
+async function callIntegration(action, body = {}) {
+  const data = payload(await base44.functions.invoke("adminSummaries", { action: `integration_${action}`, ...body }));
+  if (data?.ok === false || data?.error) {
+    throw Object.assign(new Error(data?.error || "integration_operation_failed"), { data });
+  }
+  return data;
+}
 import { ArrowLeft, Send } from "lucide-react";
 
 const STATUS_COLORS = {
@@ -21,7 +30,7 @@ export default function AdminUserDetail() {
   const [deals, setDeals] = useState([]);
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
-  const [me, setMe] = useState(null);
+  const [noteError, setNoteError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,20 +41,28 @@ export default function AdminUserDetail() {
       base44.entities.AnalyzerResult.filter({ created_by: email }),
       base44.entities.UserDeal.filter({ user_email: email }),
       base44.entities.AdminNote.filter({ target_id: email }),
-      base44.auth.me(),
-    ]).then(([users, brands, res, ud, nts, me]) => {
+      // base44.auth.me() is still read so the page can render who is signed in, but the note
+      // AUTHOR now comes from the server's authenticated actor — the browser's idea of who it
+      // is was what made `|| "admin"` possible.
+    ]).then(([users, brands, res, ud, nts]) => {
       setUser(users[0]); setBrand(brands[0]); setResults(res);
-      setDeals(ud); setNotes(nts); setMe(me);
+      setDeals(ud); setNotes(nts);
       setLoading(false);
     });
   }, [id, email]);
 
   const addNote = async () => {
     if (!newNote.trim()) return;
-    const note = await base44.entities.AdminNote.create({
-      target_type: "user", target_id: email, note: newNote, author: me?.email || "admin"
-    });
-    setNotes(prev => [...prev, note]);
+    // DASHBOARD-C15: this used to send `author: me?.email || "admin"`, so a note written when
+    // the current user could not be read was stored as if a person called "admin" had written
+    // it — indistinguishable from a real one afterwards. The author is now the authenticated
+    // actor on the server, and the write refuses when there is no actor.
+    const result = await callIntegration("record_note", {
+      target_type: "user", target_id: email, note: newNote,
+    }).catch((caught) => ({ ok: false, error: caught?.data?.reason || caught?.message }));
+    if (!result?.ok) { setNoteError(result?.error || "Note refused."); return; }
+    setNoteError(null);
+    setNotes(prev => [...prev, { id: result.note_id, target_type: "user", target_id: email, note: newNote, author: result.author }]);
     setNewNote("");
   };
 
@@ -183,6 +200,9 @@ export default function AdminUserDetail() {
               <p className="text-[11px] text-muted-foreground/40 mt-1.5">{n.author} · {new Date(n.created_date).toLocaleDateString("en-GB")}</p>
             </div>
           ))}
+          {noteError && (
+            <p data-testid="note-error" className="text-[11px] text-amber-800 pt-2">{noteError}</p>
+          )}
           <div className="flex gap-2 pt-2">
             <input
               value={newNote} onChange={e => setNewNote(e.target.value)}

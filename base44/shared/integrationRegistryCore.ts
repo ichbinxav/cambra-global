@@ -507,6 +507,16 @@ export function refuseWebhookDelete(webhookId: unknown) {
   };
 }
 
+/**
+ * The quota each plan grants, mirrored for the drift check below.
+ *
+ * Deliberately a second statement rather than an import of PLAN_CATALOG: this is here to detect
+ * rows whose STORED quota disagrees with their plan, and reading both sides from the same place
+ * would make the comparison vacuous — the mistake C12 made when two empty extractions compared
+ * as equal.
+ */
+const PLAN_TERMS: Record<string, number> = { free: 1000, starter: 10000, growth: 100000, enterprise: 1000000 };
+
 /** Reports the registry state without exposing a secret. */
 export async function readIntegrationRegistry(input: { svc: any }) {
   const readMany = async (entity: string) => {
@@ -519,6 +529,7 @@ export async function readIntegrationRegistry(input: { svc: any }) {
 
   const apps = await readMany('OAuthApp');
   const hooks = await readMany('WebhookEndpoint');
+  const orgs = await readMany('Organization');
 
   return {
     ok: true as const,
@@ -543,8 +554,23 @@ export async function readIntegrationRegistry(input: { svc: any }) {
       url_valid: validateWebhookUrl(row.url).ok,
       url_problem: validateWebhookUrl(row.url).reason || null,
     })) : null,
+    organizations: orgs.readable ? orgs.rows.map((row: any) => ({
+      id: text(row.id), name: text(row.name), slug: text(row.slug),
+      owner_email: text(row.owner_email) || null, plan: text(row.plan),
+      billing_status: text(row.billing_status),
+      monthly_api_quota: nullableNumber(row.monthly_api_quota),
+      overage_price_per_1k: nullableNumber(row.overage_price_per_1k),
+      rate_limit_per_minute: nullableNumber(row.rate_limit_per_minute),
+      suspended_at: text(row.suspended_at) || null,
+      // A row whose stored terms disagree with its plan predates the server catalogue, so the
+      // quota being enforced is not the quota the plan says.
+      terms_match_plan: row.plan && PLAN_TERMS[String(row.plan)]
+        ? nullableNumber(row.monthly_api_quota) === PLAN_TERMS[String(row.plan)]
+        : null,
+    })) : null,
     // null distinguishes an unreadable registry from an empty one.
     oauth_apps_readable: apps.readable,
     webhooks_readable: hooks.readable,
+    organizations_readable: orgs.readable,
   };
 }
