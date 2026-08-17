@@ -2,12 +2,12 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "ac89a5e1fb8fca07ed7559ad3911a954efb86965bb443fff505659c22462519a",
+  "input_fingerprint_sha256": "1b36f12bc684207d24970224b7d49fe0482b3e8d99053f624de329a3aa313ec9",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "479ec32a2409830325d52985a478ea52b9f9c84b6febc241616b64026ce9c97c",
+      "sha256": "8446ab1e8235263728e5b6904104c1403c393bf6f70789d4c8b5cd0500130168",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
@@ -19,7 +19,7 @@
     {
       "key": "workforce",
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "1883a44687014f51befbb378f19dd61263523dea5f6c48d30bf9723fa27ce794",
+      "sha256": "f186cf2884634cf9583a0f01805eda3ddd294c4346990ec9d4b26968f6bc3f55",
       "schema_version": "agent-workforce-catalog-v1.0.0"
     },
     {

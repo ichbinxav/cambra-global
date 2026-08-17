@@ -113,7 +113,22 @@
       "label_key": "nav.intelligence",
       "label": "Intelligence",
       "state": "LIVE_PENDING_CONSOLIDATION",
-      "chunk": "C10-C11"
+      "chunk": "C10-C11",
+      "tabs": [
+        "overview",
+        "pricing-queue",
+        "markets",
+        "routing",
+        "benchmarks",
+        "recommendations",
+        "providers"
+      ],
+      "tab_views": {
+        "markets": [
+          "growth"
+        ]
+      },
+      "consolidation_note": "C10 landed the backend: the Intelligence projection (PROJECTION_ONLY, no sixth authority) and the pricing-promotion path that closes INT-2. C11 builds the tab shell. State stays LIVE_PENDING_CONSOLIDATION because the six legacy routes remain live until C13."
     },
     {
       "order": 12,

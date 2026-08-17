@@ -267,6 +267,14 @@
         "action_prefix": "finance_"
       },
       "boundary": "strict_admin"
+    },
+    "intelligenceWorkspaceAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/intelligenceAdminCore.ts",
+      "route": {
+        "action_prefix": "intelligence_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }
