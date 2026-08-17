@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "fb14ff86102327093f6dda686b0c54327b73e7b903526daa6f8abab8ecbdb263",
+  "source_inventory_hash": "f501895d9c1e01938a305902064f81c957e83f9dcfbd738c25867d75fd60549b",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -1063,7 +1063,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "ca7ab0293af06c587641f7b75a1f0b51e73aa5ae44cf4cfb0ad128dadc55c575",
+      "source_sha256": "403de369e0294731906297fca12d3929d8fb35061940b3f00c99e5506f032403",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"

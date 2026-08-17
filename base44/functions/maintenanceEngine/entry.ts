@@ -57,7 +57,26 @@ async function safeRepair(s:any,internal:string,signal:MaintenanceSignal,action:
 }
 
 guardedScheduledServe({"worker_key":"maintenanceEngine","cadence_seconds":600,"routes":{"cost_governance":{"worker_key":"costGovernanceWorker","cadence_seconds":3600},"production_readiness":{"worker_key":"productionReadinessWorker","cadence_seconds":86400},"disaster_recovery_backup":{"worker_key":"disasterRecoveryBackup","cadence_seconds":86400},"command_run_sweep":{"worker_key":"commandRunWorker","cadence_seconds":300}}},createClientFromRequest,async req=>{const routed=await req.clone().json().catch(()=>({}));if(routed.host_action==='command_run_sweep'){
-  const svc=createClientFromRequest(req).asServiceRole;
+  // AUDIT SEC-01 (2026-08-17) — this branch ran with NO authentication.
+  //
+  // guardedScheduledServe (schedulerRun.ts:72) is `if (invocationKind(req) !== 'SCHEDULED') return
+  // handler(req)`: a non-scheduled request goes straight to the handler, unauthenticated, by
+  // design — because every hosted route is expected to gate itself. The three sibling routes do
+  // (costGovernanceWorker:13, productionReadinessWorker:147, disasterRecoveryRuntime:306). This
+  // one, added in COMMAND-C7, did not: it took asServiceRole and ran sweepCommandRuns before the
+  // requireAdminOrInternal call further down the file was ever reached.
+  //
+  // So an unauthenticated POST of {"host_action":"command_run_sweep"} advanced up to five founder
+  // CommandRuns per call, spending CAMBRA's ANTHROPIC_API_KEY/OPENAI_API_KEY through routeToolCall
+  // and invoking any CHAT_TOOLS entry with service-role authority — repeatable until every run's
+  // cost cap was drained, and concurrent with the real 5-minute automation because it also
+  // bypassed the scheduler lease.
+  //
+  // Gated here, at the top of the branch, in the same shape the siblings use.
+  const sweepClient=createClientFromRequest(req);
+  const sweepGate=await requireAdminOrInternal(req,sweepClient,routed);
+  if(!sweepGate.ok)return sweepGate.response||Response.json({error:'authorization_failed'},{status:503});
+  const svc=sweepClient.asServiceRole;
   const sha=async(value:any)=>{const bytes=new TextEncoder().encode(JSON.stringify(value));const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map((b)=>b.toString(16).padStart(2,'0')).join('')};
   const registry=buildToolRegistry(CHAT_TOOLS as any[]);
   const result=await sweepCommandRuns({

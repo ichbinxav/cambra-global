@@ -1,12 +1,12 @@
 {
   "command": "npx vite build",
-  "sourceTreeHash": "07a2ad61e8a9de365052e8548c6fcdaddae9b0d52053a6ac4fbadb5dfee0e298",
-  "startedAt": "2026-08-17T14:59:03.116Z",
-  "completedAt": "2026-08-17T14:59:12.290Z",
+  "sourceTreeHash": "e988fa71bed6405e9700fd2b94355ef3eaf8d6c89b0f1b7da1475f3c43142c87",
+  "startedAt": "2026-08-17T15:56:42.102Z",
+  "completedAt": "2026-08-17T15:56:50.803Z",
   "exitCode": 0,
   "ciRunId": null,
   "distHash": "9b33ab058f6febd930abd3f1714e562e02233e2e0bc241396672167ca557e27d",
   "artifactCount": 137,
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "0a70149b231bd49663a795d132a5804f6713bcb7a284fdf08665e1d37dc8a59b"
+  "evidenceDigest": "8f19faea524451c45d078e1cfa2342d954e37d47787c4e5134125ef409c822bc"
 }
