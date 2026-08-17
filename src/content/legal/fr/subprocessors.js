@@ -7,7 +7,7 @@ export default {
   badge: "Légal · Annexe III",
   title: "Sous-traitants ultérieurs.",
   version: "1.0",
-  lastUpdated: "Dernière mise à jour : 16 août 2026",
+  lastUpdated: "Dernière mise à jour : 17 août 2026",
   back: "Retour",
   intro: [
     {
@@ -30,13 +30,14 @@ export default {
         { name: "OpenAI", country: "États-Unis", service: "Contre-vérification de l'extraction par IA (second lecteur indépendant des relevés téléversés)", transfer: "Accord de sous-traitance du prestataire (clauses contractuelles types) — instrument précis en attente de revue", status: "CONFIRMÉ" },
         { name: "Resend, Inc.", country: "États-Unis", service: "Acheminement des e-mails sortants et routage des e-mails entrants", transfer: "Accord de sous-traitance du prestataire (clauses contractuelles types) — instrument précis en attente de revue", status: "CONFIRMÉ" },
         { name: "Stripe Payments Europe Ltd.", country: "Irlande", service: "Traitement des paiements pour la facturation de la commission de succès de CAMBRA ; accès en lecture seule au compte Stripe du client lorsque celui-ci l'autorise", transfer: "Dans l'EEE pour l'entité contractante ; les transferts ultérieurs sont régis par l'accord propre de Stripe", status: "CONFIRMÉ" },
+        { name: "Microsoft Ireland Operations Limited (SharePoint / Microsoft Graph)", country: "Irlande (entité contractante) ; données au repos en France (vérifié dans le centre d'administration Microsoft 365 — onglet Data location, 17 août 2026)", service: "Sauvegarde de reprise après sinistre chiffrée et hors plateforme des données de la plateforme (Brand, Invoice, Mandate, CommunicationThread et autres entités productives du catalogue Disaster Recovery) et des pièces jointes téléversées par le marchand, hébergées dans un locataire SharePoint configuré en région UE", transfer: "Données au repos hébergées en France — aucun transfert international du contenu de la sauvegarde. Les services annexes (support, télémétrie), le cas échéant, sont couverts par les Clauses contractuelles types signées dans le Microsoft Products and Services Data Protection Addendum", status: "CONFIRMÉ — ajouté le 17 août 2026" },
       ],
     },
     {
       heading: "4. Autres prestataires — opérations propres à CAMBRA",
       note: "Ces prestataires apparaissent dans le code de la plateforme mais ne sont PAS des sous-traitants ultérieurs déclarés du service client : ils soutiennent la prospection et la recherche de marché propres à CAMBRA, où CAMBRA agit en qualité de responsable de ses propres données de contact professionnel et non de sous-traitant du client. Ils sont listés par transparence et leur qualification est en attente de confirmation juridique.",
       rows: [
-        { name: "Microsoft (Graph / Outlook)", country: "En attente de confirmation", service: "Boîte professionnelle propre à CAMBRA — correspondance commerciale sortante et entrante", transfer: "En attente de revue juridique", status: "EN ATTENTE DE REVUE JURIDIQUE" },
+        { name: "Microsoft (Graph / Outlook — boîte professionnelle CAMBRA)", country: "Irlande (Microsoft Ireland Operations Limited)", service: "Boîte professionnelle propre à CAMBRA — correspondance commerciale sortante et entrante. Distinct du rôle SharePoint listé au tableau 3, qui est bien un sous-traitant ultérieur du service client.", transfer: "En attente de revue juridique", status: "EN ATTENTE DE REVUE JURIDIQUE" },
         { name: "Instantly", country: "En attente de confirmation", service: "Campagnes commerciales sortantes de CAMBRA vers des prospects", transfer: "En attente de revue juridique", status: "EN ATTENTE DE REVUE JURIDIQUE" },
         { name: "Apollo", country: "En attente de confirmation", service: "Découverte et enrichissement de contacts professionnels pour la prospection propre à CAMBRA", transfer: "En attente de revue juridique", status: "EN ATTENTE DE REVUE JURIDIQUE" },
         { name: "Perplexity", country: "En attente de confirmation", service: "Recherche publique sur le marché et les prestataires (pages tarifaires des prestataires de paiement, veille concurrentielle)", transfer: "En attente de revue juridique", status: "EN ATTENTE DE REVUE JURIDIQUE" },

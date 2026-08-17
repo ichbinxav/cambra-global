@@ -22,7 +22,7 @@ export default {
   badge: "Legal · Annex III",
   title: "Sub-processors.",
   version: "1.0",
-  lastUpdated: "Last updated: 16 August 2026",
+  lastUpdated: "Last updated: 17 August 2026",
   back: "Back",
   intro: [
     {
@@ -45,13 +45,14 @@ export default {
         { name: "OpenAI", country: "United States", service: "AI extraction cross-check (second independent reader of uploaded statements)", transfer: "Provider's data processing agreement (Standard Contractual Clauses) — specific instrument pending review", status: "CONFIRMED" },
         { name: "Resend, Inc.", country: "United States", service: "Email delivery and inbound email routing", transfer: "Provider's data processing agreement (Standard Contractual Clauses) — specific instrument pending review", status: "CONFIRMED" },
         { name: "Stripe Payments Europe Ltd.", country: "Ireland", service: "Payment processing for CAMBRA's own success-fee billing; read-only access to the customer's own connected Stripe account when the customer authorises it", transfer: "Within the EEA for the contracting entity; onward transfers governed by Stripe's own agreement", status: "CONFIRMED" },
+        { name: "Microsoft Ireland Operations Limited (SharePoint / Microsoft Graph)", country: "Ireland (contracting entity); data at rest in France (verified in the Microsoft 365 admin centre — Data location tab, 17 August 2026)", service: "Encrypted off-platform disaster-recovery backup of platform data (Brand, Invoice, Mandate, CommunicationThread and other production entities per the Disaster Recovery entity catalog) and merchant-uploaded attachments to a SharePoint tenant configured in the EU region", transfer: "Data at rest hosted in France — no international transfer of the backup content. Ancillary support and telemetry, where applicable, under the Standard Contractual Clauses executed in the Microsoft Products and Services Data Protection Addendum", status: "CONFIRMED — added 17 August 2026" },
       ],
     },
     {
       heading: "4. Other providers — CAMBRA's own operations",
       note: "These providers appear in the platform's codebase but are NOT declared sub-processors of the customer service: they support CAMBRA's own prospecting and market research, where CAMBRA acts as controller of its own business contact data rather than as the customer's processor. They are listed here for transparency and their classification is pending legal confirmation.",
       rows: [
-        { name: "Microsoft (Graph / Outlook)", country: "Pending confirmation", service: "CAMBRA's own business mailbox — outbound and inbound commercial correspondence", transfer: "Pending legal review", status: "PENDING LEGAL REVIEW" },
+        { name: "Microsoft (Graph / Outlook — CAMBRA business mailbox only)", country: "Ireland (Microsoft Ireland Operations Limited)", service: "CAMBRA's own business mailbox — outbound and inbound commercial correspondence. Distinct from the SharePoint disaster-recovery role listed in table 3, which is a sub-processor of the customer service.", transfer: "Pending legal review", status: "PENDING LEGAL REVIEW" },
         { name: "Instantly", country: "Pending confirmation", service: "CAMBRA's outbound commercial campaigns to prospects", transfer: "Pending legal review", status: "PENDING LEGAL REVIEW" },
         { name: "Apollo", country: "Pending confirmation", service: "Business contact discovery and enrichment for CAMBRA's own prospecting", transfer: "Pending legal review", status: "PENDING LEGAL REVIEW" },
         { name: "Perplexity", country: "Pending confirmation", service: "Public market and provider research (payment-provider pricing pages, competitor monitoring)", transfer: "Pending legal review", status: "PENDING LEGAL REVIEW" },

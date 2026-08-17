@@ -7,7 +7,7 @@ export default {
   badge: "Legal · Anexo III",
   title: "Subencargados.",
   version: "1.0",
-  lastUpdated: "Última actualización: 16 de agosto de 2026",
+  lastUpdated: "Última actualización: 17 de agosto de 2026",
   back: "Volver",
   intro: [
     {
@@ -30,13 +30,14 @@ export default {
         { name: "OpenAI", country: "Estados Unidos", service: "Contraste de extracción con IA (segundo lector independiente de los extractos subidos)", transfer: "Acuerdo de tratamiento del proveedor (cláusulas contractuales tipo) — instrumento concreto pendiente de revisión", status: "CONFIRMADO" },
         { name: "Resend, Inc.", country: "Estados Unidos", service: "Entrega de correo y enrutado de correo entrante", transfer: "Acuerdo de tratamiento del proveedor (cláusulas contractuales tipo) — instrumento concreto pendiente de revisión", status: "CONFIRMADO" },
         { name: "Stripe Payments Europe Ltd.", country: "Irlanda", service: "Procesamiento de pagos para la facturación de la comisión de éxito de CAMBRA; acceso de solo lectura a la cuenta Stripe del propio cliente cuando éste lo autoriza", transfer: "Dentro del EEE para la entidad contratante; las transferencias ulteriores se rigen por el propio acuerdo de Stripe", status: "CONFIRMADO" },
+        { name: "Microsoft Ireland Operations Limited (SharePoint / Microsoft Graph)", country: "Irlanda (entidad contratante); datos en reposo en Francia (verificado en el centro de administración de Microsoft 365 — pestaña Data location, 17 de agosto de 2026)", service: "Copia de recuperación ante desastres cifrada y fuera de plataforma de los datos de la plataforma (Brand, Invoice, Mandate, CommunicationThread y demás entidades productivas del catálogo de Disaster Recovery) y de los adjuntos subidos por el comercio, alojados en un tenant de SharePoint configurado en la región UE", transfer: "Datos en reposo alojados en Francia — no hay transferencia internacional del contenido de la copia. Servicios auxiliares (soporte, telemetría), cuando aplique, amparados por las Cláusulas Contractuales Tipo del Microsoft Products and Services Data Protection Addendum", status: "CONFIRMADO — añadido el 17 de agosto de 2026" },
       ],
     },
     {
       heading: "4. Otros proveedores — operaciones propias de CAMBRA",
       note: "Estos proveedores aparecen en el código de la plataforma pero NO son subencargados declarados del servicio al cliente: dan soporte a la prospección y la investigación de mercado propias de CAMBRA, donde CAMBRA actúa como responsable de sus propios datos de contacto profesional y no como encargado del cliente. Se enumeran por transparencia y su clasificación está pendiente de confirmación jurídica.",
       rows: [
-        { name: "Microsoft (Graph / Outlook)", country: "Pendiente de confirmación", service: "Buzón profesional propio de CAMBRA — correspondencia comercial saliente y entrante", transfer: "Pendiente de revisión jurídica", status: "PENDIENTE DE REVISIÓN JURÍDICA" },
+        { name: "Microsoft (Graph / Outlook — buzón profesional de CAMBRA)", country: "Irlanda (Microsoft Ireland Operations Limited)", service: "Buzón profesional propio de CAMBRA — correspondencia comercial saliente y entrante. Distinto del rol de SharePoint listado en la tabla 3, que sí es subencargado del servicio al cliente.", transfer: "Pendiente de revisión jurídica", status: "PENDIENTE DE REVISIÓN JURÍDICA" },
         { name: "Instantly", country: "Pendiente de confirmación", service: "Campañas comerciales salientes de CAMBRA hacia potenciales clientes", transfer: "Pendiente de revisión jurídica", status: "PENDIENTE DE REVISIÓN JURÍDICA" },
         { name: "Apollo", country: "Pendiente de confirmación", service: "Descubrimiento y enriquecimiento de contactos profesionales para la prospección propia de CAMBRA", transfer: "Pendiente de revisión jurídica", status: "PENDIENTE DE REVISIÓN JURÍDICA" },
         { name: "Perplexity", country: "Pendiente de confirmación", service: "Investigación pública de mercado y proveedores (páginas de tarifas de proveedores de pago, seguimiento de competencia)", transfer: "Pendiente de revisión jurídica", status: "PENDIENTE DE REVISIÓN JURÍDICA" },
