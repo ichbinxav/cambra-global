@@ -73,6 +73,33 @@ export function checkCombination(domains: FinanceDomain[]): { allowed: boolean; 
   return { allowed: true, reason: null };
 }
 
+/**
+ * The unit a source field is stored in.
+ *
+ * DASHBOARD-C9: this repo has BOTH, and C8 got it wrong. Invoice.total_amount,
+ * Invoice.amount_paid and MonthlySavingsReport.savings are `number` in MAJOR units
+ * (the pre-RECOVER-4 entities). ProviderRevenueLedger.paid_amount_minor and
+ * CostUsageEvent.amount_minor are integers in MINOR units. C8 read `savings_minor`
+ * and `amount_paid_minor`, which do not exist on those entities, so both figures
+ * were permanently UNKNOWN and the margin silently excluded all merchant revenue.
+ * Fail-closed, so nothing was confidently wrong — but the module claimed to compute
+ * figures it could never compute. Every call site now states the unit.
+ */
+export type AmountUnit = 'MINOR' | 'MAJOR';
+
+/**
+ * Converts a stored amount to minor units.
+ *
+ * A MAJOR value is a float, so it is rounded to the cent rather than carried as a
+ * fraction of one. A MINOR value that arrives fractional is a data error, not a
+ * precision choice, so it is rounded and the caller is not told a half-cent exists.
+ */
+export function toMinor(value: unknown, unit: AmountUnit): number | null {
+  const parsed = nullableMinor(value);
+  if (parsed === null) return null;
+  return unit === 'MAJOR' ? Math.round(parsed * 100) : Math.round(parsed);
+}
+
 export type FinanceFigure = {
   metric_key: string;
   domain: FinanceDomain;
@@ -83,6 +110,12 @@ export type FinanceFigure = {
   counted: number;
   missing: number;
   completeness: 'COMPLETE' | 'LOWER_BOUND' | 'UNKNOWN';
+  /** True when the rows span more than one currency, in which case amount_minor is null. */
+  mixed_currency: boolean;
+  /** The real per-currency breakdown, which survives even when no total is reportable. */
+  by_currency: Record<string, number>;
+  /** Rows that carried an amount but no currency, so they could not be attributed. */
+  currency_unknown_rows: number;
   truth_class: TruthClass;
   claim_boundary: string;
 };
@@ -92,6 +125,13 @@ export type FinanceFigure = {
  *
  * The completeness flows into the truth class: a LOWER_BOUND can never be VERIFIED,
  * because a sum that skipped rows has not verified a total.
+ *
+ * DASHBOARD-C9: this now runs the rows through `consolidate` rather than summing the
+ * field blind. C8 wrote the currency guard and then did not wire it in here, so a
+ * figure spanning EUR and GBP reported a single confident number — which across the
+ * thirty markets CAMBRA operates in is not a rounding concern but a wrong total.
+ * All four financial entities carry a `currency` field, so there is no excuse for
+ * assuming one.
  */
 export function figure(input: {
   metric_key: string;
@@ -99,32 +139,75 @@ export function figure(input: {
   basis: AccountingBasis;
   rows: any[];
   field: string;
-  currency?: string | null;
+  /** Where the per-row currency lives. Defaults to the field every financial entity uses. */
+  currencyField?: string;
+  /** The unit `field` is stored in. Defaults to MINOR; MAJOR entities must say so. */
+  unit?: AmountUnit;
+  /**
+   * True when the underlying source read completely.
+   *
+   * Without it, an empty row set is UNKNOWN — the conservative default. With it, an
+   * empty set from a complete read is a real zero, because "no paid invoices exist"
+   * is a fact and rendering it as unknown teaches an operator to ignore unknowns.
+   */
+  rows_source_complete?: boolean;
   truth_class: TruthClass;
   note?: string;
 }): FinanceFigure {
-  const summed = nullableSum((input.rows || []).map((row) => row?.[input.field]));
-  const demoted: TruthClass = summed.completeness === 'COMPLETE'
-    ? input.truth_class
-    : (summed.completeness === 'UNKNOWN' ? 'UNKNOWN' : 'DERIVED');
+  const rows = input.rows || [];
+  const currencyField = input.currencyField || 'currency';
+  const unit: AmountUnit = input.unit || 'MINOR';
+  const amounts = rows.map((row) => toMinor(row?.[input.field], unit));
+  const summed = nullableSum(amounts);
 
-  const boundary = summed.completeness === 'COMPLETE'
+  if (!rows.length && input.rows_source_complete === true) {
+    return {
+      metric_key: input.metric_key, domain: input.domain, basis: input.basis,
+      amount_minor: 0, currency: null, counted: 0, missing: 0, completeness: 'COMPLETE',
+      mixed_currency: false, by_currency: {}, currency_unknown_rows: 0,
+      truth_class: input.truth_class,
+      claim_boundary: 'No rows matched. The source read completely, so this is a real zero rather than an unknown.',
+    };
+  }
+
+  // Only rows that actually carry an amount can carry that amount's currency.
+  const consolidated = consolidate(rows.map((row, index) => ({
+    amount_minor: amounts[index],
+    currency: row?.[currencyField] ?? null,
+  })));
+
+  const completenessNote = summed.completeness === 'COMPLETE'
     ? (input.note || 'Every row carried this figure.')
     : summed.completeness === 'UNKNOWN'
       ? 'No row carried this figure. Nothing is known, and this is not zero.'
       : `${summed.missing} of ${summed.counted + summed.missing} rows do not carry this figure and are excluded. Lower bound, not a total.`;
 
+  // A figure with no reportable total is UNKNOWN however complete the rows were:
+  // knowing every component and still being unable to add them is not knowing the total.
+  const amount = summed.completeness === 'UNKNOWN' ? null : consolidated.amount_minor;
+  const demoted: TruthClass = amount === null
+    ? 'UNKNOWN'
+    : (summed.completeness === 'COMPLETE' ? input.truth_class : 'DERIVED');
+
+  const currencyNote = amount === null && summed.completeness !== 'UNKNOWN'
+    ? ` ${consolidated.claim_boundary}`
+    : '';
+
   return {
     metric_key: input.metric_key,
     domain: input.domain,
     basis: input.basis,
-    amount_minor: summed.total,
-    currency: input.currency ?? null,
+    amount_minor: amount,
+    currency: consolidated.currency,
     counted: summed.counted,
     missing: summed.missing,
     completeness: summed.completeness,
+    mixed_currency: consolidated.mixed,
+    by_currency: consolidated.by_currency,
+    currency_unknown_rows: rows.filter((row, index) => amounts[index] !== null
+      && !text(row?.[currencyField])).length,
     truth_class: demoted,
-    claim_boundary: boundary,
+    claim_boundary: `${completenessNote}${currencyNote}`,
   };
 }
 
@@ -178,6 +261,8 @@ export type FinanceSnapshot = {
     revenue_minor: number | null;
     cost_minor: number | null;
     margin_minor: number | null;
+    /** Null whenever no margin is reportable, so a figure never floats without a unit. */
+    currency: string | null;
     truth_class: TruthClass;
     claim_boundary: string;
     revenue_completeness: string;
@@ -206,6 +291,16 @@ export function computeMargin(input: {
   const provider = input.providerRevenue.amount_minor;
   const cost = input.costs.amount_minor;
 
+  // DASHBOARD-C9: the three sides must agree on currency before any of them are
+  // crossed. Subtracting a GBP cost from a EUR revenue produces a number with no
+  // unit, and it would be reported as a margin.
+  const currencies = [
+    input.merchantRevenue, input.providerRevenue, input.costs,
+  ].filter((fig) => fig.amount_minor !== null).map((fig) => text(fig.currency).toUpperCase());
+  const distinct = [...new Set(currencies.filter(Boolean))];
+  const currencyConflict = distinct.length > 1;
+  const currencyMissing = currencies.some((value) => !value);
+
   const revenue = merchant === null && provider === null
     ? null
     : (merchant || 0) + (provider || 0);
@@ -214,19 +309,28 @@ export function computeMargin(input: {
     && input.providerRevenue.completeness === 'COMPLETE'
     && input.costs.completeness === 'COMPLETE';
 
-  const margin = revenue === null || cost === null ? null : revenue - cost;
+  const margin = revenue === null || cost === null || currencyConflict || currencyMissing
+    ? null
+    : revenue - cost;
+
+  const reason = currencyConflict
+    ? `Margin is not computable: the sides are denominated in ${distinct.join(' and ')}. Crossing them without a dated FX rate produces a number that is not money.`
+    : currencyMissing
+      ? 'Margin is not computable: at least one side carries an amount with no currency.'
+      : 'Margin is not computable: at least one of revenue or cost is unknown.';
 
   return {
     revenue_minor: revenue,
     cost_minor: cost,
     margin_minor: margin,
+    currency: margin === null ? null : (distinct[0] || null),
     truth_class: margin === null ? 'UNKNOWN' : (bothComplete ? 'DERIVED' : 'MODELED'),
     revenue_completeness: `${input.merchantRevenue.completeness}/${input.providerRevenue.completeness}`,
     cost_completeness: input.costs.completeness,
     claim_boundary: margin === null
-      ? 'Margin is not computable: at least one of revenue or cost is unknown.'
+      ? reason
       : bothComplete
-        ? 'Revenue and cost are both complete. Merchant and provider revenue are combined here ONLY against cost; neither is presented as a total elsewhere.'
+        ? 'Revenue and cost are both complete and in one currency. Merchant and provider revenue are combined here ONLY against cost; neither is presented as a total elsewhere.'
         : 'At least one side is a lower bound, so this margin flatters reality and is labelled MODELED. A complete revenue figure against a truncated cost figure looks better than the truth.',
   };
 }
@@ -250,32 +354,40 @@ export async function buildFinanceSnapshot(input: {
   };
 
   const rows = (key: string) => (reads[key].status === 'UNAVAILABLE' ? [] : (reads[key].value || []));
+  // A complete read that matched no rows is a real zero. An unavailable source is not.
+  const complete = (key: string) => reads[key].status === 'COMPLETE';
 
   const verifiedSavings = figure({
     metric_key: 'verified_savings', domain: 'MERCHANT_SAVINGS', basis: 'COLLECTED',
     rows: rows('MonthlySavingsReport').filter((r: any) => text(r.verification_status).toLowerCase() === 'realized'),
-    field: 'savings_minor', truth_class: 'VERIFIED',
+    // MonthlySavingsReport.savings is a MAJOR-unit number (there is no savings_minor).
+    field: 'savings', unit: 'MAJOR', rows_source_complete: complete('MonthlySavingsReport'),
+    truth_class: 'VERIFIED',
     note: 'Verified savings from realized monthly reports. This is the merchant\'s benefit, not CAMBRA revenue.',
   });
 
   const merchantRevenue = figure({
     metric_key: 'merchant_revenue_collected', domain: 'MERCHANT_REVENUE', basis: 'COLLECTED',
     rows: rows('Invoice').filter((r: any) => text(r.status).toLowerCase() === 'paid'),
-    field: 'amount_paid_minor', truth_class: 'VERIFIED',
+    // Invoice.amount_paid is a MAJOR-unit number (there is no amount_paid_minor).
+    field: 'amount_paid', unit: 'MAJOR', rows_source_complete: complete('Invoice'),
+    truth_class: 'VERIFIED',
     note: 'Collected from paid invoices. CAMBRA\'s fee, not the merchant\'s saving.',
   });
 
   const providerRevenue = figure({
     metric_key: 'provider_revenue_collected', domain: 'PROVIDER_REVENUE', basis: 'COLLECTED',
     rows: rows('ProviderRevenueLedger').filter((r: any) => text(r.state).toLowerCase() === 'paid'),
-    field: 'paid_amount_minor', truth_class: 'VERIFIED',
+    field: 'paid_amount_minor', unit: 'MINOR', rows_source_complete: complete('ProviderRevenueLedger'),
+    truth_class: 'VERIFIED',
     note: 'A separate ledger. Provider compensation never influences merchant ranking, benchmarks or Recover targets.',
   });
 
   const costs = figure({
     metric_key: 'governed_costs', domain: 'COSTS', basis: 'ACCRUED',
     rows: rows('CostUsageEvent').filter((r: any) => ['RESERVED', 'OBSERVED', 'RECONCILED', 'FAILED'].includes(text(r.state).toUpperCase())),
-    field: 'amount_minor', truth_class: 'OBSERVED',
+    field: 'amount_minor', unit: 'MINOR', rows_source_complete: complete('CostUsageEvent'),
+    truth_class: 'OBSERVED',
     note: 'FAILED attempts are included: a provider can charge for a request our transport reported as failed. Only an explicit reconciliation may void one.',
   });
 

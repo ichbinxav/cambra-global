@@ -32,8 +32,9 @@ describe('Base44 quota-safe backend deployment topology', () => {
   // DASHBOARD-C3 (2026-08-17): 32 -> 33 for pipelineWorkspaceAdmin.
   // DASHBOARD-C4 (2026-08-17): 33 -> 34 for auditsWorkspaceAdmin.
   // DASHBOARD-C6 (2026-08-17): 34 -> 35 for recoverWorkspaceAdmin.
-  it('consolidates exactly 35 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(35);
+  // DASHBOARD-C9 (2026-08-17): 35 -> 36 for financeWorkspaceAdmin.
+  it('consolidates exactly 36 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(36);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {

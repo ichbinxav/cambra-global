@@ -95,7 +95,16 @@
       "label_key": "nav.finance",
       "label": "Finance",
       "state": "LIVE_PENDING_CONSOLIDATION",
-      "chunk": "C8-C9"
+      "chunk": "C8-C9",
+      "tabs": [
+        "overview",
+        "revenue",
+        "control-tower",
+        "merchant-billing",
+        "provider-economics",
+        "unit-economics"
+      ],
+      "consolidation_note": "C9 built the tab shell and the two new tabs. The four legacy finance pages are MOUNTED unchanged, not rewritten. State stays LIVE_PENDING_CONSOLIDATION because the legacy routes remain live until C13."
     },
     {
       "order": 11,
@@ -207,7 +216,8 @@
         "tab": "overview"
       },
       "ready": false,
-      "blocker": "AdminRevenue sums five entity lists in the component; server-side computation lands in C8"
+      "blocker": "Cleared in C9: AdminRevenue reads the finance_revenue projection and holds zero in-component arithmetic. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/recover-billing",
@@ -216,7 +226,8 @@
         "tab": "merchant-billing"
       },
       "ready": false,
-      "blocker": "FiscalIdentityCard.jsx:47 writes Brand directly from the browser (C9)"
+      "blocker": "Cleared in C9: FiscalIdentityCard goes through finance_preview_billing_identity / finance_apply_billing_identity and no longer writes Brand from the browser. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/provider-economics",
@@ -225,7 +236,8 @@
         "tab": "provider-economics"
       },
       "ready": false,
-      "blocker": "Awaiting Finance tab shell (C9). Page architecture is already correct."
+      "blocker": "Cleared in C9: the Finance tab shell exists and mounts this page at ?tab=provider-economics. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/markets",

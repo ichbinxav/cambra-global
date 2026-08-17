@@ -259,6 +259,14 @@
         "host_action": "command_run_sweep"
       },
       "boundary": "internal_scheduler_no_new_authority"
+    },
+    "financeWorkspaceAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/financeAdminCore.ts",
+      "route": {
+        "action_prefix": "finance_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }

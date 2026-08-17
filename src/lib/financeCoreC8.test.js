@@ -58,7 +58,9 @@ describe("C8 — the five domains never merge", () => {
 });
 
 describe("C8 — a figure declares its completeness and is demoted accordingly", () => {
-  const rows = (values) => values.map((v) => ({ amount_minor: v }));
+  // C9: every row carries a currency. The C8 version of this helper did not, and that
+  // omission is what let figure() sum across currencies unnoticed for a whole chunk.
+  const rows = (values) => values.map((v) => ({ amount_minor: v, currency: "EUR" }));
 
   it("keeps VERIFIED when every row carried a value", () => {
     const out = figure({
@@ -175,11 +177,18 @@ describe("C8 — margin crosses the revenue and cost planes conservatively", () 
 });
 
 describe("C8 — the snapshot reads the cost plane C0 found orphaned", () => {
+  // C9: the REAL field names and units. MonthlySavingsReport.savings and
+  // Invoice.amount_paid are MAJOR-unit numbers; there is no savings_minor or
+  // amount_paid_minor on either entity. The C8 fixture invented both, so these tests
+  // passed against a shape the database would never return.
   const rows = {
-    MonthlySavingsReport: [{ id: "r1", verification_status: "realized", savings_minor: 400000 }],
-    Invoice: [{ id: "i1", status: "paid", amount_paid_minor: 80000 }],
-    ProviderRevenueLedger: [{ id: "p1", state: "paid", paid_amount_minor: 20000 }],
-    CostUsageEvent: [{ id: "c1", state: "OBSERVED", amount_minor: 15000 }, { id: "c2", state: "FAILED", amount_minor: 500 }],
+    MonthlySavingsReport: [{ id: "r1", verification_status: "realized", savings: 4000, currency: "EUR" }],
+    Invoice: [{ id: "i1", status: "paid", amount_paid: 800, currency: "EUR" }],
+    ProviderRevenueLedger: [{ id: "p1", state: "paid", paid_amount_minor: 20000, currency: "EUR" }],
+    CostUsageEvent: [
+      { id: "c1", state: "OBSERVED", amount_minor: 15000, currency: "EUR" },
+      { id: "c2", state: "FAILED", amount_minor: 500, currency: "EUR" },
+    ],
   };
 
   it("reports each domain separately and never a merged total", async () => {
