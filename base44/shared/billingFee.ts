@@ -63,6 +63,12 @@ export async function resolveFeePctForMonth(
       'billing_rule_authority_read',
       () => svc.entities.BillingRule.filter(q, '-effective_start_date', 25),
     );
+    // AUDIT MB-07 (2026-08-17): the read is capped at 25 rows sorted newest-first, so an
+    // exactly-full page silently drops the OLDEST rules — precisely the ones that apply to
+    // older months. A truncated read must not be priced.
+    if ((rules || []).length >= 25) {
+      throw Object.assign(new Error('billing_rule_read_truncated'), { code: 'billing_rule_read_truncated' });
+    }
     const applicable = (rules || []).filter((r: any) => appliesTo(r, bounds));
     if (applicable.length) {
       const winner = applicable.reduce((best: any, r: any) =>

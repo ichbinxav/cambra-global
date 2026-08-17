@@ -168,11 +168,15 @@ describe('the acceptance gate', () => {
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button'));
     await waitFor(() => expect(screen.getByTestId('app')).toBeTruthy());
+    // AUDIT LEGAL-04 (2026-08-17): the record's `locale` is now the locale the document was
+    // DISPLAYED in (clamped to en/fr/es — the published legal languages), and the interface
+    // locale is captured separately.
     expect(functionsInvoke).toHaveBeenCalledWith('claimAnonPaymentsResult', {
       action: 'record_legal_acceptance',
       terms_version: CURRENT_TERMS_VERSION,
       dpa_version: CURRENT_DPA_VERSION,
       locale: 'en',
+      interface_locale: 'en',
     });
   });
 

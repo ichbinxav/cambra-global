@@ -58,11 +58,19 @@ export default function LegalAcceptanceGate({ children }) {
     setError("");
     setState("submitting");
     try {
+      // AUDIT LEGAL-04 (2026-08-17): the acceptance record must state the locale the
+      // document was DISPLAYED in, not the interface locale. Terms/Privacy/DPA are
+      // published in en/fr/es; anything else falls back to English at render time, so the
+      // record must reflect that fallback rather than claim the user read a translation
+      // that does not exist.
+      const PUBLISHED_LEGAL_LOCALES = ["en", "fr", "es"];
+      const displayedLocale = PUBLISHED_LEGAL_LOCALES.includes(lang) ? lang : "en";
       const resp = await base44.functions.invoke("claimAnonPaymentsResult", {
         action: "record_legal_acceptance",
         terms_version: CURRENT_TERMS_VERSION,
         dpa_version: CURRENT_DPA_VERSION,
-        locale: lang,
+        locale: displayedLocale,
+        interface_locale: lang,
       });
       const body = resp?.data || resp;
       if (body?.ok) { setState("accepted"); return; }
