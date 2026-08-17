@@ -13,15 +13,19 @@ const ALL_SCOPES = [
   "trigger:analysis",
 ];
 
-async function sha256Hex(input) {
-  const data = new TextEncoder().encode(input);
-  const buf = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-function randomToken(prefix, length = 32) {
-  const arr = new Uint8Array(length);
-  crypto.getRandomValues(arr);
-  return prefix + Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+// DASHBOARD-C12 (2026-08-17): the client id, the client secret and its hash used to be
+// produced here. The randomness was never the problem — crypto.getRandomValues is a CSPRNG
+// and the plaintext secret was correctly never sent to the server. The problem was that the
+// entity write WAS the trust decision: the same call also set allowed_scopes, redirect_uris
+// and pkce_required, and oauthAuthorize enforces PKCE only when that stored flag is true.
+// The server now generates the credentials and owns every one of those fields.
+const payload = (response) => response?.data || response || {};
+async function callIntegration(action, body = {}) {
+  const data = payload(await base44.functions.invoke("adminSummaries", { action: `integration_${action}`, ...body }));
+  if (data?.ok === false || data?.error) {
+    throw Object.assign(new Error(data?.error || "integration_operation_failed"), { data });
+  }
+  return data;
 }
 
 export default function OAuthAppsPanel() {
@@ -30,41 +34,65 @@ export default function OAuthAppsPanel() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", redirect_uri: "", scopes: ["read:brands", "read:analyses"], type: "confidential" });
   const [justCreated, setJustCreated] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState("");
 
   const load = async () => {
     setLoading(true);
-    const items = await base44.entities.OAuthApp.list("-created_date", 100);
-    setApps(items);
+    const data = await callIntegration("registry").catch(() => null);
+    // A registry that could not be read is not an empty registry.
+    setApps(data?.oauth_apps || []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
-  const create = async () => {
+  const patchOf = () => ({
+    name: form.name,
+    description: form.description,
+    redirect_uris: [form.redirect_uri],
+    allowed_scopes: form.scopes,
+    type: form.type,
+  });
+
+  const requestPreview = async () => {
     if (!form.name || !form.redirect_uri) return;
-    const clientId = randomToken("cmb_oauth_", 12);
-    const clientSecret = form.type === "confidential" ? randomToken("cmb_secret_", 24) : null;
-    const app = await base44.entities.OAuthApp.create({
-      name: form.name,
-      description: form.description,
-      client_id: clientId,
-      client_secret_hash: clientSecret ? await sha256Hex(clientSecret) : "",
-      client_secret_last4: clientSecret ? clientSecret.slice(-4) : "",
-      redirect_uris: [form.redirect_uri],
-      allowed_scopes: form.scopes,
-      type: form.type,
-      pkce_required: true,
-      status: "active",
-    });
-    setJustCreated({ ...app, client_secret: clientSecret });
-    setCreating(false);
-    setForm({ name: "", description: "", redirect_uri: "", scopes: ["read:brands", "read:analyses"], type: "confidential" });
-    load();
+    setError(null);
+    setPreview(null);
+    try {
+      setPreview(await callIntegration("preview_oauth_app", { patch: patchOf() }));
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Registration refused.");
+    }
+  };
+
+  const create = async () => {
+    try {
+      const result = await callIntegration("create_oauth_app", {
+        patch: patchOf(), expected_preview_hash: preview.preview_hash,
+      });
+      // The plaintext secret exists in this response only; the server stored its hash.
+      setJustCreated(result);
+      setPreview(null);
+      setCreating(false);
+      setForm({ name: "", description: "", redirect_uri: "", scopes: ["read:brands", "read:analyses"], type: "confidential" });
+      load();
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Registration refused.");
+    }
   };
 
   const revoke = async (id) => {
-    if (!confirm("Revoke this OAuth app? All issued tokens will be invalidated.")) return;
-    await base44.entities.OAuthApp.update(id, { status: "revoked" });
+    const reason = prompt("Why is this app being revoked? (recorded)");
+    if (!reason) return;
+    try {
+      const result = await callIntegration("revoke_oauth_app", { app_id: id, reason });
+      // The old confirm() claimed all issued tokens would be invalidated. They are not:
+      // revoking stops future authorizations, and oauthRevoke handles live tokens.
+      setError(result.token_note || null);
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Revoke refused.");
+    }
     load();
   };
 
@@ -147,7 +175,26 @@ export default function OAuthAppsPanel() {
           </div>
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
-            <Button size="sm" onClick={create} disabled={!form.name || !form.redirect_uri}>Create app</Button>
+            {preview && (
+              <div data-testid="oauth-preview" className="w-full rounded-lg border border-sky-200 bg-sky-50 p-2.5 space-y-1 text-[11px] text-sky-900 mb-2">
+                <p className="font-bold">This app will be able to do exactly this</p>
+                <p>Redirect URIs: {preview.preview.redirect_uris.join(", ")}</p>
+                <p>Scopes: {preview.preview.allowed_scopes.join(", ")}</p>
+                <p>PKCE required: <b>yes</b> — set by the server, not selectable</p>
+                {preview.preview.secret_will_be_generated && (
+                  <p>A client secret will be generated and shown once.</p>
+                )}
+                <p className="text-sky-900/80">{preview.preview.authority_note}</p>
+              </div>
+            )}
+            {error && <p data-testid="oauth-error" className="w-full text-[11px] text-amber-800 mb-2">{error}</p>}
+            {preview ? (
+              <Button size="sm" onClick={create} data-testid="oauth-confirm">Confirm and register</Button>
+            ) : (
+              <Button size="sm" onClick={requestPreview} disabled={!form.name || !form.redirect_uri} data-testid="oauth-review">
+                Review registration
+              </Button>
+            )}
           </div>
         </div>
       )}

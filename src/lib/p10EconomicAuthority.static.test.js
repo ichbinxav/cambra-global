@@ -5,6 +5,9 @@ const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url)
 const API = read('base44/functions/apiV1/entry.ts');
 const MCP = read('base44/functions/mcpServer/entry.ts');
 const CREATE_KEY = read('base44/functions/createApiKey/entry.ts');
+// DASHBOARD-C12: the scope list moved out of createApiKey into one shared catalog, because
+// it existed there AND in runApiSelfTests while OAuth apps had none at all.
+const SCOPE_CATALOG = read('base44/shared/apiScopeCatalog.ts');
 const OPENAPI = read('base44/functions/apiOpenApiSpec/entry.ts');
 const OVERRIDES = read('base44/functions/adminOverrides/entry.ts');
 const ADMIN_REPORTS = read('src/components/admin/MonthlyReportsTable.jsx');
@@ -36,7 +39,11 @@ describe('P10 — external/AI economic authority boundary', () => {
       expect(source).toContain('scope === "admin" || scope === "platform"');
       expect(source).not.toContain('return principal.type === "api_key" && !principal.raw?.organization_id;');
     }
-    expect(CREATE_KEY).toContain('"platform"');
+    // The whole chain, not just the string: the catalog declares the boundary scope, and
+    // createApiKey validates against that catalog rather than a private copy.
+    expect(SCOPE_CATALOG).toContain("'platform'");
+    expect(CREATE_KEY).toContain("from '../../shared/apiScopeCatalog.ts'");
+    expect(CREATE_KEY).toContain('VALID_SCOPES');
   });
 
 

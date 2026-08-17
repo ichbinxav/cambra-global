@@ -6,14 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Trash2, Webhook, Send, Loader2 } from "lucide-react";
+import { Plus, Webhook, Send, Loader2, PauseCircle } from "lucide-react";
 
 const EVENTS = ["new_brand_created", "new_document_uploaded", "analysis_completed", "savings_unlocked"];
 
-function randomSecret() {
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-  return "whsec_" + Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+// DASHBOARD-C12 (2026-08-17): the signing secret used to be generated here. The randomness
+// was fine; the problem was that the browser also chose the URL, the events and the status
+// with nothing validating any of them, and then a hard delete could destroy the secret and
+// the whole delivery history behind a confirm(). The server generates the secret now, the URL
+// is validated, and deleting is refused in favour of disabling.
+const payload = (response) => response?.data || response || {};
+async function callIntegration(action, body = {}) {
+  const data = payload(await base44.functions.invoke("adminSummaries", { action: `integration_${action}`, ...body }));
+  if (data?.ok === false || data?.error) {
+    throw Object.assign(new Error(data?.error || "integration_operation_failed"), { data });
+  }
+  return data;
 }
 
 export default function WebhooksTable({ webhooks, onChanged }) {
@@ -23,6 +31,9 @@ export default function WebhooksTable({ webhooks, onChanged }) {
   const [events, setEvents] = useState([]);
   const [testingId, setTestingId] = useState(null);
   const [testResult, setTestResult] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [error, setError] = useState(null);
+  const [createdSecret, setCreatedSecret] = useState(null);
 
   const handleTest = async (id) => {
     setTestingId(id); setTestResult(null);
@@ -36,26 +47,55 @@ export default function WebhooksTable({ webhooks, onChanged }) {
     onChanged?.();
   };
 
-  const handleCreate = async () => {
+  const handleReview = async () => {
     if (!name || !url || events.length === 0) return;
-    await base44.entities.WebhookEndpoint.create({
-      name, url, events,
-      secret: randomSecret(),
-      status: "active",
-      tool_name: "custom",
-    });
-    setName(""); setUrl(""); setEvents([]); setOpen(false);
-    onChanged?.();
+    setError(null);
+    setPreview(null);
+    try {
+      setPreview(await callIntegration("preview_webhook", { patch: { name, url, events, tool_name: "custom" } }));
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Registration refused.");
+    }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this webhook?")) return;
-    await base44.entities.WebhookEndpoint.delete(id);
+  const handleCreate = async () => {
+    try {
+      const result = await callIntegration("create_webhook", {
+        patch: { name, url, events, tool_name: "custom" },
+        expected_preview_hash: preview.preview_hash,
+      });
+      // Shown once: the receiver needs it to verify signatures and the server keeps only
+      // this copy on the row.
+      setCreatedSecret(result.secret);
+      setPreview(null);
+      setName(""); setUrl(""); setEvents([]); setOpen(false);
+      onChanged?.();
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Registration refused.");
+    }
+  };
+
+  const handleDisable = async (id) => {
+    const reason = prompt("Why is this endpoint being disabled? (recorded)");
+    if (!reason) return;
+    try {
+      await callIntegration("disable_webhook", { webhook_id: id, reason });
+    } catch (caught) {
+      setError(caught?.data?.reason || caught?.message || "Disable refused.");
+    }
     onChanged?.();
   };
 
   return (
     <div className="space-y-4">
+      {createdSecret && (
+        <div data-testid="webhook-secret-once" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 space-y-1">
+          <p className="text-xs font-bold text-emerald-900">Signing secret — save it now</p>
+          <p className="text-[11px] text-emerald-900/80">It will not be shown again.</p>
+          <code className="block font-mono text-[11px] break-all">{createdSecret}</code>
+          <Button size="sm" variant="ghost" onClick={() => setCreatedSecret(null)}>Done</Button>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold">Webhook endpoints</h3>
@@ -105,8 +145,12 @@ export default function WebhooksTable({ webhooks, onChanged }) {
                       <Button size="icon" variant="ghost" onClick={() => handleTest(w.id)} disabled={testingId === w.id} className="h-8 w-8" title="Send test webhook">
                         {testingId === w.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => handleDelete(w.id)} className="h-8 w-8 text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
+                      {/* Disable, not delete. A hard delete destroyed the signing secret and
+                          the delivery history with no undo. */}
+                      <Button size="icon" variant="ghost" onClick={() => handleDisable(w.id)}
+                        data-testid={`disable-webhook-${w.id}`} title="Disable delivery (keeps the secret and history)"
+                        className="h-8 w-8 text-amber-700" disabled={w.status === "disabled"}>
+                        <PauseCircle className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </td>
@@ -151,9 +195,22 @@ export default function WebhooksTable({ webhooks, onChanged }) {
               </div>
             </div>
           </div>
+          {preview && (
+            <div data-testid="webhook-preview" className="rounded-lg border border-sky-200 bg-sky-50 p-2.5 space-y-1 text-[11px] text-sky-900">
+              <p className="font-bold">This endpoint will receive signed deliveries</p>
+              <p>{preview.preview.url}</p>
+              <p>Events: {preview.preview.events.join(", ")}</p>
+              <p>A signing secret will be generated and shown once.</p>
+            </div>
+          )}
+          {error && <p data-testid="webhook-error" className="text-[11px] text-amber-800">{error}</p>}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate}>Create webhook</Button>
+            <Button variant="ghost" onClick={() => { setOpen(false); setPreview(null); setError(null); }}>Cancel</Button>
+            {preview ? (
+              <Button onClick={handleCreate} data-testid="webhook-confirm">Confirm and create</Button>
+            ) : (
+              <Button onClick={handleReview} data-testid="webhook-review">Review endpoint</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

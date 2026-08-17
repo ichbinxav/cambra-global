@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T13:15:30.847Z",
+  "generatedAt": "2026-08-17T13:37:42.662Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -37,8 +37,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "525841907ea3f0b57429af9416b9b3e2d81809921b30ab4890014c190c1dbd39",
-      "bytes": 8346
+      "sha256": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
+      "bytes": 8582
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -457,8 +457,8 @@
     },
     {
       "path": "base44/functions/adminSummaries/entry.ts",
-      "sha256": "b39adb57f83c5421de24d33e48a7ddf05cf1fa896625e15a2a90dddbc9f7dfcb",
-      "bytes": 8265
+      "sha256": "f3807224a1641daefb111b42650def48383beacbc9c3d138053081d2d26da38f",
+      "bytes": 8645
     },
     {
       "path": "base44/functions/adminUpdateApplicationStatus/entry.ts",
@@ -1262,8 +1262,8 @@
     },
     {
       "path": "base44/functions/runApiSelfTests/entry.ts",
-      "sha256": "d627dabcb2f44f2ec3aa8b22604580896fba309f70021504af031f1830e80842",
-      "bytes": 9714
+      "sha256": "4b34c5d20135c68da7f40e4dd6ef464a8162f663faf8228eca820539f692215c",
+      "bytes": 10096
     },
     {
       "path": "base44/functions/scheduledBenchmarkRecompute/function.jsonc",
@@ -2012,7 +2012,7 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "f186cf2884634cf9583a0f01805eda3ddd294c4346990ec9d4b26968f6bc3f55",
+      "sha256": "a39579ad4f0ca4fd44d796026bcdcf5ffdab382f464f247fc0e476a2105f48a9",
       "bytes": 30598
     },
     {
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "c938ee1542ccb8dddb3b15d4323dd73856c89c0bf9eba15d3734a642e37fb6b8",
+      "sha256": "83ee234100a37bb19cdc5a9af7193bef66a6500bc5342542978949bb9def679e",
       "bytes": 42987
     },
     {
@@ -2187,22 +2187,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "79225ebabdd6fa142a7d5162b4fc40332d603dfa78e79bbfcb7f3893c188524b",
+      "sha256": "56acf7107e89ba809312565319ae5ae883ea78e450a22466ec6b20e579c9b628",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "8446ab1e8235263728e5b6904104c1403c393bf6f70789d4c8b5cd0500130168",
+      "sha256": "9bb3d664cabd719b7e9995b01135c5a80b5f48d28baf92e165fe085d861da435",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "a383dd76a5f14704aab0b83878e46aa42c2802842c8a84e3b367e684e4716bb0",
+      "sha256": "aae40bb0e3450a6661d6ccb167bba4c421b96c4150727df5db79e9bec32fbbf9",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "622fd3a1097512b3b287a7b86e602a7d0eabcdd0628fb2e689f2d75ad8d53d0b",
+      "sha256": "6d5aa4ef2ee3d4e27fde0d18a5e8a9046834abc04f50d3471a4b82ffaec932db",
       "bytes": 98284
     },
     {
@@ -2267,8 +2267,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "3756c22b1d876b3e9a6eecd10843d0cac97c6a68f725c2508606894ad3051de4",
-      "bytes": 12420
+      "sha256": "23f57532e0109d82d0d20518f3b821174e45f3ab133dc5112d6dd97c67af8cc0",
+      "bytes": 12542
     },
     {
       "path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
@@ -2497,8 +2497,8 @@
     },
     {
       "path": "scripts/lib/base44Bundle.mjs",
-      "sha256": "2ff31ac4021ba0cabded6409ceeca984e949c1e973a1ff9b12e729c5db21482c",
-      "bytes": 12941
+      "sha256": "12f9574616fab68d33ffa43279002ea11f135586b442748cd5f52c5b04f84633",
+      "bytes": 13031
     },
     {
       "path": "scripts/lib/evidence.mjs",
@@ -2952,13 +2952,13 @@
     },
     {
       "path": "src/lib/base44DeploymentTopology.test.js",
-      "sha256": "98eef9cbe3adec074fae51da066abce37b9e79e6749299c987b2696d8a6c32ed",
-      "bytes": 6639
+      "sha256": "ecb00cc41d2e79554943081b76a4a876c7cd10b33e35db1dae16c5669e607749",
+      "bytes": 6711
     },
     {
       "path": "src/lib/base44ReproduciblePipeline.test.js",
-      "sha256": "d19b6c8fc725d39cc90b889f6db449d4407694776a73c9dc6342756751666d60",
-      "bytes": 10830
+      "sha256": "622eb9f3f3b5276c5eb69741b8869274de68e0fcd2291ca9d914069e2bf9ee0f",
+      "bytes": 10925
     },
     {
       "path": "src/lib/cambraDeveloper.test.js",

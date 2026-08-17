@@ -1,17 +1,13 @@
+import { VALID_SCOPES } from '../../shared/apiScopeCatalog.ts';
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Create API key (admin-only). Returns the raw key ONCE — never stored.
 // SHA-256 hashed at rest. Optional organization_id for tenant binding.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
-const VALID_SCOPES = [
-  "read", "write", "admin", "platform",
-  "read:kpis", "read:brands", "read:analyses", "read:documents", "read:providers",
-  "read:savings", "read:trackers", "read:reports", "read:integrations", "read:users",
-  "write:reports", "write:documents", "write:trackers",
-  "trigger:analysis",
-  "manage:integrations", "manage:webhooks",
-];
+// DASHBOARD-C12 (2026-08-17): the scope list lived here AND in runApiSelfTests, and the
+// OAuth app panel had no server-side list at all. One catalog now.
+
 
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);

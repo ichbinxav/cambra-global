@@ -16,10 +16,16 @@ async function sha256Hex(input) {
 function pass(name, details) { return { name, status: "pass", details: details || null }; }
 function fail(name, details) { return { name, status: "fail", details }; }
 
+// DASHBOARD-C12 (2026-08-17): this list is deliberately NOT imported from
+// shared/apiScopeCatalog.ts — a self-test that imports the thing it is testing tests
+// nothing. It is a second, independent statement of the same set, and
+// integration:check fails if the two diverge.
+//
+// It did diverge: "read:users" was missing here while createApiKey would issue it.
 const EXPECTED_SCOPES = [
   "read", "write", "admin", "platform",
   "read:kpis", "read:brands", "read:analyses", "read:documents", "read:providers",
-  "read:savings", "read:trackers", "read:reports", "read:integrations",
+  "read:savings", "read:trackers", "read:reports", "read:integrations", "read:users",
   "write:reports", "write:documents", "write:trackers",
   "trigger:analysis", "manage:integrations", "manage:webhooks",
 ];

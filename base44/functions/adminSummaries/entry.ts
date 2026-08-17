@@ -21,6 +21,8 @@ import { handleRecoverAdminAction } from '../../shared/recoverAdminCore.ts';
 import { handleFinanceAdminAction } from '../../shared/financeAdminCore.ts';
 // DASHBOARD-C10: Intelligence, also a logical route.
 import { handleIntelligenceAdminAction } from '../../shared/intelligenceAdminCore.ts';
+// DASHBOARD-C12: Integrations (OAuth apps, webhook endpoints), also a logical route.
+import { handleIntegrationAdminAction } from '../../shared/integrationAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
@@ -42,6 +44,7 @@ Deno.serve(async (req) => {
     if (String(routedBody?.action||'').startsWith('recover_')) return handleRecoverAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^recover_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('finance_')) return handleFinanceAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^finance_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('intelligence_')) return handleIntelligenceAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^intelligence_/, '')},base44.asServiceRole);
+    if (String(routedBody?.action||'').startsWith('integration_')) return handleIntegrationAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^integration_/, '')},base44.asServiceRole);
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
     if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 

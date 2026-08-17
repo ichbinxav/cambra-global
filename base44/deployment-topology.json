@@ -275,6 +275,14 @@
         "action_prefix": "intelligence_"
       },
       "boundary": "strict_admin"
+    },
+    "integrationRegistryAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/integrationAdminCore.ts",
+      "route": {
+        "action_prefix": "integration_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }
