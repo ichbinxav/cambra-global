@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "f501895d9c1e01938a305902064f81c957e83f9dcfbd738c25867d75fd60549b",
+  "source_inventory_hash": "0397157374d584e61f25e7b66e72490aeab4e20626cbd90eac99e672beb23fa7",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -451,7 +451,7 @@
     },
     {
       "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
-      "source_sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+      "source_sha256": "9b1e0c86fb72ce91eb5ba19bc6fc4600fde8dec82cf3494ef37f407e22d1fe46",
       "boundary_ids": [
         "MB-NEGOTIATE-COLLECTIVE",
         "MB-PAID-AI"
@@ -2243,7 +2243,7 @@
     },
     {
       "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
-      "source_sha256": "43b0a620f104689c4ab3c1ef3c01d3bd08aa2c4f296362338d98a92366630ab8",
+      "source_sha256": "9b1e0c86fb72ce91eb5ba19bc6fc4600fde8dec82cf3494ef37f407e22d1fe46",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,

@@ -278,14 +278,17 @@ Deno.serve(async (req) => {
       },
       tier_schedule_json: Array.isArray(ex.tiers) ? ex.tiers : [],
       legal_terms_json: ex.legal_terms || {},
-      merchant_outcome_score: Math.max(
-        0,
-        100 - Number(normalized.estimated_effective_bps || 100),
-      ),
-      total_economic_value_score: Math.max(
-        0,
-        100 - Number(normalized.estimated_effective_bps || 100),
-      ),
+      // AUDIT P3-01 — `|| 100` turned an unknown effective rate into a score of 0, and the earlier
+      // `|| 0` in pricingCostMinor turned it into a score of 94. Both are inventions. A score that
+      // cannot be computed is null, and null does not satisfy the >= 70 gate below.
+      merchant_outcome_score: normalized.estimated_effective_bps === null
+        ? null
+        : Math.max(0, 100 - Number(normalized.estimated_effective_bps)),
+      total_economic_value_score: normalized.estimated_effective_bps === null
+        ? null
+        : Math.max(0, 100 - Number(normalized.estimated_effective_bps)),
+      cost_unknown: normalized.cost_unknown === true,
+      pricing_blockers: normalized.blockers || [],
       material_commitment: material,
       extraction_confidence: Math.max(
         0,
@@ -303,7 +306,12 @@ Deno.serve(async (req) => {
     );
     const final = ex.is_final === true || material ||
       Number(c.round || 0) + 1 >= maxRounds;
-    const merchantSuitable = Number(bid.merchant_outcome_score || 0) >= 70;
+    // AUDIT P3-01 — `Number(null || 0) >= 70` is false, so this line was not the hole; the hole was
+    // upstream, where an unquoted rate produced a real 94. Made explicit anyway: an uncomputable
+    // score must never reach a threshold comparison at all.
+    const scoreKnown = bid.merchant_outcome_score !== null && bid.merchant_outcome_score !== undefined
+      && Number.isFinite(Number(bid.merchant_outcome_score)) && bid.cost_unknown !== true;
+    const merchantSuitable = scoreKnown && Number(bid.merchant_outcome_score) >= 70;
     const monetizationAlreadyRequested = c.strategy_json?.provider_monetization_requested === true;
     if (merchantSuitable && !monetizationAlreadyRequested) {
       await s.entities.NegotiationCase.update(c.id, {

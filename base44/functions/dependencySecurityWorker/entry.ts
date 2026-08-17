@@ -126,6 +126,18 @@ guardedScheduledServe(
         critical = 0,
         failures = 0;
       const activeKeys = new Set<string>();
+      // AUDIT P2-01 (2026-08-17) — the set of repos whose GitHub sweep ACTUALLY SUCCEEDED this run.
+      //
+      // The reconciliation below closes any open dependency incident whose key is absent from
+      // activeKeys, and writes recovery_json.verified = true with the note "no longer returned by
+      // the authoritative GitHub sweep". But activeKeys is only populated from alerts GitHub
+      // returned. If gh() throws — a 502, or a connector token that lost the security_events scope
+      // and returns 403 — activeKeys stays empty for that repo and EVERY open vulnerability
+      // incident for it was marked resolved and verified. Four unpatched critical vulnerabilities
+      // recorded as verified-resolved because the read failed, and the worker still returned ok.
+      //
+      // An absence only means "resolved" if the sweep that produced it is known to have run.
+      const sweptRepos = new Set<string>();
       for (const w of workspaces) {
         const repo = String(w.repo_full_name || "").trim();
         if (!repo || !repo.includes("/")) continue;
@@ -170,6 +182,9 @@ guardedScheduledServe(
             alerts++;
             if (isCritical) critical++;
           }
+          // Reached only if the whole sweep for this repo completed. An absence in activeKeys is
+          // evidence of resolution for this repo and no other.
+          sweptRepos.add(repo);
         } catch (e) {
           failures++;
           const key = `p17:dependency_monitor_failed:${repo}`;
@@ -198,20 +213,36 @@ guardedScheduledServe(
           severity: "secondary",
         }),
       );
-      for (const i of previous.filter(
-        (x: any) => {
+      // AUDIT P2-01 — a zero-length workspace read is UNAVAILABLE, not "no repos". safeBestEffort
+      // hands back [] on failure (line 97), which is indistinguishable from an empty list, so
+      // reconciling on it would resolve every open dependency incident across every repo.
+      const workspacesTrustworthy = Array.isArray(workspaces) && workspaces.length > 0;
+      const reconcilable = workspacesTrustworthy
+        ? previous.filter((x: any) => {
           const key = String(x.dedupe_key || "");
           const isDependencyAlert =
             key.startsWith("p17:dependency:") && !key.includes("monitor");
           const isRecoveredMonitorFailure =
             key.startsWith("p17:dependency_monitor_failed:") ||
             key === "p17:dependency_monitor:github_unavailable";
-          return (
-            (isDependencyAlert || isRecoveredMonitorFailure) &&
-            !activeKeys.has(key)
-          );
-        },
-      )) {
+          if (!isDependencyAlert && !isRecoveredMonitorFailure) return false;
+          if (activeKeys.has(key)) return false;
+          // The key carries the repo it belongs to: p17:dependency:<owner>/<name>:<n> and
+          // p17:dependency_monitor_failed:<owner>/<name>. Resolve one ONLY if that repo's sweep
+          // succeeded in this run. A key we cannot attribute to a repo is left open — refusing to
+          // resolve something we cannot place is the whole point.
+          const marker = key.startsWith("p17:dependency_monitor_failed:")
+            ? "p17:dependency_monitor_failed:"
+            : "p17:dependency:";
+          const rest = key.slice(marker.length);
+          const slash = rest.indexOf("/");
+          if (slash === -1) return false;
+          const colon = rest.indexOf(":", slash);
+          const repoFromKey = colon === -1 ? rest : rest.slice(0, colon);
+          return sweptRepos.has(repoFromKey);
+        })
+        : [];
+      for (const i of reconcilable) {
         await s.entities.AutonomyIncident.update(i.id, {
           status: "resolved",
           workflow_state: "resolved",
@@ -235,6 +266,13 @@ guardedScheduledServe(
         open_alerts: alerts,
         critical_or_high: critical,
         monitor_failures: failures,
+        // Stated so a partial run is not read as a clean one.
+        repos_swept_successfully: sweptRepos.size,
+        workspaces_trustworthy: Array.isArray(workspaces) && workspaces.length > 0,
+        incidents_reconciled: reconcilable.length,
+        reconciliation_scope:
+          "Only incidents belonging to repos whose GitHub sweep succeeded in this run were resolved. "
+          + "An absence is evidence of resolution only when the sweep that produced it ran.",
         note: "Advisory only. Dependency fixes remain Developer/PR/CI/approval-gated.",
       });
     } catch (e) {

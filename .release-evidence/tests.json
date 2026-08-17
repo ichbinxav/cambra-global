@@ -1,15 +1,15 @@
 {
   "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-  "sourceTreeHash": "e988fa71bed6405e9700fd2b94355ef3eaf8d6c89b0f1b7da1475f3c43142c87",
-  "startedAt": "2026-08-17T15:55:55.369Z",
-  "completedAt": "2026-08-17T15:56:41.684Z",
+  "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
+  "startedAt": "2026-08-17T16:59:05.015Z",
+  "completedAt": "2026-08-17T16:59:51.553Z",
   "exitCode": 0,
   "ciRunId": null,
-  "testFiles": 313,
-  "passed": 4434,
+  "testFiles": 314,
+  "passed": 4445,
   "failed": 0,
   "skipped": 0,
   "frameworkVersion": "^4.1.10",
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "a03d29a04581d00a0566453aed40601f70e25ece9ee4a3e9e3892624a5611240"
+  "evidenceDigest": "5321fd5b4e5f84c00adc645d114322b5c446c701baee216e97ea083b70ae7c8f"
 }
