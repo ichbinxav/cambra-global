@@ -134,8 +134,14 @@ export function authoriseStep(input: {
       emergencyAvailable: input.emergencyAvailable,
       suppressionAvailable: true,
       recipient_suppressed: false,
-      tenant_matches: true,
-      exposes_secret: false,
+      // AUDIT SEC-04 (2026-08-17): the loop cannot resolve the target entity's owning
+      // tenant or classify the tool's secret exposure at this layer — the target is a
+      // free-form tool `input` object and secret classification lives in the tool
+      // registry. Rather than asserting `true`/`false` (which defused the two unliftable
+      // controls the founderPermitAuthority declared), we leave them undefined and let
+      // any tool whose classification requires proof fail closed at its own gate.
+      tenant_matches: undefined,
+      exposes_secret: (tool as any).exposes_secret === true ? true : undefined,
       market_commercially_eligible: true,
       legal_block: false,
     },
