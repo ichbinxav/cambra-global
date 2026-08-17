@@ -176,18 +176,32 @@ export function figure(input: {
     currency: row?.[currencyField] ?? null,
   })));
 
-  const completenessNote = summed.completeness === 'COMPLETE'
+  // AUDIT P2-02 (2026-08-17) — rows_source_complete was consulted in exactly one branch: the
+  // empty-rows short-circuit above. On the WITH-rows path, completeness came from nullableSum,
+  // which measures field coverage over the rows that arrived — not whether the SOURCE READ was
+  // complete. So a truncated read of 500 rows that all carried the field emitted `COMPLETE +
+  // VERIFIED` for a lower bound. The flag now demotes the with-rows path too: an incomplete read
+  // can never produce COMPLETE, so a lower bound cannot claim VERIFIED here for the same reason
+  // it cannot on the empty path.
+  const sourceIncomplete = input.rows_source_complete === false;
+  const effectiveCompleteness = sourceIncomplete && summed.completeness === 'COMPLETE'
+    ? 'LOWER_BOUND' as const
+    : summed.completeness;
+
+  const completenessNote = effectiveCompleteness === 'COMPLETE'
     ? (input.note || 'Every row carried this figure.')
-    : summed.completeness === 'UNKNOWN'
+    : effectiveCompleteness === 'UNKNOWN'
       ? 'No row carried this figure. Nothing is known, and this is not zero.'
-      : `${summed.missing} of ${summed.counted + summed.missing} rows do not carry this figure and are excluded. Lower bound, not a total.`;
+      : sourceIncomplete && summed.completeness === 'COMPLETE'
+        ? 'The source read was declared incomplete, so this sum is a lower bound even though every returned row carried the field.'
+        : `${summed.missing} of ${summed.counted + summed.missing} rows do not carry this figure and are excluded. Lower bound, not a total.`;
 
   // A figure with no reportable total is UNKNOWN however complete the rows were:
   // knowing every component and still being unable to add them is not knowing the total.
-  const amount = summed.completeness === 'UNKNOWN' ? null : consolidated.amount_minor;
+  const amount = effectiveCompleteness === 'UNKNOWN' ? null : consolidated.amount_minor;
   const demoted: TruthClass = amount === null
     ? 'UNKNOWN'
-    : (summed.completeness === 'COMPLETE' ? input.truth_class : 'DERIVED');
+    : (effectiveCompleteness === 'COMPLETE' ? input.truth_class : 'DERIVED');
 
   const currencyNote = amount === null && summed.completeness !== 'UNKNOWN'
     ? ` ${consolidated.claim_boundary}`
@@ -201,7 +215,7 @@ export function figure(input: {
     currency: consolidated.currency,
     counted: summed.counted,
     missing: summed.missing,
-    completeness: summed.completeness,
+    completeness: effectiveCompleteness,
     mixed_currency: consolidated.mixed,
     by_currency: consolidated.by_currency,
     currency_unknown_rows: rows.filter((row, index) => amounts[index] !== null

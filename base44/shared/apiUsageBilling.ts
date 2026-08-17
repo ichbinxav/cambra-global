@@ -387,17 +387,32 @@ export async function billApiUsageOrganization(
   if (!invoice && expected.amount_minor > 0) {
     await assertClaimOwned(svc, String(claim.authority_id), runId);
     if (input.assert_before_invoice) await input.assert_before_invoice();
+    // AUDIT MB-03 (2026-08-17) — this record used to be status:'issued' with NO tax fields at all:
+    // no tax_treatment, no tax_rate, tax_amount defaulted to the entity zero, total_amount == the
+    // subtotal. An "issued" invoice by definition has been billed to the customer, and one that
+    // was issued without a tax determination bills a net figure as the gross — for a
+    // TAX_REVIEW_REQUIRED or ES_EU_REVERSE_CHARGE case it may be legally correct, but it is not
+    // known here to be correct, and the recoverTax engine that computes the determination is not
+    // invoked at all.
+    //
+    // Fail-closed: created as `status: 'draft'` with `tax_treatment: 'TAX_REVIEW_REQUIRED'` and a
+    // note listing the missing inputs (organization tax profile). Promotion to `issued` requires
+    // the tax determination to be recorded; the write path for that is out of scope here and is
+    // declared as a follow-up in the audit log for MB-03.
     const record = {
       execution_key: claimKey,
       organization_id: organizationId,
-      status: 'issued',
+      status: 'draft',
       currency: 'EUR',
-      issued_at: now.toISOString(),
-      due_at: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1_000).toISOString(),
+      issued_at: null,
+      due_at: null,
       subtotal_amount: expected.amount_eur,
+      tax_treatment: 'TAX_REVIEW_REQUIRED',
+      tax_rate: 0,
+      tax_amount: 0,
       total_amount: expected.amount_eur,
       balance_due: expected.amount_eur,
-      notes: `API overage · ${periodMonth} · ${expected.overage_count} requests above quota`,
+      notes: `API overage · ${periodMonth} · ${expected.overage_count} requests above quota. Tax determination pending: run the Organization through recoverTax before issuing.`,
       billing_snapshot_json: {
         billing_kind: 'api_overage',
         billing_version: API_USAGE_BILLING_VERSION,

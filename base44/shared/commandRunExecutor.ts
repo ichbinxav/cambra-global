@@ -230,12 +230,49 @@ export async function advanceCommandRun(input: {
   const claimed = { ...run, run_revision: claimedRevision, status: 'RUNNING' };
 
   // --- the receipt writer: this is what makes the C1 ledger live ----------
+  //
+  // AUDIT P1-SHARED-002 (2026-08-17) — this was `.catch(() => [])`, the ONLY such swallow left in
+  // base44/shared. The tip of the tamper-evident receipt chain — the row `buildNextReceipt` hashes
+  // as `previous` — became null on any read failure, and buildNextReceipt then wrote the next
+  // receipt as if the chain restarted (previous_receipt_hash: null, sequence: 1). A failed read
+  // broke the chain SILENTLY. verifyReceiptChain would later flag duplicate_sequence, but the
+  // founder-facing read in commandRunAdminCore.ts:126-139 had already trusted the value written.
+  //
+  // Fail-closed: a read failure on the chain tip stops the run rather than mutating history. Same
+  // rule applies when last_receipt_hash names a row that no longer exists.
   let previousReceipt: any = null;
   if (text(run.last_receipt_hash)) {
-    const found = await svc.entities.CommandReceipt
-      .filter({ chain_key: text(run.receipt_chain_key), receipt_hash: text(run.last_receipt_hash) }, '-sequence', 1)
-      .catch(() => []);
+    let found: any[];
+    try {
+      found = await svc.entities.CommandReceipt.filter(
+        { chain_key: text(run.receipt_chain_key), receipt_hash: text(run.last_receipt_hash) },
+        '-sequence', 1,
+      );
+    } catch (error: any) {
+      return {
+        ok: false as const,
+        error: 'receipt_chain_tip_unreadable',
+        reason: 'The tip of the receipt chain could not be read, so appending would restart the chain and hide the failure. The run cannot advance until this read succeeds.',
+        run_id: text(run.id),
+        chain_key: text(run.receipt_chain_key),
+        expected_previous_hash: text(run.last_receipt_hash),
+        read_error: String(error?.message || error).slice(0, 300),
+        history_mutated: false,
+      } as any;
+    }
     previousReceipt = found?.[0] || null;
+    if (!previousReceipt) {
+      // The tip WAS declared but the row is gone. Appending would silently rewrite history.
+      return {
+        ok: false as const,
+        error: 'receipt_chain_tip_missing',
+        reason: 'run.last_receipt_hash names a receipt that does not exist. Refusing to advance rather than writing as if the chain restarted.',
+        run_id: text(run.id),
+        chain_key: text(run.receipt_chain_key),
+        expected_previous_hash: text(run.last_receipt_hash),
+        history_mutated: false,
+      } as any;
+    }
   }
   let receiptsWritten = 0;
 

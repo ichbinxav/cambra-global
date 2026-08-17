@@ -16,7 +16,19 @@ Deno.serve(async (req) => {
     if(!amount||!ref||!evidence)return Response.json({ok:false,error:'amount_payment_ref_and_evidence_required'},{status:400});
     const prior=await svc.entities.ProviderRevenueInvoice.filter({payment_ref:ref},'-updated_at',10).catch((error:any)=>safeBestEffort(error,{operation:'recordProviderRevenuePayment',fallback:[],severity:'critical'}));
     if(prior.some((row:any)=>row.id!==inv.id))return Response.json({ok:false,error:'duplicate_provider_payment_ref'},{status:409});
-    const paid=Math.min(Number(inv.amount_minor||0),Number(inv.paid_amount_minor||0)+amount), status=paid>=Number(inv.amount_minor||0)?'paid':'partially_paid', now=new Date().toISOString();
+    // AUDIT P3-06 (2026-08-17) — this used to clamp with Math.min(inv.amount_minor||0, prior+amount)
+    // and set status with `paid >= inv.amount_minor||0`. When amount_minor is missing/zero, that
+    // becomes Math.min(0, x)=0 and 0>=0 is true, so the invoice closed as paid with zero cash
+    // recorded and the actual payment discarded. Refuse against a non-positive invoice, and
+    // record any overpayment rather than dropping it.
+    const invAmount = Number.isFinite(Number(inv.amount_minor)) ? Number(inv.amount_minor) : 0;
+    if (invAmount <= 0) return Response.json({ok:false,error:'invoice_amount_missing_or_zero',reason:'ProviderRevenueInvoice.amount_minor must be > 0 before a payment can be recorded. Recording against a zero invoice would close it as paid and drop the amount.'},{status:409});
+    const priorPaid = Number.isFinite(Number(inv.paid_amount_minor)) ? Number(inv.paid_amount_minor) : 0;
+    const paid=Math.min(invAmount,priorPaid+amount), status=paid>=invAmount?'paid':'partially_paid', now=new Date().toISOString();
+    const overpaidBy = (priorPaid + amount) - invAmount;
+    // ProviderRevenueInvoice carries no overpaid_amount_minor field, so silently dropping the
+    // excess would erase the fact that a variance exists. Refuse the record rather than mask it.
+    if (overpaidBy > 0) return Response.json({ok:false,error:'payment_exceeds_invoice_amount',reason:`Recording ${amount} would push the invoice over its amount_minor of ${invAmount} by ${overpaidBy}. Reconcile the invoice amount first, or split the payment.`,invoice_amount_minor:invAmount,prior_paid_minor:priorPaid,attempted_amount_minor:amount,overpaid_by_minor:overpaidBy},{status:409});
     const rows=await svc.entities.ProviderRevenueLedger.filter({agreement_id:inv.agreement_id,provider_id:inv.provider_id,period:inv.period},'-updated_at',5000).catch((error:any)=>safeBestEffort(error,{operation:'recordProviderRevenuePayment',fallback:[],severity:'critical'}));
     await assertEmergencyEpochUnchanged(svc,epoch,'before_provider_revenue_payment_record');
     await svc.entities.ProviderRevenueInvoice.update(inv.id,{paid_amount_minor:paid,payment_ref:ref,status,paid_at:status==='paid'?now:undefined,updated_at:now});

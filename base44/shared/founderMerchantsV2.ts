@@ -1,3 +1,5 @@
+import { nullableNumber as sharedNullableNumber } from './nullableNumber.ts';
+
 export const FOUNDER_MERCHANTS_V2_VERSION = 'founder-merchants-v2-1.0.0';
 
 export const MERCHANT_BLOCKS = Object.freeze([
@@ -38,7 +40,12 @@ const ACTIVE_RECOVER = new Set(['activated', 'awaiting_authorization', 'authoriz
 const BLOCKED_OUTPUT_KEYS = /(^|_)(access_token|refresh_token|secret|password|api_key|private_key|authorization|cookie|raw_event_json|headers_json)$/i;
 
 const text = (value: any, limit = 320) => String(value ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, limit);
-const numberOrNull = (value: any) => Number.isFinite(Number(value)) ? Number(value) : null;
+// AUDIT P3-02 (2026-08-17) — this was `Number.isFinite(Number(value)) ? Number(value) : null`,
+// the private re-implementation nullableNumber.ts was created to prevent. Number(null) === 0 and
+// Number.isFinite(0) is true, so null / undefined / '' / booleans all became a confident zero
+// here and every metric derived from it did too — including average_data_confidence, which the
+// founder dashboard renders as a percentage.
+const numberOrNull = (value: any) => sharedNullableNumber(value);
 const number = (value: any) => numberOrNull(value) ?? 0;
 const list = (value: any) => Array.isArray(value) ? value : [];
 const lower = (value: any) => text(value, 500).toLocaleLowerCase('en-US');
@@ -255,7 +262,17 @@ export function buildMerchantSummaries(input: MerchantSummaryInput) {
   const documents = groupByBrand(list(input.documents), 'owner_id');
   const contexts = latestByBrand(list(input.marketContexts), 'brand_id', ['last_resolved_at', 'created_date']);
   const evidenceStatus = (source: string, matchingRows: number) => {
-    const state = input.sourceStatus?.[source];
+    // AUDIT P2-03 (2026-08-17) — used to always return AVAILABLE for an unknown state. Overview
+    // hit that exactly for Approval / AutonomyIncident: the block called buildMerchantSummaries
+    // with a sourceStatus that TRACKED ten sources but did not track those two, and the fail-open
+    // affirmed AVAILABLE on the unread ones. Fail-closed now, but only when the caller is
+    // actually tracking source health (sourceStatus is present with entries). A caller that
+    // passed no sourceStatus at all is not asserting anything about coverage, and forcing every
+    // KPI to UNAVAILABLE there would break every downstream that reads this shape without health.
+    const status = input.sourceStatus;
+    const tracking = status && Object.keys(status).length > 0;
+    const state = status?.[source];
+    if (tracking && !state) return 'UNAVAILABLE';
     if (!state) return 'AVAILABLE';
     if (state.ok !== true) return 'UNAVAILABLE';
     if (state.truncated) return matchingRows > 0 ? 'PARTIAL' : 'UNAVAILABLE';
@@ -284,7 +301,14 @@ export function buildMerchantSummaries(input: MerchantSummaryInput) {
     const realizedSavings = brandReports
       .filter((row) => row.measurement_mode === 'fully_verified' && ['realized', 'invoiced', 'paid'].includes(String(row.verification_status)))
       .reduce((total, row) => total + Math.max(0, number(row.savings)), 0);
-    const revenueCollected = brandInvoices.reduce((total, row) => total + Math.max(0, number(row.amount_paid)), 0);
+    // AUDIT MB-04 (2026-08-17) — this reduce used to include `void` and `refunded` invoices,
+    // whose amount_paid can be non-zero (a void that was later charged, or a refund whose Stripe
+    // projection wrote the paid_at and left amount_paid set). void is unambiguous: exclude it.
+    // refunded is a founder decision (net vs gross); kept in `collected` here and separately
+    // surfaced as `refunded_minor` on the monthly evolution so the choice is visible.
+    const revenueCollected = brandInvoices
+      .filter((row) => !['void'].includes(String(row.status)))
+      .reduce((total, row) => total + Math.max(0, number(row.amount_paid)), 0);
     const latestActivation = brandActivations[0] || null;
     const recoverActive = brandActivations.some((row) => ACTIVE_RECOVER.has(String(row.status)));
     const confidence = dataConfidence(brandAnalyzer);
@@ -476,7 +500,8 @@ function portfolioKpis(summaries: any[], sources: Record<string, any>, now: stri
   const realized = summaries.reduce((total, row) => total + number(row.realized_savings?.value_minor), 0);
   const collected = summaries.reduce((total, row) => total + number(row.cambra_revenue?.collected_minor), 0);
   const monthInvoices = sources.invoices?.rows?.filter((row: any) => when(row.paid_at || row.updated_date) >= monthStart) || [];
-  const monthCollected = monthInvoices.reduce((total: number, row: any) => total + Math.max(0, number(row.amount_paid)), 0) * 100;
+  // AUDIT MB-04 — exclude void from monthly collected. Same reason as line 294.
+  const monthCollected = monthInvoices.filter((row: any) => !['void'].includes(String(row.status))).reduce((total: number, row: any) => total + Math.max(0, number(row.amount_paid)), 0) * 100;
   const recoverActive = summaries.filter((row) => row.recover.active);
   const recoverSavings = (sources.activations?.rows || [])
     .filter((row: any) => ACTIVE_RECOVER.has(String(row.status)))
@@ -666,12 +691,23 @@ export async function collectMerchantBlock(svc: any, brand: any, block: string) 
   const id = text(brand.id, 120);
   if (!MERCHANT_BLOCKS.includes(block as any)) return { ok: false, error: 'unsupported_merchant_block', supported_blocks: MERCHANT_BLOCKS, http_status: 400 };
   if (block === 'overview') {
-    const [demand, verified, analyzer, activations, reports, invoices, lifecycles, integrations, documents, contexts] = await Promise.all([
+    // AUDIT P2-03 (2026-08-17) — this used to read TEN sources and emit needs_attention:0 with
+    // attention_status:'AVAILABLE' for every merchant, because evidenceStatus fails open when the
+    // sourceStatus entry is missing (line ~259) and the two attention sources — Approval and
+    // AutonomyIncident — were never in summarySources at all. Reachable through Ask CAMBRA: the
+    // copilot receives this payload as canonical context, so a merchant with three pending
+    // approvals was reported to the founder as having zero decisions pending.
+    //
+    // Read them now. The portfolio path already reads them at the same shape (approvals /
+    // incidents on collectMerchantPortfolio input), so this is the same data plane, not new one.
+    const [demand, verified, analyzer, activations, reports, invoices, lifecycles, integrations, documents, contexts, approvals, incidents] = await Promise.all([
       scoped(svc, 'DemandUnit', id, { query: { data_classification: 'production', is_demo: false, vertical: 'payments' }, sort: '-updated_at' }), scoped(svc, 'PaymentsAnalysisVerified', id, { sort: '-created_date' }), scoped(svc, 'AnalyzerResult', id, { sort: '-created_date' }), scoped(svc, 'DealActivation', id, { sort: '-last_updated' }), scoped(svc, 'MonthlySavingsReport', id, { sort: '-month' }), scoped(svc, 'Invoice', id, { sort: '-issued_at' }), scoped(svc, 'RevenueLifecycle', id, { sort: '-updated_at' }), scoped(svc, 'Integration', id, { sort: '-last_sync_at' }), scoped(svc, 'Document', id, { field: 'owner_id', query: { owner_type: 'brand' }, sort: '-uploaded_at' }), scoped(svc, 'MerchantMarketContext', id, { sort: '-last_resolved_at' }),
+      scoped(svc, 'Approval', id, { field: 'brand_id', sort: '-created_date' }),
+      scoped(svc, 'AutonomyIncident', id, { field: 'subject_id', query: { subject_type: 'Brand' }, sort: '-created_date' }),
     ]);
-    const summarySources = { demandUnits: demand, verifiedAnalyses: verified, analyzerResults: analyzer, activations, savingsReports: reports, invoices, lifecycles, integrations, documents, marketContexts: contexts };
-    const summary = buildMerchantSummaries({ brands: [brand], demandUnits: demand.rows, verifiedAnalyses: verified.rows, analyzerResults: analyzer.rows, activations: activations.rows, savingsReports: reports.rows, invoices: invoices.rows, integrations: integrations.rows, lifecycles: lifecycles.rows, documents: documents.rows, marketContexts: contexts.rows, sourceStatus: summarySources })[0];
-    return { ok: true, version: FOUNDER_MERCHANTS_V2_VERSION, merchant_id: id, block, status: combinedSourceStatus(Object.values(summarySources)), summary, dependencies: [demand, verified, analyzer, activations, reports, invoices, lifecycles, integrations, documents, contexts].map((source, index) => sourceState(['DemandUnit', 'PaymentsAnalysisVerified', 'AnalyzerResult', 'DealActivation', 'MonthlySavingsReport', 'Invoice', 'RevenueLifecycle', 'Integration', 'Document', 'MerchantMarketContext'][index], source)) };
+    const summarySources = { demandUnits: demand, verifiedAnalyses: verified, analyzerResults: analyzer, activations, savingsReports: reports, invoices, lifecycles, integrations, documents, marketContexts: contexts, approvals, incidents };
+    const summary = buildMerchantSummaries({ brands: [brand], demandUnits: demand.rows, verifiedAnalyses: verified.rows, analyzerResults: analyzer.rows, activations: activations.rows, savingsReports: reports.rows, invoices: invoices.rows, integrations: integrations.rows, lifecycles: lifecycles.rows, documents: documents.rows, marketContexts: contexts.rows, approvals: approvals.rows, incidents: incidents.rows, sourceStatus: summarySources })[0];
+    return { ok: true, version: FOUNDER_MERCHANTS_V2_VERSION, merchant_id: id, block, status: combinedSourceStatus(Object.values(summarySources)), summary, dependencies: [demand, verified, analyzer, activations, reports, invoices, lifecycles, integrations, documents, contexts, approvals, incidents].map((source, index) => sourceState(['DemandUnit', 'PaymentsAnalysisVerified', 'AnalyzerResult', 'DealActivation', 'MonthlySavingsReport', 'Invoice', 'RevenueLifecycle', 'Integration', 'Document', 'MerchantMarketContext', 'Approval', 'AutonomyIncident'][index], source)) };
   }
   if (block === 'payments_infrastructure') {
     const [integrations, profile, demand, verified] = await Promise.all([scoped(svc, 'Integration', id, { sort: '-last_sync_at' }), scoped(svc, 'PaymentsProfile', id, { sort: '-created_date', limit: 10 }), scoped(svc, 'DemandUnit', id, { query: { data_classification: 'production', is_demo: false, vertical: 'payments' }, sort: '-updated_at' }), scoped(svc, 'PaymentsAnalysisVerified', id, { sort: '-created_date' })]);
@@ -724,7 +760,10 @@ export async function collectMerchantBlock(svc: any, brand: any, block: string) 
     const [invoices, reports, economics, payments] = await Promise.all([scoped(svc, 'Invoice', id, { sort: '-issued_at' }), scoped(svc, 'MonthlySavingsReport', id, { sort: '-month' }), scoped(svc, 'MerchantUnitEconomics', id, { sort: '-calculated_at', limit: 10 }), scoped(svc, 'PaymentEvent', id, { sort: '-occurred_at', limit: 100 })]);
     const earned = reports.rows.filter((row: any) => ['calculated', 'invoiced', 'paid'].includes(String(row.status))).reduce((a: number, row: any) => a + Math.max(0, number(row.node_fee ?? row.fee_net_amount)), 0);
     const invoiced = invoices.rows.filter((row: any) => !['draft', 'void'].includes(String(row.status))).reduce((a: number, row: any) => a + Math.max(0, number(row.total_amount)), 0);
-    const collected = invoices.rows.reduce((a: number, row: any) => a + Math.max(0, number(row.amount_paid)), 0);
+    // AUDIT MB-04 — drilldown collected/outstanding used to include void, so the invoiced base
+    // (which excludes void) and the collected total disagreed by definition. `invoiced` is the
+    // correct definition; matched here.
+    const collected = invoices.rows.filter((row: any) => !['void'].includes(String(row.status))).reduce((a: number, row: any) => a + Math.max(0, number(row.amount_paid)), 0);
     const outstanding = invoices.rows.reduce((a: number, row: any) => a + Math.max(0, number(row.balance_due)), 0);
     const status = combinedSourceStatus([invoices, reports, economics, payments]);
     return { ok: true, merchant_id: id, block, status, summary: !invoices.ok ? 'Billing evidence unavailable' : `${Math.round(collected * 100)} EUR minor collected · ${outstanding > 0 ? 'Outstanding' : 'Up to date'}`, data: sanitizeMerchantAdminValue({ revenue: { earned_minor: reports.ok ? Math.round(earned * 100) : null, invoiced_minor: invoices.ok ? Math.round(invoiced * 100) : null, collected_minor: invoices.ok ? Math.round(collected * 100) : null, outstanding_minor: invoices.ok ? Math.round(outstanding * 100) : null, currency: 'EUR', truth: { earned: 'contractual_from_reports', invoiced: 'observed_invoice', collected: 'verified_payment', outstanding: 'observed_invoice_balance' }, evidence_status: { earned: reports.ok ? reports.truncated ? 'PARTIAL' : 'AVAILABLE' : 'UNAVAILABLE', invoices: invoices.ok ? invoices.truncated ? 'PARTIAL' : 'AVAILABLE' : 'UNAVAILABLE', reconciliation: payments.ok ? payments.truncated ? 'PARTIAL' : 'AVAILABLE' : 'UNAVAILABLE' } }, invoices: invoices.rows, savings_reports: reports.rows, unit_economics: economics.ok ? economics.rows[0] || null : null, payment_events: payments.rows.map((row: any) => ({ id: row.id, event_type: row.event_type, amount: row.amount, currency: row.currency, processor: row.processor, occurred_at: row.occurred_at, invoice_id: row.invoice_id, error_code: row.error_code })) }), dependencies: [sourceState('Invoice', invoices), sourceState('MonthlySavingsReport', reports), sourceState('MerchantUnitEconomics', economics), sourceState('PaymentEvent', payments)] };
@@ -844,9 +883,14 @@ export function buildMerchantKpiDrilldown(key: string, summaries: any[], kpis: a
   }, new Map<string, any>()).values()].sort((a, b) => a.month.localeCompare(b.month)).slice(-24);
   const invoiceEvolution = [...list(sources.invoices?.rows).reduce((map, row) => {
     const month = String(row.paid_at || row.issued_at || row.created_date || '').slice(0, 7) || 'UNKNOWN';
-    const current = map.get(month) || { month, invoiced_minor: 0, collected_minor: 0, outstanding_minor: 0 };
+    const current = map.get(month) || { month, invoiced_minor: 0, collected_minor: 0, outstanding_minor: 0, refunded_minor: 0 };
     if (!['draft', 'void'].includes(String(row.status))) current.invoiced_minor += Math.round(Math.max(0, number(row.total_amount)) * 100);
-    current.collected_minor += Math.round(Math.max(0, number(row.amount_paid)) * 100);
+    // AUDIT MB-04 — monthly evolution used to add void invoices' amount_paid into collected. Now
+    // gated on the same filter as invoiced. refunded_minor is surfaced separately: whether the
+    // headline `collected` figure nets refunds is a founder call, and destroying the amount_paid
+    // evidence to make that call one way would erase cash that really moved.
+    if (!['void'].includes(String(row.status))) current.collected_minor += Math.round(Math.max(0, number(row.amount_paid)) * 100);
+    if (String(row.status) === 'refunded') current.refunded_minor += Math.round(Math.max(0, number(row.amount_paid)) * 100);
     current.outstanding_minor += Math.round(Math.max(0, number(row.balance_due)) * 100);
     map.set(month, current);
     return map;

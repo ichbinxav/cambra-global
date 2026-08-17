@@ -1,9 +1,9 @@
 {
   "releaseName": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal)",
   "version": "0.98.0",
-  "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
+  "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 2035,
+  "sourceTreeFileCount": 2037,
   "sourceArchiveShaExternal": null,
   "gitSha": null,
   "releaseBuild": false,
@@ -18,16 +18,16 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "e5d2b30d30d689818b5b3f1d88f31ff75a7c180a6c07605f368c20b038956590",
-  "documentationManifestSha": "006fe836933957e26006d86aded0c4aa6a5c8f8bb935bf290a68ce4fbb9564ec",
+  "durabilityManifestSha": "59d3aa9a80c02eead160686a5f9479dc4021ef2c682e7dc420875b13865f5680",
+  "documentationManifestSha": "fdbf668c62fc0e237e543b05510b59e3674f777290aae7946df8d4664c951a91",
   "schedulerInventorySha": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
   "backendDeploymentTopologySha": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
-  "backendBundleManifestSha": "22d6bada5412b4546cc66e27b84bd218091d51020e35874f4aa8db827db263e6",
+  "backendBundleManifestSha": "b05459608e45a91abb2cb3ea9426463e38c674cba2b56b803a5a07fa62b75bd1",
   "backendBundle": {
     "physicalFunctionCount": 276,
     "logicalRouteCount": 38,
-    "stagedFileCount": 2935,
-    "stagedTreeSha256": "34f2bebd8a8bac2deaa615911bd48c4611ca9c38cd1e9291fc1dfabb6ffc2cda",
+    "stagedFileCount": 2937,
+    "stagedTreeSha256": "b0e7866b845f30651666e606559de4e66343386711e70d7e3eefc63a679ff480",
     "hashAlgorithm": "sha256-path-bytes-tree-v1",
     "functionsDir": "./.deploy/functions",
     "configSha256": "0e9773a26dfa4e1fa7fcfd43016f8a07046b8e78c97bd5905b70155c8d3797e6"
@@ -62,66 +62,66 @@
   },
   "testEvidence": {
     "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:59:05.015Z",
-    "completedAt": "2026-08-17T16:59:51.553Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:26:26.131Z",
+    "completedAt": "2026-08-17T17:27:12.257Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 314,
-    "passed": 4445,
+    "testFiles": 315,
+    "passed": 4472,
     "failed": 0,
     "skipped": 0,
     "frameworkVersion": "^4.1.10",
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "5321fd5b4e5f84c00adc645d114322b5c446c701baee216e97ea083b70ae7c8f"
+    "evidenceDigest": "4a032c169f8c50371d226802fa361775d6161cfa1bf1076515b75741a99c0b03"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:59:51.969Z",
-    "completedAt": "2026-08-17T17:00:00.639Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:27:12.655Z",
+    "completedAt": "2026-08-17T17:27:21.767Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "9b33ab058f6febd930abd3f1714e562e02233e2e0bc241396672167ca557e27d",
     "artifactCount": 137,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "6112d6c5881719103a9b83e95bd4825b44db31a7afc8afb8054e6d0ca4dba59f"
+    "evidenceDigest": "726e5b8affa7f9697ea18f4d389f34955e3060f247934625535a9324a6c7f5d8"
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:58:39.684Z",
-    "completedAt": "2026-08-17T16:58:46.584Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:25:59.558Z",
+    "completedAt": "2026-08-17T17:26:06.891Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "c0ecdb8fa5535cedb7d4eabd0d9bc22d9b9d35c1b12bda228d42002fc11e188d"
+    "evidenceDigest": "41d87dda88ed9eeda5765135efa21932d7fbbd4f0862fce69311b884479f58c6"
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:58:46.959Z",
-    "completedAt": "2026-08-17T16:58:50.583Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:26:07.303Z",
+    "completedAt": "2026-08-17T17:26:11.133Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "3c65c25cbbd48ce2e35951f066861d84a704c0ee903517a78741f7a53000cc8b"
+    "evidenceDigest": "0193c23bba377e7ae683a52028b43370abe5a45a40f87bc880507cdd8c6253b8"
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:58:56.222Z",
-    "completedAt": "2026-08-17T16:59:04.619Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:26:16.961Z",
+    "completedAt": "2026-08-17T17:26:25.758Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "c50eadce6107a52b2f41bb2f5eb3d35d1dc54721bd726d2160bce344e56a6131"
+    "evidenceDigest": "ceeb9b8b225ab96d996d096e92e3cabe958bf2700a1a12ec264374a49419e297"
   },
   "dependencyAuditEvidence": {
     "command": "npm audit --json",
-    "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-    "startedAt": "2026-08-17T16:58:35.685Z",
-    "completedAt": "2026-08-17T16:58:36.456Z",
+    "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+    "startedAt": "2026-08-17T17:25:55.481Z",
+    "completedAt": "2026-08-17T17:25:56.149Z",
     "exitCode": 0,
     "ciRunId": null,
     "auditReportVersion": 2,
@@ -143,7 +143,7 @@
     },
     "networkExitCode": 0,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "381c61368206715bfe6dba46b423c38e3d46c8a9cfe7d6f5bca85a77e1551c59"
+    "evidenceDigest": "3adfe93b4e1f439825931ba5252b33dc34743bacaea4f24bcbb17930b3450a49"
   },
   "artifactHashes": {
     "dist": "9b33ab058f6febd930abd3f1714e562e02233e2e0bc241396672167ca557e27d"
@@ -335,5 +335,5 @@
   "realWorldValidatedEligible": false,
   "readinessLevel": "NOT_GO_READY",
   "finalVerdict": "NOT_GO_READY",
-  "generatedAt": "2026-08-17T17:00:01.813Z"
+  "generatedAt": "2026-08-17T17:27:22.999Z"
 }

@@ -58,8 +58,19 @@ Deno.serve(async (req) => {
       0
     );
 
-    const allReports = await svc.entities.MonthlySavingsReport
-      .filter({ brand_id: brandId }).catch((error:any)=>safeBestEffort(error,{operation:'getBrandSavings',fallback:[],severity:'secondary'}));
+    // AUDIT P3-07 (2026-08-17) — safeBestEffort console.warns and returns []. A transient read
+    // failure looked identical to "no reports" downstream, and measurement_quality (derived only
+    // from measurement_mode) then labelled an empty set 'estimated' as if that were a confidence
+    // claim about real figures. Track whether the read succeeded, and refuse to label quality
+    // when it did not.
+    let reportsReadable = true;
+    let allReports: any[] = [];
+    try {
+      allReports = await svc.entities.MonthlySavingsReport.filter({ brand_id: brandId });
+    } catch (error: any) {
+      reportsReadable = false;
+      safeBestEffort(error, { operation: 'getBrandSavings', fallback: [], severity: 'secondary' });
+    }
     const liveReports = allReports.filter(r => r.status !== 'void');
 
     const ymSince = ymSinceMonthsAgo(12);
@@ -70,9 +81,10 @@ Deno.serve(async (req) => {
     const realizedToDate = liveReports.reduce((s, r) => s + Number(r.savings || 0), 0);
     const nodeFeesToDate = liveReports.reduce((s, r) => s + Number(r.node_fee || 0), 0);
 
-    // Quality across live reports
-    let measurementQuality = 'estimated';
-    if (liveReports.length > 0) {
+    // Quality across live reports. AUDIT P3-07 — an unreadable source is not "estimated": it is
+    // unknown, and calling it 'estimated' claims a measurement the read never delivered.
+    let measurementQuality: string = reportsReadable ? 'estimated' : 'unknown';
+    if (reportsReadable && liveReports.length > 0) {
       const modes = new Set(liveReports.map(r => r.measurement_mode));
       const allVerified = liveReports.every(r => r.measurement_mode === 'fully_verified');
       const anyVerified = modes.has('fully_verified') || modes.has('estimated_from_partial_data');
@@ -113,6 +125,9 @@ Deno.serve(async (req) => {
       realized_to_date: Number(realizedToDate.toFixed(2)),
       node_fees_to_date: Number(nodeFeesToDate.toFixed(2)),
       measurement_quality: measurementQuality,
+      // AUDIT P3-07 — surfaced so the merchant/admin sees "source_read_failed" rather than
+      // silently reading `estimated` on an empty payload.
+      reports_readable: reportsReadable,
       baseline,
       next_report_due: nextReportDueISO(),
       history: savingsRows,

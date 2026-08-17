@@ -4,8 +4,8 @@
   "platform": "darwin",
   "arch": "arm64",
   "lockfileSha": "5de78cd20867a577cc7e6870559a215b8e0c6a1175f2934572805441bd3e6ce9",
-  "sourceTreeHash": "6c067524cbef0e40fb21e9acce81d60cae41f9800b48a0ab3d99bd6fc0f454ae",
-  "timestamp": "2026-08-17T16:59:51.967Z",
+  "sourceTreeHash": "8b9aaf4b8ef28f7e24528d8433e7305373ecdedaa322cfc4e5da51d77fad11a5",
+  "timestamp": "2026-08-17T17:27:12.654Z",
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "0c007cf3cc7378f930f4c5ebdd26abb1258f6316055130ade87ca37d7af4b686"
+  "evidenceDigest": "c2295a773cd015fcf85c6e31ad0b08c5c23cd14c43ab520cc76f0b3e7995362e"
 }

@@ -183,9 +183,15 @@ Deno.serve(async (req) => {
         integration_id:   'stripe',
         status:           'verified',
         confidence_score: 1.0,
-        effective_rate:   Number(sc.effective_fee_pct || 0),
-        monthly_cost:     Number(sc.total_fees_monthly || 0),
-        cost_confidence:  'verified',
+        // AUDIT P2-04 (2026-08-17) — this used to coerce absent Stripe aggregates to 0. The
+        // upstream merge at line 121/123 uses `??`, so 0 (which is not nullish) overwrote a
+        // previously observed cost while cost_confidence stayed 'verified' — a verified-zero-cost
+        // claim on a merchant that does pay Stripe. Propagate null when the aggregate is absent
+        // so the ?? merge keeps the existing value, and demote cost_confidence to 'unmeasured'
+        // in that case.
+        effective_rate:   (sc.effective_fee_pct === null || sc.effective_fee_pct === undefined || sc.effective_fee_pct === '' || !Number.isFinite(Number(sc.effective_fee_pct))) ? null : Number(sc.effective_fee_pct),
+        monthly_cost:     (sc.total_fees_monthly === null || sc.total_fees_monthly === undefined || sc.total_fees_monthly === '' || !Number.isFinite(Number(sc.total_fees_monthly))) ? null : Number(sc.total_fees_monthly),
+        cost_confidence:  (sc.total_fees_monthly === null || sc.total_fees_monthly === undefined || sc.total_fees_monthly === '' || !Number.isFinite(Number(sc.total_fees_monthly))) ? 'unmeasured' : 'verified',
         data_source:      'oauth',
         metadata:         {
           stripe_account_id: sc.stripe_account_id || null,

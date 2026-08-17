@@ -58,7 +58,13 @@ if (!core.includes('nullableSum')) {
 }
 
 // 4. Completeness must demote the truth class. A lower bound cannot be VERIFIED.
-if (!/completeness === 'COMPLETE'\s*\?\s*input\.truth_class/.test(core)) {
+// AUDIT P2-02 (2026-08-17): the guard used to check for the exact string
+// `completeness === 'COMPLETE' ? input.truth_class`. That matched the local variable name in the
+// function before, but the fix for P2-02 introduced `effectiveCompleteness` (which additionally
+// demotes when rows_source_complete === false). Widened to accept either name so the guard keeps
+// asserting the rule — "COMPLETE preserves truth_class, otherwise DERIVED" — without pinning a
+// specific identifier.
+if (!/(?:completeness|effectiveCompleteness) === 'COMPLETE'\s*\?\s*input\.truth_class/.test(core)) {
   fail('a figure whose sum skipped rows must be demoted — a lower bound is not verified');
 }
 

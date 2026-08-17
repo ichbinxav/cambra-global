@@ -7,8 +7,36 @@ import { DEFAULT_GROWTH_POLICY, EUROPEAN_GROWTH_VERSION, launchReadiness, maturi
 import { emergencyState } from './operationalControl.ts';
 import { buildGrowthPath, GROWTH_CHANNELS, GROWTH_PATH_ENGINE_VERSION } from './growthPath.ts';
 
+// AUDIT P1-SHARED-001 / P3-03 (2026-08-17) — this file wrapped 30+ money-bearing entity reads in a
+// swallow that returned [] on failure with NO log, NO counter and NO flag; actualRevenue and
+// actualCash were then summed with a third private copy of the broken nullable coercion
+// (`Number(x) : 0`) and returned with `revenue_sources: []`. AdminGrowth rendered
+// "Actual revenue: EUR 0 · Operational evidence" for an Invoice read that threw, and
+// persistGrowthPathSnapshot upserted that zero into MarketGrowthSnapshot — durable, and consulted
+// by launch decisions from then on.
+//
+// The correct pattern already lived twice in this same directory (founderControlV2.ts:18,
+// commandRunAdminCore.ts). The change here is narrow: `safe()` stays for backward compatibility
+// with existing callers, and a new `summarize()` reports counted / missing so a total nobody
+// could compute is null, not zero. The returned object carries `revenue_complete` and
+// `cash_complete` flags so the consumer can see when the aggregate was computed on partial data.
 const safe = async (fn:()=>Promise<any>, fallback:any = []) => { try { return await fn(); } catch { return fallback; } };
 const sum = (rows:any[], field:string) => rows.reduce((total:number,row:any) => total + (Number.isFinite(Number(row?.[field])) ? Number(row[field]) : 0),0);
+
+// The honest counterpart: reports counted/missing and returns null (never 0) when nothing carried
+// the field. A zero from THIS function is a real zero; a null is "we could not compute this".
+export function summarize(rows: any[], field: string): { total: number | null; counted: number; missing: number } {
+  let total = 0, counted = 0, missing = 0;
+  for (const row of rows || []) {
+    const value = row?.[field];
+    if (value === null || value === undefined || value === '' || typeof value === 'boolean') { missing += 1; continue; }
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) { missing += 1; continue; }
+    total += parsed; counted += 1;
+  }
+  return { total: counted === 0 ? null : total, counted, missing };
+}
+
 const nowIso = () => new Date().toISOString();
 
 function assumptionRange(metric:string, value:number) {
@@ -87,9 +115,20 @@ export async function collectObservedGrowthTruth(service:any) {
   const paidInvoices = invoices.filter((row:any) => ['paid','partially_paid'].includes(String(row.status)) || Number(row.amount_paid || 0) > 0); const realized = reports.filter((row:any) => row.measurement_mode === 'fully_verified' && row.verification_status === 'realized'); const won = leads.filter((row:any) => String(row.stage || row.revenue_stage) === 'won' && Number.isFinite(Number(row.expected_revenue_value))); const providerPaid = providerLedger.filter((row:any) => row.state === 'paid'); const providerAccrued = providerLedger.filter((row:any) => ['accrued','validation_pending','invoiced','payment_pending','partially_paid','paid'].includes(String(row.state)));
   const costCategories = new Set(costs.filter((row:any) => ['OBSERVED','VERIFIED'].includes(String(row.evidence_status))).map((row:any) => row.category)); const requiredCosts = ['paid_media','tools','enrichment','email','ai','people','agency','other']; const founderPolicy = founderPolicies[0] || null; const futureMeetings = meetingThreads.filter((row:any) => Date.parse(row.meeting_start_at || '') >= Date.now()); const weeklyCap = Math.max(0,Number(founderPolicy?.weekly_meeting_cap || 0));
   const blockedMigrations = migrations.filter((row:any) => ['blocked','failed'].includes(String(row.status)) || ['blocked','failed'].includes(String(row.step_status))); const billingBlockers = reports.filter((row:any) => String(row.billing_eligibility_status || '').startsWith('blocked_'));
-  const actualRevenue = sum(invoices.filter((row:any) => !['draft','void'].includes(String(row.status))),'total_amount') + sum(providerAccrued,'accrued_amount_minor')/100; const actualCash = sum(paidInvoices,'amount_paid') + sum(providerPaid,'paid_amount_minor')/100;
+  // AUDIT P1-SHARED-001 / P3-03 — compute each side through `summarize` so the totals carry their
+  // presence accounting. Downstream consumers can use `revenue_complete` / `cash_complete` to
+  // decide whether the aggregate is a total or a lower bound.
+  const invoicesConsidered = invoices.filter((row:any) => !['draft','void'].includes(String(row.status)));
+  const revenueSummary = summarize(invoicesConsidered,'total_amount');
+  const providerAccrualSummary = summarize(providerAccrued,'accrued_amount_minor');
+  const paidSummary = summarize(paidInvoices,'amount_paid');
+  const providerPaidSummary = summarize(providerPaid,'paid_amount_minor');
+  const actualRevenue = (revenueSummary.total ?? 0) + (providerAccrualSummary.total ?? 0)/100;
+  const actualCash = (paidSummary.total ?? 0) + (providerPaidSummary.total ?? 0)/100;
+  const revenueComplete = revenueSummary.missing === 0 && providerAccrualSummary.missing === 0;
+  const cashComplete = paidSummary.missing === 0 && providerPaidSummary.missing === 0;
   return {
-    actuals:{ bookings:sum(won,'expected_revenue_value'),verified_economic_value:sum(realized,'savings'),revenue:actualRevenue,cash:actualCash,bookings_sources:won.slice(0,100).map((row:any) => `OutboundLead:${row.id}`),verified_value_sources:realized.slice(0,100).map((row:any) => `MonthlySavingsReport:${row.id}`),revenue_sources:[...invoices.slice(0,100).map((row:any) => `Invoice:${row.id}`),...providerAccrued.slice(0,100).map((row:any) => `ProviderRevenueLedger:${row.id}`)],cash_sources:[...paidInvoices.slice(0,100).map((row:any) => `Invoice:${row.id}`),...providerPaid.slice(0,100).map((row:any) => `ProviderRevenueLedger:${row.id}`)],sources:['OutboundLead','MonthlySavingsReport','Invoice','ProviderRevenueLedger'],revenue_definition:'Operational invoiced merchant revenue plus evidenced provider accrual; formal accounting recognition remains external.' },
+    actuals:{ bookings:sum(won,'expected_revenue_value'),verified_economic_value:sum(realized,'savings'),revenue:actualRevenue,cash:actualCash,revenue_complete:revenueComplete,cash_complete:cashComplete,revenue_missing_rows:revenueSummary.missing+providerAccrualSummary.missing,cash_missing_rows:paidSummary.missing+providerPaidSummary.missing,bookings_sources:won.slice(0,100).map((row:any) => `OutboundLead:${row.id}`),verified_value_sources:realized.slice(0,100).map((row:any) => `MonthlySavingsReport:${row.id}`),revenue_sources:[...invoices.slice(0,100).map((row:any) => `Invoice:${row.id}`),...providerAccrued.slice(0,100).map((row:any) => `ProviderRevenueLedger:${row.id}`)],cash_sources:[...paidInvoices.slice(0,100).map((row:any) => `Invoice:${row.id}`),...providerPaid.slice(0,100).map((row:any) => `ProviderRevenueLedger:${row.id}`)],sources:['OutboundLead','MonthlySavingsReport','Invoice','ProviderRevenueLedger'],revenue_definition:'Operational invoiced merchant revenue plus evidenced provider accrual; formal accounting recognition remains external.' },
     evidence:{ qualified_observations:leads.length,real_outcomes:won.length,calibration_confidence:won.length >= 10 ? Math.min(.9,won.length/100) : 0,attributed_customers:attributions.length,partner_prospects:partners.length,productive_partners:partners.filter((row:any) => row.stage === 'won').length,referral_activations:referrals.length,analyzer_results:analyzer.length },
     system:{ emergency_stop:emergency.safe_mode === true,emergency_reasons:emergency.reason ? [emergency.reason] : [] },production:{ sealed:production?.sealed === true,status:production?.status || 'MISSING',source_ref:production?.id ? `ProductionReadinessSnapshot:${production.id}` : 'ProductionReadinessSnapshot:missing' },markets:{ commercially_ready:markets.filter((row:any) => row.launch_state === 'READY').length,ready_with_limitations:markets.filter((row:any) => row.launch_state === 'READY_WITH_LIMITATIONS').length,intelligence_markets:markets.length },
     policy:{ active_canary:policy?.mode === 'CANARY' && policy?.status === 'active',daily_send_limit:policy?.daily_send_limit ?? null,markets:policy?.countries || [],source_ref:policy?.id ? `CommercialPolicy:${policy.id}` : 'CommercialPolicy:missing' },
