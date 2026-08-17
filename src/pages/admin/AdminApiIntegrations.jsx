@@ -23,11 +23,15 @@ export default function AdminApiIntegrations() {
 
   const load = async () => {
     setLoading(true);
-    const [k, w, l] = await Promise.all([
+    // AUDIT SEC-02 (2026-08-17): WebhookEndpoint.secret is the plaintext HMAC signing key.
+    // Row-level RLS returns it to the browser on a raw entity read. Route through the governed
+    // registry which projects url/events/status without the secret.
+    const [k, reg, l] = await Promise.all([
       base44.entities.ApiKey.list("-created_date", 100),
-      base44.entities.WebhookEndpoint.list("-created_date", 100),
+      base44.functions.invoke("adminSummaries", { action: "integration_registry" }),
       base44.entities.ApiActivityLog.list("-created_date", 100),
     ]);
+    const w = Array.isArray(reg?.data?.webhooks) ? reg.data.webhooks : [];
     setKeys(k); setWebhooks(w); setLogs(l);
     setLoading(false);
   };

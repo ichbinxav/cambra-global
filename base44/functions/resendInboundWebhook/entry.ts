@@ -1,7 +1,7 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
-import { Webhook } from 'npm:svix';
+import { Webhook, WebhookVerificationError } from 'npm:svix@1.42.1';
 import { classifyHardStop, commercialTimezone, computeInboundReplySchedule, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { providerSecretMatches } from '../../shared/inboundConversationProvider.ts';
 import { processInstantlyProviderEvent } from '../../shared/outboundProviderEventProcessing.ts';
@@ -39,8 +39,12 @@ Deno.serve(async (req) => {
         'svix-timestamp': req.headers.get('svix-timestamp') || '',
         'svix-signature': req.headers.get('svix-signature') || ''
       });
-    } catch {
-      return Response.json({ ok:false, error:'invalid_signature' }, { status:400 });
+    } catch (error:any) {
+      if (error instanceof WebhookVerificationError) {
+        return Response.json({ ok:false, error:'invalid_signature' }, { status:400 });
+      }
+      safeBestEffort(error, { operation:'resendInboundWebhook.svixVerify', fallback:null, severity:'critical' });
+      return Response.json({ ok:false, error:'signature_verifier_unavailable' }, { status:500 });
     }
 
     const base44 = createClientFromRequest(req);

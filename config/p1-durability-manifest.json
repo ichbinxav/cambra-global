@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T17:43:58.248Z",
+  "generatedAt": "2026-08-17T18:03:53.243Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1237,8 +1237,8 @@
     },
     {
       "path": "base44/functions/resendInboundWebhook/entry.ts",
-      "sha256": "93d4151d3d4f3ccdc69b8bf692988945628c2b23a162e28010c4e6359dd33327",
-      "bytes": 11204
+      "sha256": "81e3033dd54e39574f8b82492925b5df2972b9607479bec3298cb58036c1a3e6",
+      "bytes": 11526
     },
     {
       "path": "base44/functions/resolveCommercialApproval/entry.ts",
@@ -2012,12 +2012,12 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "74905bf88ac058f5459899c5f69a14be4686155b17c61c214cf09020f0de8041",
+      "sha256": "ac6d33146f495e11d886e4964f20f679097ec41a034565f7c48c51961bcdb25a",
       "bytes": 30598
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "81c21c236da2b1009011423b2f6f893113dd88aa6b82e3342da0e488e8d013ab",
+      "sha256": "e55dd588788a53341f2c28a85afa5601e21a0c7cb99163d5522d92e93a8d0263",
       "bytes": 124138
     },
     {
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "aee727f220373fa728407b50738510d50136eaed0c8494723b0bb5f1e8dc9fd9",
+      "sha256": "8d2692bb6594c49d000d85683e43a952c8624541970cff5e0a9b0389d0a607b1",
       "bytes": 42987
     },
     {
@@ -2187,22 +2187,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "be51d39ee13b5ff717a2da1c60991be174f8d115632c72724bc983d2c6528dd6",
+      "sha256": "6ce5d67525fbbdd67b87371ae4a69124fcab88522458f200a05572fea50d4517",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "3655276b1f0f8c023e4dbeeacbae295fc7b80b17907d2dd656f1a065ddccc19a",
+      "sha256": "18151737ecdebaa7ba20a065185f63f40671cc3a7f130ff55c428b82d2b3cea9",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "14ef2051cf00a109b9c8ef99592b2bcd746a6c1e08ce1f922bb9d931b33c6fa8",
+      "sha256": "c83077415c1bb27d44d47817544c4cf2789b83042ea791bd1b74d2b818f23774",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "a082e2fada6bc5178ca411be0b4a0968d09a98fb31719c43f9ebaa1b9d952679",
+      "sha256": "8d8a308f1ab31d0785e36c7e63ac6a764cad01582039a93f311f9e581534ce41",
       "bytes": 98284
     },
     {
@@ -2232,13 +2232,13 @@
     },
     {
       "path": "docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.json",
-      "sha256": "35b6156648e24411eb42ef04d5599ddda82a14cbe90eaeef817de4e7cb674981",
-      "bytes": 46906
+      "sha256": "ed572df83e11d923cb2e73b8df8e1960c95b3111d414c9ff464b5c513fb24cb4",
+      "bytes": 46905
     },
     {
       "path": "docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.md",
-      "sha256": "2deaa714ca06d83bfc1ec3a3b5f4d89aa7eca9236725343e32ca34dbf132e984",
-      "bytes": 9812
+      "sha256": "bdad140dc9b75ce962eb8f4ad841e68564e3c011b33c1ccd17f5087bc09cbecb",
+      "bytes": 9835
     },
     {
       "path": "docs/INTELLIGENCE_CANONICAL_RECONCILIATION_V2.md",
@@ -2267,8 +2267,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "27e3fd18e4006e3095634b8b6e25da9906857edb860ead383f4263312de47d3a",
-      "bytes": 12691
+      "sha256": "824f42efece66f42867e5e339458affae689affa69e7e1c2d5bf24e1a2ed2aa4",
+      "bytes": 12834
     },
     {
       "path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
@@ -2442,8 +2442,8 @@
     },
     {
       "path": "scripts/generate-europe-v1-report.mjs",
-      "sha256": "786d93775c09b4d93e34785855c57b223eaa11704141ba281b10ae50ce8d31cf",
-      "bytes": 10846
+      "sha256": "1399bb6e5e07b746a67ff6026b784e5b5ec54c9f242815e72e521971847fdd06",
+      "bytes": 11992
     },
     {
       "path": "scripts/generate-intelligence-canonical-v2.mjs",

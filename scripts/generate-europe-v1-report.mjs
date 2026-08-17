@@ -56,10 +56,10 @@ const report={
 };
 
 fs.mkdirSync('docs',{recursive:true});
-fs.writeFileSync('docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.json',JSON.stringify(report,null,2)+'\n');
+const jsonBody=JSON.stringify(report,null,2)+'\n';
 const rows=matrix.map((x)=>`| ${x.market} | ${x.name} | ${x.p9_localization_readiness} | ${x.p10_regulatory_readiness} | ${x.p11_legal_readiness} | ${x.p12_production_readiness} | ${x.p13_growth_readiness} | ${x.recommended_strategy} |`).join('\n');
 const phases=Object.entries(report.phase_status).map(([phase,status])=>`| ${phase} | ${status} |`).join('\n');
-fs.writeFileSync('docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.md',`# CAMBRA Europe V1 Final Autonomy Report
+const mdBody=`# CAMBRA Europe V1 Final Autonomy Report
 
 **Classification:** ${report.classification}
 
@@ -128,5 +128,26 @@ ${[...report.required_authority,...report.required_legal_security].map((x)=>`- $
 ## Next actions
 
 ${report.recommended_next_actions.map((x)=>`- ${x}`).join('\n')}
-`);
-console.log(`europe:report PASS — ${matrix.length} markets · ${report.classification}`);
+`;
+
+// AUDIT EV-1 (2026-08-17): the generator used to write unconditionally, so a stale on-disk
+// report survived every seal cascade (documentation:check hashed the .md against a manifest
+// regenerated on top of the stale file, europeV1ClosureReport.test.js asserted only shape).
+// --check compares the freshly-computed bytes against what is on disk and exits non-zero on
+// any drift; verify:chunk runs it so a forgotten regeneration fails CI.
+const jsonPath='docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.json';
+const mdPath='docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.md';
+if(process.argv.includes('--check')){
+  const currentJson=fs.existsSync(jsonPath)?fs.readFileSync(jsonPath,'utf8'):'';
+  const currentMd=fs.existsSync(mdPath)?fs.readFileSync(mdPath,'utf8'):'';
+  const jsonDrift=currentJson!==jsonBody, mdDrift=currentMd!==mdBody;
+  if(jsonDrift||mdDrift){
+    console.error(`europe:report FAIL — stale on-disk report (${jsonDrift?'JSON ':''}${mdDrift?'MD':''}). Regenerate with \`node scripts/generate-europe-v1-report.mjs\`.`);
+    process.exit(1);
+  }
+  console.log(`europe:report PASS — ${matrix.length} markets · on-disk report matches generator`);
+} else {
+  fs.writeFileSync(jsonPath,jsonBody);
+  fs.writeFileSync(mdPath,mdBody);
+  console.log(`europe:report PASS — ${matrix.length} markets · ${report.classification}`);
+}
