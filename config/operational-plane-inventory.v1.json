@@ -137,6 +137,7 @@
         "base44/functions/dependencySecurityWorker/entry.ts",
         "base44/functions/goLiveControlAdmin/entry.ts",
         "base44/functions/maintenanceEngine/entry.ts",
+        "base44/functions/providerRevenueBillingWorker/entry.ts",
         "base44/functions/providerRevenueReconciliationWorker/entry.ts",
         "base44/functions/providerRevenueRecoveryAgent/entry.ts",
         "base44/functions/respondMerchantInformationRequest/entry.ts",
@@ -156,7 +157,7 @@
       ]
     },
     "writer_counts": {
-      "AutonomyIncident": 15,
+      "AutonomyIncident": 16,
       "OperationalIncident": 2,
       "IncidentAlertDelivery": 1
     },

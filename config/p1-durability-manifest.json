@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T18:10:41.262Z",
+  "generatedAt": "2026-08-17T18:18:04.539Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -8,8 +8,8 @@
   "allowlistCount": 77,
   "fileCount": 792,
   "purpose": "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
-  "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
-  "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
+  "nameNote": "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage. Current stage is ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS (authoritative in the stage field above).",
+  "stageNote": "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. Later stages extend this seal additively. The current stage is ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS; its scope belongs in that stage's decision log, not restated here (this note drifted through P6 language for several major versions).",
   "history": {
     "p1": "Evidence lifecycle schemas and frozen-field boundary.",
     "p2": "Domain contracts, policy, serialization and gate semantics.",
@@ -17,13 +17,15 @@
     "p4": "Operational scheduler/review workflow with fail-closed persistence, replay and concurrency hardening.",
     "p4ProductionProof": "Admin operator surface plus best-effort scheduler runtime proof; no economic effects.",
     "p5": "Canonical ECL gates become mandatory before Recover contractual and invoice effects.",
-    "p6": "Already-authorized economic effects execute replay-safely and reconcile against Stripe current state without a second local payment truth."
+    "p6": "Already-authorized economic effects execute replay-safely and reconcile against Stripe current state without a second local payment truth.",
+    "p7": "Operational recovery: incident workflow, dead-letter processing, admin operations cockpit; no new economic authority.",
+    "p8": "Production administration, automation and AI operations surfaces; scheduler and workforce catalogs sealed; no new material authority."
   },
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "23e5252791969515f95158bd8ebab4617c8a2220ae4632c920d08781d09974ef",
-      "bytes": 1761
+      "sha256": "65606b31b8067c80792fbf1f842239c83acdd40c1c593d0643d6666d0aeea699",
+      "bytes": 2042
     },
     {
       "path": "README.md",
@@ -1137,8 +1139,8 @@
     },
     {
       "path": "base44/functions/providerRevenueBillingWorker/entry.ts",
-      "sha256": "fedec3bbb5ed1596b9029db5efa674174caf7d67406b6fd17811e65376e15af0",
-      "bytes": 6347
+      "sha256": "4569623ec8588643cce0a302e25b2ffc99f0fa439073edad57de0d93931db424",
+      "bytes": 7747
     },
     {
       "path": "base44/functions/purgeInactiveLeads/entry.ts",
@@ -2007,8 +2009,8 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "23e5252791969515f95158bd8ebab4617c8a2220ae4632c920d08781d09974ef",
-      "bytes": 1761
+      "sha256": "65606b31b8067c80792fbf1f842239c83acdd40c1c593d0643d6666d0aeea699",
+      "bytes": 2042
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
@@ -2017,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "e55dd588788a53341f2c28a85afa5601e21a0c7cb99163d5522d92e93a8d0263",
+      "sha256": "dd4cafb7d949abd149fd3157ec4c52ce3a089c45f7d60ef50064e5b6d2108b2b",
       "bytes": 124138
     },
     {
@@ -2027,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "35e2538effd5a77fc714bb45dda9b524f02305eb8db62ee93bf9b74e974452f0",
+      "sha256": "b1c72b18708a54c0cbe9c3a3b20ae5341d6ff6f89966d59962675ff55d3fd772",
       "bytes": 42987
     },
     {
@@ -2172,8 +2174,8 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "52a67a9f2c9d834ecde066228e1df713845dfef2360a2fa09fd88aa7ca814472",
-      "bytes": 8027
+      "sha256": "3986525f7761c521366d532bb769255bba67dff0cc42c889c511a8b31fec5938",
+      "bytes": 8093
     },
     {
       "path": "config/pre-ecl-freeze.json",
@@ -2187,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "6bea6e9bd82455a139502417a02bc9e277c1693013a228274328a9237a1f82e3",
+      "sha256": "7874b26bdaefe53664ade6f50d1a545c7b0316199564fa8a4bca159f436c931d",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "18151737ecdebaa7ba20a065185f63f40671cc3a7f130ff55c428b82d2b3cea9",
+      "sha256": "3e558d212730a14db5ddf0313a993da8ba4e9e983319fd2c784543a3dc2bd36e",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "c83077415c1bb27d44d47817544c4cf2789b83042ea791bd1b74d2b818f23774",
+      "sha256": "9792e8106aba8c0621e321355948ffced060254386743e047079776e5aa5affb",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "8d8a308f1ab31d0785e36c7e63ac6a764cad01582039a93f311f9e581534ce41",
+      "sha256": "48cd24f53dcea800856349d931c859dd6b9291e8e4699a37f7f0706ee4676788",
       "bytes": 98284
     },
     {
@@ -2427,8 +2429,8 @@
     },
     {
       "path": "scripts/generate-durability-manifest.mjs",
-      "sha256": "50bf90751f4f1a5e30340b834bc0cbc636eec338daeabb870f00564e47c7c397",
-      "bytes": 7029
+      "sha256": "5a7da138f3b6b2deebfe2f10bce49fc0fb52fc4bd2f1f358faef6938d6f34f1b",
+      "bytes": 7494
     },
     {
       "path": "scripts/generate-ecl-policy.mjs",
@@ -3972,8 +3974,8 @@
     },
     {
       "path": "types/deno-shim.d.ts",
-      "sha256": "066b8eeee96a73cdca353c9658fd9f9e3c6655ff67c1db979d40a3d7e2366ad8",
-      "bytes": 2282
+      "sha256": "94ad8f63a91a0dc15e1cba20b154314fe853b19cf6d839e35c56cf04304a4395",
+      "bytes": 2430
     },
     {
       "path": "vite.config.js",

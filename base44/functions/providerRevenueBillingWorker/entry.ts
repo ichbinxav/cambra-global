@@ -31,7 +31,28 @@ guardedScheduledServe({"worker_key":"providerRevenueBillingWorker","cadence_seco
       const amount = items.reduce((sum:number, row:any) => sum + Number(row.accrued_amount_minor || 0), 0);
       const invoiceKey = `provider-invoice:${key}`;
       const old = await svc.entities.ProviderRevenueInvoice.filter({ invoice_key:invoiceKey }, '-updated_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'providerRevenueBillingWorker',fallback:[],severity:'critical'}));
-      if (old[0]) continue;
+      if (old[0]) {
+        // AUDIT MB-05 (2026-08-17): `continue` silently dropped any accrual that joined
+        // the group after its invoice was cut. Compare the existing invoice against the
+        // current group sum; on a mismatch, open an AutonomyIncident so the delta is
+        // visible instead of orphaned in state `accrued`.
+        const existingAmount = Number(old[0].amount_minor || 0);
+        if (existingAmount !== amount) {
+          await svc.entities.AutonomyIncident.create({
+            entity_type: 'ProviderRevenueInvoice',
+            entity_id: String(old[0].id || ''),
+            severity: 'high',
+            status: 'open',
+            title: 'provider_revenue_invoice_amount_drift',
+            summary: `Group ${key} sums to ${amount} minor now; invoice ${invoiceKey} was cut at ${existingAmount} minor. Delta = ${amount - existingAmount}.`,
+            evidence_json: { invoice_key: invoiceKey, existing_amount_minor: existingAmount, current_amount_minor: amount, delta_minor: amount - existingAmount, group_key: key, ledger_row_ids: items.map((x:any) => x.id) },
+            first_seen_at: new Date().toISOString(),
+            last_seen_at: new Date().toISOString(),
+          }).catch((error:any)=>safeBestEffort(error,{operation:'providerRevenueBillingWorker.amount_drift_incident',fallback:null,severity:'critical'}));
+          reviewRequired++;
+        }
+        continue;
+      }
       const statements = await svc.entities.ProviderRevenueStatement.filter({ provider_id:items[0].provider_id, agreement_id:items[0].agreement_id, period:items[0].period, status:'reconciled' }, '-reconciled_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'providerRevenueBillingWorker',fallback:[],severity:'critical'}));
       let status = 'validation_pending', externalNumber = '', sourceDocument = '', statementId = statements[0]?.id || '';
       if (mode === 'provider_self_billing' && statements[0]) {

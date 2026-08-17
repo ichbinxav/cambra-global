@@ -69,8 +69,11 @@ function buildManifest(generatedAt = new Date().toISOString()) {
     allowlistCount: allowlist.length,
     fileCount: files.length,
     purpose: "Durability probe for the active ECL stage. Every sha256/bytes pair is read from the live filesystem. A successful --check proves that the stage allowlist, release-touch surface, critical verification infrastructure, CI template/install state and operator-surface artifacts are physically present and byte-identical to this seal.",
-    nameNote: "The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage through P6 Economic Execution & Reconciliation.",
-    stageNote: "P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. P6 protects execution of already-authorized Recover invoices: deterministic local claims, Stripe idempotency, current-state webhook reconciliation, a versioned read-only Stripe reconciler, immutable finalized economics and no local/manual second payment truth. GitHub CI sealing remains a separate real-Actions proof.",
+    // AUDIT EV-3 (2026-08-17): the notes used to hardcode "P6" while the same generator wrote
+    // ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS into the same file. The authoritative
+    // stage lives above in `stage`; the notes must not restate a stage that can drift.
+    nameNote: `The historical filename p1-durability-manifest.json is retained intentionally to avoid churn; the manifest covers every active ECL stage. Current stage is ${stage} (authoritative in the stage field above).`,
+    stageNote: `P1-P5 remain authoritative for evidence, lifecycle, review and economic authorization. Later stages extend this seal additively. The current stage is ${stage}; its scope belongs in that stage's decision log, not restated here (this note drifted through P6 language for several major versions).`,
     history: {
       p1: "Evidence lifecycle schemas and frozen-field boundary.",
       p2: "Domain contracts, policy, serialization and gate semantics.",
@@ -79,6 +82,8 @@ function buildManifest(generatedAt = new Date().toISOString()) {
       p4ProductionProof: "Admin operator surface plus best-effort scheduler runtime proof; no economic effects.",
       p5: "Canonical ECL gates become mandatory before Recover contractual and invoice effects.",
       p6: "Already-authorized economic effects execute replay-safely and reconcile against Stripe current state without a second local payment truth.",
+      p7: "Operational recovery: incident workflow, dead-letter processing, admin operations cockpit; no new economic authority.",
+      p8: "Production administration, automation and AI operations surfaces; scheduler and workforce catalogs sealed; no new material authority.",
     },
     files,
   };

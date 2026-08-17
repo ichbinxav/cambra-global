@@ -46,9 +46,11 @@ declare module "npm:stripe@14.25.0" {
 // Deno npm: specifier used by resendInboundWebhook for Svix webhook signature
 // verification. Declared here so the backend typecheck gate can resolve it;
 // the real implementation is fetched by the Deno runtime at deploy time.
-declare module "npm:svix" {
+// AUDIT DEP-01 (2026-08-17): specifier pinned to npm:svix@1.42.1 at the call site.
+declare module "npm:svix@1.42.1" {
   export class Webhook {
     constructor(secret: string);
     verify(payload: string, headers: Record<string, string>): unknown;
   }
+  export class WebhookVerificationError extends Error {}
 }

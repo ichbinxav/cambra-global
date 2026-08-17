@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
 
+# AUDIT DEP-06 (2026-08-17): least-privilege token. CI only reads the tree — it never
+# comments, opens issues, updates checks or writes releases. Without this block the job
+# inherits the repo default, which is contents: read/write on many repos.
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
