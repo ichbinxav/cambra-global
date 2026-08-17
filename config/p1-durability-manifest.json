@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T18:40:08.973Z",
+  "generatedAt": "2026-08-17T19:01:46.178Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "01c4ff193d3012e50fb39c96d37175a58f50d7b7c87411236693a9ed25a52735",
+      "sha256": "ab171509fdcc7b37e0415fe645dfdef91d155331e1f3434af2b0ea02cfa1c8d9",
       "bytes": 42987
     },
     {
@@ -2629,8 +2629,8 @@
     },
     {
       "path": "src/components/paymentsAnalyzer/PspVerificationOptions.jsx",
-      "sha256": "0404a93ab08f7009146186add6c2b2e5c57474b83f2e86e1d0cb44ea627f3de6",
-      "bytes": 6188
+      "sha256": "801f67409965b66591aea27fb638af082b9561af18c46f6cb8454afaf425d7ff",
+      "bytes": 6256
     },
     {
       "path": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
@@ -3389,18 +3389,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "2f6eae05290e9f5a4d86a18ba62cdcfe913ada64602ad9ea1d46bbc9cd8fb3bb",
-      "bytes": 100458
+      "sha256": "6a3fcd3bbdde4ae299949991e63c17c204eee357bc6a700143e93ff44a9080e1",
+      "bytes": 102935
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "c7e67d94881b7995ad24fde66eb1e8cba1f3e1f2b1c4771cf768e3c057340740",
-      "bytes": 101988
+      "sha256": "d3c6bbbee0eeec21a53035079941766e48f49767cabf75e81f22b3a3c79ce56f",
+      "bytes": 104587
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "0e55074a3d705cfa6de609de23e1817e5ee75462b85730cef2c0dc32d536030c",
-      "bytes": 107393
+      "sha256": "f92b392d789f07845316f7d5a2dc8ec42ec29fd8101c7f1fe33e8f00d5a174e0",
+      "bytes": 110172
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",

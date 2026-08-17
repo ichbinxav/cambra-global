@@ -57,8 +57,8 @@ export default function PaymentsScoreBadge({
         style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
       >
         <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/40">Payments efficiency</span>
-          <span className="text-[13px] text-white/55">Connect your PSP to score</span>
+          <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/40">{t("score_efficiency_title")}</span>
+          <span className="text-[13px] text-white/55">{t("score_empty_state")}</span>
         </div>
       </div>
     );
@@ -87,7 +87,7 @@ export default function PaymentsScoreBadge({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-2">
             <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-white/50">
-              Payments efficiency
+              {t("score_efficiency_title")}
             </span>
             <div className="flex items-center gap-1.5">
               {muted && (
@@ -95,14 +95,14 @@ export default function PaymentsScoreBadge({
                   className="text-[8px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.15)" }}
                 >
-                  Estimate
+                  {t("badge_estimate")}
                 </span>
               )}
               <button
                 type="button"
                 onClick={() => setShowHow((v) => !v)}
                 className="text-white/40 hover:text-white/80 transition-colors"
-                aria-label="How this score is calculated"
+                aria-label={t("score_how_aria")}
               >
                 <Info size={13} />
               </button>
@@ -138,11 +138,8 @@ export default function PaymentsScoreBadge({
               className="mt-3 rounded-xl px-3 py-2.5 text-[11px] leading-relaxed text-white/60"
               style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              Your score reflects how close what you pay is to the best
-                          rate possible for your profile. Being at that floor scores
-              highest; paying near the top of the market scores lowest. It grades
-              your cost setup — not any specific provider.
-              {muted && " This is an estimate until you connect your PSP for exact figures."}
+              {t("score_how_body")}
+              {muted && " " + t("score_how_muted_suffix")}
             </div>
           )}
         </div>

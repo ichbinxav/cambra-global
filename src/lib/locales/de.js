@@ -442,7 +442,7 @@ export default {
     /* Last scan */
     continuous_discovery: "Kontinuierliche Erkennung",
     last_scan_ago:        "Letzter Scan {time}",
-    changes_detected_n:   "{n} Änderung{plural} erkannt",
+    changes_detected_n:   "{n} Änderungen erkannt",
     never_label:          "nie",
     last_scan_never:      "Noch nie gescannt",
     just_now:             "gerade eben",
@@ -1583,4 +1583,32 @@ export default {
     az_err_invalid_input: "Bitte prüfen Sie „{field}“ — der Wert liegt außerhalb des Bereichs.",
     az_err_generic: "Wir konnten Ihre Analyse gerade nicht ausführen. Bitte versuchen Sie es gleich erneut.",
     az_err_network: "Wir konnten den Server nicht erreichen. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+
+    /* I18N-03/04 (2026-08-17): honesty component keys — translators may refine PLACEHOLDER values */
+    payments_gap_eyebrow: "Zahlungslücke · {country}",
+    badge_in_store_tooltip: "Analyse basiert auf Ladenkassen-Zahlungstarifen (physisches Terminal).",
+    badge_verified_tooltip: "Gemessen anhand Ihrer echten Stripe-Transaktionsdaten der letzten 90 Tage.",
+    badge_public_pricing: "Öffentliche Preise",
+    badge_public_pricing_tooltip: "Berechnet gegen die von Ihrem Anbieter veröffentlichten Preise.",
+    badge_regional_estimate: "Regionale Schätzung",
+    badge_regional_estimate_tooltip: "Keine öffentlichen Preise für diesen Fall — wir haben regionale Durchschnitte verwendet.",
+    assumptions_title: "Annahmen",
+    assumptions_none: "Keine Annahmen erfasst.",
+    assumptions_regional_estimate_title: "Schätzung basierend auf regionalen Durchschnitten",
+    assumptions_regional_estimate_body_in_store: "Für diesen Terminal-Anbieter in Ihrer Region liegen uns noch keine bestätigten öffentlichen Preise vor. Laden Sie einen Kontoauszug für exakte Zahlen hoch.",
+    assumptions_regional_estimate_body_online: "Für diesen Anbieter in Ihrer Region liegen uns noch keine bestätigten öffentlichen Preise vor. Verbinden Sie ihn für exakte Zahlen.",
+    assumptions_band_note: "Die Einsparspanne oben liegt bei ±{pct}% um den zentralen Wert. Das ist unser Vertrauen in die Gesamtschätzung. Ein ± innerhalb einer einzelnen Annahme ist enger — es deckt nur diesen Teil ab, nicht die Summe.",
+    assumptions_locked_teaser: "Die vollständige Rechnung — wie wir die Fixgebühr verteilen, gegen welchen Tarif wir vergleichen und wie sicher wir sind — erscheint in Ihrem Bericht, sobald Sie ein kostenloses Konto erstellen.",
+
+    /* I18N-05/06 (2026-08-17): payments score + PSP verification keys */
+    score_efficiency_title: "Zahlungseffizienz",
+    score_empty_state: "PSP verbinden für Bewertung",
+    score_how_aria: "Wie diese Bewertung berechnet wird",
+    score_how_body: "Ihre Bewertung zeigt, wie nah das, was Sie zahlen, am besten möglichen Tarif für Ihr Profil liegt. An diesem Boden zu sein ergibt die höchste Bewertung; nahe der Marktobergrenze ergibt die niedrigste. Bewertet Ihre Kostenstruktur — keinen bestimmten Anbieter.",
+    score_how_muted_suffix: "Dies ist eine Schätzung, bis Sie Ihren PSP für exakte Zahlen verbinden.",
+    badge_estimate: "Schätzung",
+    psp_verify_prompt: "Möchten Sie eine verifizierte Zahl statt einer Schätzung?",
+    psp_connect_title: "{provider} verbinden",
+    psp_connect_body: "Wir messen, was Sie wirklich zahlen — aus 90 Tagen echter Transaktionen, nichts geschätzt.",
+    psp_connect_cta: "{provider} verbinden",
 };

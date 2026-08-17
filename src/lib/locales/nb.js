@@ -447,7 +447,7 @@ export default {
     /* Last scan */
     continuous_discovery: "Kontinuerlig oppdagelse",
     last_scan_ago:        "Siste skanning {time}",
-    changes_detected_n:   "{n} endring{plural} oppdaget",
+    changes_detected_n:   "{n} endringer oppdaget",
     never_label:          "aldri",
     last_scan_never:      "Aldri skannet",
     just_now:             "akkurat nå",
@@ -1631,4 +1631,32 @@ export default {
     az_err_invalid_input: "Sjekk «{field}» — verdien er utenfor intervallet.",
     az_err_generic: "Vi kunne ikke kjøre analysen din akkurat nå. Prøv igjen om et øyeblikk.",
     az_err_network: "Vi nådde ikke serveren. Sjekk tilkoblingen og prøv igjen.",
+
+    /* I18N-03/04 (2026-08-17): honesty component keys — translators may refine PLACEHOLDER values */
+    payments_gap_eyebrow: "Payments gap · {country}",
+    badge_in_store_tooltip: "Analysis based on in-store (physical terminal) payment rates.",
+    badge_verified_tooltip: "Measured from your real Stripe transaction data over the last 90 days.",
+    badge_public_pricing: "Public pricing",
+    badge_public_pricing_tooltip: "Calculated against your provider's published prices.",
+    badge_regional_estimate: "Regional estimate",
+    badge_regional_estimate_tooltip: "No public prices for this case — we used regional averages.",
+    assumptions_title: "Assumptions",
+    assumptions_none: "No assumptions recorded.",
+    assumptions_regional_estimate_title: "Estimate based on regional averages",
+    assumptions_regional_estimate_body_in_store: "We don't have confirmed public pricing for this card terminal provider in your region yet. Upload a statement for exact figures.",
+    assumptions_regional_estimate_body_online: "We don't have confirmed public pricing for this provider in your region yet. Connect it for exact figures.",
+    assumptions_band_note: "The savings range above is ±{pct}% around the central figure. That's our confidence in the whole estimate. Any ± mentioned inside a single assumption above is narrower — it covers only that one part, not the total.",
+    assumptions_locked_teaser: "The full working — how we spread the fixed fee, which rate we compared against, and how confident we are — appears in your report once you create a free account.",
+
+    /* I18N-05/06 (2026-08-17): payments score + PSP verification keys */
+    score_efficiency_title: "Payments efficiency",
+    score_empty_state: "Connect your PSP to score",
+    score_how_aria: "How this score is calculated",
+    score_how_body: "Your score reflects how close what you pay is to the best rate possible for your profile. Being at that floor scores highest; paying near the top of the market scores lowest. It grades your cost setup — not any specific provider.",
+    score_how_muted_suffix: "This is an estimate until you connect your PSP for exact figures.",
+    badge_estimate: "Estimate",
+    psp_verify_prompt: "Want a verified number instead of an estimate?",
+    psp_connect_title: "Connect {provider}",
+    psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
+    psp_connect_cta: "Connect {provider}",
 };

@@ -32,12 +32,14 @@ import { useEffect, useState } from "react";
 import { Zap, ArrowRight, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import StatementUploadCard from "@/components/paymentsAnalyzer/StatementUploadCard";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // The one provider whose verified path is live today. Kept as a set so a
 // future chunk that lights up a second provider only edits this line.
 const LIVE_VERIFIED_PROVIDERS = new Set(["stripe"]);
 
 export default function PspVerificationOptions({ providerSlug, providerLabel, onConnect }) {
+  const { t } = useTranslation();
   const [extractionLive, setExtractionLive] = useState(null); // null = loading
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
   return (
     <div className="mt-4">
       <p className="text-[10px] uppercase tracking-[0.22em] font-bold mb-2.5" style={{ color: "var(--gris-1)" }}>
-        Want a verified number instead of an estimate?
+        {t("psp_verify_prompt")}
       </p>
 
       {isLiveVerified ? (
@@ -92,20 +94,20 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-[14px] font-bold leading-tight" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-                    Connect {label}
+                    {t("psp_connect_title", { provider: label })}
                   </h4>
                   <span
                     className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1"
                     style={{ background: "rgba(91,76,245,0.10)", color: "var(--voltio)", border: "1px solid rgba(91,76,245,0.28)" }}
                   >
-                    <ShieldCheck size={8} /> Verified
+                    <ShieldCheck size={8} /> {t("badge_verified")}
                   </span>
                 </div>
                 <p className="text-[12px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
-                  We measure what you really pay from 90 days of real transactions — nothing estimated.
+                  {t("psp_connect_body")}
                 </p>
                 <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold" style={{ color: "var(--voltio)" }}>
-                  Connect {label} <ArrowRight size={11} />
+                  {t("psp_connect_cta", { provider: label })} <ArrowRight size={11} />
                 </span>
               </div>
             </div>

@@ -443,7 +443,7 @@ export default {
     /* Last scan */
     continuous_discovery: "Deteção contínua",
     last_scan_ago:        "Última análise {time}",
-    changes_detected_n:   "{n} alteração{plural} detetadas",
+    changes_detected_n:   "{n} alterações detetadas",
     never_label:          "nunca",
     last_scan_never:      "Nunca analisado",
     just_now:             "agora mesmo",
@@ -1584,4 +1584,32 @@ export default {
     az_err_invalid_input: "Reveja «{field}» — o valor está fora do intervalo.",
     az_err_generic: "Não conseguimos executar a sua análise agora. Tente novamente dentro de momentos.",
     az_err_network: "Não conseguimos contactar o servidor. Verifique a ligação e tente novamente.",
+
+    /* I18N-03/04 (2026-08-17): honesty component keys — translators may refine PLACEHOLDER values */
+    payments_gap_eyebrow: "Lacuna de pagamentos · {country}",
+    badge_in_store_tooltip: "Análise baseada em tarifas de pagamento presencial (terminal físico).",
+    badge_verified_tooltip: "Medido a partir dos seus dados reais de transação da Stripe dos últimos 90 dias.",
+    badge_public_pricing: "Preços públicos",
+    badge_public_pricing_tooltip: "Calculado contra os preços publicados pelo seu fornecedor.",
+    badge_regional_estimate: "Estimativa regional",
+    badge_regional_estimate_tooltip: "Sem preços públicos para este caso — usámos médias regionais.",
+    assumptions_title: "Pressupostos",
+    assumptions_none: "Sem pressupostos registados.",
+    assumptions_regional_estimate_title: "Estimativa baseada em médias regionais",
+    assumptions_regional_estimate_body_in_store: "Ainda não temos preços públicos confirmados para este fornecedor de terminal na sua região. Carregue um extrato para valores exatos.",
+    assumptions_regional_estimate_body_online: "Ainda não temos preços públicos confirmados para este fornecedor na sua região. Ligue-o para valores exatos.",
+    assumptions_band_note: "A faixa de poupança acima é de ±{pct}% em torno do valor central. Essa é a nossa confiança na estimativa total. Qualquer ± mencionado dentro de um pressuposto é mais estreito — cobre apenas essa parte, não o total.",
+    assumptions_locked_teaser: "O cálculo completo — como distribuímos a taxa fixa, contra que tarifa comparamos e com que confiança — aparece no seu relatório assim que criar uma conta gratuita.",
+
+    /* I18N-05/06 (2026-08-17): payments score + PSP verification keys */
+    score_efficiency_title: "Eficiência de pagamentos",
+    score_empty_state: "Ligue o seu PSP para obter pontuação",
+    score_how_aria: "Como esta pontuação é calculada",
+    score_how_body: "A sua pontuação reflete o quão próximo aquilo que paga está do melhor preço possível para o seu perfil. Estar nesse piso dá a pontuação mais alta; pagar perto do topo do mercado dá a mais baixa. Avalia a sua estrutura de custos — nenhum fornecedor específico.",
+    score_how_muted_suffix: "Isto é uma estimativa até ligar o seu PSP para valores exatos.",
+    badge_estimate: "Estimativa",
+    psp_verify_prompt: "Quer um número verificado em vez de uma estimativa?",
+    psp_connect_title: "Ligar {provider}",
+    psp_connect_body: "Medimos o que realmente paga a partir de 90 dias de transações reais — nada estimado.",
+    psp_connect_cta: "Ligar {provider}",
 };

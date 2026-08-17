@@ -91,43 +91,43 @@ export default function PaymentsGapCard({ engineResult, inputSnapshot, sampleMet
         {/* Eyebrow — cohort + verification tier + channel. Unchanged logic. */}
         <div className="flex items-center gap-2 mb-5 flex-wrap">
           <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>
-            Payments gap · {inputSnapshot?.country || "—"}
+            {t("payments_gap_eyebrow", { country: inputSnapshot?.country || "—" })}
           </span>
           {channel === "in_store" && (
             <span
-              title="Analysis based on in-store (physical terminal) payment rates."
+              title={t("badge_in_store_tooltip")}
               className="uppercase font-bold px-2 py-0.5 rounded-full"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(168,85,247,0.12)", color: "rgb(216,180,254)", border: "1px solid rgba(168,85,247,0.35)" }}
             >
-              In-store
+              {t("opt_in_store")}
             </span>
           )}
           {isMeasured ? (
             <span
-              title="Measured from your real Stripe transaction data over the last 90 days."
+              title={t("badge_verified_tooltip")}
               className="uppercase font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "linear-gradient(135deg, rgba(34,211,238,0.22) 0%, rgba(59,130,246,0.18) 100%)", color: "rgb(103,232,249)", border: "1px solid rgba(34,211,238,0.55)", boxShadow: "0 0 12px rgba(34,211,238,0.25)" }}
             >
               <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Verified
+              {t("badge_verified")}
             </span>
           ) : cohortVerifiedRow ? (
             <span
-              title="Calculated against your provider's published prices."
+              title={t("badge_public_pricing_tooltip")}
               className="uppercase font-bold px-2 py-0.5 rounded-full"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(34,211,238,0.12)", color: "rgb(34,211,238)", border: "1px solid rgba(34,211,238,0.35)" }}
             >
-              Public pricing
+              {t("badge_public_pricing")}
             </span>
           ) : (
             <span
-              title="No public prices for this case — we used regional averages."
+              title={t("badge_regional_estimate_tooltip")}
               className="uppercase font-bold px-2 py-0.5 rounded-full"
               style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.15)" }}
             >
-              Regional estimate
+              {t("badge_regional_estimate")}
             </span>
           )}
         </div>

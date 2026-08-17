@@ -415,7 +415,7 @@ export default {
 
     continuous_discovery: "Découverte continue",
     last_scan_ago:        "Dernier scan {time}",
-    changes_detected_n:   "{n} changement{plural} détecté{plural}",
+    changes_detected_n:   "{n} changements détectés",
     never_label:          "jamais",
     last_scan_never:      "Jamais scanné",
     just_now:             "à l'instant",
@@ -1575,4 +1575,32 @@ export default {
     az_err_invalid_input: "Veuillez vérifier « {field} » — la valeur est hors limites.",
     az_err_generic: "Nous n'avons pas pu lancer votre analyse pour le moment. Merci de réessayer dans un instant.",
     az_err_network: "Nous n'avons pas pu joindre le serveur. Vérifiez votre connexion et réessayez.",
+
+    /* I18N-03/04 (2026-08-17): honesty component keys — translators may refine PLACEHOLDER values */
+    payments_gap_eyebrow: "Écart de paiements · {country}",
+    badge_in_store_tooltip: "Analyse basée sur les tarifs de paiement en magasin (terminal physique).",
+    badge_verified_tooltip: "Mesuré à partir de vos données Stripe réelles des 90 derniers jours.",
+    badge_public_pricing: "Tarif public",
+    badge_public_pricing_tooltip: "Calculé par rapport aux tarifs publiés par votre prestataire.",
+    badge_regional_estimate: "Estimation régionale",
+    badge_regional_estimate_tooltip: "Aucun tarif public pour ce cas — nous avons utilisé des moyennes régionales.",
+    assumptions_title: "Hypothèses",
+    assumptions_none: "Aucune hypothèse enregistrée.",
+    assumptions_regional_estimate_title: "Estimation fondée sur des moyennes régionales",
+    assumptions_regional_estimate_body_in_store: "Nous n'avons pas encore de tarifs publics confirmés pour ce prestataire de terminal dans votre région. Téléversez un relevé pour des chiffres exacts.",
+    assumptions_regional_estimate_body_online: "Nous n'avons pas encore de tarifs publics confirmés pour ce prestataire dans votre région. Connectez-le pour des chiffres exacts.",
+    assumptions_band_note: "La plage d'économies ci-dessus est de ±{pct}% autour de la valeur centrale. C'est notre confiance dans l'ensemble de l'estimation. Tout ± mentionné dans une seule hypothèse est plus étroit — il ne couvre que cette partie, pas le total.",
+    assumptions_locked_teaser: "Le détail complet — comment nous répartissons les frais fixes, contre quel tarif nous comparons et notre niveau de confiance — apparaît dans votre rapport dès que vous créez un compte gratuit.",
+
+    /* I18N-05/06 (2026-08-17): payments score + PSP verification keys */
+    score_efficiency_title: "Efficacité des paiements",
+    score_empty_state: "Connectez votre PSP pour être noté",
+    score_how_aria: "Comment cette note est calculée",
+    score_how_body: "Votre note reflète l'écart entre ce que vous payez et le meilleur tarif possible pour votre profil. Être à ce plancher donne la meilleure note ; payer près du plafond du marché donne la plus basse. Elle note votre structure de coûts — pas un prestataire en particulier.",
+    score_how_muted_suffix: "C'est une estimation tant que vous n'avez pas connecté votre PSP pour des chiffres exacts.",
+    badge_estimate: "Estimation",
+    psp_verify_prompt: "Vous voulez un chiffre vérifié plutôt qu'une estimation ?",
+    psp_connect_title: "Connecter {provider}",
+    psp_connect_body: "Nous mesurons ce que vous payez vraiment sur 90 jours de transactions réelles — rien d'estimé.",
+    psp_connect_cta: "Connecter {provider}",
 };

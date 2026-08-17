@@ -1,36 +1,47 @@
-export const RECOVER_UI_COPY = {
-  en: {
-    panel: {
-      eyebrow: 'Recover margin', authorized: 'Authorization in place', authorize: 'Authorize us to recover your margin',
-      accepted: (fee) => `You've authorized us at a ${fee}% fee on verified savings. We only charge on savings confirmed against your own statements. We are reviewing your case now and will tell you what happens next before we contact any provider on your behalf. You can revoke this authorization at any time.`,
-      pitch: (fee) => `We'll negotiate with your provider, or move you to a better rate, and charge ${fee}% of what we actually recover — verified against your statements. No recovery, no fee.`,
-      review: 'Review and authorize', revoke: 'Revoke authorization', revoking: 'Revoking…', revokeConfirm: 'Revoke CAMBRA’s authorization? This stops future migration actions. Savings already verified remain part of the historical record.', revoked: 'Authorization revoked. CAMBRA will not take further migration action under this mandate.', revokeError: 'We could not revoke the authorization safely. Nothing was changed; please try again.', notReady: "This deal isn't at the authorization stage yet — we'll let you know as soon as it is.",
-      blockers: {
-        no_verified_baseline: 'We need a verified starting figure before you can authorize us. Connect your provider or upload a statement — once our team confirms it, this unlocks.',
-        ecl_verified_payment_source_unavailable: 'We need fresh verified payment data before Recover can be authorized. Sync your payment provider and try again.',
-        ecl_source_vertical_unsupported: 'Recover evidence enforcement is currently available for payments only.',
-        recover_v2_legal_review_required: 'The new 24-month Recover economics are prepared but are not yet available for acceptance while the contractual wording completes legal review.',
-        cambra_service_cancelled: 'Your CAMBRA service is cancelled, so no new Recover can be authorized.',
-      },
-    },
-    modal: {
-      close: 'Close', eyebrow: 'Recover margin', title: 'Authorize CAMBRA to recover your margin', intro: 'You are authorizing us to negotiate with your provider, or to move you to a better rate, on your behalf.',
-      preparing: 'Preparing your terms…', evidence: 'Verified payment evidence', name: 'Your full name', namePlaceholder: 'Jane Doe', role: 'Your role (optional)', rolePlaceholder: 'Founder',
-      evidenceFallback: 'I confirm, to the best of my knowledge, that the verified baseline and payment-cost figures shown here are accurate.',
-      legalFallback: (entity) => `I confirm I can legally bind ${entity || 'my business'} and I accept these terms.`,
-      changed: 'The terms changed while this window was open, so we did not record your acceptance. Close and reopen it to review the updated terms.',
-      genericError: 'We could not prepare or record your authorization. Nothing has been accepted. Please try again.',
-      recording: 'Recording your acceptance…', accept: 'Accept and authorize', signedAs: (email, version) => `Signed as ${email || 'your account'} · ${version || ''}`,
-    },
-    payment: {
-      saved: "Payment method saved. It is only charged against savings we've verified — never before.",
-      intro: 'Add a payment method for future success-fee invoices. Nothing is charged now — we only invoice once savings are verified against your own statements.',
-      saving: 'Saving', save: 'Save payment method', preparing: 'Preparing', add: 'Add payment method',
-      startError: "We couldn't start the secure setup. Please try again.", stripeError: "We couldn't reach Stripe. Please check your connection and retry.",
-      bankError: 'Your bank declined the authorization.', pending: "Stripe hasn't confirmed the method yet. Give it a moment and retry.",
+// AUDIT I18N-01 (2026-08-17, founder-authorised): widened from 3 to 23 languages. Only
+// en/fr/es carry legally-reviewed text (`__translation_readiness: 'APPROVED'`); every
+// other locale starts as a copy of the English block with `__translation_readiness:
+// 'PENDING_LEGAL_REVIEW'` and is meant to be overridden per locale by counsel. Callers
+// that need to know whether the current copy is legally approved read
+// `recoverUiCopyReadiness(lang)`.
+
+const EN_BLOCK = {
+  __translation_readiness: 'APPROVED',
+  panel: {
+    eyebrow: 'Recover margin', authorized: 'Authorization in place', authorize: 'Authorize us to recover your margin',
+    accepted: (fee) => `You've authorized us at a ${fee}% fee on verified savings. We only charge on savings confirmed against your own statements. We are reviewing your case now and will tell you what happens next before we contact any provider on your behalf. You can revoke this authorization at any time.`,
+    pitch: (fee) => `We'll negotiate with your provider, or move you to a better rate, and charge ${fee}% of what we actually recover — verified against your statements. No recovery, no fee.`,
+    review: 'Review and authorize', revoke: 'Revoke authorization', revoking: 'Revoking…', revokeConfirm: 'Revoke CAMBRA’s authorization? This stops future migration actions. Savings already verified remain part of the historical record.', revoked: 'Authorization revoked. CAMBRA will not take further migration action under this mandate.', revokeError: 'We could not revoke the authorization safely. Nothing was changed; please try again.', notReady: "This deal isn't at the authorization stage yet — we'll let you know as soon as it is.",
+    blockers: {
+      no_verified_baseline: 'We need a verified starting figure before you can authorize us. Connect your provider or upload a statement — once our team confirms it, this unlocks.',
+      ecl_verified_payment_source_unavailable: 'We need fresh verified payment data before Recover can be authorized. Sync your payment provider and try again.',
+      ecl_source_vertical_unsupported: 'Recover evidence enforcement is currently available for payments only.',
+      recover_v2_legal_review_required: 'The new 24-month Recover economics are prepared but are not yet available for acceptance while the contractual wording completes legal review.',
+      cambra_service_cancelled: 'Your CAMBRA service is cancelled, so no new Recover can be authorized.',
     },
   },
+  modal: {
+    close: 'Close', eyebrow: 'Recover margin', title: 'Authorize CAMBRA to recover your margin', intro: 'You are authorizing us to negotiate with your provider, or to move you to a better rate, on your behalf.',
+    preparing: 'Preparing your terms…', evidence: 'Verified payment evidence', name: 'Your full name', namePlaceholder: 'Jane Doe', role: 'Your role (optional)', rolePlaceholder: 'Founder',
+    evidenceFallback: 'I confirm, to the best of my knowledge, that the verified baseline and payment-cost figures shown here are accurate.',
+    legalFallback: (entity) => `I confirm I can legally bind ${entity || 'my business'} and I accept these terms.`,
+    changed: 'The terms changed while this window was open, so we did not record your acceptance. Close and reopen it to review the updated terms.',
+    genericError: 'We could not prepare or record your authorization. Nothing has been accepted. Please try again.',
+    recording: 'Recording your acceptance…', accept: 'Accept and authorize', signedAs: (email, version) => `Signed as ${email || 'your account'} · ${version || ''}`,
+  },
+  payment: {
+    saved: "Payment method saved. It is only charged against savings we've verified — never before.",
+    intro: 'Add a payment method for future success-fee invoices. Nothing is charged now — we only invoice once savings are verified against your own statements.',
+    saving: 'Saving', save: 'Save payment method', preparing: 'Preparing', add: 'Add payment method',
+    startError: "We couldn't start the secure setup. Please try again.", stripeError: "We couldn't reach Stripe. Please check your connection and retry.",
+    bankError: 'Your bank declined the authorization.', pending: "Stripe hasn't confirmed the method yet. Give it a moment and retry.",
+  },
+};
+
+export const RECOVER_UI_COPY = {
+  en: EN_BLOCK,
   fr: {
+    __translation_readiness: 'APPROVED',
     panel: {
       eyebrow: 'Recover margin', authorized: 'Autorisation en place', authorize: 'Autorisez-nous à récupérer votre marge',
       accepted: (fee) => `Vous nous avez autorisés avec une commission de ${fee}% sur les économies vérifiées. Nous facturons uniquement les économies confirmées à partir de vos propres relevés. Nous examinons actuellement votre dossier et vous informerons de la suite avant de contacter tout prestataire en votre nom. Vous pouvez révoquer cette autorisation à tout moment.`,
@@ -62,6 +73,7 @@ export const RECOVER_UI_COPY = {
     },
   },
   es: {
+    __translation_readiness: 'APPROVED',
     panel: {
       eyebrow: 'Recover margin', authorized: 'Autorización activa', authorize: 'Autorízanos a recuperar tu margen',
       accepted: (fee) => `Nos has autorizado con una comisión del ${fee}% sobre el ahorro verificado. Solo cobramos sobre ahorros confirmados frente a tus propios extractos. Estamos revisando tu caso y te diremos cuál es el siguiente paso antes de contactar con ningún proveedor en tu nombre. Puedes revocar la autorización en cualquier momento.`,
@@ -94,6 +106,20 @@ export const RECOVER_UI_COPY = {
   },
 };
 
+// Every other supported UI locale starts as an EN clone with PENDING_LEGAL_REVIEW.
+// Counsel can override any block per locale; recoverUiCopyReadiness(lang) exposes the
+// state so a caller can gate the mandate flow instead of silently signing in English.
+const PENDING_LOCALES = ['de','it','pl','pt','el','sv','da','fi','cs','ro','hu','bg','hr','et','lv','lt','sk','sl','nb','is'];
+for (const code of PENDING_LOCALES) {
+  RECOVER_UI_COPY[code] = { ...EN_BLOCK, __translation_readiness: 'PENDING_LEGAL_REVIEW' };
+}
+
 export function recoverUiCopy(lang) {
   return RECOVER_UI_COPY[lang] || RECOVER_UI_COPY.en;
+}
+
+export function recoverUiCopyReadiness(lang) {
+  const block = RECOVER_UI_COPY[lang];
+  if (!block) return 'UNKNOWN';
+  return block.__translation_readiness || 'UNKNOWN';
 }

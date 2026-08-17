@@ -81,7 +81,7 @@ export default function LastScanBar() {
                 : t("last_scan_never")}
             {!scanning && changes > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
-                <Sparkles size={10} /> {t("changes_detected_n", { n: changes, plural: changes === 1 ? "" : "s" })}
+                <Sparkles size={10} /> {t("changes_detected_n", { n: changes })}
               </span>
             )}
           </p>

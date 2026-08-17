@@ -61,11 +61,9 @@ export default function AssumptionsFootnote({ engineResult, engineVersion, provi
         >
           <AlertCircle size={16} className="text-orange-300 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-bold text-orange-200">Estimate based on regional averages</p>
+            <p className="text-[13px] font-bold text-orange-200">{t("assumptions_regional_estimate_title")}</p>
             <p className="text-[12px] text-orange-100/85 mt-0.5">
-              {isInStore
-                ? "We don't have confirmed public pricing for this card terminal provider in your region yet. Upload a statement for exact figures."
-                : "We don't have confirmed public pricing for this provider in your region yet. Connect it for exact figures."}
+              {isInStore ? t("assumptions_regional_estimate_body_in_store") : t("assumptions_regional_estimate_body_online")}
             </p>
           </div>
         </div>
@@ -84,11 +82,11 @@ export default function AssumptionsFootnote({ engineResult, engineVersion, provi
           <div className="flex items-center gap-2 mb-3">
             <Info size={13} className="text-white/50" />
             <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">
-              Assumptions
+              {t("assumptions_title")}
             </p>
           </div>
           {assumptions.length === 0 ? (
-            <p className="text-[12px] text-white/40">No assumptions recorded.</p>
+            <p className="text-[12px] text-white/40">{t("assumptions_none")}</p>
           ) : (
             <ul className="space-y-2">
               {assumptions.map((a, i) => (
@@ -107,7 +105,7 @@ export default function AssumptionsFootnote({ engineResult, engineVersion, provi
               past — it's meta-context about the numbers themselves. */}
           {bandPct !== null && (
             <p className="mt-3 pt-3 text-[11px] text-white/45 leading-relaxed border-t border-white/8">
-              The savings range above is ±{bandPct}% around the central figure. That's our confidence in the whole estimate. Any ± mentioned inside a single assumption above is narrower — it covers only that one part, not the total.
+              {t("assumptions_band_note", { pct: bandPct })}
             </p>
           )}
 
@@ -138,7 +136,7 @@ export default function AssumptionsFootnote({ engineResult, engineVersion, provi
           >
             <div className="flex items-center gap-2 mb-2">
               <Info size={13} className="text-white/50" />
-              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">Assumptions</p>
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/55">{t("assumptions_title")}</p>
             </div>
             <ul className="space-y-2">
               <li className="text-[12px] text-white/65 leading-relaxed pl-3 border-l border-white/10">
@@ -155,7 +153,7 @@ export default function AssumptionsFootnote({ engineResult, engineVersion, provi
           >
             <Lock size={13} className="text-white/40 shrink-0" />
             <p className="text-[12px] text-white/55 leading-relaxed">
-              The full working — how we spread the fixed fee, which rate we compared against, and how confident we are — appears in your report once you create a free account.
+              {t("assumptions_locked_teaser")}
             </p>
           </div>
         </div>

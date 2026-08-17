@@ -444,7 +444,7 @@ export default {
     /* Last scan */
     continuous_discovery: "Rilevamento continuo",
     last_scan_ago:        "Ultima scansione {time}",
-    changes_detected_n:   "{n} modifica{plural} rilevate",
+    changes_detected_n:   "{n} modifiche rilevate",
     never_label:          "mai",
     last_scan_never:      "Mai scansionato",
     just_now:             "proprio ora",
@@ -1585,4 +1585,32 @@ export default {
     az_err_invalid_input: "Controlla \"{field}\" — il valore è fuori intervallo.",
     az_err_generic: "Non siamo riusciti a eseguire la tua analisi in questo momento. Riprova tra poco.",
     az_err_network: "Non siamo riusciti a raggiungere il server. Controlla la connessione e riprova.",
+
+    /* I18N-03/04 (2026-08-17): honesty component keys — translators may refine PLACEHOLDER values */
+    payments_gap_eyebrow: "Divario pagamenti · {country}",
+    badge_in_store_tooltip: "Analisi basata su tariffe di pagamento in negozio (terminale fisico).",
+    badge_verified_tooltip: "Misurato dai tuoi dati reali di transazione Stripe degli ultimi 90 giorni.",
+    badge_public_pricing: "Listino pubblico",
+    badge_public_pricing_tooltip: "Calcolato rispetto ai listini pubblicati dal tuo fornitore.",
+    badge_regional_estimate: "Stima regionale",
+    badge_regional_estimate_tooltip: "Nessun listino pubblico per questo caso — abbiamo usato medie regionali.",
+    assumptions_title: "Ipotesi",
+    assumptions_none: "Nessuna ipotesi registrata.",
+    assumptions_regional_estimate_title: "Stima basata su medie regionali",
+    assumptions_regional_estimate_body_in_store: "Non abbiamo ancora listini pubblici confermati per questo fornitore di terminale nella tua area. Carica un estratto conto per cifre esatte.",
+    assumptions_regional_estimate_body_online: "Non abbiamo ancora listini pubblici confermati per questo fornitore nella tua area. Collegalo per cifre esatte.",
+    assumptions_band_note: "Il range di risparmio sopra è di ±{pct}% attorno al valore centrale. È la nostra confidenza sull'intera stima. Ogni ± dentro una singola ipotesi è più stretto — copre solo quella parte, non il totale.",
+    assumptions_locked_teaser: "Il calcolo completo — come ripartiamo il costo fisso, contro quale tariffa confrontiamo e con quale confidenza — appare nel tuo report una volta creato un account gratuito.",
+
+    /* I18N-05/06 (2026-08-17): payments score + PSP verification keys */
+    score_efficiency_title: "Efficienza dei pagamenti",
+    score_empty_state: "Collega il tuo PSP per ottenere il punteggio",
+    score_how_aria: "Come viene calcolato questo punteggio",
+    score_how_body: "Il punteggio riflette quanto ciò che paghi è vicino alla migliore tariffa possibile per il tuo profilo. Essere su quel pavimento dà il punteggio più alto; pagare vicino al tetto del mercato dà il più basso. Valuta la tua struttura di costo — non un fornitore specifico.",
+    score_how_muted_suffix: "È una stima finché non colleghi il tuo PSP per cifre esatte.",
+    badge_estimate: "Stima",
+    psp_verify_prompt: "Vuoi un numero verificato invece di una stima?",
+    psp_connect_title: "Collega {provider}",
+    psp_connect_body: "Misuriamo ciò che paghi davvero da 90 giorni di transazioni reali — nulla è stimato.",
+    psp_connect_cta: "Collega {provider}",
 };
