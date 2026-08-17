@@ -1,0 +1,40 @@
+{
+  "name": "PipelineStageEvent",
+  "type": "object",
+  "description": "Append-only record of one pipeline stage transition. This is the ONLY new durable entity the dashboard programme creates, and it exists because nothing in the tree recorded a transition as a fact: stages were mutable columns overwritten in place by roughly fifteen writers, with no actor, no reason and no source event. The proof was that AdminPipeline computed days-in-stage from the row's creation date, because no stage-entry timestamp existed. The per-lane entity columns remain the stage AUTHORITY; this is the history they never had. Append-only as a domain intent: later services must refuse update and delete, and tests must prove it, so the gap is explicit rather than assumed closed.",
+  "properties": {
+    "event_key": { "type": "string", "description": "Idempotency key. A replayed source event must not append a second row." },
+    "sequence": { "type": "number", "minimum": 1, "description": "Per-subject ordering. Gaps are detectable." },
+    "lane": { "type": "string", "enum": ["MERCHANT_ACQUISITION", "PARTNER_ACQUISITION", "PROVIDER_RELATIONS", "MERCHANT_LIFECYCLE"] },
+    "subject_type": { "type": "string", "description": "Canonical entity that owns the stage, e.g. OutboundLead, PartnerProspect, Provider, DealActivation." },
+    "subject_id": { "type": "string" },
+    "canonical_company_key": { "type": "string", "description": "Stable cross-lane identity, so a company's history survives a lane handoff without duplicating it." },
+    "from_stage": { "type": "string", "description": "Canonical stage before the move. Empty on the first observed event for a subject — absence of history is not a transition from nothing." },
+    "to_stage": { "type": "string" },
+    "stage_registry_version": { "type": "string", "description": "Which registry version produced these canonical stage keys. A later remapping must not silently rewrite what an old row meant." },
+    "direction": { "type": "string", "enum": ["FORWARD", "BACKWARD", "LATERAL", "TERMINAL"], "description": "Derived from stage order. A BACKWARD move is legitimate but must be visible." },
+    "reason_code": { "type": "string", "description": "Required for loss and disqualification. A terminal stage with no reason is not auditable." },
+    "reason_detail": { "type": "string" },
+    "actor": { "type": "string", "description": "Who or what caused this. Never blank: a system move records the worker key." },
+    "actor_kind": { "type": "string", "enum": ["FOUNDER", "OPERATOR", "SYSTEM", "SCHEDULER", "PROVIDER_EVENT"] },
+    "automatic": { "type": "boolean", "default": false, "description": "True when a deterministic rule moved it, false when a human did." },
+    "source_event_type": { "type": "string", "description": "The canonical event that justifies this move, e.g. inbound_reply_observed, connection_completed_readback. A move with no source event may only be manual." },
+    "source_event_id": { "type": "string" },
+    "source_entity_type": { "type": "string" },
+    "source_entity_id": { "type": "string" },
+    "confidence": { "type": "string", "enum": ["OBSERVED", "DERIVED", "INFERRED", "UNVERIFIED", "UNKNOWN"], "description": "How well the source supports this transition. A model classification alone is never OBSERVED." },
+    "conflicted_sources_json": { "type": "object", "description": "When several source columns disagreed, what each said and which reading won. The conflict rule takes the least-advanced stage; this records what was discarded." },
+    "policy_version": { "type": "string" },
+    "tenant_scope": { "type": "string" },
+    "market_scope": { "type": "string" },
+    "receipt_id": { "type": "string", "description": "Receipt for the governed action that caused this, when one exists." },
+    "correlation_id": { "type": "string" },
+    "occurred_at": { "type": "string", "format": "date-time", "description": "When the transition actually happened, which may precede when it was recorded." },
+    "recorded_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["event_key", "lane", "subject_type", "subject_id", "to_stage", "stage_registry_version", "actor", "actor_kind", "confidence", "occurred_at", "recorded_at"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "__service_role_only__" } }
+  }
+}

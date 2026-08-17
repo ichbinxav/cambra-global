@@ -183,6 +183,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "PaymentsProfile",
   "PaymentsRateTable",
   "PilotMerchantValidation",
+  "PipelineStageEvent",
   "PricingPlan",
   "PricingSchedule",
   "PricingScheduleVersion",
@@ -264,4 +265,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:263';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:264';
