@@ -261,7 +261,8 @@
         "tab": "markets"
       },
       "ready": false,
-      "blocker": "Awaiting Intelligence tab shell (C11). Page architecture is already correct."
+      "blocker": "Cleared in C11: the Intelligence tab shell exists and mounts this page at ?tab=markets. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/growth",
@@ -271,7 +272,8 @@
         "view": "growth"
       },
       "ready": false,
-      "blocker": "Awaiting Intelligence tab shell (C11). Page architecture is already correct."
+      "blocker": "Cleared in C11: mounted as the growth view of ?tab=markets, matching this row. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/routing-intelligence",
@@ -280,7 +282,8 @@
         "tab": "routing"
       },
       "ready": false,
-      "blocker": "Awaiting Intelligence tab shell (C11). SHADOW ONLY must stay visible."
+      "blocker": "Cleared in C11: mounted at ?tab=routing with the page unchanged, so its SHADOW ONLY labelling is carried over verbatim. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/benchmarks",
@@ -289,7 +292,8 @@
         "tab": "benchmarks"
       },
       "ready": false,
-      "blocker": "Page claims to control ranges but has no write path; the claim must be corrected, not carried over (C11)"
+      "blocker": "Cleared in C11: the false \"control the ranges\" claim is corrected (the page has no write path and the engine is frozen), and the sample-revenue slider is labelled as a preview input. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/recommendations",
@@ -298,7 +302,8 @@
         "tab": "recommendations"
       },
       "ready": false,
-      "blocker": "Awaiting Intelligence tab shell (C11)"
+      "blocker": "Cleared in C11: mounted at ?tab=recommendations. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     },
     {
       "from": "/admin/providers",
@@ -307,7 +312,8 @@
         "tab": "providers"
       },
       "ready": false,
-      "blocker": "HIGHEST SEVERITY: AdminProviders.jsx:36-42 sets provider revenue_share_pct from a browser form and writes it via generic CRUD. A governed handler must exist first (C11)."
+      "blocker": "Cleared in C11: AdminProviders writes through finance-style preview/apply on the intelligence route, and revenue_share_pct is refused by name with the governed alternative stated. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "blocker_cleared": true
     }
   ],
   "invariants": {

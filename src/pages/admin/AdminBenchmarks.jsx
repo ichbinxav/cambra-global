@@ -24,7 +24,7 @@ export default function AdminBenchmarks() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">Benchmark Engine</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Control the ranges used to calculate savings and infrastructure scores</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Shows the ranges used to calculate savings and infrastructure scores. Read only</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => setRegion(r => r === "EU" ? "Global" : "EU")}
@@ -39,8 +39,11 @@ export default function AdminBenchmarks() {
         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 mb-4">Live Preview</p>
         <div className="flex items-center gap-4 mb-4">
           <div className="flex-1">
-            <label className="text-xs text-muted-foreground/60 block mb-1.5">Monthly Revenue (€)</label>
-            <input type="range" min={5000} max={600000} step={5000} value={sampleRev}
+            <label htmlFor="benchmark-sample-revenue" className="text-xs text-muted-foreground/60 block mb-1.5">
+              Sample monthly revenue (€) — moves the preview only, changes no benchmark
+            </label>
+            <input id="benchmark-sample-revenue" data-testid="benchmark-sample-revenue"
+              type="range" min={5000} max={600000} step={5000} value={sampleRev}
               onChange={e => setSampleRev(Number(e.target.value))}
               className="w-full accent-foreground" />
             <div className="flex justify-between mt-1">
@@ -130,7 +133,7 @@ export default function AdminBenchmarks() {
           ))}
         </div>
         <p className="text-[11px] text-muted-foreground/40 mt-4">
-          Benchmarks are computed dynamically based on revenue tier and geography. To update logic, edit <code className="bg-secondary px-1 rounded text-[10px]">lib/scoreEngine.js</code>.
+          DASHBOARD-C11 correction: this page previously said it let you "control the ranges". It never had a write path of any kind — the only slider on it moves a sample revenue to preview the computation. Benchmarks are computed dynamically based on revenue tier and geography by a module that is currently frozen (FROZEN-UNTIL-BENCHMARKS-MIGRATION), so no range on this page is editable by anyone. To change the logic, edit <code className="bg-secondary px-1 rounded text-[10px]">lib/scoreEngine.js</code>.
         </p>
       </div>
     </div>

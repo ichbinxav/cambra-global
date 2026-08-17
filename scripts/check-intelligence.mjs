@@ -27,6 +27,7 @@ const strip = (source) => source
  * formatting rather than on meaning, which trains people to delete the check.
  */
 const prose = (source) => source.replace(/^\s*\*\s?/gm, ' ').replace(/\s+/g, ' ');
+let providerProse = () => '';
 
 const promotionText = fs.readFileSync('base44/shared/intelligencePromotionCore.ts', 'utf8');
 const promotionProse = prose(promotionText);
@@ -138,7 +139,45 @@ for (const row of registry.legacy_redirects || []) {
   }
 }
 
-// 10. The stale governance claim must stay corrected, not quietly deleted.
+// 10. DASHBOARD-C11 — the governed Provider registry, and the shadow-rate protection.
+const providerText = fs.readFileSync('base44/shared/providerRegistryCore.ts', 'utf8');
+providerProse = () => prose(providerText);
+const provider = strip(providerText);
+const providersPage = strip(fs.readFileSync('src/pages/admin/AdminProviders.jsx', 'utf8'));
+const entity = JSON.parse(fs.readFileSync('base44/entities/Provider.jsonc', 'utf8'));
+
+if (/revenue_share_pct/.test(provider.split('PROVIDER_EDITABLE_FIELDS')[1]?.split(']')[0] || '')) {
+  fail('revenue_share_pct must not be an editable provider field — it is an unbound duplicate of ProviderRevenueLedger.rate_bps');
+}
+if (!provider.includes('PROVIDER_PROTECTED_FIELDS')) {
+  fail('the provider handler must declare which fields it refuses');
+}
+if (!providerProse().includes('agreement_terms_hash')) {
+  fail('the revenue_share_pct refusal must name the agreement-bound field that IS authoritative');
+}
+// The handler's enums must match the entity's, or the handler refuses valid input. Getting
+// this wrong is easy: the first version of PROVIDER_CATEGORIES invented 'other' and
+// dropped 'insurance' and 'logistics', both of which the page already offers.
+for (const [constName, prop] of [['PROVIDER_CATEGORIES', 'category'], ['PROVIDER_API_STATUSES', 'api_status']]) {
+  const declared = (provider.split(constName)[1] || '').split(']')[0];
+  for (const value of entity.properties?.[prop]?.enum || []) {
+    if (!declared.includes(`'${value}'`)) {
+      fail(`${constName} is missing "${value}", which Provider.jsonc's ${prop} enum allows — the handler would refuse valid input`);
+    }
+  }
+}
+// The page must not write the entity, and must not send back the whole row.
+if (/base44\.entities\.Provider\.(create|update)/.test(providersPage)) {
+  fail('AdminProviders.jsx writes Provider directly again');
+}
+if (/setForm\(p\)/.test(providersPage)) {
+  fail('AdminProviders.jsx copies the whole provider row into the form — the patch would carry protected and read-only fields and be refused on every save');
+}
+if (/parseFloat\([^)]*\)\s*\|\|\s*0/.test(providersPage)) {
+  fail('AdminProviders.jsx coerces a rate with `|| 0` again — an empty field is not a 0% revenue share');
+}
+
+// 11. The stale governance claim must stay corrected, not quietly deleted.
 const p12 = fs.readFileSync('src/docs/P12_INTELLIGENCE_ARCHITECTURE.md', 'utf8');
 if (!p12.includes('Corrected DASHBOARD-C10')) {
   fail('the P12 doc claim about intelligenceMaintenanceWorker versioning pricing must stay corrected');

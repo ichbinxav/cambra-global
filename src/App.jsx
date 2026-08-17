@@ -98,6 +98,9 @@ const AdminFinance = lazy(() => import('@/pages/admin/AdminFinance'));
 // DASHBOARD-C9: the consolidated Finance workspace. The four legacy finance routes
 // stay live until C13 retires them; each one now redirects into its tab.
 const AdminFinanceWorkspace = lazy(() => import('@/pages/admin/AdminFinanceWorkspace'));
+// DASHBOARD-C11: the consolidated Intelligence workspace. The six legacy routes stay live
+// until C13 retires them; each one now redirects into its tab.
+const AdminIntelligenceWorkspace = lazy(() => import('@/pages/admin/AdminIntelligenceWorkspace'));
 const AdminProviderEconomics = lazy(() => import('@/pages/admin/AdminProviderEconomics'));
 const AdminFounderControl = lazy(() => import('@/pages/admin/AdminFounderControl'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
@@ -367,7 +370,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/conversations" element={withBoundary(<AdminConversations />)} />
           <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
           <Route path="/admin/commercial" element={withBoundary(<AdminCommercialOS />)} />
-          <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligence />)} />
+          <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligenceWorkspace />)} />
           <Route path="/admin/markets" element={withBoundary(<AdminMarkets />)} />
           <Route path="/admin/growth" element={withBoundary(<AdminGrowth />)} />
           <Route path="/admin/routing-intelligence" element={withBoundary(<AdminRoutingIntelligence />)} />

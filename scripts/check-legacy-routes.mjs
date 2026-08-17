@@ -115,12 +115,31 @@ if (regressions.length) {
 
 // 5. Unbacked UI claims C0 recorded. Reported, not failed — correcting the copy is
 //    consolidation work, and the point is that it stays visible until then.
+//
+//    DASHBOARD-C11: the Benchmarks marker used to be the string 'scoreEngine', which is
+//    just a mention of where the logic lives — the page correctly points at it. So the
+//    check flagged a pointer rather than the false claim, and correcting the claim could
+//    not clear it. The marker is now the CLAIM ITSELF, which is the thing that was wrong.
 const unbacked = [];
 for (const [file, marker, claim] of [
   ['src/pages/admin/AdminDeals.jsx', 'from \'@/lib/deals.js\'', 'offers editing over a hard-coded array'],
-  ['src/pages/admin/AdminBenchmarks.jsx', 'scoreEngine', 'claims to control ranges with no write path'],
+  ['src/pages/admin/AdminBenchmarks.jsx', 'Control the ranges', 'claims to control ranges with no write path'],
 ]) {
   if (fs.existsSync(file) && fs.readFileSync(file, 'utf8').includes(marker)) unbacked.push(`${file} ${claim}`);
+}
+
+// A corrected claim must stay corrected. Deleting the note and restoring the old copy
+// would take the page back to claiming control it does not have.
+const benchmarks = fs.existsSync('src/pages/admin/AdminBenchmarks.jsx')
+  ? fs.readFileSync('src/pages/admin/AdminBenchmarks.jsx', 'utf8') : '';
+if (benchmarks && !benchmarks.includes('DASHBOARD-C11 correction')) {
+  fail('AdminBenchmarks.jsx must keep the C11 correction stating it has no write path');
+}
+// The slider must be LABELLED as a preview input in the rendered markup. Checking for
+// the phrase anywhere in the file was vacuous: the corrective comment I had just written
+// satisfied it. A data-testid only exists if the JSX renders the control.
+if (/type="range"/.test(benchmarks) && !benchmarks.includes('data-testid="benchmark-sample-revenue"')) {
+  fail('the only slider on AdminBenchmarks previews a sample revenue — the rendered control must be labelled as such, or it reads as an editable benchmark range');
 }
 
 if (failures) process.exit(1);

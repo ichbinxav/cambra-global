@@ -1,8 +1,37 @@
+// DASHBOARD-C11 (2026-08-17) — Providers, now the `providers` tab of Intelligence.
+//
+// This page used to create and update Provider rows directly from the browser, and the
+// payload included a field labelled "Revenue Share %". The navigation registry flagged it
+// HIGHEST SEVERITY. What C11 verified sharpens the claim in both directions: no production
+// code reads that field — the real rate is ProviderRevenueLedger.rate_bps, bound to an
+// agreement_id and an agreement_terms_hash — so it is not biasing anything today. But an
+// unbound duplicate of a governed number, editable from an admin page, is a shadow rate
+// waiting for the first aggregator that picks it up.
+//
+// It also coerced the field with `|| 0`, so an empty input was stored as a confident 0%.
+//
+// The field is now read-only here, shown beside the governed rate, and the write goes
+// through a previewed handler that refuses it by name.
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, X, Save, Building2 } from "lucide-react";
+import { Plus, X, Save, Building2, ShieldAlert } from "lucide-react";
+import { callIntelligence } from "./AdminIntelligenceWorkspace";
 
 const CATEGORIES = ["payments", "shipping", "saas", "insurance", "banking", "logistics"];
+// Exactly the fields the handler accepts. Selecting a provider used to copy the WHOLE row
+// into the form, which would now send back `revenue_share_pct`, `id` and `created_date`
+// and be refused on every save.
+// Written as an explicit literal rather than built from a key list, so the shape matches
+// the form state exactly instead of widening to a string-keyed bag.
+const editableOnly = (row) => ({
+  name: row?.name ?? "",
+  category: row?.category ?? "payments",
+  contact_email: row?.contact_email ?? "",
+  account_manager: row?.account_manager ?? "",
+  api_status: row?.api_status ?? "not_connected",
+  contract_type: row?.contract_type ?? "",
+  notes: row?.notes ?? "",
+});
 const API_COLORS = {
   connected: "text-green-600 bg-green-500/10 border-green-500/20",
   not_connected: "text-muted-foreground bg-secondary border-border/40",
@@ -15,14 +44,33 @@ export default function AdminProviders() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [showNew, setShowNew] = useState(false);
-  const [form, setForm] = useState({ name: "", category: "payments", contact_email: "", account_manager: "", api_status: "not_connected", contract_type: "", revenue_share_pct: "", notes: "" });
+  const [form, setForm] = useState({ name: "", category: "payments", contact_email: "", account_manager: "", api_status: "not_connected", contract_type: "", notes: "" });
+  const [preview, setPreview] = useState(null);
+  const [message, setMessage] = useState(null);
+  const [compensation, setCompensation] = useState(null);
 
   const load = () => Promise.all([
     base44.entities.Provider.list(),
     base44.entities.UserDeal.list(),
-  ]).then(([p, ud]) => { setProviders(p); setUserDeals(ud); setLoading(false); });
+  ]).then(([p, ud]) => {
+    setProviders(p);
+    setUserDeals(ud);
+    setLoading(false);
+    if (selected?.id) setSelected(p.find(row => row.id === selected.id) || null);
+  });
 
   useEffect(() => { load(); }, []);
+
+  // Commercial terms are read through the governed route, never from the entity, so the
+  // page cannot show a legacy number without also showing the agreement-bound one.
+  useEffect(() => {
+    if (!selected?.id) { setCompensation(null); return; }
+    let active = true;
+    callIntelligence("provider_compensation", { provider_id: selected.id })
+      .then(data => { if (active) setCompensation(data); })
+      .catch(() => { if (active) setCompensation(null); });
+    return () => { active = false; };
+  }, [selected?.id]);
 
   const getMetrics = (providerName) => {
     const deals = userDeals.filter(d => d.provider?.toLowerCase() === providerName?.toLowerCase());
@@ -31,18 +79,31 @@ export default function AdminProviders() {
     return { leads: deals.length, active: active.length, savings, conversion: deals.length > 0 ? Math.round((active.length / deals.length) * 100) : 0 };
   };
 
-  const save = async () => {
+  const requestPreview = async () => {
     if (!form.name) return;
-    const data = { ...form, revenue_share_pct: parseFloat(form.revenue_share_pct) || 0 };
-    if (selected?.id) {
-      const updated = await base44.entities.Provider.update(selected.id, data);
-      setProviders(prev => prev.map(p => p.id === selected.id ? updated : p));
-      setSelected(updated);
-    } else {
-      const created = await base44.entities.Provider.create(data);
-      setProviders(prev => [...prev, created]);
+    setMessage(null);
+    setPreview(null);
+    try {
+      setPreview(await callIntelligence("preview_provider_write", {
+        provider_id: selected?.id || null, patch: form,
+      }));
+    } catch (caught) {
+      setMessage(caught?.data?.reason || caught?.message || "Preview refused.");
+    }
+  };
+
+  const applyPreview = async () => {
+    try {
+      await callIntelligence("apply_provider_write", {
+        provider_id: selected?.id || null, patch: form,
+        expected_preview_hash: preview.preview_hash,
+      });
+      setPreview(null);
+      setMessage(null);
       setShowNew(false);
-      setForm({ name: "", category: "payments", contact_email: "", account_manager: "", api_status: "not_connected", contract_type: "", revenue_share_pct: "", notes: "" });
+      await load();
+    } catch (caught) {
+      setMessage(caught?.data?.reason || caught?.message || "Save refused.");
     }
   };
 
@@ -72,7 +133,7 @@ export default function AdminProviders() {
           ) : providers.map(p => {
             const m = getMetrics(p.name);
             return (
-              <div key={p.id} onClick={() => { setSelected(p); setForm(p); setShowNew(false); }}
+              <div key={p.id} onClick={() => { setSelected(p); setForm(editableOnly(p)); setShowNew(false); setPreview(null); setMessage(null); }}
                 className={`px-5 py-4 border-b border-border/20 last:border-0 cursor-pointer transition-colors ${selected?.id === p.id ? "bg-secondary/40" : "hover:bg-secondary/20"}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -114,7 +175,6 @@ export default function AdminProviders() {
                 { key: "contact_email", label: "Contact Email", type: "input" },
                 { key: "account_manager", label: "Account Manager", type: "input" },
                 { key: "contract_type", label: "Contract Type", type: "input" },
-                { key: "revenue_share_pct", label: "Revenue Share %", type: "input" },
               ].map(f => (
                 <div key={f.key}>
                   <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/40 mb-1.5">{f.label}</p>
@@ -143,8 +203,70 @@ export default function AdminProviders() {
                 <textarea value={form.notes || ""} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full h-20 px-3 py-2 text-sm bg-secondary/60 border border-border/50 rounded-lg focus:outline-none resize-none" />
               </div>
-              <button onClick={save} className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-bold flex items-center justify-center gap-2">
-                <Save size={13} /> {showNew ? "Create Provider" : "Save Changes"}
+              {selected?.id && (
+                <div data-testid="provider-compensation" className="rounded-lg border border-border/50 bg-secondary/30 p-2.5 space-y-1">
+                  <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 flex items-center gap-1">
+                    <ShieldAlert size={11} /> Commercial terms — read only
+                  </p>
+                  {compensation ? (
+                    <>
+                      <p className="text-[11px] text-muted-foreground">
+                        Legacy revenue share:{" "}
+                        <b>{compensation.legacy_state === "NEVER_SET" ? "never set" : `${compensation.legacy_revenue_share_pct}%`}</b>
+                        {" "}· not authoritative
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Agreement-bound rate:{" "}
+                        <b>
+                          {compensation.governed_rate_state === "SINGLE_RATE"
+                            ? `${compensation.governed_rate_bps} bps`
+                            : compensation.governed_rate_state.toLowerCase().replaceAll("_", " ")}
+                        </b>
+                      </p>
+                      {compensation.diverges_from_agreement === true && (
+                        <p className="text-[11px] font-bold text-rose-700">
+                          The legacy number disagrees with the agreement-bound rate.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">Loading commercial terms…</p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground/60 leading-snug">
+                    Provider compensation is set through the revenue ledger against a hashed agreement, never from this form.
+                  </p>
+                </div>
+              )}
+
+              {preview && (
+                <div data-testid="provider-preview" className="rounded-lg border border-sky-200 bg-sky-50 p-2.5 space-y-1.5">
+                  <p className="text-xs font-bold text-sky-900">Confirm this change</p>
+                  <ul className="text-[11px] text-sky-900 space-y-0.5">
+                    {preview.preview.changes.map(change => (
+                      <li key={change.field}>
+                        <b>{change.field}</b>: {String(change.from || "(empty)")} → {String(change.to || "(empty)")}
+                        {change.clears_existing_value && <span className="font-bold text-rose-700"> — clears a stored value</span>}
+                      </li>
+                    ))}
+                  </ul>
+                  <ul className="text-[11px] text-sky-900/80 space-y-0.5 pt-1 border-t border-sky-200">
+                    {preview.preview.consequences.map(line => <li key={line}>{line}</li>)}
+                  </ul>
+                  <div className="flex gap-2 pt-1">
+                    <button onClick={applyPreview} data-testid="provider-confirm" className="h-7 px-3 rounded-lg bg-foreground text-background text-xs font-bold">
+                      Confirm and save
+                    </button>
+                    <button onClick={() => setPreview(null)} className="h-7 px-3 rounded-lg border border-border text-xs font-bold">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {message && <p data-testid="provider-message" className="text-xs text-amber-800">{message}</p>}
+
+              <button onClick={requestPreview} disabled={Boolean(preview)} className="w-full h-10 rounded-xl bg-foreground text-background text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                <Save size={13} /> {showNew ? "Review new provider" : "Review changes"}
               </button>
             </div>
           </div>
