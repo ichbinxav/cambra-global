@@ -277,12 +277,25 @@ export async function advanceCommandRun(input: {
   let receiptsWritten = 0;
 
   const appendReceipt = async (receipt: any) => {
+    // AUDIT SEC-06 (2026-08-17): canonicalReceiptPayload hashes input_hash / output_hash /
+    // tenant_scope / market_scope, but appendReceipt never set them — so the tamper-evident
+    // chain was actually being built over four empty strings per receipt. The loop passes
+    // the raw tool input/output through `tool_input`/`tool_output`; hash them here.
+    const { tool_input, tool_output, ...forwarded } = receipt || {};
+    const input_hash = tool_input === undefined ? '' : await input.sha256(tool_input);
+    const output_hash = tool_output === undefined ? '' : await input.sha256(tool_output);
     const built = await buildNextReceipt(input.sha256, {
       previous: previousReceipt,
       chain_key: text(run.receipt_chain_key) || text(run.run_id),
       now: input.now(),
       receipt: {
-        ...receipt,
+        ...forwarded,
+        input_hash,
+        output_hash,
+        // The run is scoped to one tenant and (optionally) one market. Stamp them on
+        // every receipt so the chain proves a step did not cross that boundary.
+        tenant_scope: text(run.tenant_scope) || text(run.tenant_key),
+        market_scope: text(run.market_scope) || text(input.market),
         run_id: text(run.run_id),
         conversation_id: text(run.conversation_id),
         actor: text(run.requested_by),

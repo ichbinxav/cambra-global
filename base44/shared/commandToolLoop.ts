@@ -171,6 +171,11 @@ export async function runCommandLoop(input: {
   appendReceipt?: (receipt: {
     kind: string; state: string; tool_id: string; step_key: string;
     external_effect_performed: boolean; source_refs: string[]; note?: string;
+    // AUDIT SEC-06 (2026-08-17): the loop knows both input and output; the executor is
+    // the one that owns sha256. Pass raw values through so the executor can hash and
+    // stamp input_hash/output_hash on the receipt.
+    tool_input?: unknown;
+    tool_output?: unknown;
   }) => Promise<{ receipt_id?: string } | null>;
   market?: string;
 }) {
@@ -193,7 +198,7 @@ export async function runCommandLoop(input: {
   }
   openingRevision = opening.revision;
 
-  const receipt = async (step: LoopStep, extra: { external?: boolean; refs?: string[]; note?: string } = {}) => {
+  const receipt = async (step: LoopStep, extra: { external?: boolean; refs?: string[]; note?: string; output?: unknown } = {}) => {
     if (!input.appendReceipt) return null;
     const written = await input.appendReceipt({
       kind: step.status === 'EXECUTED' ? 'EFFECT' : (step.status === 'REFUSED' ? 'ESCALATION' : 'DECISION'),
@@ -204,6 +209,8 @@ export async function runCommandLoop(input: {
       external_effect_performed: extra.external === true,
       source_refs: extra.refs || [],
       note: extra.note || step.reason,
+      tool_input: step.input,
+      tool_output: extra.output !== undefined ? extra.output : step.result_summary,
     }).catch(() => null);
     step.receipt_id = written?.receipt_id || null;
     return written;
