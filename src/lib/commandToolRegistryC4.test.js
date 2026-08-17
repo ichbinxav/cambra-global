@@ -7,11 +7,11 @@
 // asserts the two sets are equal. Adding a tool without classifying it fails
 // here rather than silently defaulting to something permissive.
 //
-// This is a source parse on purpose: the declarations are inline in a Deno entry
-// point that imports the Base44 SDK and cannot be imported into vitest. The
-// assertion is still about real behaviour — the exact tool names the model is
-// offered — not about source text matching a pattern.
-import fs from "node:fs";
+// COMMAND-C7 (2026-08-17): this used to PARSE the orchestrator's source, because
+// the declarations were inline in a Deno entry point that could not be imported.
+// They now live in a side-effect-free shared module, so the test imports the real
+// catalogue instead of scraping text — the assertion is about the actual object
+// the model is offered.
 import { describe, expect, it } from "vitest";
 import {
   AUTONOMOUS_ALLOWED,
@@ -19,29 +19,16 @@ import {
   EFFECT_CLASSES,
   TOOL_GOVERNANCE,
 } from "../../base44/shared/commandToolRegistry.ts";
+import { CHAT_TOOLS } from "../../base44/shared/commandToolCatalog.ts";
 
-/** Extracts the tools the orchestrator really offers the model. */
+/** The tools the orchestrator really offers the model. */
 function declaredTools() {
-  const source = fs.readFileSync("base44/functions/chatChiefOrchestrator/entry.ts", "utf8");
-  const start = source.indexOf("const CHAT_TOOLS");
-  const end = source.indexOf("const READ_SAFE_FIELDS");
-  expect(start, "CHAT_TOOLS block not found — the orchestrator was restructured").toBeGreaterThan(0);
-  expect(end).toBeGreaterThan(start);
-  const block = source.slice(start, end);
-  const tools = [];
-  const pattern = /name:\s*"([a-z_0-9]+)",\s*\n\s*description:\s*"([^"]*)"/g;
-  let match;
-  while ((match = pattern.exec(block)) !== null) {
-    const after = block.slice(match.index, match.index + 900);
-    const risk = /risk_level:\s*(\d)/.exec(after);
-    const bulk = /bulk_field:\s*"([a-z_]+)"/.exec(after);
-    tools.push({
-      name: match[1], description: match[2],
-      risk_level: risk ? Number(risk[1]) : 0,
-      bulk_field: bulk ? bulk[1] : undefined,
-    });
-  }
-  return tools;
+  return CHAT_TOOLS.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    risk_level: tool.risk_level,
+    bulk_field: tool.bulk_field,
+  }));
 }
 
 describe("C4 — the registry and the real tool list cannot drift apart", () => {

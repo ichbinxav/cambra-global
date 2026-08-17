@@ -183,7 +183,9 @@ export async function handleCommandRunAction(
         now, sha256,
         callModel: deps.callModel, executeTool: deps.executeTool,
         readEmergency,
-        autonomousEffectClasses: ['read', 'analysis'],
+        // COMMAND-C7: widened to internal_write. Drafts still hand back via
+        // always_drafts, and external_effect is never loop-executable.
+        autonomousEffectClasses: ['read', 'analysis', 'internal_write'],
         market: (Array.isArray(run.market_scope) ? run.market_scope : [])[0],
       });
       return json({ ok: true, ...result, external_send_performed: false });

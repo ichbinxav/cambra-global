@@ -20,7 +20,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  Archive, GitBranch, Loader2, MessageSquare, Pin, Plus, RefreshCw, Send, ShieldCheck,
+  Archive, Ban, GitBranch, Loader2, MessageSquare, Pin, Play, Plus, RefreshCw, Send, ShieldCheck,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ChatMessageBubble from "@/components/admin/chat/ChatMessageBubble";
@@ -37,6 +37,90 @@ const call = async (action, payload = {}) => {
 };
 
 const when = (value) => (value ? new Date(value).toLocaleString() : "—");
+
+// COMMAND-C7: durable runs. A run survives this tab, advances on a 5-minute
+// sweep, and can be cancelled — see Decision_Log_COMMAND_C6 / _C7.
+const runCall = async (action, payload = {}) => {
+  const response = await base44.functions.invoke("adminSummaries", {
+    action: `command_run_${action}`, ...payload,
+  });
+  const data = response?.data || response;
+  if (data?.ok === false || data?.error) {
+    throw Object.assign(new Error(data?.error || "Run operation failed"), { data });
+  }
+  return data;
+};
+
+const RUN_TONE = {
+  RUNNING: "border-sky-200 bg-sky-50 text-sky-700",
+  PLANNING: "border-sky-200 bg-sky-50 text-sky-700",
+  COMPLETED: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  AWAITING_APPROVAL: "border-amber-200 bg-amber-50 text-amber-700",
+  AWAITING_PERMIT: "border-amber-200 bg-amber-50 text-amber-700",
+  REVIEW_REQUIRED: "border-rose-200 bg-rose-50 text-rose-700",
+  FAILED: "border-rose-200 bg-rose-50 text-rose-700",
+  CANCELLED: "border-border/60 bg-secondary/40 text-muted-foreground",
+  PARTIAL: "border-border/60 bg-secondary/40 text-muted-foreground",
+};
+
+/**
+ * Shows a durable run honestly: what it did, what it is waiting for, and — when
+ * it stopped — WHY. A run sitting at REVIEW_REQUIRED with no reason shown would
+ * look like a hang rather than an escalation.
+ */
+export function RunPanel({ run, receiptCount, receiptsReadable, onCancel, onRefresh, busy }) {
+  if (!run) return null;
+  const tone = RUN_TONE[run.status] || "border-border/60 bg-secondary/40 text-muted-foreground";
+  const held = ["AWAITING_APPROVAL", "AWAITING_PERMIT", "REVIEW_REQUIRED"].includes(run.status);
+  const terminal = ["COMPLETED", "PARTIAL", "CANCELLED", "FAILED"].includes(run.status);
+  return (
+    <div data-testid="run-panel" className="rounded-xl border border-border/60 bg-card p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Run</span>
+          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold ${tone}`}>
+            {run.status}
+          </span>
+          <span className="text-[11px] text-muted-foreground truncate">{run.objective || run.request_text}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button type="button" onClick={onRefresh} disabled={busy}
+            className="inline-flex items-center gap-1 h-7 px-2 rounded-full border border-border/60 text-[10px] font-bold hover:bg-secondary disabled:opacity-50">
+            <RefreshCw size={10} /> Refresh
+          </button>
+          <button type="button" onClick={onCancel} disabled={busy || terminal}
+            className="inline-flex items-center gap-1 h-7 px-2 rounded-full border border-border/60 text-[10px] font-bold hover:bg-secondary disabled:opacity-50">
+            <Ban size={10} /> Cancel
+          </button>
+        </div>
+      </div>
+      <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 text-[11px]">
+        <dt className="text-muted-foreground">Steps</dt><dd className="font-bold">{run.steps_completed ?? 0}</dd>
+        <dt className="text-muted-foreground">Tool calls</dt><dd className="font-bold">{run.tool_calls_used ?? 0}</dd>
+        <dt className="text-muted-foreground">Receipts</dt>
+        <dd className="font-bold">{receiptsReadable === false ? "unreadable" : receiptCount ?? 0}</dd>
+        <dt className="text-muted-foreground">Permit</dt>
+        <dd className="font-bold">{run.permit_id ? "bound" : "none (reads only)"}</dd>
+      </dl>
+      {held && (
+        <p data-testid="run-held" className="text-[11px] text-amber-700 font-semibold">
+          This run is waiting on you, not on a worker. It will not advance on its own until you act.
+        </p>
+      )}
+      {run.cancellation_requested === true && !terminal && (
+        <p data-testid="run-cancelling" className="text-[11px] text-muted-foreground">
+          Cancellation recorded. A slice already in flight is not killed — a paid provider call cannot be un-made.
+          The next slice will refuse to start.
+        </p>
+      )}
+      {(run.blockers || []).length > 0 && (
+        <p data-testid="run-blockers" className="text-[11px] text-rose-700">
+          Stopped because: {run.blockers.join(", ")}.
+        </p>
+      )}
+    </div>
+  );
+}
 
 function StatusChip({ status }) {
   const tone = {
@@ -157,6 +241,7 @@ export default function AdminCommandChat() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [listUnavailable, setListUnavailable] = useState(false);
+  const [runStatus, setRunStatus] = useState(null);
   // Founder confirmation nonces deliberately live only in this React session.
   // Reloading the page requires a fresh preview; raw nonces never enter storage.
   const [confirmationNonces, setConfirmationNonces] = useState({});
@@ -222,6 +307,33 @@ export default function AdminCommandChat() {
     } catch (e) {
       setError(e?.message || "Could not branch this conversation.");
     } finally { setBusy(false); }
+  };
+
+  const refreshRun = useCallback(async (runId) => {
+    if (!runId) { setRunStatus(null); return; }
+    try { setRunStatus(await runCall("status", { run_id: runId })); }
+    catch (e) { setError(e?.message || "Could not read this run."); }
+  }, []);
+
+  const startRun = async () => {
+    if (!activeId || !input.trim()) return;
+    setBusy(true);
+    try {
+      const data = await runCall("start", { conversation_id: activeId, request_text: input.trim() });
+      setInput("");
+      await refreshRun(data.run.run_id);
+    } catch (e) {
+      setError(e?.message || "Could not start a run.");
+    } finally { setBusy(false); }
+  };
+
+  const cancelRun = async () => {
+    const runId = runStatus?.run?.run_id;
+    if (!runId) return;
+    setBusy(true);
+    try { await runCall("cancel", { run_id: runId }); await refreshRun(runId); }
+    catch (e) { setError(e?.message || "Could not cancel this run."); }
+    finally { setBusy(false); }
   };
 
   const send = async (text, opts = {}) => {
@@ -330,6 +442,17 @@ export default function AdminCommandChat() {
 
           <ContextInspector detail={detail} />
 
+          {runStatus?.run && (
+            <RunPanel
+              run={runStatus.run}
+              receiptCount={runStatus.receipt_count}
+              receiptsReadable={runStatus.receipts_readable}
+              onCancel={cancelRun}
+              onRefresh={() => refreshRun(runStatus.run.run_id)}
+              busy={busy}
+            />
+          )}
+
           <div data-testid="command-timeline" className="flex-1 overflow-y-auto rounded-2xl border border-border/60 bg-secondary/20 p-4 space-y-3">
             {timeline.length === 0 ? (
               <div className="h-full flex items-center justify-center">
@@ -383,6 +506,14 @@ export default function AdminCommandChat() {
               placeholder={activeId ? "Ask CAMBRA: why, compare, find, simulate or do…" : "Start a conversation first"}
               className="flex-1 h-10 px-3 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
+            <button
+              type="button" onClick={startRun}
+              disabled={busy || !input.trim() || !activeId}
+              title="Run this as a durable background run instead of a single turn"
+              className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full border border-border/60 text-xs font-bold hover:bg-secondary disabled:opacity-50"
+            >
+              <Play size={12} /> Run in background
+            </button>
             <button
               type="submit" disabled={sending || !input.trim() || !activeId}
               className="inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-foreground text-background text-sm font-bold hover:opacity-90 disabled:opacity-50"

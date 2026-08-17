@@ -49,7 +49,8 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
   });
 
   it('lets Ask CAMBRA inspect, discover, verify and safely stop the real commercial system',()=>{
-    const chat=read('base44/functions/chatChiefOrchestrator/entry.ts');
+    // COMMAND-C7: tool declarations moved to base44/shared/commandToolCatalog.ts.
+    const chat=read('base44/functions/chatChiefOrchestrator/entry.ts')+'\n'+read('base44/shared/commandToolCatalog.ts');
     for(const token of ['commercial_os_status','run_commercial_discovery','pause_outbound','verify_instantly_supersearch'])expect(chat).toContain(token);
     expect(chat).toContain('fixed_input:{action:"pause_all"}');
   });

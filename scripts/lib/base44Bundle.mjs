@@ -15,7 +15,9 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // entry point. Physical function count is unchanged at 276.
 // COMMAND-C6 (2026-08-17): 30 -> 31 for commandRunAdmin (durable run executor
 // admin, also on adminSummaries). Physical stays 276.
-export const BASE44_LOGICAL_ROUTE_TARGET = 31;
+// COMMAND-C7 (2026-08-17): 31 -> 32 for commandRunWorker (the scheduled sweep on
+// maintenanceEngine). Physical stays 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 32;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 
 const read = (file) => fs.readFileSync(file, 'utf8');
 const copilot = read('base44/functions/copilotChat/entry.ts');
-const chief = read('base44/functions/chatChiefOrchestrator/entry.ts');
+// COMMAND-C7 (2026-08-17): the 48 tool declarations moved out of the orchestrator
+// into base44/shared/commandToolCatalog.ts (a side-effect-free module) so the
+// scheduled run sweep can read the same catalogue. These assertions still check
+// that the tool exists and carries its fixed authority — only the file moved.
+const chief = read('base44/functions/chatChiefOrchestrator/entry.ts')
+  + '\n' + read('base44/shared/commandToolCatalog.ts');
 const negotiation = read('base44/functions/providerNegotiationAgent/entry.ts');
 const providerResearch = read('base44/functions/providerResearchAgent/entry.ts');
 

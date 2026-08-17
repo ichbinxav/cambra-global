@@ -2,10 +2,10 @@
   "schema_version": "cambra-scheduler-inventory-v3",
   "generated_from": "physical Base44 function configs, deployment topology and local TypeScript dependency closures",
   "truth_boundary": "Logical workers may be hosted by an existing physical function. UNKNOWN means the repository does not prove the property. Base44 triggers are treated as at-least-once; exactly-once provider execution is not claimed.",
-  "scheduled_automation_count": 69,
-  "active_count": 67,
+  "scheduled_automation_count": 70,
+  "active_count": 68,
   "inactive_count": 2,
-  "guarded_count": 67,
+  "guarded_count": 68,
   "unguarded_active": [],
   "inactive_automations": [
     {
@@ -19,8 +19,8 @@
       "source": "base44/functions/seedP3RateIntelligence/function.jsonc automations[0]: is_active=false and config description identifies a temporary idempotent runtime bootstrap to remove after materialization."
     }
   ],
-  "hard_deadline_unknown_count": 67,
-  "periodic_heartbeat_proven_count": 57,
+  "hard_deadline_unknown_count": 68,
+  "periodic_heartbeat_proven_count": 58,
   "periodic_heartbeat_not_proven": [
     "alwaysOnLeadDiscoveryWorker",
     "autonomousPartnerWorker",
@@ -1428,6 +1428,58 @@
         "repeat_interval": 1,
         "cadence_seconds": 86400,
         "start_time": "2026-08-13T01:30:00.000Z"
+      },
+      "claim_primitive": "SchedulerRun CONTROL/ATTEMPT CAS",
+      "lease_seconds": 900,
+      "heartbeat_interval_seconds": 120,
+      "heartbeat_policy": "PERIODIC_WRAPPER: min(120 seconds, lease_seconds / 3), lower bounded at 30 seconds",
+      "deadline_seconds": "UNKNOWN",
+      "timeout_seconds": "UNKNOWN",
+      "execution_bound_status": "LEASE_AND_PERIODIC_HEARTBEAT_PROVEN; HARD_DEADLINE_AND_TIMEOUT_UNKNOWN",
+      "effect_boundary": "HANDLER_ENTRY_CONSERVATIVE",
+      "protection_classification": "SLOT_GUARDED",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "operation_identity": "worker_key + explicit operation key; otherwise worker cadence slot shared by scheduled/manual/internal",
+      "effect_identity": "worker_key + explicit effect/operation key; otherwise worker cadence slot",
+      "takeover_policy": "LEASE_EXPIRY_RECLAIMABLE_ONLY_BEFORE_EFFECT; POST_EFFECT_REVIEW_REQUIRED",
+      "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE",
+      "downstream_idempotency": "IDEMPOTENCY_OR_RECONCILIATION_MARKERS_OBSERVED; SOURCE_REVIEW_REQUIRED",
+      "post_effect_ambiguity": "SCHEDULER CONTROL CONVERGES TO REVIEW_REQUIRED; PROVIDER RECONCILIATION REQUIRES ADAPTER EVIDENCE",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/maintenanceEngine/function.jsonc"
+    },
+    {
+      "worker_key": "commandRunWorker",
+      "logical_worker": "commandRunWorker",
+      "physical_host": "maintenanceEngine",
+      "host_kind": "LOGICAL_ROUTE",
+      "host_route": {
+        "host_action": "command_run_sweep"
+      },
+      "trust_boundary": "internal_scheduler_no_new_authority",
+      "hosted_workers": [
+        "commandRunWorker"
+      ],
+      "function_directory": "maintenanceEngine",
+      "automation_index": 4,
+      "name": "CAMBRA Command runs — 5 min",
+      "responsibility": "COMMAND-C7: advances durable CommandRun slices. Adds no authority of its own — CAS, cancellation, emergency epoch and budgets are all enforced inside advanceCommandRun. Terminal and human-held runs are never touched.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "inactive_classification": null,
+      "inactive_classification_source": null,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "minutes",
+        "repeat_interval": 5,
+        "cadence_seconds": 300,
+        "start_time": "2026-08-17T00:20:00.000Z"
       },
       "claim_primitive": "SchedulerRun CONTROL/ATTEMPT CAS",
       "lease_seconds": 900,

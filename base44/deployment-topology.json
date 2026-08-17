@@ -227,6 +227,14 @@
         "action_prefix": "command_run_"
       },
       "boundary": "strict_admin"
+    },
+    "commandRunWorker": {
+      "host": "maintenanceEngine",
+      "source_module": "base44/shared/commandRunWorker.ts",
+      "route": {
+        "host_action": "command_run_sweep"
+      },
+      "boundary": "internal_scheduler_no_new_authority"
     }
   }
 }

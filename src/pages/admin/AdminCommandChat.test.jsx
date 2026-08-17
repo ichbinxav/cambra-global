@@ -171,3 +171,68 @@ describe("C2 — an unreadable list is not an empty history", () => {
     expect(screen.getByTestId("list-unavailable").textContent).toContain("not an empty history");
   });
 });
+
+describe("C7 — the runs panel tells the founder what a run is waiting for", () => {
+  const RUN = {
+    run_id: "run-1", objective: "Work the ES pipeline", status: "RUNNING",
+    steps_completed: 3, tool_calls_used: 2, permit_id: "p1", blockers: [],
+    cancellation_requested: false,
+  };
+
+  it("shows real counters and a bound permit", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, {
+      run: RUN, receiptCount: 3, receiptsReadable: true,
+      onCancel: () => {}, onRefresh: () => {}, busy: false,
+    }));
+    const panel = screen.getByTestId("run-panel");
+    expect(panel.textContent).toContain("RUNNING");
+    expect(panel.textContent).toContain("Work the ES pipeline");
+    expect(panel.textContent).toContain("bound");
+  });
+
+  it("says a held run is waiting on the founder, not hanging", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, {
+      run: { ...RUN, status: "REVIEW_REQUIRED", blockers: ["effect_outcome_unconfirmed_no_retry"] },
+      receiptCount: 1, receiptsReadable: true, onCancel: () => {}, onRefresh: () => {}, busy: false,
+    }));
+    expect(screen.getByTestId("run-held").textContent).toContain("waiting on you, not on a worker");
+    // And why it stopped, so REVIEW_REQUIRED does not read as a hang.
+    expect(screen.getByTestId("run-blockers").textContent).toContain("effect_outcome_unconfirmed_no_retry");
+  });
+
+  it("is honest that cancelling does not kill work already in flight", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, {
+      run: { ...RUN, cancellation_requested: true },
+      receiptCount: 2, receiptsReadable: true, onCancel: () => {}, onRefresh: () => {}, busy: false,
+    }));
+    expect(screen.getByTestId("run-cancelling").textContent).toContain("cannot be un-made");
+  });
+
+  it("says receipts are unreadable rather than showing zero", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, {
+      run: RUN, receiptCount: 0, receiptsReadable: false,
+      onCancel: () => {}, onRefresh: () => {}, busy: false,
+    }));
+    // An unreadable chain is not an empty chain.
+    expect(screen.getByTestId("run-panel").textContent).toContain("unreadable");
+  });
+
+  it("marks a permit-less run as reads only", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, {
+      run: { ...RUN, permit_id: "" }, receiptCount: 0, receiptsReadable: true,
+      onCancel: () => {}, onRefresh: () => {}, busy: false,
+    }));
+    expect(screen.getByTestId("run-panel").textContent).toContain("reads only");
+  });
+
+  it("renders nothing when there is no run", () => {
+    const { RunPanel } = PageModule;
+    render(React.createElement(RunPanel, { run: null }));
+    expect(screen.queryByTestId("run-panel")).toBeNull();
+  });
+});

@@ -8,13 +8,13 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "7884488500c4c54ae4c3a9e527477af8f829d7a0b92a8ab5d244567f2527f91a",
+  "input_fingerprint_sha256": "4e0899b2f88660ceeba28b3c3c09e3ccf25a2de548a674d10b14fb4a0124a089",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
     "physical_function_target": 276,
-    "logical_route_count": 31,
+    "logical_route_count": 32,
     "stale_production_surface_inventory_declared_functions": 162,
     "stale_production_surface_inventory_detected": true
   },
@@ -174,9 +174,9 @@
   },
   "scheduler_inventory": {
     "schema_version": "cambra-scheduler-inventory-v3",
-    "scheduled_automation_count": 69,
-    "active_count": 67,
-    "guarded_count": 67,
+    "scheduled_automation_count": 70,
+    "active_count": 68,
+    "guarded_count": 68,
     "unguarded_active": [],
     "active_worker_keys": [
       "acquisitionAttributionWorker",
@@ -207,6 +207,7 @@
       "costGovernanceWorker",
       "productionReadinessWorker",
       "disasterRecoveryBackup",
+      "commandRunWorker",
       "regulatoryMonitoringWorker",
       "missingInformationWorker",
       "moatCuratorWorker",
@@ -753,6 +754,16 @@
       },
       {
         "worker_key": "disasterRecoveryBackup",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "commandRunWorker",
         "function_directory": "maintenanceEngine",
         "config_path": "base44/functions/maintenanceEngine/function.jsonc",
         "is_active": true,
@@ -1812,8 +1823,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "01a4e07c844d772d3f709a05731f1bb6095800d7b143d73672b08f114d7b6b7d",
-          "bytes": 6953
+          "sha256": "f794e13655f9782e3d08ec77238f0528d07e7b44c2eb3ba1fb20fd1eed4668df",
+          "bytes": 7206
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
@@ -2809,8 +2820,8 @@
         },
         {
           "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-          "sha256": "00a7bb389e19fc49fd124f9f78f1a14d734a0e842cb9f0e6fe1548ea3096a6eb",
-          "bytes": 52482
+          "sha256": "01b782a4d158d0cc38d1ce913e0d58ada31c01c483f2d262de9af6ccc1b274ae",
+          "bytes": 33593
         },
         {
           "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -3285,13 +3296,13 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "01a4e07c844d772d3f709a05731f1bb6095800d7b143d73672b08f114d7b6b7d",
-          "bytes": 6953
+          "sha256": "f794e13655f9782e3d08ec77238f0528d07e7b44c2eb3ba1fb20fd1eed4668df",
+          "bytes": 7206
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
-          "sha256": "ba878883d3924be5c5d33081f285f4fd37b1ab42d5ab412a1e64184980f1c644",
-          "bytes": 23742
+          "sha256": "ca7ab0293af06c587641f7b75a1f0b51e73aa5ae44cf4cfb0ad128dadc55c575",
+          "bytes": 27280
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
@@ -3395,6 +3406,7 @@
         "autonomousPartnerWorker",
         "billApiUsage",
         "collectionOperationsWorker",
+        "commandRunWorker",
         "commercialFollowUpWorker",
         "costGovernanceWorker",
         "customerSuccessWorker",
@@ -3483,8 +3495,8 @@
         },
         {
           "path": "config/scheduler-inventory.json",
-          "sha256": "8a2b7ca8442bfbcbcbd383f84323d5ecbebb78c254dfb208cb5d1caf37c39229",
-          "bytes": 178840
+          "sha256": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
+          "bytes": 181548
         }
       ]
     },

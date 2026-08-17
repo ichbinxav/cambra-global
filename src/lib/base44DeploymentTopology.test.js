@@ -28,8 +28,9 @@ describe('Base44 quota-safe backend deployment topology', () => {
   // COMMAND-C2 (2026-08-17): 29 -> 30 for commandConversationAdmin (durable
   // Command conversations, also on adminSummaries). Physical stays 276.
   // COMMAND-C6 (2026-08-17): 30 -> 31 for commandRunAdmin (durable run executor).
-  it('consolidates exactly 31 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(31);
+  // COMMAND-C7 (2026-08-17): 31 -> 32 for commandRunWorker (scheduled run sweep).
+  it('consolidates exactly 32 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(32);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {
@@ -70,6 +71,7 @@ describe('Base44 quota-safe backend deployment topology', () => {
       'europeanGrowthIntelligenceWorker',
       'getEuropeanGrowthCommandCenter',
       'disasterRecoveryBackup',
+      'commandRunWorker',
     ]));
   });
 

@@ -7,14 +7,19 @@ const json=(path)=>JSON.parse(read(path));
 describe('v0.97 CTO production remediation controls',()=>{
   it('records all active Base44 schedules and proves a slot guard at every physical boundary',()=>{
     const inventory=json('config/scheduler-inventory.json');
-    expect(inventory.scheduled_automation_count).toBe(69);
-    expect(inventory.active_count).toBe(67);
+    // COMMAND-C7 (2026-08-17): 69 -> 70 for the CAMBRA Command run sweep on
+    // maintenanceEngine. Raised on purpose and never loosened into an inequality;
+    // active and guarded both move with it, so an unguarded schedule still fails.
+    expect(inventory.scheduled_automation_count).toBe(70);
+    expect(inventory.active_count).toBe(68);
     expect(inventory.inactive_count).toBe(2);
     expect(inventory.unguarded_active).toEqual([]);
     const active=inventory.automations.filter((row)=>row.is_active);
     expect(active.every((row)=>row.protection_classification==='SLOT_GUARDED')).toBe(true);
     expect(active.every((row)=>row.lease_seconds===900)).toBe(true);
-    expect(inventory.periodic_heartbeat_proven_count).toBe(57);
+    // COMMAND-C7: 57 -> 58. The Command run sweep runs every 5 minutes and is
+    // slot-guarded, so it is heartbeat-proven like every other periodic worker.
+    expect(inventory.periodic_heartbeat_proven_count).toBe(58);
     expect(inventory.periodic_heartbeat_not_proven).toEqual([
       'alwaysOnLeadDiscoveryWorker',
       'autonomousPartnerWorker',
@@ -29,7 +34,7 @@ describe('v0.97 CTO production remediation controls',()=>{
     ]);
     expect(active.every((row)=>row.effect_boundary==='HANDLER_ENTRY_CONSERVATIVE')).toBe(true);
     expect(active.every((row)=>row.deadline_seconds==='UNKNOWN'&&row.timeout_seconds==='UNKNOWN')).toBe(true);
-    expect(inventory.hard_deadline_unknown_count).toBe(67);
+    expect(inventory.hard_deadline_unknown_count).toBe(68);
     expect(inventory.otr_005_status).toBe('PARTIAL');
     expect(inventory.inactive_automations.map((row)=>[row.worker_key,row.classification])).toEqual([
       ['autonomousCommercialWorker','INTENTIONALLY_DISABLED_COMPATIBILITY'],

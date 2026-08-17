@@ -6,7 +6,9 @@
       "type": "scheduled",
       "name": "CAMBRA Autonomous Maintenance — 10 min",
       "description": "P17 governed maintenance sweep. Material financial, security, contract, permission and deployment actions remain human-gated.",
-      "function_args": { "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "function_args": {
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
       "is_active": true,
       "schedule_mode": "recurring",
       "schedule_type": "simple",
@@ -20,7 +22,11 @@
       "type": "scheduled",
       "name": "Cost governance — hourly (consolidated)",
       "description": "Runs the original costGovernanceWorker handler through the existing maintenanceEngine trust boundary.",
-      "function_args": { "host_action": "cost_governance", "hosted_worker": "costGovernanceWorker", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "function_args": {
+        "host_action": "cost_governance",
+        "hosted_worker": "costGovernanceWorker",
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
       "is_active": true,
       "schedule_mode": "recurring",
       "schedule_type": "simple",
@@ -34,7 +40,11 @@
       "type": "scheduled",
       "name": "Production readiness — daily (consolidated)",
       "description": "Runs the original fail-closed productionReadinessWorker handler through maintenanceEngine.",
-      "function_args": { "host_action": "production_readiness", "hosted_worker": "productionReadinessWorker", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "function_args": {
+        "host_action": "production_readiness",
+        "hosted_worker": "productionReadinessWorker",
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
       "is_active": true,
       "schedule_mode": "recurring",
       "schedule_type": "simple",
@@ -48,7 +58,12 @@
       "type": "scheduled",
       "name": "Encrypted SharePoint disaster-recovery backup — daily (consolidated)",
       "description": "Creates a policy-selected full or incremental encrypted backup in CAMBRA INFRASTRUCTURE / Production Backups. Fails closed when service identity, site grant, encryption key or release identity is absent.",
-      "function_args": { "host_action": "disaster_recovery_backup", "hosted_worker": "disasterRecoveryBackup", "backup_mode": "AUTO", "internal_secret": "{{INTERNAL_CALL_SECRET}}" },
+      "function_args": {
+        "host_action": "disaster_recovery_backup",
+        "hosted_worker": "disasterRecoveryBackup",
+        "backup_mode": "AUTO",
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
       "is_active": true,
       "schedule_mode": "recurring",
       "schedule_type": "simple",
@@ -57,6 +72,24 @@
       "ends_type": "never",
       "function_name": "maintenanceEngine",
       "starts_at": "2026-08-13T01:30:00.000Z"
+    },
+    {
+      "type": "scheduled",
+      "name": "CAMBRA Command runs — 5 min",
+      "description": "COMMAND-C7: advances durable CommandRun slices. Adds no authority of its own — CAS, cancellation, emergency epoch and budgets are all enforced inside advanceCommandRun. Terminal and human-held runs are never touched.",
+      "function_args": {
+        "host_action": "command_run_sweep",
+        "hosted_worker": "commandRunWorker",
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5,
+      "ends_type": "never",
+      "function_name": "maintenanceEngine",
+      "starts_at": "2026-08-17T00:20:00.000Z"
     }
   ]
 }

@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "53de231f063321faeb487e897f2b8a797cdef6731ff67a7a1a1746a2ec43161b",
+  "source_inventory_hash": "fb14ff86102327093f6dda686b0c54327b73e7b903526daa6f8abab8ecbdb263",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -388,7 +388,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "source_sha256": "00a7bb389e19fc49fd124f9f78f1a14d734a0e842cb9f0e6fe1548ea3096a6eb",
+      "source_sha256": "01b782a4d158d0cc38d1ce913e0d58ada31c01c483f2d262de9af6ccc1b274ae",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1063,7 +1063,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "ba878883d3924be5c5d33081f285f4fd37b1ab42d5ab412a1e64184980f1c644",
+      "source_sha256": "ca7ab0293af06c587641f7b75a1f0b51e73aa5ae44cf4cfb0ad128dadc55c575",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"

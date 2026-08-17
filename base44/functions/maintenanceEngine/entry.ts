@@ -5,6 +5,13 @@ import{MAINTENANCE_VERSION,healthScore,isAutomatic,learningKey,remediationFor,re
 import{dispatchIncidentAlertBatch}from'../../shared/incidentAlerting.ts';
 import{evaluateSchedulerEvidence}from'../../shared/schedulerRun.ts';
 import{handleCostGovernanceWorker}from'../costGovernanceWorker/entry.ts';
+// COMMAND-C7: the sweep that advances durable CommandRun slices. It adds no
+// authority of its own; every guard lives inside advanceCommandRun.
+import{sweepCommandRuns,MAX_RUNS_PER_SWEEP}from'../../shared/commandRunWorker.ts';
+import{buildToolRegistry}from'../../shared/commandToolRegistry.ts';
+import{CHAT_TOOLS}from'../../shared/commandToolCatalog.ts';
+import{routeToolCall}from'../../shared/commandModelRouter.ts';
+import{RUN_CAPS,SLICE_MAX_STEPS}from'../../shared/commandRunAdminCore.ts';
 import{handleProductionReadinessWorker}from'../productionReadinessWorker/entry.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
@@ -49,7 +56,45 @@ async function safeRepair(s:any,internal:string,signal:MaintenanceSignal,action:
  }catch(e){return{attempted:true,verified:false,error:String((e as Error)?.message||e).slice(0,500)}}
 }
 
-guardedScheduledServe({"worker_key":"maintenanceEngine","cadence_seconds":600,"routes":{"cost_governance":{"worker_key":"costGovernanceWorker","cadence_seconds":3600},"production_readiness":{"worker_key":"productionReadinessWorker","cadence_seconds":86400},"disaster_recovery_backup":{"worker_key":"disasterRecoveryBackup","cadence_seconds":86400}}},createClientFromRequest,async req=>{const routed=await req.clone().json().catch(()=>({}));if(routed.host_action==='cost_governance')return (await handleCostGovernanceWorker(req))||Response.json({ok:false,error:'cost_governance_response_missing'},{status:500});if(routed.host_action==='production_readiness')return (await handleProductionReadinessWorker(req))||Response.json({ok:false,error:'production_readiness_response_missing'},{status:500});if(routed.host_action==='disaster_recovery_backup'||String(routed.action||'').startsWith('dr_'))return (await handleDisasterRecovery(req))||Response.json({ok:false,error:'disaster_recovery_response_missing'},{status:500});const b=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,b,body);if(!gate.ok)return gate.response||Response.json({error:'forbidden'},{status:403});const s=b.asServiceRole,started=now(),run=await s.entities.MaintenanceRun.create({run_key:`maintenance:${started}`,engine_version:MAINTENANCE_VERSION,status:'running',started_at:started});try{
+guardedScheduledServe({"worker_key":"maintenanceEngine","cadence_seconds":600,"routes":{"cost_governance":{"worker_key":"costGovernanceWorker","cadence_seconds":3600},"production_readiness":{"worker_key":"productionReadinessWorker","cadence_seconds":86400},"disaster_recovery_backup":{"worker_key":"disasterRecoveryBackup","cadence_seconds":86400},"command_run_sweep":{"worker_key":"commandRunWorker","cadence_seconds":300}}},createClientFromRequest,async req=>{const routed=await req.clone().json().catch(()=>({}));if(routed.host_action==='command_run_sweep'){
+  const svc=createClientFromRequest(req).asServiceRole;
+  const sha=async(value:any)=>{const bytes=new TextEncoder().encode(JSON.stringify(value));const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map((b)=>b.toString(16).padStart(2,'0')).join('')};
+  const registry=buildToolRegistry(CHAT_TOOLS as any[]);
+  const result=await sweepCommandRuns({
+    svc,now:()=>new Date().toISOString(),sha256:sha,
+    registry,caps:RUN_CAPS,slice_max_steps:SLICE_MAX_STEPS,maxRuns:MAX_RUNS_PER_SWEEP,
+    // Routed across both providers through the C7 tool-format layer, so a swept
+    // run is not pinned to one vendor. Canonical history in, canonical call out.
+    callModel:async({request,history})=>{
+      const canonical:any[]=[{kind:'user',text:request}];
+      for(const step of history){
+        canonical.push({kind:'assistant',text:'',call:{name:step.tool,input:step.input,call_id:`step-${step.index}`}});
+        canonical.push({kind:'tool_result',call_id:`step-${step.index}`,tool_name:step.tool,result:step.result_summary||step.status,is_error:step.status!=='EXECUTED'});
+      }
+      const answer=await routeToolCall({
+        svc,history:canonical,tools:CHAT_TOOLS as any[],task_class:'PLANNING',
+        eventKey:`run_sweep:${crypto.randomUUID()}`,source:'commandRunWorker',
+      });
+      // A tool we could not parse is reported as no tool, never guessed at.
+      return {text:answer.text,tool:answer.call?{name:answer.call.name,input:answer.call.input}:null};
+    },
+    executeTool:async({name,input})=>{
+      const tool=(CHAT_TOOLS as any[]).find((row:any)=>row.name===name);
+      if(!tool)return{ok:false,summary:'tool_not_found'};
+      try{
+        const res=await svc.functions.invoke(tool.function,{...(tool.fixed_input||{}),...input});
+        const data=res?.data||res;
+        if(data?.requires_confirmation)return{ok:true,ambiguous:true,summary:'requires_confirmation'};
+        return{ok:data?.ok!==false,summary:String(data?.summary||data?.status||'ok').slice(0,300)};
+      }catch(error:any){return{ok:false,summary:String(error?.message||'invoke_failed').slice(0,300)}}
+    },
+    readEmergency:async()=>{try{const rows=await svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_date',1);const control=rows?.[0]||null;if(!control)return{available:false,control:null,revision:null};return{available:true,control,revision:Number(control.control_revision??0)}}catch{return{available:false,control:null,revision:null}}},
+    readPermit:async(run:any)=>{const permitId=String(run?.permit_id||'').trim();if(!permitId)return{available:true,permit:null};try{const rows=await svc.entities.FounderPermit.filter({permit_id:permitId},'-created_at',1);return{available:true,permit:rows?.[0]||null}}catch{return{available:false,permit:null}}},
+    autonomousEffectClasses:['read','analysis','internal_write'],
+  });
+  return Response.json(result);
+}
+if(routed.host_action==='cost_governance')return (await handleCostGovernanceWorker(req))||Response.json({ok:false,error:'cost_governance_response_missing'},{status:500});if(routed.host_action==='production_readiness')return (await handleProductionReadinessWorker(req))||Response.json({ok:false,error:'production_readiness_response_missing'},{status:500});if(routed.host_action==='disaster_recovery_backup'||String(routed.action||'').startsWith('dr_'))return (await handleDisasterRecovery(req))||Response.json({ok:false,error:'disaster_recovery_response_missing'},{status:500});const b=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,b,body);if(!gate.ok)return gate.response||Response.json({error:'forbidden'},{status:403});const s=b.asServiceRole,started=now(),run=await s.entities.MaintenanceRun.create({run_key:`maintenance:${started}`,engine_version:MAINTENANCE_VERSION,status:'running',started_at:started});try{
  const [integrations,deadLetters,tasks,pricing,invoices,securityAudits,providerStatements,schedulerRuns]=await Promise.all([
   s.entities.Integration.list('-created_date',2000),s.entities.WebhookDeadLetter.list('-created_date',1000),s.entities.AgentTask.list('-created_date',3000),s.entities.ProviderPricingVersion.list('-observed_at',2000),s.entities.Invoice.list('-created_date',3000),s.entities.SecurityAudit.list('-created_date',1000),s.entities.ProviderRevenueStatement.list('-received_at',1000),s.entities.SchedulerRun.list('-started_at',5000).catch((error:any)=>safeBestEffort(error,{operation:'maintenanceEngine',fallback:[],severity:'secondary'}))
  ]);

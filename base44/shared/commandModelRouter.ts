@@ -22,6 +22,10 @@
 
 import { reservePaidOperation, settlePaidOperation } from './costGovernance.ts';
 import { extractAnthropicText } from './anthropicResponse.ts';
+// COMMAND-C7: the tool-format translation layer that makes tool-use dual-provider.
+import {
+  readCallForProvider, toolResultMessage, toolsForProvider, validateToolSet,
+} from './commandToolFormat.ts';
 
 export const COMMAND_MODEL_ROUTER_VERSION = 'command-model-router-1.0.0';
 
@@ -493,6 +497,181 @@ export async function callCambraModel(prompt: string, opts: {
     text: routed.text || '',
     model: routed.decision.selected_model,
     provider: routed.decision.selected_provider,
+    decision: routed.decision,
+  };
+}
+
+/**
+ * COMMAND-C7 — a tool-capable routed call.
+ *
+ * C5 shipped `callCambraModel` for plain prompt->text and said explicitly that
+ * tool-use callers had to stay provider-specific, because the two wire formats
+ * differ. commandToolFormat.ts closes that, so this exists: the loop can now take
+ * a tool-calling step on either provider and never learn which answered.
+ *
+ * Conversation state stays PROVIDER-NATIVE and is rebuilt per call from the
+ * canonical history. Translating an accumulated transcript between formats on
+ * every turn is where a field gets silently dropped; rebuilding from one
+ * canonical source cannot drift.
+ */
+export async function routeToolCall(input: {
+  svc: any;
+  /** Canonical history: user text plus prior (call, result) pairs. */
+  history: Array<
+    | { kind: 'user'; text: string }
+    | { kind: 'assistant'; text: string; call?: { name: string; input: any; call_id: string } | null }
+    | { kind: 'tool_result'; call_id: string; tool_name: string; result: unknown; is_error?: boolean }
+  >;
+  tools: any[];
+  system?: string;
+  task_class?: TaskClass | string;
+  requested_provider?: string;
+  maxTokens?: number;
+  eventKey: string;
+  source: string;
+  run_id?: string;
+  conversation_id?: string;
+  step_key?: string;
+  readEmergency?: Parameters<typeof routeModelCall>[0]['readEmergency'];
+}) {
+  if (!input?.svc) throw new Error('cost_service_context_required');
+  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY') || '';
+  const openAiKey = Deno.env.get('OPENAI_API_KEY') || '';
+  const anthropicModel = Deno.env.get('ANTHROPIC_STANDARD_MODEL') || 'claude-sonnet-5';
+  const openAiModel = Deno.env.get('OPENAI_COMMAND_MODEL') || 'gpt-4.1';
+
+  const toolSet = validateToolSet(input.tools);
+  if (!toolSet.ok) {
+    // A tool the wire format cannot carry must be reported. Dropping it would
+    // make the model unable to request something the registry says exists, with
+    // no error anywhere.
+    throw Object.assign(new Error('tool_set_not_declarable'), {
+      code: 'TOOL_SET_NOT_DECLARABLE', rejected: toolSet.rejected,
+    });
+  }
+
+  /** Rebuilds the provider-native transcript from canonical history. */
+  const transcriptFor = (provider: Provider) => {
+    if (provider === 'openai') {
+      const rows: any[] = [];
+      for (const entry of input.history) {
+        if (entry.kind === 'user') rows.push({ role: 'user', content: entry.text });
+        else if (entry.kind === 'assistant') {
+          if (text(entry.text)) rows.push({ role: 'assistant', content: entry.text });
+          if (entry.call) {
+            rows.push({
+              type: 'function_call', call_id: entry.call.call_id,
+              name: entry.call.name, arguments: JSON.stringify(entry.call.input ?? {}),
+            });
+          }
+        } else rows.push(toolResultMessage('openai', entry));
+      }
+      return rows;
+    }
+    const rows: any[] = [];
+    for (const entry of input.history) {
+      if (entry.kind === 'user') rows.push({ role: 'user', content: entry.text });
+      else if (entry.kind === 'assistant') {
+        const content: any[] = [];
+        if (text(entry.text)) content.push({ type: 'text', text: entry.text });
+        if (entry.call) {
+          content.push({
+            type: 'tool_use', id: entry.call.call_id,
+            name: entry.call.name, input: entry.call.input ?? {},
+          });
+        }
+        if (content.length) rows.push({ role: 'assistant', content });
+      } else rows.push(toolResultMessage('anthropic', entry));
+    }
+    return rows;
+  };
+
+  let answered: { provider: Provider; payload: any } | null = null;
+
+  const routed = await routeModelCall({
+    prompt: '',   // the transcript carries the request; no flat prompt is sent
+    task_class: input.task_class || 'PLANNING',
+    requested_provider: input.requested_provider,
+    configured: { anthropic: Boolean(anthropicKey), openai: Boolean(openAiKey) },
+    now: () => new Date().toISOString(),
+    newId: () => crypto.randomUUID(),
+    run_id: input.run_id, conversation_id: input.conversation_id, step_key: input.step_key,
+    readEmergency: input.readEmergency,
+    callProvider: async (provider) => {
+      const reservation = await reservePaidOperation(input.svc, {
+        event_key: `ai:${input.source}:${provider}:tools:${input.eventKey}`,
+        category: 'ai', provider, source: input.source,
+      });
+      const transport = { started: false };
+      const model = provider === 'anthropic' ? anthropicModel : openAiModel;
+      try {
+        transport.started = true;
+        const response = provider === 'anthropic'
+          ? await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01' },
+            body: JSON.stringify({
+              model, max_tokens: input.maxTokens || 2200,
+              ...(text(input.system) ? { system: input.system } : {}),
+              tools: toolsForProvider('anthropic', input.tools),
+              messages: transcriptFor('anthropic'),
+            }),
+          })
+          : await fetch('https://api.openai.com/v1/responses', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${openAiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model, store: false, temperature: 0,
+              max_output_tokens: input.maxTokens || 2200,
+              ...(text(input.system) ? { instructions: input.system } : {}),
+              tools: toolsForProvider('openai', input.tools),
+              input: transcriptFor('openai'),
+            }),
+          });
+        const data = await response.json().catch(() => ({}));
+        const usage = {
+          input_tokens: Number(data?.usage?.input_tokens || 0),
+          output_tokens: Number(data?.usage?.output_tokens || 0),
+        };
+        await settlePaidOperation(input.svc, reservation, { ok: response.ok, usage_json: { model, ...usage } });
+        if (!response.ok) {
+          return { ok: false, transport_started: true, http_status: response.status, model, error_code: `${provider}_http_${response.status}` };
+        }
+        answered = { provider, payload: data };
+        return { ok: true, transport_started: true, model, text: '', ...usage };
+      } catch (error: any) {
+        await settlePaidOperation(input.svc, reservation, { ok: false, usage_json: { model } }).catch(() => null);
+        return { ok: false, transport_started: transport.started, model, error_code: text(error?.message) || `${provider}_unavailable` };
+      }
+    },
+    persistDecision: async (row) => {
+      try { return await input.svc.entities.ModelRouteDecision.create(row); }
+      catch (error) {
+        console.error(JSON.stringify({ event: 'model_route_decision_unpersisted', source: input.source, error: String((error as any)?.message || error).slice(0, 160) }));
+        return null;
+      }
+    },
+  });
+
+  if (!routed.ok || !answered) {
+    throw Object.assign(new Error(routed.blockers[0] || 'model_route_failed'), {
+      code: routed.decision?.route_outcome === 'REVIEW_REQUIRED'
+        ? 'PROVIDER_EFFECT_REVIEW_REQUIRED' : 'MODEL_ROUTE_REFUSED',
+      review_required: routed.decision?.route_outcome === 'REVIEW_REQUIRED',
+      automatic_retry_blocked: true,
+      decision: routed.decision,
+    });
+  }
+
+  const read = readCallForProvider(answered.provider, answered.payload);
+  return {
+    text: read.text,
+    call: read.call,
+    // Surfaced so a caller can tell "the model chose not to use a tool" from
+    // "we could not read the tool it chose".
+    tool_parse_failed: (read as any).parse_failed === true,
+    provider: answered.provider,
+    model: routed.decision.selected_model,
     decision: routed.decision,
   };
 }
