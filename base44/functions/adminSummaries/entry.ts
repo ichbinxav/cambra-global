@@ -15,6 +15,8 @@ import { handleCommandRunAction } from '../../shared/commandRunAdminCore.ts';
 import { handlePipelineAdminAction } from '../../shared/pipelineAdminCore.ts';
 // DASHBOARD-C4: Audits & Opportunities, also a logical route.
 import { handleAuditsAdminAction } from '../../shared/auditsAdminCore.ts';
+// DASHBOARD-C6: Recover, also a logical route.
+import { handleRecoverAdminAction } from '../../shared/recoverAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
@@ -33,6 +35,7 @@ Deno.serve(async (req) => {
     if (String(routedBody?.action||'').startsWith('command_run_')) return handleCommandRunAction(user,{...routedBody,action:String(routedBody.action).replace(/^command_run_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('pipeline_')) return handlePipelineAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^pipeline_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('audits_')) return handleAuditsAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^audits_/, '')},base44.asServiceRole);
+    if (String(routedBody?.action||'').startsWith('recover_')) return handleRecoverAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^recover_/, '')},base44.asServiceRole);
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
     if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 

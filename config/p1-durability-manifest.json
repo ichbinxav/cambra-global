@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T11:32:44.705Z",
+  "generatedAt": "2026-08-17T11:39:57.017Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -37,8 +37,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "56c726a6ab6483d08b2fc1c86ee3539e4c6967830a130067c3693959de3e6e85",
-      "bytes": 7656
+      "sha256": "247a053da6b7e046f539d0a5528ecc4c0215e4088205894c82937035ed2636b2",
+      "bytes": 7881
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -457,8 +457,8 @@
     },
     {
       "path": "base44/functions/adminSummaries/entry.ts",
-      "sha256": "cca22f2017891a7f62bb28c69bb2b872c7def82187fe517ef3b3dc1b32fa3ab4",
-      "bytes": 7268
+      "sha256": "63930c90f0246a135814207317e6136aa36d87d460c71fcaf49e6d29b68c9b3e",
+      "bytes": 7590
     },
     {
       "path": "base44/functions/adminUpdateApplicationStatus/entry.ts",
@@ -2012,7 +2012,7 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "6538fa8356edb02fbcf3b2a110bb8012400b196d493e64faf2c4532aad8b8007",
+      "sha256": "bb6b05824f792de707277dbdbbc96fa857358c717d885ab7ef35d96db419d45f",
       "bytes": 30598
     },
     {
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "c98e26cd05961b8a12bf5976c049788820a610414af9408e691707c7053b8291",
+      "sha256": "fc936fbad050044a7344238cc8fec68f2539dd094e8f262454b7b8d6569e2370",
       "bytes": 42987
     },
     {
@@ -2187,22 +2187,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "f46f940c43a0d3881ba02a644563ac56ed381b2017321ebeac377adfa1d33193",
+      "sha256": "e7c37a498a62cdecd4ce6a2e2d08823303b044af8a19fa7ea697ac28d4d1d92e",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "f0e400d3d697a89d599760a2a88a454d2d528b96369c3837a54b0d1b2993efb9",
+      "sha256": "69d7a3789e3f8c04921327f52efae6a09ab7d17946e0b8340ad6f3d37160ab21",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "eacb902090a422e81664cdcca1a252652b430b297e450beaaf0a92e5638870d1",
+      "sha256": "0ff5d578607e1f975bfa486b72404e6b0f33396317479a80b6e5127a062066a0",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "54e7ecc148e1e22e580f5413a41aed8f9593713f64d7479e1b81709f21b863aa",
+      "sha256": "09eb4e0d17f50d13ceba3a99ab14bba019a67d0198fe376867be4d759d191c9a",
       "bytes": 98284
     },
     {
@@ -2267,8 +2267,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "de8770bcb3d9b4fea080418c372ddbf493269a482bd98a41b49ce7caab4c79cb",
-      "bytes": 12085
+      "sha256": "edd552ed3e85947890dc7cfaa11ae852f56cc16f974dbe8439b40ce968b068d9",
+      "bytes": 12190
     },
     {
       "path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
@@ -2497,8 +2497,8 @@
     },
     {
       "path": "scripts/lib/base44Bundle.mjs",
-      "sha256": "3bdecf722e3dbcd0ba2d648cabc24a2936f40ab665018632eeaf85bfe92f73c9",
-      "bytes": 12677
+      "sha256": "bc333c5aa3e332e9acad7228cc1f451cf0f3145a626aad1b5ef0971b25fec8c2",
+      "bytes": 12763
     },
     {
       "path": "scripts/lib/evidence.mjs",
@@ -2952,13 +2952,13 @@
     },
     {
       "path": "src/lib/base44DeploymentTopology.test.js",
-      "sha256": "7f3f9f825c7937199aa4169c7436d6deb2d6d553b0a269cde956c60785831ae9",
-      "bytes": 6429
+      "sha256": "8d801c8b61c2d7669d3c3016d79d4de5f74dae175fb6daba79b78028a4f4f264",
+      "bytes": 6497
     },
     {
       "path": "src/lib/base44ReproduciblePipeline.test.js",
-      "sha256": "111e136022aae1f09366063131342ec0153ddf9bbc6ae3eb42ba22006aceee26",
-      "bytes": 10571
+      "sha256": "e8c77236f449c451c109a9a2d4ace7e74a03ac73403759b9d58f2f8bdf677781",
+      "bytes": 10642
     },
     {
       "path": "src/lib/cambraDeveloper.test.js",

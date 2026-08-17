@@ -228,6 +228,14 @@
       },
       "boundary": "strict_admin"
     },
+    "recoverWorkspaceAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/recoverAdminCore.ts",
+      "route": {
+        "action_prefix": "recover_"
+      },
+      "boundary": "strict_admin"
+    },
     "auditsWorkspaceAdmin": {
       "host": "adminSummaries",
       "source_module": "base44/shared/auditsAdminCore.ts",

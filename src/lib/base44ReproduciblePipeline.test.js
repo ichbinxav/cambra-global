@@ -113,12 +113,13 @@ describe("reproducible Base44 physical bundle pipeline", () => {
   // COMMAND-C7 (2026-08-17) — 31 -> 32 for commandRunWorker.
   // DASHBOARD-C3 (2026-08-17) — 32 -> 33 for pipelineWorkspaceAdmin.
   // DASHBOARD-C4 (2026-08-17) — 33 -> 34 for auditsWorkspaceAdmin.
-  it("rebuilds a clean source checkout into the exact 276 physical / 34 logical topology", () => {
+  // DASHBOARD-C6 (2026-08-17) — 34 -> 35 for recoverWorkspaceAdmin.
+  it("rebuilds a clean source checkout into the exact 276 physical / 35 logical topology", () => {
     expect(firstIdentity).toMatchObject({
       schema_version: "cambra-base44-function-bundle-v2",
       functions_dir: BASE44_FUNCTIONS_DIR,
       physical_function_count: 276,
-      logical_route_count: 34,
+      logical_route_count: 35,
       hash_algorithm: BASE44_BUNDLE_HASH_ALGORITHM,
       escaped_relative_import_count: 0,
       unresolved_relative_import_count: 0,
