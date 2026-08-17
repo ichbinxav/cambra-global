@@ -68,6 +68,10 @@ for (const row of Array.isArray(registry.legacy_redirects) ? registry.legacy_red
   } else if (!row.blocker) {
     // An unready redirect with no stated blocker is an undeclared gap.
     fail(`${row.from} is not ready and states no blocker`);
+  } else if (row.blocker_cleared === true && !/C13|retire/i.test(row.blocker)) {
+    // A cleared blocker that does not say what still holds the redirect back would
+    // read as "nearly done" with nothing naming the remaining step.
+    fail(`${row.from} declares blocker_cleared but its blocker does not name the remaining step`);
   }
 }
 
@@ -86,13 +90,14 @@ for (const child of registry.advanced_system_children || []) {
 const rendersFromRegistry = layout.includes('dashboardNavigation') || layout.includes('navigation.v1.json');
 
 const readyRedirects = (registry.legacy_redirects || []).filter((row) => row.ready === true).length;
+const clearedRedirects = (registry.legacy_redirects || []).filter((row) => row.blocker_cleared === true && row.ready !== true).length;
 const pendingRedirects = (registry.legacy_redirects || []).length - readyRedirects;
 const notBuilt = target.filter((row) => row.state === 'NOT_BUILT').map((row) => row.path);
 
 if (failures) process.exit(1);
 console.log(
   `dashboard:navigation:check PASS — 12 target entries, ${readyRedirects} redirects ready, ` +
-  `${pendingRedirects} pending with declared blockers, ${notBuilt.length} workspaces not built` +
+  `${pendingRedirects} pending with declared blockers (${clearedRedirects} blocker-cleared, awaiting C13 retirement), ${notBuilt.length} workspaces not built` +
   `${notBuilt.length ? ` (${notBuilt.join(', ')})` : ''}; ` +
   `layout renders from ${rendersFromRegistry ? 'registry' : 'inline NAV (consolidation pending, C13)'}; ` +
   `physical function target 276 unchanged`,

@@ -224,9 +224,16 @@ describe("C1 — the navigation registry is the single source of truth", () => {
     expect(registry.target_group_order).toEqual(["COMMAND", "GROWTH", "CLIENTS", "BUSINESS", "SYSTEM"]);
   });
 
-  it("declares the two unbuilt workspaces rather than implying they exist", () => {
+  it("declares what is still unbuilt rather than implying it exists", () => {
+    // C1 pinned two: /admin/audits and /admin/recover. C7 built Recover, so the
+    // assertion now records the progress instead of the old snapshot. A route that
+    // exists while declared NOT_BUILT is caught separately by
+    // dashboard:navigation:check, which is the direction that would hide work.
     const notBuilt = registry.target_navigation.filter((row) => row.state === "NOT_BUILT");
-    expect(notBuilt.map((row) => row.path)).toEqual(["/admin/audits", "/admin/recover"]);
+    expect(notBuilt.map((row) => row.path)).toEqual(["/admin/audits"]);
+
+    const recover = registry.target_navigation.find((row) => row.path === "/admin/recover");
+    expect(recover.state).toBe("LIVE");
   });
 
   it("gives every pending redirect a stated blocker", () => {

@@ -85,8 +85,8 @@
       "path": "/admin/recover",
       "label_key": "nav.recover",
       "label": "Recover",
-      "state": "NOT_BUILT",
-      "chunk": "C6-C7"
+      "state": "LIVE",
+      "note": "Built in C7. Projects DealActivation, the canonical root. Reports billing eligibility only."
     },
     {
       "order": 10,
@@ -196,7 +196,9 @@
         "tab": "contracts"
       },
       "ready": false,
-      "blocker": "AdminContracts.jsx:49 writes Contract directly from the browser; a governed handler must exist first (C7)"
+      "note": "Unblocked in C7: AdminContracts now uses the governed recover_apply_contract_edit handler with a field allowlist, a required reason and CAS. The direct browser write is gone.",
+      "blocker_cleared": true,
+      "blocker": "Blocker cleared in C7 (the governed contract handler exists and the direct browser write is gone). The redirect itself is wired in C13, when routes are retired after parity."
     },
     {
       "from": "/admin/revenue",
@@ -286,5 +288,6 @@
     "note": "Every workspace surface is a view+action on an existing host, so it is a LOGICAL route. This programme must not add a physical function.",
     "reference_pattern": "src/pages/admin/AdminMerchants.jsx:118-124",
     "no_direct_browser_crud": "A workspace page must contain zero base44.entities writes. Reads through a governed portfolio call only."
-  }
+  },
+  "redirect_semantics": "ready=true means the redirect is LIVE in src/App.jsx. blocker_cleared=true means the technical obstacle is gone but the route still serves its own page, because section 2.5 requires parity, deep-link preservation and navigation tests before retirement, and section 24 puts that in C13. Conflating the two would let the registry claim a redirect that does not exist."
 }

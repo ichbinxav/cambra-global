@@ -61,6 +61,8 @@ const AdminApplications = lazy(() => import('@/pages/admin/AdminApplications'));
 // kanban over DealApplication (an entity with zero producers and zero rows) is
 // kept on disk unrouted until C13 retires it with its redirect.
 const AdminPipelineWorkspace = lazy(() => import('@/pages/admin/AdminPipelineWorkspace'));
+// DASHBOARD-C7: the Recover workspace.
+const AdminRecover = lazy(() => import('@/pages/admin/AdminRecover'));
 const AdminDeals = lazy(() => import('@/pages/admin/AdminDeals'));
 const AdminProviders = lazy(() => import('@/pages/admin/AdminProviders'));
 const AdminContracts = lazy(() => import('@/pages/admin/AdminContracts'));
@@ -381,6 +383,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
           <Route path="/admin/pipeline" element={withBoundary(<AdminPipelineWorkspace />)} />
+          <Route path="/admin/recover" element={withBoundary(<AdminRecover />)} />
           <Route path="/admin/deals" element={withBoundary(<AdminDeals />)} />
           <Route path="/admin/providers" element={withBoundary(<AdminProviders />)} />
           <Route path="/admin/revenue" element={withBoundary(<AdminRevenue />)} />

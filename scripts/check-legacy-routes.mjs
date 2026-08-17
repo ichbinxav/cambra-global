@@ -34,8 +34,13 @@ const KNOWN_DIRECT_CRUD = [
     severity: 'CRITICAL',
     note: 'Creates and HARD-DELETES outbound delivery configuration from the browser with no governed handler and no receipt. Standing configuration is a material effect class.',
   },
-  { file: 'src/pages/admin/AdminContracts.jsx', entity: 'Contract', ops: ['update'], severity: 'HIGH',
-    note: 'Writes the entire form object over a contract.' },
+  {
+    file: 'src/pages/admin/AdminContracts.jsx', entity: 'Contract', ops: ['update'], severity: 'HIGH',
+    note: 'FIXED in DASHBOARD-C7. The page now calls recover_preview_contract_edit and '
+      + 'recover_apply_contract_edit: a field allowlist, a required reason, CAS on every changed '
+      + 'field, and an append to the contract activity_log. The entry stays in this list so a '
+      + 'regression would be detected as a re-opened known site rather than as a new one.',
+  },
   { file: 'src/pages/admin/AdminProviders.jsx', entity: 'Provider', ops: ['update', 'create'], severity: 'HIGH',
     note: 'Line 36 builds revenue_share_pct — provider compensation — from a browser form.' },
   { file: 'src/components/admin/integrations/OrganizationsPanel.jsx', entity: 'Organization', ops: ['create', 'update'],

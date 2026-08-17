@@ -3,6 +3,20 @@ import { base44 } from "@/api/base44Client";
 import { Search, X, Save, FileText, ExternalLink } from "lucide-react";
 import { formatSavings } from "@/lib/deals";
 
+// DASHBOARD-C7: contract corrections go through the governed Recover handler.
+// The field list mirrors EDITABLE_FIELDS in recoverContractCore so the form cannot
+// offer a field the handler will refuse.
+const EDITABLE_CONTRACT_FIELDS = ["deal_name", "provider", "category", "start_date", "end_date"];
+const payload = (response) => response?.data || response || {};
+async function callRecover(action, body = {}) {
+  const data = payload(await base44.functions.invoke("adminSummaries", { action: `recover_${action}`, ...body }));
+  if (data?.ok === false || data?.error) {
+    throw Object.assign(new Error(data?.error || "contract_operation_failed"), { data });
+  }
+  return data;
+}
+
+
 const STATUS_CFG = {
   pending: { label: "Pending", color: "text-muted-foreground bg-secondary border-border/40" },
   sent: { label: "Sent", color: "text-blue-600 bg-blue-500/10 border-blue-500/20" },
@@ -21,6 +35,8 @@ export default function AdminContracts() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(null);
+  const [editReason, setEditReason] = useState("");
+  const [editError, setEditError] = useState(null);
 
   const load = async () => {
     const [c, b] = await Promise.all([
@@ -43,13 +59,45 @@ export default function AdminContracts() {
     setForm({ ...c });
   };
 
+  // DASHBOARD-C7: this used to be a generic entity update on Contract taking the
+  // whole form object — written over a contract from the browser, with no
+  // validation, no tenant check, no field allowlist and no receipt. It now goes
+  // through a governed handler that allows only correctable metadata fields,
+  // requires a reason, uses compare-and-swap, and appends to the contract's own
+  // activity_log. A patch touching a protected field is refused whole rather than
+  // partially applied.
   const saveContract = async () => {
-    if (!form) return;
+    if (!form || !selected) return;
+    if (!editReason.trim()) { setEditError("A reason is required to correct a contract."); return; }
     setSaving(true);
-    const updated = await base44.entities.Contract.update(form.id, form);
-    setContracts(prev => prev.map(c => c.id === updated.id ? updated : c));
-    setSelected(updated);
-    setSaving(false);
+    setEditError(null);
+    try {
+      // Only the fields the handler accepts are sent. Sending the whole form is
+      // exactly the defect this replaces.
+      const patch = {};
+      for (const field of EDITABLE_CONTRACT_FIELDS) {
+        if (String(form[field] ?? "") !== String(selected[field] ?? "")) patch[field] = form[field];
+      }
+      const previewed = await callRecover("preview_contract_edit", {
+        contract_id: selected.id, patch, reason: editReason.trim(),
+      });
+      if (!previewed?.preview?.allowed) {
+        const refused = (previewed?.preview?.protected_fields_refused || [])
+          .map((row) => `${row.field} (${row.why})`).join("; ");
+        setEditError(refused || (previewed?.preview?.blockers || []).join(", ") || "Refused.");
+        return;
+      }
+      await callRecover("apply_contract_edit", {
+        contract_id: selected.id, patch, reason: editReason.trim(),
+        expected_preview_hash: previewed.preview_hash,
+      });
+      setEditReason("");
+      await load();
+    } catch (e) {
+      setEditError(e?.message || "Could not correct this contract.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const getBrand = (email) => brands.find(b => b.created_by === email);

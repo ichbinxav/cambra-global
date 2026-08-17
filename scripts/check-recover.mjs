@@ -52,10 +52,26 @@ if (!/status: 'proposed'/.test(core)) {
   fail('a new case must be created in the weakest phase, never already authorized');
 }
 
+// 7. The governed Contract handler must keep its allowlist and its protections.
+const contract = fs.readFileSync('base44/shared/recoverContractCore.ts', 'utf8');
+for (const protectedField of ['user_email', 'deal_activation_id', 'node_revenue_pct', 'estimated_savings_annual', 'status', 'activity_log']) {
+  if (!new RegExp(`${protectedField}:`).test(contract)) {
+    fail(`recoverContractCore must protect ${protectedField} — it binds a party, a case, economics or lifecycle`);
+  }
+}
+if (!/EDITABLE_FIELDS = Object\.freeze/.test(contract)) fail('recoverContractCore must declare a frozen field allowlist');
+if (!contract.includes('reason_required')) fail('a contract correction must require a reason');
+if (!contract.includes('field_not_editable')) fail('an unknown field must be refused, not ignored');
+// The page must not have regressed to a generic write.
+const page = fs.readFileSync('src/pages/admin/AdminContracts.jsx', 'utf8');
+if (/base44\.entities\.Contract\.(update|create|delete)\(/.test(page)) {
+  fail('AdminContracts writes Contract directly again — the C7 governed handler was bypassed');
+}
+
 if (failures) process.exit(1);
 console.log(
   'recover:check PASS — root is DealActivation with no competing aggregate, billing eligibility only ' +
   '(no invoice, no billable amount), verified figure required, open-case idempotent and gated on the ' +
   'shared eligibility rules, unreadable existing-case check refuses, nullable coercion centralised, ' +
-  'new cases open in the weakest phase',
+  'new cases open in the weakest phase, Contract corrections go through the governed allowlist handler',
 );
