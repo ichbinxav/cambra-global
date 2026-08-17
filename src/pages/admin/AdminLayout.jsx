@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  LayoutDashboard, FileText, Handshake, Building2,
+  LayoutDashboard, Handshake, Building2,
   ClipboardCheck, GitBranch, ChevronRight, Menu, X, LogOut, FileCheck, Plug, ShieldCheck, Activity, MessageSquare, Search, FileSearch, Bot, Workflow, Code2, BrainCircuit, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Settings2, Megaphone, MessagesSquare
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -257,14 +257,13 @@ const NAV = [
   { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch, advanced: true },
   { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity, advanced: true },
   { path: "/admin/merchants", label: "Merchants", icon: Building2 },
-  { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
   // DASHBOARD-C13: neither of these was in the sidebar. /admin/recover has been unreachable
   // from navigation since C7 built it — only by typing the URL. The reverse-coverage check in
   // dashboard:navigation:check found it.
   { path: "/admin/audits", label: "Audits & Opportunities", icon: ClipboardCheck },
   { path: "/admin/recover", label: "Recover", icon: FileCheck },
-  { path: "/admin/deals", label: "Deals", icon: Handshake },
+  { path: "/admin/deals", label: "Deals", icon: Handshake , advanced: true },
   { path: "/admin/integrations", label: "Integrations", icon: Plug, advanced: true },
   { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug, advanced: true },
   { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck, advanced: true },

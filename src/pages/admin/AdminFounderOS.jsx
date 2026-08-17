@@ -10,36 +10,19 @@
 //   3. Inbox and Approvals merge into ONE founder queue, because two separate queues is how
 //      one of them gets ignored.
 //
-// HONEST LIMIT ON DECISION 3: this puts both surfaces in one place, which is the navigation
-// decision. It does NOT merge them into a single ranked list — that needs a projection over
-// three differently-shaped sources (AgentQuestion, AgentTask, Approval) with one ordering, and
-// inventing that ordering here would be a guess about which item a founder should see first.
-// Declared as the remaining step rather than implied by the tab label.
+// DECISION 3 IS NOW COMPLETE. C14 put both surfaces in one place and said plainly that it had
+// not merged them into one ranked list. C16 does: founderQueueCore projects Approval,
+// AgentQuestion and AgentTask into one list under a DECLARED ordering rule, and the UI renders
+// that rule beside the items so it can be argued with rather than trusted.
 import React from "react";
-import { AlertTriangle } from "lucide-react";
 import WorkspaceTabs from "@/components/admin/WorkspaceTabs";
 import AdminOverview from "./AdminOverview";
 import AdminCommand from "./AdminCommand";
-import AdminInbox from "./AdminInbox";
-import AdminApprovals from "./AdminApprovals";
+import FounderQueue from "@/components/admin/FounderQueue";
 
-function FounderQueue() {
-  return (
-    <div className="space-y-4">
-      <div data-testid="queue-fusion-note" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 flex items-start gap-2">
-        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-        <span>
-          Questions, tasks and approvals are in one place but still in two lists. A single ranked
-          queue needs one ordering across three differently-shaped sources; until that exists,
-          read both.
-        </span>
-      </div>
-      <AdminInbox />
-      <AdminApprovals />
-    </div>
-  );
-}
-
+// DASHBOARD-C16: the queue is now ONE ranked list with a declared ordering, so the stacked
+// pair and its caveat are gone. The two source pages remain reachable by URL; what the founder
+// asked for was one queue, and this is it.
 const TABS = [
   { key: "overview", label: "Overview", body: AdminOverview },
   { key: "command", label: "Command summary", body: AdminCommand },

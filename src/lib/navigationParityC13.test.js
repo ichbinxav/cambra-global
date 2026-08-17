@@ -24,9 +24,13 @@ const ready = registry.legacy_redirects.filter((row) => row.ready === true);
 const pending = registry.legacy_redirects.filter((row) => row.ready !== true);
 
 describe("C13 — every retired route redirects to exactly what the registry declares", () => {
-  it("retires ten routes and leaves two pending with corrected blockers", () => {
+  it("retires ten routes and leaves none pending", () => {
     expect(ready).toHaveLength(10);
-    expect(pending.map((row) => row.from).sort()).toEqual(["/admin/applications", "/admin/deals"]);
+    // C16 resolved the last two WITHOUT a redirect, so they left legacy_redirects: a row
+    // pointing at a route that no longer exists points at nothing, which the gate rejects.
+    expect(pending).toEqual([]);
+    expect(registry.resolved_without_redirect.map((row) => row.from).sort())
+      .toEqual(["/admin/applications", "/admin/deals"]);
   });
 
   it("wires each ready redirect in App.jsx to the declared destination and query", () => {
@@ -54,16 +58,14 @@ describe("C13 — every retired route redirects to exactly what the registry dec
     }
   });
 
-  it("gives each pending route a blocker that reflects what C13 verified", () => {
-    for (const row of pending) {
-      expect(row.blocker, row.from).toContain("C13 verified");
-      // The old text said "Pipeline replacement lands in C3", which C3 delivered.
-      expect(row.blocker, row.from).not.toMatch(/lands in C3$/);
-    }
-    const deals = pending.find((row) => row.from === "/admin/deals");
-    expect(deals.blocker).toContain("compile-time constant");
-    const applications = pending.find((row) => row.from === "/admin/applications");
-    expect(applications.blocker).toContain("ZERO_PRODUCERS");
+  it("says why the last two were resolved without a redirect", () => {
+    const byPath = new Map(registry.resolved_without_redirect.map((row) => [row.from, row]));
+    // /admin/deals: the proposed destination was wrong, not just unbuilt.
+    expect(byPath.get("/admin/deals").why_not_a_redirect).toContain("not a pipeline");
+    expect(byPath.get("/admin/deals").resolution).toContain("compile-time constant");
+    // /admin/applications: there is nowhere to redirect a surface over an entity with no rows.
+    expect(byPath.get("/admin/applications").why_not_a_redirect).toContain("nowhere to redirect");
+    expect(byPath.get("/admin/applications").resolution).toContain("ZERO_PRODUCERS");
   });
 });
 
@@ -135,16 +137,27 @@ describe("C13 — nothing is reachable from nowhere", () => {
 });
 
 describe("C13/C14 — every route has a decided destination, each with evidence", () => {
-  it("keeps the evidence and the decision on all ten routes", () => {
-    expect(registry.unmapped_routes).toHaveLength(10);
+  it("keeps the evidence and the decision on every decided route", () => {
+    // Ten from the founder in C14, plus /admin/applications retired in C16.
+    expect(registry.unmapped_routes).toHaveLength(11);
     for (const row of registry.unmapped_routes) {
       expect(row.evidence, row.path).toBeTruthy();
       // C14: the founder decided all ten. The evidence stays: a decision without the evidence
       // it was made on cannot be revisited.
       expect(row.decision_required, row.path).toBe(false);
-      expect(row.decided_by, row.path).toBe("founder");
+      // WHO decided is recorded and must be distinguishable. Ten were the founder's calls in
+      // C14; /admin/applications was mine in C16, and a decision log that flattens the two
+      // cannot be audited.
+      expect(["founder", "claude"], row.path).toContain(row.decided_by);
       expect(row.mode, row.path).toBeTruthy();
     }
+
+    const founderCalls = registry.unmapped_routes.filter((row) => row.decided_by === "founder");
+    expect(founderCalls).toHaveLength(10);
+    expect(founderCalls.every((row) => row.decided_in === "C14")).toBe(true);
+
+    const mine = registry.unmapped_routes.filter((row) => row.decided_by === "claude");
+    expect(mine.map((row) => row.path)).toEqual(["/admin/applications"]);
   });
 
   it("records the two retirements as retirements, not as mappings", () => {
@@ -162,15 +175,27 @@ describe("C13/C14 — every route has a decided destination, each with evidence"
     expect(overview.destination).toBe("/admin");
   });
 
-  it("declares the target as thirteen, and why it is not twelve", () => {
+  it("declares the target as thirteen, why it is not twelve, and that the cut is done", () => {
     expect(registry.sidebar_cut.target_entries).toBe(13);
-    expect(registry.sidebar_cut.state).toBe("UNBLOCKED_PENDING_IMPLEMENTATION");
+    expect(registry.sidebar_cut.state).toBe("COMPLETE");
+    expect(registry.sidebar_cut.completed_in).toBe("C16");
     expect(registry.sidebar_cut.target_change_note).toContain("emergency stop");
+  });
+
+  it("has exactly the declared number of top-level entries", () => {
+    const nested = [...layout.matchAll(/\{ path: "[^"]+"[^\n]*advanced: true/g)].length;
+    const topLevel = navPaths.length - nested;
+    expect(topLevel).toBe(registry.invariants.target_entry_count);
   });
 
   it("does not store the sidebar entry count, which went stale inside one chunk", () => {
     expect(registry.sidebar_cut.current_entries).toBeUndefined();
     expect(registry.sidebar_cut.current_entries_note).toContain("went stale");
+  });
+
+  it("decided every route without one still awaiting a decision", () => {
+    const undecided = registry.unmapped_routes.filter((row) => row.decision_required === true);
+    expect(undecided).toEqual([]);
   });
 
   it("keeps every nested Advanced System child reachable", () => {

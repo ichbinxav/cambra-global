@@ -19,6 +19,8 @@ import {
   applyOrganization, cancelOrganization, planCatalogView, previewOrganization,
   recordAdminNote, refuseDealApplicationWrite,
 } from './platformAdminCore.ts';
+// DASHBOARD-C16: the single founder queue — the remaining half of founder decision 3.
+import { buildFounderQueue, founderQueueBadge } from './founderQueueCore.ts';
 
 export const INTEGRATION_ADMIN_VERSION = 'integration-admin-1.0.0';
 const text = (value: unknown) => String(value ?? '').trim();
@@ -107,6 +109,12 @@ export async function handleIntegrationAdminAction(user: any, body: any, svc: an
     // alternative instead of receiving "not implemented".
     return json(refuseWebhookDelete(body?.webhook_id), 409);
   }
+
+  if (action === 'founder_queue') {
+    return json(await buildFounderQueue({ svc, now, limit: Number(body?.limit) || undefined }));
+  }
+
+  if (action === 'founder_queue_badge') return json(await founderQueueBadge({ svc, now }));
 
   if (action === 'plan_catalog') return json(planCatalogView());
 

@@ -194,6 +194,12 @@
     {
       "path": "/admin/integrations",
       "label": "Integrations"
+    },
+    {
+      "path": "/admin/deals",
+      "label": "Deals",
+      "note": "Read-only reference view of the DEALS constant in src/lib/deals.js. Not editable and never was.",
+      "resolution": "Claim corrected: the page said \"Edit deal metadata and status\" over a compile-time constant with no persistence. The pencil is gone, the header says read only, and the page states why. It is declared an Advanced System child — a reference view of the offer catalogue — because /admin/pipeline is the wrong home for a catalogue."
     }
   ],
   "merchants_children": [
@@ -204,25 +210,6 @@
     }
   ],
   "legacy_redirects": [
-    {
-      "from": "/admin/deals",
-      "to": "/admin/pipeline",
-      "query": {
-        "tab": "merchant"
-      },
-      "ready": false,
-      "blocker": "C13 verified: the blocker text (\"Pipeline replacement lands in C3\") was stale — C3 built the Pipeline workspace. The real problem is different. AdminDeals reads DEALS, a hard-coded array in src/lib/deals.js, and offers \"Edit deal metadata and status\" over a compile-time constant: there is no persistence at all. A deal catalogue is also not a pipeline, so /admin/pipeline is the wrong destination. Same class as the Benchmarks claim — the claim must be corrected before the route is retired, and the destination re-chosen."
-    },
-    {
-      "from": "/admin/applications",
-      "to": "/admin/pipeline",
-      "query": {
-        "tab": "merchant",
-        "view": "applications"
-      },
-      "ready": false,
-      "blocker": "C13 verified: the blocker text was stale. The real finding is that DealApplication is declared ZERO_PRODUCERS in pipeline-stage-registry.v1.json with evidence (\"No .create() exists anywhere in the tree. submitDealApplication was deleted in FASE 1.2 with the entity at 0 rows\") and the rule \"Do not extend, do not project, do not resurrect.\" So this is an admin page over an entity with no producer and no rows, and its DealApplication.update write targets that entity. Retiring it is a deletion, not a migration, and needs the founder rather than a redirect."
-    },
     {
       "from": "/admin/contracts",
       "to": "/admin/recover",
@@ -472,15 +459,41 @@
       "note": "Inbound top-of-funnel. Does not justify its own entry.",
       "decided_by": "founder",
       "decided_in": "C14"
+    },
+    {
+      "path": "/admin/applications",
+      "label": "Deal Applications",
+      "evidence": "Reads Brand and DealApplication. The pipeline registry declares DealApplication ZERO_PRODUCERS with zero rows.",
+      "mode": "RETIRED",
+      "destination": null,
+      "decision_required": false,
+      "decided_by": "claude",
+      "decided_in": "C16",
+      "note": "Retiring a surface over an entity with no producer is not a migration. The entity, the page file and the Brand read are all kept."
     }
   ],
   "sidebar_cut": {
-    "state": "UNBLOCKED_PENDING_IMPLEMENTATION",
+    "state": "COMPLETE",
     "target_entries": 13,
     "blocked_by": null,
     "rule": "Prompt section 2.5 forbids retiring a route before parity. Cutting the sidebar to 12 today would remove navigation to 10 pages that still exist and are reachable from nowhere else.",
     "gate": "dashboard:navigation:check fails if the sidebar is cut while any unmapped route still carries decision_required.",
     "current_entries_note": "Deliberately NOT stored. It was stored as 43 and went stale inside one chunk when C13 trimmed the sidebar to 35. Counted from src/pages/admin/AdminLayout.jsx by dashboard:navigation:check and by the release manifest.",
-    "target_change_note": "The founder chose 13, not 12: Founder Control keeps its own entry because it carries the emergency stop. Two routes are retired instead of mapped (/admin/copilot, /admin/aggregate)."
-  }
+    "target_change_note": "The founder chose 13, not 12: Founder Control keeps its own entry because it carries the emergency stop. Two routes are retired instead of mapped (/admin/copilot, /admin/aggregate).",
+    "completed_in": "C16"
+  },
+  "resolved_without_redirect": [
+    {
+      "from": "/admin/deals",
+      "resolution": "Claim corrected: the page said \"Edit deal metadata and status\" over a compile-time constant with no persistence. The pencil is gone, the header says read only, and the page states why. It is declared an Advanced System child — a reference view of the offer catalogue — because /admin/pipeline is the wrong home for a catalogue.",
+      "resolved_in": "C16",
+      "why_not_a_redirect": "The proposed destination (/admin/pipeline) was wrong — a deal catalogue is not a pipeline — and the page is a useful read-only reference, so it is nested under Advanced System instead of redirected."
+    },
+    {
+      "from": "/admin/applications",
+      "resolution": "Retired. DealApplication is ZERO_PRODUCERS with zero rows and its writes were removed in C15, so this was an admin surface over an entity nothing produces. Unrouted and out of the sidebar; the entity and the page file are kept.",
+      "resolved_in": "C16",
+      "why_not_a_redirect": "There is nowhere to redirect to. DealApplication has no producer and no rows, so the surface is retired rather than pointed at another page."
+    }
+  ]
 }

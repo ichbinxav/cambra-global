@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { DEALS, PHASE_CONFIG } from "@/lib/deals.js";
-import { CheckCircle2, Edit2, X } from "lucide-react";
+import { CheckCircle2, FileText, X } from "lucide-react";
 
+// DASHBOARD-C16 (2026-08-17) — corrected. The header claimed "Edit deal metadata and status" and
+// the row carried a pencil icon, over DEALS: a hard-coded array in src/lib/deals.js. There is no
+// persistence at all, so no edit was ever possible. Same class as the Benchmarks claim corrected
+// in C11 — a page that says it controls something it cannot.
+//
+// It is declared an Advanced System child rather than retired: a reference view of the offer
+// catalogue is useful, and /admin/pipeline (the destination the registry proposed) is the wrong
+// home because a deal catalogue is not a pipeline.
 export default function AdminDeals() {
   const [selected, setSelected] = useState(null);
 
@@ -9,7 +17,15 @@ export default function AdminDeals() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-black tracking-[-0.03em]">Deals Management</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">{DEALS.length} deals configured · Edit deal metadata and status</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {DEALS.length} deals configured · read only
+        </p>
+        <p data-testid="deals-readonly-note" className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-2 mt-2 leading-snug">
+          DASHBOARD-C16 correction: this page said &quot;Edit deal metadata and status&quot;. It never
+          could. <code>DEALS</code> is a hard-coded array in <code>src/lib/deals.js</code> — a
+          compile-time constant with no persistence behind it, so nothing typed here could ever be
+          saved. It is a reference view of the catalogue; changing a deal means changing that file.
+        </p>
       </div>
 
       <div className="flex gap-4">
@@ -39,7 +55,8 @@ export default function AdminDeals() {
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border w-fit ${phase.badge}`}>
                   {phase.label}
                 </span>
-                <Edit2 size={12} className="text-muted-foreground/30" />
+                {/* DASHBOARD-C16: this was a pencil. There is nothing to edit — see below. */}
+                <FileText size={12} className="text-muted-foreground/30" />
               </div>
             );
           })}
