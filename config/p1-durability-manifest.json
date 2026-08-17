@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T13:37:42.662Z",
+  "generatedAt": "2026-08-17T13:56:24.691Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "83ee234100a37bb19cdc5a9af7193bef66a6500bc5342542978949bb9def679e",
+      "sha256": "036b3bcb7ddc312489869b20e50ddbc624d9b111b21f0d2e683678cd1123b921",
       "bytes": 42987
     },
     {
@@ -2557,8 +2557,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "89b5bf89cf5ea9a423488876f4cd066deb1ef3628c300b5623635660ec5cf527",
-      "bytes": 27449
+      "sha256": "a624bd9e3453f53b5a216790f07a47722bebeb515cd8c5b54025d2db2036c078",
+      "bytes": 28002
     },
     {
       "path": "src/README.md",
@@ -2897,8 +2897,8 @@
     },
     {
       "path": "src/lib/adminLayoutI18n.test.js",
-      "sha256": "947d9145435973c4d88c1c73d5042b91b1922cc8a84104a07555d6aaa5d06d7c",
-      "bytes": 2028
+      "sha256": "bde2e3b2ab086ee18e33ea79fa21cc8a1cb2b7cccbd2b3ae10a4cd1b1414af23",
+      "bytes": 2308
     },
     {
       "path": "src/lib/adminSettingsV2.test.js",
@@ -3927,8 +3927,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "f641a40b30ff25cc678537e4558c8badc9dfb2d716f97df5d721b43d0f7e1592",
-      "bytes": 30713
+      "sha256": "5af68f374c016622399f7085a2ac8191f275082ace117c5898693a6133583494",
+      "bytes": 30975
     },
     {
       "path": "src/pages/admin/AdminMaintenance.jsx",

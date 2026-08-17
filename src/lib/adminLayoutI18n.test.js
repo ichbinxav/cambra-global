@@ -14,7 +14,10 @@ describe('Admin shell internationalization', () => {
     expect(englishKeys.length).toBeGreaterThan(60);
 
     const navLabels = [...source.matchAll(/\{ path: "\/admin[^\n]+?label: "([^"]+)"/g)].map((match) => match[1]);
-    expect(navLabels.length).toBeGreaterThan(35);
+    // DASHBOARD-C13: this floor was 35, which broke the moment the sidebar was trimmed — and
+    // the sidebar is MEANT to shrink to the twelve canonical entries. The floor is now the
+    // architectural minimum; the assertion that matters is the per-label one below.
+    expect(navLabels.length).toBeGreaterThanOrEqual(12);
     for (const label of navLabels) expect(englishKeys).toContain(`nav.${label}`);
   });
 

@@ -229,8 +229,14 @@ describe("C1 — the navigation registry is the single source of truth", () => {
     // assertion now records the progress instead of the old snapshot. A route that
     // exists while declared NOT_BUILT is caught separately by
     // dashboard:navigation:check, which is the direction that would hide work.
+    // C13 built /admin/audits, the last one. The assertion records the progress rather than
+    // the old snapshot; a route that exists while declared NOT_BUILT is still caught by
+    // dashboard:navigation:check, which is the direction that would hide work.
     const notBuilt = registry.target_navigation.filter((row) => row.state === "NOT_BUILT");
-    expect(notBuilt.map((row) => row.path)).toEqual(["/admin/audits"]);
+    expect(notBuilt.map((row) => row.path)).toEqual([]);
+
+    const audits = registry.target_navigation.find((row) => row.path === "/admin/audits");
+    expect(audits.state).toBe("LIVE");
 
     const recover = registry.target_navigation.find((row) => row.path === "/admin/recover");
     expect(recover.state).toBe("LIVE");

@@ -101,6 +101,9 @@ const AdminFinanceWorkspace = lazy(() => import('@/pages/admin/AdminFinanceWorks
 // DASHBOARD-C11: the consolidated Intelligence workspace. The six legacy routes stay live
 // until C13 retires them; each one now redirects into its tab.
 const AdminIntelligenceWorkspace = lazy(() => import('@/pages/admin/AdminIntelligenceWorkspace'));
+// DASHBOARD-C13: the last unbuilt workspace. Entry 8 of the twelve-entry sidebar pointed at
+// nothing until now; the backend has existed since C4.
+const AdminAudits = lazy(() => import('@/pages/admin/AdminAudits'));
 const AdminProviderEconomics = lazy(() => import('@/pages/admin/AdminProviderEconomics'));
 const AdminFounderControl = lazy(() => import('@/pages/admin/AdminFounderControl'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
@@ -371,12 +374,12 @@ const AuthenticatedApp = () => {
           <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
           <Route path="/admin/commercial" element={withBoundary(<AdminCommercialOS />)} />
           <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligenceWorkspace />)} />
-          <Route path="/admin/markets" element={withBoundary(<AdminMarkets />)} />
-          <Route path="/admin/growth" element={withBoundary(<AdminGrowth />)} />
-          <Route path="/admin/routing-intelligence" element={withBoundary(<AdminRoutingIntelligence />)} />
+          <Route path="/admin/markets" element={<Navigate to="/admin/intelligence?tab=markets" replace />} />
+          <Route path="/admin/growth" element={<Navigate to="/admin/intelligence?tab=markets&view=growth" replace />} />
+          <Route path="/admin/routing-intelligence" element={<Navigate to="/admin/intelligence?tab=routing" replace />} />
           <Route path="/admin/aggregate" element={withBoundary(<AdminAggregate />)} />
           <Route path="/admin/finance" element={withBoundary(<AdminFinanceWorkspace />)} />
-          <Route path="/admin/provider-economics" element={withBoundary(<AdminProviderEconomics />)} />
+          <Route path="/admin/provider-economics" element={<Navigate to="/admin/finance?tab=provider-economics" replace />} />
           <Route path="/admin/founder-control" element={withBoundary(<AdminFounderControl />)} />
           <Route path="/admin/settings" element={withBoundary(<AdminSettings />)} />
           <Route path="/admin/maintenance" element={withBoundary(<AdminMaintenance />)} />
@@ -390,15 +393,16 @@ const AuthenticatedApp = () => {
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
           <Route path="/admin/pipeline" element={withBoundary(<AdminPipelineWorkspace />)} />
           <Route path="/admin/recover" element={withBoundary(<AdminRecover />)} />
+          <Route path="/admin/audits" element={withBoundary(<AdminAudits />)} />
           <Route path="/admin/deals" element={withBoundary(<AdminDeals />)} />
-          <Route path="/admin/providers" element={withBoundary(<AdminProviders />)} />
-          <Route path="/admin/revenue" element={withBoundary(<AdminRevenue />)} />
-          <Route path="/admin/benchmarks" element={withBoundary(<AdminBenchmarks />)} />
-          <Route path="/admin/contracts" element={withBoundary(<AdminContracts />)} />
+          <Route path="/admin/providers" element={<Navigate to="/admin/intelligence?tab=providers" replace />} />
+          <Route path="/admin/revenue" element={<Navigate to="/admin/finance?tab=revenue" replace />} />
+          <Route path="/admin/benchmarks" element={<Navigate to="/admin/intelligence?tab=benchmarks" replace />} />
+          <Route path="/admin/contracts" element={<Navigate to="/admin/recover?tab=contracts" replace />} />
           <Route path="/admin/integrations" element={withBoundary(<AdminIntegrations />)} />
           <Route path="/admin/api-integrations" element={withBoundary(<AdminApiIntegrations />)} />
           <Route path="/admin/control" element={withBoundary(<AdminControl />)} />
-          <Route path="/admin/recommendations" element={withBoundary(<AdminRecommendations />)} />
+          <Route path="/admin/recommendations" element={<Navigate to="/admin/intelligence?tab=recommendations" replace />} />
           <Route path="/admin/compliance" element={withBoundary(<AdminCompliance />)} />
           <Route path="/admin/activity" element={withBoundary(<AdminActivity />)} />
           <Route path="/admin/approvals" element={withBoundary(<AdminApprovals />)} />
@@ -406,7 +410,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
-          <Route path="/admin/recover-billing" element={withBoundary(<AdminRecoverBilling />)} />
+          <Route path="/admin/recover-billing" element={<Navigate to="/admin/finance?tab=merchant-billing" replace />} />
           <Route path="/admin/waitlist" element={withBoundary(<AdminWaitlist />)} />
         </Route>
         <Route path="*" element={<PageNotFound />} />

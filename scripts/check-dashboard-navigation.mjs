@@ -75,6 +75,98 @@ for (const row of Array.isArray(registry.legacy_redirects) ? registry.legacy_red
   }
 }
 
+// ---------------------------------------------------------------------------
+// DASHBOARD-C13 — parity. A redirect is only honest if the destination actually serves
+// what the source served.
+//
+// Two real failures were caught by writing this: /admin/revenue pointed at the Finance
+// OVERVIEW tab (the five-domain snapshot) rather than the revenue tab that carries the
+// per-provider breakdown, and /admin/contracts pointed at /admin/recover?tab=contracts
+// when AdminRecover had no tab handling at all — the entire Contracts surface would have
+// become unreachable. A redirect to a tab nobody serves is a blank page.
+// ---------------------------------------------------------------------------
+
+/** Resolves a route path to the source file that serves it, via App.jsx. */
+const pageFileFor = (routePath) => {
+  const routeMatch = app.match(new RegExp(`path="${routePath.replace(/\//g, '\\/')}"\\s+element=\\{withBoundary\\(<([A-Za-z0-9_]+)`));
+  if (!routeMatch) return null;
+  const component = routeMatch[1];
+  const importMatch = app.match(new RegExp(`const ${component} = lazy\\(\\(\\) => import\\('([^']+)'\\)`));
+  if (!importMatch) return null;
+  return importMatch[1].replace('@/', 'src/') + '.jsx';
+};
+
+for (const row of Array.isArray(registry.legacy_redirects) ? registry.legacy_redirects : []) {
+  const wired = new RegExp(`path="${row.from.replace(/\//g, '\\/')}"\\s+element=\\{<Navigate to="([^"]+)"`).exec(app);
+
+  if (row.ready === true && !wired) {
+    fail(`${row.from} is marked ready but ${APP} does not redirect it`);
+  }
+
+  if (wired) {
+    const query = row.query || {};
+    const expected = Object.keys(query).length
+      ? `${row.to}?${Object.entries(query).map(([k, v]) => `${k}=${v}`).join('&')}`
+      : row.to;
+    if (wired[1] !== expected) {
+      fail(`${row.from} redirects to ${wired[1]} but the registry declares ${expected}`);
+    }
+
+    // The destination must actually serve the declared tab.
+    if (query.tab) {
+      const file = pageFileFor(row.to);
+      if (!file) {
+        fail(`cannot resolve the page that serves ${row.to} — parity for ${row.from} is unverifiable`);
+      } else if (!fs.existsSync(file)) {
+        fail(`${row.to} resolves to ${file}, which does not exist`);
+      } else {
+        const page = fs.readFileSync(file, 'utf8');
+        // The tab must appear in a KEY position — as an object key in the tab-body map or as
+        // a `key:` field in a tab list. Merely being mentioned somewhere in the file is not
+        // evidence that the page dispatches on it, and matching a bare string would let a
+        // comment satisfy this check.
+        const tab = query.tab.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const served = new RegExp(`(?:^|[{,\\s])${tab}\\s*:`, 'm').test(page)
+          || new RegExp(`["']${tab}["']\\s*:`).test(page)
+          || new RegExp(`key:\\s*["']${tab}["']`).test(page);
+        if (!served) {
+          fail(`${row.from} redirects to ${row.to}?tab=${query.tab} but ${file} never names that tab — the operator lands on a blank or wrong surface`);
+        }
+      }
+    }
+  }
+}
+
+// Reverse coverage: a target entry the sidebar does not offer is a workspace the operator
+// cannot reach. /admin/audits was exactly this until C13 built the page.
+// Sidebar coverage. Cutting the sidebar to twelve entries while a route is reachable from
+// nowhere else silently removes navigation to a page that still exists.
+const navPaths = [...layout.matchAll(/\{ path: "([^"]+)"/g)].map((m) => m[1]);
+const targetPaths = new Set(target.map((row) => row.path));
+const redirectSources = new Set((registry.legacy_redirects || []).map((row) => row.from));
+const advancedPaths = new Set((registry.advanced_system_children || []).map((row) => row.path));
+const declaredUnmapped = new Map((registry.unmapped_routes || []).map((row) => [row.path, row]));
+
+const missingFromSidebar = target
+  .filter((row) => String(row.state || '').startsWith('LIVE') && !navPaths.includes(row.path))
+  .map((row) => row.path);
+if (missingFromSidebar.length) {
+  fail(`target entries that are LIVE but absent from the sidebar: ${missingFromSidebar.join(', ')} — the operator cannot reach them`);
+}
+
+const orphans = navPaths.filter((path) => !targetPaths.has(path) && !redirectSources.has(path)
+  && !advancedPaths.has(path) && !declaredUnmapped.has(path));
+if (orphans.length) {
+  fail(`sidebar entries with no declared destination: ${orphans.join(', ')} — declare each in unmapped_routes before the sidebar is cut`);
+}
+
+// The cut itself is gated on those decisions being made.
+const sidebarCut = navPaths.length <= 12;
+const undecided = [...declaredUnmapped.values()].filter((row) => row.decision_required === true);
+if (sidebarCut && undecided.length) {
+  fail(`the sidebar has been cut to ${navPaths.length} entries while ${undecided.length} route(s) still await a destination decision: ${undecided.map((row) => row.path).join(', ')}`);
+}
+
 // The physical function quota this programme must not touch.
 if (registry.invariants?.physical_function_target !== 276) {
   fail(`physical_function_target must stay 276, found ${registry.invariants?.physical_function_target}`);
@@ -87,7 +179,10 @@ for (const child of registry.advanced_system_children || []) {
 
 // The layout must render from the registry rather than an inline literal once the
 // consolidation lands. Until then, record which one is authoritative.
-const rendersFromRegistry = layout.includes('dashboardNavigation') || layout.includes('navigation.v1.json');
+// DASHBOARD-C13: this used to be `layout.includes('navigation.v1.json')`, which a COMMENT
+// referencing the registry satisfied — and one did, making the gate report "renders from
+// registry" while the inline NAV array was still the source. It must be an actual import.
+const rendersFromRegistry = /^\s*import[^\n]*(dashboardNavigation|navigation\.v1\.json)/m.test(layout);
 
 const readyRedirects = (registry.legacy_redirects || []).filter((row) => row.ready === true).length;
 const clearedRedirects = (registry.legacy_redirects || []).filter((row) => row.blocker_cleared === true && row.ready !== true).length;
@@ -99,6 +194,7 @@ console.log(
   `dashboard:navigation:check PASS — 12 target entries, ${readyRedirects} redirects ready, ` +
   `${pendingRedirects} pending with declared blockers (${clearedRedirects} blocker-cleared, awaiting C13 retirement), ${notBuilt.length} workspaces not built` +
   `${notBuilt.length ? ` (${notBuilt.join(', ')})` : ''}; ` +
-  `layout renders from ${rendersFromRegistry ? 'registry' : 'inline NAV (consolidation pending, C13)'}; ` +
+  `${navPaths.length} sidebar entries (${undecided.length} route(s) awaiting a destination decision); ` +
+  `layout renders from ${rendersFromRegistry ? 'registry' : 'inline NAV'}; ` +
   `physical function target 276 unchanged`,
 );

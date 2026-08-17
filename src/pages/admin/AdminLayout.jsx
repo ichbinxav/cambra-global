@@ -3,9 +3,8 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard, Users, FileText, Handshake, Building2,
-  GitBranch, ChevronRight, Menu, X, LogOut, BarChart2, Sliders, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Route, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Globe2, TrendingUp, Settings2, Megaphone, MessagesSquare
+  ClipboardCheck, GitBranch, ChevronRight, Menu, X, LogOut, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Settings2, Megaphone, MessagesSquare
 } from "lucide-react";
-import { Lightbulb } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -42,6 +41,8 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Waitlist": "Waitlist",
     "nav.Deal Applications": "Deal Applications",
     "nav.Pipeline": "Pipeline",
+    "nav.Audits & Opportunities": "Audits & Opportunities",
+    "nav.Recover": "Recover",
     "nav.Deals": "Deals",
     "nav.Providers": "Providers",
     "nav.Revenue": "Revenue",
@@ -112,6 +113,8 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Waitlist": "Liste d’attente",
     "nav.Deal Applications": "Demandes commerciales",
     "nav.Pipeline": "Pipeline",
+    "nav.Audits & Opportunities": "Audits et opportunités",
+    "nav.Recover": "Recover",
     "nav.Deals": "Opportunités",
     "nav.Providers": "Prestataires",
     "nav.Revenue": "Chiffre d’affaires",
@@ -182,6 +185,8 @@ export const ADMIN_LAYOUT_COPY = {
     "nav.Waitlist": "Lista de espera",
     "nav.Deal Applications": "Solicitudes comerciales",
     "nav.Pipeline": "Pipeline",
+    "nav.Audits & Opportunities": "Auditorías y oportunidades",
+    "nav.Recover": "Recover",
     "nav.Deals": "Acuerdos",
     "nav.Providers": "Proveedores",
     "nav.Revenue": "Ingresos",
@@ -229,6 +234,11 @@ export function adminLayoutText(lang, key, params = {}) {
   return String(raw).replace(/\{(\w+)\}/g, (_match, name) => params[name] == null ? `{${name}}` : String(params[name]));
 }
 
+// DASHBOARD-C13: the ten routes below were removed from the sidebar because each now
+// redirects into a workspace tab that serves the same content (verified per row by
+// dashboard:navigation:check). Nothing is orphaned by this. The full cut to twelve entries is
+// BLOCKED: ten further routes have no declared destination yet — see unmapped_routes in
+// config/dashboard/navigation.v1.json.
 const NAV = [
   { path: "/admin", label: "Founder OS", icon: LayoutDashboard, exact: true },
   { path: "/admin/inbox", label: "Inbox", icon: Inbox, showQuestionsBadge: true },
@@ -242,12 +252,8 @@ const NAV = [
   { path: "/admin/commercial", label: "Commercial OS", icon: Sparkles },
   { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
-  { path: "/admin/markets", label: "Europe · Markets", icon: Globe2 },
-  { path: "/admin/growth", label: "Europe · Growth", icon: TrendingUp },
-  { path: "/admin/routing-intelligence", label: "Routing Intelligence", icon: Route },
   { path: "/admin/aggregate", label: "Aggregate", icon: Layers3 },
   { path: "/admin/finance", label: "Finance", icon: Landmark },
-  { path: "/admin/provider-economics", label: "Provider Economics", icon: Handshake },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
   { path: "/admin/settings", label: "Settings", icon: Settings2 },
   { path: "/admin/maintenance", label: "Maintenance", icon: Wrench },
@@ -260,13 +266,12 @@ const NAV = [
   { path: "/admin/waitlist", label: "Waitlist", icon: Mail, showWaitlistBadge: true },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
+  // DASHBOARD-C13: neither of these was in the sidebar. /admin/recover has been unreachable
+  // from navigation since C7 built it — only by typing the URL. The reverse-coverage check in
+  // dashboard:navigation:check found it.
+  { path: "/admin/audits", label: "Audits & Opportunities", icon: ClipboardCheck },
+  { path: "/admin/recover", label: "Recover", icon: FileCheck },
   { path: "/admin/deals", label: "Deals", icon: Handshake },
-  { path: "/admin/providers", label: "Providers", icon: Building2 },
-  { path: "/admin/revenue", label: "Revenue", icon: BarChart2 },
-  { path: "/admin/recover-billing", label: "Recover Billing", icon: FileText },
-  { path: "/admin/contracts", label: "Contracts", icon: FileCheck },
-  { path: "/admin/benchmarks", label: "Benchmarks", icon: Sliders },
-  { path: "/admin/recommendations", label: "Recommendations", icon: Lightbulb },
   { path: "/admin/integrations", label: "Integrations", icon: Plug },
   { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug },
   { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck },
@@ -281,7 +286,7 @@ function navGroup(path) {
   if (["/admin/founder-control", "/admin/chat", "/admin/copilot"].includes(path)) return "Command";
   if (["/admin/inbox", "/admin/approvals"].includes(path)) return "Inbox";
   if (["/admin/intelligence", "/admin/markets", "/admin/growth", "/admin/routing-intelligence", "/admin/benchmarks", "/admin/recommendations"].includes(path)) return "Intelligence";
-  if (["/admin/discovery", "/admin/campaigns", "/admin/conversations", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts"].includes(path)) return "Commercial";
+  if (["/admin/discovery", "/admin/campaigns", "/admin/conversations", "/admin/commercial", "/admin/commercial-autonomy", "/admin/pipeline", "/admin/deals", "/admin/aggregate", "/admin/providers", "/admin/provider-economics", "/admin/contracts", "/admin/audits", "/admin/recover"].includes(path)) return "Commercial";
   if (["/admin/agents", "/admin/automations", "/admin/developer", "/admin/maintenance", "/admin/evidence-review", "/admin/ecl-operations", "/admin/activity"].includes(path)) return "Operations";
   if (["/admin/users", "/admin/merchants", "/admin/waitlist", "/admin/applications", "/admin/finance", "/admin/revenue", "/admin/recover-billing"].includes(path)) return "Company";
   return "System";

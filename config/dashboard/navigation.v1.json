@@ -76,8 +76,8 @@
       "path": "/admin/audits",
       "label_key": "nav.audits",
       "label": "Audits & Opportunities",
-      "state": "NOT_BUILT",
-      "chunk": "C4-C5"
+      "state": "LIVE",
+      "chunk": "C4-C5 backend, C13 page"
     },
     {
       "order": 9,
@@ -201,7 +201,7 @@
         "tab": "merchant"
       },
       "ready": false,
-      "blocker": "Pipeline replacement lands in C3"
+      "blocker": "C13 verified: the blocker text (\"Pipeline replacement lands in C3\") was stale — C3 built the Pipeline workspace. The real problem is different. AdminDeals reads DEALS, a hard-coded array in src/lib/deals.js, and offers \"Edit deal metadata and status\" over a compile-time constant: there is no persistence at all. A deal catalogue is also not a pipeline, so /admin/pipeline is the wrong destination. Same class as the Benchmarks claim — the claim must be corrected before the route is retired, and the destination re-chosen."
     },
     {
       "from": "/admin/applications",
@@ -211,7 +211,7 @@
         "view": "applications"
       },
       "ready": false,
-      "blocker": "Pipeline replacement lands in C3"
+      "blocker": "C13 verified: the blocker text was stale. The real finding is that DealApplication is declared ZERO_PRODUCERS in pipeline-stage-registry.v1.json with evidence (\"No .create() exists anywhere in the tree. submitDealApplication was deleted in FASE 1.2 with the entity at 0 rows\") and the rule \"Do not extend, do not project, do not resurrect.\" So this is an admin page over an entity with no producer and no rows, and its DealApplication.update write targets that entity. Retiring it is a deletion, not a migration, and needs the founder rather than a redirect."
     },
     {
       "from": "/admin/contracts",
@@ -219,20 +219,22 @@
       "query": {
         "tab": "contracts"
       },
-      "ready": false,
+      "ready": true,
       "note": "Unblocked in C7: AdminContracts now uses the governed recover_apply_contract_edit handler with a field allowlist, a required reason and CAS. The direct browser write is gone.",
-      "blocker_cleared": true,
-      "blocker": "Blocker cleared in C7 (the governed contract handler exists and the direct browser write is gone). The redirect itself is wired in C13, when routes are retired after parity."
+      "parity_note": "C13: AdminRecover had no tab handling, so this redirect would have landed on the cases view and made the Contracts surface unreachable. A two-tab shell was added and AdminContracts is mounted unchanged.",
+      "retired_note": "Blocker cleared in C7 (the governed contract handler exists and the direct browser write is gone). The redirect itself is wired in C13, when routes are retired after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/revenue",
       "to": "/admin/finance",
       "query": {
-        "tab": "overview"
+        "tab": "revenue"
       },
-      "ready": false,
-      "blocker": "Cleared in C9: AdminRevenue reads the finance_revenue projection and holds zero in-component arithmetic. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "parity_note": "C13: corrected from tab=overview. The overview tab is the C8 five-domain snapshot; the revenue CONTENT (per-provider breakdown, monthly collected series) is the revenue tab, which mounts AdminRevenue itself.",
+      "retired_note": "Cleared in C9: AdminRevenue reads the finance_revenue projection and holds zero in-component arithmetic. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/recover-billing",
@@ -240,9 +242,9 @@
       "query": {
         "tab": "merchant-billing"
       },
-      "ready": false,
-      "blocker": "Cleared in C9: FiscalIdentityCard goes through finance_preview_billing_identity / finance_apply_billing_identity and no longer writes Brand from the browser. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C9: FiscalIdentityCard goes through finance_preview_billing_identity / finance_apply_billing_identity and no longer writes Brand from the browser. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/provider-economics",
@@ -250,9 +252,9 @@
       "query": {
         "tab": "provider-economics"
       },
-      "ready": false,
-      "blocker": "Cleared in C9: the Finance tab shell exists and mounts this page at ?tab=provider-economics. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C9: the Finance tab shell exists and mounts this page at ?tab=provider-economics. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/markets",
@@ -260,9 +262,9 @@
       "query": {
         "tab": "markets"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: the Intelligence tab shell exists and mounts this page at ?tab=markets. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: the Intelligence tab shell exists and mounts this page at ?tab=markets. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/growth",
@@ -271,9 +273,9 @@
         "tab": "markets",
         "view": "growth"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: mounted as the growth view of ?tab=markets, matching this row. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: mounted as the growth view of ?tab=markets, matching this row. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/routing-intelligence",
@@ -281,9 +283,9 @@
       "query": {
         "tab": "routing"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: mounted at ?tab=routing with the page unchanged, so its SHADOW ONLY labelling is carried over verbatim. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: mounted at ?tab=routing with the page unchanged, so its SHADOW ONLY labelling is carried over verbatim. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/benchmarks",
@@ -291,9 +293,9 @@
       "query": {
         "tab": "benchmarks"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: the false \"control the ranges\" claim is corrected (the page has no write path and the engine is frozen), and the sample-revenue slider is labelled as a preview input. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: the false \"control the ranges\" claim is corrected (the page has no write path and the engine is frozen), and the sample-revenue slider is labelled as a preview input. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/recommendations",
@@ -301,9 +303,9 @@
       "query": {
         "tab": "recommendations"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: mounted at ?tab=recommendations. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: mounted at ?tab=recommendations. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     },
     {
       "from": "/admin/providers",
@@ -311,9 +313,9 @@
       "query": {
         "tab": "providers"
       },
-      "ready": false,
-      "blocker": "Cleared in C11: AdminProviders writes through finance-style preview/apply on the intelligence route, and revenue_share_pct is refused by name with the governed alternative stated. Remaining step: C13 retires the route and wires the redirect after parity.",
-      "blocker_cleared": true
+      "ready": true,
+      "retired_note": "Cleared in C11: AdminProviders writes through finance-style preview/apply on the intelligence route, and revenue_share_pct is refused by name with the governed alternative stated. Remaining step: C13 retires the route and wires the redirect after parity.",
+      "retired_in": "C13"
     }
   ],
   "invariants": {
@@ -322,5 +324,104 @@
     "reference_pattern": "src/pages/admin/AdminMerchants.jsx:118-124",
     "no_direct_browser_crud": "A workspace page must contain zero base44.entities writes. Reads through a governed portfolio call only."
   },
-  "redirect_semantics": "ready=true means the redirect is LIVE in src/App.jsx. blocker_cleared=true means the technical obstacle is gone but the route still serves its own page, because section 2.5 requires parity, deep-link preservation and navigation tests before retirement, and section 24 puts that in C13. Conflating the two would let the registry claim a redirect that does not exist."
+  "redirect_semantics": "ready=true means the redirect is LIVE in src/App.jsx. blocker_cleared=true means the technical obstacle is gone but the route still serves its own page, because section 2.5 requires parity, deep-link preservation and navigation tests before retirement, and section 24 puts that in C13. Conflating the two would let the registry claim a redirect that does not exist.",
+  "unmapped_routes": [
+    {
+      "path": "/admin/inbox",
+      "label": "Inbox",
+      "evidence": "Calls founderOSCommand; reads AgentQuestion, AgentTask, Approval. A founder decision queue, not merchant conversations.",
+      "proposed": "/admin (Founder OS)",
+      "proposed_confidence": "HIGH",
+      "decision_required": true,
+      "why_not_decided": "The 12-entry target puts Inbox & Conversations at /admin/conversations, which is the MERCHANT thread surface. This page is the founder queue. Merging two different inboxes under one label is a product decision."
+    },
+    {
+      "path": "/admin/approvals",
+      "label": "Approvals",
+      "evidence": "Calls founderOSCommand; reads Approval. Carries a pending badge.",
+      "proposed": "/admin (Founder OS)",
+      "proposed_confidence": "HIGH",
+      "decision_required": true,
+      "why_not_decided": "A blocking approval queue may warrant its own entry rather than living inside Founder OS. That is an operator-workflow call."
+    },
+    {
+      "path": "/admin/founder-control",
+      "label": "Founder Control",
+      "evidence": "Calls getFounderControlCenter, emergencyControlAdmin, goLiveControlAdmin, copilotChat, founderOSCommand. The emergency-control surface.",
+      "proposed": "/admin (Founder OS)",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true,
+      "why_not_decided": "This is where emergency controls live. Burying an emergency stop inside a tab is exactly the kind of change that must be chosen deliberately, not inferred."
+    },
+    {
+      "path": "/admin/copilot",
+      "label": "Founder Copilot",
+      "evidence": "Calls founderCopilotAgent, investorUpdateAgent, qaAgent.",
+      "proposed": "/admin/chat (CAMBRA Command)",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true,
+      "why_not_decided": "CAMBRA Command (C1-C7) is the durable agent surface. Whether Copilot is superseded by it or remains a separate tool is a founder call about which one is the real one."
+    },
+    {
+      "path": "/admin/commercial",
+      "label": "Commercial OS",
+      "evidence": "67 lines; reads CLUSTERS from agentRegistry and lib/commercialOS.js; lead filtering and CSV export.",
+      "proposed": "/admin/campaigns",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true
+    },
+    {
+      "path": "/admin/commercial-autonomy",
+      "label": "Commercial Autonomy",
+      "evidence": "Calls commercialPolicyAdmin, outboundControlAdmin; reads CommercialStrategy, CommunicationThread. Autonomy policy for outbound.",
+      "proposed": "/admin/campaigns",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true,
+      "why_not_decided": "Autonomy policy governs sending. It may belong with Campaigns or under Settings as a standing control; the two readings differ in who is expected to change it."
+    },
+    {
+      "path": "/admin/aggregate",
+      "label": "Aggregate",
+      "evidence": "2-line minified page reading a single aggregator. Purpose not determinable from the source.",
+      "proposed": "UNKNOWN",
+      "proposed_confidence": "NONE",
+      "decision_required": true,
+      "why_not_decided": "I could not determine what this page is for from its source. Proposing a destination would be a guess."
+    },
+    {
+      "path": "/admin/overview",
+      "label": "Overview",
+      "evidence": "Reads Brand, AnalyzerResult, DealActivation, DealApplication directly. Note DealApplication is declared ZERO_PRODUCERS in the pipeline registry.",
+      "proposed": "/admin (Founder OS)",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true,
+      "why_not_decided": "Founder OS is already the overview. Whether this page holds anything Founder OS lacks needs a look at both, not a mapping."
+    },
+    {
+      "path": "/admin/users",
+      "label": "Users & Companies",
+      "evidence": "Reads User, Brand, UserDeal, AnalyzerResult. Platform users, distinct from merchants.",
+      "proposed": "/admin/settings",
+      "proposed_confidence": "MEDIUM",
+      "decision_required": true,
+      "why_not_decided": "Merchants (entry 7) is the CLIENT surface; platform user administration is a different concern. Settings or a Company group are both defensible."
+    },
+    {
+      "path": "/admin/waitlist",
+      "label": "Waitlist",
+      "evidence": "Calls getWaitlistLeads. Carries a badge.",
+      "proposed": "/admin/discovery",
+      "proposed_confidence": "LOW",
+      "decision_required": true,
+      "why_not_decided": "A waitlist is inbound; Discovery is outbound. They are both top-of-funnel but not the same motion."
+    }
+  ],
+  "sidebar_cut": {
+    "state": "BLOCKED",
+    "current_entries": 43,
+    "target_entries": 12,
+    "blocked_by": "10 routes in unmapped_routes await a destination decision",
+    "rule": "Prompt section 2.5 forbids retiring a route before parity. Cutting the sidebar to 12 today would remove navigation to 10 pages that still exist and are reachable from nowhere else.",
+    "gate": "dashboard:navigation:check fails if the sidebar is cut while any unmapped route still carries decision_required."
+  }
 }

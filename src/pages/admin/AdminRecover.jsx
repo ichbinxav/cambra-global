@@ -10,8 +10,18 @@
 //   - billing eligibility is shown as eligibility, with its blockers. Recover never
 //     shows an invoice or a billable amount, because it does not have that authority
 import React, { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AlertTriangle, FileCheck, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+// DASHBOARD-C13: the /admin/contracts redirect points here at ?tab=contracts, so the page
+// has to serve that tab. Wiring the redirect without this would have made the entire
+// Contracts surface unreachable — a redirect to a tab nobody serves is a blank page.
+import AdminContracts from "./AdminContracts";
+
+const RECOVER_TABS = [
+  { key: "cases", label: "Cases" },
+  { key: "contracts", label: "Contracts" },
+];
 
 const payload = (response) => response?.data || response || {};
 async function callRecover(action, body = {}) {
@@ -126,7 +136,7 @@ export function RecoverKpiCard({ kpi }) {
   );
 }
 
-export default function AdminRecover() {
+export function RecoverCasesTab() {
   const [data, setData] = useState(null);
   const [view, setView] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -208,6 +218,45 @@ export default function AdminRecover() {
         )}
         {(data?.items?.rows || []).map((row) => <RecoverCaseCard key={row.canonical_id} row={row} />)}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The Recover workspace shell.
+ *
+ * Two tabs, because C13's redirect for /admin/contracts lands at ?tab=contracts. AdminContracts
+ * is mounted unchanged: it was converted to the governed handler in C7 and rewriting a correct
+ * page is how a correct page stops being correct.
+ */
+export default function AdminRecover() {
+  const [params, setParams] = useSearchParams();
+  const requested = params.get("tab") || "cases";
+  const active = RECOVER_TABS.some((tab) => tab.key === requested) ? requested : "cases";
+
+  return (
+    <div className="space-y-4">
+      <div role="tablist" className="flex gap-1 border-b border-border/50">
+        {RECOVER_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            role="tab"
+            aria-selected={tab.key === active}
+            data-testid={`recover-tab-${tab.key}`}
+            onClick={() => setParams((next) => {
+              const updated = new URLSearchParams(next);
+              updated.set("tab", tab.key);
+              return updated;
+            })}
+            className={`px-3 py-2 text-xs font-bold border-b-2 -mb-px ${
+              tab.key === active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {active === "contracts" ? <AdminContracts /> : <RecoverCasesTab />}
     </div>
   );
 }
