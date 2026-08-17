@@ -1,7 +1,7 @@
 {
   "releaseName": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal)",
   "version": "0.98.0",
-  "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+  "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
   "sourceTreeFileCount": 2023,
   "sourceArchiveShaExternal": null,
@@ -18,8 +18,8 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "542543aebcf8ed59794f34dd33154b0cf07033e1ed355e9276890a5d6d9a3be3",
-  "documentationManifestSha": "586581419448d91af28bc5d88172573cefdf0e599500d4ca53c81906dff5f99a",
+  "durabilityManifestSha": "345b65c832d14a517100f0eecf49aefe9e4b2e568cd33cb7624600f45e89ee62",
+  "documentationManifestSha": "75b831ece23b39ede66b90e26e9ce8e217b6f8749bb639f068f061c3bb566c62",
   "schedulerInventorySha": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
   "backendDeploymentTopologySha": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
   "backendBundleManifestSha": "5c8acf5124160124b086813e00830810b2fe060186706f42aa9f6496e3332e5e",
@@ -62,9 +62,9 @@
   },
   "testEvidence": {
     "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:14:30.226Z",
-    "completedAt": "2026-08-17T14:15:12.783Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:16:51.640Z",
+    "completedAt": "2026-08-17T14:17:34.155Z",
     "exitCode": 0,
     "ciRunId": null,
     "testFiles": 309,
@@ -73,55 +73,55 @@
     "skipped": 0,
     "frameworkVersion": "^4.1.10",
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "044a47a6c89eeff7959075f1b305130c07c7ec21ae10e38eb874798ff154f4ca"
+    "evidenceDigest": "aec78b77a8a6cc881e2e69df87468eeb543e986bfd57b21776072ddf08bb60c9"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:15:13.249Z",
-    "completedAt": "2026-08-17T14:15:22.242Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:17:34.562Z",
+    "completedAt": "2026-08-17T14:17:43.513Z",
     "exitCode": 0,
     "ciRunId": null,
     "distHash": "3c5bce59cd4d0e2a7cef7286fd7b3ad492577850e105e48dbb5e5423867dfa4d",
     "artifactCount": 139,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "92a22fd823bfbac6668db6f3b71981acec3d6b4d0c70f03a74dddece8b42516b"
+    "evidenceDigest": "9298384982053c39fbd263034bedb5701d0eba1675db5d718d4ffe8bdb08aff0"
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:14:03.671Z",
-    "completedAt": "2026-08-17T14:14:10.633Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:16:25.539Z",
+    "completedAt": "2026-08-17T14:16:32.688Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "03b6828632cb2275e27c6e9969b6a951979fa0c6a3b26d60aa2efc1b3eceb9ee"
+    "evidenceDigest": "574dbcb18756174324f0a5ff8e10fe35d0a3dbed01e766e6940123b36b266c4d"
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:14:11.023Z",
-    "completedAt": "2026-08-17T14:14:15.138Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:16:33.057Z",
+    "completedAt": "2026-08-17T14:16:36.942Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "70d64c093fc20df64c1610fa4c6a60eef81e0ef4df7e0a91031e7127604594e2"
+    "evidenceDigest": "86e582abf624bc78a0629ad993aca2f585e9d32643f338ef7fe015fa62b887cc"
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:14:20.977Z",
-    "completedAt": "2026-08-17T14:14:29.846Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:16:42.668Z",
+    "completedAt": "2026-08-17T14:16:51.250Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "171f8a99c8f4a54c8bc2e25e48a01ab1a43c390bc7b7f6164a8e6f41e00264ef"
+    "evidenceDigest": "7c924634568a9014f011690819c1edd26adfc3abf6af40da425d9dbaa91f33ef"
   },
   "dependencyAuditEvidence": {
     "command": "npm audit --json",
-    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
-    "startedAt": "2026-08-17T14:13:59.495Z",
-    "completedAt": "2026-08-17T14:14:00.250Z",
+    "sourceTreeHash": "b0a30935fa10c814c723ecd47b79810e061899f949d6e5c2b0913f03f826cd47",
+    "startedAt": "2026-08-17T14:16:21.451Z",
+    "completedAt": "2026-08-17T14:16:22.140Z",
     "exitCode": 0,
     "ciRunId": null,
     "auditReportVersion": 2,
@@ -143,7 +143,7 @@
     },
     "networkExitCode": 0,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "6e2bde7d87b311e3cd0d338f2e0e98d7cf31fe45cfc02811a425d33fdf37a761"
+    "evidenceDigest": "469e7f84af7169cdd9bda5a31b5889e625a18617c0bcf2539f1fa244c2ff86ad"
   },
   "artifactHashes": {
     "dist": "3c5bce59cd4d0e2a7cef7286fd7b3ad492577850e105e48dbb5e5423867dfa4d"
@@ -290,7 +290,7 @@
   "pendingProductionRequirements": [
     "FINAL-SHA REMOTE CI PROOF REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the exact final release SHA.",
     "LEGACY ADMIN ROUTES NOT RETIRED: 2 route(s) remain live with a declared blocker (/admin/deals, /admin/applications).",
-    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 26 entries against a target of 13.",
+    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 15 top-level entries against a target of 13 (11 further entries are nested under Advanced System and reachable). ",
     "HIGH/CRITICAL ALERT PROOF REQUIRED: prove real delivery, retry, deduplication and Founder/Admin visibility with a controlled production incident.",
     "FINAL BASE44 PARITY PROOF REQUIRED: deploy the exact final source tree and match runtime release version, Git SHA, sha256-tree-v1 hash and file count to RELEASE.json and the archive.",
     "IMMUTABLE RUNTIME IDENTITY + SLO PROOF REQUIRED: inject the deployment-owned source, bundle, topology and scheduler identities; collect complete durable attempt receipts for Analyzer, extraction, commercial send, billing reconciliation and the company orchestrator; then satisfy the canonical 30-day SLO windows.",
@@ -320,7 +320,7 @@
   "manualRequirements": [
     "FINAL-SHA REMOTE CI PROOF REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the exact final release SHA.",
     "LEGACY ADMIN ROUTES NOT RETIRED: 2 route(s) remain live with a declared blocker (/admin/deals, /admin/applications).",
-    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 26 entries against a target of 13.",
+    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 15 top-level entries against a target of 13 (11 further entries are nested under Advanced System and reachable). ",
     "HIGH/CRITICAL ALERT PROOF REQUIRED: prove real delivery, retry, deduplication and Founder/Admin visibility with a controlled production incident.",
     "FINAL BASE44 PARITY PROOF REQUIRED: deploy the exact final source tree and match runtime release version, Git SHA, sha256-tree-v1 hash and file count to RELEASE.json and the archive.",
     "IMMUTABLE RUNTIME IDENTITY + SLO PROOF REQUIRED: inject the deployment-owned source, bundle, topology and scheduler identities; collect complete durable attempt receipts for Analyzer, extraction, commercial send, billing reconciliation and the company orchestrator; then satisfy the canonical 30-day SLO windows.",
@@ -339,5 +339,5 @@
   "realWorldValidatedEligible": false,
   "readinessLevel": "NOT_GO_READY",
   "finalVerdict": "NOT_GO_READY",
-  "generatedAt": "2026-08-17T14:15:23.413Z"
+  "generatedAt": "2026-08-17T14:17:44.659Z"
 }

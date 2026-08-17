@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-17T14:13:52.286Z",
+  "generatedAt": "2026-08-17T14:16:14.183Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -246,7 +246,7 @@
     "scripts/generate-documentation-manifest.mjs": "8f921d448cb3bda874963ada1c166a88b11107cd8e2ea3e812b98ca81258ece3",
     "scripts/generate-dr-entity-catalog.mjs": "1ad971c717b2cb3413ba05e5a1fb6b2d08818a5732a145bf5c2e0a3ff09f1d66",
     "scripts/generate-intelligence-canonical-v2.mjs": "3c9b6b30e12b79bcd1d6e34f01a48d34c12469202facb441529ae83871f8878b",
-    "scripts/generate-release-manifest.mjs": "74695a0bb541fae3896e89756e0508fe3ec59a5568cd8e63574c0ff7c50e215d",
+    "scripts/generate-release-manifest.mjs": "e7cf0f4d6d306e9a542ccd79ceb17ad1e57c0e1d5cf3423e0ac721475b448da7",
     "scripts/generate-remediation-r0.mjs": "3380158f526c7a9022aed2bbf412e4860b7d80f0c1fd4f0e246223f0fdab411a",
     "scripts/generate-remediation-r4.mjs": "eec35780291104bf42d12ae69525cf3dab8de4d3ed636b1b8c23b61b3085ede0",
     "scripts/generate-remediation-r5.mjs": "ee901e31272a2ca71f6d989a95aa568e183b4627b7e4e18caeec9ae0f1f88ea4",

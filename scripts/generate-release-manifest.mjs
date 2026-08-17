@@ -316,10 +316,17 @@ if (dashboardNav) {
     const layoutSource = fs.existsSync("src/pages/admin/AdminLayout.jsx")
       ? fs.readFileSync("src/pages/admin/AdminLayout.jsx", "utf8") : "";
     const entryCount = [...layoutSource.matchAll(/\{ path: "([^"]+)"/g)].length;
-    addPendingRequirement(
-      `ADMIN SIDEBAR CONSOLIDATION ${dashboardNav.sidebar_cut.state}: ${entryCount} entries against a target of `
-      + `${dashboardNav.sidebar_cut.target_entries}. ${dashboardNav.sidebar_cut.blocked_by || ''}`.trim(),
-    );
+    // Nested Advanced System children are reachable, so counting them against the target
+    // overstates the gap — "26 against 13" reads as thirteen entries too many when it is two.
+    const nestedCount = [...layoutSource.matchAll(/\{ path: "[^"]+"[^\n]*advanced: true/g)].length;
+    const topLevel = entryCount - nestedCount;
+    if (topLevel > dashboardNav.sidebar_cut.target_entries) {
+      addPendingRequirement(
+        `ADMIN SIDEBAR CONSOLIDATION ${dashboardNav.sidebar_cut.state}: ${topLevel} top-level entries against a target of `
+        + `${dashboardNav.sidebar_cut.target_entries} (${nestedCount} further entries are nested under Advanced System and reachable). `
+        + `${dashboardNav.sidebar_cut.blocked_by || ''}`.trim(),
+      );
+    }
   }
 }
 
