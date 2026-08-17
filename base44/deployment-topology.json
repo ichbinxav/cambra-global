@@ -228,6 +228,14 @@
       },
       "boundary": "strict_admin"
     },
+    "pipelineWorkspaceAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/pipelineAdminCore.ts",
+      "route": {
+        "action_prefix": "pipeline_"
+      },
+      "boundary": "strict_admin"
+    },
     "commandRunWorker": {
       "host": "maintenanceEngine",
       "source_module": "base44/shared/commandRunWorker.ts",

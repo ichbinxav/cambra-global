@@ -222,3 +222,23 @@ export const RETIRED_AUTHORITY = Object.freeze({
 export function isRetiredAuthority(entity: unknown): boolean {
   return text(entity) === RETIRED_AUTHORITY.entity;
 }
+
+/**
+ * Reverse mapping: the legacy value to write for a canonical stage.
+ *
+ * Lives here because this is the module that owns the mapping table. Returns the
+ * FIRST legacy value that maps to the canonical stage — deterministic because
+ * object key order in the registry JSON is stable — or null when no legacy value
+ * expresses that stage. Null matters: it means the canonical stage cannot be
+ * written to that column at all, and the caller must refuse rather than write a
+ * value the entity enum does not accept.
+ */
+export function canonicalToLegacy(lane: string, column: string, canonical: string): string | null {
+  const mappings = (registry as any).lanes?.[text(lane)]?.legacy_mappings?.[text(column)];
+  if (!mappings) return null;
+  const target = text(canonical).toUpperCase();
+  for (const [legacy, mapped] of Object.entries(mappings)) {
+    if (mapped === target) return legacy;
+  }
+  return null;
+}
