@@ -29,6 +29,11 @@ const COPY = {
     blockerTitles:{ takeover:'Préparation de la migration', provider_coordination:'Coordination prestataire', provider_ready:'Configuration prestataire', technical_configuration:'Configuration des paiements', migration_testing:'Tests de migration', cutover_ready:'Préparation de la mise en ligne', go_live:'Mise en ligne', verify_savings:'Vérification des économies' },
   },
 };
+// AUDIT I18N-01 (2026-08-17, founder-authorised): the other 20 UI locales fall through
+// to English by design (UI copy, not a legal record). Translators override per locale.
+for (const code of ['de','it','pl','pt','el','sv','da','fi','cs','ro','hu','bg','hr','et','lv','lt','sk','sl','nb','is']) {
+  COPY[code] = COPY.en;
+}
 const ORDER = ['preparing','provider_coordination','scheduled','going_live','verifying','completed'];
 
 export default function PaymentsMigrationCard(){

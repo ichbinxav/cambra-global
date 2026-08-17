@@ -50,6 +50,12 @@ const COPY = {
     superseded: "Este acuerdo fue sustituido por uno nuevo. La copia se conserva como registro.",
   },
 };
+// AUDIT I18N-01 (2026-08-17, founder-authorised): other 20 UI locales fall through to EN.
+// This is agreement-adjacent UI copy; the legal record itself lives in recoveryEconomicsCopy
+// (which carries PENDING_LEGAL_REVIEW markers). Overridable per locale by translators.
+for (const code of ['de','it','pl','pt','el','sv','da','fi','cs','ro','hu','bg','hr','et','lv','lt','sk','sl','nb','is']) {
+  COPY[code] = COPY.en;
+}
 
 export default function ContractDocumentCard({ dealActivationId }) {
   const { lang } = useLanguage();

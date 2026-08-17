@@ -92,6 +92,48 @@ describe('global i18n contract — EN / FR / ES', () => {
     }
   });
 
+  // AUDIT I18N-08 (2026-08-17): structural test for parallel copy maps OUTSIDE
+  // src/lib/locales. The dictionary-parity assertions above cover the main dict but a
+  // component that ships its own `const COPY = { en, fr, es }` map is invisible to them.
+  // Each parallel map is enumerated below with the languages it must have OR a declared
+  // exception with a reason. Adding a new map without registering it here trips the check.
+  it('every parallel copy map declares the languages it covers, or an explicit exception', () => {
+    const PARALLEL_MAPS = [
+      // Merchant UI — must reach 23 langs (English fallback for non-legal-critical UI is OK).
+      { file: 'src/components/recover/recoverUiCopy.js', requiredLangs: SUPPORTED_LANGUAGES, marker: '__translation_readiness' },
+      { file: 'base44/shared/recoveryEconomicsCopy.ts', requiredLangs: SUPPORTED_LANGUAGES, marker: '__translation_readiness' },
+      { file: 'src/components/recover/PaymentsMigrationCard.jsx', requiredLangs: SUPPORTED_LANGUAGES },
+      { file: 'src/components/recover/ContractDocumentCard.jsx', requiredLangs: SUPPORTED_LANGUAGES },
+      { file: 'src/components/account/RecoverCommitmentsCard.jsx', requiredLangs: SUPPORTED_LANGUAGES },
+      { file: 'src/pages/PaymentsMigration.jsx', requiredLangs: SUPPORTED_LANGUAGES },
+      // Declared exceptions (scope calls with an owner and a reason).
+      { file: 'src/pages/Pricing.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'JSX-fragment lookup; per-market pricing wording pending legal review, tracked as I18N-08' },
+      { file: 'src/lib/seoConfig.js', requiredLangs: ['en','fr','es'], exceptionReason: 'OG_LOCALE + per-route SEO wording; header comment declares en/fr/es scope' },
+      { file: 'src/pages/Privacy.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING per config/legal/dpa-status.json' },
+      { file: 'src/pages/Terms.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING' },
+      { file: 'src/pages/Cookies.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING' },
+      { file: 'src/pages/Dpa.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING' },
+      { file: 'src/pages/Subprocessors.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING' },
+    ];
+    const failures = [];
+    for (const entry of PARALLEL_MAPS) {
+      const body = source(entry.file);
+      for (const lang of entry.requiredLangs) {
+        // Match the lang either as `en:` (explicit key), `en,`/`en }` (object shorthand)
+        // or as `from "@/content/legal/en/…` (per-locale content module import).
+        const keyRe = new RegExp(`(?:^|[\\s{,\\[])['\"]?${lang}['\"]?\\s*[,:}\\]]`, 'm');
+        const importRe = new RegExp(`/${lang}/[\\w-]+["']`, 'm');
+        if (!keyRe.test(body) && !importRe.test(body)) {
+          failures.push(`${entry.file} missing lang ${lang}` + (entry.exceptionReason ? ` (exception scope: ${entry.exceptionReason})` : ''));
+        }
+      }
+      if (entry.marker && !body.includes(entry.marker)) {
+        failures.push(`${entry.file} missing translation_readiness marker (${entry.marker})`);
+      }
+    }
+    expect(failures, 'parallel copy maps must all declare their language coverage explicitly').toEqual([]);
+  });
+
   it('keeps invisible toast viewports click-through and the mobile menu accessible', () => {
     const toast = source('src/components/ui/toast.jsx');
     expect((toast.match(/pointer-events-none fixed top-0/g) || []).length).toBe(2);

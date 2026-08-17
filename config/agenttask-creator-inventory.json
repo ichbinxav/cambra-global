@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "c0987d03872c0aa09f543f99f7e81c819a20a86b5a00d5af8e3eebbb9e118e2d",
+  "source_inventory_hash": "f3e517909863f9fc2e21d17dfb83860d37c5e3055d96b042d9f6f77e534211db",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -931,7 +931,7 @@
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
-      "source_sha256": "4543ac82bd1328eca767f5f5ee0ae29bafa3ca9be9a79dfb7c1e46a205202350",
+      "source_sha256": "c4fbc2821e99f1ddd8e32ffb83ba60c0cffc3be446b87cf44abfb3a96f8d7a75",
       "boundary_ids": [
         "MB-INTEL-P3-LEGACY-PROMOTION",
         "MB-SCHEDULER-BASE"

@@ -32,7 +32,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 
-// The ONLY currencies the engine's ~1:1 assumption covers today.
+// AUDIT I18N-07 (2026-08-17): the allowlist is now owned by
+// base44/shared/engineCurrencyAllowlist.ts so every writer AND this test read the same
+// constant. Re-declared inline for backward compatibility of the assertions below.
 const ENGINE_ONE_TO_ONE_CURRENCIES = ['EUR', 'GBP', 'USD'];
 
 describe('payments rate table — currency safety lock (Fase D)', () => {
@@ -52,6 +54,19 @@ describe('payments rate table — currency safety lock (Fase D)', () => {
     const engine = read('src/lib/paymentsGap.js');
     expect(engine).toContain('We do NOT do FX here');
     expect(engine).toContain('avg_ticket_eur');
+  });
+
+  it('the second writer (intelligenceMaintenanceWorker) also enforces the allowlist', () => {
+    // AUDIT I18N-07 (2026-08-17): the seeder used to be the only writer this suite
+    // guarded; the P3 compatibility projection wrote to the same field via a different
+    // code path. Both must import the shared allowlist and refuse non-1:1 currencies.
+    const worker = read('base44/functions/intelligenceMaintenanceWorker/entry.ts');
+    expect(worker).toContain("from '../../shared/engineCurrencyAllowlist.ts'");
+    expect(worker).toContain('isEngineOneToOneCurrency(fixedCurrency)');
+    const shared = read('base44/shared/engineCurrencyAllowlist.ts');
+    for (const currency of ENGINE_ONE_TO_ONE_CURRENCIES) {
+      expect(shared).toContain(`'${currency}'`);
+    }
   });
 
   it('states the blocked-market decision in the decision log', () => {

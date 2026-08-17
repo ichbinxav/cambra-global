@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T19:01:46.178Z",
+  "generatedAt": "2026-08-17T20:52:08.784Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -894,8 +894,8 @@
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/entry.ts",
-      "sha256": "4543ac82bd1328eca767f5f5ee0ae29bafa3ca9be9a79dfb7c1e46a205202350",
-      "bytes": 8646
+      "sha256": "c4fbc2821e99f1ddd8e32ffb83ba60c0cffc3be446b87cf44abfb3a96f8d7a75",
+      "bytes": 9063
     },
     {
       "path": "base44/functions/intelligenceMaintenanceWorker/function.jsonc",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "ebe8cd7aa1789737dfee1d25403f65a7d9835f1b41f0481b56c7987394c908a1",
+      "sha256": "ffccd181b250bbd6d704373ebaa3467463e024cb11d61c4f338ab07868b9d7c1",
       "bytes": 124138
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "ab171509fdcc7b37e0415fe645dfdef91d155331e1f3434af2b0ea02cfa1c8d9",
+      "sha256": "a3ece6943e4904c9ea2a6ec6066db5484d3b90e661259cfa380b50e9a7c6b04a",
       "bytes": 42987
     },
     {
@@ -2194,17 +2194,17 @@
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "1ba0798d910b8f1153e8b7c1a2bc6f66a436346c6f3393f6dde7711a9eff0f53",
+      "sha256": "57a335b18d8b25f3c03b48c57b26bc9cfdf040f4aa1ddd47ebe5accfe7fe7001",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "94e48ef5364041a82ad8bc567f0609f7280c2c61a8d67e490a50a55c58a28fb7",
+      "sha256": "10b0ffe1c5c5a0ed981743579470df977fd9ea5ba913124294be82fc602cd025",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "b1829367eabee5d567850a3423d606ed34ab049bcf9f32d17ff99d9c9277a94e",
+      "sha256": "1cd7ca4e3af48ed554f635c80afde9bebbc4ac2d1c630e58eb848eff78282901",
       "bytes": 98284
     },
     {
@@ -3334,8 +3334,8 @@
     },
     {
       "path": "src/lib/i18nParity.test.js",
-      "sha256": "83d1e0f06e941ecfe21cc76b52b891426bce2820e63c70427edd1fc2ca84fa75",
-      "bytes": 5464
+      "sha256": "5246b666b1eeb38d3e20f48eacbaf4e00d3d950b0cf96cf230f163598395a0bc",
+      "bytes": 8898
     },
     {
       "path": "src/lib/incidentAlerting.test.js",
