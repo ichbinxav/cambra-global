@@ -31,7 +31,15 @@ import {
 export const PIPELINE_CORE_VERSION = 'pipeline-core-1.0.0';
 
 const text = (value: unknown) => String(value ?? '').trim();
+/**
+ * Numeric read that treats null and empty string as UNKNOWN.
+ *
+ * Number(null) is 0 and Number.isFinite(0) is true, so the naive version reports
+ * an absent expected value as a confident zero — which would make an unvalued
+ * lead look like a worthless one and let it pass a minimum-value filter.
+ */
 const num = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };

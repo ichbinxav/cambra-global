@@ -18,7 +18,8 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // COMMAND-C7 (2026-08-17): 31 -> 32 for commandRunWorker (the scheduled sweep on
 // maintenanceEngine). Physical stays 276.
 // DASHBOARD-C3 (2026-08-17): 32 -> 33 for pipelineWorkspaceAdmin. Physical stays 276.
-export const BASE44_LOGICAL_ROUTE_TARGET = 33;
+// DASHBOARD-C4 (2026-08-17): 33 -> 34 for auditsWorkspaceAdmin. Physical stays 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 34;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

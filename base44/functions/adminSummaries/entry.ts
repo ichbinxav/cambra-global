@@ -13,6 +13,8 @@ import { handleCommandConversationAction } from '../../shared/commandConversatio
 import { handleCommandRunAction } from '../../shared/commandRunAdminCore.ts';
 // DASHBOARD-C3: Pipeline workspace, also a logical route.
 import { handlePipelineAdminAction } from '../../shared/pipelineAdminCore.ts';
+// DASHBOARD-C4: Audits & Opportunities, also a logical route.
+import { handleAuditsAdminAction } from '../../shared/auditsAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 Deno.serve(async (req) => {
@@ -30,6 +32,7 @@ Deno.serve(async (req) => {
     if (String(routedBody?.action||'').startsWith('command_conversation_')) return handleCommandConversationAction(user,{...routedBody,action:String(routedBody.action).replace(/^command_conversation_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('command_run_')) return handleCommandRunAction(user,{...routedBody,action:String(routedBody.action).replace(/^command_run_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('pipeline_')) return handlePipelineAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^pipeline_/, '')},base44.asServiceRole);
+    if (String(routedBody?.action||'').startsWith('audits_')) return handleAuditsAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^audits_/, '')},base44.asServiceRole);
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
     if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 
