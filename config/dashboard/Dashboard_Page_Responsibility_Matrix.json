@@ -1,0 +1,139 @@
+{
+  "schema_version": "cambra-dashboard-page-responsibility-v1",
+  "generated_for": "DASHBOARD CORE C0",
+  "tree_sha": "02438b33df8aac8742deed501de38fe1b258b7fb",
+  "target_sidebar_entries": 12,
+  "current_sidebar_entries": 43,
+  "pages": [
+    {
+      "group": "COMMAND",
+      "order": 1,
+      "label": "Founder OS",
+      "route": "/admin",
+      "file": "src/pages/admin/AdminCommand.jsx",
+      "state": "EXISTING",
+      "question": "What needs my attention and what must I decide today?",
+      "must_not_become": "A full CRM or a technical explorer"
+    },
+    {
+      "group": "COMMAND",
+      "order": 2,
+      "label": "CAMBRA Command",
+      "route": "/admin/chat",
+      "file": "src/pages/admin/AdminCommandChat.jsx",
+      "state": "EXISTING",
+      "question": "What do I want to consult, analyse, prepare or operate?",
+      "must_not_become": "A parallel database",
+      "note": "Built in this session, chunks C1-C7. AdminCommand.jsx at /admin and /admin/command is the Founder OS dashboard, a DIFFERENT page — do not confuse them."
+    },
+    {
+      "group": "GROWTH",
+      "order": 3,
+      "label": "Discovery",
+      "route": "/admin/discovery",
+      "file": "src/pages/admin/AdminDiscovery.jsx",
+      "state": "EXISTING",
+      "question": "Which companies, people, partners or providers should we know?",
+      "must_not_become": "A campaign or pipeline manager"
+    },
+    {
+      "group": "GROWTH",
+      "order": 4,
+      "label": "Campaigns",
+      "route": "/admin/campaigns",
+      "file": "src/pages/admin/AdminCampaigns.jsx",
+      "state": "EXISTING",
+      "question": "Who do we contact, what do we send, when, and with what result?",
+      "must_not_become": "An inbox or full CRM",
+      "note": "618 lines plus 12 shared modules. Present in this tree — NOT an external branch dependency."
+    },
+    {
+      "group": "GROWTH",
+      "order": 5,
+      "label": "Inbox & Conversations",
+      "route": "/admin/conversations",
+      "file": "src/pages/admin/AdminConversations.jsx",
+      "state": "EXISTING",
+      "question": "What did each person reply and how does the relationship continue?",
+      "must_not_become": "The canonical pipeline",
+      "note": "282 lines plus 4 shared modules. Present in this tree."
+    },
+    {
+      "group": "GROWTH",
+      "order": 6,
+      "label": "Pipeline",
+      "route": "/admin/pipeline",
+      "file": "src/pages/admin/AdminPipeline.jsx",
+      "state": "REPLACE",
+      "question": "What commercial stage is each organisation in and what must happen next?",
+      "must_not_become": "Email history, or the source of truth for connections/Recover",
+      "note": "Current page is a kanban over DealApplication, an entity with zero producers. Replace, do not extend."
+    },
+    {
+      "group": "CLIENTS",
+      "order": 7,
+      "label": "Merchants",
+      "route": "/admin/merchants",
+      "file": "src/pages/admin/AdminMerchants.jsx",
+      "state": "EXISTING_REFERENCE",
+      "question": "Which companies are real CAMBRA clients and what is their 360 state?",
+      "must_not_become": "A prospect list",
+      "note": "THE reference pattern. Activations & Connections consolidates INSIDE this page, not as a new sidebar entry."
+    },
+    {
+      "group": "CLIENTS",
+      "order": 8,
+      "label": "Audits & Opportunities",
+      "route": "/admin/audits",
+      "file": null,
+      "state": "GAP",
+      "question": "What have we analysed, what evidence exists, and which economic opportunity is defensible?",
+      "must_not_become": "Recover or billing",
+      "note": "Route does not exist. Genuinely new surface."
+    },
+    {
+      "group": "CLIENTS",
+      "order": 9,
+      "label": "Recover",
+      "route": "/admin/recover",
+      "file": null,
+      "state": "GAP",
+      "question": "How do we turn an approved opportunity into conditions, go-live and verified savings?",
+      "must_not_become": "A generic contracts or migrations page",
+      "note": "Route does not exist. Root authority DOES exist (DealActivation)."
+    },
+    {
+      "group": "BUSINESS",
+      "order": 10,
+      "label": "Finance",
+      "route": "/admin/finance",
+      "file": "src/pages/admin/AdminFinance.jsx",
+      "state": "EXTEND",
+      "question": "What savings, revenue, invoice, collection, cost and cash actually exist?",
+      "must_not_become": "Intelligence or provider recommendations",
+      "note": "Already uses getFinancialControlTower. Extend with tabs; absorb Revenue, Recover Billing, Provider Economics."
+    },
+    {
+      "group": "BUSINESS",
+      "order": 11,
+      "label": "Intelligence",
+      "route": "/admin/intelligence",
+      "file": "src/pages/admin/AdminIntelligence.jsx",
+      "state": "EXTEND",
+      "question": "What does CAMBRA know, with what evidence, freshness, coverage and conflicts?",
+      "must_not_become": "Direct commercial or financial execution",
+      "note": "Already uses getIntelligenceCommandCenter. Absorb Markets, Growth, Routing, Benchmarks, Recommendations, Providers."
+    },
+    {
+      "group": "SYSTEM",
+      "order": 12,
+      "label": "Settings",
+      "route": "/admin/settings",
+      "file": "src/pages/admin/AdminSettings.jsx",
+      "state": "EXTEND",
+      "question": "How is the system configured and governed?",
+      "must_not_become": "The main menu for daily operations",
+      "note": "Advanced System sub-navigation absorbs AI Operations, Automations, Maintenance, Developer, ECL, API & Webhooks, Activity Log."
+    }
+  ]
+}

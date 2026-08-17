@@ -1,0 +1,279 @@
+{
+  "schema_version": "cambra-dashboard-gap-map-v1",
+  "generated_for": "DASHBOARD CORE C0",
+  "tree_sha": "02438b33df8aac8742deed501de38fe1b258b7fb",
+  "classification_legend": {
+    "EXISTING": "Present and working. Integrate, do not rewrite.",
+    "REUSE": "Present but must be extended or consolidated.",
+    "GAP": "Genuinely does not exist and must be built.",
+    "RUNTIME_ONLY": "Cannot be closed by writing code; needs real production execution.",
+    "EXTERNAL_BRANCH_DEPENDENCY": "Declared by the founder but absent from this tree."
+  },
+  "external_branch_dependencies": {
+    "count": 0,
+    "note": "Campaigns and Inbox & Conversations were both found PRESENT in this tree. Neither is an external branch dependency. Nothing about them is to be recreated."
+  },
+  "items": [
+    {
+      "id": "EX-1",
+      "classification": "EXISTING",
+      "area": "growth",
+      "what": "Campaigns",
+      "today": "src/pages/admin/AdminCampaigns.jsx (618 lines) plus 12 shared modules under base44/shared/campaign*",
+      "action": "Integrate. Do not rewrite, do not rename lanes, recipient ledger, threads, suppressions, sender profiles or provider events.",
+      "verified_directly": true
+    },
+    {
+      "id": "EX-2",
+      "classification": "EXISTING",
+      "area": "growth",
+      "what": "Inbox & Conversations",
+      "today": "src/pages/admin/AdminConversations.jsx (282 lines) plus conversationAdminCore, conversationResolution, conversationFollowUp, inboundConversationProvider",
+      "action": "Integrate. No workspace may create a second thread or message authority.",
+      "verified_directly": true
+    },
+    {
+      "id": "EX-3",
+      "classification": "EXISTING",
+      "area": "command",
+      "what": "CAMBRA Command",
+      "today": "src/pages/admin/AdminCommandChat.jsx (529 lines) at /admin/chat, with commandToolRegistry, commandToolLoop, commandToolFormat, commandModelRouter, commandRunExecutor, commandRunWorker, commandReceiptLedger, founderPermitAuthority",
+      "action": "Register each new workspace's tools and context builders into the existing registry. Do not build a second tool plane.",
+      "verified_directly": true
+    },
+    {
+      "id": "EX-4",
+      "classification": "EXISTING",
+      "area": "clients",
+      "what": "Merchants",
+      "today": "src/pages/admin/AdminMerchants.jsx (374 lines), zero base44.entities calls, single getFounderControlCenter view+action call",
+      "action": "Use as the reference pattern; add concise blocks and deep links, do not duplicate whole pages into it.",
+      "verified_directly": true
+    },
+    {
+      "id": "EX-5",
+      "classification": "EXISTING",
+      "area": "framework",
+      "what": "Six legacy pages already on the correct single-aggregator architecture",
+      "today": "AdminFinance, AdminProviderEconomics, AdminIntelligence, AdminMarkets, AdminGrowth, AdminRoutingIntelligence (plus AdminRecommendations, aggregator-based but filtering client-side)",
+      "action": "Consolidate under the correct tabs. Rewriting them would be regression risk for no gain.",
+      "verified_directly": true
+    },
+    {
+      "id": "NAV-1",
+      "classification": "GAP",
+      "area": "navigation",
+      "what": "Final 12-entry sidebar with COMMAND/GROWTH/CLIENTS/BUSINESS/SYSTEM groups",
+      "today": "43 flat entries",
+      "chunk": "C1"
+    },
+    {
+      "id": "NAV-2",
+      "classification": "GAP",
+      "area": "navigation",
+      "what": "Legacy redirect framework preserving deep links and query state",
+      "today": "None",
+      "chunk": "C1"
+    },
+    {
+      "id": "FW-1",
+      "classification": "GAP",
+      "area": "framework",
+      "what": "Shared Operating Workspace primitives (header, KPI drilldown, filters, saved views, compare, export, source health)",
+      "today": "Merchants implements the pattern inline; nothing is shared",
+      "chunk": "C1",
+      "note": "Extract from AdminMerchants rather than inventing. Its contract is at AdminMerchants.jsx:118-124."
+    },
+    {
+      "id": "GATE-1",
+      "classification": "GAP",
+      "area": "gates",
+      "what": "Eight gate scripts named in the prompt",
+      "today": "None of dashboard:navigation:check, dashboard:workspace-contract:check, pipeline:check, audits-opportunities:check, recover:check, finance:check, intelligence:workspace:check, legacy-routes:check exist",
+      "chunk": "C1 onwards",
+      "verified_directly": true
+    },
+    {
+      "id": "PIPE-1",
+      "classification": "GAP",
+      "area": "pipeline",
+      "what": "Append-only stage-transition entity recording lane, subject, from/to, actor, reason, source event",
+      "today": "Nothing. Closest is a mutable truncated JSON blob on DiscoveryExecutionRun that omits the actor.",
+      "chunk": "C2",
+      "note": "THE ONLY new durable entity justified across the whole programme."
+    },
+    {
+      "id": "PIPE-2",
+      "classification": "REUSE",
+      "area": "pipeline",
+      "what": "Four-lane vocabulary",
+      "today": "CAMPAIGN_LANES already frozen at base44/shared/campaignsCore.ts:13",
+      "chunk": "C2",
+      "note": "Do not redefine."
+    },
+    {
+      "id": "PIPE-3",
+      "classification": "REUSE",
+      "area": "pipeline",
+      "what": "Per-lane stage authority",
+      "today": "OutboundLead (3 competing vocabularies), PartnerProspect.stage, Provider.provider_monetization_status, DealActivation.status",
+      "chunk": "C2"
+    },
+    {
+      "id": "PIPE-4",
+      "classification": "GAP",
+      "area": "pipeline",
+      "what": "Server-side pipeline portfolio projection",
+      "today": "AdminPipeline assembles from two entity lists in the browser over a dead entity",
+      "chunk": "C2"
+    },
+    {
+      "id": "PIPE-5",
+      "classification": "GAP",
+      "area": "pipeline",
+      "what": "Real days-in-stage",
+      "today": "AdminPipeline.jsx:16 computes it from created_date because no stage-entry timestamp exists",
+      "chunk": "C2",
+      "verified_directly": true
+    },
+    {
+      "id": "AUD-1",
+      "classification": "GAP",
+      "area": "audits",
+      "what": "The whole /admin/audits surface",
+      "today": "No route. Nearest is a per-merchant block inside /admin/merchants.",
+      "chunk": "C4-C5",
+      "verified_directly": true
+    },
+    {
+      "id": "AUD-2",
+      "classification": "REUSE",
+      "area": "audits",
+      "what": "Audit and opportunity authorities",
+      "today": "AnalyzerResult, PaymentsAnalysisVerified, MerchantOpportunity, SavingsEvidence, EvidenceAssertion, ReviewCase",
+      "chunk": "C4"
+    },
+    {
+      "id": "AUD-3",
+      "classification": "GAP",
+      "area": "audits",
+      "what": "Portfolio-level read across audits and opportunities",
+      "today": "Everything is per-merchant",
+      "chunk": "C4"
+    },
+    {
+      "id": "REC-1",
+      "classification": "REUSE",
+      "area": "recover",
+      "what": "Recover root",
+      "today": "DealActivation.status, with the direct mutator retired (HTTP 410), a transition guard, and CAS on every real move",
+      "chunk": "C6",
+      "note": "Do NOT create RecoverCase."
+    },
+    {
+      "id": "REC-2",
+      "classification": "GAP",
+      "area": "recover",
+      "what": "A production path that OPENS a Recover case",
+      "today": "DealActivation.create exists only in seedDemoData and runFlowSelfTests",
+      "chunk": "C6",
+      "verified_directly": true
+    },
+    {
+      "id": "REC-3",
+      "classification": "GAP",
+      "area": "recover",
+      "what": "The whole /admin/recover surface",
+      "today": "No route; pieces scattered across AdminContracts and nothing else",
+      "chunk": "C7"
+    },
+    {
+      "id": "FIN-1",
+      "classification": "REUSE",
+      "area": "finance",
+      "what": "Financial aggregator",
+      "today": "getFinancialControlTower already serves AdminFinance as a single call",
+      "chunk": "C8"
+    },
+    {
+      "id": "FIN-2",
+      "classification": "GAP",
+      "area": "finance",
+      "what": "Server-side join between the revenue/cash plane and the cost plane",
+      "today": "CostUsageEvent, CostBudgetControl, GrowthCostLedger and MerchantUnitEconomics are read by zero financial aggregator. Margin and unit economics are therefore not computable server-side today.",
+      "chunk": "C8"
+    },
+    {
+      "id": "FIN-3",
+      "classification": "REUSE",
+      "area": "finance",
+      "what": "Cost aggregation primitive",
+      "today": "costRuntimeSnapshot at base44/shared/costGovernance.ts:1338, sum primitive summarizeCostUsage at :400, already returns coverage_truncated",
+      "chunk": "C8"
+    },
+    {
+      "id": "FIN-4",
+      "classification": "GAP",
+      "area": "finance",
+      "what": "Remove frontend financial math",
+      "today": "AdminRevenue.jsx:18-22 sums five entity lists in the component",
+      "chunk": "C9"
+    },
+    {
+      "id": "INT-1",
+      "classification": "REUSE",
+      "area": "intelligence",
+      "what": "Five existing aggregators",
+      "today": "getIntelligenceCommandCenter, getEuropeMarketsCommandCenter, getRoutingIntelligenceCommandCenter, rateIntelligenceQuery, intelligenceAccess",
+      "chunk": "C10"
+    },
+    {
+      "id": "INT-2",
+      "classification": "GAP",
+      "area": "intelligence",
+      "what": "Live creator for ProviderPricingVersion",
+      "today": "Read by 13+ call sites, written by no production path",
+      "chunk": "C10"
+    },
+    {
+      "id": "INT-3",
+      "classification": "GAP",
+      "area": "intelligence",
+      "what": "Honour the declared write boundary",
+      "today": "intelligenceAccess is declared canonical in P12_INTELLIGENCE_ARCHITECTURE.md:21 but is not the only writer in practice",
+      "chunk": "C10"
+    },
+    {
+      "id": "SEC-1",
+      "classification": "GAP",
+      "area": "security",
+      "what": "Replace direct browser CRUD on material entities with governed handlers",
+      "today": "5 sites. Worst: AdminProviders.jsx:36-42 sets provider revenue_share_pct from a browser form; AdminContracts.jsx:49 writes a whole contract form object.",
+      "chunk": "C7 for contracts, C11 for providers",
+      "verified_directly": true
+    },
+    {
+      "id": "RT-1",
+      "classification": "RUNTIME_ONLY",
+      "area": "release",
+      "what": "Production seal and root seals",
+      "today": "0 CLOSED, 8/8 root seals NOT_SEALED across R0/R4/R5",
+      "note": "Requires real production executions producing RuntimeGateEvidence with a genuine deployment identity. Cannot be closed by writing code, and fabricating it is what the go-live gates exist to prevent."
+    },
+    {
+      "id": "RT-2",
+      "classification": "RUNTIME_ONLY",
+      "area": "release",
+      "what": "Every live proof named in prompt section 28",
+      "today": "Not run",
+      "note": "Real pipeline transitions, real connection handoff, real migration, real invoice and payment, real reconciliation, SLO windows, backup/restore, Emergency drill."
+    }
+  ],
+  "counts": {
+    "EXISTING": 5,
+    "GAP": 16,
+    "REUSE": 7,
+    "RUNTIME_ONLY": 2
+  },
+  "single_most_important_conclusion": "Four of the five workspaces need NO new persisted aggregate — they are server-side projections over authorities that already exist. Recover has a real root in DealActivation. Exactly ONE new durable entity is justified across the entire programme: the append-only pipeline stage-transition event (PIPE-1). Six of the fourteen legacy pages already use the correct single-aggregator architecture and must be consolidated, not rewritten."
+}

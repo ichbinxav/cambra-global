@@ -1,0 +1,119 @@
+{
+  "schema_version": "cambra-dashboard-legacy-route-migration-v1",
+  "generated_for": "DASHBOARD CORE C0",
+  "tree_sha": "02438b33df8aac8742deed501de38fe1b258b7fb",
+  "rule": "No legacy route leaves the sidebar until parity, redirect, deep-link preservation, data preservation, navigation tests and documentation are all demonstrated.",
+  "sidebar_entries_to_remove": 31,
+  "routes": [
+    {
+      "legacy": "/admin/pipeline",
+      "destination": "/admin/pipeline",
+      "kind": "REPLACE_IN_PLACE",
+      "data_to_preserve": "none — DealApplication has zero rows and zero producers",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/deals",
+      "destination": "/admin/pipeline?tab=merchant",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none — renders a hard-coded frontend array",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/applications",
+      "destination": "/admin/pipeline?tab=merchant&view=applications",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none — same dead entity",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/contracts",
+      "destination": "/admin/recover?tab=contracts",
+      "kind": "REDIRECT",
+      "data_to_preserve": "Contract rows",
+      "blocker": "AdminContracts.jsx:49 writes Contract directly from the browser; the destination must expose a governed handler before this redirect lands",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/approvals",
+      "destination": "Founder OS Needs Attention plus domain context",
+      "kind": "REDIRECT",
+      "data_to_preserve": "Approval rows",
+      "note": "Already routes resolution through founderOSCommand two-phase preview/confirm — keep that path",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/revenue",
+      "destination": "/admin/finance?tab=overview",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none new",
+      "blocker": "Five parallel entity lists with aggregation in the component (AdminRevenue.jsx:18-22). The destination must compute server-side.",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/recover-billing",
+      "destination": "/admin/finance?tab=merchant-billing",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none new",
+      "blocker": "FiscalIdentityCard.jsx:47 writes Brand directly from the browser",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/provider-economics",
+      "destination": "/admin/finance?tab=provider-economics",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none new",
+      "note": "Already a single-aggregator page (getProviderEconomicsCommandCenter) — consolidate, do not rewrite",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/markets",
+      "destination": "/admin/intelligence?tab=markets",
+      "kind": "REDIRECT",
+      "note": "Already single-aggregator (getEuropeMarketsCommandCenter)",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/growth",
+      "destination": "/admin/intelligence?tab=markets&view=growth",
+      "kind": "REDIRECT",
+      "note": "Already single-aggregator with governed confirmation-token mutations",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/routing-intelligence",
+      "destination": "/admin/intelligence?tab=routing",
+      "kind": "REDIRECT",
+      "note": "Already single-aggregator. Must keep SHADOW ONLY visible.",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/benchmarks",
+      "destination": "/admin/intelligence?tab=benchmarks",
+      "kind": "REDIRECT",
+      "data_to_preserve": "none — computes client-side via scoreEngine",
+      "blocker": "Page claims to CONTROL ranges but has no write path. The claim must be corrected, not carried over.",
+      "already_correct_architecture": false
+    },
+    {
+      "legacy": "/admin/recommendations",
+      "destination": "/admin/intelligence?tab=recommendations",
+      "kind": "REDIRECT",
+      "note": "Aggregator-based, but filters client-side",
+      "already_correct_architecture": true
+    },
+    {
+      "legacy": "/admin/providers",
+      "destination": "/admin/intelligence?tab=providers",
+      "kind": "REDIRECT",
+      "data_to_preserve": "Provider rows",
+      "blocker": "AdminProviders.jsx:38,42 write Provider — including revenue_share_pct — directly from the browser. HIGHEST-severity blocker in the matrix.",
+      "already_correct_architecture": false
+    }
+  ],
+  "summary": {
+    "already_correct_architecture": 6,
+    "need_backend_work": 8,
+    "with_write_blockers": 4
+  }
+}

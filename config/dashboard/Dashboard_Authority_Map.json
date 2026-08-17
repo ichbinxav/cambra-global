@@ -1,0 +1,116 @@
+{
+  "schema_version": "cambra-dashboard-authority-map-v1",
+  "generated_for": "DASHBOARD CORE C0",
+  "generated_at": "2026-08-17",
+  "tree_sha": "02438b33df8aac8742deed501de38fe1b258b7fb",
+  "method": "Five parallel readers over the real tree, each followed by an independent agent instructed to REFUTE its verdict. One verdict was CONFIRMED outright; four were PARTLY_WRONG with corrections that KEPT the verdict and the recommended root. Every claim reproduced below that is marked verified_directly was then re-checked by hand.",
+  "headline": "No new persisted aggregate is justified for any of the five workspaces. Four are server-side projections over existing authorities; Recover has a real root in DealActivation. Exactly ONE new durable entity is justified across the whole programme: an append-only pipeline stage-transition event.",
+  "workspaces": {
+    "pipeline": {
+      "authority_verdict": "AUTHORITY_EXISTS_BUT_FRAGMENTED",
+      "recommended_root": "PROJECTION_ONLY",
+      "lane_authorities": {
+        "MERCHANT_ACQUISITION": {
+          "entity": "OutboundLead",
+          "note": "Carries THREE overlapping mutable progression vocabularies: stage (:29), revenue_stage (:137), reservoir_state (:180). Each writer maps between them ad hoc. The projection must pick one canonical reading and declare the mapping; it must not add a fourth."
+        },
+        "PARTNER_ACQUISITION": { "entity": "PartnerProspect", "field": "stage", "note": "Single column, four writers, no history." },
+        "PROVIDER_RELATIONS": {
+          "entity": "Provider",
+          "field": "provider_monetization_status",
+          "enum": ["unknown", "opportunity", "negotiating", "contracted", "active", "prohibited"],
+          "verified_directly": true,
+          "note": "The first reader called this lane a total gap. The refutation pass corrected it and the correction is right: this field exists and is written by providerMonetizationAgent. NegotiationCase.status is scoped to one Recover/provider pair, not to the relationship, and ProviderCandidate.state is identity discovery."
+        },
+        "MERCHANT_LIFECYCLE": {
+          "entity": "DealActivation",
+          "field": "status",
+          "note": "Strongest existing authority. Its direct mutator is retired (updateDealActivationStatus returns HTTP 410), guardDealActivationStatus reverts illegal transitions, and every real move uses CAS updateMany. RevenueLifecycle is its declared downstream projection."
+        }
+      },
+      "canonical_lane_vocabulary": {
+        "source": "base44/shared/campaignsCore.ts:13",
+        "constant": "CAMPAIGN_LANES",
+        "note": "The four-lane vocabulary ALREADY EXISTS and is frozen, with CAMPAIGN_LANE_TO_ENGINE mapping each lane to an engine. CommunicationThread.engine is the per-conversation discriminator. Do not redefine these."
+      },
+      "the_one_real_gap": "No append-only stage-transition row exists anywhere. Nothing records (lane, subject_type, subject_id, from_stage, to_stage, actor, reason, source_event, occurred_at) as a first-class durable fact. The closest is DiscoveryExecutionRun.pipeline_transition_json — a mutable untyped JSON blob, truncated with .slice(-500), written best-effort, with the actor available in the handler and simply not written.",
+      "dead_entity_finding": {
+        "entity": "DealApplication",
+        "verdict": "ZERO PRODUCERS",
+        "verified_directly": true,
+        "evidence": "Eight non-generated references exist: adminUpdateApplicationStatus, three docs, and four frontend files (AdminPipeline, AdminApplications, AdminOverview, AdminApplicationDetail). No .create() call exists anywhere in the tree. Decision_Log_PURGE2.md records that submitDealApplication was deleted in FASE 1.2 with DealApplication at 0 rows.",
+        "consequence": "The current /admin/pipeline kanban and /admin/applications table are a UI over an entity with no writer and no rows. Consolidation has no data to preserve from them — only routes and a corrected claim."
+      },
+      "proof_the_transition_authority_is_missing": "src/pages/admin/AdminPipeline.jsx:16 defines daysInStage(created_date), computing 'days in stage' from the row's creation date because no stage-entry timestamp exists. The 'stuck > 7d' warning is therefore days-since-creation, not days-in-stage."
+    },
+    "audits_opportunities": {
+      "authority_verdict": "AUTHORITY_EXISTS_BUT_FRAGMENTED",
+      "recommended_root": "PROJECTION_ONLY",
+      "existing_authorities": ["AnalyzerResult", "PaymentsAnalysisVerified", "MerchantOpportunity", "SavingsEvidence", "EvidenceAssertion", "ReviewCase", "IntelligenceSnapshot"],
+      "refutation_verdict": "CONFIRMED",
+      "refutation_refinement": "PaymentsAnalysisVerified declares measurement_window and sample_metrics as properties but NOT in required; only brand_id, owner_email, integration_id, engine_version, measured_current_bps, engine_result and source_charges_hash are schema-enforced. Window and sample provenance are therefore optional and must be treated as possibly-absent, not assumed.",
+      "route_state": "No /admin/audits route exists. Verified: src/App.jsx contains no route whose path includes 'audit'. The only audit-named entities are SecurityAudit and FounderCommandAudit, unrelated domains. The nearest existing surface is the per-merchant analyzer_opportunities block inside /admin/merchants.",
+      "gaps": [
+        "No portfolio-level read across audits or opportunities — everything today is per-merchant.",
+        "No audit-run authority distinct from AnalyzerResult rows."
+      ]
+    },
+    "recover": {
+      "authority_verdict": "SUFFICIENT_AUTHORITY_EXISTS",
+      "recommended_root": "DealActivation",
+      "refutation_verdict": "PARTLY_WRONG",
+      "refutation_refinement": "The verdict and root were KEPT, and the prohibition on any new persisted Recover aggregate was kept. Correction: scope the root honestly — DealActivation is the canonical root for the MERCHANT-SCOPED Recover lifecycle (mandate through billing eligibility). It is not a root for provider-scoped or aggregate negotiation.",
+      "real_gap": {
+        "finding": "NO PRODUCTION CREATOR",
+        "verified_directly": true,
+        "evidence": "entities.DealActivation.create appears in exactly three places, all non-production: seedDemoData/entry.ts:112 and :123, and runFlowSelfTests/entry.ts:86. Every real writer only UPDATEs an existing row.",
+        "consequence": "The Recover root exists and is well-guarded for transitions, but nothing in production opens a case. Opening one is genuine new work — and it is a create path, not a new entity."
+      },
+      "do_not_create": ["RecoverCase", "RecoverAggregate", "RecoverStageEvent"]
+    },
+    "finance": {
+      "authority_verdict": "AUTHORITY_EXISTS_BUT_FRAGMENTED",
+      "recommended_root": "PROJECTION_ONLY",
+      "existing_aggregator": "getFinancialControlTower",
+      "refutation_verdict": "PARTLY_WRONG",
+      "refutation_refinement": "The cost-plane aggregator is costRuntimeSnapshot at base44/shared/costGovernance.ts:1338, with the sum primitive summarizeCostUsage at :400. It already returns coverage_truncated. The first reader cited a readGovernedUsage function that does not exist.",
+      "the_real_gap": "No server-side join between the cash/revenue plane and the cost plane. CostUsageEvent, CostBudgetControl, GrowthCostLedger and MerchantUnitEconomics are read by ZERO financial aggregator. Margin and unit economics therefore cannot be computed today without crossing that gap on the server.",
+      "frontend_math_defect": {
+        "file": "src/pages/admin/AdminRevenue.jsx",
+        "lines": "18-22",
+        "note": "Five parallel .list() calls with all aggregation performed in the component, plus a child that re-fetches two of the same entities. This is the §4.2 violation the new workspace must not inherit."
+      }
+    },
+    "intelligence": {
+      "authority_verdict": "AUTHORITY_EXISTS_BUT_FRAGMENTED",
+      "recommended_root": "PROJECTION_ONLY",
+      "existing_aggregators": ["getIntelligenceCommandCenter", "getEuropeMarketsCommandCenter", "getRoutingIntelligenceCommandCenter", "rateIntelligenceQuery", "intelligenceAccess"],
+      "refutation_verdict": "PARTLY_WRONG",
+      "refutation_refinement": "The claim that all creates funnel through intelligenceAccess is not supported. intelligenceAccess is the DECLARED canonical service boundary (src/docs/P12_INTELLIGENCE_ARCHITECTURE.md:21), but the code does not yet honour that declaration for writes — the write boundary is itself fragmented. This is a fifth fracture the first reader missed.",
+      "gaps": [
+        "No live creator for ProviderPricingVersion, the canonical pricing ledger. It is read by 13+ call sites and written by no production path.",
+        "The declared write boundary (intelligenceAccess) is not the only writer in practice."
+      ]
+    }
+  },
+  "reference_pattern": {
+    "source": "src/pages/admin/AdminMerchants.jsx:118-124",
+    "verified_directly": true,
+    "shape": "One server function with a view + action discriminator: base44.functions.invoke('getFounderControlCenter', { view:'merchants', action, ...body })",
+    "envelope": "payload(response) = response?.data || response || {}; then ok === false throws with the data attached.",
+    "actions": ["portfolio", "list", "kpi_detail", "merchant_block", "export", "compare", "save_view", "delete_view"],
+    "entity_calls_in_page": 0,
+    "note": "Even the mutations (save_view, delete_view) go through the function rather than generic entity CRUD. The five workspaces must clone this shape. Because each is a view+action on an existing host, they are LOGICAL routes and do not consume the 276 physical function quota."
+  },
+  "direct_browser_crud_defects": [
+    { "file": "src/pages/admin/AdminContracts.jsx", "line": 49, "call": "base44.entities.Contract.update(form.id, form)", "severity": "HIGH", "note": "Writes the entire form object from the browser with no validation, tenant check, policy check or receipt — on contracts.", "verified_directly": true },
+    { "file": "src/pages/admin/AdminProviders.jsx", "line": 38, "call": "base44.entities.Provider.update(selected.id, data)", "severity": "HIGH", "note": "Line 36 builds revenue_share_pct — provider compensation — from a browser form. Provider rows feed Intelligence and recommendations, so this touches both §4.9 and the §4.11 firewall.", "verified_directly": true },
+    { "file": "src/pages/admin/AdminProviders.jsx", "line": 42, "call": "base44.entities.Provider.create(data)", "severity": "HIGH" },
+    { "file": "src/components/admin/recoverBilling/FiscalIdentityCard.jsx", "line": 47, "call": "base44.entities.Brand.update(...)", "severity": "MEDIUM", "note": "Reached from /admin/recover-billing." },
+    { "file": "src/components/admin/AdminApplicationDetail.jsx", "lines": [25, 33, 115], "call": "AdminNote.create, DealApplication.update x2", "severity": "LOW", "note": "Writes a dead entity; reached from both AdminPipeline and AdminApplications." }
+  ],
+  "unbacked_ui_claims": [
+    { "file": "src/pages/admin/AdminDeals.jsx", "claim": "Subtitle offers editing and the rows carry pencil icons, but the page renders a hard-coded array from src/lib/deals.js and nothing persists.", "action": "Correct the claim during consolidation; there is no data to migrate." },
+    { "file": "src/pages/admin/AdminBenchmarks.jsx", "claim": "States it controls the ranges used to calculate savings, but only displays values computed client-side via scoreEngine. No write path exists.", "action": "Correct the claim; benchmark authority belongs to the Intelligence workspace." }
+  ]
+}
