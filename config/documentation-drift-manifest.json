@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-17T17:33:22.874Z",
+  "generatedAt": "2026-08-17T17:43:58.035Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -74,7 +74,7 @@
     "base44/functions/europeanGrowthIntelligenceWorker/entry.ts": "aa4881e86ae156722fc902b8f156e308ad2121d59cb5bfef5706ab6a7d736e37",
     "base44/functions/founderMeetingAdmin/entry.ts": "0726d27df3c53b8f322dbb3d533f3414a1d2eaad3db5629f27c9b63d180bf9c7",
     "base44/functions/founderOSCommand/entry.ts": "286d21278f32d59bcf568c86eb74575a72bf596393a8cba2aa4b227ae04ead85",
-    "base44/functions/founderOSQuery/entry.ts": "9799ccffae5f6608fb5ac6ae1217d57862de70f30b1c1328f4c4acb20f1f7ead",
+    "base44/functions/founderOSQuery/entry.ts": "46266233ab5f3382517ac0424d5c89f6aa77b4062a506634f6fcbdf54e124f05",
     "base44/functions/generateMonthlySavingsReport/entry.ts": "4bb6a0ea371ed843a2bb76e00b9e698c71f77627f885cf69f88baa320b7c6802",
     "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
     "base44/functions/getEuropeMarketsCommandCenter/entry.ts": "baf95ec961f27436298be5619bab5c1402ca35f52f242d161b9502413959f5c6",
