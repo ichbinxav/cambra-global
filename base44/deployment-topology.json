@@ -219,6 +219,14 @@
         "action_prefix": "command_conversation_"
       },
       "boundary": "strict_admin"
+    },
+    "commandRunAdmin": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/commandRunAdminCore.ts",
+      "route": {
+        "action_prefix": "command_run_"
+      },
+      "boundary": "strict_admin"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T09:03:20.393Z",
+  "generatedAt": "2026-08-17T09:17:08.856Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -37,8 +37,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "66c35cbd9af4b6d147c394195da91714e334574df8c1598017b10ea1c2b8b91f",
-      "bytes": 6727
+      "sha256": "01a4e07c844d772d3f709a05731f1bb6095800d7b143d73672b08f114d7b6b7d",
+      "bytes": 6953
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -457,8 +457,8 @@
     },
     {
       "path": "base44/functions/adminSummaries/entry.ts",
-      "sha256": "1b1e460cb8d8ea337d542633a7e7b3b2c869621f5040832daf3a4a197f5c89f7",
-      "bytes": 6231
+      "sha256": "dcf4b1a93c73e8000e9df9dbb26427e36d06ecddf9dedbaf7f2e42aaf1b41717",
+      "bytes": 6598
     },
     {
       "path": "base44/functions/adminUpdateApplicationStatus/entry.ts",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "894c20b04c8deb0151af947457fb80a5f57dfe6f8612687cc1678918b138d3e4",
+      "sha256": "abc64c80205dc3a69a6aba6f13f30abda82e7a50b1a7548eb715ea507b89484a",
       "bytes": 42987
     },
     {
@@ -2187,22 +2187,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "6aea4acb4390fe1affd64c1813c951018eb0e1e065c605624fea3c0b6291d21d",
+      "sha256": "2812ca6681fc151dd71a93df22d553127b78a17d293e971e1fcc55ff5a7f4e9e",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "a76ac472aaaa114c040ef27dbfbd77b1d238eea5d75472eafb0489ce1a1a1828",
+      "sha256": "5b0809c23326be7b05356b4526dd6d8afde391a6c5d7bfef8deafcb5a0807f9d",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "031dc908626de37489bf0682caeb8800f35d02e558203ba3c7396e0a56c00d5f",
+      "sha256": "9be1b2d22c94b9948ebf9ceeddc0274ae46a661f77d74604ac8664926596f072",
       "bytes": 143616
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "827a1e73130bc47b055eee4fe7fb16493e51077c78794420dbd7a71ea952170e",
+      "sha256": "c19bec04386ff969a3f18aa07a162d65eca2ad73f10bae3048f4d50678aa406e",
       "bytes": 98284
     },
     {
@@ -2497,8 +2497,8 @@
     },
     {
       "path": "scripts/lib/base44Bundle.mjs",
-      "sha256": "0bcb5dbc485f3deeb811ed800d4f9fbaa3ad2ee51b46b773450b95ced27b515b",
-      "bytes": 12246
+      "sha256": "282ff3e82df8400730aced69f141646ec0bd805d51514310cb4768b423dcb223",
+      "bytes": 12380
     },
     {
       "path": "scripts/lib/evidence.mjs",
@@ -2952,13 +2952,13 @@
     },
     {
       "path": "src/lib/base44DeploymentTopology.test.js",
-      "sha256": "391088d757637fd7eef478ce3b52cbb64b2461cf7b2d557e69741d7c20257f05",
-      "bytes": 6101
+      "sha256": "caa0d8e566b91d2288cdbe74e9e091a447fcd24000b22799fb1e334b5462622e",
+      "bytes": 6184
     },
     {
       "path": "src/lib/base44ReproduciblePipeline.test.js",
-      "sha256": "d674054facfc35962bcdc717fdd472daccd21cf6110f801957aa8d735673561e",
-      "bytes": 10302
+      "sha256": "176d174cd2a3997b677c31d384a4d46d490f67bc82b0181a5e8d584baba48bf5",
+      "bytes": 10365
     },
     {
       "path": "src/lib/cambraDeveloper.test.js",

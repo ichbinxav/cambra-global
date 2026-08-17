@@ -13,7 +13,9 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // COMMAND-C2 (2026-08-17): 29 -> 30 for commandConversationAdmin, the durable
 // CAMBRA Command conversation layer hosted on the existing adminSummaries
 // entry point. Physical function count is unchanged at 276.
-export const BASE44_LOGICAL_ROUTE_TARGET = 30;
+// COMMAND-C6 (2026-08-17): 30 -> 31 for commandRunAdmin (durable run executor
+// admin, also on adminSummaries). Physical stays 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 31;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

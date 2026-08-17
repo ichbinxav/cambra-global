@@ -8,13 +8,13 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "5f9ad871d65c1ec7d925bb420eb4e2d136c3e34f5fffb6dae00ad86b51a1faea",
+  "input_fingerprint_sha256": "7884488500c4c54ae4c3a9e527477af8f829d7a0b92a8ab5d244567f2527f91a",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
     "physical_function_target": 276,
-    "logical_route_count": 30,
+    "logical_route_count": 31,
     "stale_production_surface_inventory_declared_functions": 162,
     "stale_production_surface_inventory_detected": true
   },
@@ -1812,8 +1812,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "66c35cbd9af4b6d147c394195da91714e334574df8c1598017b10ea1c2b8b91f",
-          "bytes": 6727
+          "sha256": "01a4e07c844d772d3f709a05731f1bb6095800d7b143d73672b08f114d7b6b7d",
+          "bytes": 6953
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
@@ -3285,8 +3285,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "66c35cbd9af4b6d147c394195da91714e334574df8c1598017b10ea1c2b8b91f",
-          "bytes": 6727
+          "sha256": "01a4e07c844d772d3f709a05731f1bb6095800d7b143d73672b08f114d7b6b7d",
+          "bytes": 6953
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
