@@ -1494,8 +1494,8 @@ const BOUNDARY_SPECS = [
   {
     boundary_id: "MB-PAID-AI",
     material_kinds: ["paid_spend", "provider_effect"],
-    logical_route: "callCambraClaude",
-    physical_host: "shared/commercialModelRouter",
+    logical_route: "callCambraClaude|callCambraModel",
+    physical_host: "shared/commercialModelRouter|shared/commandModelRouter",
     route_selector: "category=ai",
     callers: "__DYNAMIC_AI_CALLERS__",
     actor: "Inherited from 38 physical callers",
@@ -2410,8 +2410,13 @@ export function validateMaterialBoundaryRegistry(document) {
       document.paid_ai_inventory.caller_count,
     "material_registry_ai_count_drift",
   );
+  // This guard exists so nobody can quietly claim the AI emergency gap is closed
+  // without doing the work. COMMAND-C0 did the work: category=ai now maps onto
+  // the paid_discovery capability and reservePaidOperation captures the epoch
+  // from it. The guard stays exactly as strict — the pinned value simply moved
+  // to the truth. Changing it again requires the same burden of proof.
   assert(
-    document.paid_ai_inventory.emergency_capability === "NONE",
+    document.paid_ai_inventory.emergency_capability === "paid_discovery",
     "material_registry_ai_gap_must_be_explicit",
   );
   return document;
@@ -2423,7 +2428,10 @@ export function buildMaterialBoundaryRegistry(root = REPO_ROOT) {
   validateTopologyBindings(topology);
 
   const functionEntries = listFunctionEntrySources(root);
-  const aiCallers = findFunctionCallers(root, /\bcallCambraClaude\b/);
+  // COMMAND-C5 (2026-08-17): callCambraModel is the second AI primitive
+  // (commandModelRouter). Matching only callCambraClaude made a real AI
+  // spender invisible to this census the moment a caller was migrated.
+  const aiCallers = findFunctionCallers(root, /\bcallCambra(?:Claude|Model)\b/);
   const paidPrimitiveCallers = findFunctionCallers(
     root,
     /\b(?:paidProviderFetch|sendCostGovernedEmail|reservePaidOperation)\b/,
@@ -2547,13 +2555,19 @@ export function buildMaterialBoundaryRegistry(root = REPO_ROOT) {
       ),
     },
     paid_ai_inventory: {
-      primitive: "callCambraClaude",
+      primitive: "callCambraClaude|callCambraModel",
       caller_count: aiCallers.length,
       callers: aiCallers,
       cost_category: "ai",
-      emergency_capability: "NONE",
+      // COMMAND-C0 (2026-08-17) mapped category=ai onto the paid_discovery
+      // emergency capability in paidProviderEmergencyCapabilities, and
+      // reservePaidOperation captures/inherits the epoch from it. This field
+      // read "NONE" and the EMERGENCY_CAPABILITY_MISSING_AI gap stayed listed
+      // after that fix landed, so the registry claimed an open gap the code had
+      // already closed. Proven by src/lib/aiSpendEmergencyCoverage.test.js,
+      // which asserts zero provider calls under safe mode end to end.
+      emergency_capability: "paid_discovery",
       gap_codes: [
-        "EMERGENCY_CAPABILITY_MISSING_AI",
         "AI_RETRY_EFFECT_KEY_UNSTABLE",
         "PROVIDER_FINAL_RECEIPT_MISSING",
       ],

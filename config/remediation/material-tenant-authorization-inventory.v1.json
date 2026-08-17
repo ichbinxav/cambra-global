@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "6cfa2d893f3cc28a2692a39a790a7b216b076e4e47497efe8b5d6c1b68de6ef3",
-  "material_registry_input_fingerprint_sha256": "390918bc461fbe956c47b083e2beb4c202fd73e4804ca92742584e6fe8846400",
-  "input_fingerprint_sha256": "b97c0ddf14154b783a5d25634fc8475e17f18b72f95b9938f09a7f96897679f4",
+  "material_registry_sha256": "031dc908626de37489bf0682caeb8800f35d02e558203ba3c7396e0a56c00d5f",
+  "material_registry_input_fingerprint_sha256": "5f9ad871d65c1ec7d925bb420eb4e2d136c3e34f5fffb6dae00ad86b51a1faea",
+  "input_fingerprint_sha256": "6cb8bd84a8ed0cbcd3c8d5234359e3acfc9d34591cba5cbcdbad2fdfdda45410",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1769,8 +1769,8 @@
     },
     {
       "boundary_id": "MB-PAID-AI",
-      "logical_route": "callCambraClaude",
-      "physical_host": "shared/commercialModelRouter",
+      "logical_route": "callCambraClaude|callCambraModel",
+      "physical_host": "shared/commercialModelRouter|shared/commandModelRouter",
       "material_kinds": [
         "paid_spend",
         "provider_effect"

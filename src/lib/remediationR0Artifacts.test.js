@@ -91,10 +91,23 @@ describe("R0.C material boundary registry", () => {
       unguarded_active: [],
     });
     expect(document.paid_ai_inventory.caller_count).toBe(38);
-    expect(document.paid_ai_inventory.emergency_capability).toBe("NONE");
-    expect(document.paid_ai_inventory.gap_codes).toContain(
+    // COMMAND-C0 (2026-08-17) closed the AI emergency gap: category=ai maps onto
+    // the paid_discovery capability and reservePaidOperation captures the epoch
+    // from it. This assertion and the registry both still claimed "NONE" and
+    // still listed the gap as open, so the inventory was reporting a gap the code
+    // had already closed. Repointed to the truth and kept just as strict —
+    // proven end to end by src/lib/aiSpendEmergencyCoverage.test.js, which
+    // asserts zero provider calls under safe mode.
+    expect(document.paid_ai_inventory.emergency_capability).toBe("paid_discovery");
+    expect(document.paid_ai_inventory.gap_codes).not.toContain(
       "EMERGENCY_CAPABILITY_MISSING_AI",
     );
+    // The gaps that genuinely remain open are still pinned.
+    expect(document.paid_ai_inventory.gap_codes).toContain("AI_RETRY_EFFECT_KEY_UNSTABLE");
+    expect(document.paid_ai_inventory.gap_codes).toContain("PROVIDER_FINAL_RECEIPT_MISSING");
+    // Both AI primitives must be visible to the census. Matching only
+    // callCambraClaude made a migrated caller invisible to this registry.
+    expect(document.paid_ai_inventory.primitive).toContain("callCambraModel");
     expect(
       document.boundaries.find((row) =>
         row.boundary_id === "MB-BILL-RECOVER-REPORT-GENERATION"

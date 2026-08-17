@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "390918bc461fbe956c47b083e2beb4c202fd73e4804ca92742584e6fe8846400",
+  "input_fingerprint_sha256": "5f9ad871d65c1ec7d925bb420eb4e2d136c3e34f5fffb6dae00ad86b51a1faea",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -82,7 +82,7 @@
     ]
   },
   "paid_ai_inventory": {
-    "primitive": "callCambraClaude",
+    "primitive": "callCambraClaude|callCambraModel",
     "caller_count": 38,
     "callers": [
       "autonomousCommercialWorker",
@@ -125,9 +125,8 @@
       "xTwitterAgent"
     ],
     "cost_category": "ai",
-    "emergency_capability": "NONE",
+    "emergency_capability": "paid_discovery",
     "gap_codes": [
-      "EMERGENCY_CAPABILITY_MISSING_AI",
       "AI_RETRY_EFFECT_KEY_UNSTABLE",
       "PROVIDER_FINAL_RECEIPT_MISSING"
     ]
@@ -2966,8 +2965,8 @@
         "paid_spend",
         "provider_effect"
       ],
-      "logical_route": "callCambraClaude",
-      "physical_host": "shared/commercialModelRouter",
+      "logical_route": "callCambraClaude|callCambraModel",
+      "physical_host": "shared/commercialModelRouter|shared/commandModelRouter",
       "route_selector": "category=ai",
       "callers": [
         "autonomousCommercialWorker",
@@ -3106,8 +3105,8 @@
         },
         {
           "path": "base44/functions/founderChiefOfStaff/entry.ts",
-          "sha256": "35d397eadbdae684bee5708d67c62a64827aa43a421635bd3c34a56523f92232",
-          "bytes": 5340
+          "sha256": "d410b6048709ffc86f2613b152c43319c6b34796a55255a02074db58a69ac560",
+          "bytes": 5645
         },
         {
           "path": "base44/functions/founderCopilotAgent/entry.ts",
