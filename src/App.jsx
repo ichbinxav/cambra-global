@@ -57,7 +57,10 @@ const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'));
 const AdminMerchants = lazy(() => import('@/pages/admin/AdminMerchants'));
 const AdminUserDetail = lazy(() => import('@/pages/admin/AdminUserDetail'));
 const AdminApplications = lazy(() => import('@/pages/admin/AdminApplications'));
-const AdminPipeline = lazy(() => import('@/pages/admin/AdminPipeline'));
+// DASHBOARD-C3: /admin/pipeline now renders the workspace projection. The old
+// kanban over DealApplication (an entity with zero producers and zero rows) is
+// kept on disk unrouted until C13 retires it with its redirect.
+const AdminPipelineWorkspace = lazy(() => import('@/pages/admin/AdminPipelineWorkspace'));
 const AdminDeals = lazy(() => import('@/pages/admin/AdminDeals'));
 const AdminProviders = lazy(() => import('@/pages/admin/AdminProviders'));
 const AdminContracts = lazy(() => import('@/pages/admin/AdminContracts'));
@@ -377,7 +380,7 @@ const AuthenticatedApp = () => {
           <Route path="/admin/merchants" element={withBoundary(<AdminMerchants />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
-          <Route path="/admin/pipeline" element={withBoundary(<AdminPipeline />)} />
+          <Route path="/admin/pipeline" element={withBoundary(<AdminPipelineWorkspace />)} />
           <Route path="/admin/deals" element={withBoundary(<AdminDeals />)} />
           <Route path="/admin/providers" element={withBoundary(<AdminProviders />)} />
           <Route path="/admin/revenue" element={withBoundary(<AdminRevenue />)} />

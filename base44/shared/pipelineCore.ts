@@ -237,7 +237,7 @@ export async function buildPipelinePortfolio(input: {
   return portfolioResponse({
     context,
     source_health,
-    kpis: buildPipelineKpis(rows, source_health),
+    kpis: buildPipelineKpis(rows, source_health, Object.keys(reads)),
     quick_views: buildQuickViews(rows),
     filter_options: {
       lane: [...lanes],
@@ -256,8 +256,15 @@ export async function buildPipelinePortfolio(input: {
   });
 }
 
-/** KPIs, each declaring its sources so a failed read cannot become a zero. */
-export function buildPipelineKpis(rows: PipelineRow[], health: SourceHealthRow[]) {
+/**
+ * KPIs, each declaring its sources so a failed read cannot become a zero.
+ *
+ * `sources` is the set of entities ACTUALLY read, not the full four. Declaring all
+ * four on a lane-filtered view would mark every KPI UNKNOWN because three sources
+ * were never consulted — conservative to the point of useless, and it would hide
+ * the genuine failures among the irrelevant ones.
+ */
+export function buildPipelineKpis(rows: PipelineRow[], health: SourceHealthRow[], sources?: string[]) {
   const open = rows.filter((row) => !row.terminal);
   const won = rows.filter((row) => row.semantics === 'win');
   const lost = rows.filter((row) => row.semantics === 'loss');
@@ -265,7 +272,9 @@ export function buildPipelineKpis(rows: PipelineRow[], health: SourceHealthRow[]
   const conflicted = rows.filter((row) => row.stage_conflicted);
   const unknownStage = rows.filter((row) => row.stage === null);
   const valued = rows.filter((row) => row.expected_value_minor !== null);
-  const allSources = ['OutboundLead', 'PartnerProspect', 'Provider', 'DealActivation'];
+  const allSources = sources && sources.length
+    ? sources
+    : health.map((row) => row.source);
 
   return [
     kpi({ metric_key: 'active_relationships', label: 'Active relationships', value: open.length, unit: 'count', truth_class: 'OBSERVED', sources: allSources, health }),
@@ -274,7 +283,7 @@ export function buildPipelineKpis(rows: PipelineRow[], health: SourceHealthRow[]
     kpi({ metric_key: 'needs_attention', label: 'Needs attention', value: attention.length, unit: 'count', truth_class: 'DERIVED', sources: allSources, health }),
     kpi({
       metric_key: 'stage_conflicts', label: 'Stage sources disagree', value: conflicted.length, unit: 'count',
-      truth_class: 'OBSERVED', sources: ['OutboundLead'], health,
+      truth_class: 'OBSERVED', sources: allSources.includes('OutboundLead') ? ['OutboundLead'] : allSources, health,
       extra: { claim_boundary: 'OutboundLead carries three progression columns. A conflict means the least-advanced reading was taken.' },
     }),
     kpi({
