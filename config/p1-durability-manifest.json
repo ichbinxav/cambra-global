@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T18:23:32.432Z",
+  "generatedAt": "2026-08-17T18:31:48.964Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1449,8 +1449,8 @@
     },
     {
       "path": "base44/shared/apiUsageBilling.ts",
-      "sha256": "2c25ba93726582fb02e2bc076bcc06ab7494ebeb7135fbaf2be86c7f32b640ec",
-      "bytes": 19444
+      "sha256": "c5b60822b105c5c01158b254dae93b679fc2657f1d4d3e6a478d4e6f5b3fe203",
+      "bytes": 22907
     },
     {
       "path": "base44/shared/approvalAuthority.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "47480e712f368f30b5f029e2dcbda99b2ad496cda7cc7116389cb02652fe7a34",
+      "sha256": "9c4dce7921ed2989d243762b18c9a6b3a5730628df9b18efc16435a8a3f49c17",
       "bytes": 42987
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "7a675c62b9e4f4dcf0b776523f309d90bd75c950dc5a9f573c7860a91356ad36",
-      "bytes": 41599
+      "sha256": "46edb8a19f2bd3c858ca0c5bf30c62dc3b83b6595fd06cf0913036356e6b3959",
+      "bytes": 41924
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2179,8 +2179,8 @@
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "fb61148630171697818fe348ecc9192ec3604cada631ae0fa9dbbe133c28538f",
-      "bytes": 8554
+      "sha256": "3f0306e37a98402d8fc98e26c68a7ab627ad6ee34a4739d515fe2eb3307cf714",
+      "bytes": 8229
     },
     {
       "path": "config/release-touch-list.json",
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "7874b26bdaefe53664ade6f50d1a545c7b0316199564fa8a4bca159f436c931d",
+      "sha256": "2069a82d66bbfbf647c86da73a3336598d0fb4a00537d209d3eb28a4095bf201",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "3e558d212730a14db5ddf0313a993da8ba4e9e983319fd2c784543a3dc2bd36e",
+      "sha256": "8f0c33dd713ba31dd9709d6089a324ea1aa7ffa624b179c63bcd50dcd682bdcc",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "9792e8106aba8c0621e321355948ffced060254386743e047079776e5aa5affb",
+      "sha256": "33a2714b68b7a7f51bd215fe700e0f38766d5955feded1f97ad97a829abe93a1",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "48cd24f53dcea800856349d931c859dd6b9291e8e4699a37f7f0706ee4676788",
+      "sha256": "375d8633710c79f22af8e7a2069f37c7bf2bd5166212393fcf7d18ec52a23407",
       "bytes": 98284
     },
     {
@@ -2329,8 +2329,8 @@
     },
     {
       "path": "scripts/advance-stage.mjs",
-      "sha256": "05fb90e88d7f5c65251f4db95bcf579fac051b949cfc214bcf90c3d47e9d2cab",
-      "bytes": 2664
+      "sha256": "73a3ceedde0c66a2268e51592a5460eb314a100b7f7093e02106f351821b6b16",
+      "bytes": 3268
     },
     {
       "path": "scripts/base44-runtime-smoke.ts",

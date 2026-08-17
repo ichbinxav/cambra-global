@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "9f75ec7dc44a5260307efa867e2edf102f939ef4b8e390ec4be021ad6c09bf9d",
+  "input_fingerprint_sha256": "d474f65aff44279ac332f0f1975656511865ac893bc2dbd544aff91558ae2b2c",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2556,8 +2556,8 @@
         },
         {
           "path": "base44/shared/apiUsageBilling.ts",
-          "sha256": "2c25ba93726582fb02e2bc076bcc06ab7494ebeb7135fbaf2be86c7f32b640ec",
-          "bytes": 19444
+          "sha256": "c5b60822b105c5c01158b254dae93b679fc2657f1d4d3e6a478d4e6f5b3fe203",
+          "bytes": 22907
         },
         {
           "path": "base44/shared/schedulerRun.ts",

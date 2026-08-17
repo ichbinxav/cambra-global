@@ -2,7 +2,7 @@
   "freezeReason": "Pre-ECL freeze (v62.1/v62.2), staged in v62.3 — these files must have ZERO unsanctioned diffs. Changing any hash requires scripts/update-freeze.mjs with an explicit reason and confirmation token; adding an entry requires --add AND membership of the current stage's code-owned allowlist; changing the stage requires scripts/advance-stage.mjs. Every change is recorded in config/freeze-change-log.json.",
   "frozenAt": "2026-08-06",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
-  "stageComment": "v0.65.0 — ECL P6 Economic Execution & Reconciliation. P1-P5 remain authoritative for evidence, workflow and economic authorization. P6 protects only already-authorized Recover execution: one deterministic local invoice claim per report, Stripe idempotency for remote writes, webhook reconciliation from a fresh Stripe GET rather than delivery order, frozen-amount/customer/metadata binding checks, a read-only Stripe reconciler every 15 minutes, and hard blocks on manual Recover payment/status/Checkout bypasses. Invoice and PaymentEvent schemas widen additively only for execution/reconciliation provenance; finalized economics remain immutable.",
+  "stageComment": "AUDIT EV-4 (2026-08-17, founder-authorised): the stage is authoritative in the `stage` field above and NOT restated here. This comment used to carry P6-era language that drifted through P7 and P8 advances because scripts/advance-stage.mjs never touched it. Per-stage scope belongs in that stage's own decision log, not here.",
   "allowlist": [
     "base44/entities/StatementImport.jsonc",
     "base44/entities/SavingsEvidence.jsonc",

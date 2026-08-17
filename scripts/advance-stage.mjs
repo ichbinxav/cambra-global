@@ -5,6 +5,12 @@
 // CLI: the allowlist for each stage is owned by scripts/lib/preEclFreeze.mjs,
 // so an operator can move between declared stages but can never invent scope.
 // Every transition is appended to config/freeze-change-log.json.
+//
+// AUDIT EV-3/EV-4 (2026-08-17): the stageComment used to drift through P6 language
+// across P7 and P8 advances because this script never touched it. The comment field
+// is now derived from the target stage instead of frozen — a plain marker that says
+// "the stage field is authoritative", so the file cannot state one stage in its
+// canonical field and another in its prose.
 import fs from "node:fs";
 import process from "node:process";
 import { STAGES, STAGE_TRANSITIONS, allowlistForStage } from "./lib/preEclFreeze.mjs";
@@ -51,6 +57,7 @@ log.changes.push({
 
 freeze.stage = to;
 freeze.allowlist = nextAllowlist;
+freeze.stageComment = `The stage is authoritative in the \`stage\` field (currently ${to}). Per-stage scope belongs in that stage's own decision log, not restated here — this comment used to drift and now it can't.`;
 fs.writeFileSync(FREEZE, JSON.stringify(freeze, null, 2) + "\n");
 fs.writeFileSync(LOG, JSON.stringify(log, null, 2) + "\n");
 console.log(`stage advanced ${from} → ${to}; allowlist now ${nextAllowlist.length} path(s); change logged in ${LOG}.`);

@@ -807,6 +807,11 @@
       "oldHash": "f61b119bf46bc86a8eaa8ac92a699c865c7eb73c6377249492ff697907ac880f",
       "newHash": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
       "reason": "FX-2 (2026-08-16), founder-authorized: pass FxSnapshot reference rows to buildAnalyzerProjection so accepted non-EUR statements project with evidence-backed ECB conversion (fail-closed), and stamp currency:'EUR' on the EUR-normalized AnalyzerInput patch. No ECL code enters the handler; the original freeze intent (ECL must not leak into the upload pipeline) is preserved."
+    },
+    {
+      "date": "2026-08-17T20:30:00.000Z",
+      "type": "stageComment_drift_fix",
+      "reason": "AUDIT EV-4: stageComment carried P6 language while stage is ECL_P8. Founder-authorised (session, 2026-08-17). Also updated scripts/advance-stage.mjs to write stageComment on every bump so the drift cannot recur."
     }
   ]
 }

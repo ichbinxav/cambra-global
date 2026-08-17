@@ -76,6 +76,48 @@ async function readOrganization(svc: any, organizationId: string) {
   return organization;
 }
 
+/**
+ * AUDIT MB-08 (2026-08-17, founder-authorised) — reuse the Brand tax profile as
+ * createEligibleRecoverInvoices does. Organization has no billing_country / legal_name /
+ * VAT of its own, so the API-overage invoice can only be tax-correct if it inherits from
+ * the merchant Brand tied to the same owner.
+ *
+ * Resolution: match Brand by owner_email = organization.owner_email. Returns a projection
+ * of the fields determineTaxTreatment (recoverTax.ts) requires; NULL entries stay null so
+ * the promoter can list the missing inputs by name rather than silently apply a wrong rate.
+ * If more than one Brand matches, none is returned — an ambiguous owner is not a tax fact.
+ */
+async function resolveMerchantBrandTaxProfile(svc: any, organization: any) {
+  const email = String(organization?.owner_email || '').trim().toLowerCase();
+  if (!email) return { ok: false, blocker: 'organization_owner_email_missing', brand: null, profile: null };
+  const brands = await svc.entities.Brand.filter({ owner_email: email }, '-created_date', 5)
+    .catch(() => null);
+  if (!Array.isArray(brands) || brands.length === 0) {
+    return { ok: false, blocker: 'merchant_brand_not_found_for_owner', brand: null, profile: null };
+  }
+  if (brands.length > 1) {
+    return { ok: false, blocker: 'merchant_brand_owner_ambiguous', brand: null, profile: null };
+  }
+  const brand = brands[0];
+  const profile = {
+    brand_id: String(brand.id || ''),
+    billing_country: String(brand.billing_country || '').toUpperCase() || null,
+    legal_name: String(brand.billing_legal_name || '') || null,
+    billing_address_line1: String(brand.billing_address_line1 || '') || null,
+    billing_postal_code: String(brand.billing_postal_code || '') || null,
+    billing_city: String(brand.billing_city || '') || null,
+    vat_number: String(brand.vat_number_normalized || brand.vat_number || '') || null,
+    tax_customer_type: String(brand.tax_customer_type || '') || null,
+    vies_status: String(brand.vies_status || '') || null,
+  };
+  const missing = [];
+  if (!profile.billing_country) missing.push('billing_country');
+  if (!profile.legal_name) missing.push('legal_name');
+  if (!profile.billing_address_line1 || !profile.billing_postal_code || !profile.billing_city) missing.push('billing_address');
+  if (profile.tax_customer_type !== 'business_taxable_person') missing.push('tax_customer_type');
+  return { ok: missing.length === 0, blocker: missing.length ? `merchant_brand_tax_profile_incomplete:${missing.join(',')}` : null, brand, profile };
+}
+
 function economics(organization: any, rows: any[]) {
   const quota = requireNonNegativeInteger(
     organization.monthly_api_quota ?? 10_000,
@@ -387,6 +429,11 @@ export async function billApiUsageOrganization(
   if (!invoice && expected.amount_minor > 0) {
     await assertClaimOwned(svc, String(claim.authority_id), runId);
     if (input.assert_before_invoice) await input.assert_before_invoice();
+    // AUDIT MB-08 (2026-08-17): resolve the merchant Brand tax profile and stamp it on
+    // the draft. determineTaxTreatment is not run here (RecoverTaxConfig is out of scope
+    // for this module); the promoter (draft → issued) reads the snapshot and calls the
+    // tax engine — same source that createEligibleRecoverInvoices already validates.
+    const merchant = await resolveMerchantBrandTaxProfile(svc, organization);
     // AUDIT MB-03 (2026-08-17) — this record used to be status:'issued' with NO tax fields at all:
     // no tax_treatment, no tax_rate, tax_amount defaulted to the entity zero, total_amount == the
     // subtotal. An "issued" invoice by definition has been billed to the customer, and one that
@@ -412,7 +459,7 @@ export async function billApiUsageOrganization(
       tax_amount: 0,
       total_amount: expected.amount_eur,
       balance_due: expected.amount_eur,
-      notes: `API overage · ${periodMonth} · ${expected.overage_count} requests above quota. Tax determination pending: run the Organization through recoverTax before issuing.`,
+      notes: `API overage · ${periodMonth} · ${expected.overage_count} requests above quota. Tax determination pending${merchant.blocker ? `: ${merchant.blocker}` : ' — merchant Brand tax profile captured, run determineTaxTreatment before issuing.'}`,
       billing_snapshot_json: {
         billing_kind: 'api_overage',
         billing_version: API_USAGE_BILLING_VERSION,
@@ -425,6 +472,12 @@ export async function billApiUsageOrganization(
         overage_count: expected.overage_count,
         overage_amount_eur: expected.amount_eur,
         overage_amount_minor: expected.amount_minor,
+        // AUDIT MB-08 (2026-08-17): the merchant Brand's tax profile at the moment the
+        // draft was cut. The promoter passes this to determineTaxTreatment; a partial
+        // profile is a blocker, never a silent default to zero-rate.
+        merchant_brand_tax_profile: merchant.profile,
+        merchant_brand_tax_profile_ok: merchant.ok,
+        merchant_brand_tax_profile_blocker: merchant.blocker,
       },
     };
     try {
