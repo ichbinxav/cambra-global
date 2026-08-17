@@ -19,30 +19,22 @@
 //     against it is refused. DealActivation already has a guarded authority.
 
 import { readRuntimeSource } from './runtimeSourceRead.ts';
+import { nullableNumber } from './nullableNumber.ts';
 import {
   buildContext, kpi, portfolioResponse, sortKeepingUnknownLast,
   type SourceHealthRow,
 } from './workspaceContract.ts';
 import {
-  canonicalToLegacy, checkTransition, LANES, laneAuthority,
+  canonicalToLegacy, checkTransition, historyRequiredFor, isMaterialStage,
+  materialKindsFor, LANES, laneAuthority,
   PIPELINE_STAGE_REGISTRY_VERSION, resolveStage, stagesFor, transitionDirection, type Lane,
 } from './pipelineStageRegistry.ts';
 
 export const PIPELINE_CORE_VERSION = 'pipeline-core-1.0.0';
 
 const text = (value: unknown) => String(value ?? '').trim();
-/**
- * Numeric read that treats null and empty string as UNKNOWN.
- *
- * Number(null) is 0 and Number.isFinite(0) is true, so the naive version reports
- * an absent expected value as a confident zero — which would make an unvalued
- * lead look like a worthless one and let it pass a minimum-value filter.
- */
-const num = (value: unknown) => {
-  if (value === null || value === undefined || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
+// Nullable coercion lives in ONE place now; see nullableNumber.ts for why.
+const num = nullableNumber;
 
 /** Read limits. Truncation is reported, never silently swallowed. */
 const READ_LIMIT = 2000;
@@ -380,6 +372,12 @@ export async function previewStageChange(input: {
     current_readings: current.readings,
     conflicted: current.conflicted,
     reason_code: text(input.reason_code) || null,
+    // Materiality is shown BEFORE the decision, because a transition whose history
+    // must persist behaves differently on failure and the founder should know that
+    // in advance rather than discover it from an error.
+    material: isMaterialStage(input.lane, input.to_stage),
+    material_kinds: materialKindsFor(input.lane, input.to_stage),
+    history_required: historyRequiredFor(input.lane, input.to_stage),
     allowed: check.allowed,
     blockers: check.blockers,
     requires_reason: check.requires_reason,
@@ -480,13 +478,46 @@ export async function applyStageChange(input: {
   };
 
   let historyRecorded = true;
+  let historyError: string | null = null;
   try {
     await input.svc.entities.PipelineStageEvent.create(event);
   } catch (error) {
-    // The move happened. Saying otherwise would be worse than reporting that the
-    // history is incomplete.
     historyRecorded = false;
-    console.error(JSON.stringify({ event: 'pipeline_stage_event_unpersisted', subject_id: input.subject_id, error: text((error as any)?.message).slice(0, 160) }));
+    historyError = text((error as any)?.message).slice(0, 160);
+    console.error(JSON.stringify({ event: 'pipeline_stage_event_unpersisted', subject_id: input.subject_id, material: previewed.preview.material, error: historyError }));
+  }
+
+  // FAIL-CLOSED for material transitions. A contractual, economic, verification,
+  // billing, mandate, migration or terminal change with no durable history is
+  // indistinguishable from one that never happened, and that ambiguity is not
+  // acceptable for those kinds. So the authority move is rolled back.
+  //
+  // Non-material transitions stay fail-open: the move stands and the caller is told
+  // the history is incomplete, because losing a lead's CONTACTED timestamp is not
+  // worth reverting a real change.
+  if (!historyRecorded && previewed.preview.history_required) {
+    let rolledBack = false;
+    try {
+      const undo = await input.svc.entities[previewed.preview.subject_type].updateMany(
+        { id: input.subject_id, [column]: legacyValue },
+        { [column]: previousRaw },
+      );
+      rolledBack = Number(undo?.matched_count ?? undo?.modified_count ?? undo?.count ?? 0) === 1;
+    } catch (error) {
+      console.error(JSON.stringify({ event: 'pipeline_material_rollback_failed', subject_id: input.subject_id, error: text((error as any)?.message).slice(0, 160) }));
+    }
+    return {
+      ok: false as const,
+      error: 'material_transition_history_unpersisted',
+      material_kinds: previewed.preview.material_kinds,
+      history_error: historyError,
+      rolled_back: rolledBack,
+      // If the rollback itself failed the authority moved with no history and no
+      // undo. That is a review case, not a retry: repeating the move could double
+      // a material effect.
+      ambiguity_state: rolledBack ? null : 'REVIEW_REQUIRED',
+      automatic_retry_blocked: !rolledBack,
+    };
   }
 
   return {
@@ -495,6 +526,7 @@ export async function applyStageChange(input: {
     from_stage: previewed.preview.from_stage,
     to_stage: previewed.preview.to_stage,
     column_written: column,
+    material: previewed.preview.material,
     history_recorded: historyRecorded,
     external_send_performed: false,
   };

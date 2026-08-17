@@ -35,6 +35,11 @@ export type StageDefinition = {
   semantics: 'open' | 'win' | 'loss' | 'nurture' | 'blocked';
   allowed_source_events?: string[];
   required_fields?: string[];
+  /** True when a transition into this stage carries a material effect. */
+  material?: boolean;
+  material_kinds?: string[];
+  /** True when PipelineStageEvent persistence is a success condition. */
+  history_required?: boolean;
   note?: string;
 };
 
@@ -241,4 +246,30 @@ export function canonicalToLegacy(lane: string, column: string, canonical: strin
     if (mapped === target) return legacy;
   }
   return null;
+}
+
+/** Material effect kinds a transition may carry. */
+export const MATERIAL_KINDS: readonly string[] = Object.freeze(
+  ((registry as any).material_kinds || []) as string[],
+);
+
+/**
+ * Whether a transition INTO this stage carries a material effect.
+ *
+ * Material stages require their PipelineStageEvent to persist as a condition of
+ * success. A material change with no durable history is indistinguishable from one
+ * that never happened, and for a contractual or economic effect that ambiguity is
+ * unacceptable — so those transitions are FAIL-CLOSED on history failure.
+ */
+export function isMaterialStage(lane: string, stage: string): boolean {
+  return stageDefinition(lane, stage)?.material === true;
+}
+
+export function materialKindsFor(lane: string, stage: string): string[] {
+  return [...((stageDefinition(lane, stage) as any)?.material_kinds || [])];
+}
+
+/** True when history persistence is a success condition for this transition. */
+export function historyRequiredFor(lane: string, stage: string): boolean {
+  return (stageDefinition(lane, stage) as any)?.history_required === true;
 }

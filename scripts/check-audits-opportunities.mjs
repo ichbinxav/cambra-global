@@ -44,20 +44,39 @@ if (!core.includes("RECOVER_ELIGIBLE_STATUSES") || !core.includes("'APPROVED_FOR
   fail('Recover eligibility must be gated on APPROVED_FOR_RECOVER');
 }
 
-// 5. The Number(null) trap. A numeric helper that does not guard null would
-//    report an absent figure as a confident zero, which is the defect this
-//    workspace exists to prevent.
-if (!/value === null \|\| value === undefined/.test(core)) {
-  fail('auditsCore numeric helper does not guard null — Number(null) is 0 and would report an absent figure as zero');
+// 5. The Number(null) trap, now enforced by CENTRALISATION rather than by looking
+//    for an inline guard. Number(null) is 0 and Number.isFinite(0) is true, so a
+//    naive helper reports an absent figure as a confident zero. That bug was
+//    written twice in this repo, so the rule is no longer "each file guards
+//    correctly" but "there is exactly one implementation and everyone imports it".
+if (!fs.existsSync('base44/shared/nullableNumber.ts')) {
+  fail('base44/shared/nullableNumber.ts must exist — nullable coercion lives in one place');
+} else {
+  const shared = fs.readFileSync('base44/shared/nullableNumber.ts', 'utf8');
+  if (!/value === null \|\| value === undefined/.test(shared)) {
+    fail('nullableNumber does not guard null');
+  }
+  if (!/typeof value === 'string' && value\.trim\(\) === ''/.test(shared)) {
+    fail('nullableNumber must treat an empty or whitespace string as absent');
+  }
+  if (!/typeof value === 'boolean'/.test(shared)) {
+    fail('nullableNumber must treat a boolean as absent — Number(true) is 1');
+  }
 }
-const pipeline = fs.readFileSync('base44/shared/pipelineCore.ts', 'utf8');
-if (!/value === null \|\| value === undefined/.test(pipeline)) {
-  fail('pipelineCore numeric helper does not guard null');
+for (const consumer of ['base44/shared/auditsCore.ts', 'base44/shared/pipelineCore.ts']) {
+  const source = fs.readFileSync(consumer, 'utf8');
+  if (!source.includes("from './nullableNumber.ts'")) {
+    fail(`${consumer} must import the shared nullable coercion instead of writing its own`);
+  }
+  // A local re-implementation defeats the centralisation.
+  if (/Number\.isFinite\(parsed\)/.test(source)) {
+    fail(`${consumer} re-implements nullable coercion locally — use nullableNumber`);
+  }
 }
 
 if (failures) process.exit(1);
 console.log(
   'audits-opportunities:check PASS — MerchantOpportunity carries all 9 section-9.15 fields, ' +
   'no verified or billable savings computed here, no duplicate audit authority, ' +
-  'ANONYMOUS_ESTIMATE can never be verified, Recover gated on APPROVED_FOR_RECOVER, null-guard present in both cores',
+  'ANONYMOUS_ESTIMATE can never be verified, Recover gated on APPROVED_FOR_RECOVER, nullable coercion centralised and imported by both cores',
 );

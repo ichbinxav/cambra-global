@@ -91,10 +91,105 @@ if (registry.lanes.MERCHANT_LIFECYCLE?.projection_only !== true) {
   fail('MERCHANT_LIFECYCLE must remain projection_only — DealActivation already has a guarded authority');
 }
 
+
+// 8. FOUNDER RULE: no NEW direct writer of the OutboundLead legacy vocabularies.
+//    Every new read and write must go through PipelineStageRegistry, so the
+//    canonical reading cannot be bypassed. Pre-existing writers are inventoried
+//    with their count as a ratchet; the count may only go DOWN.
+const LEGACY_STAGE_COLUMNS = ['stage', 'revenue_stage', 'reservoir_state'];
+// Measured, not guessed: 25 write call sites across 11 files as of 2026-08-17.
+// This is a ratchet — it may only go DOWN. Raising it means a new writer bypassed
+// the registry, which is exactly what the rule forbids.
+//   companyEnrichment 1 · discoveryV2Admin 3 · outboundProviderEventProcessing 1
+//   alwaysOnLeadDiscoveryWorker 5 · autonomousCommercialWorker 1 · crmAgent 1
+//   leadEnrichmentAgent 8 · outboundVolumeWorker 2 · outlookMeetingCoordinator 1
+//   outreachAgent 1 · salesPipelineWorker 1
+const KNOWN_LEGACY_WRITERS = 25;
+const walk = (dir) => {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) { if (entry.name !== '.deploy') out.push(...walk(full)); }
+    else if (/\.(ts|tsx|js|jsx)$/.test(entry.name) && !/\.test\./.test(entry.name)) out.push(full);
+  }
+  return out;
+};
+const registryConsumers = new Set([
+  'base44/shared/pipelineStageRegistry.ts',
+  'base44/shared/pipelineCore.ts',
+]);
+let legacyWriters = 0;
+const legacyWriterFiles = [];
+for (const file of [...walk('base44/shared'), ...walk('base44/functions')]) {
+  if (registryConsumers.has(file)) continue;
+  const source = fs.readFileSync(file, 'utf8');
+  // A write is an OutboundLead update whose patch names a stage column.
+  const writes = [...source.matchAll(/OutboundLead\.update(?:Many)?\(/g)];
+  if (!writes.length) continue;
+  const touchesStage = LEGACY_STAGE_COLUMNS.some((column) =>
+    new RegExp(`${column}\\s*:`).test(source));
+  if (touchesStage) { legacyWriters += writes.length; legacyWriterFiles.push(`${file} (${writes.length})`); }
+}
+if (legacyWriters > KNOWN_LEGACY_WRITERS) {
+  fail(
+    `NEW direct writer of an OutboundLead legacy stage vocabulary: ${legacyWriters} found, ` +
+    `ratchet is ${KNOWN_LEGACY_WRITERS}. New reads and writes must go through ` +
+    `pipelineStageRegistry so the canonical reading cannot be bypassed.\n    ` +
+    legacyWriterFiles.join('\n    '),
+  );
+}
+
+// 9. FOUNDER RULE: material transitions must be classified and fail-closed.
+if (!Array.isArray(registry.material_kinds) || registry.material_kinds.length !== 7) {
+  fail('registry must declare exactly the seven material kinds');
+}
+let materialStages = 0;
+for (const [lane, node] of Object.entries(registry.lanes)) {
+  for (const stage of node.stages || []) {
+    if (stage.material === true) {
+      materialStages += 1;
+      if (stage.history_required !== true) {
+        fail(`${lane}.${stage.key} is material but does not require history`);
+      }
+      if (!Array.isArray(stage.material_kinds) || !stage.material_kinds.length) {
+        fail(`${lane}.${stage.key} is material but declares no material_kinds`);
+      }
+      for (const kind of stage.material_kinds || []) {
+        if (!registry.material_kinds.includes(kind)) fail(`${lane}.${stage.key} declares unknown material kind ${kind}`);
+      }
+    } else if (stage.history_required === true) {
+      fail(`${lane}.${stage.key} requires history but is not marked material`);
+    }
+    // Every terminal stage is material by definition.
+    if (stage.terminal === true && stage.material !== true) {
+      fail(`${lane}.${stage.key} is terminal and must be material`);
+    }
+  }
+}
+if (!core.includes('material_transition_history_unpersisted')) {
+  fail('pipelineCore must fail closed on material history loss');
+}
+if (!/rolled_back/.test(core) || !/REVIEW_REQUIRED/.test(core)) {
+  fail('pipelineCore must roll back a material move whose history failed, and escalate when the rollback fails');
+}
+
+// 10. FOUNDER RULE: nullable coercion is centralised.
+if (!fs.existsSync('base44/shared/nullableNumber.ts')) {
+  fail('base44/shared/nullableNumber.ts must exist — nullable coercion lives in one place');
+}
+for (const consumer of ['base44/shared/pipelineCore.ts', 'base44/shared/auditsCore.ts']) {
+  if (!fs.readFileSync(consumer, 'utf8').includes("from './nullableNumber.ts'")) {
+    fail(`${consumer} must use the shared nullable coercion`);
+  }
+}
+
 if (failures) process.exit(1);
 const lanes = Object.keys(registry.lanes).length;
 const stages = Object.values(registry.lanes).reduce((n, l) => n + (l.stages || []).length, 0);
 console.log(
   `pipeline:check PASS — ${lanes} lanes, ${stages} canonical stages, ${mapped} legacy enum values mapped with zero stale entries, ` +
-  `retired authority ${retired} refused, no generic pipeline entity, lifecycle lane projection-only`,
+  `retired authority ${retired} refused, no generic pipeline entity, lifecycle lane projection-only, ` +
+  `${materialStages} material stages fail-closed on history loss, ${legacyWriters}/${KNOWN_LEGACY_WRITERS} legacy stage writers (ratchet), ` +
+  `nullable coercion centralised`,
 );

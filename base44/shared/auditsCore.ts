@@ -24,6 +24,7 @@
 // possibly-absent too.
 
 import { readRuntimeSource } from './runtimeSourceRead.ts';
+import { nullableMinor } from './nullableNumber.ts';
 import {
   buildContext, kpi, portfolioResponse, sortKeepingUnknownLast,
   type SourceHealthRow, type TruthClass,
@@ -32,21 +33,8 @@ import {
 export const AUDITS_CORE_VERSION = 'audits-core-1.0.0';
 
 const text = (value: unknown) => String(value ?? '').trim();
-/**
- * Numeric read that treats null and empty string as UNKNOWN.
- *
- * Number(null) is 0 and Number.isFinite(0) is true, so the obvious
- * implementation returns 0 for an absent figure. That is the exact defect this
- * workspace exists to prevent: an opportunity with NO expected recoverable
- * savings would report a confident zero AND pass the Recover eligibility check.
- * This repo has already been bitten by Number(null) twice — see
- * Decision_Log_COMMAND_C3.
- */
-const minor = (value: unknown) => {
-  if (value === null || value === undefined || value === '') return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
+// Nullable coercion lives in ONE place now; see nullableNumber.ts for why.
+const minor = nullableMinor;
 
 const READ_LIMIT = 2000;
 
