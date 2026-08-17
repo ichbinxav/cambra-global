@@ -2,6 +2,11 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+// COMMAND-C4: the multi-step coordinator. Scoped to read/analysis chaining here;
+// anything that writes, drafts or needs approval is handed straight back to
+// executeToolWithGates below, so every existing gate still applies unchanged.
+import { buildToolRegistry } from '../../shared/commandToolRegistry.ts';
+import { runCommandLoop } from '../../shared/commandToolLoop.ts';
 
 // ════════════════════════════════════════════════════════════════════
 // Chief Orchestrator Chat
@@ -717,33 +722,111 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, assistant_text: assistantText, tool_calls: [], blocked_by_gate: "no_api_key" });
     }
 
-    const claudeRes = await callClaude(base44.asServiceRole, claudeMessages, CHAT_TOOLS, `${conversation_id}:${crypto.randomUUID()}`);
+    // COMMAND-C4 — multi-step coordination.
+    //
+    // Before this, one model call produced at most one tool call and the result
+    // never went back to the model, so "look this up, then analyse it, then
+    // summarise" was not expressible in a single turn.
+    //
+    // The loop is deliberately scoped to read + analysis. The moment the model
+    // proposes anything that writes, drafts or needs approval, the loop hands it
+    // back and it goes through executeToolWithGates exactly as before — so the
+    // bulk gate, the L3 forced-draft gate and the hash-bound material preview are
+    // untouched. For those flows behaviour is identical to the single-shot path.
+    const registry = buildToolRegistry(CHAT_TOOLS as any[]);
+    const permit = await base44.asServiceRole.entities.FounderPermit
+      .filter({ status: 'ACTIVE' }, '-created_at', 1)
+      .then((rows: any[]) => rows?.[0] || null)
+      .catch((error: any) => safeBestEffort(error, { operation: 'chatChiefOrchestrator:permit', fallback: null, severity: 'secondary' }));
 
-    // Parse Claude's reply
-    let assistantText = "";
-    let toolUseBlock = null;
-    for (const block of (claudeRes.content || [])) {
-      if (block.type === "text") assistantText += block.text;
-      if (block.type === "tool_use") toolUseBlock = block;
-    }
+    let loopAssistantText = "";
+    const loop = await runCommandLoop({
+      request: String(message || ""),
+      registry,
+      permit,
+      autonomousEffectClasses: ['read', 'analysis'],
+      now: () => new Date().toISOString(),
+      readEmergency: async () => {
+        // The orchestrator did not consult the emergency control at all before
+        // C4. An unreadable control blocks the loop rather than defaulting open.
+        try {
+          const rows = await base44.asServiceRole.entities.EmergencyControl.filter({ control_key: 'global' }, '-updated_date', 1);
+          const control = rows?.[0] || null;
+          if (!control) return { available: false, control: null, revision: null };
+          return { available: true, control, revision: Number(control.control_revision ?? 0) };
+        } catch { return { available: false, control: null, revision: null }; }
+      },
+      callModel: async ({ history }) => {
+        const stepMessages = [...claudeMessages];
+        if (history.length) {
+          stepMessages.push({
+            role: 'user',
+            content: `STEPS ALREADY RUN (results are canonical, do not restate them as new findings):\n${
+              history.map((step: any) => `${step.index}. ${step.tool} → ${step.status}${step.result_summary ? `: ${step.result_summary}` : ''}`).join('\n')
+            }\nContinue, or answer if you have enough.`,
+          });
+        }
+        const res = await callClaude(base44.asServiceRole, stepMessages, CHAT_TOOLS, `${conversation_id}:${crypto.randomUUID()}`);
+        let stepText = "";
+        let block = null;
+        for (const part of (res.content || [])) {
+          if (part.type === "text") stepText += part.text;
+          if (part.type === "tool_use") block = part;
+        }
+        if (stepText) loopAssistantText = stepText;
+        return { text: stepText, tool: block ? { name: block.name, input: block.input || {} } : null };
+      },
+      executeTool: async ({ name, input }) => {
+        const tool = CHAT_TOOLS.find((row: any) => row.name === name);
+        if (!tool) return { ok: false, summary: 'tool_not_found' };
+        if (tool.function === "__READ_STATE__") {
+          const read = await handleReadState(base44, input);
+          return { ok: !!read?.ok, summary: read?.ok ? `${read.count} rows from ${read.entity}` : `read failed: ${read?.error || 'unknown'}` };
+        }
+        try {
+          const res = await base44.asServiceRole.functions.invoke(tool.function, { ...(tool.fixed_input || {}), ...input });
+          const data = res?.data || res;
+          // A step that comes back asking for confirmation is NOT a completed
+          // step. Treat it as ambiguous so the loop escalates instead of
+          // reporting success for something that has not happened.
+          if (data?.requires_confirmation) return { ok: true, ambiguous: true, summary: 'requires_confirmation' };
+          return { ok: data?.ok !== false, summary: String(data?.summary || data?.status || 'ok').slice(0, 300) };
+        } catch (error: any) {
+          return { ok: false, summary: String(error?.message || 'invoke_failed').slice(0, 300) };
+        }
+      },
+    });
 
-    // No tool → just save text and reply
-    if (!toolUseBlock) {
-      await base44.asServiceRole.entities.ChatMessage.create({
-        conversation_id, role: "assistant", content: assistantText || "(no response)",
+    // Handed back → the existing gate path owns it, unchanged.
+    if ((loop as any).hand_back_tool) {
+      return await executeToolWithGates({
+        base44,
+        conversation_id,
+        toolName: (loop as any).hand_back_tool.name,
+        toolInput: (loop as any).hand_back_tool.input || {},
+        userMessage: loopAssistantText || "",
+        brand_id,
+        bypassBulkGate: false,
       });
-      return Response.json({ ok: true, assistant_text: assistantText, tool_calls: [] });
     }
 
-    // Tool requested → run through the gates
-    return await executeToolWithGates({
-      base44,
-      conversation_id,
-      toolName: toolUseBlock.name,
-      toolInput: toolUseBlock.input || {},
-      userMessage: assistantText || "",
-      brand_id,
-      bypassBulkGate: false,
+    const chained = loop.steps.filter((step: any) => step.status === 'EXECUTED');
+    await base44.asServiceRole.entities.ChatMessage.create({
+      conversation_id, role: "assistant",
+      content: loopAssistantText || loop.assistant_text || "(no response)",
+      tool_calls_json: loop.steps.map((step: any) => ({
+        name: step.tool, status: step.status.toLowerCase(), input: step.input, reason: step.reason || null,
+      })),
+      blocked_by_gate: loop.outcome === 'BLOCKED' ? 'loop_refused' : undefined,
+    });
+    return Response.json({
+      ok: loop.outcome === 'COMPLETED' || loop.outcome === 'PARTIAL',
+      assistant_text: loopAssistantText || loop.assistant_text,
+      outcome: loop.outcome,
+      blockers: loop.blockers,
+      steps_run: chained.length,
+      tool_calls: loop.steps.map((step: any) => ({ name: step.tool, status: step.status.toLowerCase() })),
+      external_send_performed: false,
     });
 
   } catch (error) {

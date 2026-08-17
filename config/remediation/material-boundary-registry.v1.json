@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "2f87930819d752591cb628a823575714eef41568255f622bbd6b721aeaab4e8e",
+  "input_fingerprint_sha256": "390918bc461fbe956c47b083e2beb4c202fd73e4804ca92742584e6fe8846400",
   "input_file_count": 130,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2810,8 +2810,8 @@
         },
         {
           "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-          "sha256": "0904effe1116af028547e1c99fe208c7512e5e1f0f3ef56ea3d4f04451a71b48",
-          "bytes": 47549
+          "sha256": "00a7bb389e19fc49fd124f9f78f1a14d734a0e842cb9f0e6fe1548ea3096a6eb",
+          "bytes": 52482
         },
         {
           "path": "base44/functions/commercialSendMessage/entry.ts",
