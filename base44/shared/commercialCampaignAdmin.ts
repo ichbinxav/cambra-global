@@ -13,5 +13,9 @@ export async function handleCommercialCampaignAdmin(req:Request){
     try{user=await base44.auth.me();}catch{return Response.json({ok:false,error:'authentication_unavailable'},{status:503});}
     let body:any;try{body=await req.json();}catch{return Response.json({ok:false,error:'invalid_json_body'},{status:400});}
     return await handleCampaignAdminAction(user,body,base44.asServiceRole);
-  }catch(error:any){console.error('commercialCampaignAdmin failed',error);return Response.json({ok:false,error:String(error?.code||error?.message||'commercial_campaign_admin_failed').slice(0,160)},{status:Number(error?.status||500)});}
+  }catch(error:any){
+    console.error('commercialCampaignAdmin failed',error);
+    // AUDIT SEC-07 (2026-08-17): bounded error CODE only, never raw error.message.
+    return Response.json({ok:false,error:String(error?.code||'commercial_campaign_admin_failed').slice(0,80)},{status:Number(error?.status||500)});
+  }
 }

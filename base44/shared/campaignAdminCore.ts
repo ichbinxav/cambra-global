@@ -147,6 +147,9 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     catch(error:any){
       const blocker='campaign_audit_persistence_failed';
       try{await svc.entities.CommercialCampaign.update(campaign.id,{status:'DRAFT',blockers:[...new Set([...(campaign.blockers||[]),blocker])],updated_at:new Date().toISOString()});}catch{/* response remains fail-closed even if containment projection also fails */}
+      // public-errors:allow-diagnostic — fail-closed 503 with a bounded 120-char `detail` so
+      // the operator can distinguish audit-plane outages from real failures; the fixed `error`
+      // code is the authoritative machine-readable value.
       return Response.json({ok:false,error:blocker,campaign_id:campaign.id,external_send_performed:false,review_required:true,detail:String(error?.code||error?.message||'audit_unavailable').slice(0,120)},{status:503});
     }
     return Response.json({ok:true,campaign,item:projectCampaignSummary(campaign),external_send_performed:false});

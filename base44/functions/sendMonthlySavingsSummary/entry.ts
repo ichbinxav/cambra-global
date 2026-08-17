@@ -77,6 +77,9 @@ Deno.serve(async (req) => {
         "communications",
       );
     } catch (error: any) {
+      // public-errors:allow-diagnostic — captureEmergencyEpoch throws an error whose
+      // message is the bounded emergency_control_* code the operator uses to route the
+      // pause. Forwarding it is intentional; the fallback is the same shape.
       return Response.json({
         ok: false,
         error: String(

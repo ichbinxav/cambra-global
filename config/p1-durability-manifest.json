@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T18:31:48.964Z",
+  "generatedAt": "2026-08-17T18:37:42.554Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -849,8 +849,8 @@
     },
     {
       "path": "base44/functions/instantlyProviderAdmin/entry.ts",
-      "sha256": "a4b5df262478b4050a2edd8ac520d000f155b2c4ba5fad4d00de8df9a5febded",
-      "bytes": 30086
+      "sha256": "79c69c7b58df48794aef03050761528c7fa887211b7e47ac7befaa0531fca31d",
+      "bytes": 30143
     },
     {
       "path": "base44/functions/instantlyProviderEventRetryWorker/entry.ts",
@@ -1039,8 +1039,8 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "sha256": "c93e2e1aa9c68eb771f9ab79e2e9334ca4de7ec19c191b51d93dcb298f62d123",
-      "bytes": 22327
+      "sha256": "d0ccfcf78edd66973685d5450bc65a6a393e72a2a6676db6755b49a18c6773fa",
+      "bytes": 22372
     },
     {
       "path": "base44/functions/outcomeLearningWorker/entry.ts",
@@ -1109,8 +1109,8 @@
     },
     {
       "path": "base44/functions/providerContactResolver/entry.ts",
-      "sha256": "8814751b8099d1e2360eb5dd338577a830e386b8d17a5ce9da8f9d6b230fcb02",
-      "bytes": 10375
+      "sha256": "fdb7b65d782d0caf9adc3d0113061ef4d0e1266ab09b906400f6d4f72cf79293",
+      "bytes": 10656
     },
     {
       "path": "base44/functions/providerMonetizationAgent/entry.ts",
@@ -1304,13 +1304,13 @@
     },
     {
       "path": "base44/functions/sendMonthlySavingsSummary/entry.ts",
-      "sha256": "6112533fde5827184ac59986604bd342ae5016c5eb1e0f4e9c1e578e6655a6e2",
-      "bytes": 7008
+      "sha256": "5e0644041d25ec8e7302e6ad4e017cd6415c22bb77b1f877a4dfcf119c5913b5",
+      "bytes": 7262
     },
     {
       "path": "base44/functions/sendRecoverContractEmail/entry.ts",
-      "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a",
-      "bytes": 9559
+      "sha256": "4dc3b8273122320030983d46456b9ecaa02d3d18af680ed40fa663e3ed767eae",
+      "bytes": 9671
     },
     {
       "path": "base44/functions/sendTestWebhook/entry.ts",
@@ -1334,8 +1334,8 @@
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
-      "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289",
-      "bytes": 31345
+      "sha256": "47855d1407470d8d7055a880038a2c64cbdd1bd245d76b42e98cb08586a1d0fd",
+      "bytes": 31428
     },
     {
       "path": "base44/functions/startProviderNegotiation/entry.ts",
@@ -1494,8 +1494,8 @@
     },
     {
       "path": "base44/shared/commercialCampaignAdmin.ts",
-      "sha256": "77279282d2c989beabe8eba5c54986a58f9e5f793d14b494978dc2f359a5ea2d",
-      "bytes": 1140
+      "sha256": "363af1b6c4c8b99b57e25cbb8b9627934c6f38764cc83ac47b03523b7a2a239e",
+      "bytes": 1220
     },
     {
       "path": "base44/shared/commercialFollowUpRecovery.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "dd4cafb7d949abd149fd3157ec4c52ce3a089c45f7d60ef50064e5b6d2108b2b",
+      "sha256": "ebe8cd7aa1789737dfee1d25403f65a7d9835f1b41f0481b56c7987394c908a1",
       "bytes": 124138
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "9c4dce7921ed2989d243762b18c9a6b3a5730628df9b18efc16435a8a3f49c17",
+      "sha256": "1a2564e98e9c44bac92cff67c2d4fb58bc09d43fa07dfb1ae667aea875e58576",
       "bytes": 42987
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "2069a82d66bbfbf647c86da73a3336598d0fb4a00537d209d3eb28a4095bf201",
+      "sha256": "e4b0504c11fbf8a24bb3edb5137eaf4a8790e296b0b61c980881578fdd37b350",
       "bytes": 13243
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "8f0c33dd713ba31dd9709d6089a324ea1aa7ffa624b179c63bcd50dcd682bdcc",
+      "sha256": "1ba0798d910b8f1153e8b7c1a2bc6f66a436346c6f3393f6dde7711a9eff0f53",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "33a2714b68b7a7f51bd215fe700e0f38766d5955feded1f97ad97a829abe93a1",
+      "sha256": "94e48ef5364041a82ad8bc567f0609f7280c2c61a8d67e490a50a55c58a28fb7",
       "bytes": 144115
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "375d8633710c79f22af8e7a2069f37c7bf2bd5166212393fcf7d18ec52a23407",
+      "sha256": "b1829367eabee5d567850a3423d606ed34ab049bcf9f32d17ff99d9c9277a94e",
       "bytes": 98284
     },
     {

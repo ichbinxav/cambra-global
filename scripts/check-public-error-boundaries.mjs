@@ -4,12 +4,22 @@ import path from 'node:path';
 import process from 'node:process';
 
 const fix=process.argv.includes('--fix');
-const root='base44/functions';
+// AUDIT SEC-07 (2026-08-17): logical routes moved into base44/shared/*.ts. Walk both
+// roots recursively so the check sees where the trust boundaries actually live.
+const roots=['base44/functions','base44/shared'];
 const files=[];
-for(const dir of fs.readdirSync(root,{withFileTypes:true})){
-  if(!dir.isDirectory())continue;
-  for(const name of fs.readdirSync(path.join(root,dir.name)))if(name.endsWith('.ts'))files.push(path.join(root,dir.name,name));
-}
+const walk=(dir)=>{
+  for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
+    const full=path.join(dir,entry.name);
+    if(entry.isDirectory())walk(full);
+    else if(entry.name.endsWith('.ts'))files.push(full);
+  }
+};
+for(const r of roots)if(fs.existsSync(r))walk(r);
+// A `public-errors:allow-diagnostic — <reason>` comment on the same block exempts an
+// intentional bounded exposure (namespaced error prefix, or slice(0,N) truncation with
+// a fallback code). The reason has to be present so the exemption is auditable.
+const ALLOW_MARK=/public-errors:allow-diagnostic/;
 const unsafe=[];
 for(const file of files){
   let source=fs.readFileSync(file,'utf8');
@@ -28,7 +38,15 @@ for(const file of files){
     if(close<0)break;
     const end=source[close+1]===';'?close+2:close+1;
     const call=source.slice(cursor,end);
-    const leaks=/status\s*:\s*5\d\d/.test(call)&&/(?:\.message\b|\.stack\b|\bmessage\s*:\s*(?!["'])|\bstack\s*:|String\((?:error|e)\))/.test(call);
+    const isFiveXx=/status\s*:\s*5\d\d/.test(call);
+    // AUDIT SEC-07 (2026-08-17): dynamic status expressions with a fallback that resolves
+    // to 5xx are just as bad — e.g. `{status: Number(error?.status || 500)}` returns 500
+    // when the caught error has no status field. Flag them as potentially-5xx.
+    const dynamicWith5xxFallback=/\|\|\s*5\d\d\b/.test(call)||/status\s*:\s*(?:Number\()?(?:error|e)\?\.status\b/.test(call);
+    const hasDiagnostic=/(?:\.message\b|\.stack\b|\bmessage\s*:\s*(?!["'])|\bstack\s*:|String\((?:error|e)\))/.test(call);
+    const contextBefore=source.slice(Math.max(0,cursor-400),cursor);
+    const allowed=ALLOW_MARK.test(contextBefore)||ALLOW_MARK.test(call);
+    const leaks=(isFiveXx||dynamicWith5xxFallback)&&hasDiagnostic&&!allowed;
     if(leaks){
       const line=source.slice(0,cursor).split('\n').length;
       unsafe.push(`${file}:${line}`);

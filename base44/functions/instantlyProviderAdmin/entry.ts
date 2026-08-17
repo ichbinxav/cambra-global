@@ -688,16 +688,14 @@ export async function handleInstantlyProviderAdmin(req: Request) {
       "instantlyProviderAdmin failed",
       String(error?.code || error?.message || "unknown"),
     );
+    // AUDIT SEC-07 (2026-08-17): return bounded error codes only — a truncated exception
+    // can still surface paths, secret fragments or unbounded prose.
     return Response.json(
       {
         ok: false,
-        error: String(
-          error?.code || error?.message || "instantly_provider_admin_failed",
-        ).slice(0, 200),
+        error: String(error?.code || "instantly_provider_admin_failed").slice(0, 80),
         provider_detail:
-          error?.name === "InstantlyApiError"
-            ? String(error?.message || "provider_request_failed").slice(0, 300)
-            : undefined,
+          error?.name === "InstantlyApiError" ? "provider_request_failed" : undefined,
       },
       { status: Number(error?.status || 500) },
     );

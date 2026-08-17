@@ -668,13 +668,11 @@ Deno.serve(async (req) => {
   } catch (e: any) {
     __schedulerOk = false;
     console.error("outboundVolumeWorker failed", e);
+    // AUDIT SEC-07 (2026-08-17): bounded error CODE only, never raw e.message.
     return Response.json(
       {
         ok: false,
-        error: String(e?.message || "outbound_volume_worker_failed").slice(
-          0,
-          160,
-        ),
+        error: String(e?.code || "outbound_volume_worker_failed").slice(0, 80),
         sent: 0,
         queued: 0,
         material_effects_fail_closed: true,

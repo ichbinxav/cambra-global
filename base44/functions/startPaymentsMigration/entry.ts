@@ -147,6 +147,7 @@ export default async function (req: Request): Promise<Response> {
     try {
       migrationEpoch = await captureEmergencyEpoch(svc, "migrations");
     } catch (error: any) {
+      // public-errors:allow-diagnostic — bounded emergency_control_* namespace.
       return Response.json({
         error: error?.message || "emergency_control_paused:migrations",
       }, { status: Number(error?.status || 409) });

@@ -62,6 +62,7 @@ export default async function (req: Request): Promise<Response> {
   try {
     communicationEpoch = await captureEmergencyEpoch(svc, "communications");
   } catch (error: any) {
+    // public-errors:allow-diagnostic — bounded emergency_control_* namespace, see sendMonthlySavingsSummary.
     return Response.json({
       ok: false,
       error: String(
