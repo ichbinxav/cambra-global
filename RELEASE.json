@@ -1,9 +1,9 @@
 {
   "releaseName": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal)",
   "version": "0.98.0",
-  "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
+  "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
   "sourceTreeHashAlgorithm": "sha256-tree-v1",
-  "sourceTreeFileCount": 1779,
+  "sourceTreeFileCount": 2023,
   "sourceArchiveShaExternal": null,
   "gitSha": null,
   "releaseBuild": false,
@@ -18,21 +18,21 @@
     "base44/shared/generated/eclPolicy.ts": "4c963889c72fc6106e106666ce59cec315881a6e698dd595ad8837aadd262a94",
     "base44/shared/generated/eclDomain.ts": "1622e7307c6e61d87d9435a8f6d545b7a13a8d1378a207e1d47dff15b6fc1afd"
   },
-  "durabilityManifestSha": "94d8fb2201d8939b10d2f106efe57ebb20db0dbbd3c61711c8f239bf5ce7ed1a",
-  "documentationManifestSha": "57016cd51c591f0b87f048beea38d619c32d25cb50cb839300148ab5b2c7eb19",
-  "schedulerInventorySha": "8a2b7ca8442bfbcbcbd383f84323d5ecbebb78c254dfb208cb5d1caf37c39229",
-  "backendDeploymentTopologySha": "a69dadd587f189c15e09be16d3311fa1ff290333496ff5b3007b55b2e0b972d8",
-  "backendBundleManifestSha": "2c567a76913756e11b6efd0e694aed82163d67a2922ff88c77aa0a0d867fc7a0",
+  "durabilityManifestSha": "542543aebcf8ed59794f34dd33154b0cf07033e1ed355e9276890a5d6d9a3be3",
+  "documentationManifestSha": "586581419448d91af28bc5d88172573cefdf0e599500d4ca53c81906dff5f99a",
+  "schedulerInventorySha": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
+  "backendDeploymentTopologySha": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
+  "backendBundleManifestSha": "5c8acf5124160124b086813e00830810b2fe060186706f42aa9f6496e3332e5e",
   "backendBundle": {
     "physicalFunctionCount": 276,
-    "logicalRouteCount": 27,
-    "stagedFileCount": 2853,
-    "stagedTreeSha256": "d7479a6015656d90b1da6d6e4ff3708887f8ed398cd4790696a32a79b01b3693",
+    "logicalRouteCount": 38,
+    "stagedFileCount": 2933,
+    "stagedTreeSha256": "7d68b4fcb38eb2c749834b5f1b1eb6967a3c823be00a4972b112b45744245eaf",
     "hashAlgorithm": "sha256-path-bytes-tree-v1",
     "functionsDir": "./.deploy/functions",
     "configSha256": "0e9773a26dfa4e1fa7fcfd43016f8a07046b8e78c97bd5905b70155c8d3797e6"
   },
-  "dataRetentionMatrixSha": "62c190c350d57538a97d12019ec0b20977e1fc74671e73b7a644367e54c5e610",
+  "dataRetentionMatrixSha": "5bcbef91f5dd35df6483cf50e5aa7da872a168039fdc45fbe79395f458194ed7",
   "secretScannerSha": "e93f7f2b554d95d0777fb59275706c98ab5f4f70fc84392594ce7056428d56fa",
   "contractTemplateVersions": [
     "recover-contract-pdf-v2"
@@ -50,7 +50,7 @@
     "base44/entities/StatementImport.jsonc": "95ca764e3186876827dc8d9e681b8d75a03af27e8c1c0377ae1deac1d17d3296",
     "base44/entities/SavingsEvidence.jsonc": "21be09e33b376f57e03aef336fc1bc4b06d641ca72d840ad8f671a2ab4af1731",
     "base44/entities/Baseline.jsonc": "a4d186074a4834aca489842447a6ce5052d526315863b5acdc9cff9b998a3bd1",
-    "base44/functions/processUploadedFile/entry.ts": "f61b119bf46bc86a8eaa8ac92a699c865c7eb73c6377249492ff697907ac880f",
+    "base44/functions/processUploadedFile/entry.ts": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
     "base44/entities/EvidenceAttestation.jsonc": "1cb6bec24599aec271f527bc28d46697fe961c4a1427ab3bf7e0f5f10ce10d29",
     "base44/entities/EvidenceLifecycleEvent.jsonc": "78bfa30864dadf7574c09bcc0dfb440d39e6505ef98f8dcb077a09ab919f1412",
     "base44/entities/EvidenceStrike.jsonc": "5d96ed9ae9f6cefa56a3dc652fbcec6019fdfaf536661efdd5480412d85d22f9",
@@ -62,66 +62,66 @@
   },
   "testEvidence": {
     "command": "npx vitest run --maxWorkers=2 --reporter=default --reporter=json --outputFile=.release-evidence/vitest-raw.json",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:11:15.804Z",
-    "completedAt": "2026-08-14T19:11:45.810Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:14:30.226Z",
+    "completedAt": "2026-08-17T14:15:12.783Z",
     "exitCode": 0,
     "ciRunId": null,
-    "testFiles": 247,
-    "passed": 3116,
+    "testFiles": 309,
+    "passed": 4383,
     "failed": 0,
     "skipped": 0,
     "frameworkVersion": "^4.1.10",
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "c507d765df8a24675843b1a46fe8d37c8b52363b3b2ca7f74b66e189a414f6b8"
+    "evidenceDigest": "044a47a6c89eeff7959075f1b305130c07c7ec21ae10e38eb874798ff154f4ca"
   },
   "buildEvidence": {
     "command": "npx vite build",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:11:46.214Z",
-    "completedAt": "2026-08-14T19:11:54.236Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:15:13.249Z",
+    "completedAt": "2026-08-17T14:15:22.242Z",
     "exitCode": 0,
     "ciRunId": null,
-    "distHash": "22095b3511c84895157c4297e0f11542a6eb5c453968d40a121095a89e035554",
-    "artifactCount": 130,
+    "distHash": "3c5bce59cd4d0e2a7cef7286fd7b3ad492577850e105e48dbb5e5423867dfa4d",
+    "artifactCount": 139,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "580648622573ce07931ecfb0a65cac11536a28e878d052b5c0242ad12d4fa9dc"
+    "evidenceDigest": "92a22fd823bfbac6668db6f3b71981acec3d6b4d0c70f03a74dddece8b42516b"
   },
   "lintEvidence": {
     "command": "npx eslint . --quiet",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:10:56.619Z",
-    "completedAt": "2026-08-14T19:11:03.240Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:14:03.671Z",
+    "completedAt": "2026-08-17T14:14:10.633Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "1f784d3f5ef67fa7e913e9a730b31fedf9c71c288d4471e1e4565cd9631a42b1"
+    "evidenceDigest": "03b6828632cb2275e27c6e9969b6a951979fa0c6a3b26d60aa2efc1b3eceb9ee"
   },
   "typecheckCriticalEvidence": {
     "command": "npx tsc -p ./tsconfig.critical.json",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:11:03.626Z",
-    "completedAt": "2026-08-14T19:11:07.250Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:14:11.023Z",
+    "completedAt": "2026-08-17T14:14:15.138Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "a0b99d45a9c54597322d76da2e381e6eea414f32fd158c60d6814c86dea007f1"
+    "evidenceDigest": "70d64c093fc20df64c1610fa4c6a60eef81e0ef4df7e0a91031e7127604594e2"
   },
   "typecheckBaselineEvidence": {
     "command": "node scripts/check-typecheck-baseline.mjs",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:11:07.635Z",
-    "completedAt": "2026-08-14T19:11:15.419Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:14:20.977Z",
+    "completedAt": "2026-08-17T14:14:29.846Z",
     "exitCode": 0,
     "ciRunId": null,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "f11710e45367cd4929a23ffbcc909d0682c1d265e783f09ba1a63e20f17ab1f5"
+    "evidenceDigest": "171f8a99c8f4a54c8bc2e25e48a01ab1a43c390bc7b7f6164a8e6f41e00264ef"
   },
   "dependencyAuditEvidence": {
     "command": "npm audit --json",
-    "sourceTreeHash": "ba99880d214eeefbf82f2a811f8ca751e3377d8a24a324f96e9fa8914dd7d0e6",
-    "startedAt": "2026-08-14T19:10:52.505Z",
-    "completedAt": "2026-08-14T19:10:53.341Z",
+    "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+    "startedAt": "2026-08-17T14:13:59.495Z",
+    "completedAt": "2026-08-17T14:14:00.250Z",
     "exitCode": 0,
     "ciRunId": null,
     "auditReportVersion": 2,
@@ -143,10 +143,10 @@
     },
     "networkExitCode": 0,
     "evidenceSchemaVersion": "cambra-release-evidence-v2",
-    "evidenceDigest": "03c36346fce88d4244aa7024e475644160189238ee81967fdd43e69610c73b73"
+    "evidenceDigest": "6e2bde7d87b311e3cd0d338f2e0e98d7cf31fe45cfc02811a425d33fdf37a761"
   },
   "artifactHashes": {
-    "dist": "22095b3511c84895157c4297e0f11542a6eb5c453968d40a121095a89e035554"
+    "dist": "3c5bce59cd4d0e2a7cef7286fd7b3ad492577850e105e48dbb5e5423867dfa4d"
   },
   "marketLaunchScope": {
     "registryPath": "config/europe-markets.json",
@@ -283,12 +283,14 @@
   },
   "completedProductionRequirements": [
     "Node 24 LTS toolchain and the reproducible local verification pipeline are source-enforced and locally verified.",
-    "The reproducible Base44 bundle preserves trust boundaries while staging exactly 276 physical functions behind 27 logical routes; deployment parity remains a separate pending proof.",
+    "The reproducible Base44 bundle preserves trust boundaries while staging exactly 276 physical functions behind 38 logical routes; deployment parity remains a separate pending proof.",
     "FOUNDER 30/33 MARKET SCOPE SOURCE-BOUND: 33 canonical markets, 30 active including Spain, and exactly France, Belgium and the Netherlands protected as research-only while outbound remains PAUSED_ZERO; this is repository policy, not runtime proof.",
     "FOUNDER RESEARCH CORPUS REPOSITORY INTAKE COMPLETE: exactly 11 physical files / 9 SHA-unique / 2 exact duplicates are byte-bound as untrusted, non-executable and non-training input; this is repository intake only, not production proof."
   ],
   "pendingProductionRequirements": [
     "FINAL-SHA REMOTE CI PROOF REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the exact final release SHA.",
+    "LEGACY ADMIN ROUTES NOT RETIRED: 2 route(s) remain live with a declared blocker (/admin/deals, /admin/applications).",
+    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 26 entries against a target of 13.",
     "HIGH/CRITICAL ALERT PROOF REQUIRED: prove real delivery, retry, deduplication and Founder/Admin visibility with a controlled production incident.",
     "FINAL BASE44 PARITY PROOF REQUIRED: deploy the exact final source tree and match runtime release version, Git SHA, sha256-tree-v1 hash and file count to RELEASE.json and the archive.",
     "IMMUTABLE RUNTIME IDENTITY + SLO PROOF REQUIRED: inject the deployment-owned source, bundle, topology and scheduler identities; collect complete durable attempt receipts for Analyzer, extraction, commercial send, billing reconciliation and the company orchestrator; then satisfy the canonical 30-day SLO windows.",
@@ -317,6 +319,8 @@
   ],
   "manualRequirements": [
     "FINAL-SHA REMOTE CI PROOF REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the exact final release SHA.",
+    "LEGACY ADMIN ROUTES NOT RETIRED: 2 route(s) remain live with a declared blocker (/admin/deals, /admin/applications).",
+    "ADMIN SIDEBAR CONSOLIDATION UNBLOCKED_PENDING_IMPLEMENTATION: 26 entries against a target of 13.",
     "HIGH/CRITICAL ALERT PROOF REQUIRED: prove real delivery, retry, deduplication and Founder/Admin visibility with a controlled production incident.",
     "FINAL BASE44 PARITY PROOF REQUIRED: deploy the exact final source tree and match runtime release version, Git SHA, sha256-tree-v1 hash and file count to RELEASE.json and the archive.",
     "IMMUTABLE RUNTIME IDENTITY + SLO PROOF REQUIRED: inject the deployment-owned source, bundle, topology and scheduler identities; collect complete durable attempt receipts for Analyzer, extraction, commercial send, billing reconciliation and the company orchestrator; then satisfy the canonical 30-day SLO windows.",
@@ -335,5 +339,5 @@
   "realWorldValidatedEligible": false,
   "readinessLevel": "NOT_GO_READY",
   "finalVerdict": "NOT_GO_READY",
-  "generatedAt": "2026-08-14T19:11:55.357Z"
+  "generatedAt": "2026-08-17T14:15:23.413Z"
 }

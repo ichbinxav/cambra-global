@@ -211,13 +211,23 @@ describe("C1 — unknown values sort last in both directions", () => {
 describe("C1 — the navigation registry is the single source of truth", () => {
   const registry = JSON.parse(fs.readFileSync("config/dashboard/navigation.v1.json", "utf8"));
 
-  it("declares exactly the twelve target entries in the founder's architecture", () => {
-    expect(registry.target_navigation).toHaveLength(12);
+  it("declares exactly the target entries the architecture invariant states", () => {
+    // C14: the founder chose THIRTEEN, not twelve. Founder Control keeps its own entry because
+    // it carries emergencyControlAdmin and goLiveControlAdmin, and two clicks to an emergency
+    // stop is one too many. The count is read from the invariant rather than hard-coded, so the
+    // test cannot fight an architecture decision.
+    expect(registry.invariants.target_entry_count).toBe(13);
+    expect(registry.target_navigation).toHaveLength(registry.invariants.target_entry_count);
     expect(registry.target_navigation.map((row) => row.label)).toEqual([
-      "Founder OS", "CAMBRA Command", "Discovery", "Campaigns", "Inbox & Conversations",
-      "Pipeline", "Merchants", "Audits & Opportunities", "Recover", "Finance",
-      "Intelligence", "Settings",
+      "Founder OS", "Founder Control", "CAMBRA Command", "Discovery", "Campaigns",
+      "Inbox & Conversations", "Pipeline", "Merchants", "Audits & Opportunities", "Recover",
+      "Finance", "Intelligence", "Settings",
     ]);
+  });
+
+  it("records why Founder Control is an entry rather than a tab", () => {
+    const row = registry.target_navigation.find((entry) => entry.path === "/admin/founder-control");
+    expect(row.entry_reason).toContain("emergency stop");
   });
 
   it("uses the five groups in order", () => {

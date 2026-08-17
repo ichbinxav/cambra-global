@@ -112,8 +112,10 @@ describe("C13 — nothing is reachable from nowhere", () => {
     }
   });
 
-  it("has all twelve target entries live, with no workspace unbuilt", () => {
-    expect(registry.target_navigation).toHaveLength(12);
+  it("has every target entry live, with no workspace unbuilt", () => {
+    // C14: thirteen, not twelve — read from the invariant so the test does not fight an
+    // architecture decision.
+    expect(registry.target_navigation).toHaveLength(registry.invariants.target_entry_count);
     expect(registry.target_navigation.filter((row) => row.state === "NOT_BUILT")).toEqual([]);
   });
 
@@ -132,31 +134,52 @@ describe("C13 — nothing is reachable from nowhere", () => {
   });
 });
 
-describe("C13 — the sidebar cut is blocked, and says why", () => {
-  it("declares ten routes awaiting a destination decision, each with evidence", () => {
+describe("C13/C14 — every route has a decided destination, each with evidence", () => {
+  it("keeps the evidence and the decision on all ten routes", () => {
     expect(registry.unmapped_routes).toHaveLength(10);
     for (const row of registry.unmapped_routes) {
       expect(row.evidence, row.path).toBeTruthy();
-      expect(row.decision_required, row.path).toBe(true);
-      expect(row.proposed, row.path).toBeTruthy();
+      // C14: the founder decided all ten. The evidence stays: a decision without the evidence
+      // it was made on cannot be revisited.
+      expect(row.decision_required, row.path).toBe(false);
+      expect(row.decided_by, row.path).toBe("founder");
+      expect(row.mode, row.path).toBeTruthy();
     }
   });
 
-  it("admits where no destination could be proposed at all", () => {
-    // /admin/aggregate is a two-line minified page. Proposing a home for it would be a guess.
-    const aggregate = registry.unmapped_routes.find((row) => row.path === "/admin/aggregate");
-    expect(aggregate.proposed).toBe("UNKNOWN");
-    expect(aggregate.proposed_confidence).toBe("NONE");
+  it("records the two retirements as retirements, not as mappings", () => {
+    const byPath = new Map(registry.unmapped_routes.map((row) => [row.path, row]));
+    expect(byPath.get("/admin/copilot").mode).toBe("RETIRED");
+    expect(byPath.get("/admin/aggregate").mode).toBe("DEFERRED");
+    // Neither deletes a backend. Aggregate returns when there is a negotiation to run.
+    expect(byPath.get("/admin/aggregate").note).toContain("NOT deleted");
+    expect(byPath.get("/admin/copilot").note).toContain("NOT deleted");
   });
 
-  it("records the cut as BLOCKED with the rule it would break", () => {
-    expect(registry.sidebar_cut.state).toBe("BLOCKED");
-    expect(registry.sidebar_cut.target_entries).toBe(12);
-    expect(registry.sidebar_cut.rule).toContain("section 2.5");
-    expect(registry.sidebar_cut.rule).toContain("reachable from nowhere else");
+  it("records that Overview is the body of Founder OS, not a page it absorbed", () => {
+    const overview = registry.unmapped_routes.find((row) => row.path === "/admin/overview");
+    expect(overview.mode).toBe("BODY_OF");
+    expect(overview.destination).toBe("/admin");
   });
 
-  it("has not cut the sidebar while decisions are outstanding", () => {
-    expect(navPaths.length).toBeGreaterThan(12);
+  it("declares the target as thirteen, and why it is not twelve", () => {
+    expect(registry.sidebar_cut.target_entries).toBe(13);
+    expect(registry.sidebar_cut.state).toBe("UNBLOCKED_PENDING_IMPLEMENTATION");
+    expect(registry.sidebar_cut.target_change_note).toContain("emergency stop");
+  });
+
+  it("does not store the sidebar entry count, which went stale inside one chunk", () => {
+    expect(registry.sidebar_cut.current_entries).toBeUndefined();
+    expect(registry.sidebar_cut.current_entries_note).toContain("went stale");
+  });
+
+  it("keeps every nested Advanced System child reachable", () => {
+    // Excluding them from the top-level list without rendering them nested would have made
+    // eleven routes unreachable — the orphaning C13 refused to do.
+    const advanced = registry.advanced_system_children.map((row) => row.path);
+    expect(advanced.length).toBeGreaterThan(0);
+    for (const path of advanced) expect(navPaths, path).toContain(path);
+    expect(layout).toContain('data-testid="advanced-system"');
+    expect(layout).toContain("ADVANCED_NAV.map");
   });
 });

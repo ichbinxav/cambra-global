@@ -1,8 +1,8 @@
 {
   "command": "npm audit --json",
-  "sourceTreeHash": "9d5998aa487d5ec9ab98481cc6fa71ebc8093c4e4f7b64beb3294567985578e8",
-  "startedAt": "2026-08-17T13:56:31.323Z",
-  "completedAt": "2026-08-17T13:56:31.956Z",
+  "sourceTreeHash": "5d933fddb401d2c47e902d381af4cb9726377ea092b5d8fbb6f4d0df1bde8be3",
+  "startedAt": "2026-08-17T14:13:59.495Z",
+  "completedAt": "2026-08-17T14:14:00.250Z",
   "exitCode": 0,
   "ciRunId": null,
   "auditReportVersion": 2,
@@ -24,5 +24,5 @@
   },
   "networkExitCode": 0,
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "a946999bf311bcbdf1b795e48c937e4226f9d61d4feb90aafedf7ad0bd2f2d59"
+  "evidenceDigest": "6e2bde7d87b311e3cd0d338f2e0e98d7cf31fe45cfc02811a425d33fdf37a761"
 }

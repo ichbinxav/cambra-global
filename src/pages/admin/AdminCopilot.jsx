@@ -1,3 +1,6 @@
+// DASHBOARD-C14 (2026-08-17) — UNROUTED by founder decision. This page has no route and no
+// sidebar entry. It is kept, not deleted: see unmapped_routes in
+// config/dashboard/navigation.v1.json for the decision and the condition for its return.
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Sparkles, RefreshCw, AlertTriangle, FileText, Bug } from "lucide-react";

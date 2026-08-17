@@ -266,7 +266,12 @@ const researchCorpus = {
 
 const completedProductionRequirements = [
   'Node 24 LTS toolchain and the reproducible local verification pipeline are source-enforced and locally verified.',
-  'The reproducible Base44 bundle preserves trust boundaries while staging exactly 276 physical functions behind 27 logical routes; deployment parity remains a separate pending proof.',
+  // DASHBOARD-C14 (2026-08-17): the logical route count was the literal 27 and had gone stale —
+  // the programme added eleven logical routes (pipeline, audits, recover, finance, intelligence,
+  // integrations and the Command routes) without this completed-requirement statement moving.
+  // A completed requirement that no longer matches reality is worse than a pending one. It is
+  // interpolated from the bundle the generator already inspects, so it cannot go stale again.
+  `The reproducible Base44 bundle preserves trust boundaries while staging exactly ${backendBundle.physical_function_count} physical functions behind ${backendBundle.logical_route_count} logical routes; deployment parity remains a separate pending proof.`,
   'FOUNDER 30/33 MARKET SCOPE SOURCE-BOUND: 33 canonical markets, 30 active including Spain, and exactly France, Belgium and the Netherlands protected as research-only while outbound remains PAUSED_ZERO; this is repository policy, not runtime proof.',
   'FOUNDER RESEARCH CORPUS REPOSITORY INTAKE COMPLETE: exactly 11 physical files / 9 SHA-unique / 2 exact duplicates are byte-bound as untrusted, non-executable and non-training input; this is repository intake only, not production proof.',
 ];
@@ -283,6 +288,41 @@ const baseline = fs.existsSync("config/typecheck-baseline.json")
 if (!baseline || baseline.state !== "APPROVED") addPendingRequirement("typecheck baseline: candidate/approve flow not completed", { blocking: true });
 if (!fs.existsSync(".github/workflows/ci.yml")) addPendingRequirement("CI workflow not installed (npm run ci:install from a real checkout)", { blocking: true });
 if (!process.env.GITHUB_RUN_ID) addPendingRequirement("FINAL-SHA REMOTE CI PROOF REQUIRED: this manifest was generated outside GitHub Actions; obtain a green remote workflow run for the exact final release SHA.");
+// DASHBOARD-C14 (2026-08-17) — the Dashboard Core programme's own open debts, derived from
+// config/dashboard/navigation.v1.json rather than restated, so they clear themselves when the
+// registry does and cannot be declared done while the registry says otherwise.
+const dashboardNav = fs.existsSync("config/dashboard/navigation.v1.json")
+  ? JSON.parse(fs.readFileSync("config/dashboard/navigation.v1.json", "utf8")) : null;
+if (dashboardNav) {
+  const undecided = (dashboardNav.unmapped_routes || []).filter((row) => row.decision_required === true);
+  if (undecided.length) {
+    addPendingRequirement(
+      `ADMIN NAVIGATION DESTINATION DECISIONS REQUIRED: ${undecided.length} admin route(s) have no declared home in the twelve-entry architecture `
+      + `(${undecided.map((row) => row.path).join(', ')}). The sidebar cannot be cut to twelve without orphaning them, and one of them `
+      + `(/admin/aggregate — collective bargaining over AggregatePool/AggregateRFP/AggregateBid) has no place in that architecture at all.`,
+    );
+  }
+  const pendingRedirects = (dashboardNav.legacy_redirects || []).filter((row) => row.ready !== true);
+  if (pendingRedirects.length) {
+    addPendingRequirement(
+      `LEGACY ADMIN ROUTES NOT RETIRED: ${pendingRedirects.length} route(s) remain live with a declared blocker `
+      + `(${pendingRedirects.map((row) => row.from).join(', ')}).`,
+    );
+  }
+  if (dashboardNav.sidebar_cut && dashboardNav.sidebar_cut.state !== "COMPLETE") {
+    // Counted from the layout, not read from the registry. The registry stored 43 and went
+    // stale inside one chunk when C13 trimmed it to 35, so the number is derived at the only
+    // place that cannot disagree with itself.
+    const layoutSource = fs.existsSync("src/pages/admin/AdminLayout.jsx")
+      ? fs.readFileSync("src/pages/admin/AdminLayout.jsx", "utf8") : "";
+    const entryCount = [...layoutSource.matchAll(/\{ path: "([^"]+)"/g)].length;
+    addPendingRequirement(
+      `ADMIN SIDEBAR CONSOLIDATION ${dashboardNav.sidebar_cut.state}: ${entryCount} entries against a target of `
+      + `${dashboardNav.sidebar_cut.target_entries}. ${dashboardNav.sidebar_cut.blocked_by || ''}`.trim(),
+    );
+  }
+}
+
 const productPolicy = fs.existsSync("config/product-policy.json")
   ? JSON.parse(fs.readFileSync("config/product-policy.json", "utf8")) : null;
 if (productPolicy?.economicTerms?.recoveryEconomicsVersion === "recover-economics-v2" &&

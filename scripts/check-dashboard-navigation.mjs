@@ -34,7 +34,16 @@ const layout = fs.readFileSync(LAYOUT, 'utf8');
 const routeExists = (path) => app.includes(`path="${path}"`);
 
 const target = Array.isArray(registry.target_navigation) ? registry.target_navigation : [];
-if (target.length !== 12) fail(`target_navigation must hold exactly 12 entries, found ${target.length}`);
+// DASHBOARD-C14: the count is read from the registry's own invariant rather than hard-coded at
+// 12. The founder chose 13: Founder Control keeps its own entry because it carries the
+// emergency stop, and two clicks to an emergency stop is one too many. A hard-coded 12 would
+// have made the gate fight the architecture it is meant to protect.
+const expectedEntries = registry.invariants?.target_entry_count;
+if (typeof expectedEntries !== 'number') {
+  fail('invariants.target_entry_count must declare how many entries the architecture has');
+} else if (target.length !== expectedEntries) {
+  fail(`target_navigation must hold exactly ${expectedEntries} entries, found ${target.length}`);
+}
 
 const groups = new Set(registry.target_group_order || []);
 const seenOrders = new Set();
@@ -161,7 +170,16 @@ if (orphans.length) {
 }
 
 // The cut itself is gated on those decisions being made.
-const sidebarCut = navPaths.length <= 12;
+// A stored entry count is a number that goes stale. The registry declares it is not stored;
+// fail if someone puts it back, because then two places can disagree about the same fact.
+if (registry.sidebar_cut && registry.sidebar_cut.current_entries !== undefined) {
+  fail('sidebar_cut.current_entries is stored again — count it from the layout instead; the stored value went stale inside one chunk');
+}
+
+// Nested Advanced System children are reachable, so they do not count against the cut.
+const nestedEntries = [...layout.matchAll(/\{ path: "[^"]+"[^\n]*advanced: true/g)].length;
+const topLevelEntries = navPaths.length - nestedEntries;
+const sidebarCut = typeof expectedEntries === 'number' && topLevelEntries <= expectedEntries;
 const undecided = [...declaredUnmapped.values()].filter((row) => row.decision_required === true);
 if (sidebarCut && undecided.length) {
   fail(`the sidebar has been cut to ${navPaths.length} entries while ${undecided.length} route(s) still await a destination decision: ${undecided.map((row) => row.path).join(', ')}`);
@@ -191,10 +209,11 @@ const notBuilt = target.filter((row) => row.state === 'NOT_BUILT').map((row) => 
 
 if (failures) process.exit(1);
 console.log(
-  `dashboard:navigation:check PASS — 12 target entries, ${readyRedirects} redirects ready, ` +
+  `dashboard:navigation:check PASS — ${target.length} target entries, ${readyRedirects} redirects ready, ` +
   `${pendingRedirects} pending with declared blockers (${clearedRedirects} blocker-cleared, awaiting C13 retirement), ${notBuilt.length} workspaces not built` +
   `${notBuilt.length ? ` (${notBuilt.join(', ')})` : ''}; ` +
-  `${navPaths.length} sidebar entries (${undecided.length} route(s) awaiting a destination decision); ` +
+  `${navPaths.length} sidebar entries (${topLevelEntries} top level, ${nestedEntries} nested under Advanced System; ` +
+  `${undecided.length} route(s) awaiting a destination decision); ` +
   `layout renders from ${rendersFromRegistry ? 'registry' : 'inline NAV'}; ` +
   `physical function target 276 unchanged`,
 );

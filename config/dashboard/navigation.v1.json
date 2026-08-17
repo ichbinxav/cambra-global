@@ -23,13 +23,23 @@
     {
       "order": 2,
       "group": "COMMAND",
+      "path": "/admin/founder-control",
+      "label_key": "nav.Founder Control",
+      "label": "Founder Control",
+      "state": "LIVE",
+      "chunk": "C14",
+      "entry_reason": "Founder decision: carries emergencyControlAdmin and goLiveControlAdmin. Two clicks to an emergency stop is one too many, so it is not a tab."
+    },
+    {
+      "order": 3,
+      "group": "COMMAND",
       "path": "/admin/chat",
       "label_key": "nav.cambra_command",
       "label": "CAMBRA Command",
       "state": "LIVE"
     },
     {
-      "order": 3,
+      "order": 4,
       "group": "GROWTH",
       "path": "/admin/discovery",
       "label_key": "nav.discovery",
@@ -37,7 +47,7 @@
       "state": "LIVE"
     },
     {
-      "order": 4,
+      "order": 5,
       "group": "GROWTH",
       "path": "/admin/campaigns",
       "label_key": "nav.campaigns",
@@ -45,7 +55,7 @@
       "state": "LIVE"
     },
     {
-      "order": 5,
+      "order": 6,
       "group": "GROWTH",
       "path": "/admin/conversations",
       "label_key": "nav.conversations",
@@ -53,7 +63,7 @@
       "state": "LIVE"
     },
     {
-      "order": 6,
+      "order": 7,
       "group": "GROWTH",
       "path": "/admin/pipeline",
       "label_key": "nav.pipeline",
@@ -62,7 +72,7 @@
       "note": "Replaced in C3 by AdminPipelineWorkspace, a projection over the four lane authorities. The old kanban rendered DealApplication, an entity with zero producers."
     },
     {
-      "order": 7,
+      "order": 8,
       "group": "CLIENTS",
       "path": "/admin/merchants",
       "label_key": "nav.merchants",
@@ -71,7 +81,7 @@
       "note": "Reference pattern. Activations & Connections consolidates inside this page, not as a sidebar entry."
     },
     {
-      "order": 8,
+      "order": 9,
       "group": "CLIENTS",
       "path": "/admin/audits",
       "label_key": "nav.audits",
@@ -80,7 +90,7 @@
       "chunk": "C4-C5 backend, C13 page"
     },
     {
-      "order": 9,
+      "order": 10,
       "group": "CLIENTS",
       "path": "/admin/recover",
       "label_key": "nav.recover",
@@ -89,7 +99,7 @@
       "note": "Built in C7. Projects DealActivation, the canonical root. Reports billing eligibility only."
     },
     {
-      "order": 10,
+      "order": 11,
       "group": "BUSINESS",
       "path": "/admin/finance",
       "label_key": "nav.finance",
@@ -107,7 +117,7 @@
       "consolidation_note": "C9 built the tab shell and the two new tabs. The four legacy finance pages are MOUNTED unchanged, not rewritten. State stays LIVE_PENDING_CONSOLIDATION because the legacy routes remain live until C13."
     },
     {
-      "order": 11,
+      "order": 12,
       "group": "BUSINESS",
       "path": "/admin/intelligence",
       "label_key": "nav.intelligence",
@@ -131,7 +141,7 @@
       "consolidation_note": "C10 landed the backend: the Intelligence projection (PROJECTION_ONLY, no sixth authority) and the pricing-promotion path that closes INT-2. C11 builds the tab shell. State stays LIVE_PENDING_CONSOLIDATION because the six legacy routes remain live until C13."
     },
     {
-      "order": 12,
+      "order": 13,
       "group": "SYSTEM",
       "path": "/admin/settings",
       "label_key": "nav.settings",
@@ -322,7 +332,8 @@
     "physical_function_target": 276,
     "note": "Every workspace surface is a view+action on an existing host, so it is a LOGICAL route. This programme must not add a physical function.",
     "reference_pattern": "src/pages/admin/AdminMerchants.jsx:118-124",
-    "no_direct_browser_crud": "A workspace page must contain zero base44.entities writes. Reads through a governed portfolio call only."
+    "no_direct_browser_crud": "A workspace page must contain zero base44.entities writes. Reads through a governed portfolio call only.",
+    "target_entry_count": 13
   },
   "redirect_semantics": "ready=true means the redirect is LIVE in src/App.jsx. blocker_cleared=true means the technical obstacle is gone but the route still serves its own page, because section 2.5 requires parity, deep-link preservation and navigation tests before retirement, and section 24 puts that in C13. Conflating the two would let the registry claim a redirect that does not exist.",
   "unmapped_routes": [
@@ -332,8 +343,13 @@
       "evidence": "Calls founderOSCommand; reads AgentQuestion, AgentTask, Approval. A founder decision queue, not merchant conversations.",
       "proposed": "/admin (Founder OS)",
       "proposed_confidence": "HIGH",
-      "decision_required": true,
-      "why_not_decided": "The 12-entry target puts Inbox & Conversations at /admin/conversations, which is the MERCHANT thread surface. This page is the founder queue. Merging two different inboxes under one label is a product decision."
+      "decision_required": false,
+      "destination": "/admin",
+      "mode": "TAB",
+      "tab": "queue",
+      "note": "Founder decision queue. Kept apart from /admin/conversations, which is the merchant thread surface.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/approvals",
@@ -341,8 +357,13 @@
       "evidence": "Calls founderOSCommand; reads Approval. Carries a pending badge.",
       "proposed": "/admin (Founder OS)",
       "proposed_confidence": "HIGH",
-      "decision_required": true,
-      "why_not_decided": "A blocking approval queue may warrant its own entry rather than living inside Founder OS. That is an operator-workflow call."
+      "decision_required": false,
+      "destination": "/admin",
+      "mode": "TAB",
+      "tab": "queue",
+      "note": "Merged with Inbox into ONE founder decision queue. Two separate queues is how one gets ignored.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/founder-control",
@@ -350,8 +371,12 @@
       "evidence": "Calls getFounderControlCenter, emergencyControlAdmin, goLiveControlAdmin, copilotChat, founderOSCommand. The emergency-control surface.",
       "proposed": "/admin (Founder OS)",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true,
-      "why_not_decided": "This is where emergency controls live. Burying an emergency stop inside a tab is exactly the kind of change that must be chosen deliberately, not inferred."
+      "decision_required": false,
+      "destination": "/admin/founder-control",
+      "mode": "OWN_ENTRY",
+      "note": "Founder decision: its own sidebar entry, NOT a tab. It carries emergencyControlAdmin and goLiveControlAdmin — two clicks to an emergency stop is one too many. This is why the target is 13 entries, not 12.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/copilot",
@@ -359,8 +384,12 @@
       "evidence": "Calls founderCopilotAgent, investorUpdateAgent, qaAgent.",
       "proposed": "/admin/chat (CAMBRA Command)",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true,
-      "why_not_decided": "CAMBRA Command (C1-C7) is the durable agent surface. Whether Copilot is superseded by it or remains a separate tool is a founder call about which one is the real one."
+      "decision_required": false,
+      "destination": null,
+      "mode": "RETIRED",
+      "note": "Founder decision: remove. CAMBRA Command (C1-C7) is the durable agent surface with receipts; Copilot was three loose agents. The functions founderCopilotAgent, investorUpdateAgent and qaAgent are NOT deleted — they stay in the 276 physical quota, unrouted.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/commercial",
@@ -368,7 +397,13 @@
       "evidence": "67 lines; reads CLUSTERS from agentRegistry and lib/commercialOS.js; lead filtering and CSV export.",
       "proposed": "/admin/campaigns",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true
+      "decision_required": false,
+      "destination": "/admin/campaigns",
+      "mode": "TAB",
+      "tab": "commercial",
+      "note": "Lead filtering and CSV export belong with Campaigns.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/commercial-autonomy",
@@ -376,8 +411,13 @@
       "evidence": "Calls commercialPolicyAdmin, outboundControlAdmin; reads CommercialStrategy, CommunicationThread. Autonomy policy for outbound.",
       "proposed": "/admin/campaigns",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true,
-      "why_not_decided": "Autonomy policy governs sending. It may belong with Campaigns or under Settings as a standing control; the two readings differ in who is expected to change it."
+      "decision_required": false,
+      "destination": "/admin/settings",
+      "mode": "TAB",
+      "tab": "autonomy",
+      "note": "Settings, not Campaigns: a standing control that is changed rarely, not daily work.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/aggregate",
@@ -385,8 +425,12 @@
       "evidence": "2-line minified page reading a single aggregator. Purpose not determinable from the source.",
       "proposed": "UNKNOWN",
       "proposed_confidence": "NONE",
-      "decision_required": true,
-      "why_not_decided": "I could not determine what this page is for from its source. Proposing a destination would be a guess."
+      "decision_required": false,
+      "destination": null,
+      "mode": "DEFERRED",
+      "note": "Founder decision: do not build a collective-bargaining workspace yet, and remove the surface for now. The KPIs are already available elsewhere; the AggregatePool/AggregateRFP/AggregateBid entities and getAggregateCommandCenter are NOT deleted — the surface returns when there is a negotiation to run.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/overview",
@@ -394,8 +438,12 @@
       "evidence": "Reads Brand, AnalyzerResult, DealActivation, DealApplication directly. Note DealApplication is declared ZERO_PRODUCERS in the pipeline registry.",
       "proposed": "/admin (Founder OS)",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true,
-      "why_not_decided": "Founder OS is already the overview. Whether this page holds anything Founder OS lacks needs a look at both, not a mapping."
+      "decision_required": false,
+      "destination": "/admin",
+      "mode": "BODY_OF",
+      "note": "Overview becomes the body of Founder OS. It is 400 lines against Founder OS at 50, so it is the content and Founder OS is the entry.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/users",
@@ -403,8 +451,13 @@
       "evidence": "Reads User, Brand, UserDeal, AnalyzerResult. Platform users, distinct from merchants.",
       "proposed": "/admin/settings",
       "proposed_confidence": "MEDIUM",
-      "decision_required": true,
-      "why_not_decided": "Merchants (entry 7) is the CLIENT surface; platform user administration is a different concern. Settings or a Company group are both defensible."
+      "decision_required": false,
+      "destination": "/admin/settings",
+      "mode": "TAB",
+      "tab": "users",
+      "note": "Platform user administration. Merchants is the client surface; this is a different concern.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     },
     {
       "path": "/admin/waitlist",
@@ -412,16 +465,22 @@
       "evidence": "Calls getWaitlistLeads. Carries a badge.",
       "proposed": "/admin/discovery",
       "proposed_confidence": "LOW",
-      "decision_required": true,
-      "why_not_decided": "A waitlist is inbound; Discovery is outbound. They are both top-of-funnel but not the same motion."
+      "decision_required": false,
+      "destination": "/admin/discovery",
+      "mode": "TAB",
+      "tab": "waitlist",
+      "note": "Inbound top-of-funnel. Does not justify its own entry.",
+      "decided_by": "founder",
+      "decided_in": "C14"
     }
   ],
   "sidebar_cut": {
-    "state": "BLOCKED",
-    "current_entries": 43,
-    "target_entries": 12,
-    "blocked_by": "10 routes in unmapped_routes await a destination decision",
+    "state": "UNBLOCKED_PENDING_IMPLEMENTATION",
+    "target_entries": 13,
+    "blocked_by": null,
     "rule": "Prompt section 2.5 forbids retiring a route before parity. Cutting the sidebar to 12 today would remove navigation to 10 pages that still exist and are reachable from nowhere else.",
-    "gate": "dashboard:navigation:check fails if the sidebar is cut while any unmapped route still carries decision_required."
+    "gate": "dashboard:navigation:check fails if the sidebar is cut while any unmapped route still carries decision_required.",
+    "current_entries_note": "Deliberately NOT stored. It was stored as 43 and went stale inside one chunk when C13 trimmed the sidebar to 35. Counted from src/pages/admin/AdminLayout.jsx by dashboard:navigation:check and by the release manifest.",
+    "target_change_note": "The founder chose 13, not 12: Founder Control keeps its own entry because it carries the emergency stop. Two routes are retired instead of mapped (/admin/copilot, /admin/aggregate)."
   }
 }

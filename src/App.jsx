@@ -4,6 +4,10 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
+// DASHBOARD-C14 (2026-08-17) — founder decision: /admin/copilot and /admin/aggregate are
+// unrouted. Copilot is superseded by CAMBRA Command, which is durable and leaves receipts.
+// Aggregate is deferred until there is a collective negotiation to run — its entities and
+// getAggregateCommandCenter are untouched, and the page files remain for that day.
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { LanguageProvider } from '@/lib/i18n.jsx';
 import { MarketProvider } from '@/lib/publicExperience.jsx';
@@ -74,7 +78,6 @@ const AdminRecommendations = lazy(() => import('@/pages/admin/AdminRecommendatio
 const AdminCompliance = lazy(() => import('@/pages/admin/AdminCompliance'));
 const AdminActivity = lazy(() => import('@/pages/admin/AdminActivity'));
 const AdminApprovals = lazy(() => import('@/pages/admin/AdminApprovals'));
-const AdminCopilot = lazy(() => import('@/pages/admin/AdminCopilot'));
 const AdminCommand = lazy(() => import('@/pages/admin/AdminCommand'));
 const AdminAgents = lazy(() => import('@/pages/admin/AdminAgents'));
 const AdminDeveloper = lazy(() => import('@/pages/admin/AdminDeveloper'));
@@ -93,7 +96,6 @@ const AdminIntelligence = lazy(() => import('@/pages/admin/AdminIntelligence'));
 const AdminMarkets = lazy(() => import('@/pages/admin/AdminMarkets'));
 const AdminGrowth = lazy(() => import('@/pages/admin/AdminGrowth'));
 const AdminRoutingIntelligence = lazy(() => import('@/pages/admin/AdminRoutingIntelligence'));
-const AdminAggregate = lazy(() => import('@/pages/admin/AdminAggregate'));
 const AdminFinance = lazy(() => import('@/pages/admin/AdminFinance'));
 // DASHBOARD-C9: the consolidated Finance workspace. The four legacy finance routes
 // stay live until C13 retires them; each one now redirects into its tab.
@@ -104,6 +106,11 @@ const AdminIntelligenceWorkspace = lazy(() => import('@/pages/admin/AdminIntelli
 // DASHBOARD-C13: the last unbuilt workspace. Entry 8 of the twelve-entry sidebar pointed at
 // nothing until now; the backend has existed since C4.
 const AdminAudits = lazy(() => import('@/pages/admin/AdminAudits'));
+// DASHBOARD-C14: the four shells that absorb the routes the founder mapped.
+const AdminFounderOS = lazy(() => import('@/pages/admin/AdminFounderOS'));
+const AdminCampaignsWorkspace = lazy(() => import('@/pages/admin/AdminCampaignsWorkspace'));
+const AdminDiscoveryWorkspace = lazy(() => import('@/pages/admin/AdminDiscoveryWorkspace'));
+const AdminSettingsWorkspace = lazy(() => import('@/pages/admin/AdminSettingsWorkspace'));
 const AdminProviderEconomics = lazy(() => import('@/pages/admin/AdminProviderEconomics'));
 const AdminFounderControl = lazy(() => import('@/pages/admin/AdminFounderControl'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
@@ -361,33 +368,32 @@ const AuthenticatedApp = () => {
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path="/admin" element={withBoundary(<AdminCommand />)} />
+          <Route path="/admin" element={withBoundary(<AdminFounderOS />)} />
           <Route path="/admin/command" element={withBoundary(<AdminCommand />)} />
           <Route path="/admin/agents" element={withBoundary(<AdminAgents />)} />
           <Route path="/admin/developer" element={withBoundary(<AdminDeveloper />)} />
           <Route path="/admin/automations" element={withBoundary(<AdminAutomations />)} />
-          <Route path="/admin/inbox" element={withBoundary(<AdminInbox />)} />
+          <Route path="/admin/inbox" element={<Navigate to="/admin?tab=queue" replace />} />
           <Route path="/admin/chat" element={withBoundary(<AdminCommandChat />)} />
-          <Route path="/admin/discovery" element={withBoundary(<AdminDiscovery />)} />
-          <Route path="/admin/campaigns" element={withBoundary(<AdminCampaigns />)} />
+          <Route path="/admin/discovery" element={withBoundary(<AdminDiscoveryWorkspace />)} />
+          <Route path="/admin/campaigns" element={withBoundary(<AdminCampaignsWorkspace />)} />
           <Route path="/admin/conversations" element={withBoundary(<AdminConversations />)} />
-          <Route path="/admin/commercial-autonomy" element={withBoundary(<AdminCommercialAutonomy />)} />
-          <Route path="/admin/commercial" element={withBoundary(<AdminCommercialOS />)} />
+          <Route path="/admin/commercial-autonomy" element={<Navigate to="/admin/settings?tab=autonomy" replace />} />
+          <Route path="/admin/commercial" element={<Navigate to="/admin/campaigns?tab=commercial" replace />} />
           <Route path="/admin/intelligence" element={withBoundary(<AdminIntelligenceWorkspace />)} />
           <Route path="/admin/markets" element={<Navigate to="/admin/intelligence?tab=markets" replace />} />
           <Route path="/admin/growth" element={<Navigate to="/admin/intelligence?tab=markets&view=growth" replace />} />
           <Route path="/admin/routing-intelligence" element={<Navigate to="/admin/intelligence?tab=routing" replace />} />
-          <Route path="/admin/aggregate" element={withBoundary(<AdminAggregate />)} />
           <Route path="/admin/finance" element={withBoundary(<AdminFinanceWorkspace />)} />
           <Route path="/admin/provider-economics" element={<Navigate to="/admin/finance?tab=provider-economics" replace />} />
           <Route path="/admin/founder-control" element={withBoundary(<AdminFounderControl />)} />
-          <Route path="/admin/settings" element={withBoundary(<AdminSettings />)} />
+          <Route path="/admin/settings" element={withBoundary(<AdminSettingsWorkspace />)} />
           <Route path="/admin/maintenance" element={withBoundary(<AdminMaintenance />)} />
           <Route path="/admin/documentation" element={withBoundary(<AdminDocumentation />)} />
           <Route path="/admin/evidence-review" element={withBoundary(<ReviewQueue />)} />
           <Route path="/admin/ecl-operations" element={withBoundary(<EclOperations />)} />
-          <Route path="/admin/overview" element={withBoundary(<AdminOverview />)} />
-          <Route path="/admin/users" element={withBoundary(<AdminUsers />)} />
+          <Route path="/admin/overview" element={<Navigate to="/admin?tab=overview" replace />} />
+          <Route path="/admin/users" element={<Navigate to="/admin/settings?tab=users" replace />} />
           <Route path="/admin/merchants" element={withBoundary(<AdminMerchants />)} />
           <Route path="/admin/users/:id" element={withBoundary(<AdminUserDetail />)} />
           <Route path="/admin/applications" element={withBoundary(<AdminApplications />)} />
@@ -405,13 +411,12 @@ const AuthenticatedApp = () => {
           <Route path="/admin/recommendations" element={<Navigate to="/admin/intelligence?tab=recommendations" replace />} />
           <Route path="/admin/compliance" element={withBoundary(<AdminCompliance />)} />
           <Route path="/admin/activity" element={withBoundary(<AdminActivity />)} />
-          <Route path="/admin/approvals" element={withBoundary(<AdminApprovals />)} />
-          <Route path="/admin/copilot" element={withBoundary(<AdminCopilot />)} />
+          <Route path="/admin/approvals" element={<Navigate to="/admin?tab=queue" replace />} />
           <Route path="/admin/activation" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/activation/:id" element={withBoundary(<AdminActivationDetail />)} />
           <Route path="/admin/invoices" element={withBoundary(<AdminInvoices />)} />
           <Route path="/admin/recover-billing" element={<Navigate to="/admin/finance?tab=merchant-billing" replace />} />
-          <Route path="/admin/waitlist" element={withBoundary(<AdminWaitlist />)} />
+          <Route path="/admin/waitlist" element={<Navigate to="/admin/discovery?tab=waitlist" replace />} />
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

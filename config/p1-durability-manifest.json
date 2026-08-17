@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-17T13:56:24.691Z",
+  "generatedAt": "2026-08-17T14:13:52.501Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2027,7 +2027,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "036b3bcb7ddc312489869b20e50ddbc624d9b111b21f0d2e683678cd1123b921",
+      "sha256": "586581419448d91af28bc5d88172573cefdf0e599500d4ca53c81906dff5f99a",
       "bytes": 42987
     },
     {
@@ -2457,8 +2457,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "ed0e255405a18ca03a723c9bdcbcf9d2f3d093bd6259e6fdc4b80d87a9b3cbd4",
-      "bytes": 29839
+      "sha256": "74695a0bb541fae3896e89756e0508fe3ec59a5568cd8e63574c0ff7c50e215d",
+      "bytes": 32601
     },
     {
       "path": "scripts/generate-remediation-r0.mjs",
@@ -2557,8 +2557,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "a624bd9e3453f53b5a216790f07a47722bebeb515cd8c5b54025d2db2036c078",
-      "bytes": 28002
+      "sha256": "d7270a2fa4cf0e191c722c157f58aa7042db664c76df34f34d702e9d9734a940",
+      "bytes": 28625
     },
     {
       "path": "src/README.md",
@@ -3927,8 +3927,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "5af68f374c016622399f7085a2ac8191f275082ace117c5898693a6133583494",
-      "bytes": 30975
+      "sha256": "f48b85f00070e75c07c5498d29334ceecf92d2298325c740a1fae93029571ec1",
+      "bytes": 32278
     },
     {
       "path": "src/pages/admin/AdminMaintenance.jsx",

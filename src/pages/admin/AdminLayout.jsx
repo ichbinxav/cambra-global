@@ -2,8 +2,8 @@ import { Fragment, useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  LayoutDashboard, Users, FileText, Handshake, Building2,
-  ClipboardCheck, GitBranch, ChevronRight, Menu, X, LogOut, FileCheck, Plug, ShieldCheck, Activity, ShieldAlert, Sparkles, Inbox, BarChart3, MessageSquare, Search, Mail, FileSearch, Bot, Workflow, RadioTower, Code2, BrainCircuit, Layers3, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Settings2, Megaphone, MessagesSquare
+  LayoutDashboard, FileText, Handshake, Building2,
+  ClipboardCheck, GitBranch, ChevronRight, Menu, X, LogOut, FileCheck, Plug, ShieldCheck, Activity, MessageSquare, Search, FileSearch, Bot, Workflow, Code2, BrainCircuit, Landmark, Gauge, Wrench, BookOpen, HelpCircle, Settings2, Megaphone, MessagesSquare
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
@@ -241,29 +241,22 @@ export function adminLayoutText(lang, key, params = {}) {
 // config/dashboard/navigation.v1.json.
 const NAV = [
   { path: "/admin", label: "Founder OS", icon: LayoutDashboard, exact: true },
-  { path: "/admin/inbox", label: "Inbox", icon: Inbox, showQuestionsBadge: true },
-  { path: "/admin/agents", label: "AI Operations", icon: Bot },
-  { path: "/admin/developer", label: "CAMBRA Developer", icon: Code2 },
-  { path: "/admin/automations", label: "Automations", icon: Workflow },
+  { path: "/admin/agents", label: "AI Operations", icon: Bot, advanced: true },
+  { path: "/admin/developer", label: "CAMBRA Developer", icon: Code2, advanced: true },
+  { path: "/admin/automations", label: "Automations", icon: Workflow, advanced: true },
   { path: "/admin/chat", label: "Ask CAMBRA", icon: MessageSquare },
   { path: "/admin/discovery", label: "Discovery", icon: Search },
   { path: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { path: "/admin/conversations", label: "Inbox & Conversations", icon: MessagesSquare },
-  { path: "/admin/commercial", label: "Commercial OS", icon: Sparkles },
-  { path: "/admin/commercial-autonomy", label: "Commercial Autonomy", icon: RadioTower },
   { path: "/admin/intelligence", label: "Intelligence", icon: BrainCircuit },
-  { path: "/admin/aggregate", label: "Aggregate", icon: Layers3 },
   { path: "/admin/finance", label: "Finance", icon: Landmark },
   { path: "/admin/founder-control", label: "Founder Control", icon: Gauge },
   { path: "/admin/settings", label: "Settings", icon: Settings2 },
-  { path: "/admin/maintenance", label: "Maintenance", icon: Wrench },
-  { path: "/admin/documentation", label: "Operating Bible", icon: BookOpen },
-  { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch },
-  { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity },
-  { path: "/admin/overview", label: "Overview", icon: BarChart3 },
-  { path: "/admin/users", label: "Users & Companies", icon: Users },
+  { path: "/admin/maintenance", label: "Maintenance", icon: Wrench, advanced: true },
+  { path: "/admin/documentation", label: "Operating Bible", icon: BookOpen, advanced: true },
+  { path: "/admin/evidence-review", label: "Evidence Review", icon: FileSearch, advanced: true },
+  { path: "/admin/ecl-operations", label: "ECL Operations", icon: Activity, advanced: true },
   { path: "/admin/merchants", label: "Merchants", icon: Building2 },
-  { path: "/admin/waitlist", label: "Waitlist", icon: Mail, showWaitlistBadge: true },
   { path: "/admin/applications", label: "Deal Applications", icon: FileText },
   { path: "/admin/pipeline", label: "Pipeline", icon: GitBranch },
   // DASHBOARD-C13: neither of these was in the sidebar. /admin/recover has been unreachable
@@ -272,14 +265,17 @@ const NAV = [
   { path: "/admin/audits", label: "Audits & Opportunities", icon: ClipboardCheck },
   { path: "/admin/recover", label: "Recover", icon: FileCheck },
   { path: "/admin/deals", label: "Deals", icon: Handshake },
-  { path: "/admin/integrations", label: "Integrations", icon: Plug },
-  { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug },
-  { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck },
-  { path: "/admin/activity", label: "Activity Log", icon: Activity },
-  { path: "/admin/approvals", label: "Approvals", icon: ShieldAlert, showPendingBadge: true },
-  { path: "/admin/copilot", label: "Founder Copilot", icon: Sparkles },
+  { path: "/admin/integrations", label: "Integrations", icon: Plug, advanced: true },
+  { path: "/admin/api-integrations", label: "API & Webhooks", icon: Plug, advanced: true },
+  { path: "/admin/compliance", label: "Compliance", icon: ShieldCheck, advanced: true },
+  { path: "/admin/activity", label: "Activity Log", icon: Activity, advanced: true },
 ];
 
+// DASHBOARD-C14 (2026-08-17): the eleven entries flagged `advanced: true` are the
+// advanced_system_children the registry declares. They render nested under Settings instead of
+// as eleven top-level entries — that nesting is the last step of the consolidation, and it is
+// what takes the sidebar from 26 top-level entries to the declared architecture.
+const ADVANCED_NAV = NAV.filter((item) => item.advanced);
 const GROUP_ORDER = ["Overview", "Command", "Inbox", "Intelligence", "Commercial", "Operations", "Company", "System"];
 function navGroup(path) {
   if (["/admin", "/admin/overview"].includes(path)) return "Overview";
@@ -454,10 +450,10 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {GROUPED_NAV.map((item, index) => {
+          {GROUPED_NAV.filter((item) => !item.advanced).map((item, index, visible) => {
             const active = isActive(item.path, item.exact);
             const group = navGroup(item.path);
-            const startsGroup = index === 0 || navGroup(GROUPED_NAV[index - 1].path) !== group;
+            const startsGroup = index === 0 || navGroup(visible[index - 1].path) !== group;
             return (
               <Fragment key={item.path}>
               {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{copy(`group.${group}`)}</p>}
@@ -498,6 +494,33 @@ export default function AdminLayout() {
               </Fragment>
             );
           })}
+
+          {/* DASHBOARD-C14: Advanced System. The eleven registry-declared children render here,
+              nested and collapsed, instead of as eleven top-level entries. Excluding them from
+              the list above without rendering them here would have made eleven routes
+              unreachable — the orphaning C13 refused to do. */}
+          <details data-testid="advanced-system" className="mt-5">
+            <summary className="px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65 cursor-pointer">
+              {copy("group.SYSTEM")} · {ADVANCED_NAV.length}
+            </summary>
+            <div className="pl-2 border-l border-border/40 ml-3 mt-1">
+              {ADVANCED_NAV.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    isActive(item.path, item.exact)
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <item.icon size={12} />
+                  <span className="flex-1">{copy(`nav.${item.label}`)}</span>
+                </Link>
+              ))}
+            </div>
+          </details>
         </nav>
 
         <div className="px-3 py-4 border-t border-border/60">
