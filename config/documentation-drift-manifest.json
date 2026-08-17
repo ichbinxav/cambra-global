@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-17T14:42:41.891Z",
+  "generatedAt": "2026-08-17T14:57:39.136Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",

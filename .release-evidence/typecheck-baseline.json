@@ -1,10 +1,10 @@
 {
   "command": "node scripts/check-typecheck-baseline.mjs",
-  "sourceTreeHash": "ca11577d0f7d0c18fe59c38881ccfd8541f1d34980cb265605a4d45b0384903a",
-  "startedAt": "2026-08-17T14:43:10.037Z",
-  "completedAt": "2026-08-17T14:43:18.680Z",
+  "sourceTreeHash": "07a2ad61e8a9de365052e8548c6fcdaddae9b0d52053a6ac4fbadb5dfee0e298",
+  "startedAt": "2026-08-17T14:58:07.891Z",
+  "completedAt": "2026-08-17T14:58:16.586Z",
   "exitCode": 0,
   "ciRunId": null,
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "a282517f935348312ee92b8f9ced907ecc595de7f928d7923c3f3acb7b152eaf"
+  "evidenceDigest": "603445d49c0e4dd8a6ae4ad3867b7833b80ea7746e34c7ffa4521e2ceeeed231"
 }
