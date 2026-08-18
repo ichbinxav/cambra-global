@@ -56,7 +56,7 @@ describe('P7 · autonomous commercial truth and forecast', () => {
 });
 
 describe('P8 · company nervous system', () => {
-  const orchestrator = read('base44/functions/autonomousCompanyOrchestrator/entry.ts');
+  const orchestrator = read('base44/shared/logical/autonomousCompanyOrchestrator.ts');
   const automation = JSON.parse(read('base44/functions/autonomousCompanyOrchestrator/function.jsonc'));
 
   it('coordinates intelligence, pipeline learning and executive state on a durable schedule', () => {

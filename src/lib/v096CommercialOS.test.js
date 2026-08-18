@@ -42,7 +42,7 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
   });
 
   it('verifies Instantly SuperSearch using the official preview path without enriching leads',()=>{
-    const admin=read('base44/functions/instantlyProviderAdmin/entry.ts');
+    const admin=read('base44/shared/logical/instantlyProviderAdmin.ts');
     expect(admin).toContain('/supersearch-enrichment/preview-leads-from-supersearch');
     expect(admin).toContain('lead_data_persisted:false');
     expect(admin).toContain('automatic_enrichment_enabled:false');

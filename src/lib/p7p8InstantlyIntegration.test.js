@@ -340,7 +340,7 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     const webhook = source("base44/functions/instantlyWebhook/entry.ts");
     const events = source("base44/shared/outboundProviderEventProcessing.ts");
     const reconcile = source(
-      "base44/functions/instantlyReconciliationWorker/entry.ts",
+      "base44/shared/logical/instantlyReconciliationWorker.ts",
     );
     const send = source("base44/functions/commercialSendMessage/entry.ts");
     // FCTRL-J: handler extracted to the shared core for behavior testing.
@@ -416,12 +416,12 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     for (
       const file of [
         "base44/functions/commercialSendMessage/entry.ts",
-        "base44/functions/instantlyProviderAdmin/entry.ts",
-        "base44/functions/instantlyReconciliationWorker/entry.ts",
+        "base44/shared/logical/instantlyProviderAdmin.ts",
+        "base44/shared/logical/instantlyReconciliationWorker.ts",
         "base44/functions/outboundControlAdmin/entry.ts",
       ]
     ) expect(source(file)).toContain("reservePaidOperation");
-    expect(source("base44/functions/commercialExecutionDryRun/entry.ts")).not
+    expect(source("base44/shared/logical/commercialExecutionDryRun.ts")).not
       .toContain("INSTANTLY_API_KEY");
   });
 });

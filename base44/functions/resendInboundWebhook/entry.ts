@@ -1,7 +1,8 @@
+// AUDIT 2026-08-18 — svix is now an installed dependency; this touch re-triggers deployment.
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { paidProviderFetch } from '../../shared/costGovernance.ts';
-import { Webhook, WebhookVerificationError } from 'npm:svix@1.42.1';
+import { Webhook, WebhookVerificationError } from 'npm:svix@1.99.1';
 import { classifyHardStop, commercialTimezone, computeInboundReplySchedule, normalizeEmail, policyIsActive, sanitizeExternalText } from '../../shared/commercialAutonomy.ts';
 import { providerSecretMatches } from '../../shared/inboundConversationProvider.ts';
 import { processInstantlyProviderEvent } from '../../shared/outboundProviderEventProcessing.ts';

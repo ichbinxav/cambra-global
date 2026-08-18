@@ -241,7 +241,7 @@ describe("Founder Control V2 canonical authority projection", () => {
 
   it("never turns a tenant merchant Stripe connection into global billing authority", () => {
     const aggregate = read("base44/shared/founderControlV2.ts");
-    const runtime = read("base44/functions/goLiveControlAdmin/entry.ts");
+    const runtime = read("base44/shared/logical/goLiveControlAdmin.ts");
     expect(aggregate).not.toContain(
       "entities.Integration.filter({status:'connected'}",
     );

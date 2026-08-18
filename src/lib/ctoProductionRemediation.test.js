@@ -74,7 +74,7 @@ describe('v0.97 CTO production remediation controls',()=>{
   });
 
   it('can exercise the global stop with policies configured and restores the exact policy set',()=>{
-    const source=read('base44/functions/goLiveControlAdmin/entry.ts');
+    const source=read('base44/shared/logical/goLiveControlAdmin.ts');
     expect(source).not.toContain('outbound?.acquisition_enabled === true || activePolicies.length');
     expect(source).toContain('activePolicyIdsBefore');
     expect(source).toContain('active_policy_set_restored:policySetRestored');

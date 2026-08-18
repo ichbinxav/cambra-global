@@ -61,7 +61,7 @@ describe('P11 legal execution and commercial compatibility',()=>{
     for(const src of [acceptance,startMigration,migrationTask,negotiation,billing])expect(src).toMatch(/enforceLegalExecution|evaluateLegalExecution/);
   });
   it('keeps policy publication, kill switches and authority grants strict-admin and evidence-gated',()=>{
-    const src=fs.readFileSync('base44/functions/manageLegalExecution/entry.ts','utf8');
+    const src=fs.readFileSync('base44/shared/logical/manageLegalExecution.ts','utf8');
     expect(src).toContain("user?.role!=='admin'");
     expect(src).toContain('allow_requires_approved_review_confidence_and_evidence');
     expect(src).toContain("mandate.status!=='active'");

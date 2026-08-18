@@ -5,13 +5,13 @@ const read = path => fs.readFileSync(path, 'utf8');
 
 describe('P3/P4/P5 bridge boundary', () => {
   it('projects verified aggregate measurements without writing P4 output into P3', () => {
-    const source = read('base44/functions/projectVerifiedPaymentsToP4/entry.ts');
+    const source = read('base44/shared/logical/projectVerifiedPaymentsToP4.ts');
     expect(source).toContain('P4EvidenceProjection.create');
     expect(source).not.toContain('ProviderPricingVersion.create');
     expect(source).not.toContain('ProviderPricingVersion.update');
   });
   it('requires the canonical admin/internal trust gate on both bridge functions', () => {
-    for (const path of ['base44/functions/projectVerifiedPaymentsToP4/entry.ts', 'base44/functions/requestP4Estimate/entry.ts']) expect(read(path)).toContain('requireAdminOrInternal');
+    for (const path of ['base44/shared/logical/projectVerifiedPaymentsToP4.ts', 'base44/shared/logical/requestP4Estimate.ts']) expect(read(path)).toContain('requireAdminOrInternal');
   });
   it('requires a keyed pseudonym and refuses a missing P4 service configuration', () => {
     const source = read('base44/shared/p4Bridge.ts');

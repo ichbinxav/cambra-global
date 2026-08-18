@@ -244,8 +244,8 @@ describe('canonical singleton authority',()=>{
       'base44/shared/commercialActivationRuntime.ts',
       'base44/shared/emergencyControlAdminCore.ts',
       'base44/functions/outboundControlAdmin/entry.ts',
-      'base44/functions/goLiveControlAdmin/entry.ts',
-      'base44/functions/commercialGoLiveReadiness/entry.ts',
+      'base44/shared/logical/goLiveControlAdmin.ts',
+      'base44/shared/logical/commercialGoLiveReadiness.ts',
       'base44/functions/commercialSendMessage/entry.ts',
     ])expect(read(file)).toContain('singletonAuthority');
     const emergency=read('base44/shared/emergencyControlAdminCore.ts');

@@ -98,7 +98,7 @@ describe('commercial pre-GO activation seal',()=>{
   });
 
   it('keeps the backfill dry-run by default and apply explicitly confirmed',()=>{
-    const migration=source('base44/functions/backfillLegacySendingProfiles/entry.ts');
+    const migration=source('base44/shared/logical/backfillLegacySendingProfiles.ts');
     expect(migration).toContain("const apply=body?.apply===true");
     expect(migration).toContain("confirmation!=='BACKFILL_LEGACY_SENDING_PROFILES'");
     expect(migration).toContain('resolveLegacySendingProfile');

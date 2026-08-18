@@ -374,8 +374,8 @@ describe('Founder approval action registry', () => {
     for (const file of [
       'base44/functions/founderOSCommand/entry.ts',
       'base44/functions/emergencyControlAdmin/entry.ts',
-      'base44/functions/founderMeetingAdmin/entry.ts',
-      'base44/functions/goLiveControlAdmin/entry.ts',
+      'base44/shared/logical/founderMeetingAdmin.ts',
+      'base44/shared/logical/goLiveControlAdmin.ts',
     ]) {
       // FCTRL-J: emergencyControlAdmin's handler lives in the shared core; its
       // entry stays the trust boundary that resolves asServiceRole.

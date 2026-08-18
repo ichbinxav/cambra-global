@@ -170,7 +170,7 @@ describe("human commercial communication and Founder meeting policy", () => {
         new RegExp(`worker_key\\s*:\\s*["']${worker}["']`),
       );
     }
-    const goLive = read("base44/functions/goLiveControlAdmin/entry.ts");
+    const goLive = read("base44/shared/logical/goLiveControlAdmin.ts");
     expect(goLive).toContain("nativeScheduledWorkerKeys");
     expect(goLive).toContain("do not double-count");
   });

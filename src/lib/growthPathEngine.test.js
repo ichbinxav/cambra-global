@@ -63,7 +63,7 @@ describe('CAMBRA Growth Path Engine V1', () => {
   });
 
   it('consolidates the runtime behind an existing deployed function name', () => {
-    const route=read('base44/functions/getEuropeMarketsCommandCenter/entry.ts'); const config=JSON.parse(read('base44/functions/getEuropeMarketsCommandCenter/function.jsonc')); const handler=read('base44/functions/getEuropeanGrowthCommandCenter/entry.ts');
+    const route=read('base44/functions/getEuropeMarketsCommandCenter/entry.ts'); const config=JSON.parse(read('base44/functions/getEuropeMarketsCommandCenter/function.jsonc')); const handler=read('base44/shared/logical/getEuropeanGrowthCommandCenter.ts');
     expect(route).toContain("routedBody?.view === 'growth'"); expect(config.automations[0]).toMatchObject({ function_name:'getEuropeMarketsCommandCenter',repeat_interval:6,function_args:{internal_secret:'{{INTERNAL_CALL_SECRET}}'} }); expect(handler).toContain('recomputeEuropeanMarketPortfolio'); expect(handler).toContain('persistGrowthPathSnapshot'); expect(handler).toContain('claimSchedulerRun');
   });
 

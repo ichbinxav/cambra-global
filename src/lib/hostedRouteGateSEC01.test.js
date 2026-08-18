@@ -80,8 +80,8 @@ describe("SEC-01 — the premise the gate rests on", () => {
 
   it("keeps the three sibling routes delegating to handlers that gate themselves", () => {
     for (const file of [
-      "base44/functions/costGovernanceWorker/entry.ts",
-      "base44/functions/productionReadinessWorker/entry.ts",
+      "base44/shared/logical/costGovernanceWorker.ts",
+      "base44/shared/logical/productionReadinessWorker.ts",
     ]) {
       expect(fs.readFileSync(file, "utf8"), file).toContain("requireAdminOrInternal");
     }

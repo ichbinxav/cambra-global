@@ -63,7 +63,7 @@ describe('P12 European launch and growth intelligence', () => {
   });
 
   it('reuses P9, P10, P11, Founder OS, approval inbox, SEO, partners and emergency controls', () => {
-    const runtime = read('base44/shared/growthPathRuntime.ts'); const command = read('base44/functions/getEuropeanGrowthCommandCenter/entry.ts');
+    const runtime = read('base44/shared/growthPathRuntime.ts'); const command = read('base44/shared/logical/getEuropeanGrowthCommandCenter.ts');
     expect(runtime).toContain("from './localeRuntime.ts'"); expect(runtime).toContain('RegulatoryPolicyVersion'); expect(runtime).toContain('ProductionReadinessSnapshot'); expect(runtime).toContain('emergencyState'); expect(command).toContain("Approval.filter({ status:'pending' }");
     expect(read('base44/functions/founderOSQuery/entry.ts')).toContain('why_metric'); expect(fs.existsSync('base44/functions/seoAgent/entry.ts')).toBe(true); expect(fs.existsSync('base44/shared/referralProgram.ts')).toBe(true);
   });

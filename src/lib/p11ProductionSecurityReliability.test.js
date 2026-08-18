@@ -83,7 +83,7 @@ describe('P11 production security and reliability', () => {
   });
 
   it('does not let the runtime worker invent external proof', () => {
-    const worker = read('base44/functions/productionReadinessWorker/entry.ts');
+    const worker = read('base44/shared/logical/productionReadinessWorker.ts');
     expect(worker).toMatch(/verification\(["']GITHUB_ACTIONS["']\)/);
     expect(worker).toMatch(/gate_key:\s*["']BASE44_RUNTIME_PARITY["']/);
     expect(worker).toContain('runtimeDeploymentIdentity()');

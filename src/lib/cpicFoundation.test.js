@@ -525,7 +525,7 @@ describe("P4 reuse through the CPIC contract", () => {
   });
 
   it("persists the CPIC evidence envelope through the existing P4 function only", () => {
-    const source = fs.readFileSync("base44/functions/requestP4Estimate/entry.ts", "utf8");
+    const source = fs.readFileSync("base44/shared/logical/requestP4Estimate.ts", "utf8");
     expect(source).toContain("adaptP4ServiceEstimateToCpicV0");
     expect(source).toContain("cpic_contract: cpicContract");
     expect(source).toContain("calibration_locally_verified: false");

@@ -103,7 +103,7 @@ describe('final GO-live hard gates', () => {
   });
 
   it('keeps control and external effects behind explicit real-runtime paths', () => {
-    const admin = source('base44/functions/goLiveControlAdmin/entry.ts');
+    const admin = source('base44/shared/logical/goLiveControlAdmin.ts');
     for (const token of ['runtime_git_sha_mismatch','RUN_GLOBAL_EMERGENCY_STOP_DRILL','RUN_COST_KILL_SWITCH_DRILL','CONFIGURE_OUTBOUND_SENDING_PROFILE','ENABLE_SENDING_PROFILE_WARMUP','PAUSE_SENDING_PROFILE','fresh_matching_deliverability_evidence_required','SPF','DKIM','DMARC']) expect(admin.toUpperCase()).toContain(token.toUpperCase());
     for (const file of ['commercialSendMessage','providerRevenueBillingWorker','billApiUsage','createPaymentLink','updatePaymentsMigrationTask']) expect(source(`base44/functions/${file}/entry.ts`)).toContain('emergency_control_paused');
     expect(source('base44/functions/outboundControlAdmin/entry.ts')).toContain('preflight_json?.go_live?.final_sha');

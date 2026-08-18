@@ -233,13 +233,13 @@ describe("ROOT-OTR-002/003 source boundary inventory", () => {
     };
     visit(path.join(root, "base44"));
     expect(files.sort()).toEqual([
-      "base44/functions/goLiveControlAdmin/entry.ts",
-      "base44/functions/instantlyProviderAdmin/entry.ts",
-      "base44/functions/instantlyReconciliationWorker/entry.ts",
+      "base44/shared/logical/goLiveControlAdmin.ts",
+      "base44/shared/logical/instantlyProviderAdmin.ts",
+      "base44/shared/logical/instantlyReconciliationWorker.ts",
       "base44/functions/leadDiscoveryAgent/entry.ts",
       "base44/functions/leadEnrichmentAgent/entry.ts",
       "base44/functions/outboundControlAdmin/entry.ts",
-      "base44/functions/requestP4Estimate/entry.ts",
+      "base44/shared/logical/requestP4Estimate.ts",
     ]);
     for (const file of files) {
       const source = read(file);

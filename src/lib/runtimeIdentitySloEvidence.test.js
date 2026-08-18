@@ -173,7 +173,7 @@ describe('runtime identity and measured SLO evidence',()=>{
       const schema=JSON.parse(fs.readFileSync(`base44/entities/${name}.jsonc`,'utf8'));
       expect(schema.rls.write.user_condition.role).toBe('__service_role_only__');
     }
-    const worker=fs.readFileSync('base44/functions/productionReadinessWorker/entry.ts','utf8');
+    const worker=fs.readFileSync('base44/shared/logical/productionReadinessWorker.ts','utf8');
     expect(worker).toContain('runtimeDeploymentIdentity()');
     expect(worker).toContain('localChecksFromRemoteCi');
     expect(worker).toContain('produceServiceLevelSnapshots');

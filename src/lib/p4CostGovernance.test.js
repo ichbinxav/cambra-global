@@ -274,7 +274,7 @@ describe("P4 paid external-call governance", () => {
 
   it("reserves with a stable key and blocks duplicates before the provider boundary", () => {
     const source = fs.readFileSync(
-      "base44/functions/requestP4Estimate/entry.ts",
+      "base44/shared/logical/requestP4Estimate.ts",
       "utf8",
     );
     const reserve = source.indexOf("await reservePaidOperation");
@@ -293,7 +293,7 @@ describe("P4 paid external-call governance", () => {
 
   it("adds source guards for CPIC-AT-203/204/205 cache ordering, binding and billing", () => {
     const source = fs.readFileSync(
-      "base44/functions/requestP4Estimate/entry.ts",
+      "base44/shared/logical/requestP4Estimate.ts",
       "utf8",
     );
     const cache = source.indexOf("const cachedRows = await strictFilter");
@@ -323,7 +323,7 @@ describe("P4 paid external-call governance", () => {
 
   it("settles every attempted provider call and never invents an actual amount without a receipt", () => {
     const source = fs.readFileSync(
-      "base44/functions/requestP4Estimate/entry.ts",
+      "base44/shared/logical/requestP4Estimate.ts",
       "utf8",
     );
     expect(source).toContain("await settlePaidOperation");

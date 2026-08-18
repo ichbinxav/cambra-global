@@ -16,7 +16,7 @@ describe('P10 regulatory control', () => {
   it('seeds all market/activity combinations as review required rather than inventing permission', () => {
     const policy = conservativePolicy('ES', 'B2B_OUTREACH', '2026-08-11T00:00:00Z');
     expect(policy).toMatchObject({ status:'LEGAL_REVIEW_REQUIRED',evidence_refs:[],reason_code:'unreviewed_market_activity' });
-    const seed = read('base44/functions/seedP10RegulatoryControl/entry.ts');
+    const seed = read('base44/shared/logical/seedP10RegulatoryControl.ts');
     expect(seed).toContain('EUROPE_MARKETS.length * REGULATORY_ACTIVITIES.length');
     expect(seed).toContain('permission_claims_created:0');
   });
@@ -48,7 +48,7 @@ describe('P10 regulatory control', () => {
   });
 
   it('monitors expiry without auto-promoting legal conclusions', () => {
-    const worker = read('base44/functions/regulatoryMonitoringWorker/entry.ts');
+    const worker = read('base44/shared/logical/regulatoryMonitoringWorker.ts');
     expect(worker).toContain('auto_promoted:false');
     expect(worker).toContain('legal_conclusions_changed:false');
     expect(worker).not.toMatch(/RegulatoryPolicyVersion\.(update|create)/);
