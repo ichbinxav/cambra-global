@@ -31,8 +31,11 @@ const dependencyLabels = (file, callName = 'observeSupervisorCollection') => {
 
 const OPERATIONAL_PLANE_PATTERN = /OPERATIONAL_PLANE_DECLARATION\s*=\s*Object\.freeze\((\{[^\n]+\})\)/;
 const PLANE_CANDIDATE_PATTERN = /AUTONOMOUS_OPERATIONS_SUPERVISOR_VERSION|OPERATING_HEALTH_PROJECTION_VERSION|evaluateProductionSeal|HEALTH_AGENT\s*=\s*['"]ecl_production_health['"]|SYSTEM_HEALTH_COMPATIBILITY_STATE/;
+// AUDIT 2026-08-18 — logical-route implementations moved to base44/shared/logical/;
+// health surfaces are scanned in both the physical entry points and logical modules.
 const planeCandidateFiles = sourceFiles.filter((file) =>
-  file.startsWith('base44/functions/') && file.endsWith('/entry.ts') &&
+  ((file.startsWith('base44/functions/') && file.endsWith('/entry.ts')) ||
+    file.startsWith('base44/shared/logical/')) &&
   PLANE_CANDIDATE_PATTERN.test(fs.readFileSync(file, 'utf8'))
 );
 const undeclaredPlaneCandidates = planeCandidateFiles.filter((file) =>
@@ -50,9 +53,12 @@ const healthSurfaces = planeCandidateFiles.map((file) => {
   } catch {
     throw new Error(`operational_plane_declaration_invalid:${file}`);
   }
-  const expectedPath = `base44/functions/${declaration.function_name}/entry.ts`;
-  if (expectedPath !== file) {
-    throw new Error(`operational_plane_path_binding_mismatch:${file}:${expectedPath}`);
+  const expectedPaths = [
+    `base44/functions/${declaration.function_name}/entry.ts`,
+    `base44/shared/logical/${declaration.function_name}.ts`,
+  ];
+  if (!expectedPaths.includes(file)) {
+    throw new Error(`operational_plane_path_binding_mismatch:${file}:${expectedPaths.join('|')}`);
   }
   if (!Array.isArray(declaration.authoritative_for)) {
     throw new Error(`operational_plane_authority_invalid:${file}`);
