@@ -165,6 +165,7 @@
     "react-router-dom": "^7.18.2",
     "recharts": "^2.15.4",
     "sonner": "^2.0.1",
+    "svix": "^1.99.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.171.0",
