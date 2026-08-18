@@ -65,12 +65,19 @@ async function claimAndStart(svc, req, input) {
 }
 
 function schedulerCallerInventory() {
+  // AUDIT 2026-08-18 — logical-route worker implementations moved to
+  // base44/shared/logical/, so direct scheduler claimants are scanned there too.
   const root = new URL("../../base44/functions/", import.meta.url).pathname;
-  return fs.readdirSync(root, { withFileTypes: true })
+  const logicalRoot = new URL("../../base44/shared/logical/", import.meta.url).pathname;
+  const functionFiles = fs.readdirSync(root, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(root, entry.name, "entry.ts"))
-    .filter((file) => fs.existsSync(file))
-    .map((file) => ({ file, source: fs.readFileSync(file, "utf8") }))
+    .map((entry) => ({ name: entry.name, file: path.join(root, entry.name, "entry.ts") }));
+  const logicalFiles = fs.readdirSync(logicalRoot)
+    .filter((name) => name.endsWith(".ts"))
+    .map((name) => ({ name: name.replace(/\.ts$/, ""), file: path.join(logicalRoot, name) }));
+  return [...functionFiles, ...logicalFiles]
+    .filter(({ file }) => fs.existsSync(file))
+    .map(({ name, file }) => ({ name, file, source: fs.readFileSync(file, "utf8") }))
     .filter(({ source }) => /\bclaimSchedulerRun\s*\(/.test(source));
 }
 
@@ -112,8 +119,7 @@ describe("scheduler lease and fencing authority", () => {
     const explicitFinalizers = new Set([
       "commercialFollowUpWorker",
     ]);
-    for (const { file, source } of schedulerCallerInventory()) {
-      const name = path.basename(path.dirname(file));
+    for (const { file, source, name } of schedulerCallerInventory()) {
       if (explicitFinalizers.has(name)) continue;
       expect(source, file).toContain("finishSchedulerRunOrThrow(");
       expect(source, file).not.toMatch(/\bfinishSchedulerRun\s*\(/);
@@ -122,7 +128,7 @@ describe("scheduler lease and fencing authority", () => {
 
   it("routes every direct scheduler claimant through the centralized denied response", () => {
     const callers = schedulerCallerInventory();
-    expect(callers.map(({ file }) => path.basename(path.dirname(file))).sort()).toEqual([
+    expect(callers.map(({ name }) => name).sort()).toEqual([
       "alwaysOnLeadDiscoveryWorker",
       "autonomousCompanyOrchestrator",
       "autonomousPartnerWorker",
