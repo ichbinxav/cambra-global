@@ -541,11 +541,11 @@
     },
     {
       "path": "base44/functions/sendRecoverContractEmail/entry.ts",
-      "sha256": "4cd85db21e25536ec3ec478862e1d95268264767f40016289d51f2fc7738063a"
+      "sha256": "4dc3b8273122320030983d46456b9ecaa02d3d18af680ed40fa663e3ed767eae"
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
-      "sha256": "f3e928dd7304c93404b3003459179136fb677d8c761697c9fa1a775260179289"
+      "sha256": "47855d1407470d8d7055a880038a2c64cbdd1bd245d76b42e98cb08586a1d0fd"
     },
     {
       "path": "base44/functions/stripeBillingWebhook/entry.ts",
@@ -625,7 +625,7 @@
     },
     {
       "path": "src/lib/founderApprovalRegistry.test.js",
-      "sha256": "924a60f5f7153c76257af66c10bf63d365ca70fb7acf0ca1e0057de654aaefe7"
+      "sha256": "7867ffc7d144f524c9389f7fb2c987668b706d6a701b525c5005e100ca10af21"
     },
     {
       "path": "src/lib/paymentsMigrationP9.test.js",

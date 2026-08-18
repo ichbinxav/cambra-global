@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "10b0ffe1c5c5a0ed981743579470df977fd9ea5ba913124294be82fc602cd025",
-  "material_registry_input_fingerprint_sha256": "b0be81c3c2a0302968b1dfa96a1bd59d6440a8322a512c2937e96b7a036b0628",
-  "input_fingerprint_sha256": "c2d4b195bc8307f9bddfbd5ddc034accaaf472c417f01e8016d097f01a75c358",
+  "material_registry_sha256": "11f6fedd4e6d60798aac087d29d2fa370325039ab2d4d6a6226063ac6bb99d5a",
+  "material_registry_input_fingerprint_sha256": "3d5b620429c77b5abdb161b3296e162e444495095c82100ee72db2d857dc9b56",
+  "input_fingerprint_sha256": "9284a852fb15f3f699b7e0ccbd37176e902f3192eff1c4739a547828fc2bcced",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1932,8 +1932,8 @@
       "test_evidence": [
         {
           "path": "src/lib/disasterRecovery.test.js",
-          "sha256": "185f0bc9bec7d7f6183e0e9baec4f1e9f5b9f6e4404a599e2b050479b3d105b3",
-          "bytes": 6278
+          "sha256": "50443716e7a435179a8e62fe990d58164d89f394942e4a650d46725a579fd6cd",
+          "bytes": 6315
         },
         {
           "path": "src/lib/materialTenantAuthorization.test.js",
@@ -2111,8 +2111,8 @@
       "test_evidence": [
         {
           "path": "src/lib/intelligenceFoundationContracts.test.js",
-          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
-          "bytes": 38035
+          "sha256": "f8932d7de38a8168955e4dd8690347d849f24d228a850096c3b9b708d8a62d53",
+          "bytes": 38057
         },
         {
           "path": "src/lib/intelligenceTenantScope.test.js",
@@ -2177,8 +2177,8 @@
       "test_evidence": [
         {
           "path": "src/lib/intelligenceFoundationContracts.test.js",
-          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
-          "bytes": 38035
+          "sha256": "f8932d7de38a8168955e4dd8690347d849f24d228a850096c3b9b708d8a62d53",
+          "bytes": 38057
         },
         {
           "path": "src/lib/intelligenceTenantScope.test.js",
@@ -2245,8 +2245,8 @@
       "test_evidence": [
         {
           "path": "src/lib/intelligenceFoundationContracts.test.js",
-          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
-          "bytes": 38035
+          "sha256": "f8932d7de38a8168955e4dd8690347d849f24d228a850096c3b9b708d8a62d53",
+          "bytes": 38057
         },
         {
           "path": "src/lib/intelligenceTenantScope.test.js",
@@ -2312,8 +2312,8 @@
       "test_evidence": [
         {
           "path": "src/lib/intelligenceFoundationContracts.test.js",
-          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
-          "bytes": 38035
+          "sha256": "f8932d7de38a8168955e4dd8690347d849f24d228a850096c3b9b708d8a62d53",
+          "bytes": 38057
         },
         {
           "path": "src/lib/intelligenceTenantScope.test.js",
@@ -2382,8 +2382,8 @@
       "test_evidence": [
         {
           "path": "src/lib/intelligenceFoundationContracts.test.js",
-          "sha256": "d9e74b9eb4aaf06aa78423e922f0493c88b2fb12f2a942bf760e2e33f6189c72",
-          "bytes": 38035
+          "sha256": "f8932d7de38a8168955e4dd8690347d849f24d228a850096c3b9b708d8a62d53",
+          "bytes": 38057
         },
         {
           "path": "src/lib/intelligenceTenantScope.test.js",
