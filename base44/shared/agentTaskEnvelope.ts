@@ -249,7 +249,10 @@ async function updateAgentTaskTraceExactlyOnce(
 ) {
   let result: any;
   try {
-    result = await svc.entities.AgentTask.updateMany(filter, patch);
+    // The platform's updateMany takes MongoDB update operators, never a plain
+    // field map: passing the patch directly made every canonical bind fail at
+    // runtime while mocked tests still passed.
+    result = await svc.entities.AgentTask.updateMany(filter, { $set: patch });
   } catch (cause) {
     throw Object.assign(new Error(`${operation}_authority_unavailable`), {
       code: `${operation.toUpperCase()}_AUTHORITY_UNAVAILABLE`,
