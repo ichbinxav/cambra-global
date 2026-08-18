@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "b9bac612e0ab5ab3838c3b471f060c6fb3bd2034c5d1201b04551ccbd3488922",
+  "input_fingerprint_sha256": "e4975ef0d5e8d93bf07e4e962f3e17d5982282656fa2df6247a4aac682013bc5",
   "components": [
     {
       "key": "effect_authority",
@@ -13,7 +13,7 @@
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "2f5a704a2e3805070ec0e558e972cdb7639c60cf2e47fac057b2e35ceaa4d910",
+      "sha256": "c100f84f62a4cb7caf1ec4c1e44b5bdb97175a45d4fcc2c93a0ffa593242d360",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
@@ -25,7 +25,7 @@
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "f5fe29dff92fa53f74bcf27b0403b430c3a5be4a48b39f5a1c0e71f049d971a2",
+      "sha256": "266e5332f264d85f9cd1d34799ba8016cef7daf655d763af7d24fd8144a7e2e8",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -202,13 +202,13 @@
     },
     {
       "path": "base44/functions/operatingHealthWorker/entry.ts",
-      "sha256": "28bdf08e2772ccd166fc7bd9a91e38cfa178503f42baf577a866820409bf7bc6",
-      "bytes": 10908
+      "sha256": "b3d3fb5884040d319a065a6d87645b0eba7a69de658fbc7004cc0e116ece5cc0",
+      "bytes": 10916
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
-      "bytes": 21782
+      "sha256": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
+      "bytes": 21790
     },
     {
       "path": "base44/functions/productionReadinessWorker/entry.ts",
@@ -217,8 +217,8 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-      "sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31",
-      "bytes": 18063
+      "sha256": "3ae40761debc52f547cbc07d3dfb1189ad49e53358a0d2b3ffa208c3875d4f36",
+      "bytes": 18071
     },
     {
       "path": "base44/functions/recoverAutopilotWorker/entry.ts",
@@ -242,8 +242,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "e04b385dc4bba35179ea2efb4562ce2161b0a7ac6896af44ff74797c7886d6de",
-      "bytes": 40265
+      "sha256": "a59747ce543db54e86707edfc88154fe4a137dba53c8bc8c5af8cc578b7346df",
+      "bytes": 40480
     },
     {
       "path": "base44/shared/canonicalIncident.ts",
@@ -307,8 +307,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "810a9ccd78aa801a55b5dcac5cd1d8e50541407d01a31fef46d8a2f8adb9cc8e",
-      "bytes": 26690
+      "sha256": "c2a93402d93c8520cbd3338e588cb9fb595a552c7e2f93497b29ca99395dd09d",
+      "bytes": 26730
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
