@@ -139,7 +139,7 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
+      "sha256": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
       "freezeReason": "R3 webhook replay safety: durable manual/scheduled operation identity, CAS effect-start fence, fail-closed authority, and post-effect REVIEW_REQUIRED without blind retry; no ECL economic semantics changed",
       "allowedChange": false
     },

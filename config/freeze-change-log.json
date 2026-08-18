@@ -830,6 +830,15 @@
       "oldHash": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
       "newHash": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
       "reason": "2026-08-18 logical-route migration: cross-function imports moved to base44/shared/logical/ for bundler compliance; no behavior change"
+    },
+    {
+      "date": "2026-08-18T19:21:39.056Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
+      "newHash": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
+      "reason": "Scheduler-linked worker adopted req.clone().json() to prevent request-stream exhaustion; canonical envelope binding unchanged"
     }
   ]
 }
