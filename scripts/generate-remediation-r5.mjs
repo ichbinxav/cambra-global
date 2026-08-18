@@ -134,7 +134,11 @@ function validateComponents(components, root = REPO_ROOT) {
     'trace_material_adapted');
   exact(trace.counts.material_not_adapted_files, 43,
     'trace_material_unadapted');
-  exact(trace.counts.unresolved_material_route_files, 111,
+  // 2026-08-18: 111 -> 107 after the logical-route migration into
+  // base44/shared/logical/ (four hosted route files are now discovered at their
+  // canonical shared path instead of a duplicated function directory). The
+  // invariant stays exact; it is lowered deliberately, never loosened.
+  exact(trace.counts.unresolved_material_route_files, 107,
     'trace_unresolved_routes');
   exact(trace.root_otr_013.implementation_status, 'PARTIAL',
     'trace_implementation_status');

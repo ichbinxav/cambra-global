@@ -2,30 +2,30 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "242bc176cd27c2099033a1254c61ac7ce50d8acdbee3c55f2ff66010d5e4655f",
+  "input_fingerprint_sha256": "14ba57aba1b1f01d3511de82e373aed6ea5f75857c6d82a37dd3bbc4fde6f344",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "e93abc626d6c7b5d48c1e61ae158d67b8d992474f705beb5b0f2c93649655bb7",
+      "sha256": "babd4ce14e14ff39d5bccc02d9f5ace95cdf456c44ef2158b13becd0dc34bf1f",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "52bc518e602641e04527c69498b6c97ef61011d3b9087170bf47c7b739cb805d",
+      "sha256": "2f5a704a2e3805070ec0e558e972cdb7639c60cf2e47fac057b2e35ceaa4d910",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
       "key": "workforce",
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "d797fa9564043bc35511ea968b21792bc59c18d70b65fec71b09654385eec72d",
+      "sha256": "9090c24e8dc05485f670ac7c8a263b95e570a12e6d248558104abea3db36024b",
       "schema_version": "agent-workforce-catalog-v1.0.0"
     },
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "6ca37bfd384c1f6039d511195c3f131db5687e7cd3b4c051b45af3dee6cf65e2",
+      "sha256": "f5fe29dff92fa53f74bcf27b0403b430c3a5be4a48b39f5a1c0e71f049d971a2",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -74,8 +74,8 @@
       "evidence_component": "agent_task_trace",
       "blockers": [
         "46 material creator file(s) lack a complete local terminal envelope",
-        "65 material route file(s) have no local AgentTask creator",
-        "111 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
+        "61 material route file(s) have no local AgentTask creator",
+        "107 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
         "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
       ]
     },
@@ -277,13 +277,13 @@
     },
     {
       "path": "scripts/generate-agenttask-creator-inventory.mjs",
-      "sha256": "746384cc11102bf10ae13c45b3bd76652da8effd1c461ea58cc2b08ec93ac4ed",
-      "bytes": 11327
+      "sha256": "32fea5bdf533d9f4f53e2fe0560ba458aa53363517c0bd68b0808f04bfa51e52",
+      "bytes": 11682
     },
     {
       "path": "scripts/generate-operational-plane-inventory.mjs",
-      "sha256": "e4fb5c5639b2f931498b1e7fc94299c068c4ba9d9ef93db2194bb1e72478e3fe",
-      "bytes": 10253
+      "sha256": "4d5b13dcc99cbe70f081912944e2467d0fd87810573d15f0a728678d6afe5338",
+      "bytes": 10570
     },
     {
       "path": "scripts/generate-remediation-r0.mjs",
