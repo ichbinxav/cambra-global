@@ -2,30 +2,30 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "7630ea6ecf3260f7a76fa35c8e25604675c91496e1af928aa3ae07248ce5966a",
+  "input_fingerprint_sha256": "242bc176cd27c2099033a1254c61ac7ce50d8acdbee3c55f2ff66010d5e4655f",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "57a335b18d8b25f3c03b48c57b26bc9cfdf040f4aa1ddd47ebe5accfe7fe7001",
+      "sha256": "e93abc626d6c7b5d48c1e61ae158d67b8d992474f705beb5b0f2c93649655bb7",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "ffccd181b250bbd6d704373ebaa3467463e024cb11d61c4f338ab07868b9d7c1",
+      "sha256": "52bc518e602641e04527c69498b6c97ef61011d3b9087170bf47c7b739cb805d",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
       "key": "workforce",
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "ac6d33146f495e11d886e4964f20f679097ec41a034565f7c48c51961bcdb25a",
+      "sha256": "d797fa9564043bc35511ea968b21792bc59c18d70b65fec71b09654385eec72d",
       "schema_version": "agent-workforce-catalog-v1.0.0"
     },
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "3986525f7761c521366d532bb769255bba67dff0cc42c889c511a8b31fec5938",
+      "sha256": "6ca37bfd384c1f6039d511195c3f131db5687e7cd3b4c051b45af3dee6cf65e2",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -167,8 +167,8 @@
     },
     {
       "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
-      "sha256": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
-      "bytes": 33750
+      "sha256": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
+      "bytes": 33762
     },
     {
       "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -207,13 +207,13 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
-      "bytes": 21758
+      "sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
+      "bytes": 21782
     },
     {
       "path": "base44/functions/productionReadinessWorker/entry.ts",
-      "sha256": "7a800a744903e53d4573cbb2c97dbc0884bdf998ced2c3d8fb49d678cfca5bfa",
-      "bytes": 15981
+      "sha256": "38c31d492720fa5582e7f81e63e1057fb14129c18a0d37c277c8aef9b9f9f6db",
+      "bytes": 249
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",

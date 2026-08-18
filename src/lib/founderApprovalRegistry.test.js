@@ -30,10 +30,16 @@ const EXPECTED_ACTIONS = [
 ].sort();
 
 function functionEntries() {
+  // AUDIT 2026-08-18: logical-route implementations now live in
+  // base44/shared/logical/, so Approval producers are scanned there too.
   const functionsRoot = path.join(root, 'base44/functions');
+  const logicalRoot = path.join(root, 'base44/shared/logical');
   return fs.readdirSync(functionsRoot, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => path.join(functionsRoot, entry.name, 'entry.ts'))
+    .concat(fs.readdirSync(logicalRoot)
+      .filter(name => name.endsWith('.ts'))
+      .map(name => path.join(logicalRoot, name)))
     .filter(file => fs.existsSync(file));
 }
 
