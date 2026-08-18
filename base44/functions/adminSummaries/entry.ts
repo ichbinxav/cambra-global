@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { handleAdminGlobalSearch } from '../adminGlobalSearch/entry.ts';
+import { handleAdminGlobalSearch } from '../../shared/adminGlobalSearchCore.ts';
 import { buildDiscoveryAdminRadar } from '../../shared/discoveryAdmin.ts';
 import { buildCommercialOperatingSystem } from '../../shared/commercialOperatingSystem.ts';
 import { handleCommercialCampaignAdmin } from '../../shared/commercialCampaignAdmin.ts';
@@ -25,6 +25,8 @@ import { handleIntelligenceAdminAction } from '../../shared/intelligenceAdminCor
 import { handleIntegrationAdminAction } from '../../shared/integrationAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
+// deploy-marker: 2026-08-18 — force redeploy after GitHub sync left a stale build
+// (integration_* routing was missing from the running version).
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   if (routedBody?.action === 'global_search') return handleAdminGlobalSearch(req);

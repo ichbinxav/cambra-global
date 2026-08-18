@@ -19,7 +19,10 @@
 // reservoir_state says "converted" while its stage still says "contacted" is a
 // contacted lead with a suspicious reservoir row, not a won deal.
 
-import registry from '../../config/dashboard/pipeline-stage-registry.v1.json' with { type: 'json' };
+// 2026-08-18 — the platform bundler cannot reach config/ from a backend
+// function, so the registry JSON is mirrored as a generated TS module.
+// Source of truth remains config/dashboard/pipeline-stage-registry.v1.json.
+import registry from './generated/pipelineStageRegistryData.ts';
 
 export const PIPELINE_STAGE_REGISTRY_VERSION: string = (registry as any).registry_version;
 

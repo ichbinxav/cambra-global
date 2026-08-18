@@ -1,0 +1,111 @@
+{
+  "type": "object",
+  "name": "GrowthAssumptionRegistry",
+  "description": "Versioned planning parameter with explicit provenance. Assumptions, observations and calibrated values are never silently blended.",
+  "properties": {
+    "assumption_key": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "ACTIVE",
+        "SUPERSEDED",
+        "ARCHIVED"
+      ]
+    },
+    "metric_key": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number"
+    },
+    "low_value": {
+      "type": "number"
+    },
+    "high_value": {
+      "type": "number"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "period_key": {
+      "type": "string"
+    },
+    "business_line": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "PAYMENTS_EUROPE",
+        "PAYMENTS_USA",
+        "LOGISTICS_EUROPE"
+      ]
+    },
+    "geography": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "segment_key": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "string",
+      "enum": [
+        "ASSUMPTION",
+        "OBSERVED",
+        "CALIBRATED",
+        "INSUFFICIENT_DATA"
+      ]
+    },
+    "source_ref": {
+      "type": "string"
+    },
+    "source_note": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "effective_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "assumption_key",
+    "version",
+    "status",
+    "metric_key",
+    "unit",
+    "business_line",
+    "provenance",
+    "confidence",
+    "effective_at",
+    "created_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -52,6 +52,7 @@ describe('runtime identity and measured SLO evidence',()=>{
     expect(releaseIdentityExpectation({sourceTreeHash:HASH,sourceTreeFileCount:2500,gitSha:SHA,backendBundle:{stagedTreeSha256:HASH,stagedFileCount:2400,physicalFunctionCount:276,logicalRouteCount:27}})).toMatchObject({git_sha:SHA,source_tree_hash:HASH,source_tree_file_count:2500,physical_function_count:276,logical_route_count:27});
   });
 
+  /* global process */
   it('downgrades runtime PASS when deployment identity or expected parity is absent',async()=>{
     const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));
     Object.assign(process.env,IDENTITY_ENV);

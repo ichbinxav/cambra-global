@@ -16,6 +16,11 @@ async function callQueue(action) {
   if (data?.ok === false || data?.error) {
     throw Object.assign(new Error(data?.error || "queue_unavailable"), { data });
   }
+  // Defensive shape check: a stale or mismatched backend build must surface as
+  // a readable error card, never crash the whole Founder OS page.
+  if (!Array.isArray(data?.items) || !Array.isArray(data?.ordering_rule)) {
+    throw Object.assign(new Error("queue_response_invalid"), { data });
+  }
   return data;
 }
 

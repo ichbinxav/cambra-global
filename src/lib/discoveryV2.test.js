@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import { CAPABILITY_CLASS, DISCOVERY_FILTER_CATALOG, DISCOVERY_SOURCE_REGISTRY, interpretDiscoveryIntent, planDiscoveryQuery } from '../../base44/shared/discoveryV2Planner.ts';
 import { DISCOVERY_COUNTRY_OPTIONS, DISCOVERY_FILTER_TAXONOMY, DISCOVERY_GEOGRAPHY, getDiscoveryFilterDefinition } from './discoveryFilterOptions.js';
 

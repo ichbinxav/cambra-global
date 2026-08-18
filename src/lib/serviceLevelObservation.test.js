@@ -29,6 +29,7 @@ function service(options={}){
   };
 }
 
+/* global process */
 describe('durable service-level request observation',()=>{
   beforeEach(()=>{previous=Object.fromEntries(Object.keys(ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,ENV);});
   afterEach(()=>{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}});

@@ -17,6 +17,7 @@ afterEach(() => {
   }
 });
 
+/* global process */
 describe("CAMBRA Intelligence canonical reconciliation v2", () => {
   it("passes the fail-closed canonical v2 checker without implying external reverification", () => {
     const output = execFileSync(process.execPath, [

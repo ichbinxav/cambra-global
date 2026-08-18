@@ -26,6 +26,7 @@ describe('CAMBRA model router', () => {
       CostBudgetControl:{filter:async()=>[structuredClone(budget)],get:async()=>structuredClone(budget),updateMany:async(query,operation)=>{if(query.id!==budget.id||query.reservation_revision!==budget.reservation_revision)return{updated:0};budget={...budget,...structuredClone(operation.$set)};return{updated:1};}},
       CostUsageEvent:{filter:async()=>[],create:async(value)=>{const row={id:'cost-1',...structuredClone(value)};events.push(row);return structuredClone(row);},update:async(id,patch)=>{const index=events.findIndex((row)=>row.id===id);events[index]={...events[index],...structuredClone(patch)};return structuredClone(events[index]);}},
     }};
+    /* global process */
     const envNames=['ANTHROPIC_API_KEY','ANTHROPIC_STANDARD_MODEL','ANTHROPIC_OPUS_MODEL'];
     const originalDeno=globalThis.Deno;
     globalThis.Deno={env:{get:(name)=>process.env[name],set:(name,value)=>{process.env[name]=String(value)},delete:(name)=>{delete process.env[name]}}};

@@ -45,6 +45,7 @@ afterEach(() => {
   invoke.mockReset();
 });
 
+/* global process */
 describe('AdminDiscovery operational truth', () => {
   it('contains no browser-driven stage advance and requires a Run id for every results request', () => {
     const ui = fs.readFileSync(path.join(process.cwd(), 'src/pages/admin/AdminDiscovery.jsx'), 'utf8');

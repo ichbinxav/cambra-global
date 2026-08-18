@@ -220,6 +220,7 @@ describe('ROOT-OTR-020 — one work plane, one general supervisor, exact catalog
       status: 'QUARANTINED_COMPATIBILITY',
       canonical_replacement: 'autonomousOperationsSupervisor',
     });
+    /* global process */
     execFileSync(process.execPath, ['scripts/generate-agent-workforce-catalog.mjs', '--check'], { stdio: 'pipe' });
     execFileSync(process.execPath, ['scripts/generate-operational-plane-inventory.mjs', '--check'], { stdio: 'pipe' });
   });

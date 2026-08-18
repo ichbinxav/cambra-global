@@ -76,7 +76,8 @@ export default function TrustSecuritySection() {
                       >
                         {t(b.tKey)}
                       </h3>
-                      <p className="text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+                      {/* Fix: --gris-1 (#585868) was unreadable on the #0A0818 panel. */}
+                      <p className="text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.62)" }}>
                         {t(b.dKey)}
                       </p>
                     </div>

@@ -153,6 +153,7 @@ describe('research knowledge preservation pipeline', () => {
   it('makes check mode source-independent and refuses external inputs in check mode', () => {
     expect(() => parseArgs(['--check', '--source', '/tmp/report.md']))
       .toThrow('check_reads_only_imported_originals');
+    /* global process */
     const result = spawnSync(process.execPath, [SCRIPT_PATH, '--check'], {
       cwd: ROOT,
       encoding: 'utf8',

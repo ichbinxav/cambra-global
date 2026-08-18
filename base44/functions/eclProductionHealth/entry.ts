@@ -32,6 +32,20 @@ async function readCriticalHealthCollection<T>(
   return requireCompleteOperationalCollection(observation);
 }
 
+// For "latest run" questions a `-created_date` sorted page is authoritative even
+// when the underlying set is larger than the cap: the newest rows are always in
+// the page, so RESULT_SET_TRUNCATED does not make the LATEST row unknown. Real
+// read failures (READ_FAILED / NON_ARRAY_RESULT) still fail the sweep closed.
+async function readLatestBoundedCollection<T>(
+  dependency: string,
+  cap: number,
+  read: (requestedLimit: number) => Promise<unknown>,
+): Promise<T[]> {
+  const observation = await observeBoundedOperationalCollection<T>(dependency, cap, read);
+  if (observation.coverage_status === 'COMPLETE' || observation.reason_code === 'RESULT_SET_TRUNCATED') return observation.rows;
+  return requireCompleteOperationalCollection(observation);
+}
+
 async function ensureIncident(svc: any, signal: P7IncidentSignal, nowIso: string) {
   const rows = await readCriticalHealthCollection<any>(
     `OperationalIncident.dedupe_key:${signal.dedupeKey}`,
@@ -109,7 +123,13 @@ export default async function (req: Request): Promise<Response> {
     const dlqCutoff = new Date(nowMs - DLQ_OVERDUE_MIN * 60000).toISOString();
     // No empty-array fallbacks: a critical read outage fails the sweep rather than manufacturing green.
     const [recentTasks, overdueStatements, overdueSavings, mismatchInvoices, errorInvoices, exhaustedDlq, pendingDlq, resolvingReviews] = await Promise.all([
-      readCriticalHealthCollection<any>('AgentTask.recent', 500, (limit) => svc.entities.AgentTask.list('-created_date', limit)),
+      // Per-worker latest-completed reads: a global AgentTask.list(500) both
+      // truncates on a busy platform (permanent sweep failure) and can push a
+      // worker's latest run out of the page (false STALE). Querying each P7
+      // worker directly answers the liveness question exactly.
+      Promise.all(Object.keys(P7_WORKERS).map((agentName) =>
+        readLatestBoundedCollection<any>(`AgentTask.recent:${agentName}`, 25, (limit) => svc.entities.AgentTask.filter({ agent_name: agentName, status: 'completed' }, '-created_date', limit)),
+      )).then((pages) => pages.flat()),
       readCriticalHealthCollection<any>('StatementImport.overdue', 100, (limit) => svc.entities.StatementImport.filter({ evidence_status: 'accepted_provisionally', next_lifecycle_action_at: { $lte: overdueCutoff } }, 'next_lifecycle_action_at', limit)),
       readCriticalHealthCollection<any>('SavingsEvidence.overdue', 100, (limit) => svc.entities.SavingsEvidence.filter({ evidence_status: 'accepted_provisionally', next_lifecycle_action_at: { $lte: overdueCutoff } }, 'next_lifecycle_action_at', limit)),
       readCriticalHealthCollection<any>('Invoice.reconciliation_mismatch', 100, (limit) => svc.entities.Invoice.filter({ payment_provider: 'stripe', reconciliation_status: 'mismatch' }, '-created_date', limit)),

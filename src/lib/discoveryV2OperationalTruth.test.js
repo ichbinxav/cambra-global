@@ -129,6 +129,7 @@ function scheduleServiceFor(initialViews, initialRuns = []) {
   };
 }
 
+/* global process */
 describe("Discovery V2 operational truth", () => {
   const read = (file) =>
     fs.readFileSync(path.join(process.cwd(), file), "utf8");

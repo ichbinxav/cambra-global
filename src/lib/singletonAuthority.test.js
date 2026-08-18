@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import { assertEmergencyEpochUnchanged, captureEmergencyEpoch, containCommunicationTransport, emergencyState, extendEmergencyEpoch, guardedEmergencyEffect, inheritEmergencyEpoch, normalizeTransportContainment, persistEmergencyTransportContainment } from '../../base44/shared/operationalControl.ts';
 import { containOutboundForCostStop, paidProviderEmergencyCapabilities, paidProviderFetch } from '../../base44/shared/costGovernance.ts';
 import { bootstrapContainedSingleton, readSingletonAuthority } from '../../base44/shared/singletonAuthority.ts';

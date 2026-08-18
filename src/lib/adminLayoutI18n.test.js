@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 
 const source = fs.readFileSync(path.join(process.cwd(), 'src/pages/admin/AdminLayout.jsx'), 'utf8');
 const dictionaryMatch = source.match(/export const ADMIN_LAYOUT_COPY = (\{[\s\S]*?\n\});\n\nexport function adminLayoutText/);

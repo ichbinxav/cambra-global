@@ -30,6 +30,7 @@ const budget = {
   reservation_revision:0,reservation_day_key:'2026-08-11',reservation_month_key:'2026-08',reserved_daily_total_minor:0,reserved_monthly_total_minor:0,reserved_category_json:Object.fromEntries(['ai','api','enrichment','email'].map(category=>[category,{daily_minor:0,monthly_minor:0}])),reservation_recent_event_keys:[],
 };
 
+/* global process */
 describe('final GO-live hard gates', () => {
   it('never returns GO unless every gate has fresh cryptographically valid evidence', async() => {
     const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);

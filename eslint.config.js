@@ -62,4 +62,12 @@ export default [
       "react-hooks/rules-of-hooks": "error",
     },
   },
+  {
+    // Test files run under Vitest in a Node environment: process, Buffer and
+    // global are legitimate there, so grant Node globals for tests only.
+    files: ["src/**/*.test.{js,mjs,cjs,jsx}"],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
 ];

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 
 const root = process.cwd();
 const functionsRoot = path.join(root, 'base44', 'functions');

@@ -495,6 +495,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
 
   it('keeps a reproducible source inventory and OTR-013 honestly NOT_MET', () => {
     const root = new URL('../../', import.meta.url).pathname;
+    /* global process */
     const output = execFileSync(process.execPath, ['scripts/generate-agenttask-creator-inventory.mjs', '--check'], { cwd: root, encoding: 'utf8' });
     expect(output).toContain('agenttask-creator-inventory:check PASS');
     expect(inventory.counts.creator_files).toBe(60);

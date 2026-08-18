@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
 import { evaluateSafeResumeFromSnapshot } from "../../base44/shared/founderControlV2.ts";
 
 const root = process.cwd();

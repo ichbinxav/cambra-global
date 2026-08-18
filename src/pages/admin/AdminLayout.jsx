@@ -500,7 +500,7 @@ export default function AdminLayout() {
               unreachable — the orphaning C13 refused to do. */}
           <details data-testid="advanced-system" className="mt-5">
             <summary className="px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65 cursor-pointer">
-              {copy("group.SYSTEM")} · {ADVANCED_NAV.length}
+              {copy("group.System")} · {ADVANCED_NAV.length}
             </summary>
             <div className="pl-2 border-l border-border/40 ml-3 mt-1">
               {ADVANCED_NAV.map((item) => (

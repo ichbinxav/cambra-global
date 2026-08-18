@@ -6,6 +6,7 @@ import { evaluateRegulatoryActivityRuntime } from "../../base44/shared/regulator
 import { collectGoLiveRuntime } from "../../base44/shared/goLiveRuntime.ts";
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
 
 describe("critical shared execution dependencies fail closed", () => {
   it("keeps raw silent fallbacks out of the critical shared execution inventory", () => {

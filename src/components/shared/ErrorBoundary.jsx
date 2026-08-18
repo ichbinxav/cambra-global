@@ -7,11 +7,11 @@ import React from "react";
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMessage: "" };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, errorMessage: String(error?.message || error || "") };
   }
 
   componentDidCatch(error, info) {
@@ -44,6 +44,19 @@ class ErrorBoundary extends React.Component {
           <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
             We hit an unexpected error. This has been logged. Refresh to continue.
           </p>
+          {this.state.errorMessage && (
+            <p
+              className="text-[11px] mb-6 px-3 py-2 rounded-lg break-words"
+              style={{
+                color: "rgba(255,255,255,0.5)",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                fontFamily: "ui-monospace, monospace",
+              }}
+            >
+              {this.state.errorMessage.slice(0, 300)}
+            </p>
+          )}
           <button
             onClick={this.handleReload}
             className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-white text-black text-sm font-bold hover:opacity-90"

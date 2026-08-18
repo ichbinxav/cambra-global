@@ -14,6 +14,7 @@ const read = (name) =>
     fs.readFileSync(path.join(ROOT, "config", "intelligence", name), "utf8"),
   );
 
+/* global process */
 describe("CAMBRA Intelligence Phase 0 requirement governance", () => {
   it("passes the deterministic ledger integrity checker", () => {
     const output = execFileSync(process.execPath, [

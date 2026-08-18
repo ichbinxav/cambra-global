@@ -1092,6 +1092,7 @@ describe("CAMBRA Intelligence v2 Phase-1 shared foundation", () => {
     )).toBe(false);
   });
 
+  /* global process */
   it("passes the machine-readable foundation contract checker", () => {
     const output = execFileSync(process.execPath, [
       "scripts/check-intelligence-foundation-contracts.mjs",
