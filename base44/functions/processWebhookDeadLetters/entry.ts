@@ -104,7 +104,7 @@ export default async function (req: Request): Promise<Response> {
   const traceReceiptRefs: any[] = [];
   try {
     const base44 = createClientFromRequest(req);
-    const body0 = await req.json().catch(() => ({}));
+    const body0 = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body0);
     if (!gate.ok) {
       return gate.response ||

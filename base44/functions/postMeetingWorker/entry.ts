@@ -24,7 +24,7 @@ async function requestOutcomeCapture(svc:any, thread:any) {
 Deno.serve(async(req)=>{
   let schedulerSvc:any=null;let schedulerClaim:any=null;let schedulerOk=true;
   try{
-    const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
+    const base44=createClientFromRequest(req);const body=await req.clone().json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
     const svc=base44.asServiceRole;schedulerSvc=svc;schedulerClaim=await claimSchedulerRun(svc,req,{worker_key:'postMeetingWorker',cadence_seconds:3600});{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}schedulerClaim=await markSchedulerEffectStarted(svc,schedulerClaim);{const denied=schedulerClaimDeniedResponse(schedulerClaim);if(denied)return denied;}const now=new Date();
     const rows=await svc.entities.CommunicationThread.filter({post_meeting_status:'pending',meeting_end_at:{$lte:now.toISOString()}},'meeting_end_at',50).catch((error:any)=>safeBestEffort(error,{operation:'postMeetingWorker',fallback:[],severity:'secondary'}));
     let sent=0,skipped=0,waitingOutcome=0;
