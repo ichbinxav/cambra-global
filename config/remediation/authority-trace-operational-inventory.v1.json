@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "b710d3f1d7eed6bf7914e979600a4e35c90d22161432dcbe6d427561c2146c9b",
+  "input_fingerprint_sha256": "7630ea6ecf3260f7a76fa35c8e25604675c91496e1af928aa3ae07248ce5966a",
   "components": [
     {
       "key": "effect_authority",
@@ -187,8 +187,8 @@
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
-      "sha256": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
-      "bytes": 14523
+      "sha256": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
+      "bytes": 15745
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
@@ -262,13 +262,13 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "46edb8a19f2bd3c858ca0c5bf30c62dc3b83b6595fd06cf0913036356e6b3959",
-      "bytes": 41924
+      "sha256": "d95a5fc0b7af79e8e98354c7eb6890e96f1afcb15904eef88f54d0a568c031ef",
+      "bytes": 42438
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "3f0306e37a98402d8fc98e26c68a7ab627ad6ee34a4739d515fe2eb3307cf714",
-      "bytes": 8229
+      "sha256": "a82ce39180e9e137937d42a013e4c970e8b74463c3e8c2bef8f0ec3c23753968",
+      "bytes": 8228
     },
     {
       "path": "scripts/generate-agent-workforce-catalog.mjs",
@@ -307,8 +307,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "19c950b8d476c9def80ab63fb1d68b327d5df1697dbea09157c4940f6365589e",
-      "bytes": 26057
+      "sha256": "ff030ee705551d0b58c92655e4b9eb5cc0c22d1731908a3a48ece524aca23146",
+      "bytes": 26081
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
@@ -327,8 +327,8 @@
     },
     {
       "path": "src/lib/operationalPlaneReconciliation.test.js",
-      "sha256": "e2fb14b64c69ef096c8107796759376a03e56ca223cb4b79b53542f54598dba3",
-      "bytes": 10399
+      "sha256": "18ad17579fb5e0c31db35c4898066d8048021fea32a4a728299246b190993503",
+      "bytes": 10423
     },
     {
       "path": "src/lib/preEclFreeze.test.js",
