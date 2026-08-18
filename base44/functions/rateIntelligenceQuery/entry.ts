@@ -2,8 +2,8 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import{createClientFromRequest}from'npm:@base44/sdk@0.8.41';
 import{requireAdminOrInternal}from'../../shared/internalGate.ts';
 import{P3_SCHEMA_VERSION,P3_RESOLVER_POLICY_VERSION,resolvePricing,evaluateComponents,validateObservation}from'../../shared/p3RateIntelligence.ts';
-import{handleProjectVerifiedPaymentsToP4}from'../projectVerifiedPaymentsToP4/entry.ts';
-import{handleRequestP4Estimate}from'../requestP4Estimate/entry.ts';
+import{handleProjectVerifiedPaymentsToP4}from'../../shared/logical/projectVerifiedPaymentsToP4.ts';
+import{handleRequestP4Estimate}from'../../shared/logical/requestP4Estimate.ts';
 
 const max=(n:any,d=500)=>Math.max(1,Math.min(Number(n||d),2000));
 function tenantSafe(rows:any[],g:any,q:any){if(g.isAdmin)return rows;const tenant=String(q?.tenant_id||'');return rows.filter(r=>r.access_scope!=='TENANT_PRIVATE'||(tenant&&r.tenant_id===tenant));}

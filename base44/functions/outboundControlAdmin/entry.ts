@@ -2,12 +2,12 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { evaluateCommercialGoLiveReadiness } from "../../shared/commercialActivationRuntime.ts";
-import { handleGoLiveControlAdmin } from "../goLiveControlAdmin/entry.ts";
-import { handleInstantlyProviderAdmin } from "../instantlyProviderAdmin/entry.ts";
-import { handleCommercialExecutionDryRun } from "../commercialExecutionDryRun/entry.ts";
-import { handleCommercialStrategyAgent } from "../commercialStrategyAgent/entry.ts";
-import { handleBackfillLegacySendingProfiles } from "../backfillLegacySendingProfiles/entry.ts";
-import { handleCommercialGoLiveReadiness } from "../commercialGoLiveReadiness/entry.ts";
+import { handleGoLiveControlAdmin } from "../../shared/logical/goLiveControlAdmin.ts";
+import { handleInstantlyProviderAdmin } from "../../shared/logical/instantlyProviderAdmin.ts";
+import { handleCommercialExecutionDryRun } from "../../shared/logical/commercialExecutionDryRun.ts";
+import { handleCommercialStrategyAgent } from "../../shared/logical/commercialStrategyAgent.ts";
+import { handleBackfillLegacySendingProfiles } from "../../shared/logical/backfillLegacySendingProfiles.ts";
+import { handleCommercialGoLiveReadiness } from "../../shared/logical/commercialGoLiveReadiness.ts";
 import {
   InstantlyOutboundProvider,
   instantlyProfileReady,

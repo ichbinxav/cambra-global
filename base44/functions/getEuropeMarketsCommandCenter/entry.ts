@@ -3,7 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { EUROPE_CURRENCIES, EUROPE_MARKETS, EUROPE_MARKET_REGISTRY } from '../../shared/generated/europeMarkets.ts';
 import { localizationReadiness } from '../../shared/localeRuntime.ts';
 import { REGULATORY_ACTIVITIES } from '../../shared/regulatoryControl.ts';
-import { handleEuropeanGrowthCommandCenter } from '../getEuropeanGrowthCommandCenter/entry.ts';
+import { handleEuropeanGrowthCommandCenter } from '../../shared/logical/getEuropeanGrowthCommandCenter.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 function regulatoryReadiness(policies:any[]) {

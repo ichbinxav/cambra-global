@@ -12,8 +12,8 @@ import {
   markSchedulerEffectStarted,
   schedulerClaimDeniedResponse,
 } from "../../shared/schedulerRun.ts";
-import { handleInstantlyProviderEventRetryWorker } from "../instantlyProviderEventRetryWorker/entry.ts";
-import { handleInstantlyReconciliationWorker } from "../instantlyReconciliationWorker/entry.ts";
+import { handleInstantlyProviderEventRetryWorker } from "../../shared/logical/instantlyProviderEventRetryWorker.ts";
+import { handleInstantlyReconciliationWorker } from "../../shared/logical/instantlyReconciliationWorker.ts";
 import {
   claimWebhookDeadLetter,
   finishWebhookDeadLetterClaim,

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { handleAutonomousCompanyOrchestrator } from '../autonomousCompanyOrchestrator/entry.ts';
+import { handleAutonomousCompanyOrchestrator } from '../../shared/logical/autonomousCompanyOrchestrator.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 import {
   observeSupervisorCollection,

@@ -1,9 +1,9 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import{createClientFromRequest}from'npm:@base44/sdk@0.8.41';import{MARKET_CAPABILITIES,POLICY_STATES}from'../../shared/jurisdictionPolicy.ts';
-import{handleSeedP10RegulatoryControl}from'../seedP10RegulatoryControl/entry.ts';
-import{handleRegulatoryMonitoringWorker}from'../regulatoryMonitoringWorker/entry.ts';
-import{handleManageLegalExecution}from'../manageLegalExecution/entry.ts';
-import{handleSeedP11LegalExecution}from'../seedP11LegalExecution/entry.ts';
+import{handleSeedP10RegulatoryControl}from'../../shared/logical/seedP10RegulatoryControl.ts';
+import{handleRegulatoryMonitoringWorker}from'../../shared/logical/regulatoryMonitoringWorker.ts';
+import{handleManageLegalExecution}from'../../shared/logical/manageLegalExecution.ts';
+import{handleSeedP11LegalExecution}from'../../shared/logical/seedP11LegalExecution.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 const NON_OVERRIDABLE=new Set(['ACCESS_BANK_ACCOUNT_DATA','INITIATE_PAYMENT','HOLD_FUNDS','ACT_AS_PSP','ACT_AS_PSP_AGENT']);
 guardedScheduledServe({"worker_key":"regulatoryMonitoringWorker","cadence_seconds":86400,"routes":{"regulatoryMonitoringWorker":{"worker_key":"regulatoryMonitoringWorker","cadence_seconds":86400}}},createClientFromRequest,async req=>{const routed=await req.clone().json().catch(()=>({}));if(routed.action==='seed_p10_regulatory_control')return handleSeedP10RegulatoryControl(req);if(routed.action==='regulatory_monitoring')return handleRegulatoryMonitoringWorker(req);if(routed.action==='manage_legal_execution')return handleManageLegalExecution(req);if(routed.action==='seed_p11_legal_execution')return handleSeedP11LegalExecution(req);try{const b=createClientFromRequest(req),u=await b.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'marketPolicyAdmin',fallback:null,severity:'secondary'}));if(!u||u.role!=='admin')return Response.json({ok:false,error:'Forbidden'},{status:403});const body=await req.json().catch(()=>({})),s=b.asServiceRole,action=String(body.action||''),jurisdiction=String(body.jurisdiction||'').toUpperCase(),capability=String(body.capability||'').toUpperCase(),reason=String(body.reason||'').trim(),now=new Date().toISOString();if(!/^[A-Z]{2}$/.test(jurisdiction)||!MARKET_CAPABILITIES.includes(capability)||reason.length<5)return Response.json({ok:false,error:'jurisdiction_capability_reason_required'},{status:400});

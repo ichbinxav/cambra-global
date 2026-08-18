@@ -4,7 +4,7 @@ import{requireAdminOrInternal}from'../../shared/internalGate.ts';
 import{MAINTENANCE_VERSION,healthScore,isAutomatic,learningKey,remediationFor,requiresHuman,type MaintenanceSignal,type MaintenanceAction}from'../../shared/maintenanceCore.ts';
 import{dispatchIncidentAlertBatch}from'../../shared/incidentAlerting.ts';
 import{evaluateSchedulerEvidence}from'../../shared/schedulerRun.ts';
-import{handleCostGovernanceWorker}from'../costGovernanceWorker/entry.ts';
+import{handleCostGovernanceWorker}from'../../shared/logical/costGovernanceWorker.ts';
 // COMMAND-C7: the sweep that advances durable CommandRun slices. It adds no
 // authority of its own; every guard lives inside advanceCommandRun.
 import{sweepCommandRuns,MAX_RUNS_PER_SWEEP}from'../../shared/commandRunWorker.ts';
@@ -12,7 +12,7 @@ import{buildToolRegistry}from'../../shared/commandToolRegistry.ts';
 import{CHAT_TOOLS}from'../../shared/commandToolCatalog.ts';
 import{routeToolCall}from'../../shared/commandModelRouter.ts';
 import{RUN_CAPS,SLICE_MAX_STEPS}from'../../shared/commandRunAdminCore.ts';
-import{handleProductionReadinessWorker}from'../productionReadinessWorker/entry.ts';
+import{handleProductionReadinessWorker}from'../../shared/logical/productionReadinessWorker.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { retentionCutoff, retentionEvidenceStart, retentionEvidenceComplete } from '../../shared/retentionPolicy.ts';

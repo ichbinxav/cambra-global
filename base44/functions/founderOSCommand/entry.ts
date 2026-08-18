@@ -1,6 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { FOUNDER_OS_VERSION, safeNumber } from "../../shared/founderOSCore.ts";
-import { handleFounderMeetingAdmin } from "../founderMeetingAdmin/entry.ts";
+import { handleFounderMeetingAdmin } from "../../shared/logical/founderMeetingAdmin.ts";
 import { internalErrorResponse } from "../../shared/publicErrors.ts";
 import { safeBestEffort } from "../../shared/bestEffort.ts";
 import { sha256 } from "../../shared/intelligenceCore.ts";
