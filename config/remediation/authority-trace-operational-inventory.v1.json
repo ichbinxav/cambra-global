@@ -2,12 +2,12 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "e4975ef0d5e8d93bf07e4e962f3e17d5982282656fa2df6247a4aac682013bc5",
+  "input_fingerprint_sha256": "e23fdaa1c7cc43a3374b5d5947f3062c0124ca1d03c6bbbceb5bae36eb3e8708",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "babd4ce14e14ff39d5bccc02d9f5ace95cdf456c44ef2158b13becd0dc34bf1f",
+      "sha256": "02cfe1cdfca343ad1021872a86eba6df9034fe0dfa50ccb1057e7490f4b7ac07",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
@@ -262,12 +262,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "3e707609c6888a06597d312bc853d9bb2ab02e51d76d3e696b6e8a694efaaca6",
-      "bytes": 42982
+      "sha256": "4737d24cd26f26fa8c804537194fa0aedcfcfa0c23b7f1458052e01ede64b7dc",
+      "bytes": 43518
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "7d9d9005babf30c868030e71fb7dc40cf5726fbeff55cd52c51474bc40569d72",
+      "sha256": "8b7a38d3065f068565e4230926b536a44c25b4502648ad54d1fbdb017ce6e9e6",
       "bytes": 8229
     },
     {
