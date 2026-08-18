@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FUNCTIONS = path.join(ROOT, 'base44', 'functions');
+// AUDIT 2026-08-18 — logical-route implementations live in base44/shared/logical/;
+// creators and material evidence are scanned there too.
+const LOGICAL = path.join(ROOT, 'base44', 'shared', 'logical');
 const OUTPUT = path.join(ROOT, 'config', 'agenttask-creator-inventory.json');
 const MATERIAL_REGISTRY = path.join(
   ROOT,
@@ -34,8 +37,8 @@ const materialSources = new Map();
 const registerMaterialSource = (sourcePath, boundaryId, kinds) => {
   if (
     typeof sourcePath !== 'string' ||
-    !sourcePath.startsWith('base44/functions/') ||
-    !sourcePath.endsWith('/entry.ts') ||
+    !((sourcePath.startsWith('base44/functions/') && sourcePath.endsWith('/entry.ts')) ||
+      (sourcePath.startsWith('base44/shared/logical/') && sourcePath.endsWith('.ts'))) ||
     !fs.existsSync(path.join(ROOT, sourcePath))
   ) return;
   const row = materialSources.get(sourcePath) || {
@@ -64,7 +67,7 @@ for (const route of registry.scheduler_inventory?.material_scheduled_routes || [
   );
 }
 
-const allSources = files(FUNCTIONS).map((absolute) => {
+const allSources = [...files(FUNCTIONS), ...files(LOGICAL)].map((absolute) => {
   const source = fs.readFileSync(absolute, 'utf8');
   const pathFromRoot = path.relative(ROOT, absolute).split(path.sep).join('/');
   return { absolute, source, path: pathFromRoot };
@@ -194,6 +197,7 @@ const artifact = {
   envelope_version: 'agent-task-envelope-v2.0.0',
   generated_from: [
     'base44/functions/**/*.ts',
+    'base44/shared/logical/**/*.ts',
     'config/remediation/material-boundary-registry.v1.json',
   ],
   material_registry_schema_version: registry.schema_version,
