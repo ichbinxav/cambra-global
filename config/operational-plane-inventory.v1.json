@@ -8,7 +8,7 @@
       "base44/entities/IncidentAlertDelivery.jsonc": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
       "base44/entities/OperationalIncident.jsonc": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
       "base44/functions/autonomousOperationsSupervisor/entry.ts": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
-      "base44/functions/eclProductionHealth/entry.ts": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "base44/functions/eclProductionHealth/entry.ts": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
       "base44/functions/operatingHealthWorker/entry.ts": "28bdf08e2772ccd166fc7bd9a91e38cfa178503f42baf577a866820409bf7bc6",
       "base44/functions/productionReadinessWorker/entry.ts": "7a800a744903e53d4573cbb2c97dbc0884bdf998ced2c3d8fb49d678cfca5bfa",
@@ -60,7 +60,6 @@
         ],
         "path": "base44/functions/eclProductionHealth/entry.ts",
         "dependency_labels": [
-          "AgentTask.recent",
           "Invoice.reconciliation_error",
           "Invoice.reconciliation_mismatch",
           "ReviewCase.resolving",
