@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-18T00:57:18.617Z",
+  "generatedAt": "2026-08-18T01:01:47.476Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "4d9b54009b520173a1d99aa5b3a1a11b88b1bdd148f7fa571ad3141872281d3a",
+      "sha256": "a03b8fc9d0b663a7a4226b5cf757884b6ffc9dcf127b68d39863f32cc74b094c",
       "bytes": 42987
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "46edb8a19f2bd3c858ca0c5bf30c62dc3b83b6595fd06cf0913036356e6b3959",
-      "bytes": 41924
+      "sha256": "d95a5fc0b7af79e8e98354c7eb6890e96f1afcb15904eef88f54d0a568c031ef",
+      "bytes": 42438
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2179,8 +2179,8 @@
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "3f0306e37a98402d8fc98e26c68a7ab627ad6ee34a4739d515fe2eb3307cf714",
-      "bytes": 8229
+      "sha256": "a82ce39180e9e137937d42a013e4c970e8b74463c3e8c2bef8f0ec3c23753968",
+      "bytes": 8228
     },
     {
       "path": "config/release-touch-list.json",
