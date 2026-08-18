@@ -150,7 +150,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     let stored;
     const create = vi.fn(async (row) => (stored = { ...row, id: 'task-root' }));
     const updateMany = vi.fn(async (_filter, patch) => {
-      stored = { ...stored, ...patch };
+      stored = { ...stored, ...patch.$set };
       return { success: true, updated: 1 };
     });
     const get = vi.fn(async () => stored);
@@ -165,7 +165,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     }));
     expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({
       id: 'task-root', trace_revision: 0,
-    }), expect.objectContaining({ root_task_id: 'task-root', trace_revision: 1 }));
+    }), { $set: expect.objectContaining({ root_task_id: 'task-root', trace_revision: 1 }) });
     expect(get).toHaveBeenCalledWith('task-root');
   });
 
@@ -226,12 +226,12 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     const parent = { ...parentEnvelope, id: 'parent-1', root_task_id: 'parent-1', brand_id: '_platform' };
     let sameTenantRow = { id: 'child-1', brand_id: '_platform' };
     const updateMany = vi.fn(async (_filter, patch) => {
-      sameTenantRow = { ...sameTenantRow, ...patch };
+      sameTenantRow = { ...sameTenantRow, ...patch.$set };
       return { success: true, updated: 1 };
     });
     const sameTenant = { entities: { AgentTask: { get: vi.fn(async () => sameTenantRow), updateMany } } };
     await attachCanonicalChildTask(sameTenant, 'child-1', parent, { stepKey: 'one', stepIndex: 1, input: {} });
-    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({ id: 'child-1' }), expect.objectContaining({ parent_task_id: 'parent-1' }));
+    expect(updateMany).toHaveBeenCalledWith(expect.objectContaining({ id: 'child-1' }), { $set: expect.objectContaining({ parent_task_id: 'parent-1' }) });
 
     const otherTenant = { entities: { AgentTask: { get: vi.fn(async () => ({ id: 'child-2', brand_id: 'other' })), update: vi.fn() } } };
     await expect(attachCanonicalChildTask(otherTenant, 'child-2', parent, { stepKey: 'two', stepIndex: 2, input: {} }))
@@ -358,7 +358,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     let stored = { ...task };
     const svc = { entities: { AgentTask: {
       updateMany: vi.fn(async (_filter, patch) => {
-        stored = { ...stored, ...patch };
+        stored = { ...stored, ...patch.$set };
         return { success: true, updated: 1 };
       }),
       get: vi.fn(async () => ({ ...stored, terminal_result_hash: '0'.repeat(64) })),
@@ -401,7 +401,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
         if (stored.trace_revision !== filter.trace_revision) {
           return { success: true, updated: 0 };
         }
-        stored = { ...stored, ...patch };
+        stored = { ...stored, ...patch.$set };
         return { success: true, updated: 1 };
       }),
       get: vi.fn(async () => stored),
