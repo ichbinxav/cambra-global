@@ -15,28 +15,32 @@
       "route": {
         "host_action": "autonomous_company_orchestrator"
       },
-      "boundary": "internal_scheduler_or_admin"
+      "boundary": "internal_scheduler_or_admin",
+      "source_module": "base44/shared/logical/autonomousCompanyOrchestrator.ts"
     },
     "backfillLegacySendingProfiles": {
       "host": "outboundControlAdmin",
       "route": {
         "action": "backfill_legacy_sending_profiles"
       },
-      "boundary": "strict_admin_or_internal"
+      "boundary": "strict_admin_or_internal",
+      "source_module": "base44/shared/logical/backfillLegacySendingProfiles.ts"
     },
     "canExecuteLegalAction": {
       "host": "checkMarketCapability",
       "route": {
         "action": "can_execute_legal_action"
       },
-      "boundary": "legal_evaluation_internal_or_admin"
+      "boundary": "legal_evaluation_internal_or_admin",
+      "source_module": "base44/shared/logical/canExecuteLegalAction.ts"
     },
     "checkRegulatoryActivity": {
       "host": "checkMarketCapability",
       "route": {
         "action": "check_regulatory_activity"
       },
-      "boundary": "regulatory_evaluation_internal_or_admin"
+      "boundary": "regulatory_evaluation_internal_or_admin",
+      "source_module": "base44/shared/logical/checkRegulatoryActivity.ts"
     },
     "commercialCampaignAdmin": {
       "host": "adminSummaries",
@@ -59,28 +63,32 @@
       "route": {
         "action": "commercial_dry_run"
       },
-      "boundary": "commercial_admin_or_internal"
+      "boundary": "commercial_admin_or_internal",
+      "source_module": "base44/shared/logical/commercialExecutionDryRun.ts"
     },
     "commercialGoLiveReadiness": {
       "host": "outboundControlAdmin",
       "route": {
         "action": "commercial_go_live_readiness"
       },
-      "boundary": "commercial_admin_or_internal_fail_closed"
+      "boundary": "commercial_admin_or_internal_fail_closed",
+      "source_module": "base44/shared/logical/commercialGoLiveReadiness.ts"
     },
     "commercialStrategyAgent": {
       "host": "outboundControlAdmin",
       "route": {
         "action": "commercial_strategy"
       },
-      "boundary": "commercial_admin_or_internal"
+      "boundary": "commercial_admin_or_internal",
+      "source_module": "base44/shared/logical/commercialStrategyAgent.ts"
     },
     "costGovernanceWorker": {
       "host": "maintenanceEngine",
       "route": {
         "host_action": "cost_governance"
       },
-      "boundary": "internal_scheduler_or_admin_financial_control"
+      "boundary": "internal_scheduler_or_admin_financial_control",
+      "source_module": "base44/shared/logical/costGovernanceWorker.ts"
     },
     "disasterRecoveryBackup": {
       "host": "maintenanceEngine",
@@ -96,49 +104,56 @@
         "view": "growth",
         "action": "recompute"
       },
-      "boundary": "recommendation_only_internal_or_admin"
+      "boundary": "recommendation_only_internal_or_admin",
+      "source_module": "base44/shared/logical/europeanGrowthIntelligenceWorker.ts"
     },
     "founderMeetingAdmin": {
       "host": "founderOSCommand",
       "route": {
         "action_family": "meeting"
       },
-      "boundary": "strict_admin"
+      "boundary": "strict_admin",
+      "source_module": "base44/shared/logical/founderMeetingAdmin.ts"
     },
     "getEuropeanGrowthCommandCenter": {
       "host": "getEuropeMarketsCommandCenter",
       "route": {
         "view": "growth"
       },
-      "boundary": "internal_or_admin_read_recommendation"
+      "boundary": "internal_or_admin_read_recommendation",
+      "source_module": "base44/shared/logical/getEuropeanGrowthCommandCenter.ts"
     },
     "goLiveControlAdmin": {
       "host": "outboundControlAdmin",
       "route": {
         "action_family": "go_live"
       },
-      "boundary": "strict_admin_or_internal_fail_closed"
+      "boundary": "strict_admin_or_internal_fail_closed",
+      "source_module": "base44/shared/logical/goLiveControlAdmin.ts"
     },
     "instantlyProviderAdmin": {
       "host": "outboundControlAdmin",
       "route": {
         "action_prefix": "instantly_"
       },
-      "boundary": "strict_admin_paid_provider"
+      "boundary": "strict_admin_paid_provider",
+      "source_module": "base44/shared/logical/instantlyProviderAdmin.ts"
     },
     "instantlyProviderEventRetryWorker": {
       "host": "processWebhookDeadLetters",
       "route": {
         "provider_maintenance_only": true
       },
-      "boundary": "internal_scheduler_provider_event_recovery"
+      "boundary": "internal_scheduler_provider_event_recovery",
+      "source_module": "base44/shared/logical/instantlyProviderEventRetryWorker.ts"
     },
     "instantlyReconciliationWorker": {
       "host": "processWebhookDeadLetters",
       "route": {
         "provider_maintenance_only": true
       },
-      "boundary": "internal_scheduler_paid_provider"
+      "boundary": "internal_scheduler_paid_provider",
+      "source_module": "base44/shared/logical/instantlyReconciliationWorker.ts"
     },
     "instantlyWebhook": {
       "host": "resendInboundWebhook",
@@ -152,49 +167,56 @@
       "route": {
         "action": "manage_legal_execution"
       },
-      "boundary": "strict_admin_legal_authority"
+      "boundary": "strict_admin_legal_authority",
+      "source_module": "base44/shared/logical/manageLegalExecution.ts"
     },
     "productionReadinessWorker": {
       "host": "maintenanceEngine",
       "route": {
         "host_action": "production_readiness"
       },
-      "boundary": "internal_scheduler_or_admin_readiness"
+      "boundary": "internal_scheduler_or_admin_readiness",
+      "source_module": "base44/shared/logical/productionReadinessWorker.ts"
     },
     "projectVerifiedPaymentsToP4": {
       "host": "rateIntelligenceQuery",
       "route": {
         "action": "project_verified_payments_to_p4"
       },
-      "boundary": "tenant_safe_internal_or_admin"
+      "boundary": "tenant_safe_internal_or_admin",
+      "source_module": "base44/shared/logical/projectVerifiedPaymentsToP4.ts"
     },
     "regulatoryMonitoringWorker": {
       "host": "marketPolicyAdmin",
       "route": {
         "action": "regulatory_monitoring"
       },
-      "boundary": "internal_scheduler_regulatory"
+      "boundary": "internal_scheduler_regulatory",
+      "source_module": "base44/shared/logical/regulatoryMonitoringWorker.ts"
     },
     "requestP4Estimate": {
       "host": "rateIntelligenceQuery",
       "route": {
         "action": "request_p4_estimate"
       },
-      "boundary": "tenant_safe_internal_or_admin"
+      "boundary": "tenant_safe_internal_or_admin",
+      "source_module": "base44/shared/logical/requestP4Estimate.ts"
     },
     "seedP10RegulatoryControl": {
       "host": "marketPolicyAdmin",
       "route": {
         "action": "seed_p10_regulatory_control"
       },
-      "boundary": "admin_or_internal_conservative_seed"
+      "boundary": "admin_or_internal_conservative_seed",
+      "source_module": "base44/shared/logical/seedP10RegulatoryControl.ts"
     },
     "seedP11LegalExecution": {
       "host": "marketPolicyAdmin",
       "route": {
         "action": "seed_p11_legal_execution"
       },
-      "boundary": "strict_admin_conservative_seed"
+      "boundary": "strict_admin_conservative_seed",
+      "source_module": "base44/shared/logical/seedP11LegalExecution.ts"
     },
     "recordLegalAcceptance": {
       "host": "claimAnonPaymentsResult",
