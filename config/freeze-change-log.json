@@ -812,6 +812,15 @@
       "date": "2026-08-17T20:30:00.000Z",
       "type": "stageComment_drift_fix",
       "reason": "AUDIT EV-4: stageComment carried P6 language while stage is ECL_P8. Founder-authorised (session, 2026-08-17). Also updated scripts/advance-stage.mjs to write stageComment on every bump so the drift cannot recur."
+    },
+    {
+      "date": "2026-08-18T00:57:19.259Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "oldHash": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "newHash": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
+      "reason": "Audit pass 2026-08-18: close freeze drift for committed silent-failure/bounded-read hardening already on main"
     }
   ]
 }

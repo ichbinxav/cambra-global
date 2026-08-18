@@ -151,7 +151,7 @@
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
-      "sha256": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
+      "sha256": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "freezeReason": "R5 ROOT-OTR-014: make the authoritative ECL health sweep fail closed on unavailable, malformed, truncated, or duplicate incident authority reads using cap-plus-one evidence before any healthy or auto-resolution projection; no recovery worker, economic effect, or production action was added",
       "allowedChange": false
     }
