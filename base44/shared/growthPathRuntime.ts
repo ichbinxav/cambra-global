@@ -1,4 +1,6 @@
-import DEFAULTS from '../../config/growth-path-defaults.json' with { type: 'json' };
+// AUDIT 2026-08-18 — config/ is outside the function bundle, so the identical
+// bytes are consumed from the drift-gated generated artifact.
+import { GROWTH_PATH_DEFAULTS as DEFAULTS } from './generated/growthPathDefaults.ts';
 import { EUROPE_MARKETS } from './generated/europeMarkets.ts';
 import { canonicalMarket } from './marketContext.ts';
 import { localizationReadiness } from './localeRuntime.ts';

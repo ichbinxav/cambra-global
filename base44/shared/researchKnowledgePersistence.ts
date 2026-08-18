@@ -1,5 +1,9 @@
-import RESEARCH_KNOWLEDGE_CATALOG from "../../config/intelligence/research-knowledge.v1.json" with { type: "json" };
-import RESEARCH_KNOWLEDGE_CONFLICTS from "../../config/intelligence/research-conflicts.v1.json" with { type: "json" };
+// AUDIT 2026-08-18 — see researchKnowledge.ts: config/ is outside the function
+// bundle, so the identical bytes are consumed from the generated artifact.
+import {
+  RESEARCH_KNOWLEDGE_CATALOG,
+  RESEARCH_KNOWLEDGE_CONFLICTS,
+} from "./generated/researchKnowledgeConfig.ts";
 import {
   RESEARCH_KNOWLEDGE_DOCUMENTS,
 } from "./generated/researchKnowledgeDocuments.ts";

@@ -37,7 +37,10 @@ function render(artifact) {
   const body = artifact.sources
     .map((source) => {
       const json = JSON.parse(fs.readFileSync(source.file, "utf8"));
-      return `export const ${source.name} = Object.freeze(${JSON.stringify(json, null, 2)} as const);\n`;
+      // No `as const`: the JSON-module import these artifacts replace produced
+      // widened types, and narrowing them here would change type-checking of
+      // every existing consumer rather than only the import path.
+      return `export const ${source.name} = Object.freeze(${JSON.stringify(json, null, 2)});\n`;
     })
     .join("\n");
   return `${header}${body}`;

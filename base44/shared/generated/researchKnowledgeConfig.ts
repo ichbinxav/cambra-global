@@ -2725,7 +2725,7 @@ export const RESEARCH_KNOWLEDGE_CATALOG = Object.freeze({
       "evidence_excerpt": "R9 claims a ZIP, 33 dossiers, index, methodology and manifest under ephemeral sandbox paths, but none of those artifacts is present in the retained research set."
     }
   ]
-} as const);
+});
 
 export const RESEARCH_KNOWLEDGE_CONFLICTS = Object.freeze({
   "schema_version": "research-conflicts.v1",
@@ -2901,4 +2901,4 @@ export const RESEARCH_KNOWLEDGE_CONFLICTS = Object.freeze({
       "training_blocked": true
     }
   ]
-} as const);
+});

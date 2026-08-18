@@ -166,4 +166,4 @@ export const GROWTH_PATH_DEFAULTS = Object.freeze({
     "LOGISTICS_EUROPE": "PLANNED"
   },
   "note": "Initial founder-editable planning assumptions. They are neither observed facts nor commitments and must be calibrated from canonical outcomes."
-} as const);
+});
