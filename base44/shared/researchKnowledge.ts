@@ -2,8 +2,13 @@ import {
   RESEARCH_KNOWLEDGE_CHUNKS,
   RESEARCH_KNOWLEDGE_DOCUMENTS,
 } from "./generated/researchKnowledgeDocuments.ts";
-import RESEARCH_KNOWLEDGE_CATALOG from "../../config/intelligence/research-knowledge.v1.json" with { type: "json" };
-import RESEARCH_KNOWLEDGE_CONFLICTS from "../../config/intelligence/research-conflicts.v1.json" with { type: "json" };
+// AUDIT 2026-08-18 — the canonical JSON lives in config/, which the Base44
+// function bundler cannot reach from inside a function tree; the generated
+// artifact carries the identical bytes and is drift-gated.
+import {
+  RESEARCH_KNOWLEDGE_CATALOG,
+  RESEARCH_KNOWLEDGE_CONFLICTS,
+} from "./generated/researchKnowledgeConfig.ts";
 
 export const RESEARCH_KNOWLEDGE_RETRIEVAL_VERSION =
   "research-knowledge-retrieval.v1";
