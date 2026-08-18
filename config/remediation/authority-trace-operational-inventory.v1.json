@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "14ba57aba1b1f01d3511de82e373aed6ea5f75857c6d82a37dd3bbc4fde6f344",
+  "input_fingerprint_sha256": "b79a1914ce1d1716eb6f004530b715f129467e1cf9b99949bfcf9a56dcc78d29",
   "components": [
     {
       "key": "effect_authority",
@@ -262,13 +262,13 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "d95a5fc0b7af79e8e98354c7eb6890e96f1afcb15904eef88f54d0a568c031ef",
-      "bytes": 42438
+      "sha256": "3e707609c6888a06597d312bc853d9bb2ab02e51d76d3e696b6e8a694efaaca6",
+      "bytes": 42982
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "a82ce39180e9e137937d42a013e4c970e8b74463c3e8c2bef8f0ec3c23753968",
-      "bytes": 8228
+      "sha256": "7d9d9005babf30c868030e71fb7dc40cf5726fbeff55cd52c51474bc40569d72",
+      "bytes": 8229
     },
     {
       "path": "scripts/generate-agent-workforce-catalog.mjs",
@@ -307,8 +307,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "ff030ee705551d0b58c92655e4b9eb5cc0c22d1731908a3a48ece524aca23146",
-      "bytes": 26081
+      "sha256": "810a9ccd78aa801a55b5dcac5cd1d8e50541407d01a31fef46d8a2f8adb9cc8e",
+      "bytes": 26690
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
