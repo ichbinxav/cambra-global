@@ -13,6 +13,8 @@ const sha256File = (file) => crypto.createHash('sha256').update(fs.readFileSync(
 const canonicalJson = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const fail = (message) => { throw new Error(`remediation_r4_invalid:${message}`); };
 
+const LOGICAL_CREATOR_FUNCTIONS = new Set(['founderMeetingAdmin']);
+
 const APPROVAL_CREATORS = [
   ['aggregateAgreementWorker', ['aggregate_contract_execution']],
   ['blogAgent', ['publish_blog']],
@@ -32,7 +34,12 @@ const APPROVAL_CREATORS = [
   ['xTwitterAgent', ['publish_x_post']],
 ].map(([function_name, action_types]) => ({
   function_name,
-  source_path: `base44/functions/${function_name}/entry.ts`,
+  // AUDIT 2026-08-18 — logical-route implementations moved to base44/shared/logical/
+  // so hosts can import them without escaping their bundle; creators that moved are
+  // inventoried at their canonical shared path.
+  source_path: LOGICAL_CREATOR_FUNCTIONS.has(function_name)
+    ? `base44/shared/logical/${function_name}.ts`
+    : `base44/functions/${function_name}/entry.ts`,
   action_types,
 }));
 
@@ -215,9 +222,13 @@ function buildArtifact(root = REPO_ROOT) {
     });
   }
   const functionRoot = path.join(root, 'base44/functions');
+  const logicalRoot = path.join(root, 'base44/shared/logical');
   const observedCreators = fs.readdirSync(functionRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => `base44/functions/${entry.name}/entry.ts`)
+    .concat(fs.readdirSync(logicalRoot)
+      .filter((name) => name.endsWith('.ts'))
+      .map((name) => `base44/shared/logical/${name}`))
     .filter((relative) => relative !== 'base44/functions/founderOSCommand/entry.ts')
     .filter((relative) => fs.existsSync(path.join(root, relative)) && readSource(root, relative).includes('Approval.create'))
     .sort();

@@ -63,11 +63,11 @@
       },
       {
         "function_name": "founderMeetingAdmin",
-        "source_path": "base44/functions/founderMeetingAdmin/entry.ts",
+        "source_path": "base44/shared/logical/founderMeetingAdmin.ts",
         "action_types": [
           "post_meeting_commitment_review"
         ],
-        "source_sha256": "0726d27df3c53b8f322dbb3d533f3414a1d2eaad3db5629f27c9b63d180bf9c7"
+        "source_sha256": "65c2660c8bcea99274184a07c0ae1482f729ac5846f2d65a506f1a90901ee501"
       },
       {
         "function_name": "investorUpdateAgent",
@@ -521,7 +521,7 @@
     },
     {
       "path": "base44/functions/founderOSCommand/entry.ts",
-      "sha256": "286d21278f32d59bcf568c86eb74575a72bf596393a8cba2aa4b227ae04ead85"
+      "sha256": "61d5defc3b8e1195e76f6b704d2f1e46a5c21ae00664818ff7582bda50522f7b"
     },
     {
       "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
@@ -625,7 +625,7 @@
     },
     {
       "path": "src/lib/founderApprovalRegistry.test.js",
-      "sha256": "7867ffc7d144f524c9389f7fb2c987668b706d6a701b525c5005e100ca10af21"
+      "sha256": "e64c8d9fca496e10942d82c634a5b6d6954f3544aa9a2dafa0a6bc939487f975"
     },
     {
       "path": "src/lib/paymentsMigrationP9.test.js",
