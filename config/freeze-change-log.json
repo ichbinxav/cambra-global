@@ -821,6 +821,15 @@
       "oldHash": "04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a",
       "newHash": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "reason": "Audit pass 2026-08-18: close freeze drift for committed silent-failure/bounded-read hardening already on main"
+    },
+    {
+      "date": "2026-08-18T13:19:47.698Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "newHash": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
+      "reason": "2026-08-18 logical-route migration: cross-function imports moved to base44/shared/logical/ for bundler compliance; no behavior change"
     }
   ]
 }

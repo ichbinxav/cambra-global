@@ -70,7 +70,7 @@ describe('R5 authority, trace and operational-plane evidence', () => {
       '37 of 42 material boundaries remain SOURCE_OBSERVED_ONLY and are not wired to the common facade',
     );
     expect(trace.blockers).toContain(
-      '111 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope',
+      '107 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope',
     );
   });
 

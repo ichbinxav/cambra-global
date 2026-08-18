@@ -478,15 +478,24 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     expect(schema.required).toEqual(['brand_id', 'agent_name', 'task_type', 'status']);
     expect(eventSchema.required).toEqual(['brand_id', 'event_type', 'source']);
 
+    // 2026-08-18 — some logical routes now live in base44/shared/logical/<name>.ts
+    // (the function directory keeps a re-export so hosts stay inside their bundle).
+    // Read the implementation wherever it actually is; the assertions are unchanged.
+    const readRoute = (name) => {
+      const logical = `base44/shared/logical/${name}.ts`;
+      return fs.existsSync(new URL(`../../${logical}`, import.meta.url))
+        ? read(logical)
+        : read(`base44/functions/${name}/entry.ts`);
+    };
     for (const name of adaptedCoordinators) {
-      const source = read(`base44/functions/${name}/entry.ts`);
+      const source = readRoute(name);
       expect(source).toContain('createCanonicalAgentTask');
       expect(source).toContain('attachCanonicalChildTask');
       expect(source).not.toContain('.entities.AgentTask.create(');
       expect(source).not.toContain('AgentRun');
     }
     for (const name of adaptedMaterialWorkers) {
-      const source = read(`base44/functions/${name}/entry.ts`);
+      const source = readRoute(name);
       expect(source).toContain('createCanonicalAgentTask');
       expect(source).toContain('settleCanonicalAgentTask');
       expect(source).not.toContain('.entities.AgentTask.create(');
@@ -503,7 +512,9 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     expect(inventory.counts.legacy_creator_files).toBe(14);
     expect(inventory.counts.root_envelope_adapted_files).toBe(8);
     expect(inventory.counts.material_trace_adapted_files).toBe(0);
-    expect(inventory.counts.unresolved_material_route_files).toBe(111);
+    // 111 -> 107 (2026-08-18): four hosted route files now resolve at their
+    // canonical base44/shared/logical/ path instead of a function directory.
+    expect(inventory.counts.unresolved_material_route_files).toBe(107);
     expect(inventory.counts.not_adapted_files).toBeGreaterThan(0);
     expect(inventory.root_otr_013).toMatchObject({
       implementation_status: 'PARTIAL',
