@@ -27,6 +27,10 @@ let secondIdentity;
 let extractedIdentity;
 let extractedRebuiltIdentity;
 
+const hasBinary = (name) =>
+  spawnSync(name, ["-v"], { encoding: "utf8" }).error === undefined;
+const zipToolsAvailable = hasBinary("zip") && hasBinary("unzip");
+
 function copyCleanBundleInputs(targetRoot) {
   const sourceEntries = collectSourceTreeEntries(REPO_ROOT);
   for (const entry of sourceEntries) {
@@ -79,6 +83,12 @@ beforeAll(() => {
   const secondBuild = buildBundle(cleanRoot);
   expect(secondBuild.status, secondBuild.stderr || secondBuild.stdout).toBe(0);
   secondIdentity = inspectBase44Bundle(cleanRoot);
+
+  // 2026-08-18 — the archive round-trip needs the external zip/unzip binaries.
+  // When they are absent the round-trip is SKIPPED VISIBLY (it.skipIf below),
+  // never silently passed: a missing environment tool must not be reported as a
+  // verified re-extraction.
+  if (!zipToolsAvailable) return;
 
   zipRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cambra-base44-zip-"));
   const archivePath = path.join(zipRoot, "clean-source-and-bundle.zip");
@@ -189,7 +199,7 @@ describe("reproducible Base44 physical bundle pipeline", () => {
     expect(packageJson.scripts["base44:runtime:smoke"]).toContain("npx --no-install base44");
   });
 
-  it("packages, re-extracts, verifies, and rebuilds the included bundle", () => {
+  it.skipIf(!zipToolsAvailable)("packages, re-extracts, verifies, and rebuilds the included bundle", () => {
     const payloadSource = fs.readFileSync(path.join(REPO_ROOT, "scripts", "lib", "releasePayload.mjs"), "utf8");
     const packagerSource = fs.readFileSync(path.join(REPO_ROOT, "scripts", "package-release.mjs"), "utf8");
     expect(payloadSource).toContain('RELEASE_GENERATED_DIRS = ["base44/.deploy"]');

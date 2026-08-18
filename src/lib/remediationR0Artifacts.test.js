@@ -330,9 +330,14 @@ describe("R0.D physical research corpus inventory", () => {
       bytes_unique: 419567,
       lf_count_physical: 5309,
     });
-    const duplicateGroups = Object.values(
-      Object.groupBy(document.physical_sources, (row) => row.sha256),
-    )
+    // Grouped with reduce instead of Object.groupBy: the runtime baseline this
+    // suite must pass on does not expose Object.groupBy, and an environment
+    // capability gap must never be reported as a corpus failure.
+    const groups = document.physical_sources.reduce((acc, row) => {
+      (acc[row.sha256] ||= []).push(row);
+      return acc;
+    }, {});
+    const duplicateGroups = Object.values(groups)
       .filter((rows) => rows.length > 1)
       .map((rows) => rows.map((row) => row.file_name).sort());
     expect(duplicateGroups).toEqual(expect.arrayContaining([
