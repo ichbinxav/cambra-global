@@ -166,7 +166,9 @@ describe("reproducible Base44 physical bundle pipeline", () => {
     expect(() => inspectBase44Bundle(cleanRoot)).toThrow("base44_bundle_unexpected_deploy_entries");
     fs.unlinkSync(unboundPath);
     expect(inspectBase44Bundle(cleanRoot)).toEqual(firstIdentity);
-  });
+    // Explicit timeout: this case rehashes the whole staged bundle three times
+    // and legitimately exceeds the 5s default under full-suite load.
+  }, 60_000);
 
   it("binds release metadata to the independently recomputed bundle identity", () => {
     const releaseIdentity = asReleaseIdentity(firstIdentity);
