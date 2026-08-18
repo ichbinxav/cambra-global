@@ -8,8 +8,8 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "3d5b620429c77b5abdb161b3296e162e444495095c82100ee72db2d857dc9b56",
-  "input_file_count": 130,
+  "input_fingerprint_sha256": "938812baef2b0f18925e168d29a3f4adc8637abb06b8693fbc7c33af1ee3527e",
+  "input_file_count": 126,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
@@ -137,7 +137,7 @@
       "sendCostGovernedEmail",
       "reservePaidOperation"
     ],
-    "caller_count": 31,
+    "caller_count": 27,
     "callers": [
       "autonomousPartnerWorker",
       "blogAgent",
@@ -146,9 +146,6 @@
       "competitorMonitorAgent",
       "copilotChat",
       "crmAgent",
-      "goLiveControlAdmin",
-      "instantlyProviderAdmin",
-      "instantlyReconciliationWorker",
       "joinCollective",
       "leadDiscoveryAgent",
       "leadEnrichmentAgent",
@@ -161,7 +158,6 @@
       "providerMonitorAgent",
       "providerResearchAgent",
       "recoverBillingDigest",
-      "requestP4Estimate",
       "resendInboundWebhook",
       "sendMonthlySavingsSummary",
       "sendRecoverContractEmail",
@@ -1589,8 +1585,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-          "sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
-          "bytes": 21758
+          "sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
+          "bytes": 21782
         },
         {
           "path": "base44/shared/schedulerRun.ts",
@@ -1823,13 +1819,13 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
-          "bytes": 8582
+          "sha256": "fcbdb2754c4953182c1977c40eec0bd547fb8c0e25aa159f296ee25849f6f880",
+          "bytes": 10264
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
-          "sha256": "7d5dd151020edcdffe49fe2e26a07915c2a72109b2daf74160367f4a951867d6",
-          "bytes": 6827
+          "sha256": "fde6f6b9546d932078f165306945434374653aa38245e488917768261345329f",
+          "bytes": 6875
         }
       ]
     },
@@ -2756,9 +2752,6 @@
         "competitorMonitorAgent",
         "copilotChat",
         "crmAgent",
-        "goLiveControlAdmin",
-        "instantlyProviderAdmin",
-        "instantlyReconciliationWorker",
         "joinCollective",
         "leadDiscoveryAgent",
         "leadEnrichmentAgent",
@@ -2771,7 +2764,6 @@
         "providerMonitorAgent",
         "providerResearchAgent",
         "recoverBillingDigest",
-        "requestP4Estimate",
         "resendInboundWebhook",
         "sendMonthlySavingsSummary",
         "sendRecoverContractEmail",
@@ -2844,21 +2836,6 @@
           "bytes": 6397
         },
         {
-          "path": "base44/functions/goLiveControlAdmin/entry.ts",
-          "sha256": "e5572a6ec47ac6882be88e75b103f488dc0c3c21ef67a52a077086b48d96dd42",
-          "bytes": 56496
-        },
-        {
-          "path": "base44/functions/instantlyProviderAdmin/entry.ts",
-          "sha256": "79c69c7b58df48794aef03050761528c7fa887211b7e47ac7befaa0531fca31d",
-          "bytes": 30143
-        },
-        {
-          "path": "base44/functions/instantlyReconciliationWorker/entry.ts",
-          "sha256": "12885ff17d094d3287db19e0f2547e3a8c8ed228b1647b131dab4dbb0974c921",
-          "bytes": 10038
-        },
-        {
           "path": "base44/functions/joinCollective/entry.ts",
           "sha256": "c8f28710cbc9cabc582ed619036ebae76bb6eb4c2b6c44379332bcdbe8ff36d8",
           "bytes": 9883
@@ -2890,8 +2867,8 @@
         },
         {
           "path": "base44/functions/outboundControlAdmin/entry.ts",
-          "sha256": "a36870e6799a9389a208362c391ef53cbecf3b0be15f91776e47c0b3b7da5022",
-          "bytes": 34316
+          "sha256": "e347940d44111847ca0d5bf264c93fbb62199201500bffbdf3fe66dc0be56177",
+          "bytes": 34388
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
@@ -2919,14 +2896,9 @@
           "bytes": 14807
         },
         {
-          "path": "base44/functions/requestP4Estimate/entry.ts",
-          "sha256": "7a283bd76824942ac7602e24aa96c4dd89302748fa6f4d4796054b1ffc05a152",
-          "bytes": 19398
-        },
-        {
           "path": "base44/functions/resendInboundWebhook/entry.ts",
-          "sha256": "81e3033dd54e39574f8b82492925b5df2972b9607479bec3298cb58036c1a3e6",
-          "bytes": 11526
+          "sha256": "5c9aca8f311a7ecd231c39a29f64a51f9d19e2333e05fbd5d9d184d5cbd530a6",
+          "bytes": 11621
         },
         {
           "path": "base44/functions/sendMonthlySavingsSummary/entry.ts",
@@ -3296,13 +3268,13 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "e91ce6fac9c63087339cdd0f21df86f2b8e47aa8b124d5ec918ecf11498406d7",
-          "bytes": 8582
+          "sha256": "fcbdb2754c4953182c1977c40eec0bd547fb8c0e25aa159f296ee25849f6f880",
+          "bytes": 10264
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
-          "sha256": "403de369e0294731906297fca12d3929d8fb35061940b3f00c99e5506f032403",
-          "bytes": 28647
+          "sha256": "1ba8f82defec9323d54acac0c0930a51e5d4b89598ab8f54980b5b92f7f89bdc",
+          "bytes": 28671
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",

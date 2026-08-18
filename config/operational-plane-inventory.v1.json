@@ -7,20 +7,19 @@
       "base44/entities/AutonomyIncident.jsonc": "f0f55af0a800d875652e2527c2e31584c635b0c86621e339d0e98aa493791bcf",
       "base44/entities/IncidentAlertDelivery.jsonc": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
       "base44/entities/OperationalIncident.jsonc": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
-      "base44/functions/autonomousOperationsSupervisor/entry.ts": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
+      "base44/functions/autonomousOperationsSupervisor/entry.ts": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
       "base44/functions/eclProductionHealth/entry.ts": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
       "base44/functions/operatingHealthWorker/entry.ts": "28bdf08e2772ccd166fc7bd9a91e38cfa178503f42baf577a866820409bf7bc6",
-      "base44/functions/productionReadinessWorker/entry.ts": "7a800a744903e53d4573cbb2c97dbc0884bdf998ced2c3d8fb49d678cfca5bfa",
       "base44/functions/systemHealthAgent/entry.ts": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",
       "base44/shared/canonicalIncident.ts": "2d346d22341c8be10b4a5ac2b9d9946a070f8ca7cd55b0eabbfcea42b712e8b4",
       "base44/shared/supervisorObservation.ts": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006"
     }
   },
   "health_planes": {
-    "surface_count": 5,
+    "surface_count": 4,
     "active_general_supervisor_count": 1,
-    "active_non_authoritative_projection_count": 2,
+    "active_non_authoritative_projection_count": 1,
     "authoritative_specialized_sweep_count": 1,
     "quarantined_compatibility_count": 1,
     "surfaces": [
@@ -86,21 +85,6 @@
         ]
       },
       {
-        "function_name": "productionReadinessWorker",
-        "classification": "RELEASE_READINESS_EVALUATOR",
-        "status": "ACTIVE_NON_AUTHORITATIVE",
-        "authoritative_for": [
-          "fail-closed release readiness projection only"
-        ],
-        "path": "base44/functions/productionReadinessWorker/entry.ts",
-        "dependency_labels": [
-          "production_findings",
-          "release_verifications",
-          "restore_exercises",
-          "runtime_gate_evidence"
-        ]
-      },
-      {
         "function_name": "systemHealthAgent",
         "classification": "QUARANTINED_COMPATIBILITY",
         "status": "HTTP_410_NO_OPERATIONAL_PLANE_WRITES",
@@ -132,9 +116,7 @@
       "AutonomyIncident": [
         "base44/functions/autonomousOperationsSupervisor/entry.ts",
         "base44/functions/collectionOperationsWorker/entry.ts",
-        "base44/functions/costGovernanceWorker/entry.ts",
         "base44/functions/dependencySecurityWorker/entry.ts",
-        "base44/functions/goLiveControlAdmin/entry.ts",
         "base44/functions/maintenanceEngine/entry.ts",
         "base44/functions/providerRevenueBillingWorker/entry.ts",
         "base44/functions/providerRevenueReconciliationWorker/entry.ts",
@@ -144,6 +126,8 @@
         "base44/shared/disasterRecoveryRuntime.ts",
         "base44/shared/emergencyControlAdminCore.ts",
         "base44/shared/instantlyRuntime.ts",
+        "base44/shared/logical/costGovernanceWorker.ts",
+        "base44/shared/logical/goLiveControlAdmin.ts",
         "base44/shared/outboundProviderEventProcessing.ts",
         "base44/shared/stripeConnectedAccountLifecycle.ts"
       ],

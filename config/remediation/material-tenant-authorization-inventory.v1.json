@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "11f6fedd4e6d60798aac087d29d2fa370325039ab2d4d6a6226063ac6bb99d5a",
-  "material_registry_input_fingerprint_sha256": "3d5b620429c77b5abdb161b3296e162e444495095c82100ee72db2d857dc9b56",
-  "input_fingerprint_sha256": "9284a852fb15f3f699b7e0ccbd37176e902f3192eff1c4739a547828fc2bcced",
+  "material_registry_sha256": "c1868ac0a74edccf87225fc8dbb76456a09a9ea1ca12462c71382eadf21a36b2",
+  "material_registry_input_fingerprint_sha256": "938812baef2b0f18925e168d29a3f4adc8637abb06b8693fbc7c33af1ee3527e",
+  "input_fingerprint_sha256": "56daa339b0cf4a9a89f1c290182ef06f7bae967432e5bb9de576953e548c6246",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1709,9 +1709,6 @@
         "base44/functions/competitorMonitorAgent/entry.ts",
         "base44/functions/copilotChat/entry.ts",
         "base44/functions/crmAgent/entry.ts",
-        "base44/functions/goLiveControlAdmin/entry.ts",
-        "base44/functions/instantlyProviderAdmin/entry.ts",
-        "base44/functions/instantlyReconciliationWorker/entry.ts",
         "base44/functions/joinCollective/entry.ts",
         "base44/functions/leadDiscoveryAgent/entry.ts",
         "base44/functions/leadEnrichmentAgent/entry.ts",
@@ -1724,7 +1721,6 @@
         "base44/functions/providerMonitorAgent/entry.ts",
         "base44/functions/providerResearchAgent/entry.ts",
         "base44/functions/recoverBillingDigest/entry.ts",
-        "base44/functions/requestP4Estimate/entry.ts",
         "base44/functions/resendInboundWebhook/entry.ts",
         "base44/functions/sendMonthlySavingsSummary/entry.ts",
         "base44/functions/sendRecoverContractEmail/entry.ts",
@@ -1758,8 +1754,8 @@
       "test_evidence": [
         {
           "path": "src/lib/p4CostGovernance.test.js",
-          "sha256": "2180cea5b57898cec93964383a632a703aadb3d814eb2a5767f0f1a17a3fc1f7",
-          "bytes": 11963
+          "sha256": "6a08d12c029652e6c083af68bdd7f5d7488927635fe52df21203b45a590a1f96",
+          "bytes": 11960
         }
       ],
       "remaining_gaps": [
@@ -1864,8 +1860,8 @@
       "test_evidence": [
         {
           "path": "src/lib/p4CostGovernance.test.js",
-          "sha256": "2180cea5b57898cec93964383a632a703aadb3d814eb2a5767f0f1a17a3fc1f7",
-          "bytes": 11963
+          "sha256": "6a08d12c029652e6c083af68bdd7f5d7488927635fe52df21203b45a590a1f96",
+          "bytes": 11960
         },
         {
           "path": "src/lib/tenantOwnership.test.js",

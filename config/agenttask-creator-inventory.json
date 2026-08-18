@@ -6,18 +6,18 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "f70bf3eba60dc14254981ee37fce907c94a4a184260c0f8d7394f2913ede4c4f",
+  "source_inventory_hash": "d71be32e37ef2fffd6e19edb5afafe80c09b577b2e833c309e66ff789e5c3e4a",
   "counts": {
-    "creator_files": 60,
-    "raw_create_sites": 56,
-    "canonical_root_create_sites": 8,
-    "canonical_child_link_sites": 7,
+    "creator_files": 58,
+    "raw_create_sites": 55,
+    "canonical_root_create_sites": 7,
+    "canonical_child_link_sites": 6,
     "canonical_terminal_sites": 6,
-    "root_envelope_adapted_files": 8,
+    "root_envelope_adapted_files": 7,
     "partial_mixed_files": 0,
-    "not_adapted_files": 52,
+    "not_adapted_files": 51,
     "material_creator_files": 46,
-    "legacy_creator_files": 14,
+    "legacy_creator_files": 12,
     "material_trace_adapted_files": 0,
     "material_root_only_files": 3,
     "material_not_adapted_files": 43,
@@ -852,7 +852,7 @@
     },
     {
       "path": "base44/functions/goLiveControlAdmin/entry.ts",
-      "source_sha256": "e5572a6ec47ac6882be88e75b103f488dc0c3c21ef67a52a077086b48d96dd42",
+      "source_sha256": "0e620ab86fbbe353d66e9073c432c23bd78ff98332d0947ba0af93bb0ece16c0",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -868,7 +868,7 @@
     },
     {
       "path": "base44/functions/instantlyProviderAdmin/entry.ts",
-      "source_sha256": "79c69c7b58df48794aef03050761528c7fa887211b7e47ac7befaa0531fca31d",
+      "source_sha256": "1836b08c90922e65e558be8eab59481f43b9aebe7cbfe6b480c7efccabd87752",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -884,7 +884,7 @@
     },
     {
       "path": "base44/functions/instantlyReconciliationWorker/entry.ts",
-      "source_sha256": "12885ff17d094d3287db19e0f2547e3a8c8ed228b1647b131dab4dbb0974c921",
+      "source_sha256": "b25118c8ba1b1f6a0960614306d9c76b5697920bff315aa5938cff197d1a9df6",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1063,7 +1063,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "403de369e0294731906297fca12d3929d8fb35061940b3f00c99e5506f032403",
+      "source_sha256": "1ba8f82defec9323d54acac0c0930a51e5d4b89598ab8f54980b5b92f7f89bdc",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"
@@ -1080,7 +1080,7 @@
     },
     {
       "path": "base44/functions/marketPolicyAdmin/entry.ts",
-      "source_sha256": "7d5dd151020edcdffe49fe2e26a07915c2a72109b2daf74160367f4a951867d6",
+      "source_sha256": "fde6f6b9546d932078f165306945434374653aa38245e488917768261345329f",
       "boundary_ids": [
         "MB-LEGAL-AUTHORITY-ADMIN",
         "MB-SCHEDULER-BASE"
@@ -1215,7 +1215,7 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "source_sha256": "a36870e6799a9389a208362c391ef53cbecf3b0be15f91776e47c0b3b7da5022",
+      "source_sha256": "e347940d44111847ca0d5bf264c93fbb62199201500bffbdf3fe66dc0be56177",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1335,7 +1335,7 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "source_sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "source_sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
       "boundary_ids": [
         "MB-SCHEDULER-BASE",
         "MB-WEBHOOK-DLQ-RETRY"
@@ -1654,7 +1654,7 @@
     },
     {
       "path": "base44/functions/requestP4Estimate/entry.ts",
-      "source_sha256": "7a283bd76824942ac7602e24aa96c4dd89302748fa6f4d4796054b1ffc05a152",
+      "source_sha256": "a454ffebe467fbef66f8c6dcc12ca5d6e609491287c6048949d8693491ced548",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1664,13 +1664,13 @@
       ],
       "agenttask_creator": false,
       "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
-      "raw_event_create_sites": 1,
+      "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
       "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
     },
     {
       "path": "base44/functions/resendInboundWebhook/entry.ts",
-      "source_sha256": "81e3033dd54e39574f8b82492925b5df2972b9607479bec3298cb58036c1a3e6",
+      "source_sha256": "5c9aca8f311a7ecd231c39a29f64a51f9d19e2333e05fbd5d9d184d5cbd530a6",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -2120,25 +2120,8 @@
       "runtime_verified": false
     },
     {
-      "path": "base44/functions/autonomousCompanyOrchestrator/entry.ts",
-      "source_sha256": "aa3627f56640f6ee1c71a9356084963d73e7df34247158d89f0da13b66a98426",
-      "raw_create_sites": 0,
-      "canonical_root_create_sites": 1,
-      "canonical_child_link_sites": 1,
-      "canonical_terminal_sites": 0,
-      "raw_event_create_sites": 1,
-      "canonical_event_create_sites": 0,
-      "status": "ROOT_ENVELOPE_ADAPTED",
-      "trace_status": "LEGACY_ROOT_ADAPTED",
-      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
-      "material_boundary_ids": [],
-      "material_effect_kinds": [],
-      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
-      "runtime_verified": false
-    },
-    {
       "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
-      "source_sha256": "cc1dd4fc1e12d9312987005ade9b73b8818e3fa8c844585c3724e9398bdc5159",
+      "source_sha256": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -2607,23 +2590,6 @@
       "runtime_verified": false
     },
     {
-      "path": "base44/functions/founderMeetingAdmin/entry.ts",
-      "source_sha256": "0726d27df3c53b8f322dbb3d533f3414a1d2eaad3db5629f27c9b63d180bf9c7",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
-      "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "status": "NOT_ADAPTED",
-      "trace_status": "LEGACY_NOT_ADAPTED",
-      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
-      "material_boundary_ids": [],
-      "material_effect_kinds": [],
-      "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
-      "runtime_verified": false
-    },
-    {
       "path": "base44/functions/gdprAgent/entry.ts",
       "source_sha256": "5cebcb4bc88ce2bc16df7710b3e768aad03d53e4c5cf35227e211a54947365c7",
       "raw_create_sites": 1,
@@ -2949,7 +2915,7 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "source_sha256": "52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe",
+      "source_sha256": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
       "raw_create_sites": 0,
       "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
