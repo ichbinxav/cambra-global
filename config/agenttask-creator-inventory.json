@@ -6,7 +6,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "d71be32e37ef2fffd6e19edb5afafe80c09b577b2e833c309e66ff789e5c3e4a",
+  "source_inventory_hash": "07c13b26a212ea2586314104134dcda84540526ee1fb9a07f8f5a37d6c3bf8da",
   "counts": {
     "creator_files": 58,
     "raw_create_sites": 55,
@@ -21,9 +21,9 @@
     "material_trace_adapted_files": 0,
     "material_root_only_files": 3,
     "material_not_adapted_files": 43,
-    "material_route_files": 111,
-    "material_route_files_without_agenttask_creator": 65,
-    "unresolved_material_route_files": 111
+    "material_route_files": 107,
+    "material_route_files_without_agenttask_creator": 61,
+    "unresolved_material_route_files": 107
   },
   "compatibility": {
     "legacy_row_lineage": "UNKNOWN",
@@ -40,8 +40,8 @@
     "verification_level": "LOCAL_FAILURE_INJECTION",
     "blockers": [
       "46 material creator file(s) lack a complete local terminal envelope",
-      "65 material route file(s) have no local AgentTask creator",
-      "111 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
+      "61 material route file(s) have no local AgentTask creator",
+      "107 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope",
       "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
     ],
     "material_creator_blockers": [
@@ -131,9 +131,6 @@
       "base44/functions/generateInvoicePdf/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/generateMonthlySavingsReport/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/generateRecoverContractPdf/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/goLiveControlAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/instantlyProviderAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/instantlyReconciliationWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/intelligenceAccess/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/intelligenceAdmin/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/intelligenceMaintenanceWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
@@ -179,7 +176,6 @@
       "base44/functions/recordProviderRevenuePayment/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/recoverAutopilotWorker/entry.ts:MATERIAL_ROOT_ONLY",
       "base44/functions/recoverBillingDigest/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/requestP4Estimate/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/resendInboundWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/resolveCommercialApproval/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/retryPendingRecoverContracts/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
@@ -843,54 +839,6 @@
         "material_schedule",
         "provider_effect",
         "terms"
-      ],
-      "agenttask_creator": false,
-      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
-    },
-    {
-      "path": "base44/functions/goLiveControlAdmin/entry.ts",
-      "source_sha256": "0e620ab86fbbe353d66e9073c432c23bd78ff98332d0947ba0af93bb0ece16c0",
-      "boundary_ids": [
-        "MB-PAID-API-ENRICHMENT"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
-      ],
-      "agenttask_creator": false,
-      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
-    },
-    {
-      "path": "base44/functions/instantlyProviderAdmin/entry.ts",
-      "source_sha256": "1836b08c90922e65e558be8eab59481f43b9aebe7cbfe6b480c7efccabd87752",
-      "boundary_ids": [
-        "MB-PAID-API-ENRICHMENT"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
-      ],
-      "agenttask_creator": false,
-      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
-    },
-    {
-      "path": "base44/functions/instantlyReconciliationWorker/entry.ts",
-      "source_sha256": "b25118c8ba1b1f6a0960614306d9c76b5697920bff315aa5938cff197d1a9df6",
-      "boundary_ids": [
-        "MB-PAID-API-ENRICHMENT"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
       ],
       "agenttask_creator": false,
       "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
@@ -1645,22 +1593,6 @@
         "paid_spend",
         "provider_effect",
         "send"
-      ],
-      "agenttask_creator": false,
-      "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "trace_resolution": "UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR"
-    },
-    {
-      "path": "base44/functions/requestP4Estimate/entry.ts",
-      "source_sha256": "a454ffebe467fbef66f8c6dcc12ca5d6e609491287c6048949d8693491ced548",
-      "boundary_ids": [
-        "MB-PAID-API-ENRICHMENT"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
       ],
       "agenttask_creator": false,
       "creator_trace_status": "NO_LOCAL_AGENTTASK_CREATOR",
