@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "85e0bb1df58b7865cd9ea394a2cdbbaa128a7ae6d9af5444b813947a593bab6e",
+  "source_inventory_hash": "a9d7e68c86d75f3c612647bb318c4abf9d27b40d794c3b685de91aa0285047da",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -655,7 +655,7 @@
     },
     {
       "path": "base44/functions/dataSyncAgent/entry.ts",
-      "source_sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
+      "source_sha256": "58fcbe82b585ba81bc7802d85a8667532e6b87cbc25ff5ad8dbedcaea21096e8",
       "boundary_ids": [
         "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
       ],
@@ -1099,7 +1099,7 @@
     },
     {
       "path": "base44/functions/oauthConnector/entry.ts",
-      "source_sha256": "d0424c4429aa8002e7384fe61f070e54e5d0dae637da49da57b6e3dbb9c8b118",
+      "source_sha256": "d34856443fd7cefb8ba98186ee8e879f3ef5418c69f10ae8b0710a05cd3078dc",
       "boundary_ids": [
         "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
       ],
@@ -1487,7 +1487,7 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-      "source_sha256": "3ae40761debc52f547cbc07d3dfb1189ad49e53358a0d2b3ffa208c3875d4f36",
+      "source_sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784",
       "boundary_ids": [
         "MB-BILL-RECOVER-STRIPE",
         "MB-SCHEDULER-BASE"
@@ -2323,7 +2323,7 @@
     },
     {
       "path": "base44/functions/dataSyncAgent/entry.ts",
-      "source_sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
+      "source_sha256": "58fcbe82b585ba81bc7802d85a8667532e6b87cbc25ff5ad8dbedcaea21096e8",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -3057,7 +3057,7 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-      "source_sha256": "3ae40761debc52f547cbc07d3dfb1189ad49e53358a0d2b3ffa208c3875d4f36",
+      "source_sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784",
       "raw_create_sites": 0,
       "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,

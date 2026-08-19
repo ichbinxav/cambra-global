@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "d21e105047ea34ab0ec220594b41b037b68b64827c0761178a4b8ad807722320",
+  "input_fingerprint_sha256": "a291927aab452481b5b45ba3b3871b095a2fc22a0127f4bce5f589a06b9c119b",
   "input_file_count": 126,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2405,8 +2405,8 @@
         },
         {
           "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-          "sha256": "3ae40761debc52f547cbc07d3dfb1189ad49e53358a0d2b3ffa208c3875d4f36",
-          "bytes": 18071
+          "sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784",
+          "bytes": 18308
         },
         {
           "path": "base44/functions/stripeBillingWebhook/entry.ts",
@@ -3330,13 +3330,13 @@
         },
         {
           "path": "base44/functions/dataSyncAgent/entry.ts",
-          "sha256": "94d7e65ff6b870f508dbc43ae155885f48f956505362fdc54aaf5de0922a3a2f",
-          "bytes": 112389
+          "sha256": "58fcbe82b585ba81bc7802d85a8667532e6b87cbc25ff5ad8dbedcaea21096e8",
+          "bytes": 113774
         },
         {
           "path": "base44/functions/oauthConnector/entry.ts",
-          "sha256": "d0424c4429aa8002e7384fe61f070e54e5d0dae637da49da57b6e3dbb9c8b118",
-          "bytes": 82168
+          "sha256": "d34856443fd7cefb8ba98186ee8e879f3ef5418c69f10ae8b0710a05cd3078dc",
+          "bytes": 82443
         },
         {
           "path": "base44/functions/rateIntelligenceWatchWorker/entry.ts",
