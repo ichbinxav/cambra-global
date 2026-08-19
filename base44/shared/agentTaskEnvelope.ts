@@ -1116,11 +1116,18 @@ function terminalSettlementFence(task: any, revision: number) {
       "status",
     ]
   ) {
-    filter[field] = field === "trace_revision"
+    const expected = field === "trace_revision"
       ? revision
       : task[field] === undefined
       ? null
       : task[field];
+    // The platform query engine cannot match an ARRAY field by equality: such a
+    // predicate never matches any row, so including it here made every terminal
+    // settlement fail as a false conflict. Array-valued fields stay out of the
+    // CAS predicate and are still verified exactly in the authoritative
+    // readback below; serialization remains owned by trace_revision.
+    if (Array.isArray(expected)) continue;
+    filter[field] = expected;
   }
   return filter;
 }
