@@ -4,27 +4,31 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 import { quarantineReasonForLegacyIntelligence } from '../../shared/intelligenceTenantScope.ts';
 
+// Quarantine patches use updateMany + $set on purpose: the rows being
+// quarantined are legacy records that FAIL current schema validation (missing
+// legal_basis/purpose/retention_policy_key, ...). A full-record update() can
+// never pass validation on exactly the rows this worker exists to quarantine.
 async function quarantineEvidence(s: any, row: any, reason: string) {
   if (row.quarantined) return false;
-  await s.entities.IntelligenceEvidence.update(row.id, { quarantined: true, quarantine_reason: reason });
+  await s.entities.IntelligenceEvidence.updateMany({ id: row.id }, { $set: { quarantined: true, quarantine_reason: reason } });
   return true;
 }
 
 async function quarantineObservation(s: any, row: any, reason: string) {
   if (row.status === 'quarantined') return false;
-  await s.entities.IntelligenceObservation.update(row.id, { status: 'quarantined', quarantine_reason: reason });
+  await s.entities.IntelligenceObservation.updateMany({ id: row.id }, { $set: { status: 'quarantined', quarantine_reason: reason } });
   return true;
 }
 
 async function quarantineClaim(s: any, row: any, reason: string) {
   if (row.knowledge_state === 'quarantined') return false;
-  await s.entities.KnowledgeClaim.update(row.id, {knowledge_state:'quarantined', quarantine_reason: reason});
+  await s.entities.KnowledgeClaim.updateMany({ id: row.id }, { $set: { knowledge_state: 'quarantined', quarantine_reason: reason } });
   return true;
 }
 
 async function quarantineOutcome(s: any, row: any, reason: string) {
   if (row.quarantined) return false;
-  await s.entities.IntelligenceOutcome.update(row.id, { quarantined: true, quarantine_reason: reason });
+  await s.entities.IntelligenceOutcome.updateMany({ id: row.id }, { $set: { quarantined: true, quarantine_reason: reason } });
   return true;
 }
 
@@ -87,7 +91,7 @@ guardedScheduledServe(
       }
       for (const row of pricing) {
         if (Number(row.variable_rate_bps || 0) < 0 || Number(row.variable_rate_bps || 0) > 5000) {
-          await s.entities.ProviderPricingVersion.update(row.id, {knowledge_state:'quarantined'}).catch((error: any) =>
+          await s.entities.ProviderPricingVersion.updateMany({ id: row.id }, { $set: { knowledge_state: 'quarantined' } }).catch((error: any) =>
             safeBestEffort(error, { operation: 'knowledgeIntegrityWorker', fallback: null, severity: 'secondary' })
           );
           anomalies.push({ type: 'impossible_pricing', entity: 'ProviderPricingVersion', id: row.id });
