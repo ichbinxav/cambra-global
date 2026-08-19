@@ -478,7 +478,10 @@ export default async function (req: Request): Promise<Response> {
     }
     return Response.json({ ok: false, error: message }, { status: 500 });
   } finally {
-    if (svc && schedulerClaim) {
+    // Only a claim that was actually GRANTED may be finalized. A denied claim
+    // object owns no SchedulerRun row, so finalizing it threw
+    // scheduler_claim_missing out of `finally` and erased the real response.
+    if (svc && schedulerClaim?.allowed === true) {
       await finishSchedulerRunOrThrow(svc, schedulerClaim, {
         worker_key: "reconcileRecoverBilling",
         ...(schedulerRuntime ||
