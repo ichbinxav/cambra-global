@@ -418,6 +418,10 @@ const REGISTRY = {
     data_endpoints: [
       { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
     ],
+    // Mirror of dataSyncAgent's REGISTRY (verifyRegistrySync compares both).
+    // /v2/payments carries no refunds; Square exposes them on /v2/refunds,
+    // which is not wired. Declared so the gap is visible instead of silent.
+    known_data_gaps: ["refunds_not_inline"],
     demo_mode: false,
   },
 

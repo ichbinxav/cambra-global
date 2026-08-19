@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "e23fdaa1c7cc43a3374b5d5947f3062c0124ca1d03c6bbbceb5bae36eb3e8708",
+  "input_fingerprint_sha256": "0bbc4c7af4678e68a8713b9910f7c2cddaf7e44f02e594ae14385a4a79f121db",
   "components": [
     {
       "key": "effect_authority",
@@ -217,8 +217,8 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-      "sha256": "3ae40761debc52f547cbc07d3dfb1189ad49e53358a0d2b3ffa208c3875d4f36",
-      "bytes": 18071
+      "sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784",
+      "bytes": 18308
     },
     {
       "path": "base44/functions/recoverAutopilotWorker/entry.ts",
@@ -242,8 +242,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "a59747ce543db54e86707edfc88154fe4a137dba53c8bc8c5af8cc578b7346df",
-      "bytes": 40480
+      "sha256": "53d97f5f82fca465ca21684e29f15ea32ef2b21bb47b8ef1343e589309f4aa4a",
+      "bytes": 40939
     },
     {
       "path": "base44/shared/canonicalIncident.ts",

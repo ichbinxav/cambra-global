@@ -33,7 +33,7 @@ guardedScheduledServe({"worker_key":"purgePaymentsAnalysisSessions","cadence_sec
     const policy=retentionCutoff('anonymous_analyzer_sessions');
     if(!policy.ok)return Response.json({ok:false,error:policy.error},{status:503});
     const cutoff = policy.cutoff;
-    const evidenceStart=retentionEvidenceStart({run_key:`anonymous-analyzer:${new Date().toISOString()}:${crypto.randomUUID()}`,policy_key:'anonymous_analyzer_sessions',action:'DELETE',cutoff_at:cutoff,scope:'PaymentsAnalysisSession'});
+    const evidenceStart=retentionEvidenceStart({run_key:`anonymous-analyzer:${new Date().toISOString()}:${crypto.randomUUID()}`,policy_key:'anonymous_analyzer_sessions',action:'DELETE',cutoff_at:cutoff,scope:'PaymentsAnalysisSession+UnclaimedAnonBrand'});
     if(!evidenceStart.ok)return Response.json({ok:false,error:evidenceStart.error},{status:503});
     const evidence=await base44.asServiceRole.entities.RetentionExecutionEvidence.create(evidenceStart.row).catch((error:any)=>safeBestEffort(error,{operation:'purgePaymentsAnalysisSessions',fallback:null,severity:'secondary'}));
     if(!evidence)return Response.json({ok:false,error:'retention_audit_evidence_unavailable'},{status:503});
@@ -69,6 +69,58 @@ guardedScheduledServe({"worker_key":"purgePaymentsAnalysisSessions","cadence_sec
       batchesProcessed += 1;
     }
 
+    // ─── Unclaimed anonymous brands (TASK-CLEANUP-2, closed 2026-08-19) ────
+    // A visitor who runs the anonymous Analyzer and never signs up leaves a
+    // Brand with `anon_session_id` populated, plus its AnalyzerInput /
+    // AnalyzerResult rows. The claim flow CLEARS anon_session_id, so a
+    // still-populated value is a precise, non-guessing marker of "never
+    // claimed". Those rows were invisible to every human user and accumulated
+    // forever; they now expire under the SAME 90-day anonymous-analyzer policy
+    // as the sessions above (one policy, one cutoff — no second retention
+    // window invented here).
+    //
+    // Defensive guard: a brand with an economic record (Mandate or
+    // DealActivation) is NEVER deleted, even if the marker is present. That
+    // combination should be impossible, and if it ever happens the right
+    // outcome is to skip and leave it for a human, not to destroy contractual
+    // history.
+    let brandsDeleted = 0;
+    let brandsSkipped = 0;
+    let analyzerRowsDeleted = 0;
+    const staleAnonBrands = await base44.asServiceRole.entities.Brand.filter(
+      { anon_session_id: { $nin: [null, ''] }, created_date: { $lt: cutoff } },
+      'created_date',
+      BATCH_SIZE,
+    ).catch((error: any) => safeBestEffort(error, { operation: 'purgePaymentsAnalysisSessions.anon_brands', fallback: [], severity: 'secondary' }));
+
+    for (const brand of (staleAnonBrands || [])) {
+      try {
+        const [mandates, activations] = await Promise.all([
+          base44.asServiceRole.entities.Mandate.filter({ brand_id: brand.id }, '-created_date', 1),
+          base44.asServiceRole.entities.DealActivation.filter({ brand_id: brand.id }, '-created_date', 1),
+        ]);
+        if ((mandates || []).length > 0 || (activations || []).length > 0) {
+          brandsSkipped += 1;
+          console.warn('purgePaymentsAnalysisSessions: anon brand has economic records, skipped:', brand.id);
+          continue;
+        }
+        for (const entity of ['AnalyzerResult', 'AnalyzerInput']) {
+          const rows = await base44.asServiceRole.entities[entity].filter({ brand_id: brand.id }, 'created_date', BATCH_SIZE);
+          for (const row of (rows || [])) {
+            await base44.asServiceRole.entities[entity].delete(row.id);
+            analyzerRowsDeleted += 1;
+          }
+        }
+        await base44.asServiceRole.entities.Brand.delete(brand.id);
+        brandsDeleted += 1;
+      } catch (e) {
+        totalFailed += 1;
+        console.warn('purgePaymentsAnalysisSessions: anon brand purge failed:', brand.id, (e as any)?.message);
+      }
+    }
+    totalCandidates += (staleAnonBrands || []).length;
+    totalDeleted += brandsDeleted;
+
     const summary = {
       ok: true,
       retention_days: policy.retention_days,
@@ -76,6 +128,9 @@ guardedScheduledServe({"worker_key":"purgePaymentsAnalysisSessions","cadence_sec
       cutoff,
       deleted: totalDeleted,
       batches_processed: batchesProcessed,
+      anon_brands_deleted: brandsDeleted,
+      anon_brands_skipped_with_economic_records: brandsSkipped,
+      analyzer_rows_deleted: analyzerRowsDeleted,
     };
     const complete=retentionEvidenceComplete(evidenceStart,{candidate_count:totalCandidates,succeeded_count:totalDeleted,failed_count:totalFailed,batches_processed:batchesProcessed});
     await base44.asServiceRole.entities.RetentionExecutionEvidence.update(evidence.id,complete);

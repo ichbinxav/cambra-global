@@ -301,6 +301,13 @@ const REGISTRY = {
     data_endpoints: [
       { url: "https://connect.squareup.com/v2/payments", method: "GET", normalize_as: "square_payments" },
     ],
+    // /v2/payments does NOT carry refunds — Square exposes them on a separate
+    // /v2/refunds endpoint that is not wired. Declared here so the sync marks
+    // the integration as structurally incomplete (integration_data_quality
+    // drops to 70 with this gap named) instead of presenting a GMV total that
+    // silently ignores money given back. Remove the gap only when the refunds
+    // endpoint is actually synced.
+    known_data_gaps: ["refunds_not_inline"],
     demo_mode: false,
   },
 
@@ -1325,10 +1332,20 @@ const normalizers = {
     // is observability only, zero behavior change.
     let droppedNoAnchor = 0;
     const droppedSampleTypes = new Set();
+    // T3 RESOLVED (2026-08-19) — refunds are no longer dropped.
+    // Previously ONLY "PAYMENT" was accepted as the group anchor, on the
+    // unverified assumption that Zettle models a refund as a PAYMENT line with
+    // a negative amount. If Zettle instead emits a literal "REFUND"
+    // originatorTransactionType, every refund group had no anchor and was
+    // silently discarded via `continue` → GMV overstated (refunds never
+    // subtracted). Accepting REFUND as an anchor is safe in BOTH worlds: if the
+    // type never appears the behaviour is byte-identical to before; if it does
+    // appear the money is preserved instead of lost. No value is invented — the
+    // amount is read as-reported (refunds arrive negative, so they reduce GMV
+    // correctly) and the fee comes from the paired FEE_REFUND line.
+    const ANCHOR_TYPES = ["PAYMENT", "REFUND"];
     for (const [uuid, groupLines] of groups) {
-      // Anchor line: the PAYMENT (or REFUND, which Zettle models as a
-      // PAYMENT with negative amount). If absent, skip the group.
-      const paymentLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT");
+      const paymentLine = groupLines.find(l => ANCHOR_TYPES.includes(l?.originatorTransactionType));
       if (!paymentLine) {
         droppedNoAnchor++;
         for (const l of groupLines) {
@@ -1336,7 +1353,12 @@ const normalizers = {
         }
         continue;
       }
-      const feeLine = groupLines.find(l => l?.originatorTransactionType === "PAYMENT_FEE");
+      // A sale group carries PAYMENT_FEE; a refund group carries FEE_REFUND
+      // (the fee Zettle gives back). Either is the fee line for its group.
+      const feeLine = groupLines.find(l =>
+        l?.originatorTransactionType === "PAYMENT_FEE"
+        || l?.originatorTransactionType === "FEE_REFUND"
+      );
       const amount = toNum(paymentLine?.amount) / 100;
       const fee = feeLine ? Math.abs(toNum(feeLine?.amount)) / 100 : 0;
       const occurredAt = typeof paymentLine?.timestamp === "string"
@@ -1345,11 +1367,9 @@ const normalizers = {
       // Type whitelist — only the documented Zettle anchor types are preserved;
       // anything else (new type added by Zettle, garbage) → null. Consistent
       // with the same fix applied to square_payments.status. See audit T6.
-      // NOTE: Zettle's documented sale-anchor types are limited to PAYMENT;
-      // REFUND handling is unresolved (see T3 audit) and intentionally NOT
-      // added to the whitelist here — preserving raw on unknown would
-      // contradict the strict-over-permissive decision applied to Square.
-      const KNOWN_TYPES = ["PAYMENT"];
+      // Whitelist mirrors ANCHOR_TYPES: PAYMENT (sale) and REFUND. Anything
+      // else still collapses to null — strict-over-permissive is preserved.
+      const KNOWN_TYPES = ANCHOR_TYPES;
       const rawType = paymentLine?.originatorTransactionType;
       const type = KNOWN_TYPES.includes(rawType) ? rawType : null;
       rows.push({
@@ -1369,7 +1389,8 @@ const normalizers = {
       console.warn(
         `[zettle_finance] dropped ${droppedNoAnchor} group(s) with no PAYMENT anchor. ` +
         `Sample types in dropped groups: [${Array.from(droppedSampleTypes).join(", ")}]. ` +
-        `If "REFUND" appears here, T3 is real — refunds are being silently lost.`
+        `PAYMENT and REFUND are both accepted anchors, so a drop here means an ` +
+        `undocumented Zettle type — report it before trusting the GMV total.`
       );
     }
     return rows;
