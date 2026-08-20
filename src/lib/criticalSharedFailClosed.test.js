@@ -31,6 +31,17 @@ describe("critical shared execution dependencies fail closed", () => {
       .rejects.toMatchObject({ code:"CRITICAL_EXECUTION_DEPENDENCY_UNAVAILABLE", operation:"billing_rule_authority_read" });
   });
 
+  it("never invents live pricing when a caller omits frozen billing economics", async () => {
+    const svc = { entities:{ BillingRule:{ filter:vi.fn().mockResolvedValue([]) } } };
+    const resolved = await resolveFeePctForMonth(
+      svc,
+      { brand_id:"b" },
+      "2026-08",
+    );
+    expect(Number.isNaN(resolved.pct)).toBe(true);
+    expect(resolved.source).toBe("caller_supplied_fallback");
+  });
+
   it("does not authorize a rate-limit request when its counter store is unavailable", async () => {
     const svc = { entities:{ RateLimitCounter:{ filter:vi.fn().mockRejectedValue(new Error("down")) } } };
     await expect(consumeRateLimit(svc, { principal_id:"p", principal_type:"api_key", limit:10, window_seconds:60 }))
