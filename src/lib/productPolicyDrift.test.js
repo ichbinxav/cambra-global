@@ -50,7 +50,8 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
     const src = read("base44/shared/billingFee.ts");
     expect(src).not.toMatch(/fallbackPct\s*=\s*25\b/);
     expect(src).not.toMatch(/\?\?\s*25\b/);
-    expect(src).toContain("getSuccessFeePct");
+    expect(src).toContain("caller_supplied_fallback");
+    expect(src).not.toContain("getSuccessFeePct");
   });
   it("referralProgram.ts imports the ladder from the generated policy", () => {
     const src = read("base44/shared/referralProgram.ts");
@@ -75,11 +76,16 @@ describe("policy drift guards — backend economic hardcodes (v60.1)", () => {
     expect(read("base44/functions/acceptRecoverMandate/entry.ts")).toContain("getSuccessFeePct");
   });
   it("Recover context/commitments never hardcode a 25% fallback", () => {
-    for (const rel of ["base44/functions/getRecoverAcceptanceContext/entry.ts", "base44/functions/getMyRecoveryCommitments/entry.ts"]) {
-      const src = read(rel);
-      expect(src).toContain("getSuccessFeePct");
-      expect(src).not.toMatch(/fallbackPct\s*:\s*25\b/);
-    }
+    const context = read("base44/functions/getRecoverAcceptanceContext/entry.ts");
+    expect(context).toContain("getSuccessFeePct"); // current offer only, before acceptance
+    expect(context).toContain("resolveFeePctForMonth");
+    expect(context).not.toMatch(/fallbackPct\s*:\s*25\b/);
+
+    const commitments = read("base44/functions/getMyRecoveryCommitments/entry.ts");
+    expect(commitments).toContain("resolveFeePctForMonth");
+    expect(commitments).toContain("recoveryEconomicsV2");
+    expect(commitments).not.toContain("getSuccessFeePct"); // accepted/live economics must not drift with current policy
+    expect(commitments).not.toMatch(/fallbackPct\s*:\s*25\b/);
   });
   it("acceptance snapshot carries policy_version", () => {
     expect(read("base44/shared/recoverAcceptance.ts")).toContain("policy_version");
@@ -136,11 +142,12 @@ describe("policy drift guards — v60.2 unsafe fallback elimination", () => {
     expect(src).toContain("applied_fee_pct");
   });
 
-  it("approveRecoverReportForInvoicing uses resolveContractPolicy and getSuccessFeePct", () => {
+  it("approveRecoverReportForInvoicing uses frozen contract policy and month-specific fee authority", () => {
     const src = read("base44/functions/approveRecoverReportForInvoicing/entry.ts");
     expect(src).toContain("resolveContractPolicy");
     expect(src).toContain("buildContractEconomicView");
-    expect(src).toContain("getSuccessFeePct");
+    expect(src).toContain("resolveFeePctForMonth");
+    expect(src).not.toContain("getSuccessFeePct");
     expect(src).not.toMatch(/const STANDARD_FEE_PCT = 25/);
     // Immutability guard present.
     expect(src).toContain("provenance_mismatch");

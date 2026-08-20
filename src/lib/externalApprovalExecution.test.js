@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   beginExternalApprovalEffects,
   claimExternalApprovalExecution,
@@ -12,6 +12,17 @@ import {
 } from "../../base44/shared/approvalAuthority.ts";
 import { sha256 } from "../../base44/shared/intelligenceCore.ts";
 import fs from "node:fs";
+
+const TEST_NOW = new Date("2026-08-14T12:00:00.000Z");
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(TEST_NOW);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const matches = (row, query) => Object.entries(query).every(([key, value]) => row?.[key] === value);
 
