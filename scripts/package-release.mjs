@@ -62,7 +62,10 @@ const releaseControl = releaseControlHash(root);
 if (releaseControl.fileCount < Object.keys(RELEASE_EVIDENCE_BINDINGS).length + 1) fail("release control plane is incomplete after canonical verification");
 
 const safeVersion = String(release.version).replace(/[^0-9A-Za-z._-]/g, "-");
-const archiveName = `CAMBRA-v${safeVersion}-verified.zip`;
+const safeVerdict = String(release.finalVerdict || "UNVERIFIED")
+  .replace(/[^0-9A-Za-z._-]/g, "-");
+const archiveName =
+  `CAMBRA-v${safeVersion}-repository-verified-${safeVerdict}.zip`;
 const output = path.resolve(requestedOutput || path.join(root, ".release-artifacts", archiveName));
 if (output.startsWith(`${root}${path.sep}`) && !output.includes(`${path.sep}.release-artifacts${path.sep}`)) {
   fail("output inside the source tree must be under .release-artifacts/");
