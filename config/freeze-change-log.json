@@ -839,6 +839,15 @@
       "oldHash": "3c00b3468f074b0df92882902d0c5a417275e46a42598c31c054dba7764bdb29",
       "newHash": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
       "reason": "Scheduler-linked worker adopted req.clone().json() to prevent request-stream exhaustion; canonical envelope binding unchanged"
+    },
+    {
+      "date": "2026-08-20T12:49:23.364Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
+      "newHash": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
+      "reason": "Split ambiguous hosted Instantly maintenance into explicit retry and reconciliation routes; preserve fail-closed replay and no economic semantics change"
     }
   ]
 }
