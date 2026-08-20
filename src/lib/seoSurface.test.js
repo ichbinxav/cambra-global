@@ -20,9 +20,13 @@ const seoMeta = readFile("src/components/shared/SeoMeta.jsx");
 const indexHtml = readFile("index.html");
 const sitemap = readFile("public/sitemap.xml");
 const robots = readFile("public/robots.txt");
+const securityTxt = readFile("public/.well-known/security.txt");
 const appJsx = readFile("src/App.jsx");
 const i18n = readFile("src/lib/i18n.jsx");
 const partnersJsx = readFile("src/pages/Partners.jsx");
+const adminOverview = readFile("src/pages/admin/AdminOverview.jsx");
+const copilotBrief = readFile("src/components/admin/command/CopilotBrief.jsx");
+const devExport = readFile("src/pages/DevExport.jsx");
 
 // Lightweight extraction of the SEO_STATIC map from seoConfig.js source.
 // We import the module to read the real export.
@@ -73,6 +77,20 @@ describe("SEO architecture — single source of truth", () => {
   });
 });
 
+describe("Canonical aliases and retired admin routes", () => {
+  it("redirects both Landing aliases directly to the canonical root", () => {
+    expect(appJsx).toContain('<Route path="/Landing" element={<Navigate to="/" replace />} />');
+    expect(appJsx).toContain('<Route path="/landing" element={<Navigate to="/" replace />} />');
+  });
+
+  it("does not expose executable links to retired admin surfaces", () => {
+    expect(adminOverview).not.toContain('"/admin/applications"');
+    expect(copilotBrief).not.toContain('to="/admin/copilot"');
+    expect(copilotBrief).toContain('to="/admin/command"');
+    expect(devExport).not.toContain('"/admin/applications"');
+  });
+});
+
 describe("SEO config — every public route is complete", () => {
   let SEO_STATIC, CANONICAL_PUBLIC_PATHS, buildCanonicalUrl, getSeoForPathLang;
   beforeAll(async () => {
@@ -86,7 +104,8 @@ describe("SEO config — every public route is complete", () => {
   const LANGS = ["en", "fr", "es"];
   const EXPECTED_ROUTES = [
     "/", "/Analyzer", "/HowItWorks", "/Pricing", "/Partners", "/ForProviders",
-    "/Contact", "/Security", "/Help", "/Privacy", "/Terms", "/Cookies",
+    "/Contact", "/Security", "/Help", "/Privacy", "/Terms", "/Dpa",
+    "/Subprocessors", "/Cookies",
   ];
 
   it("has exactly the expected canonical public routes", () => {
@@ -222,6 +241,13 @@ describe("Sitemap + robots sync with seoConfig", () => {
     expect(robots).toContain("Disallow: /functions/");
     expect(robots).toContain("Disallow: /auth/");
     expect(robots).toContain("Sitemap: https://cambra.global/sitemap.xml");
+  });
+
+  it("publishes a canonical RFC 9116 security contact", () => {
+    expect(securityTxt).toContain("Contact: mailto:support@cambra.global");
+    expect(securityTxt).toContain("Canonical: https://cambra.global/.well-known/security.txt");
+    expect(securityTxt).toContain("Policy: https://cambra.global/Security");
+    expect(securityTxt).toMatch(/Expires: 2027-08-19T23:59:59Z/);
   });
 });
 
