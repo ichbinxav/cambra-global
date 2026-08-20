@@ -402,6 +402,9 @@ Deno.serve(async (req) => {
     }
     return Response.json({ ok: false, error: 'scheduler_run_failed', message }, { status: 500 });
   } finally {
-    if (svc && schedulerClaim) await finishSchedulerRunOrThrow(svc, schedulerClaim, { worker_key:'eclLifecycleScheduler' }, schedulerOk);
+    // A denied/ambiguous claim was never acquired and must not be finalized.
+    if (svc && schedulerClaim?.allowed === true) {
+      await finishSchedulerRunOrThrow(svc, schedulerClaim, { worker_key:'eclLifecycleScheduler' }, schedulerOk);
+    }
   }
 });
