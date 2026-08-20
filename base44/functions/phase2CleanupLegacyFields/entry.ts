@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // BillingRule: nothing legacy listed, but ensure no legacy fields remain (model/start_date)
     const rules = await base44.asServiceRole.entities.BillingRule.list();
     for (const r of rules) {
-      const patch = {};
+      const patch: Record<string, unknown> = {};
       if (r.model && !r.billing_model) patch.billing_model = r.model; // enforce canonical if needed
       if (r.start_date && !r.effective_start_date) patch.effective_start_date = r.start_date;
       if (Object.keys(patch).length) {
