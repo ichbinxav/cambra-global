@@ -96,11 +96,27 @@ export function configuredIncidentAlertRecipient() {
   ).trim();
 }
 
+export function incidentAlertProvenPreEffect(existing: any) {
+  const status = String(existing?.status || '');
+  if (!['FAILED', 'RETRY_PENDING'].includes(status)) return false;
+  const receipt = existing?.provider_receipt_json || {};
+  return !existing?.effect_started_at &&
+    !existing?.provider_message_id &&
+    !existing?.accepted_at &&
+    !existing?.delivered_at &&
+    receipt?.provider_reference_present !== true &&
+    receipt?.delivery_observed !== true &&
+    Number(existing?.provider_effects || 0) === 0;
+}
+
 export function alertRetryDecision(existing: any, at = Date.now()) {
   if (ACCEPTED_STATES.has(String(existing?.status || ''))) {
     return { allowed: false, reason: 'already_accepted_or_observed' };
   }
-  if (AMBIGUOUS_STATES.has(String(existing?.status || ''))) {
+  if (
+    AMBIGUOUS_STATES.has(String(existing?.status || '')) &&
+    !incidentAlertProvenPreEffect(existing)
+  ) {
     return { allowed: false, reason: 'prior_effect_requires_review' };
   }
   if (Number(existing?.attempt_count || 0) >= INCIDENT_ALERT_MAX_ATTEMPTS) {
@@ -161,7 +177,10 @@ export function selectIncidentAlertBatchCandidates(
         if (current && severityCovers(link.severity, current)) {
           acknowledged.add(link.incident_id);
         }
-      } else if (AMBIGUOUS_STATES.has(status)) {
+      } else if (
+        AMBIGUOUS_STATES.has(status) &&
+        !incidentAlertProvenPreEffect(delivery)
+      ) {
         ambiguous.add(link.incident_id);
       }
     }
@@ -220,6 +239,7 @@ export function buildIncidentAlertBatchPayload(
 function recentProviderEffect(deliveries: any[], now: Date) {
   const cutoff = now.getTime() - INCIDENT_ALERT_WINDOW_SECONDS * 1000;
   return deliveries.find((delivery) => {
+    if (incidentAlertProvenPreEffect(delivery)) return false;
     const timestamp = Date.parse(String(
       delivery?.effect_started_at ||
         (['DELIVERED', 'RETRY_PENDING', 'FAILED'].includes(delivery?.status)
