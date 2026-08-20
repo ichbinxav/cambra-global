@@ -104,15 +104,15 @@ export function resolvePublicExperience(marketCode) {
     }),
     landing: Object.freeze({ status: "AVAILABLE", reason: "INFORMATIONAL_SURFACE" }),
     analyzer: Object.freeze({
-      status: analyzerEnabled ? "ENABLED" : "LIMITED",
+      status: analyzerEnabled ? "ENABLED" : "WAITLIST",
       href: analyzerEnabled
         ? `/Analyzer?market=${encodeURIComponent(code)}`
-        : `/Contact?market=${encodeURIComponent(code)}&intent=market-access`,
-      reason: analyzerEnabled ? "MARKET_POLICY_ENABLED" : "PROTECTED_MARKET_RESEARCH_ONLY",
+        : `/#market-availability`,
+      reason: analyzerEnabled ? "MARKET_POLICY_ENABLED" : "NOT_AVAILABLE_IN_MARKET",
     }),
     recovery: Object.freeze({
       status: analyzerEnabled ? "REVIEW_REQUIRED" : "BLOCKED",
-      reason: analyzerEnabled ? "CASE_AND_LEGAL_REVIEW_REQUIRED" : "PROTECTED_MARKET_RESEARCH_ONLY",
+      reason: analyzerEnabled ? "CASE_AND_LEGAL_REVIEW_REQUIRED" : "NOT_AVAILABLE_IN_MARKET",
     }),
     outbound: Object.freeze({ status: MARKET_OUTBOUND_MODE, capacity: 0, allowed: false }),
     regulated: Object.freeze({
@@ -130,6 +130,20 @@ export function resolvePublicExperience(marketCode) {
       supportedLocales: Object.freeze([...locale.supported_product_locales]),
     }),
   });
+}
+
+export function canonicalPublicMarketCode(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const upper = raw.toUpperCase();
+  if (EUROPE_MARKET_BY_ISO2[upper]) return upper;
+  const low = raw.toLowerCase();
+  const market = EUROPE_MARKETS.find((row) =>
+    row.iso3 === upper
+    || row.canonical_name.toLowerCase() === low
+    || (row.aliases || []).some((alias) => alias.toLowerCase() === low)
+  );
+  return market?.iso2 || null;
 }
 
 export function marketDisplayName(code, locale = "en-GB") {

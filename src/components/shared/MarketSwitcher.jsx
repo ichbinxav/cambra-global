@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 import { ChevronDown, MapPin } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { EUROPE_MARKETS, marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
+import { ACTIVE_LAUNCH_MARKETS, EUROPE_MARKETS, marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
 
 export default function MarketSwitcher({ className = "", variant = "dark" }) {
   const { locale, t } = useTranslation();
   const { marketCode, detectedMarket, isAutomatic, setMarket, setAutoMarket } = useMarket();
   const dark = variant === "dark";
-  const options = useMemo(() => EUROPE_MARKETS.map((market) => ({
+  const options = useMemo(() => EUROPE_MARKETS.filter((market) => ACTIVE_LAUNCH_MARKETS.includes(market.iso2)).map((market) => ({
     code: market.iso2,
     name: marketDisplayName(market.iso2, locale),
     currency: market.primary_currency,

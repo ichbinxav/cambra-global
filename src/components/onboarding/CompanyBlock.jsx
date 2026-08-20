@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import CountrySelect from '@/components/inputs/CountrySelect';
 import CategorySelect from '@/components/inputs/CategorySelect';
 import { useTranslation } from '@/lib/i18n.jsx';
+import { canonicalPublicMarketCode, resolvePublicExperience, useMarket } from '@/lib/publicExperience.jsx';
 import { Building2, Mail, Globe, Instagram, Linkedin, Twitter, Youtube, Music2, CheckCircle2, ArrowRight } from 'lucide-react';
 
 /** @param {{ onCreated?: (brand: any) => void, autoRedirect?: boolean }} [props] */
@@ -21,6 +22,7 @@ export default function CompanyBlock({ onCreated = undefined, autoRedirect = tru
   const navigate = useNavigate();
   const { toast } = useToast();
   const { lang, t } = useTranslation();
+  const { setMarket } = useMarket();
 
   useEffect(()=>{ (async()=>{
     // A2 migration — resolve brand by contact_email (single source of truth).
@@ -73,9 +75,18 @@ export default function CompanyBlock({ onCreated = undefined, autoRedirect = tru
         description: t(isNew ? 'cb_ok_created_body' : 'cb_ok_saved_body'),
       });
       if (onCreated) onCreated(saved);
-      // Auto-redirect to Analyzer on first creation — keeps the flow continuous
+      // Registration is allowed in every country. Commercially inactive markets
+      // are parked with an explicit waitlist choice instead of being sent into Analyzer.
       if (isNew && autoRedirect) {
-        setTimeout(() => navigate('/Analyzer'), 600);
+        const marketCode = canonicalPublicMarketCode(saved?.country || payload.country);
+        const marketExperience = marketCode ? resolvePublicExperience(marketCode) : null;
+        if (marketCode && marketExperience?.analyzer?.status !== 'ENABLED') {
+          setMarket(marketCode);
+          toast({ title: t('market_status_limited'), description: t('market_section_limited') });
+          setTimeout(() => navigate('/#market-availability'), 600);
+        } else {
+          setTimeout(() => navigate('/Analyzer'), 600);
+        }
       }
     } catch (err) {
       toast({ title: t('cb_err_save'), description: err?.message || t('cb_err_save_body'), variant: 'destructive' });

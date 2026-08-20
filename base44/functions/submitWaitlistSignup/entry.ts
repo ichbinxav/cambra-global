@@ -4,6 +4,7 @@ import { emergencyState } from "../../shared/operationalControl.ts";
 import { normalizeLocale } from "../../shared/emailLocale.ts";
 import { consumePublicRequestRateLimit } from "../../shared/rateLimit.ts";
 import { internalErrorResponse } from "../../shared/publicErrors.ts";
+import { canonicalMarket } from "../../shared/marketContext.ts";
 
 /**
  * submitWaitlistSignup
@@ -95,6 +96,7 @@ Deno.serve(async (req) => {
     const email = String(body?.email || "").trim().toLowerCase();
     const source = String(body?.source || "waitlist").trim();
     const context = body?.context || {};
+    const marketCode = canonicalMarket(context?.market_code)?.iso2 || null;
 
     // Basic email validation
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -116,6 +118,7 @@ Deno.serve(async (req) => {
     const notes = [
       `Waitlist signup: ${source}`,
       context.brand_name ? `Brand: ${context.brand_name}` : null,
+      marketCode ? `Market: ${marketCode}` : null,
       context.total_savings
         ? `Savings estimate: €${
           Number(context.total_savings).toLocaleString("fr-FR")
@@ -137,6 +140,7 @@ Deno.serve(async (req) => {
       email,
       consent: true, // user explicitly opted in by submitting the form
       source_page: source,
+      ...(marketCode ? { market_code: marketCode } : {}),
       notes,
       // EMAIL-1 T2 — captured now so any future merchant-facing email to this
       // lead can be sent in the language they were browsing in. This endpoint

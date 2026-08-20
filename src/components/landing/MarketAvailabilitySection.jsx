@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, CircleAlert, Globe2, Languages, Scale } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
+import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
 
@@ -38,9 +39,17 @@ export default function MarketAvailabilitySection() {
               {enabled ? t("market_section_enabled") : t("market_section_limited")}
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Link to={experience.analyzer.href} className="btn-primary inline-flex items-center gap-2">
-                {t(enabled ? "market_cta_analyze" : "market_cta_access")} <ArrowRight size={15} />
-              </Link>
+              {enabled ? (
+                <Link to={experience.analyzer.href} className="btn-primary inline-flex items-center gap-2">
+                  {t("market_cta_analyze")} <ArrowRight size={15} />
+                </Link>
+              ) : (
+                <JoinWaitlistButton
+                  label={t("waitlist_cta")}
+                  source="market_not_launch_waitlist"
+                  context={{ market_code: marketCode }}
+                />
+              )}
               <span className="inline-flex items-center gap-2 text-[12px] font-semibold" style={{ color: enabled ? "var(--menta-dark)" : "#a15c00" }}>
                 {enabled ? <CheckCircle2 size={15} /> : <CircleAlert size={15} />}
                 {t(enabled ? "market_status_enabled" : "market_status_limited")}
