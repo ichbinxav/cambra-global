@@ -45,7 +45,7 @@ describe("critical shared execution dependencies fail closed", () => {
   it("fails closed when an applicable BillingRule lacks a finite fee", async () => {
     const svc = { entities:{ BillingRule:{ filter:vi.fn().mockResolvedValue([
       { id:"rule-bad", effective_start_date:"2026-01-01", node_share_percent:null },
-    ]) } } } };
+    ]) } } };
     await expect(resolveFeePctForMonth(
       svc,
       { brand_id:"b", fallbackPct:20 },
