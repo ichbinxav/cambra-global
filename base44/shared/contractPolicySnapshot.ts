@@ -281,11 +281,54 @@ export function resolveContractPolicy(input: {
   // 2 — BillingRule (contractual fee over a date window)
   if (input.billingRule && input.billingRule.node_share_percent != null) {
     const hasPolicy = !!input.billingRule.policy_version;
+    const successFeePct = Number(input.billingRule.node_share_percent);
+    const merchantSharePct = input.billingRule.merchant_share_pct != null
+      ? Number(input.billingRule.merchant_share_pct)
+      : Number.NaN;
+    const feeDurationMonths = input.billingRule.fee_duration_months != null
+      ? Number(input.billingRule.fee_duration_months)
+      : Number.NaN;
+    const incomplete = [
+      ...(!Number.isFinite(successFeePct) ? ['billing_rule_fee_missing'] : []),
+      ...(hasPolicy && !Number.isFinite(merchantSharePct)
+        ? ['billing_rule_share_missing']
+        : []),
+      ...(hasPolicy && !Number.isFinite(feeDurationMonths)
+        ? ['billing_rule_duration_missing']
+        : []),
+    ];
+    if (incomplete.length) {
+      return {
+        successFeePct: 0,
+        merchantSharePct: 0,
+        feeDurationMonths: 0,
+        feeBase: 'unknown',
+        currency: input.billingRule.currency || 'EUR',
+        policyVersion: hasPolicy
+          ? input.billingRule.policy_version
+          : LEGACY_POLICY_SOURCE,
+        policySource: hasPolicy
+          ? POLICY_SOURCE_REGISTRY
+          : LEGACY_POLICY_SOURCE,
+        snapshotHash: null,
+        templateVersion: input.billingRule.terms_version || null,
+        documentVersion: null,
+        isLegacy: !hasPolicy,
+        hasOverride: false,
+        warnings: [...warnings, ...incomplete, 'unresolvable: billing rule incomplete'],
+        provenance: 'billing_rule_incomplete',
+        resolvable: false,
+      };
+    }
     return {
-      successFeePct: Number(input.billingRule.node_share_percent),
-      merchantSharePct: 75,
-      feeDurationMonths: 24,
-      feeBase: 'positive_verified_savings',
+      successFeePct,
+      merchantSharePct: Number.isFinite(merchantSharePct)
+        ? merchantSharePct
+        : 75,
+      feeDurationMonths: Number.isFinite(feeDurationMonths)
+        ? feeDurationMonths
+        : 24,
+      feeBase: input.billingRule.fee_base || 'positive_verified_savings',
       currency: input.billingRule.currency || 'EUR',
       policyVersion: hasPolicy ? input.billingRule.policy_version : LEGACY_POLICY_SOURCE,
       policySource: hasPolicy ? POLICY_SOURCE_REGISTRY : LEGACY_POLICY_SOURCE,
@@ -303,11 +346,54 @@ export function resolveContractPolicy(input: {
   // 3 — MonthlySavingsReport (effective_fee_pct already resolved at report time)
   if (input.report && input.report.effective_fee_pct != null) {
     const hasPolicy = !!input.report.policy_version;
+    const successFeePct = Number(input.report.effective_fee_pct);
+    const merchantSharePct = input.report.merchant_share_pct != null
+      ? Number(input.report.merchant_share_pct)
+      : Number.NaN;
+    const feeDurationMonths = input.report.fee_duration_months != null
+      ? Number(input.report.fee_duration_months)
+      : Number.NaN;
+    const incomplete = [
+      ...(!Number.isFinite(successFeePct) ? ['monthly_report_fee_missing'] : []),
+      ...(hasPolicy && !Number.isFinite(merchantSharePct)
+        ? ['monthly_report_share_missing']
+        : []),
+      ...(hasPolicy && !Number.isFinite(feeDurationMonths)
+        ? ['monthly_report_duration_missing']
+        : []),
+    ];
+    if (incomplete.length) {
+      return {
+        successFeePct: 0,
+        merchantSharePct: 0,
+        feeDurationMonths: 0,
+        feeBase: 'unknown',
+        currency: input.report.currency || 'EUR',
+        policyVersion: hasPolicy
+          ? input.report.policy_version
+          : LEGACY_POLICY_SOURCE,
+        policySource: hasPolicy
+          ? POLICY_SOURCE_REGISTRY
+          : LEGACY_POLICY_SOURCE,
+        snapshotHash: input.report.snapshot_hash ?? null,
+        templateVersion: null,
+        documentVersion: null,
+        isLegacy: !hasPolicy,
+        hasOverride: false,
+        warnings: [...warnings, ...incomplete, 'unresolvable: monthly report incomplete'],
+        provenance: 'monthly_report_incomplete',
+        resolvable: false,
+      };
+    }
     return {
-      successFeePct: Number(input.report.effective_fee_pct),
-      merchantSharePct: 75,
-      feeDurationMonths: 24,
-      feeBase: 'positive_verified_savings',
+      successFeePct,
+      merchantSharePct: Number.isFinite(merchantSharePct)
+        ? merchantSharePct
+        : 75,
+      feeDurationMonths: Number.isFinite(feeDurationMonths)
+        ? feeDurationMonths
+        : 24,
+      feeBase: input.report.fee_base || 'positive_verified_savings',
       currency: input.report.currency || 'EUR',
       policyVersion: hasPolicy ? input.report.policy_version : LEGACY_POLICY_SOURCE,
       policySource: hasPolicy ? POLICY_SOURCE_REGISTRY : LEGACY_POLICY_SOURCE,
