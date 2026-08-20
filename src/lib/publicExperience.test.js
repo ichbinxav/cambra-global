@@ -13,8 +13,11 @@ describe("public market experience", () => {
     expect(EUROPE_MARKETS).toHaveLength(33);
     expect(MARKET_SCOPE_COUNTS).toEqual({
       canonical_market_count: 33,
-      active_launch_count: 30,
-      protected_market_count: 3,
+      launch_perimeter_count: 30,
+      active_launch_count: 10,
+      licensing_blocked_count: 3,
+      not_launch_market_count: 17,
+      outside_launch_perimeter_count: 3,
     });
     const resolved = EUROPE_MARKETS.map((market) => resolvePublicExperience(market.iso2));
     expect(new Set(resolved.map((row) => row.marketCode)).size).toBe(33);
@@ -28,9 +31,9 @@ describe("public market experience", () => {
     }
   });
 
-  it("enables Analyzer for the exact active 30, including Spain", () => {
+  it("enables Analyzer for exactly the 10 launch markets", () => {
     expect(ANALYZER_ENABLED_MARKETS).toBe(ACTIVE_LAUNCH_MARKETS);
-    expect(ACTIVE_LAUNCH_MARKETS).toHaveLength(30);
+    expect(ACTIVE_LAUNCH_MARKETS).toHaveLength(10);
     expect(ACTIVE_LAUNCH_MARKETS).toContain("ES");
     for (const market of ACTIVE_LAUNCH_MARKETS) {
       const row = resolvePublicExperience(market);
@@ -44,7 +47,7 @@ describe("public market experience", () => {
     for (const market of PROTECTED_MARKETS) {
       const row = resolvePublicExperience(market);
       expect(row.scope).toMatchObject({
-        status: "PROTECTED_RESEARCH_ONLY",
+        status: "LICENSING_RESEARCH_ONLY",
         launchActive: false,
         researchAllowed: true,
         researchOnly: true,

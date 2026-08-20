@@ -6,6 +6,8 @@ import {
   MARKET_SCOPE_BY_ISO2,
   MARKET_SCOPE_COUNTS,
   MARKET_SCOPE_DECISION_STATUS,
+  NOT_LAUNCH_MARKETS,
+  OUTSIDE_LAUNCH_PERIMETER,
   PROTECTED_MARKETS,
 } from "./generated/europeMarkets.js";
 import {
@@ -20,26 +22,30 @@ const EXPECTED_CANONICAL = [
   "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT",
   "RO", "SK", "SI", "ES", "SE", "NO", "IS", "LI", "CH", "GB", "AD",
 ];
-const EXPECTED_ACTIVE = [
-  "AT", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "DE", "GR", "HU",
-  "IE", "IT", "LV", "LT", "LU", "MT", "PL", "PT", "RO", "SK", "SI",
-  "ES", "SE", "NO", "IS", "LI", "CH", "GB", "AD",
-];
+const EXPECTED_ACTIVE = ["ES", "IT", "PT", "GB", "GR", "HR", "DE", "PL", "CZ", "CY"];
+const EXPECTED_NOT_LAUNCH = ["AT", "BG", "CH", "DK", "EE", "FI", "HU", "IE", "LT", "LU", "LV", "MT", "NO", "RO", "SE", "SI", "SK"];
+const EXPECTED_OUTSIDE = ["IS", "LI", "AD"];
 
 describe("founder market launch authority", () => {
-  it("defines the exact canonical 33 and exact 30/3 partition", () => {
+  it("defines the exact canonical 33 and exact 10/3/17 launch decision", () => {
     expect(CANONICAL_MARKET_CODES).toEqual(EXPECTED_CANONICAL);
     expect(ACTIVE_LAUNCH_MARKETS).toEqual(EXPECTED_ACTIVE);
     expect(PROTECTED_MARKETS).toEqual(["FR", "BE", "NL"]);
+    expect(NOT_LAUNCH_MARKETS).toEqual(EXPECTED_NOT_LAUNCH);
+    expect(OUTSIDE_LAUNCH_PERIMETER).toEqual(EXPECTED_OUTSIDE);
     expect(MARKET_SCOPE_COUNTS).toEqual({
       canonical_market_count: 33,
-      active_launch_count: 30,
-      protected_market_count: 3,
+      launch_perimeter_count: 30,
+      active_launch_count: 10,
+      licensing_blocked_count: 3,
+      not_launch_market_count: 17,
+      outside_launch_perimeter_count: 3,
     });
     expect(MARKET_SCOPE_DECISION_STATUS).toBe("FOUNDER_DECIDED");
-    expect(new Set([...ACTIVE_LAUNCH_MARKETS, ...PROTECTED_MARKETS])).toEqual(
-      new Set(EXPECTED_CANONICAL),
+    expect(new Set([...ACTIVE_LAUNCH_MARKETS, ...PROTECTED_MARKETS, ...NOT_LAUNCH_MARKETS])).toEqual(
+      new Set(EXPECTED_CANONICAL.filter((code) => !EXPECTED_OUTSIDE.includes(code))),
     );
+    expect(new Set([...ACTIVE_LAUNCH_MARKETS, ...PROTECTED_MARKETS, ...NOT_LAUNCH_MARKETS, ...OUTSIDE_LAUNCH_PERIMETER])).toEqual(new Set(EXPECTED_CANONICAL));
     expect(ACTIVE_LAUNCH_MARKETS).toContain("ES");
   });
 
@@ -69,8 +75,37 @@ describe("founder market launch authority", () => {
       expect(marketSeedLaunchProjection(market)).toMatchObject({
         iso2: market,
         launch_status: "REGULATORY_HOLD",
+        commercial_eligibility: "BLOCKED",
+        blocked_reason: "licensing",
         research_mode: "RESEARCH_ONLY",
         outbound_capacity: 0,
+      });
+    }
+  });
+
+  it("blocks exactly 17 not-launch markets without degrading research access", () => {
+    expect(NOT_LAUNCH_MARKETS).toHaveLength(17);
+    for (const market of NOT_LAUNCH_MARKETS) {
+      expect(evaluateMarketLaunchScope(market)).toMatchObject({
+        launch_active: false,
+        research_allowed: true,
+        commercial_eligibility: "BLOCKED",
+        blocked_reason: "not_launch_market",
+      });
+      expect(validatePaymentsLaunchMarketInput({ country: market })).toEqual({
+        ok: false,
+        failure: { field: "country", reason: "not_launch_market" },
+      });
+    }
+  });
+
+  it("keeps IS/LI/AD outside the 30-market launch perimeter and commercially inactive", () => {
+    for (const market of OUTSIDE_LAUNCH_PERIMETER) {
+      expect(evaluateMarketLaunchScope(market)).toMatchObject({
+        launch_active: false,
+        research_allowed: true,
+        commercial_scope_eligible: false,
+        commercial_eligibility: null,
       });
     }
   });
@@ -94,10 +129,9 @@ describe("founder market launch authority", () => {
       country: "ES",
       region: "EU",
     });
-    expect(validatePaymentsLaunchMarketInput({ country: "AD" })).toMatchObject({
-      ok: true,
-      country: "AD",
-      region: "RoW",
+    expect(validatePaymentsLaunchMarketInput({ country: "AD" })).toEqual({
+      ok: false,
+      failure: { field: "country", reason: "protected_research_only" },
     });
   });
 

@@ -35,12 +35,14 @@ describe("release manual gates",()=>{
   expect(src).toContain("This blocks REAL_WORLD_VALIDATED, not PILOT_READY");
   expect(src).toContain("realWorldValidatedEligible");
  });
- it("hash-binds the exact founder 30/33 market decision",()=>{
+ it("hash-binds the exact founder 10/30 market decision",()=>{
   expect(markets.launchScope).toMatchObject({
    decisionStatus:"FOUNDER_DECIDED",
    canonical_market_count:33,
-   active_launch_count:30,
+   launch_perimeter_count:30,
+   active_launch_count:10,
    protected_market_count:3,
+   not_launch_market_count:17,
    protectedMode:"RESEARCH_ONLY",
    outboundMode:"PAUSED_ZERO",
    regulatedCapabilitiesMode:"SPECIFIC_POLICY_REQUIRED",
@@ -48,7 +50,7 @@ describe("release manual gates",()=>{
   expect(markets.launchScope.active).toContain("ES");
   expect(new Set(markets.launchScope.protected)).toEqual(new Set(["FR","BE","NL"]));
   expect(src).toContain("const marketLaunchScope = {");
-  expect(src).toContain("FOUNDER 30/33 MARKET SCOPE SOURCE-BOUND:");
+  expect(src).toContain("FOUNDER 10/30 MARKET SCOPE SOURCE-BOUND:");
   expect(src).toContain("marketLaunchScope,");
   expect(check).toContain("checkMarketLaunchScopeBoundary");
   expect(check).toContain("protected markets must remain exactly FR, BE and NL");

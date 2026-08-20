@@ -76,22 +76,27 @@ function checkMarketLaunchScopeBoundary(manifest) {
   const canonicalMarketCodes = (Array.isArray(registry.markets) ? registry.markets : []).map((row) => row.iso2);
   const activeMarkets = Array.isArray(scope.active) ? scope.active : [];
   const protectedMarkets = Array.isArray(scope.protected) ? scope.protected : [];
+  const notLaunchMarkets = Array.isArray(scope.notLaunch) ? scope.notLaunch : [];
+  const outsideLaunchPerimeter = Array.isArray(scope.outsideLaunchPerimeter) ? scope.outsideLaunchPerimeter : [];
   const expectedProtectedMarkets = ["FR", "BE", "NL"];
   if (registry.schemaVersion !== 1 || typeof registry.registryVersion !== "string" || registry.registryVersion.length === 0) {
     fail("market registry schema/version boundary drift");
   }
   if (scope.decisionStatus !== "FOUNDER_DECIDED") fail("market launch scope must remain FOUNDER_DECIDED");
-  if (scope.canonical_market_count !== 33 || scope.active_launch_count !== 30 || scope.protected_market_count !== 3) {
-    fail("market launch scope declared counts must remain 33 canonical / 30 active / 3 protected");
+  if (scope.canonical_market_count !== 33 || scope.launch_perimeter_count !== 30 || scope.active_launch_count !== 10 || scope.protected_market_count !== 3 || scope.not_launch_market_count !== 17) {
+    fail("market launch scope declared counts must remain 33 canonical / 30 perimeter / 10 active / 3 licensing / 17 not-launch");
   }
   if (!exactStringSet(canonicalMarketCodes, [...new Set(canonicalMarketCodes)]) || canonicalMarketCodes.length !== 33) {
     fail("market canonical universe must contain exactly 33 unique ISO2 codes");
   }
-  if (activeMarkets.length !== 30 || new Set(activeMarkets).size !== 30) fail("market active set must contain exactly 30 unique codes");
+  if (activeMarkets.length !== 10 || new Set(activeMarkets).size !== 10) fail("market active set must contain exactly 10 unique codes");
+  if (notLaunchMarkets.length !== 17 || new Set(notLaunchMarkets).size !== 17) fail("not-launch set must contain exactly 17 unique codes");
+  if (outsideLaunchPerimeter.length !== 3 || new Set(outsideLaunchPerimeter).size !== 3) fail("outside launch perimeter must contain exactly IS, LI and AD");
   if (!exactStringSet(protectedMarkets, expectedProtectedMarkets)) fail("protected markets must remain exactly FR, BE and NL");
-  if (!activeMarkets.includes("ES")) fail("Spain must remain active in the 30/33 launch scope");
+  if (!activeMarkets.includes("ES")) fail("Spain must remain active in the 10-market launch scope");
   if (activeMarkets.some((code) => protectedMarkets.includes(code))) fail("active and protected market sets must be disjoint");
-  if (!exactStringSet([...activeMarkets, ...protectedMarkets], canonicalMarketCodes)) fail("active and protected markets must exactly partition the 33-market universe");
+  if (!exactStringSet([...activeMarkets, ...protectedMarkets, ...notLaunchMarkets], canonicalMarketCodes.filter((code) => !outsideLaunchPerimeter.includes(code)))) fail("10 active + 3 licensing + 17 not-launch must exactly partition the 30-market launch perimeter");
+  if (!exactStringSet([...activeMarkets, ...protectedMarkets, ...notLaunchMarkets, ...outsideLaunchPerimeter], canonicalMarketCodes)) fail("launch scope plus research-only outside perimeter must partition the 33-market data universe");
   if (scope.protectedMode !== "RESEARCH_ONLY" || scope.outboundMode !== "PAUSED_ZERO" || scope.regulatedCapabilitiesMode !== "SPECIFIC_POLICY_REQUIRED") {
     fail("protected/research/outbound/regulatory market modes drifted");
   }
@@ -102,20 +107,25 @@ function checkMarketLaunchScopeBoundary(manifest) {
     scopeVersion: scope.scopeVersion,
     decisionStatus: "FOUNDER_DECIDED",
     canonicalMarketCount: 33,
-    activeLaunchCount: 30,
-    protectedMarketCount: 3,
+    launchPerimeterCount: 30,
+    activeLaunchCount: 10,
+    licensingBlockedCount: 3,
+    notLaunchMarketCount: 17,
+    outsideLaunchPerimeterCount: 3,
     activeMarkets,
     protectedMarkets,
+    notLaunchMarkets,
+    outsideLaunchPerimeter,
     spainActive: true,
     protectedMode: "RESEARCH_ONLY",
     outboundMode: "PAUSED_ZERO",
     regulatedCapabilitiesMode: "SPECIFIC_POLICY_REQUIRED",
   };
   if (JSON.stringify(manifest.marketLaunchScope) !== JSON.stringify(expectedSummary)) {
-    fail("RELEASE.json marketLaunchScope is stale or violates the founder 30/33 boundary");
+    fail("RELEASE.json marketLaunchScope is stale or violates the founder 10/30 boundary");
   }
-  if (!manifest.completedProductionRequirements?.some((item) => String(item).startsWith("FOUNDER 30/33 MARKET SCOPE SOURCE-BOUND:"))) {
-    fail("RELEASE.json must declare the exact founder 30/33 repository policy boundary");
+  if (!manifest.completedProductionRequirements?.some((item) => String(item).startsWith("FOUNDER 10/30 MARKET SCOPE SOURCE-BOUND:"))) {
+    fail("RELEASE.json must declare the exact founder 10/30 repository policy boundary");
   }
 }
 

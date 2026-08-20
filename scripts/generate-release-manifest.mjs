@@ -52,7 +52,7 @@ const backendBundle = inspectBase44Bundle(".");
 
 // R7 launch/closure traceability. These source-owned ledgers are already
 // checked elsewhere in the verification pipeline, but RELEASE.json must expose
-// their exact, hash-bound state so a package consumer can verify the 30/33
+// their exact, hash-bound state so a package consumer can verify the 10/30 launch decision
 // claim and distinguish repository remediation from runtime/root-seal closure.
 const marketRegistryPath = "config/europe-markets.json";
 const orchestrationLedgerPath = "config/intelligence/orchestration-p0-remediation.v2.json";
@@ -74,19 +74,24 @@ const canonicalMarketCodes = (Array.isArray(marketRegistry.markets) ? marketRegi
   .map((row) => row.iso2);
 const activeMarkets = Array.isArray(launchScope.active) ? launchScope.active : [];
 const protectedMarkets = Array.isArray(launchScope.protected) ? launchScope.protected : [];
+const notLaunchMarkets = Array.isArray(launchScope.notLaunch) ? launchScope.notLaunch : [];
+const outsideLaunchPerimeter = Array.isArray(launchScope.outsideLaunchPerimeter) ? launchScope.outsideLaunchPerimeter : [];
 const expectedProtectedMarkets = ["FR", "BE", "NL"];
 assertReleaseBoundary(marketRegistry.schemaVersion === 1, "market_schema_version");
 assertReleaseBoundary(typeof marketRegistry.registryVersion === "string" && marketRegistry.registryVersion.length > 0, "market_registry_version");
 assertReleaseBoundary(launchScope.decisionStatus === "FOUNDER_DECIDED", "market_decision_status");
 assertReleaseBoundary(launchScope.canonical_market_count === 33, "market_declared_canonical_count");
-assertReleaseBoundary(launchScope.active_launch_count === 30, "market_declared_active_count");
+assertReleaseBoundary(launchScope.launch_perimeter_count === 30 && launchScope.active_launch_count === 10, "market_declared_active_count");
 assertReleaseBoundary(launchScope.protected_market_count === 3, "market_declared_protected_count");
 assertReleaseBoundary(exactStringSet(canonicalMarketCodes, [...new Set(canonicalMarketCodes)]) && canonicalMarketCodes.length === 33, "market_canonical_universe");
-assertReleaseBoundary(activeMarkets.length === 30 && new Set(activeMarkets).size === 30, "market_active_set");
+assertReleaseBoundary(activeMarkets.length === 10 && new Set(activeMarkets).size === 10, "market_active_set");
+assertReleaseBoundary(notLaunchMarkets.length === 17 && new Set(notLaunchMarkets).size === 17, "market_not_launch_set");
+assertReleaseBoundary(outsideLaunchPerimeter.length === 3 && new Set(outsideLaunchPerimeter).size === 3, "market_outside_perimeter_set");
 assertReleaseBoundary(exactStringSet(protectedMarkets, expectedProtectedMarkets), "market_protected_set");
 assertReleaseBoundary(activeMarkets.includes("ES"), "market_spain_active");
 assertReleaseBoundary(!activeMarkets.some((code) => protectedMarkets.includes(code)), "market_active_protected_overlap");
-assertReleaseBoundary(exactStringSet([...activeMarkets, ...protectedMarkets], canonicalMarketCodes), "market_scope_partition");
+assertReleaseBoundary(exactStringSet([...activeMarkets, ...protectedMarkets, ...notLaunchMarkets], canonicalMarketCodes.filter((code) => !outsideLaunchPerimeter.includes(code))), "market_launch_perimeter_partition");
+assertReleaseBoundary(exactStringSet([...activeMarkets, ...protectedMarkets, ...notLaunchMarkets, ...outsideLaunchPerimeter], canonicalMarketCodes), "market_scope_partition");
 assertReleaseBoundary(launchScope.protectedMode === "RESEARCH_ONLY", "market_protected_mode");
 assertReleaseBoundary(launchScope.outboundMode === "PAUSED_ZERO", "market_outbound_mode");
 assertReleaseBoundary(launchScope.regulatedCapabilitiesMode === "SPECIFIC_POLICY_REQUIRED", "market_regulated_mode");
@@ -98,10 +103,15 @@ const marketLaunchScope = {
   scopeVersion: launchScope.scopeVersion,
   decisionStatus: "FOUNDER_DECIDED",
   canonicalMarketCount: 33,
-  activeLaunchCount: 30,
-  protectedMarketCount: 3,
+  launchPerimeterCount: 30,
+  activeLaunchCount: 10,
+  licensingBlockedCount: 3,
+  notLaunchMarketCount: 17,
+  outsideLaunchPerimeterCount: 3,
   activeMarkets,
   protectedMarkets,
+  notLaunchMarkets,
+  outsideLaunchPerimeter,
   spainActive: true,
   protectedMode: "RESEARCH_ONLY",
   outboundMode: "PAUSED_ZERO",
@@ -272,7 +282,7 @@ const completedProductionRequirements = [
   // A completed requirement that no longer matches reality is worse than a pending one. It is
   // interpolated from the bundle the generator already inspects, so it cannot go stale again.
   `The reproducible Base44 bundle preserves trust boundaries while staging exactly ${backendBundle.physical_function_count} physical functions behind ${backendBundle.logical_route_count} logical routes; deployment parity remains a separate pending proof.`,
-  'FOUNDER 30/33 MARKET SCOPE SOURCE-BOUND: 33 canonical markets, 30 active including Spain, and exactly France, Belgium and the Netherlands protected as research-only while outbound remains PAUSED_ZERO; this is repository policy, not runtime proof.',
+  'FOUNDER 10/30 MARKET SCOPE SOURCE-BOUND: exactly 10 commercial launch markets; FR/BE/NL remain licensing-blocked; 17 launch-perimeter markets are not_launch_market; IS/LI/AD remain research-only outside the 30-market perimeter; outbound remains PAUSED_ZERO. This is repository policy, not runtime proof.',
   'FOUNDER RESEARCH CORPUS REPOSITORY INTAKE COMPLETE: exactly 11 physical files / 9 SHA-unique / 2 exact duplicates are byte-bound as untrusted, non-executable and non-training input; this is repository intake only, not production proof.',
 ];
 const pendingProductionRequirements = [];
