@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:33:20.970Z",
+  "generatedAt": "2026-08-20T11:34:46.180Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "6ccd45720c39147d8edbffaadbee6302d62a7c439b6a6c9ef903648fcb309279",
+      "sha256": "9493aee717df067d6dc4e04a47776e5682156b94e6862f17058d520236cf4b4f",
       "bytes": 121589
     },
     {

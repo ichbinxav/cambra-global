@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "a9d7e68c86d75f3c612647bb318c4abf9d27b40d794c3b685de91aa0285047da",
+  "source_inventory_hash": "20b014a305adc1ae1f954c85553f3e78638757a2ef38b8d356fcd847e651a8c6",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 56,
@@ -300,7 +300,7 @@
     },
     {
       "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
-      "source_sha256": "e05714e264e375b9f60c779347d943d020761e10cdb3d710715a8de8bea9f21d",
+      "source_sha256": "8275d887222a3a1afb9fec917fdc3fa3e9714025f460ac0edc18b2994437c4cd",
       "boundary_ids": [
         "MB-BILL-RECOVER-ELIGIBILITY"
       ],
