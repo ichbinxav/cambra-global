@@ -80,6 +80,11 @@ const inactiveClassifications = Object.freeze({
     evidence:
       'is_active=false and config description identifies a temporary idempotent runtime bootstrap to remove after materialization.',
   },
+  europeanGrowthIntelligenceWorker: {
+    classification: 'HOSTED_LOGICAL_COMPATIBILITY_DISABLED',
+    evidence:
+      'is_active=false because production scheduling is consolidated into getEuropeMarketsCommandCenter; this directory remains source-archive compatibility only.',
+  },
 });
 
 const effectPattern =
