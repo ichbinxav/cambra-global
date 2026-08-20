@@ -1,6 +1,6 @@
-/* Standalone health check — no shell, no auth, no data fetches.
-   Used to verify bundle freshness after deploys. */
-const BUILD_STAMP = "20260626-force";
+/* Standalone client health check — no shell, auth, or backend data fetches.
+   The build injects a source revision when available and falls back truthfully. */
+const BUILD_STAMP = import.meta.env.VITE_CAMBRA_BUILD_STAMP || "unidentified";
 
 export default function HealthCheck() {
   return (
@@ -22,7 +22,7 @@ export default function HealthCheck() {
         ✅ HealthCheck OK
       </h1>
       <p style={{ marginTop: 12, fontSize: 14, fontWeight: 600, opacity: 0.75 }}>
-        bundle is fresh · build: {BUILD_STAMP}
+        client bundle loaded · build: {BUILD_STAMP}
       </p>
     </div>
   );
