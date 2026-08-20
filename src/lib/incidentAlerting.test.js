@@ -5,6 +5,7 @@ import {
   buildIncidentAlertBatchPayload,
   dispatchIncidentAlertBatch,
   incidentAlertKey,
+  incidentAlertProvenPreEffect,
   incidentAlertSeverity,
   incidentAlertWindowKey,
   isIncidentAlertingSelfIncident,
@@ -211,9 +212,20 @@ describe('aggregated founder incident alerting', () => {
 
   it('never retries accepted or ambiguous effects blindly', () => {
     for (const status of [
-      'ACCEPTED', 'OBSERVED', 'DELIVERED', 'EFFECTING', 'RETRY_PENDING',
-      'REVIEW_REQUIRED', 'FAILED',
+      'ACCEPTED', 'OBSERVED', 'DELIVERED', 'EFFECTING', 'REVIEW_REQUIRED',
     ]) expect(alertRetryDecision({ status }).allowed, status).toBe(false);
+    for (const status of ['FAILED', 'RETRY_PENDING']) {
+      expect(incidentAlertProvenPreEffect({ status })).toBe(true);
+      expect(alertRetryDecision({ status }).allowed, status).toBe(true);
+      expect(alertRetryDecision({
+        status,
+        effect_started_at: BASE_TIME.toISOString(),
+      }).allowed, status).toBe(false);
+      expect(alertRetryDecision({
+        status,
+        provider_message_id: 'provider-1',
+      }).allowed, status).toBe(false);
+    }
     expect(alertRetryDecision({
       status: 'BLOCKED', attempt_count: 1,
       next_retry_at: new Date(Date.now() + 60_000).toISOString(),
