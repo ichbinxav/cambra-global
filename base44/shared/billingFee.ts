@@ -11,7 +11,6 @@
 // discount would have silently applied to past months, and any BillingRule
 // would have been ignored entirely.
 
-import { getSuccessFeePct } from './generated/productPolicy.ts';
 import { requireCriticalOperation } from './criticalExecution.ts';
 
 export function monthBounds(month: string): { start: string; end: string } {
@@ -44,12 +43,14 @@ function appliesTo(rule: any, bounds: { start: string; end: string }): boolean {
 /**
  * Fee percentage for one month.
  * Picks the applicable BillingRule with the LATEST effective_start_date;
- * falls back to `fallbackPct` (historically DealActivation.node_share_percent)
- * when the brand has no rule yet — Task 7's "no BillingRule" case.
+ * falls back only to the caller-supplied `fallbackPct` (historically
+ * DealActivation.node_share_percent) when the brand has no rule yet. The live
+ * product policy is never consulted here: accepted-contract callers must pass
+ * frozen economics, while new-acceptance callers pass the current offer.
  */
 export async function resolveFeePctForMonth(
   svc: any,
-  { deal_activation_id, brand_id, provider_id, fallbackPct = getSuccessFeePct() }: any,
+  { deal_activation_id, brand_id, provider_id, fallbackPct }: any,
   month: string,
 ): Promise<{ pct: number; rule_id: string | null; source: string }> {
   const bounds = monthBounds(month);
@@ -81,5 +82,5 @@ export async function resolveFeePctForMonth(
     }
   }
 
-  return { pct: Number(fallbackPct ?? getSuccessFeePct()), rule_id: null, source: 'deal_activation_fallback' };
+  return { pct: Number(fallbackPct), rule_id: null, source: 'caller_supplied_fallback' };
 }
