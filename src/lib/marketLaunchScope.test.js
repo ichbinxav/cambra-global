@@ -110,6 +110,17 @@ describe("founder market launch authority", () => {
     }
   });
 
+  it("treats Austria reactivation as launch-state only and never mutates rate data", () => {
+    const rateSchemaBefore = fs.readFileSync("base44/entities/PaymentsRateTable.jsonc", "utf8");
+    const rateSeederBefore = fs.readFileSync("base44/functions/seedPaymentsRateTable/entry.ts", "utf8");
+    const austria = marketSeedLaunchProjection("AT");
+    expect(austria).toMatchObject({ commercial_eligibility: "BLOCKED", blocked_reason: "not_launch_market" });
+    const hypotheticalReactivated = { ...austria, commercial_eligibility: "ELIGIBLE", blocked_reason: null, launch_status: "ANALYZER_READY" };
+    expect(hypotheticalReactivated.commercial_eligibility).toBe("ELIGIBLE");
+    expect(fs.readFileSync("base44/entities/PaymentsRateTable.jsonc", "utf8")).toBe(rateSchemaBefore);
+    expect(fs.readFileSync("base44/functions/seedPaymentsRateTable/entry.ts", "utf8")).toBe(rateSeederBefore);
+  });
+
   it("rejects a caller-supplied region and derives region server-side", () => {
     expect(validatePaymentsLaunchMarketInput({ country: "ES", region: "UK" })).toEqual({
       ok: false,
