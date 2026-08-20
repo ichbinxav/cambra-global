@@ -26,7 +26,6 @@ import {
   buildContractEconomicView,
   resolveContractPolicy,
 } from "../../shared/contractPolicySnapshot.ts";
-import { getSuccessFeePct } from "../../shared/generated/productPolicy.ts";
 import { evaluateRecoverEconomicGate } from "../../shared/eclEconomicGate.ts";
 import {
   periodEconomicsV2,
@@ -41,12 +40,6 @@ import {
   persistRecoverReportApprovalDecision,
   requireCanonicalRecoverReport,
 } from "../../shared/recoverReportAuthority.ts";
-
-// v60.2 — the standard fee comes from the resolved contract policy (the
-// accepted snapshot's standard_fee_pct), not a hardcoded 25. For current
-// contracts this is 25; for a future policy B contract it would be 30. The
-// live policy's getSuccessFeePct() is the fallback for new/unaccepted deals.
-const STANDARD_FEE_PCT = getSuccessFeePct();
 
 function approvalAuthorityProjection(
   report: any,
@@ -491,35 +484,38 @@ export default async function (req: Request): Promise<Response> {
     // resolveContractPolicy + buildContractEconomicView, not from a local
     // `|| 25` fallback. An unresolvable contract blocks approval.
     const contractResolved = resolveContractPolicy({ mandate });
-    if (mandate && !contractResolved.resolvable) {
+    if (!contractResolved.resolvable) {
       block("blocked_contract", "contract_unresolvable");
     }
     const acceptedPct = contractResolved.resolvable
       ? contractResolved.successFeePct
-      : Number(activation.node_share_percent || STANDARD_FEE_PCT);
-    if (mandate && !Number.isFinite(acceptedPct)) {
+      : Number.NaN;
+    if (!Number.isFinite(acceptedPct)) {
       block("blocked_contract", "accepted_fee_pct_unresolvable");
     }
-    const monthFee = await resolveFeePctForMonth(svc, {
-      deal_activation_id: activation.id,
-      brand_id: activation.brand_id,
-      provider_id: activation.provider_id || null,
-      fallbackPct: Number.isFinite(acceptedPct)
-        ? acceptedPct
-        : Number(activation.node_share_percent || STANDARD_FEE_PCT),
-    }, report.month);
-    const v2Economics = isEconomicsV2 && activation.conditions_activated_at
-      ? periodEconomicsV2({
-        activationIso: activation.conditions_activated_at,
-        periodStart: reportPeriod.start,
-        periodEndExclusive: reportPeriod.endExclusive,
-        activatedReferrals: referralCountFromYear1EquivalentFee(monthFee.pct),
-      })
-      : null;
-    const effectivePct = v2Economics ? v2Economics.effective_fee_pct : Math.min(
-      Number.isFinite(acceptedPct) ? acceptedPct : STANDARD_FEE_PCT,
-      Number(monthFee.pct),
-    );
+    const monthFee = contractResolved.resolvable
+      ? await resolveFeePctForMonth(svc, {
+        deal_activation_id: activation.id,
+        brand_id: activation.brand_id,
+        provider_id: activation.provider_id || null,
+        fallbackPct: acceptedPct,
+      }, report.month)
+      : { pct: Number.NaN, rule_id: null, source: "contract_unresolvable" };
+    const v2Economics =
+      contractResolved.resolvable && isEconomicsV2 &&
+        activation.conditions_activated_at
+        ? periodEconomicsV2({
+          activationIso: activation.conditions_activated_at,
+          periodStart: reportPeriod.start,
+          periodEndExclusive: reportPeriod.endExclusive,
+          activatedReferrals: referralCountFromYear1EquivalentFee(monthFee.pct),
+        })
+        : null;
+    const effectivePct = contractResolved.resolvable
+      ? (v2Economics
+        ? v2Economics.effective_fee_pct
+        : Math.min(acceptedPct, Number(monthFee.pct)))
+      : 0;
     // v60.2 immutability guard — a re-approval must not silently change the
     // provenance. If the report was already approved with a fee, the new
     // effective fee must match; a mismatch means the contract moved underneath
@@ -542,11 +538,9 @@ export default async function (req: Request): Promise<Response> {
       resolvedContractPolicy: contractResolved,
       mandate,
     });
-    const standardFeePctForAmounts = v2Economics
-      ? v2Economics.standard_fee_pct
-      : (contractResolved.resolvable
-        ? econView.standardFeePct
-        : STANDARD_FEE_PCT);
+    const standardFeePctForAmounts = contractResolved.resolvable
+      ? (v2Economics ? v2Economics.standard_fee_pct : econView.standardFeePct)
+      : 0;
 
     // ── Amounts (integer cents, §10) ──────────────────────────────────────
     const savings = Number(report.savings || 0);
