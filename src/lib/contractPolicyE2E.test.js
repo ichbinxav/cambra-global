@@ -184,7 +184,7 @@ describe("resolveContractPolicy — resolvable flag (v60.2)", () => {
     delete snap.fee_pct;
     delete snap.economicTerms;
     const mandate = { acceptance_snapshot_json: snap, acceptance_snapshot_hash: "h" };
-    const billingRule = { node_share_percent: 25, policy_version: "2026.08.01" };
+    const billingRule = { node_share_percent: 25, merchant_share_pct: 75, fee_duration_months: 24, policy_version: "2026.08.01" };
     const r = resolveContractPolicy({ mandate, billingRule });
     // Should fall through to BillingRule (not silently default to 25)
     expect(r.provenance).toBe("billing_rule");
@@ -303,7 +303,7 @@ describe("policy A → B immutability across all surfaces", () => {
   });
 
   it("BillingRule A conserves A terms", () => {
-    const billingRuleA = { node_share_percent: 25, currency: "EUR", policy_version: "2026.08.01" };
+    const billingRuleA = { node_share_percent: 25, merchant_share_pct: 75, fee_duration_months: 24, currency: "EUR", policy_version: "2026.08.01" };
     const r = resolveContractPolicy({ billingRule: billingRuleA });
     expect(r.successFeePct).toBe(25);
     expect(r.policyVersion).toBe("2026.08.01");
