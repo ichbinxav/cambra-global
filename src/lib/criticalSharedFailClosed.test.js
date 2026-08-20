@@ -42,6 +42,20 @@ describe("critical shared execution dependencies fail closed", () => {
     expect(resolved.source).toBe("caller_supplied_fallback");
   });
 
+  it("fails closed when an applicable BillingRule lacks a finite fee", async () => {
+    const svc = { entities:{ BillingRule:{ filter:vi.fn().mockResolvedValue([
+      { id:"rule-bad", effective_start_date:"2026-01-01", node_share_percent:null },
+    ]) } } } };
+    await expect(resolveFeePctForMonth(
+      svc,
+      { brand_id:"b", fallbackPct:20 },
+      "2026-08",
+    )).rejects.toMatchObject({
+      code:"billing_rule_fee_unresolvable",
+      rule_id:"rule-bad",
+    });
+  });
+
   it("does not authorize a rate-limit request when its counter store is unavailable", async () => {
     const svc = { entities:{ RateLimitCounter:{ filter:vi.fn().mockRejectedValue(new Error("down")) } } };
     await expect(consumeRateLimit(svc, { principal_id:"p", principal_type:"api_key", limit:10, window_seconds:60 }))
