@@ -11,5 +11,7 @@
   <url><loc>https://cambra.global/Security</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://cambra.global/Privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://cambra.global/Terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://cambra.global/Dpa</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://cambra.global/Subprocessors</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://cambra.global/Cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
