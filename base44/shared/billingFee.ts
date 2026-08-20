@@ -74,8 +74,9 @@ export async function resolveFeePctForMonth(
     if (applicable.length) {
       const winner = applicable.reduce((best: any, r: any) =>
         String(r.effective_start_date || '') > String(best.effective_start_date || '') ? r : best);
-      const pct = Number(winner.node_share_percent);
-      if (!Number.isFinite(pct)) {
+      const rawPct = winner.node_share_percent;
+      const pct = Number(rawPct);
+      if (rawPct === null || rawPct === undefined || rawPct === '' || !Number.isFinite(pct)) {
         throw Object.assign(new Error('billing_rule_fee_unresolvable'), {
           code: 'billing_rule_fee_unresolvable',
           rule_id: winner.id || null,

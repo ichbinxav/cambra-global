@@ -170,6 +170,8 @@ describe("Recover financial P0/P1 hardening", () => {
     expect(source).not.toContain(
       "await svc.entities.MonthlySavingsReport.update(report.id",
     );
+    expect(source).not.toContain("STANDARD_FEE_PCT");
+    expect(source).not.toContain("node_share_percent ||");
   });
 
   it("does not authorize approval from contradictory CAS counters", async () => {
