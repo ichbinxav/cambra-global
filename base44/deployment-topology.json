@@ -142,7 +142,7 @@
     "instantlyProviderEventRetryWorker": {
       "host": "processWebhookDeadLetters",
       "route": {
-        "provider_maintenance_only": true
+        "hosted_worker": "instantlyProviderEventRetryWorker"
       },
       "boundary": "internal_scheduler_provider_event_recovery",
       "source_module": "base44/shared/logical/instantlyProviderEventRetryWorker.ts"
@@ -150,7 +150,7 @@
     "instantlyReconciliationWorker": {
       "host": "processWebhookDeadLetters",
       "route": {
-        "provider_maintenance_only": true
+        "hosted_worker": "instantlyReconciliationWorker"
       },
       "boundary": "internal_scheduler_paid_provider",
       "source_module": "base44/shared/logical/instantlyReconciliationWorker.ts"
