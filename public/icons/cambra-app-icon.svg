@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">CAMBRA</title>
+  <desc id="desc">CAMBRA gradient C mark on a navy square</desc>
+  <rect width="1024" height="1024" rx="196" fill="#0A1024"/>
+  <defs>
+    <linearGradient id="gv" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B4CF5"/>
+      <stop offset=".55" stop-color="#8B7BFF"/>
+      <stop offset="1" stop-color="#39C6F0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(269 182) scale(.856)">
+    <polygon points="160,110 0,210 0,555 160,655" fill="url(#gv)"/>
+    <polygon points="160,110 336,0 568,145 391,256" fill="url(#gv)" opacity=".82"/>
+    <polygon points="160,655 391,509 568,620 336,765" fill="url(#gv)" opacity=".68"/>
+  </g>
+</svg>
