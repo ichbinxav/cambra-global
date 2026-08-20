@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:34:46.180Z",
+  "generatedAt": "2026-08-20T11:35:33.165Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1464,8 +1464,8 @@
     },
     {
       "path": "base44/shared/billingFee.ts",
-      "sha256": "fae638b67bafdffc52a4e8ccef7c2ceeca81f6376bb6c5604972603e408f513d",
-      "bytes": 3904
+      "sha256": "bc0caae26435f2c8002e324bad92ceb5a13f3e0582c0a752384a1bb9151338af",
+      "bytes": 4123
     },
     {
       "path": "base44/shared/cambraLegalIdentity.ts",
