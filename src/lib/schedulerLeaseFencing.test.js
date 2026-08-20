@@ -126,6 +126,12 @@ describe("scheduler lease and fencing authority", () => {
     }
   });
 
+  it("never finalizes an ECL scheduler claim that was denied or ambiguous", () => {
+    const ecl = schedulerCallerInventory()
+      .find(({ name }) => name === "eclLifecycleScheduler");
+    expect(ecl?.source).toContain("schedulerClaim?.allowed === true");
+  });
+
   it("routes every direct scheduler claimant through the centralized denied response", () => {
     const callers = schedulerCallerInventory();
     expect(callers.map(({ name }) => name).sort()).toEqual([
