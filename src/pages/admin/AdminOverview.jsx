@@ -193,10 +193,10 @@ export default function AdminOverview() {
   // SECTION 2 — ACTION QUEUE (top 10)
   const actionQueue = [
     ...blockedTasks.map(t => ({ type: "Blocked", title: t.step_name?.replaceAll("_"," ") || "Migration task", sub: t.blocked_reason || "—", link: `/admin/activation/${t.deal_activation_id || ""}`, badge: "bg-red-500/[0.06] text-red-600 border-red-500/20" })),
-    ...offerReady.map(a => ({ type: "Offer ready", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/applications", badge: "bg-purple-500/[0.06] text-purple-600 border-purple-500/20" })),
+    ...offerReady.map(a => ({ type: "Offer ready", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", badge: "bg-purple-500/[0.06] text-purple-600 border-purple-500/20" })),
     ...toInvoice.map(r => ({ type: "Ready to invoice", title: r.month, sub: `${safeCurrency(r.node_fee)} · ${r.vertical || ""}`, link: "/admin/revenue", badge: "bg-orange-500/[0.06] text-orange-600 border-orange-500/20" })),
     ...awaitingAuth.map(a => ({ type: "Awaiting signature", title: a.deal_name || a.id, sub: a.brand_id || "—", link: "/admin/activation", badge: "bg-blue-500/[0.06] text-blue-600 border-blue-500/20" })),
-    ...inReviewAged.map(a => ({ type: "Incomplete review", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/applications", badge: "bg-amber-500/[0.06] text-amber-600 border-amber-500/20" })),
+    ...inReviewAged.map(a => ({ type: "Incomplete review", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", badge: "bg-amber-500/[0.06] text-amber-600 border-amber-500/20" })),
   ];
 
   // SECTION 3 — CONVERSION + BOTTLENECKS
@@ -287,7 +287,7 @@ export default function AdminOverview() {
   // SECTION 9 — LIVE ACTIVITY: use recent apps
 
   const handleQuickAction = (key) => {
-    if (key === 'applications') window.location.href = '/admin/applications';
+    if (key === 'applications') window.location.href = '/admin/deals';
     if (key === 'deal') window.location.href = '/admin/deals';
     if (key === 'followup') window.location.href = '/admin/users';
     if (key === 'invoice') window.location.href = '/admin/revenue';
