@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:41:14.115Z",
+  "generatedAt": "2026-08-20T11:48:26.276Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "1239f37d171132806b7213b18c57cac6780d8b536ad722dd76493446de2a8b97",
+      "sha256": "16448f56a5a703b0e4830dd513ac3a0a9cdd75fb2803ccbdefec4a58e88518f4",
       "bytes": 42987
     },
     {
@@ -2204,12 +2204,12 @@
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "3bdbd604af97b2caea47796e79112b051a0eafe854b874a426c11b79f6c363cd",
+      "sha256": "513405f9a2e987917922f4da1c6d75852a4c1275d420870bdb18ead86a50a93f",
       "bytes": 98046
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "9f5f04ab7cfeacd424832ea3bdd4d034c51ec686a492721b16802be83f98ae0b",
+      "sha256": "2c287929d10c05448957b9ec12906759e1092d4dea3ac0259074f9b07ab187c1",
       "bytes": 25748
     },
     {
@@ -3249,8 +3249,8 @@
     },
     {
       "path": "src/lib/externalApprovalExecution.test.js",
-      "sha256": "9d38ebd293f9c190a9bebe106b92a654c8479c139288c35b9517ddb23a70a16c",
-      "bytes": 14905
+      "sha256": "67c86bd7324b8605c0bc1065fb21f047b9c9e82d9d5839e6142befd28368f73d",
+      "bytes": 15109
     },
     {
       "path": "src/lib/finalAutonomyMerchantFallback.test.js",
@@ -3579,8 +3579,8 @@
     },
     {
       "path": "src/lib/productPolicyDrift.test.js",
-      "sha256": "ba701a6b4001e08f6f5b22602ae113c3ac40598edcb50608163c2d3b894a0596",
-      "bytes": 14253
+      "sha256": "b67956c16b32ddc19d91b57ec18dd2bc0b4bb5a1296439d5954677926feebfbf",
+      "bytes": 14780
     },
     {
       "path": "src/lib/productionFunctions.static.test.js",
