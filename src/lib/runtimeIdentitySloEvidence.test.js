@@ -21,7 +21,7 @@ import { serviceLevelSnapshotBlockers } from '../../base44/shared/productionRead
 
 const SHA='0123456789abcdef0123456789abcdef01234567';
 const HASH='a'.repeat(64);
-const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:'276',CAMBRA_LOGICAL_ROUTE_COUNT:'27'};
+const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:'276',CAMBRA_LOGICAL_ROUTE_COUNT:'38'};
 const WINDOW_FROM='2026-07-14T12:00:00.000Z';
 const WINDOW_TO='2026-08-13T12:00:00.000Z';
 const RECEIPT_HASH='b'.repeat(64);
@@ -47,9 +47,9 @@ describe('runtime identity and measured SLO evidence',()=>{
     const expected={...identity};delete expected.identity_version;
     expect(validateReleaseIdentityExpectation(expected)).toMatchObject({ok:true,status:'COMPLETE'});
     expect(compareRuntimeDeploymentIdentity(identity,expected)).toMatchObject({ok:true});
-    expect(compareRuntimeDeploymentIdentity({...identity,logical_route_count:26},expected)).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_logical_route_count_mismatch'])});
+    expect(compareRuntimeDeploymentIdentity({...identity,logical_route_count:37},expected)).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_logical_route_count_mismatch'])});
     expect(validateRuntimeDeploymentIdentity({...identity,base44_bundle_hash:''})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_base44_bundle_hash_invalid'])});
-    expect(releaseIdentityExpectation({sourceTreeHash:HASH,sourceTreeFileCount:2500,gitSha:SHA,backendBundle:{stagedTreeSha256:HASH,stagedFileCount:2400,physicalFunctionCount:276,logicalRouteCount:27}})).toMatchObject({git_sha:SHA,source_tree_hash:HASH,source_tree_file_count:2500,physical_function_count:276,logical_route_count:27});
+    expect(releaseIdentityExpectation({sourceTreeHash:HASH,sourceTreeFileCount:2500,gitSha:SHA,backendBundle:{stagedTreeSha256:HASH,stagedFileCount:2400,physicalFunctionCount:276,logicalRouteCount:38}})).toMatchObject({git_sha:SHA,source_tree_hash:HASH,source_tree_file_count:2500,physical_function_count:276,logical_route_count:38});
   });
 
   /* global process */
@@ -61,7 +61,7 @@ describe('runtime identity and measured SLO evidence',()=>{
       const noExpected=await recordRuntimeGateEvidence(svc,{gate_key:'BASE44_RUNTIME_PARITY',environment:'production',status:'PASS',evidence_kind:'REAL_RUNTIME',source:'test'});
       expect(noExpected).toMatchObject({status:'BLOCKED',identity_status:'INCOMPLETE',identity_blockers:expect.arrayContaining(['expected_release_identity_required'])});
       const pass=await recordRuntimeGateEvidence(svc,{gate_key:'BASE44_RUNTIME_PARITY',environment:'production',status:'PASS',evidence_kind:'REAL_RUNTIME',source:'test',expected_identity:{...runtimeDeploymentIdentity(IDENTITY_ENV)}});
-      expect(pass).toMatchObject({status:'PASS',identity_status:'COMPLETE',physical_function_count:276,logical_route_count:27});
+      expect(pass).toMatchObject({status:'PASS',identity_status:'COMPLETE',physical_function_count:276,logical_route_count:38});
       expect(pass.identity_hash).toMatch(/^[a-f0-9]{64}$/u);
     }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
