@@ -3,7 +3,7 @@ import { sha256Canonical } from './legalExecution.ts';
 export const RUNTIME_EVIDENCE_VERSION = 'runtime-evidence-2.0.0';
 export const RUNTIME_IDENTITY_VERSION = 'cambra-runtime-deployment-identity-v1';
 export const EXPECTED_BASE44_PHYSICAL_FUNCTIONS = 276;
-export const EXPECTED_BASE44_LOGICAL_ROUTES = 27;
+export const EXPECTED_BASE44_LOGICAL_ROUTES = 38;
 
 const SHA40 = /^[a-f0-9]{40}$/iu;
 const SHA256 = /^[a-f0-9]{64}$/iu;
