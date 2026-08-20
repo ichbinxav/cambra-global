@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T14:54:51.557Z",
+  "generatedAt": "2026-08-20T15:16:02.210Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "8712b8346e185a4dfe30a2eb4db712b1796b4ab5034e7087795d092830169985",
+      "sha256": "75e9f8c7481a81fe308c77e7fbcce665be6d8b9322bab15da1d87f770f51f0c0",
       "bytes": 42987
     },
     {
@@ -2089,8 +2089,8 @@
     },
     {
       "path": "config/intelligence/gates.v1.json",
-      "sha256": "8d803f54442ba0379b509621c20b322477ed5a3e463dc8881ea040e3d8896ffa",
-      "bytes": 31912
+      "sha256": "3f6a57b466e3331594694ccb7bc628cdd200deccdb589fd2e3220bc26dd691a7",
+      "bytes": 32025
     },
     {
       "path": "config/intelligence/label-registry.v1.json",
@@ -2164,8 +2164,8 @@
     },
     {
       "path": "config/intelligence/spec-compatibility-matrix.v1.json",
-      "sha256": "55c0db80c820c6c8fd4f0350c591b54e980ccbc9bf76cc26a40765e4e9b3497c",
-      "bytes": 25436
+      "sha256": "ec39d2038e5bfd80a94802aacac8193864bc2b81beef24292ba2ecbdacc24352",
+      "bytes": 25549
     },
     {
       "path": "config/intelligence/universal-experience.v1.json",
@@ -3374,8 +3374,8 @@
     },
     {
       "path": "src/lib/intelligenceRequirementLedger.test.js",
-      "sha256": "9009fb2c0b9cc1ed771316e0d0dc0ed7c58073d59249fb7868749c78c82f644e",
-      "bytes": 5776
+      "sha256": "3a6fc1855af09392ab1f64db12ecab7f8dff389ad6f137a85b74f7294b2f1808",
+      "bytes": 6583
     },
     {
       "path": "src/lib/intelligenceTenantScope.test.js",
