@@ -79,7 +79,13 @@ export function validatePaymentsLaunchMarketInput(raw: unknown): PaymentsMarketV
     return { ok: false, failure: { field: 'country', reason: 'not_canonical_market' } };
   }
   if (!scope.launch_active) {
-    return { ok: false, failure: { field: 'country', reason: 'protected_research_only' } };
+    return {
+      ok: false,
+      failure: {
+        field: 'country',
+        reason: scope.blocked_reason === 'not_launch_market' ? 'not_launch_market' : 'protected_research_only',
+      },
+    };
   }
 
   const region = paymentsRegionForCanonicalMarket(scope.iso2);
