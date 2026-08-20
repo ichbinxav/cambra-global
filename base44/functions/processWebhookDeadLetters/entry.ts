@@ -111,8 +111,40 @@ export default async function (req: Request): Promise<Response> {
         Response.json({ error: "forbidden" }, { status: 403 });
     }
     svc = base44.asServiceRole;
+    const hostedWorker = String(
+      body0?.args?.hosted_worker ?? body0?.hosted_worker ?? "",
+    );
+    if (hostedWorker) {
+      const workerBody = {
+        internal_secret: Deno.env.get("INTERNAL_CALL_SECRET") || "",
+        host_worker: "processWebhookDeadLetters",
+        hosted_worker: hostedWorker,
+      };
+      if (hostedWorker === "instantlyProviderEventRetryWorker") {
+        return await handleInstantlyProviderEventRetryWorker(
+          workerRequest(req, workerBody),
+        );
+      }
+      if (hostedWorker === "instantlyReconciliationWorker") {
+        return await handleInstantlyReconciliationWorker(
+          workerRequest(req, workerBody),
+        );
+      }
+      return Response.json({
+        ok: false,
+        error: "unknown_hosted_worker",
+        hosted_worker: hostedWorker,
+      }, { status: 400 });
+    }
+    if (body0?.provider_maintenance_only === true) {
+      return Response.json({
+        ok: false,
+        error: "ambiguous_provider_maintenance_route",
+        required: "hosted_worker",
+      }, { status: 400 });
+    }
     const manualReplay = body0?.manualReplay === true;
-    const providerMaintenanceOnly = body0?.provider_maintenance_only === true;
+    const providerMaintenanceOnly = false;
     // Static contract marker retained for the legacy closure test:
     // manualReplay && (!gate.isAdmin
     if (
@@ -502,32 +534,8 @@ export default async function (req: Request): Promise<Response> {
       }
     }
 
-    let instantlyEventRetry: any = null, instantlyReconciliation: any = null;
-    if (!manualReplay) {
-      const internalSecret = Deno.env.get("INTERNAL_CALL_SECRET") || "";
-      const workerBody = {
-        internal_secret: internalSecret,
-        host_worker: "processWebhookDeadLetters",
-      };
-      const retryResponse = await handleInstantlyProviderEventRetryWorker(
-        workerRequest(req, workerBody),
-      );
-      instantlyEventRetry = retryResponse
-        ? await retryResponse.json().catch(() => ({
-          ok: false,
-          error: "instantly_retry_response_invalid",
-        }))
-        : { ok: false, error: "instantly_retry_response_missing" };
-      const reconciliationResponse = await handleInstantlyReconciliationWorker(
-        workerRequest(req, workerBody),
-      );
-      instantlyReconciliation = reconciliationResponse
-        ? await reconciliationResponse.json().catch(() => ({
-          ok: false,
-          error: "instantly_reconciliation_response_invalid",
-        }))
-        : { ok: false, error: "instantly_reconciliation_response_missing" };
-    }
+    const instantlyEventRetry: any = null;
+    const instantlyReconciliation: any = null;
     const summary = {
       processed: results.length,
       pending_total: pending.length,
@@ -536,7 +544,8 @@ export default async function (req: Request): Promise<Response> {
       results,
       instantly_event_retry: instantlyEventRetry,
       instantly_reconciliation: instantlyReconciliation,
-      host_worker_fallback: true,
+      host_worker_fallback: false,
+      host_worker_routing: "dedicated",
       review_required: reviewRequired,
     };
     if (task?.id) {
@@ -560,12 +569,10 @@ export default async function (req: Request): Promise<Response> {
         result: summary,
         effectRefs: traceEffectRefs,
         receiptRefs: traceReceiptRefs,
-        // Scheduled mode also hosts Instantly maintenance routes whose child
-        // receipts are not returned here, so it remains explicitly partial.
-        effectCoverageComplete: manualReplay &&
-          traceEffectRefs.length > 0 &&
-          (reviewRequired ||
-            traceReceiptRefs.length === traceEffectRefs.length),
+        effectCoverageComplete:
+          traceEffectRefs.length === 0 ||
+          reviewRequired ||
+          traceReceiptRefs.length === traceEffectRefs.length,
       });
     }
     if (reviewRequired) schedulerOk = false;
