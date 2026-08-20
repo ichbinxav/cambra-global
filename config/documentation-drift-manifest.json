@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-19T10:18:28.964Z",
+  "generatedAt": "2026-08-20T11:36:10.928Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -213,7 +213,7 @@
     "base44/shared/supervisorObservation.ts": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006",
     "base44/shared/webhookDeadLetterClaim.ts": "7e1dee08442e9e69a5b318606180b83919ac108a5ff19537634d502a91e623bf",
     "config/agent-workforce-catalog.v1.json": "9090c24e8dc05485f670ac7c8a263b95e570a12e6d248558104abea3db36024b",
-    "config/agenttask-creator-inventory.json": "6ccd45720c39147d8edbffaadbee6302d62a7c439b6a6c9ef903648fcb309279",
+    "config/agenttask-creator-inventory.json": "9493aee717df067d6dc4e04a47776e5682156b94e6862f17058d520236cf4b4f",
     "config/europe-locales.json": "e6267619483517627cc8e965f2cedf103b660ee42d1d0b2f557a17d67df92d14",
     "config/europe-markets.json": "049fc2801d628e57303bc1a6aff5176d2bbc0952c531d7ee1e6c2ff1183375ef",
     "config/growth-path-defaults.json": "26b89724bbe3dc5ca60d30ca3ff5561e178c6847a4bf56b96dc717d1d4a668e6",
