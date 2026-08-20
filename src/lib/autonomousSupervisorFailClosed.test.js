@@ -188,15 +188,37 @@ describe('ROOT-OTR-014 — autonomous supervisor dependency truth', () => {
     })).toBe(true);
   });
 
-  it('surfaces partial follow-up recovery as attention instead of healthy completion', () => {
-    expect(COMMERCIAL_FOLLOW_UP).toContain('const workerComplete = workerSucceeded && recoveryComplete');
-    expect(COMMERCIAL_FOLLOW_UP).toContain("status: workerComplete ? 'completed' : workerSucceeded ? 'waiting_input' : 'failed'");
-    expect(COMMERCIAL_FOLLOW_UP).toContain('executionOk = workerComplete');
-    expect(SUPERVISOR).toContain('partialCommercialRecovery = recoveryPartial');
-    expect(SUPERVISOR).toContain('(partialCommercialRecovery ? 1 : 0)');
-    expect(SUPERVISOR).toContain("readiness_status: partialCommercialRecovery ? 'PARTIAL' : 'COMPLETE'");
-    expect(SUPERVISOR).toContain("status: partialCommercialRecovery ? 'waiting_input' : 'completed'");
-    expect(SUPERVISOR).toContain('partialCommercialRecovery ? { status: 503 } : undefined');
+  it('records routine commercial deferral as PARTIAL without failing either scheduler', () => {
+    expect(COMMERCIAL_FOLLOW_UP).toContain(
+      'const totalDeferred = deferred + pendingWindow',
+    );
+    expect(COMMERCIAL_FOLLOW_UP).toContain(
+      "status: workerSucceeded ? 'completed' : 'failed'",
+    );
+    expect(COMMERCIAL_FOLLOW_UP).toContain(
+      'executionOk = workerSucceeded',
+    );
+    expect(COMMERCIAL_FOLLOW_UP).toContain(
+      'deadline_at: taskDeadlineAt',
+    );
+    expect(COMMERCIAL_FOLLOW_UP).toContain(
+      'await renewRunHeartbeat(true)',
+    );
+    expect(COMMERCIAL_FOLLOW_UP).not.toContain(
+      'executionOk = workerComplete',
+    );
+
+    expect(SUPERVISOR).toContain(
+      "readiness_status: partialCommercialRecovery ? 'PARTIAL' : 'COMPLETE'",
+    );
+    expect(SUPERVISOR).toContain(
+      'deferred_recovery_pending: partialCommercialRecovery',
+    );
+    expect(SUPERVISOR).toContain("status: 'completed'");
+    expect(SUPERVISOR).toContain('ok: true');
+    expect(SUPERVISOR).not.toContain(
+      'partialCommercialRecovery ? { status: 503 }',
+    );
   });
 
   it('re-probes the exact dependency before resolving its incident', () => {
