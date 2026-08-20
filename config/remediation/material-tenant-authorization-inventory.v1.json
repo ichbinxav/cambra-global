@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "f041aa6caf2f55102e21a9afc4d544d50f3671678d36b258d84b78dd871bb490",
-  "material_registry_input_fingerprint_sha256": "9702619ab94978b49ec1e87ce59f94d14d0727d02ead871da8656e5775cb5655",
-  "input_fingerprint_sha256": "42db069296c26351c9d0a9941fb9b1294e6acebb5af3a95a9ea0addac7cfb733",
+  "material_registry_sha256": "4bad0588f4c915d2bf93291944b3435fa998d566050806c04cf0718ee2e7716d",
+  "material_registry_input_fingerprint_sha256": "c42b1cec66fe2d2b20e24c398f318b692c04a981256b3bfdade488312688be96",
+  "input_fingerprint_sha256": "ebb06d152cdaa1fa32df7b13cc748b9b9623c7ac77872032dbf2057f8c103573",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -2044,8 +2044,8 @@
         },
         {
           "path": "src/lib/schedulerLeaseFencing.test.js",
-          "sha256": "e21362680d9f0705bb4da096cb76797e5c965f0f6aa9a7d4aae7c0e96a389a27",
-          "bytes": 36646
+          "sha256": "67dae273a891d3b30209bd929c360362860816875939911ce294d8586b4fd0a8",
+          "bytes": 36912
         }
       ],
       "remaining_gaps": [
