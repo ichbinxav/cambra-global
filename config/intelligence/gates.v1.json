@@ -478,7 +478,9 @@
         "ORCH.S34"
       ],
       "evidence_refs": [
-        "RELEASE.json"
+        "base44/shared/runtimeEvidence.ts",
+        "base44/shared/goLiveHardGates.ts",
+        "scripts/generate-release-manifest.mjs"
       ],
       "runtime_evidence": [],
       "blockers": [

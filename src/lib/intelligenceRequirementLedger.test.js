@@ -96,6 +96,15 @@ describe("CAMBRA Intelligence Phase 0 requirement governance", () => {
       )?.resolution,
     )
       .toContain("contract-only registry family");
+    const runtimeTruth = matrix.conflicts.find((entry) =>
+      entry.compatibility_id === "RUNTIME_TRUTH"
+    );
+    expect(runtimeTruth?.implementation_refs).toEqual(expect.arrayContaining([
+      "base44/shared/runtimeEvidence.ts",
+      "base44/shared/goLiveHardGates.ts",
+      "scripts/generate-release-manifest.mjs",
+    ]));
+    expect(runtimeTruth?.implementation_refs).not.toContain("RELEASE.json");
   });
 
   it("reuses authoritative resources and makes target registries explicit", () => {
@@ -172,5 +181,14 @@ describe("CAMBRA Intelligence Phase 0 requirement governance", () => {
       )?.blockers,
     )
       .toContain("GOLDEN_PATH_NOT_EXECUTED");
+    const runtimeParity = gates.gates.find((gate) =>
+      gate.gate_id === "IMMUTABLE_RUNTIME_PARITY"
+    );
+    expect(runtimeParity?.evidence_refs).toEqual(expect.arrayContaining([
+      "base44/shared/runtimeEvidence.ts",
+      "base44/shared/goLiveHardGates.ts",
+      "scripts/generate-release-manifest.mjs",
+    ]));
+    expect(runtimeParity?.evidence_refs).not.toContain("RELEASE.json");
   });
 });

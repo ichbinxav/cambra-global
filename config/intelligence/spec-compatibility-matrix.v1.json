@@ -692,7 +692,9 @@
       "capability_state": "PARTIAL",
       "delivery_status": "IMPLEMENTED",
       "implementation_refs": [
-        "RELEASE.json"
+        "base44/shared/runtimeEvidence.ts",
+        "base44/shared/goLiveHardGates.ts",
+        "scripts/generate-release-manifest.mjs"
       ],
       "runtime_evidence": [],
       "blockers": [

@@ -250,4 +250,5 @@ for (const key of Object.keys(findings)) {
   console.log('');
 }
 console.log(`TOTAL candidate findings: ${total}. These are CANDIDATES: every one needs reading before it is a defect.`);
-process.exit(0);
+// Allow piped stdout to drain. process.exit() can truncate the P6/P7 tail under load.
+process.exitCode = 0;
