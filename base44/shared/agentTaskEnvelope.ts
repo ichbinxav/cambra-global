@@ -508,6 +508,62 @@ export async function buildRootAgentTaskEnvelope(
   };
 }
 
+async function closeCreatedRootTaskAfterBindFailure(
+  svc: any,
+  created: any,
+  envelope: any,
+  revision: number,
+  cause: any,
+) {
+  const at = new Date().toISOString();
+  const failure = {
+    ok: false,
+    error: "agent_task_root_bind_failed",
+    cause_code: String(cause?.code || cause?.message || "unknown").slice(0, 200),
+  };
+  const failureHash = await hashAgentTaskProjection(failure);
+  const filter: Record<string, unknown> = {
+    id: created.id,
+    envelope_version: AGENT_TASK_ENVELOPE_VERSION,
+    trace_id: envelope.trace_id,
+    attempt_token: envelope.attempt_token,
+    fence_token: envelope.fence_token,
+    trace_revision: revision,
+  };
+  if (created.status !== undefined && created.status !== null) {
+    filter.status = created.status;
+  }
+  if (revision > 0) filter.root_task_id = created.id;
+  await updateAgentTaskTraceExactlyOnce(
+    svc,
+    filter,
+    {
+      root_task_id: created.id,
+      status: "failed",
+      error: "agent_task_root_bind_failed",
+      completed_at: at,
+      heartbeat_at: at,
+      lineage_state: "PARTIAL",
+      terminal_state: "FAILED",
+      effect_state: envelope.material_effect
+        ? "FAILED_PRE_EFFECT"
+        : "NOT_APPLICABLE",
+      effect_coverage_state: envelope.material_effect
+        ? "COMPLETE"
+        : "NOT_APPLICABLE",
+      ambiguity_state: "NONE",
+      output_hash: failureHash,
+      terminal_result_hash: failureHash,
+      terminal_result_json: { value: failure },
+      cost_record_refs_json: [],
+      effect_refs_json: [],
+      receipt_refs_json: [],
+      trace_revision: revision + 1,
+    },
+    "agent_task_root_bind_failure_close",
+  );
+}
+
 export async function createCanonicalAgentTask(
   svc: any,
   req: Request,
@@ -532,26 +588,59 @@ export async function createCanonicalAgentTask(
     heartbeat_at: new Date().toISOString(),
     trace_revision: 1,
   };
-  await updateAgentTaskTraceExactlyOnce(
-    svc,
-    {
-      id: created.id,
-      envelope_version: AGENT_TASK_ENVELOPE_VERSION,
-      trace_id: envelope.trace_id,
-      attempt_token: envelope.attempt_token,
-      fence_token: envelope.fence_token,
-      trace_revision: 0,
-    },
-    rootPatch,
-    "agent_task_root_bind",
-  );
+  try {
+    await updateAgentTaskTraceExactlyOnce(
+      svc,
+      {
+        id: created.id,
+        envelope_version: AGENT_TASK_ENVELOPE_VERSION,
+        trace_id: envelope.trace_id,
+        attempt_token: envelope.attempt_token,
+        fence_token: envelope.fence_token,
+        trace_revision: 0,
+      },
+      rootPatch,
+      "agent_task_root_bind",
+    );
+  } catch (error: any) {
+    try {
+      await closeCreatedRootTaskAfterBindFailure(
+        svc,
+        created,
+        envelope,
+        0,
+        error,
+      );
+    } catch (cleanupError: any) {
+      error.agent_task_cleanup_error = String(
+        cleanupError?.code || cleanupError?.message || cleanupError,
+      ).slice(0, 200);
+    }
+    throw error;
+  }
   const observed = await svc.entities.AgentTask.get(created.id);
   if (
     !observed || observed.root_task_id !== created.id ||
     observed.trace_id !== envelope.trace_id ||
     observed.input_hash !== envelope.input_hash ||
     observed.tenant_key !== envelope.tenant_key
-  ) throw new Error("agent_task_root_readback_mismatch");
+  ) {
+    const error: any = new Error("agent_task_root_readback_mismatch");
+    try {
+      await closeCreatedRootTaskAfterBindFailure(
+        svc,
+        created,
+        envelope,
+        1,
+        error,
+      );
+    } catch (cleanupError: any) {
+      error.agent_task_cleanup_error = String(
+        cleanupError?.code || cleanupError?.message || cleanupError,
+      ).slice(0, 200);
+    }
+    throw error;
+  }
   return { ...observed, ...envelope, ...rootPatch };
 }
 
