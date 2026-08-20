@@ -7,7 +7,7 @@
       "base44/entities/AutonomyIncident.jsonc": "f0f55af0a800d875652e2527c2e31584c635b0c86621e339d0e98aa493791bcf",
       "base44/entities/IncidentAlertDelivery.jsonc": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
       "base44/entities/OperationalIncident.jsonc": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
-      "base44/functions/autonomousOperationsSupervisor/entry.ts": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
+      "base44/functions/autonomousOperationsSupervisor/entry.ts": "95bbd45445316c48c84659b66d1d1aa570bef31f89ceeacf086a42ef37aaf271",
       "base44/functions/eclProductionHealth/entry.ts": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
       "base44/functions/operatingHealthWorker/entry.ts": "b3d3fb5884040d319a065a6d87645b0eba7a69de658fbc7004cc0e116ece5cc0",
