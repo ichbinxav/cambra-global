@@ -505,7 +505,7 @@
     },
     {
       "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
-      "sha256": "e05714e264e375b9f60c779347d943d020761e10cdb3d710715a8de8bea9f21d"
+      "sha256": "8275d887222a3a1afb9fec917fdc3fa3e9714025f460ac0edc18b2994437c4cd"
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
@@ -537,7 +537,7 @@
     },
     {
       "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-      "sha256": "5d1e0d1b4280d2532d1898fe2dc729d0a06c8ef01a57095aff32bc52c05d9d31"
+      "sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784"
     },
     {
       "path": "base44/functions/sendRecoverContractEmail/entry.ts",

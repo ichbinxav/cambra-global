@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:36:12.786Z",
+  "generatedAt": "2026-08-20T11:37:50.284Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "42ceabe9f2ffb41d6ffe7d44deae47fd36fcd6f0ab86d27fe30f919525b1fd24",
+      "sha256": "ea8e32722084a399a95b8ea824b790705033e0522a7a06ced0db95ce9de53897",
       "bytes": 42987
     },
     {
@@ -2189,27 +2189,27 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "26008c862613c49f008ac3763ec21dedcf6bbb2ad76d48c1ac7f13ab35439cbc",
+      "sha256": "badde64d75b53035619d1e75457fccdc4c447dfa3cc72bf235851cc6a5c3ff7a",
       "bytes": 13241
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "90881619eaa814a8f21b946c1d599d52e9fb4149115492bb1db05ba60bfe40e7",
+      "sha256": "b4ad0589cfcf1f3d74f7e35831769ae814e59710d4744442cd4c26c3ad25c83a",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "2f61df41c908fd246456f04f8a5bb9eb0c9a461bcdc8dc51aa938e70b5287468",
+      "sha256": "f041aa6caf2f55102e21a9afc4d544d50f3671678d36b258d84b78dd871bb490",
       "bytes": 143043
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "e11774dc3e6ab9e180fe8081ab094021f6afe0ad83490eb418992a360401e98a",
+      "sha256": "10f19bd1d46173921b55819c24c6ab7bb20012554b1bd63c6842e41b3a2f3a23",
       "bytes": 98046
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "67dae7b68e2caa0636713a5366b82531868802c4e985b366a389fd457218981f",
+      "sha256": "e3614eeb30035f5720afb277885b969600d52c689aedeef455aaccc979890195",
       "bytes": 25748
     },
     {
