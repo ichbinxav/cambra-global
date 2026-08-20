@@ -32,3 +32,8 @@ dist-ssr
 .vite
 base44/.app.jsonc
 base44/.deploy/
+
+# Generated release evidence; publish through CI, never commit.
+/.release-evidence/
+/.release-artifacts/
+/RELEASE.json
