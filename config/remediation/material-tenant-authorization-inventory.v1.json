@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "2f61df41c908fd246456f04f8a5bb9eb0c9a461bcdc8dc51aa938e70b5287468",
-  "material_registry_input_fingerprint_sha256": "a291927aab452481b5b45ba3b3871b095a2fc22a0127f4bce5f589a06b9c119b",
-  "input_fingerprint_sha256": "a8010c94e7ac87d0b91d25f1b1d00885217f38b6e067a3b817d8b12e6eb68874",
+  "material_registry_sha256": "f041aa6caf2f55102e21a9afc4d544d50f3671678d36b258d84b78dd871bb490",
+  "material_registry_input_fingerprint_sha256": "9702619ab94978b49ec1e87ce59f94d14d0727d02ead871da8656e5775cb5655",
+  "input_fingerprint_sha256": "2c7fecce830f889b2c0153dffb9d2a9f7b2c4a58c2e567911b979772255908d6",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -763,8 +763,8 @@
       "test_evidence": [
         {
           "path": "src/lib/contractPolicyE2E.test.js",
-          "sha256": "207776c4efab6cd736f724a632d4ebbad797fc1c71b1801b66924c069e9e426f",
-          "bytes": 27400
+          "sha256": "beba5fb981012757f0113438dc222970277d9ab41ff62289c445c61fb0747c19",
+          "bytes": 27498
         }
       ],
       "remaining_gaps": [
@@ -1354,8 +1354,8 @@
       "test_evidence": [
         {
           "path": "src/lib/contractPolicyE2E.test.js",
-          "sha256": "207776c4efab6cd736f724a632d4ebbad797fc1c71b1801b66924c069e9e426f",
-          "bytes": 27400
+          "sha256": "beba5fb981012757f0113438dc222970277d9ab41ff62289c445c61fb0747c19",
+          "bytes": 27498
         }
       ],
       "remaining_gaps": [
