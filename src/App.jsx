@@ -267,8 +267,8 @@ const AuthenticatedApp = () => {
       <Routes>
         {/* Public */}
         <Route path="/" element={withBoundary(<Landing />)} />
-        <Route path="/Landing" element={withBoundary(<Landing />)} />
-        <Route path="/landing" element={<Navigate to="/Landing" replace />} />
+        <Route path="/Landing" element={<Navigate to="/" replace />} />
+        <Route path="/landing" element={<Navigate to="/" replace />} />
         <Route path="/Onboarding" element={withBoundary(<Onboarding />)} />
         <Route path="/onboarding" element={<Navigate to="/Onboarding" replace />} />
         <Route path="/BrandProfile" element={withBoundary(<BrandProfile />)} />
