@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "35ef45f6356171a203f6fd27f930e0dff8a25924019837b5355bc8b2693f18fe",
+  "input_fingerprint_sha256": "e4334a8b7fe2128990571d9b9c4ddcbe2323d397c11fd34e30241534ccc724a3",
   "components": [
     {
       "key": "effect_authority",
@@ -13,7 +13,7 @@
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "9493aee717df067d6dc4e04a47776e5682156b94e6862f17058d520236cf4b4f",
+      "sha256": "12a33c1accce1b34c25f0b19956809bad8c7f012e82aa6470d627f16d5008555",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
@@ -25,7 +25,7 @@
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "266e5332f264d85f9cd1d34799ba8016cef7daf655d763af7d24fd8144a7e2e8",
+      "sha256": "79d0ec49d1d27dc20be31a88c29dea6fbdca9b3b59f103f2367f7998cef56cd4",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -162,13 +162,13 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
-      "bytes": 29825
+      "sha256": "ad9c7e7be686eae6714df62cc49ae42e11a19abcdfa837a3f9c940a8653cb1f6",
+      "bytes": 30138
     },
     {
       "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
-      "sha256": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
-      "bytes": 33762
+      "sha256": "95bbd45445316c48c84659b66d1d1aa570bef31f89ceeacf086a42ef37aaf271",
+      "bytes": 33694
     },
     {
       "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -207,8 +207,8 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
-      "bytes": 21790
+      "sha256": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
+      "bytes": 21686
     },
     {
       "path": "base44/functions/productionReadinessWorker/entry.ts",
@@ -242,8 +242,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "53d97f5f82fca465ca21684e29f15ea32ef2b21bb47b8ef1343e589309f4aa4a",
-      "bytes": 40939
+      "sha256": "06c846b62f003900a7d27d92133e705bc6f1268b37e80afa0e25db54f2dd6d0b",
+      "bytes": 43349
     },
     {
       "path": "base44/shared/canonicalIncident.ts",
@@ -262,12 +262,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "4737d24cd26f26fa8c804537194fa0aedcfcfa0c23b7f1458052e01ede64b7dc",
-      "bytes": 43518
+      "sha256": "1d76ebba661f2179ddbe2cb9039935506220b379713df5f3d83b47dd056c537e",
+      "bytes": 44081
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "8b7a38d3065f068565e4230926b536a44c25b4502648ad54d1fbdb017ce6e9e6",
+      "sha256": "dace425a9489e729921948ea6cf81b19f225bb1a469a2031574c16af495284a3",
       "bytes": 8229
     },
     {
@@ -307,13 +307,13 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "c2a93402d93c8520cbd3338e588cb9fb595a552c7e2f93497b29ca99395dd09d",
-      "bytes": 26730
+      "sha256": "d62267c5fc6b7321566d6a27c5e430afc7f6b0672914604388476b0177ee4cc8",
+      "bytes": 28012
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
-      "sha256": "237e447cc178501d5aba46c8d0c0f7c193c4cb14551d0825962f669f131c1c09",
-      "bytes": 15452
+      "sha256": "0bfaa783bf70fb33a0ae26ab4444d930f4944f09f179876556f17b61509ed132",
+      "bytes": 15685
     },
     {
       "path": "src/lib/effectAuthority.test.js",
