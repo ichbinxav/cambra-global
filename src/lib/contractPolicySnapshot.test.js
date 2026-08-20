@@ -177,11 +177,41 @@ describe("resolveContractPolicy", () => {
   });
 
   it("resolves from a BillingRule with policy_version", () => {
-    const r = resolveContractPolicy({ billingRule: { node_share_percent: 20, currency: "EUR", policy_version: "2026.08.01" } });
+    const r = resolveContractPolicy({ billingRule: { node_share_percent: 20, merchant_share_pct: 80, fee_duration_months: 24, currency: "EUR", policy_version: "2026.08.01" } });
     expect(r.successFeePct).toBe(20);
     expect(r.policyVersion).toBe("2026.08.01");
     expect(r.isLegacy).toBe(false);
     expect(r.provenance).toBe("billing_rule");
+    expect(r.merchantSharePct).toBe(80);
+    expect(r.feeDurationMonths).toBe(24);
+  });
+
+  it("fails closed for a policy BillingRule missing frozen share or duration", () => {
+    const r = resolveContractPolicy({
+      billingRule: {
+        node_share_percent: 20,
+        currency: "EUR",
+        policy_version: "2026.08.01",
+      },
+    });
+    expect(r.resolvable).toBe(false);
+    expect(r.provenance).toBe("billing_rule_incomplete");
+    expect(r.warnings).toEqual(expect.arrayContaining([
+      "billing_rule_share_missing",
+      "billing_rule_duration_missing",
+    ]));
+  });
+
+  it("fails closed for a policy report missing frozen share or duration", () => {
+    const r = resolveContractPolicy({
+      report: {
+        effective_fee_pct: 20,
+        currency: "EUR",
+        policy_version: "2026.08.01",
+      },
+    });
+    expect(r.resolvable).toBe(false);
+    expect(r.provenance).toBe("monthly_report_incomplete");
   });
 
   it("resolves from a BillingRule without policy_version as legacy", () => {
