@@ -237,6 +237,36 @@ export const SEO_STATIC = {
       es: "Las condiciones que rigen el servicio de auditoría y recuperación de costes de pago con tarjeta de CAMBRA.",
     },
   },
+  "/Dpa": {
+    canonicalPath: "/Dpa",
+    ogType: "article",
+    robots: DEFAULT_ROBOTS,
+    title: {
+      en: "Data Processing Addendum — CAMBRA",
+      fr: "Avenant relatif au traitement des données — CAMBRA",
+      es: "Anexo de tratamiento de datos — CAMBRA",
+    },
+    description: {
+      en: "The data processing terms governing CAMBRA's handling of personal data for customers.",
+      fr: "Les conditions de traitement des données personnelles applicables aux clients de CAMBRA.",
+      es: "Las condiciones de tratamiento de datos personales aplicables a los clientes de CAMBRA.",
+    },
+  },
+  "/Subprocessors": {
+    canonicalPath: "/Subprocessors",
+    ogType: "article",
+    robots: DEFAULT_ROBOTS,
+    title: {
+      en: "Subprocessors — CAMBRA",
+      fr: "Sous-traitants ultérieurs — CAMBRA",
+      es: "Subencargados del tratamiento — CAMBRA",
+    },
+    description: {
+      en: "The current subprocessors CAMBRA uses to provide its services and protect customer data.",
+      fr: "Les sous-traitants ultérieurs actuellement utilisés par CAMBRA pour fournir ses services et protéger les données clients.",
+      es: "Los subencargados que CAMBRA utiliza actualmente para prestar sus servicios y proteger los datos de clientes.",
+    },
+  },
   "/Cookies": {
     canonicalPath: "/Cookies",
     ogType: "article",
