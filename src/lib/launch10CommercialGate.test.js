@@ -24,7 +24,7 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
   it("manual Analyzer returns NOT_AVAILABLE_IN_MARKET before durable analysis effects", () => {
     const src = read("base44/functions/submitPaymentsAnalysis/entry.ts");
     const gate = after(src, "error: 'NOT_AVAILABLE_IN_MARKET'");
-    const firstDurable = after(src, "observeServiceLevelRequest");
+    const firstDurable = after(src, "return await observeServiceLevelRequest(");
     expect(gate).toBeGreaterThan(-1);
     expect(firstDurable).toBeGreaterThan(-1);
     expect(gate).toBeLessThan(firstDurable);
@@ -71,7 +71,7 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
     const accept = read("base44/functions/acceptRecoverMandate/entry.ts");
     const acceptGate = accept.indexOf("const marketDecision = commercialMarketDecision(brand?.country)");
     expect(acceptGate).toBeGreaterThan(-1);
-    expect(acceptGate).toBeLessThan(accept.indexOf("claimRecoverAcceptanceAuthority"));
+    expect(acceptGate).toBeLessThan(accept.indexOf("await claimRecoverAcceptanceAuthority(svc, {"));
     expect(accept.slice(acceptGate)).toContain("NOT_AVAILABLE_IN_MARKET");
   });
 

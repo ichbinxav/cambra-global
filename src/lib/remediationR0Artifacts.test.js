@@ -85,11 +85,11 @@ describe("R0.C material boundary registry", () => {
       ),
     ).toBe(true);
     expect(document.scheduler_inventory).toMatchObject({
-      // COMMAND-C7 (2026-08-17): the Command run sweep. Guarded count moves with
-      // active, so an unguarded active schedule would still fail this.
-      scheduled_automation_count: 70,
-      active_count: 68,
-      guarded_count: 68,
+      // PROMPT_LAUNCH_10 (2026-08-20): includes both explicit Instantly hosted
+      // routes. Guarded count moves with active so an unguarded route still fails.
+      scheduled_automation_count: 72,
+      active_count: 70,
+      guarded_count: 70,
       unguarded_active: [],
     });
     expect(document.paid_ai_inventory.caller_count).toBe(38);

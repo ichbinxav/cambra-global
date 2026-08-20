@@ -52,7 +52,7 @@ describe("public market experience", () => {
         researchAllowed: true,
         researchOnly: true,
       });
-      expect(row.analyzer).toMatchObject({ status: "LIMITED", reason: "PROTECTED_MARKET_RESEARCH_ONLY" });
+      expect(row.analyzer).toMatchObject({ status: "WAITLIST", reason: "NOT_AVAILABLE_IN_MARKET" });
       expect(row.recovery.status).toBe("BLOCKED");
     }
   });
