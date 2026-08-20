@@ -456,14 +456,31 @@ if (m.finalVerdict !== expectedVerdict) fail(`finalVerdict is inconsistent: expe
 
 // Strict CI mode
 if (ciMode) {
+  const expectedGitSha =
+    process.env.CAMBRA_RELEASE_GIT_SHA || process.env.GITHUB_SHA || null;
+  const currentRunId = process.env.GITHUB_RUN_ID || null;
+
   if (m.releaseBuild !== true) fail("[CI] releaseBuild must be true");
-  if (!m.gitSha) fail("[CI] gitSha is null");
-  if (!m.ciEvidence?.runId) fail("[CI] no CI run id");
-  for (const [n, ev] of [["tests", m.testEvidence], ["build", m.buildEvidence]]) {
-    if (ev && ev.ciRunId !== m.ciEvidence?.runId) fail(`[CI] ${n} evidence was not generated in this CI run`);
+  if (!expectedGitSha || m.gitSha !== expectedGitSha) {
+    fail(`[CI] gitSha does not match checked-out source: ${m.gitSha} vs ${expectedGitSha}`);
   }
-  if (blockingManualRequirements.length > 0) fail(`[CI] blocking technical release requirements: ${blockingManualRequirements.join("; ")}`);
-  if (pendingProductionRequirements.length > 0) console.log(`[CI] technical verification PASS with ${pendingProductionRequirements.length} retained pilot production proof(s); readinessLevel=NOT_GO_READY.`);
+  if (!currentRunId || String(m.ciEvidence?.runId) !== String(currentRunId)) {
+    fail("[CI] RELEASE.json was not generated in this CI run");
+  }
+  for (const [manifestKey, binding] of Object.entries(RELEASE_EVIDENCE_BINDINGS)) {
+    const evidence = m[manifestKey];
+    if (!evidence || String(evidence.ciRunId) !== String(currentRunId)) {
+      fail(`[CI] ${binding.artifact} evidence was not generated in this CI run`);
+    }
+  }
+  if (blockingManualRequirements.length > 0) {
+    fail(`[CI] blocking technical release requirements: ${blockingManualRequirements.join("; ")}`);
+  }
+  if (pendingProductionRequirements.length > 0) {
+    console.log(
+      `[CI] technical verification PASS with ${pendingProductionRequirements.length} retained pilot production proof(s); readinessLevel=NOT_GO_READY.`,
+    );
+  }
 }
 
 if (failed) process.exit(1);
