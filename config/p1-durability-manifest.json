@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:38:53.148Z",
+  "generatedAt": "2026-08-20T11:41:14.115Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1464,8 +1464,8 @@
     },
     {
       "path": "base44/shared/billingFee.ts",
-      "sha256": "bc0caae26435f2c8002e324bad92ceb5a13f3e0582c0a752384a1bb9151338af",
-      "bytes": 4123
+      "sha256": "07105694ee35dffbc417419c654a13aecddebb94510b62753d3a444b2c0ba797",
+      "bytes": 4212
     },
     {
       "path": "base44/shared/cambraLegalIdentity.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "7690ad10756bb6ca04d1f9d77fc60b20ed7f922aa6ad40567173aa1f75027558",
+      "sha256": "1239f37d171132806b7213b18c57cac6780d8b536ad722dd76493446de2a8b97",
       "bytes": 42987
     },
     {
@@ -2204,12 +2204,12 @@
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "10f19bd1d46173921b55819c24c6ab7bb20012554b1bd63c6842e41b3a2f3a23",
+      "sha256": "3bdbd604af97b2caea47796e79112b051a0eafe854b874a426c11b79f6c363cd",
       "bytes": 98046
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "e3614eeb30035f5720afb277885b969600d52c689aedeef455aaccc979890195",
+      "sha256": "9f5f04ab7cfeacd424832ea3bdd4d034c51ec686a492721b16802be83f98ae0b",
       "bytes": 25748
     },
     {
@@ -3069,8 +3069,8 @@
     },
     {
       "path": "src/lib/criticalSharedFailClosed.test.js",
-      "sha256": "8e4f647e074b67b58180a440cf4b8339ef10a934a5059550beb6f3c956801281",
-      "bytes": 4673
+      "sha256": "c07678896c1e6c6492adcee01d7ffb400dd44970eebbfee3933c0c478fbf29cb",
+      "bytes": 4671
     },
     {
       "path": "src/lib/ctoProductionRemediation.test.js",
@@ -3644,8 +3644,8 @@
     },
     {
       "path": "src/lib/recoverFinancialHardening.test.js",
-      "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
-      "bytes": 22187
+      "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8",
+      "bytes": 22300
     },
     {
       "path": "src/lib/recoverHandlerContracts.test.js",

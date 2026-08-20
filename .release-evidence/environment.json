@@ -4,8 +4,8 @@
   "platform": "linux",
   "arch": "x64",
   "lockfileSha": "ff2cbab515f07b42e9769a56b7ef75cfedbd516c5367bc04d9186d3475ee19b7",
-  "sourceTreeHash": "4ba0d0310906e562813a1cec73fbac98a16dc19fb2bd1c71947b35da7d4c6c8e",
-  "timestamp": "2026-08-20T11:39:20.082Z",
+  "sourceTreeHash": "aaa6467bd201502e95cb82c5838bae3ae8a975c772180254fb1c21e45c521658",
+  "timestamp": "2026-08-20T11:42:27.048Z",
   "evidenceSchemaVersion": "cambra-release-evidence-v2",
-  "evidenceDigest": "b11bef659a0f0ae1970d7ee376668daf2e03e005dd97fe20d31f9969947d51d0"
+  "evidenceDigest": "d63022ca84a3798cdc585873d0f04ad220d9b14e6f4ab852c6e3d62ea667a95d"
 }

@@ -6,7 +6,7 @@
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
   "material_registry_sha256": "f041aa6caf2f55102e21a9afc4d544d50f3671678d36b258d84b78dd871bb490",
   "material_registry_input_fingerprint_sha256": "9702619ab94978b49ec1e87ce59f94d14d0727d02ead871da8656e5775cb5655",
-  "input_fingerprint_sha256": "2c7fecce830f889b2c0153dffb9d2a9f7b2c4a58c2e567911b979772255908d6",
+  "input_fingerprint_sha256": "6d6c73335ad07510cf31401e22adb4693336c767bc100ffeb00fc0ba5b44033f",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -826,8 +826,8 @@
       "test_evidence": [
         {
           "path": "src/lib/recoverFinancialHardening.test.js",
-          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
-          "bytes": 22187
+          "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8",
+          "bytes": 22300
         }
       ],
       "remaining_gaps": [
@@ -1148,8 +1148,8 @@
       "test_evidence": [
         {
           "path": "src/lib/recoverFinancialHardening.test.js",
-          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
-          "bytes": 22187
+          "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8",
+          "bytes": 22300
         }
       ],
       "remaining_gaps": [
@@ -1295,8 +1295,8 @@
       "test_evidence": [
         {
           "path": "src/lib/recoverFinancialHardening.test.js",
-          "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4",
-          "bytes": 22187
+          "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8",
+          "bytes": 22300
         }
       ],
       "remaining_gaps": [

@@ -645,7 +645,7 @@
     },
     {
       "path": "src/lib/recoverFinancialHardening.test.js",
-      "sha256": "2f795b5480eb6fdb58ced2c2dd182d17fe3b3ea9459d225c73de8d5c2e138ca4"
+      "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8"
     },
     {
       "path": "src/pages/admin/AdminChat.jsx",
