@@ -168,7 +168,9 @@ Deno.serve(async (req) => {
       });
       const res = fetched.response;
       url = fetched.finalUrl;
-      headers = Object.fromEntries(res.headers.entries());
+      res.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
       // Cap body at 512KB — we only need signal substrings, never full HTML
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
