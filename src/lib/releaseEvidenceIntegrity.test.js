@@ -108,4 +108,12 @@ describe("release evidence anti-forgery contract", () => {
     expect(checker).toContain("releaseManifestCanonicalStatus");
     expect(checker).toContain("hand-edited readiness/evidence fields are forbidden");
   });
+
+  it("binds every strict-CI evidence record to the checked-out SHA and current run", () => {
+    const checker = fs.readFileSync("scripts/check-release-manifest.mjs", "utf8");
+    expect(checker).toContain("expectedGitSha");
+    expect(checker).toContain("process.env.GITHUB_RUN_ID");
+    expect(checker).toContain("Object.entries(RELEASE_EVIDENCE_BINDINGS)");
+    expect(checker).toContain("String(evidence.ciRunId) !== String(currentRunId)");
+  });
 });
