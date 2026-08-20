@@ -169,6 +169,43 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     expect(get).toHaveBeenCalledWith('task-root');
   });
 
+  it('CAS-closes a newly created root when durable root binding fails pre-effect', async () => {
+    let stored;
+    let updates = 0;
+    const svc = { entities: { AgentTask: {
+      create: vi.fn(async (row) => (stored = { ...row, id: 'task-root' })),
+      updateMany: vi.fn(async (_filter, patch) => {
+        updates += 1;
+        if (updates === 1) return { success: true, updated: 0 };
+        stored = { ...stored, ...patch.$set };
+        return { success: true, updated: 1 };
+      }),
+      get: vi.fn(async () => stored),
+    } } };
+    await expect(createCanonicalAgentTask(svc, request(), {
+      brand_id: '_platform',
+      agent_name: 'test',
+      task_type: 'test',
+      status: 'running',
+    }, rootInput({
+      materialEffect: true,
+      effectClass: 'EXECUTE',
+    }))).rejects.toThrow('agent_task_root_bind_conflict');
+    expect(updates).toBe(2);
+    expect(stored).toMatchObject({
+      root_task_id: 'task-root',
+      status: 'failed',
+      terminal_state: 'FAILED',
+      effect_state: 'FAILED_PRE_EFFECT',
+      effect_coverage_state: 'COMPLETE',
+      ambiguity_state: 'NONE',
+      lineage_state: 'PARTIAL',
+      trace_revision: 1,
+    });
+    expect(stored.effect_refs_json).toEqual([]);
+    expect(stored.receipt_refs_json).toEqual([]);
+  });
+
   it('fails closed when canonical root readback does not preserve trace ownership', async () => {
     const svc = { entities: { AgentTask: {
       create: vi.fn(async (row) => ({ ...row, id: 'task-root' })),
