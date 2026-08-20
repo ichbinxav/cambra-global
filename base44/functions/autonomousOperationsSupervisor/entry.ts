@@ -853,7 +853,8 @@ guardedScheduledServe(
       const output = {
         health_status: attentionCount ? 'ATTENTION_REQUIRED' : 'HEALTHY',
         readiness_status: partialCommercialRecovery ? 'PARTIAL' : 'COMPLETE',
-        automated_recovery_allowed: !partialCommercialRecovery,
+        automated_recovery_allowed: true,
+        deferred_recovery_pending: partialCommercialRecovery,
         dependencies: dependencyPayload(dependencies),
         actions,
         stale_tasks: staleRunning.length,
@@ -868,19 +869,20 @@ guardedScheduledServe(
         live_recoveries: live.length,
         resolved_dependency_incidents: resolvedDependencyIncidents,
       };
+      const completedAt = new Date().toISOString();
       await svc.entities.AgentTask.update(task.id, {
-        status: partialCommercialRecovery ? 'waiting_input' : 'completed',
+        status: 'completed',
+        heartbeat_at: completedAt,
         output_summary:
           `Supervisor ${output.health_status}: ${actions.length} bounded/observed action(s), ${attentionCount} attention signal(s)`,
         output_payload_json: output,
-        ...(!partialCommercialRecovery
-          ? { completed_at: new Date().toISOString() }
-          : {}),
+        completed_at: completedAt,
       });
-      return Response.json(
-        { ok: !partialCommercialRecovery, task_id: task.id, ...output },
-        partialCommercialRecovery ? { status: 503 } : undefined,
-      );
+      return Response.json({
+        ok: true,
+        task_id: task.id,
+        ...output,
+      });
     } catch (error) {
       const errorCode = stableErrorCode(error);
       console.error(JSON.stringify({
