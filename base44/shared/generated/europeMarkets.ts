@@ -10,6 +10,7 @@ export const EUROPE_MARKET_REGISTRY={
     "canonical_market_count": 33,
     "launch_perimeter_count": 30,
     "active_launch_count": 10,
+    "protected_market_count": 3,
     "licensing_blocked_count": 3,
     "not_launch_market_count": 17,
     "outside_launch_perimeter_count": 3,
