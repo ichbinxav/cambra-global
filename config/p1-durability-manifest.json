@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:28:45.229Z",
+  "generatedAt": "2026-08-20T11:33:20.970Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2479,8 +2479,8 @@
     },
     {
       "path": "scripts/generate-scheduler-inventory.mjs",
-      "sha256": "3edd570d22a26fea56c1ca3c1deb45fa63a440d9692d767a21f6c2bedde1c361",
-      "bytes": 12291
+      "sha256": "45500f32c5321d8993e4da04cb5a4a8554726f70f5165931ca499ed79d84b97b",
+      "bytes": 12574
     },
     {
       "path": "scripts/harden-scheduled-functions.mjs",
@@ -3044,8 +3044,8 @@
     },
     {
       "path": "src/lib/contractPolicyE2E.test.js",
-      "sha256": "207776c4efab6cd736f724a632d4ebbad797fc1c71b1801b66924c069e9e426f",
-      "bytes": 27400
+      "sha256": "beba5fb981012757f0113438dc222970277d9ab41ff62289c445c61fb0747c19",
+      "bytes": 27498
     },
     {
       "path": "src/lib/copilotGovernance.test.js",
@@ -3069,8 +3069,8 @@
     },
     {
       "path": "src/lib/criticalSharedFailClosed.test.js",
-      "sha256": "9cfb8f6c022b042fa833518957bd72c4508afff8b701735bb27c21189552f1ff",
-      "bytes": 3775
+      "sha256": "4ff21b9e547f5978f1cf52bb44ea4448572b6e60c1c0b85fc8249fd22639e762",
+      "bytes": 4185
     },
     {
       "path": "src/lib/ctoProductionRemediation.test.js",
