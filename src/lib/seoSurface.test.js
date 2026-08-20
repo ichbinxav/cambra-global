@@ -21,6 +21,10 @@ const indexHtml = readFile("index.html");
 const sitemap = readFile("public/sitemap.xml");
 const robots = readFile("public/robots.txt");
 const securityTxt = readFile("public/.well-known/security.txt");
+const manifest = JSON.parse(readFile("public/manifest.json"));
+const appIcon = readFile("public/icons/cambra-app-icon.svg");
+const healthCheck = readFile("src/pages/HealthCheck.jsx");
+const viteConfig = readFile("vite.config.js");
 const appJsx = readFile("src/App.jsx");
 const i18n = readFile("src/lib/i18n.jsx");
 const partnersJsx = readFile("src/pages/Partners.jsx");
@@ -88,6 +92,28 @@ describe("Canonical aliases and retired admin routes", () => {
     expect(copilotBrief).not.toContain('to="/admin/copilot"');
     expect(copilotBrief).toContain('to="/admin/command"');
     expect(devExport).not.toContain('"/admin/applications"');
+  });
+});
+
+describe("PWA assets and client health truthfulness", () => {
+  it("uses one local square vector icon without false raster dimensions", () => {
+    expect(manifest.icons).toEqual([{
+      src: "/icons/cambra-app-icon.svg",
+      sizes: "any",
+      type: "image/svg+xml",
+      purpose: "any maskable",
+    }]);
+    expect(appIcon).toContain('viewBox="0 0 1024 1024"');
+    expect(indexHtml).toContain('href="/icons/cambra-app-icon.svg"');
+  });
+
+  it("injects a build identity and never claims freshness from a fixed date", () => {
+    expect(healthCheck).toContain("VITE_CAMBRA_BUILD_STAMP");
+    expect(healthCheck).toContain("client bundle loaded");
+    expect(healthCheck).not.toContain("20260626-force");
+    expect(healthCheck).not.toContain("bundle is fresh");
+    expect(viteConfig).toContain("CAMBRA_RELEASE_GIT_SHA");
+    expect(viteConfig).toContain("BASE44_COMMIT_SHA");
   });
 });
 
