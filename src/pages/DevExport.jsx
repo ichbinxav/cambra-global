@@ -3,7 +3,6 @@ import { useToast } from "@/components/shared/Toast.jsx";
 
 const PUBLIC_ROUTES = [
   "/",
-  "/Landing",
   "/Onboarding",
   "/Analyzer",
   "/ConnectTools",
@@ -27,7 +26,6 @@ const AUThed_ROUTES = [
 const ADMIN_ROUTES = [
   "/admin",
   "/admin/users",
-  "/admin/applications",
   "/admin/pipeline",
   "/admin/deals",
   "/admin/providers",
