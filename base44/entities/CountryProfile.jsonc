@@ -102,6 +102,24 @@
         "DISABLED"
       ]
     },
+    "commercial_eligibility": {
+      "type": "string",
+      "enum": [
+        "ELIGIBLE",
+        "BLOCKED"
+      ],
+      "description": "Commercial launch eligibility. Independent from research/data availability."
+    },
+    "blocked_reason": {
+      "type": "string",
+      "enum": [
+        "licensing",
+        "not_launch_market",
+        "rate_unverified",
+        "rate_stale"
+      ],
+      "description": "Current commercial block reason when commercial_eligibility=BLOCKED. Licensing has priority over launch-market policy."
+    },
     "provider_intelligence_status": {
       "type": "string"
     },

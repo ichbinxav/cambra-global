@@ -37,6 +37,8 @@ export function evaluateMarketLaunchScope(value: unknown) {
       research_allowed: false,
       research_only: false,
       commercial_scope_eligible: false,
+      commercial_eligibility: null,
+      blocked_reason: null,
       outbound_allowed: false,
       outbound_capacity: 0,
       regulated_capabilities_authorized: false,
@@ -93,6 +95,8 @@ export function marketSeedLaunchProjection(value: unknown) {
   return Object.freeze({
     iso2: scope.iso2,
     launch_status: scope.launch_active ? 'ANALYZER_READY' : 'REGULATORY_HOLD',
+    ...(scope.commercial_eligibility ? { commercial_eligibility: scope.commercial_eligibility } : {}),
+    ...(scope.blocked_reason ? { blocked_reason: scope.blocked_reason } : {}),
     research_mode: scope.research_only ? 'RESEARCH_ONLY' : 'RESEARCH_ALLOWED',
     outbound_capacity: 0,
     regulated_capabilities_authorized: false,

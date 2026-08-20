@@ -4,43 +4,23 @@ export const EUROPE_MARKET_REGISTRY={
   "registryVersion": "p1-europe-2026.08.10",
   "effectiveDate": "2026-08-10",
   "launchScope": {
-    "scopeVersion": "founder-market-scope-2026.08.13",
-    "effectiveDate": "2026-08-13",
+    "scopeVersion": "founder-market-scope-10-2026.08.20",
+    "effectiveDate": "2026-08-20",
     "decisionStatus": "FOUNDER_DECIDED",
     "canonical_market_count": 33,
-    "active_launch_count": 30,
+    "active_launch_count": 10,
     "protected_market_count": 3,
     "active": [
-      "AT",
-      "BG",
-      "HR",
-      "CY",
-      "CZ",
-      "DK",
-      "EE",
-      "FI",
-      "DE",
-      "GR",
-      "HU",
-      "IE",
-      "IT",
-      "LV",
-      "LT",
-      "LU",
-      "MT",
-      "PL",
-      "PT",
-      "RO",
-      "SK",
-      "SI",
       "ES",
-      "SE",
-      "NO",
-      "IS",
-      "LI",
-      "CH",
+      "IT",
+      "PT",
       "GB",
-      "AD"
+      "GR",
+      "HR",
+      "DE",
+      "PL",
+      "CZ",
+      "CY"
     ],
     "protected": [
       "FR",
@@ -49,7 +29,35 @@ export const EUROPE_MARKET_REGISTRY={
     ],
     "protectedMode": "RESEARCH_ONLY",
     "outboundMode": "PAUSED_ZERO",
-    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED"
+    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED",
+    "launch_perimeter_count": 30,
+    "licensing_blocked_count": 3,
+    "not_launch_market_count": 17,
+    "outside_launch_perimeter_count": 3,
+    "notLaunch": [
+      "AT",
+      "BG",
+      "CH",
+      "DK",
+      "EE",
+      "FI",
+      "HU",
+      "IE",
+      "LT",
+      "LU",
+      "LV",
+      "MT",
+      "NO",
+      "RO",
+      "SE",
+      "SI",
+      "SK"
+    ],
+    "outsideLaunchPerimeter": [
+      "IS",
+      "LI",
+      "AD"
+    ]
   },
   "markets": [
     {
@@ -638,11 +646,13 @@ export const MARKET_SCOPE_VERSION=EUROPE_MARKET_REGISTRY.launchScope.scopeVersio
 export const MARKET_SCOPE_DECISION_STATUS=EUROPE_MARKET_REGISTRY.launchScope.decisionStatus;
 export const ACTIVE_LAUNCH_MARKETS=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.active]);
 export const PROTECTED_MARKETS=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.protected]);
-export const RESEARCH_ONLY_MARKETS=PROTECTED_MARKETS;
-export const MARKET_SCOPE_COUNTS=Object.freeze({canonical_market_count:EUROPE_MARKET_CODES.length,active_launch_count:ACTIVE_LAUNCH_MARKETS.length,protected_market_count:PROTECTED_MARKETS.length});
+export const NOT_LAUNCH_MARKETS=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.notLaunch]);
+export const OUTSIDE_LAUNCH_PERIMETER=Object.freeze([...EUROPE_MARKET_REGISTRY.launchScope.outsideLaunchPerimeter]);
+export const RESEARCH_ONLY_MARKETS=Object.freeze([...PROTECTED_MARKETS,...NOT_LAUNCH_MARKETS,...OUTSIDE_LAUNCH_PERIMETER]);
+export const MARKET_SCOPE_COUNTS=Object.freeze({canonical_market_count:EUROPE_MARKET_CODES.length,launch_perimeter_count:ACTIVE_LAUNCH_MARKETS.length+PROTECTED_MARKETS.length+NOT_LAUNCH_MARKETS.length,active_launch_count:ACTIVE_LAUNCH_MARKETS.length,licensing_blocked_count:PROTECTED_MARKETS.length,not_launch_market_count:NOT_LAUNCH_MARKETS.length,outside_launch_perimeter_count:OUTSIDE_LAUNCH_PERIMETER.length});
 export const MARKET_OUTBOUND_MODE=EUROPE_MARKET_REGISTRY.launchScope.outboundMode;
 export const MARKET_REGULATED_CAPABILITIES_MODE=EUROPE_MARKET_REGISTRY.launchScope.regulatedCapabilitiesMode;
-export const MARKET_SCOPE_BY_ISO2=Object.freeze(Object.fromEntries(EUROPE_MARKET_CODES.map(iso2=>{const launchActive=ACTIVE_LAUNCH_MARKETS.includes(iso2);return[iso2,Object.freeze({iso2,scope_status:launchActive?'ACTIVE_LAUNCH':'PROTECTED_RESEARCH_ONLY',launch_active:launchActive,research_allowed:true,research_only:!launchActive,commercial_scope_eligible:launchActive,outbound_allowed:false,regulated_capabilities_authorized:false})]})));
+export const MARKET_SCOPE_BY_ISO2=Object.freeze(Object.fromEntries(EUROPE_MARKET_CODES.map(iso2=>{const launchActive=ACTIVE_LAUNCH_MARKETS.includes(iso2);const licensing=PROTECTED_MARKETS.includes(iso2);const notLaunch=NOT_LAUNCH_MARKETS.includes(iso2);const outside=OUTSIDE_LAUNCH_PERIMETER.includes(iso2);return[iso2,Object.freeze({iso2,scope_status:launchActive?'ACTIVE_LAUNCH':licensing?'LICENSING_RESEARCH_ONLY':notLaunch?'NOT_LAUNCH_RESEARCH_ONLY':'OUTSIDE_LAUNCH_PERIMETER',launch_active:launchActive,research_allowed:true,research_only:!launchActive,commercial_scope_eligible:launchActive,commercial_eligibility:outside?null:(launchActive?'ELIGIBLE':'BLOCKED'),blocked_reason:outside?null:(licensing?'licensing':notLaunch?'not_launch_market':null),outbound_allowed:false,regulated_capabilities_authorized:false})]})));
 export function canonicalMarketIso2(value){const iso2=typeof value==='string'?value.trim().toUpperCase():'';return Object.prototype.hasOwnProperty.call(EUROPE_MARKET_BY_ISO2,iso2)?iso2:null}
 export function marketScopeForIso2(value){const iso2=canonicalMarketIso2(value);return iso2?MARKET_SCOPE_BY_ISO2[iso2]:null}
 export function paymentsRegionForCanonicalMarket(value){const iso2=canonicalMarketIso2(value);if(!iso2)return null;if(iso2==='GB')return'UK';if(iso2==='AD')return'RoW';return'EU'}

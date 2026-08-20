@@ -131,6 +131,8 @@ Deno.serve(async (req) => {
         regulatory_system: regulatorySystem(market.iso2),
         intelligence_status: 'NOT_RESEARCHED',
         launch_status: launch.launch_status,
+        ...(launch.commercial_eligibility ? { commercial_eligibility: launch.commercial_eligibility } : {}),
+        ...(launch.blocked_reason ? { blocked_reason: launch.blocked_reason } : {}),
         provider_intelligence_status: 'PENDING_PROVIDER_DISCOVERY',
         rate_intelligence_status: 'PENDING_RATE_INTELLIGENCE',
         benchmark_maturity: 'NOT_RESEARCHED',
@@ -149,6 +151,8 @@ Deno.serve(async (req) => {
           // launch_status is intentionally reconciled from the canonical
           // scope, never preserved from the superseded FR/ES policy.
           launch_status: launch.launch_status,
+          ...(launch.commercial_eligibility ? { commercial_eligibility: launch.commercial_eligibility } : {}),
+          ...(launch.blocked_reason ? { blocked_reason: launch.blocked_reason } : { blocked_reason: null }),
           provider_intelligence_status: existing.provider_intelligence_status || row.provider_intelligence_status,
           rate_intelligence_status: existing.rate_intelligence_status || row.rate_intelligence_status,
           benchmark_maturity: existing.benchmark_maturity || row.benchmark_maturity,
