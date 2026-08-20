@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-19T10:11:48.743Z",
+  "generatedAt": "2026-08-19T10:18:28.964Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -88,7 +88,7 @@
     "base44/functions/intelligenceAccess/entry.ts": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
     "base44/functions/intelligenceMaintenanceWorker/entry.ts": "c4fbc2821e99f1ddd8e32ffb83ba60c0cffc3be446b87cf44abfb3a96f8d7a75",
     "base44/functions/joinCollective/entry.ts": "c8f28710cbc9cabc582ed619036ebae76bb6eb4c2b6c44379332bcdbe8ff36d8",
-    "base44/functions/knowledgeIntegrityWorker/entry.ts": "a0d35c223606ccb0e301ab105f7aa2f1f03bc228e499553527f11a899a41d1db",
+    "base44/functions/knowledgeIntegrityWorker/entry.ts": "b25c164c8ef537dbba42c62a5434bff43517410f1063f5ece81d653a289829b9",
     "base44/functions/leadDiscoveryAgent/entry.ts": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
     "base44/functions/leadEnrichmentAgent/entry.ts": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
     "base44/functions/maintenanceEngine/entry.ts": "1ba8f82defec9323d54acac0c0930a51e5d4b89598ab8f54980b5b92f7f89bdc",
