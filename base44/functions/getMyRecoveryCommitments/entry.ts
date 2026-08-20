@@ -2,7 +2,6 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { recoveryTermFromActivation, standardFeeForDate, effectiveFee, referralCountFromYear1EquivalentFee, RECOVERY_ECONOMICS_V2, parisRecoveryDate } from '../../shared/recoveryEconomicsV2.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
-import { getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 
 function mask(a:any, currentFee:number|null){
   return { id:a.id, name:a.deal_name||'Payments Optimization', vertical:a.vertical, status:a.status,
@@ -23,8 +22,9 @@ export default async function(req:Request):Promise<Response>{
     let currentFee:null|number=null;
     if(a.recovery_economics_version===RECOVERY_ECONOMICS_V2 && a.conditions_activated_at && a.economic_right_status==='active'){
       const term=recoveryTermFromActivation(a.conditions_activated_at); const standard=standardFeeForDate(today,term);
-      const rule=await resolveFeePctForMonth(svc,{deal_activation_id:a.id,brand_id:a.brand_id,provider_id:a.provider_id,fallbackPct:getSuccessFeePct()},month);
-      currentFee=effectiveFee(standard,referralCountFromYear1EquivalentFee(rule.pct));
+      const activationFee=Number(a.node_share_percent);
+      const rule=await resolveFeePctForMonth(svc,{deal_activation_id:a.id,brand_id:a.brand_id,provider_id:a.provider_id,fallbackPct:Number.isFinite(activationFee)?activationFee:Number.NaN},month);
+      if(Number.isFinite(Number(rule.pct))) currentFee=effectiveFee(standard,referralCountFromYear1EquivalentFee(rule.pct));
     }
     if(a.economic_right_status==='active' || ['authorized','migrating','live','monetizing','paused'].includes(a.status)) out.push(mask(a,currentFee));
   }
