@@ -2,6 +2,14 @@ import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+const buildStamp =
+  process.env.VITE_CAMBRA_BUILD_STAMP ||
+  process.env.CAMBRA_RELEASE_GIT_SHA ||
+  process.env.GITHUB_SHA ||
+  process.env.BASE44_COMMIT_SHA ||
+  process.env.npm_package_version ||
+  'unidentified'
+
 function productionChunk(id) {
   if (id.includes('vite/preload-helper')) return 'vite-runtime'
   if (!id.includes('/node_modules/')) return undefined
@@ -25,6 +33,9 @@ function productionChunk(id) {
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_CAMBRA_BUILD_STAMP': JSON.stringify(buildStamp),
+  },
   // TRUTH-1 Fase 4 (2026-07-24): was 'error' (warnings hidden blind).
   // Build warnings are inventoried in Decision_Log_TRUTH1.md.
   logLevel: 'warn',
