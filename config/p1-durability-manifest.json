@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T11:48:26.276Z",
+  "generatedAt": "2026-08-20T14:00:22.306Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -24,8 +24,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "65606b31b8067c80792fbf1f842239c83acdd40c1c593d0643d6666d0aeea699",
-      "bytes": 2042
+      "sha256": "e015a688f4c5728e0dc12b11c351a4483ac6750c22e1bfe61375c483534a351d",
+      "bytes": 2897
     },
     {
       "path": "README.md",
@@ -39,8 +39,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "fcbdb2754c4953182c1977c40eec0bd547fb8c0e25aa159f296ee25849f6f880",
-      "bytes": 10264
+      "sha256": "b8c4d1dbdfce244cc5e13d353492ec5aae7c6885d7cb27946c3b75783e48a572",
+      "bytes": 10298
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -429,8 +429,8 @@
     },
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
-      "bytes": 29825
+      "sha256": "ad9c7e7be686eae6714df62cc49ae42e11a19abcdfa837a3f9c940a8653cb1f6",
+      "bytes": 30138
     },
     {
       "path": "base44/functions/acquisitionAttributionWorker/entry.ts",
@@ -514,8 +514,8 @@
     },
     {
       "path": "base44/functions/autonomousOperationsSupervisor/entry.ts",
-      "sha256": "9296507e6f089a29b2923f3cccadd474f183f4e0fe4c564703fb049e003e735d",
-      "bytes": 33762
+      "sha256": "95bbd45445316c48c84659b66d1d1aa570bef31f89ceeacf086a42ef37aaf271",
+      "bytes": 33694
     },
     {
       "path": "base44/functions/autonomousPartnerWorker/entry.ts",
@@ -579,8 +579,8 @@
     },
     {
       "path": "base44/functions/commercialFollowUpWorker/entry.ts",
-      "sha256": "9820e6bcc1e2cbf280efaf10181f22214505755097f715bc84ff7f1576453ee6",
-      "bytes": 15885
+      "sha256": "8627cd7bfb8aa1e5402f315f18c2569a7d45fe5a1cfb57817265b790b3017477",
+      "bytes": 17077
     },
     {
       "path": "base44/functions/commercialGoLiveReadiness/entry.ts",
@@ -619,8 +619,8 @@
     },
     {
       "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-      "sha256": "e5873034e539f832d11509a4390e33ba1d419dc92c2f3890de0bffce6712cfb1",
-      "bytes": 105701
+      "sha256": "30aebb7018e6e7b6997b4c5e971f45c69b3c4dad5f0ad54b6b6afa2997b0f862",
+      "bytes": 106120
     },
     {
       "path": "base44/functions/contractIPAgent/entry.ts",
@@ -689,8 +689,8 @@
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
-      "sha256": "5ee840cfe6811ff435412992f8051405b90139dc43f4e47a2df5181516cfe934",
-      "bytes": 17144
+      "sha256": "30a4230efb607b6fbb84b38eee7498793cfdbf73f3ff8567099373fffe01ec82",
+      "bytes": 17254
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/function.jsonc",
@@ -824,8 +824,8 @@
     },
     {
       "path": "base44/functions/getRecoverAcceptanceContext/entry.ts",
-      "sha256": "11f85142d360d50d7700cf4455876ae834d5771be4b0c04aa6a5cea3d113e96a",
-      "bytes": 9234
+      "sha256": "c7667153ba83645fce640209f24d802ebbbb3aafdee9b1711f0721b418c26e8c",
+      "bytes": 9540
     },
     {
       "path": "base44/functions/getUploadCapability/entry.ts",
@@ -1064,8 +1064,8 @@
     },
     {
       "path": "base44/functions/outreachAgent/entry.ts",
-      "sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b",
-      "bytes": 12149
+      "sha256": "ada2ff9cbda0f1cc289bf7578450cb3b7164a6b4faf7dd14e85e3c246f20009f",
+      "bytes": 13053
     },
     {
       "path": "base44/functions/outreachExperimentLearningWorker/entry.ts",
@@ -1094,13 +1094,13 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
-      "bytes": 21790
+      "sha256": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
+      "bytes": 21686
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/function.jsonc",
-      "sha256": "19b6b4cc31a9838972826bc663fad334cb67d1d0fd48318ec66ed64ca60f9476",
-      "bytes": 841
+      "sha256": "73baf69380c4fc377d4b4f7a48ad29f5dc39261d0de233832de99f8c35b7d0e9",
+      "bytes": 1813
     },
     {
       "path": "base44/functions/productionReadinessWorker/entry.ts",
@@ -1179,8 +1179,8 @@
     },
     {
       "path": "base44/functions/recommendationEngineAgent/entry.ts",
-      "sha256": "3a9ee071c11a9b539568a8e28138e410fddcbe736e8842c1231b80bf596b9cdf",
-      "bytes": 21137
+      "sha256": "35fe77cc17f3d1e57327088e7719a6a508bcb97a339adc3fd3c48b3297a95997",
+      "bytes": 21471
     },
     {
       "path": "base44/functions/reconcileInvoice/entry.ts",
@@ -1284,8 +1284,8 @@
     },
     {
       "path": "base44/functions/seedEuropeMarketFoundation/entry.ts",
-      "sha256": "48af8ec1ac1a997bc10f6d1ca7abe90534b35f05941816034accdc54dc6ce23c",
-      "bytes": 10885
+      "sha256": "772d4518e6b5114386ae033fff1cb855fa3244177b8d3b8c6ffeb6e4b217076f",
+      "bytes": 11299
     },
     {
       "path": "base44/functions/seedP11LegalExecution/entry.ts",
@@ -1344,8 +1344,8 @@
     },
     {
       "path": "base44/functions/startRecoverAcceptance/entry.ts",
-      "sha256": "56e5a993a4ba0aea38ffd0d5b1211a5b7b7a58b677cf6273ca5b86b8995d0006",
-      "bytes": 9174
+      "sha256": "3f097377968d4571b1505fe7115d3280ee32c0ca2b8a76e890a758946e567472",
+      "bytes": 9473
     },
     {
       "path": "base44/functions/stripeBillingWebhook/entry.ts",
@@ -1374,13 +1374,13 @@
     },
     {
       "path": "base44/functions/submitPaymentsAnalysis/entry.ts",
-      "sha256": "a2f51bbeb2e1d841f52da04a8681aab62f15d4f6be672c91d8f50ec6bef8aee7",
-      "bytes": 114179
+      "sha256": "893cee471eaaa5fc40077e36b2d9d7d5a3fc9d91058affb1fdf138f0a22e8135",
+      "bytes": 114493
     },
     {
       "path": "base44/functions/submitWaitlistSignup/entry.ts",
-      "sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
-      "bytes": 8864
+      "sha256": "411088eec623941f3875b8277c26acabf24791af87a2812c3268432604d85f6b",
+      "bytes": 9114
     },
     {
       "path": "base44/functions/systemHealthAgent/entry.ts",
@@ -1429,8 +1429,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "53d97f5f82fca465ca21684e29f15ea32ef2b21bb47b8ef1343e589309f4aa4a",
-      "bytes": 40939
+      "sha256": "06c846b62f003900a7d27d92133e705bc6f1268b37e80afa0e25db54f2dd6d0b",
+      "bytes": 43349
     },
     {
       "path": "base44/shared/analyzerFx.ts",
@@ -1679,8 +1679,8 @@
     },
     {
       "path": "base44/shared/generated/europeMarkets.ts",
-      "sha256": "07b2373f84b33289d52a116f753d20f4941a2fe15cb7f9abd5c9d7a535c10465",
-      "bytes": 15697
+      "sha256": "45175a35ab875f4e4b1a25d7787e2c0ae214a77802fb4a5a8eddcd2d4a69c4e9",
+      "bytes": 16795
     },
     {
       "path": "base44/shared/generated/researchKnowledgeDocuments.ts",
@@ -1704,8 +1704,8 @@
     },
     {
       "path": "base44/shared/incidentAlerting.ts",
-      "sha256": "3d1062f632d6ea1f8d9a4c8eb11d30ba8849b9c463fd8500addd76d417701988",
-      "bytes": 24862
+      "sha256": "a1ba005c8b5f5b502ea6f825e425018942a5e4787d27492262facbc5db54e80a",
+      "bytes": 25570
     },
     {
       "path": "base44/shared/instantlyRuntime.ts",
@@ -1794,8 +1794,8 @@
     },
     {
       "path": "base44/shared/marketLaunchScope.ts",
-      "sha256": "d665a6d943b985aa4bdbbef777c48c921d1277a74cfeb906386586d3a2f0a9b8",
-      "bytes": 3476
+      "sha256": "1f930418cb1a6170380b372e11fd3c45fc33b2c8d026d656680bdc9ee3b4aa45",
+      "bytes": 4433
     },
     {
       "path": "base44/shared/marketPolicyRuntime.ts",
@@ -1939,7 +1939,7 @@
     },
     {
       "path": "base44/shared/runtimeEvidence.ts",
-      "sha256": "878f573be5fd1197bdf12b976316bf1cf0dad402a72e888dd86cb81b252d6ac2",
+      "sha256": "dfa542a3d5d6e2e75b26d66c39e99f0aced4aaaea9c6f460e19c7082b1d50d39",
       "bytes": 18688
     },
     {
@@ -2009,8 +2009,8 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "65606b31b8067c80792fbf1f842239c83acdd40c1c593d0643d6666d0aeea699",
-      "bytes": 2042
+      "sha256": "e015a688f4c5728e0dc12b11c351a4483ac6750c22e1bfe61375c483534a351d",
+      "bytes": 2897
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "9493aee717df067d6dc4e04a47776e5682156b94e6862f17058d520236cf4b4f",
+      "sha256": "12a33c1accce1b34c25f0b19956809bad8c7f012e82aa6470d627f16d5008555",
       "bytes": 121589
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "16448f56a5a703b0e4830dd513ac3a0a9cdd75fb2803ccbdefec4a58e88518f4",
+      "sha256": "f843c253a98c25cb87dd8fb2b75fa9c358c1b6cff21c7bac804af60170fb73ed",
       "bytes": 42987
     },
     {
@@ -2039,13 +2039,13 @@
     },
     {
       "path": "config/europe-markets.json",
-      "sha256": "049fc2801d628e57303bc1a6aff5176d2bbc0952c531d7ee1e6c2ff1183375ef",
-      "bytes": 8965
+      "sha256": "0f443208bdee17e4202208d426833a31a61b6f39055848f48c985e96dda2161b",
+      "bytes": 9163
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "4737d24cd26f26fa8c804537194fa0aedcfcfa0c23b7f1458052e01ede64b7dc",
-      "bytes": 43518
+      "sha256": "1d76ebba661f2179ddbe2cb9039935506220b379713df5f3d83b47dd056c537e",
+      "bytes": 44081
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2174,12 +2174,12 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "266e5332f264d85f9cd1d34799ba8016cef7daf655d763af7d24fd8144a7e2e8",
+      "sha256": "79d0ec49d1d27dc20be31a88c29dea6fbdca9b3b59f103f2367f7998cef56cd4",
       "bytes": 8059
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "8b7a38d3065f068565e4230926b536a44c25b4502648ad54d1fbdb017ce6e9e6",
+      "sha256": "dace425a9489e729921948ea6cf81b19f225bb1a469a2031574c16af495284a3",
       "bytes": 8229
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "badde64d75b53035619d1e75457fccdc4c447dfa3cc72bf235851cc6a5c3ff7a",
+      "sha256": "027b572cd3aa202ba0076871390d0b3b54bc8863d3bb06b9f4151913a5085941",
       "bytes": 13241
     },
     {
@@ -2219,8 +2219,8 @@
     },
     {
       "path": "config/scheduler-inventory.json",
-      "sha256": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
-      "bytes": 181548
+      "sha256": "c34c958de900fff6c30296552016875dca8ca726b8a022df75b6dbc20696b587",
+      "bytes": 186676
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -2369,8 +2369,8 @@
     },
     {
       "path": "scripts/check-release-manifest.mjs",
-      "sha256": "439af9933e18888c0d48eb1febe70a6b1e95a049056376716747aa6a79799eb2",
-      "bytes": 29374
+      "sha256": "c0b6d8a2006b95bd529c676eba4fac3d467165e82479684cb33132b4c9157cd5",
+      "bytes": 30941
     },
     {
       "path": "scripts/check-remediation-r0.mjs",
@@ -2439,8 +2439,8 @@
     },
     {
       "path": "scripts/generate-europe-markets.mjs",
-      "sha256": "dfa31f60790f92a243135eadb158ae33a725e9e4b2390a1509d5dcab79d48dd7",
-      "bytes": 5851
+      "sha256": "68d4bc563da9b76ffbdc264a65cd44b836b3c1989aff0a0cb420431539c2ef4a",
+      "bytes": 7320
     },
     {
       "path": "scripts/generate-europe-v1-report.mjs",
@@ -2459,8 +2459,8 @@
     },
     {
       "path": "scripts/generate-release-manifest.mjs",
-      "sha256": "e7cf0f4d6d306e9a542ccd79ceb17ad1e57c0e1d5cf3423e0ac721475b448da7",
-      "bytes": 33112
+      "sha256": "1dae3b4543c8ab87949ce634ad96970f58c48305d0b3ce0552d52e1e8ff6c665",
+      "bytes": 34107
     },
     {
       "path": "scripts/generate-remediation-r0.mjs",
@@ -2529,8 +2529,8 @@
     },
     {
       "path": "scripts/package-release.mjs",
-      "sha256": "b296266b8c15eb9f65160e3f3e7b4498ddeaf0458547ca096af13ec4bbf627dc",
-      "bytes": 11549
+      "sha256": "0e6771bcae846e737ad7f8577c659d931d3f38a5a975ca3d2ee0382642738bf9",
+      "bytes": 11679
     },
     {
       "path": "scripts/run-with-evidence.mjs",
@@ -2559,8 +2559,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "7efcc589cf161de19ecd8c19a7084f830e506b997877346f408a2b82fe950944",
-      "bytes": 28451
+      "sha256": "3e41c15e7f39e900f316be1caa2f05c3cba8c6ff095a1be34b64e54726168333",
+      "bytes": 28446
     },
     {
       "path": "src/README.md",
@@ -2919,8 +2919,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "c2a93402d93c8520cbd3338e588cb9fb595a552c7e2f93497b29ca99395dd09d",
-      "bytes": 26730
+      "sha256": "d62267c5fc6b7321566d6a27c5e430afc7f6b0672914604388476b0177ee4cc8",
+      "bytes": 28012
     },
     {
       "path": "src/lib/analyzerFx.test.js",
@@ -2949,8 +2949,8 @@
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
-      "sha256": "237e447cc178501d5aba46c8d0c0f7c193c4cb14551d0825962f669f131c1c09",
-      "bytes": 15452
+      "sha256": "0bfaa783bf70fb33a0ae26ab4444d930f4944f09f179876556f17b61509ed132",
+      "bytes": 15685
     },
     {
       "path": "src/lib/base44DeploymentTopology.test.js",
@@ -2994,8 +2994,8 @@
     },
     {
       "path": "src/lib/commercialHardeningPatch.test.js",
-      "sha256": "761879953674f8104599364f6b28f8e18e3096df89acfb08fab0980d69f6f018",
-      "bytes": 4723
+      "sha256": "3acc669a7ccfef8e2ded8287bf71bfe8f18297d50892af374062da1c14697ce4",
+      "bytes": 5540
     },
     {
       "path": "src/lib/commercialIntelligenceP6P8.test.js",
@@ -3304,8 +3304,8 @@
     },
     {
       "path": "src/lib/generated/europeMarkets.js",
-      "sha256": "07b2373f84b33289d52a116f753d20f4941a2fe15cb7f9abd5c9d7a535c10465",
-      "bytes": 15697
+      "sha256": "45175a35ab875f4e4b1a25d7787e2c0ae214a77802fb4a5a8eddcd2d4a69c4e9",
+      "bytes": 16795
     },
     {
       "path": "src/lib/goLiveHardGates.test.js",
@@ -3339,8 +3339,8 @@
     },
     {
       "path": "src/lib/incidentAlerting.test.js",
-      "sha256": "81dc0a24d1bdbeb0b3ea4949332918109f526119c142b56c562e8862ba79bc6c",
-      "bytes": 20845
+      "sha256": "46b0d1080cc08e08d9a1102f1b03244d9ed1000fe1944592fc09bf4203b6d5d6",
+      "bytes": 21319
     },
     {
       "path": "src/lib/integrationCredentialBoundary.test.js",
@@ -3404,8 +3404,8 @@
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",
-      "sha256": "9adfe6bdff83a34c230dbbeb933d5519230e85e2b910e242e3f23c2dfe28afdf",
-      "bytes": 5539
+      "sha256": "1cb23c9ed54a0d19214ecf1d9d84b5fa5d8ff5d66e6c05f34de6a9d98fe9d184",
+      "bytes": 8096
     },
     {
       "path": "src/lib/materialEffectContract.test.js",
@@ -3544,8 +3544,8 @@
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",
-      "sha256": "08aadcbfa068f81fc738d465cc63bb4cd2d8fb5aef4c6b12a7ecf3940065357c",
-      "bytes": 15393
+      "sha256": "195e5d953a071e067bb6d3c1eac039a92e53627519b06bb32c1076e81868f033",
+      "bytes": 16150
     },
     {
       "path": "src/lib/partnerAcquisitionAutonomy.test.js",
@@ -3594,13 +3594,13 @@
     },
     {
       "path": "src/lib/publicExperience.jsx",
-      "sha256": "573ef6e0513c0d026098eb1e4af073d15241e9588d611fd099b7e5f0a0df786c",
-      "bytes": 6647
+      "sha256": "fa0de7ec62dcfe2ae9c01a4109832329cffbb6d9880502a17aa1ffdbe760e17e",
+      "bytes": 7055
     },
     {
       "path": "src/lib/publicExperience.test.js",
-      "sha256": "972a90d5c41ba6e84985fe0c4d8286220b395b4da0b1caa3ab73a60e6cb04623",
-      "bytes": 2763
+      "sha256": "c3d3c8d132cdf050ca237772f20c9e355b2bb65ac9f93a2f1d299ac098216c50",
+      "bytes": 2867
     },
     {
       "path": "src/lib/publicHttpEgress.test.js",
@@ -3654,13 +3654,13 @@
     },
     {
       "path": "src/lib/releaseEvidenceIntegrity.test.js",
-      "sha256": "832ebc4c67e3c55e0ca5c61da074950d95302bbdab1478371bc82d98e540867c",
-      "bytes": 4434
+      "sha256": "ca71b6ef07ad33e2ccd4043ed976c7a466cb192356100a4fb631f1543f7ed5d6",
+      "bytes": 4886
     },
     {
       "path": "src/lib/releaseManualGates.test.js",
-      "sha256": "ba61d8bbe3a9fcc2b388d708e293d02452167b4374938fa5f28780c11147e933",
-      "bytes": 5145
+      "sha256": "880c0d82adba6c5c8ade2bd878eb68764f090e4d488f477db38965b5c321c241",
+      "bytes": 5206
     },
     {
       "path": "src/lib/releasePayload.test.js",
@@ -3714,7 +3714,7 @@
     },
     {
       "path": "src/lib/runtimeIdentitySloEvidence.test.js",
-      "sha256": "c34ce9d4ffb081d95ec2cfe509dae3d2d9b83243269c06dc09040ada6f252b3e",
+      "sha256": "6fea99a2eef7ebb17c5a9c3aacf45568e311cf21c5f83e73b3a3d9228fbb61cc",
       "bytes": 19168
     },
     {
@@ -3724,13 +3724,13 @@
     },
     {
       "path": "src/lib/schedulerLeaseFencing.test.js",
-      "sha256": "e21362680d9f0705bb4da096cb76797e5c965f0f6aa9a7d4aae7c0e96a389a27",
-      "bytes": 36646
+      "sha256": "67dae273a891d3b30209bd929c360362860816875939911ce294d8586b4fd0a8",
+      "bytes": 36912
     },
     {
       "path": "src/lib/seoConfig.js",
-      "sha256": "3128b691b68616812b9c649f362e9acc7567ba98e840f6d8131ed83d67f228d9",
-      "bytes": 14980
+      "sha256": "6368722f53a1885bea934f243318609b9707d20226fe82519a5a7d1986f1d4d5",
+      "bytes": 16262
     },
     {
       "path": "src/lib/serviceLevelObservation.test.js",
@@ -3979,8 +3979,8 @@
     },
     {
       "path": "vite.config.js",
-      "sha256": "7e734cb812b7bc10f3c2a9d53b9f8809781724a640a43d41528d8fcf8b75afe5",
-      "bytes": 3211
+      "sha256": "ca10fd2359dd7a90b68c51f61971989d4915678d0cc72129a8f13a5fe9ed3ad2",
+      "bytes": 3585
     }
   ]
 }
