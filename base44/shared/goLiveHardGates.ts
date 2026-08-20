@@ -1,6 +1,10 @@
-import { verifyRuntimeGateEvidence } from './runtimeEvidence.ts';
+import {
+  EXPECTED_BASE44_LOGICAL_ROUTES,
+  EXPECTED_BASE44_PHYSICAL_FUNCTIONS,
+  verifyRuntimeGateEvidence,
+} from './runtimeEvidence.ts';
 
-export const GO_LIVE_HARD_GATES_VERSION = 'go-live-hard-gates-1.0.0';
+export const GO_LIVE_HARD_GATES_VERSION = 'go-live-hard-gates-1.0.1';
 
 export const GO_LIVE_GATE_REQUIREMENTS = Object.freeze([
   { key:'REMOTE_CI_FINAL_SHA', label:'Remote GitHub CI on final SHA', kinds:['EXTERNAL'], sha_bound:true, max_age_hours:168, category:'release' },
@@ -34,7 +38,10 @@ export async function evidenceForGate(rows:any[], requirement:any, input:any) {
   if (row && ['REAL_RUNTIME','OPERATOR_EXERCISE'].includes(String(row.evidence_kind || ''))) {
     if (row.identity_status !== 'COMPLETE') blockers.push('runtime_identity_incomplete');
     if (!/^[a-f0-9]{64}$/iu.test(String(row.identity_hash || ''))) blockers.push('runtime_identity_hash_invalid');
-    if (Number(row.physical_function_count) !== 276 || Number(row.logical_route_count) !== 27) blockers.push('runtime_topology_identity_mismatch');
+    if (
+      Number(row.physical_function_count) !== EXPECTED_BASE44_PHYSICAL_FUNCTIONS ||
+      Number(row.logical_route_count) !== EXPECTED_BASE44_LOGICAL_ROUTES
+    ) blockers.push('runtime_topology_identity_mismatch');
   }
   if (row && requirement.sha_bound && (!input.final_sha || row.git_sha !== input.final_sha)) blockers.push('evidence_final_sha_mismatch');
   const observed = row ? Date.parse(row.observed_at || row.verified_at || row.completed_at || '') : NaN;
