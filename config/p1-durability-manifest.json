@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T14:39:02.213Z",
+  "generatedAt": "2026-08-20T14:54:51.557Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1689,8 +1689,8 @@
     },
     {
       "path": "base44/shared/goLiveHardGates.ts",
-      "sha256": "db9e812d5a43415a05afe77d9e8356897ebf40d169f6f88349c7c4be090b9389",
-      "bytes": 7403
+      "sha256": "139079f6f096cbd465d0ef6593521e0662aaf81f1d1a41ef19658956c36b9f32",
+      "bytes": 7555
     },
     {
       "path": "base44/shared/goLiveRuntime.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "c1ad6685bdf86665c91607bf748a383df7ece9cfcab19c60fa4578312f98403e",
+      "sha256": "8712b8346e185a4dfe30a2eb4db712b1796b4ab5034e7087795d092830169985",
       "bytes": 42987
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "e3ede2d094473883691f93f0c6b989223f244f2f9c8ff4137e8e3c09d88b732d",
+      "sha256": "7392844dcea3b6cf951215cb5bf58fc4f256f82bcaf9ce12f9037c02c831b855",
       "bytes": 13241
     },
     {
@@ -3074,8 +3074,8 @@
     },
     {
       "path": "src/lib/ctoProductionRemediation.test.js",
-      "sha256": "70add74be0e3ca8237ed0ee08773d27e93a88b9d12d06f525fc5eb977b007768",
-      "bytes": 7052
+      "sha256": "25008352676b02f6a80461c28a5b8dfce32dbad7d0a7022d5b1fee12753833f4",
+      "bytes": 7107
     },
     {
       "path": "src/lib/developerMigrationLifecycle.test.js",
@@ -3309,8 +3309,8 @@
     },
     {
       "path": "src/lib/goLiveHardGates.test.js",
-      "sha256": "e738245d3e1da450ea9af77a11bd8ddf32a1ef99bf8eec31853cc34b6475dc02",
-      "bytes": 12295
+      "sha256": "ba8e93fdd3e2ef16c8ab42def16f638acb5c84c75681b7cee718388e1dcd8be6",
+      "bytes": 12296
     },
     {
       "path": "src/lib/helpCenterContent.js",
@@ -3599,8 +3599,8 @@
     },
     {
       "path": "src/lib/publicExperience.test.js",
-      "sha256": "c3d3c8d132cdf050ca237772f20c9e355b2bb65ac9f93a2f1d299ac098216c50",
-      "bytes": 2867
+      "sha256": "b29e3cf9a9f4aa60a173b58e0bce95de432f12bd337a25818febbc391ae2965a",
+      "bytes": 2861
     },
     {
       "path": "src/lib/publicHttpEgress.test.js",
@@ -3669,8 +3669,8 @@
     },
     {
       "path": "src/lib/remediationR0Artifacts.test.js",
-      "sha256": "86b85271c2978c7e77cc55c0f7d5a410a0fc6344287b2c5b8288cc3294d51120",
-      "bytes": 18122
+      "sha256": "6fae5717e358f2788ceef636d0a795b5379cc58c60ddb0236fe83b1e03c250bb",
+      "bytes": 18133
     },
     {
       "path": "src/lib/remediationR4Artifacts.test.js",
@@ -3734,8 +3734,8 @@
     },
     {
       "path": "src/lib/serviceLevelObservation.test.js",
-      "sha256": "42631e4dc2456b564f7889dd5978d30e38d2a24a3e4bba49f4e5d1e699de9fb8",
-      "bytes": 5305
+      "sha256": "b2cd8a4e6b9bbe0cf3b83ba0066dbe620d780bc6acb8bca8774b1f86388dedfa",
+      "bytes": 5306
     },
     {
       "path": "src/lib/singletonAuthority.test.js",
