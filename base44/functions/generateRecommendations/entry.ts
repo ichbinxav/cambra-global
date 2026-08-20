@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 
 function sum(arr){ return (arr||[]).reduce((s,v)=>s+(Number(v)||0),0); }
 function byLatest(arr, key='created_date'){ return (arr||[]).sort((a,b)=> new Date(b[key]) - new Date(a[key])); }
@@ -113,6 +114,8 @@ Deno.serve(async (req) => {
     const providers = await base44.asServiceRole.entities.Provider.list();
 
     for (const brand of (brands||[])) {
+      const marketDecision = commercialMarketDecision(brand?.country);
+      if (!marketDecision.ok) continue;
       const results = await base44.asServiceRole.entities.AnalyzerResult.filter({ created_by: brand.created_by }, '-created_date', 1);
       const latestResult = results?.[0] || null;
       const reports = await base44.asServiceRole.entities.MonthlySavingsReport.filter({ brand_id: brand.id }, '-month', 6);

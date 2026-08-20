@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { captureEmergencyEpoch } from '../../shared/operationalControl.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { canonicalMarket } from '../../shared/marketContext.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { requireAcceptedCommercialSendResponse } from '../../shared/commercialSendSafety.ts';
 import {
@@ -104,6 +105,13 @@ Deno.serve(async (req) => {
         }, { status: 403 });
       }
 
+      // Resolve the approved lead and re-check market authority BEFORE claiming any external execution.
+      const approvedPayload = ap.draft_payload_json || {};
+      const approvedLead = approvedPayload.lead_id ? await base44.asServiceRole.entities.OutboundLead.get(approvedPayload.lead_id).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'})) : null;
+      if (!approvedLead) return Response.json({ ok:false, error:'approved_outreach_lead_missing' }, { status:409 });
+      const approvedMarket = commercialMarketDecision(approvedLead.country);
+      if (!approvedMarket.ok) return Response.json({ ok:false, error:'NOT_AVAILABLE_IN_MARKET', blocked_reason:approvedMarket.blocked_reason }, { status:409 });
+
       // Resume the AgentTask
       const taskId = ap.agent_task_id;
       task = await base44.asServiceRole.entities.AgentTask.get(taskId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
@@ -115,9 +123,8 @@ Deno.serve(async (req) => {
           if(execution.state==='replay')return Response.json({...execution.result,ok:true,idempotent_replay:true});
           return Response.json({ok:false,error:execution.error||'external_execution_not_claimed',execution_state:execution.state,review_required:execution.state==='review_required'},{status:externalExecutionHttpStatus(execution)});
         }
-        const payload = ap.draft_payload_json || {};
-        const lead = payload.lead_id ? await base44.asServiceRole.entities.OutboundLead.get(payload.lead_id) : null;
-        if (!lead) throw new Error('approved_outreach_lead_missing');
+        const payload = approvedPayload;
+        const lead = approvedLead;
         const preferredThread = payload.communication_thread_id ? await base44.asServiceRole.entities.CommunicationThread.get(payload.communication_thread_id) : null;
         const thread = preferredThread || await ensureCanonicalThread(base44.asServiceRole, lead);
         if (!thread) throw new Error('approved_outreach_thread_missing');
@@ -144,6 +151,8 @@ Deno.serve(async (req) => {
 
     const lead = await base44.asServiceRole.entities.OutboundLead.get(leadId).catch((error:any)=>safeBestEffort(error,{operation:'outreachAgent',fallback:null,severity:'secondary'}));
     if (!lead) return Response.json({ ok: false, error: "Lead not found" }, { status: 404 });
+    const marketDecision = commercialMarketDecision(lead.country);
+    if (!marketDecision.ok) return Response.json({ ok:false, error:'NOT_AVAILABLE_IN_MARKET', blocked_reason:marketDecision.blocked_reason }, { status:409 });
     if (!lead.contact_email) return Response.json({ ok: false, error: "Lead has no contact_email" }, { status: 400 });
 
     const thread = await ensureCanonicalThread(base44.asServiceRole, lead);

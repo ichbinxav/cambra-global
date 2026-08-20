@@ -37,6 +37,7 @@ import {
   evaluateRecoverEconomicGate,
 } from "../../shared/eclEconomicGate.ts";
 import { assertMarketCapabilityAllowed } from "../../shared/marketPolicyRuntime.ts";
+import { commercialMarketDecision } from "../../shared/marketLaunchScope.ts";
 import {
   enforceLegalExecution,
   legalBlockResponse,
@@ -163,7 +164,9 @@ export default async function (req: Request): Promise<Response> {
     if (!owned.ok) {
       return Response.json({ error: owned.error }, { status: owned.status });
     }
-    const { activation, ownerEmail } = owned;
+    const { activation, ownerEmail, brand } = owned;
+    const marketDecision = commercialMarketDecision(brand?.country);
+    if (!marketDecision.ok) return Response.json({ ok:false, error:'NOT_AVAILABLE_IN_MARKET', blocked_reason:marketDecision.blocked_reason }, { status:409 });
     if (mandate.status === "active") {
       const replayActivation = await singleRow(svc.entities.DealActivation, {
         id: activation.id,

@@ -5,6 +5,7 @@ import {
   MARKET_SCOPE_VERSION,
   paymentsRegionForCanonicalMarket,
 } from './generated/europeMarkets.ts';
+import { canonicalMarket } from './marketContext.ts';
 
 export const REGULATED_CAPABILITIES = Object.freeze([
   'ACCESS_BANK_ACCOUNT_DATA',
@@ -25,6 +26,19 @@ export type PaymentsMarketValidation =
     ok: false;
     failure: { field: 'body' | 'country' | 'region'; reason: string };
   };
+
+export function commercialMarketDecision(value: unknown) {
+  const market = canonicalMarket(value);
+  const scope = evaluateMarketLaunchScope(market?.iso2 || value);
+  const eligible = scope.commercial_eligibility === 'ELIGIBLE' && scope.launch_active === true;
+  return Object.freeze({
+    ok: eligible,
+    iso2: scope.iso2,
+    error: eligible ? null : 'NOT_AVAILABLE_IN_MARKET',
+    blocked_reason: scope.blocked_reason || (scope.scope_status === 'OUTSIDE_LAUNCH_PERIMETER' ? 'outside_launch_perimeter' : 'unknown_market'),
+    scope,
+  });
+}
 
 export function evaluateMarketLaunchScope(value: unknown) {
   const iso2 = typeof value === 'string' ? value.trim().toUpperCase() : '';

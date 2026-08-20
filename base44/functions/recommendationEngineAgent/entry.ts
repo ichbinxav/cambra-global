@@ -2,6 +2,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
 import { requireExactBrandTask, requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
@@ -185,7 +186,11 @@ Deno.serve(async (req) => {
     const { brand_id, spend_task_id } = body;
     if (!brand_id) return Response.json({ ok:false, error:"Missing brand_id" }, { status: 400 });
 
-    await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+    const brand = await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+    const marketDecision = commercialMarketDecision(brand?.country);
+    if (!marketDecision.ok) {
+      return Response.json({ ok:false, error:'NOT_AVAILABLE_IN_MARKET', blocked_reason:marketDecision.blocked_reason }, { status:409 });
+    }
 
     task = await base44.asServiceRole.entities.AgentTask.create({
       brand_id,

@@ -56,6 +56,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { normalizeAnalyzerStripeRows } from '../../shared/analyzerFx.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 import {
   classifyStripeCardGeography,
   normalizeStripeCountry,
@@ -1809,6 +1810,15 @@ Deno.serve(async (req) => {
       ? auth.acct_country_hint
       : await fetchStripeAccountCountry(auth.headers);
     const region = stripeCountryToRateRegion(accountCountry);
+    const commercialMarket = commercialMarketDecision(accountCountry);
+    if (!commercialMarket.ok) {
+      return Response.json({
+        ok: false,
+        error: 'NOT_AVAILABLE_IN_MARKET',
+        country: commercialMarket.iso2 || accountCountry,
+        blocked_reason: commercialMarket.blocked_reason,
+      }, { status: 409 });
+    }
     if (!region) {
       return Response.json({
         ok: false,

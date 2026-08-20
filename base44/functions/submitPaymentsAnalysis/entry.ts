@@ -1772,9 +1772,13 @@ Deno.serve(async (req) => {
     // The founder-decided market scope is authoritative on the backend.
     const launchMarket = validatePaymentsLaunchMarketInput(raw);
     if (!launchMarket.ok) {
+      const unavailable = launchMarket.failure.field === 'country'
+        && ['not_launch_market', 'protected_research_only'].includes(launchMarket.failure.reason);
       return Response.json(
-        { error: 'invalid_input', field: launchMarket.failure.field, reason: launchMarket.failure.reason },
-        { status: 400 },
+        unavailable
+          ? { error: 'NOT_AVAILABLE_IN_MARKET', field: 'country', reason: launchMarket.failure.reason }
+          : { error: 'invalid_input', field: launchMarket.failure.field, reason: launchMarket.failure.reason },
+        { status: unavailable ? 409 : 400 },
       );
     }
 

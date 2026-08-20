@@ -14,6 +14,7 @@ import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 import { recoveryEconomicsCopy, recoveryEconomicsAcceptanceText, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
 import { PRODUCT_POLICY, getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import {
@@ -50,6 +51,8 @@ export default async function (req: Request): Promise<Response> {
     const owned = await resolveOwnedActivation(svc, user, activationId);
     if (!owned.ok) return Response.json({ error: owned.error }, { status: owned.status });
     const { activation, brand, ownerEmail } = owned;
+    const marketDecision = commercialMarketDecision(brand?.country);
+    if (!marketDecision.ok) return Response.json({ ok:false, error:'NOT_AVAILABLE_IN_MARKET', blocked_reason:marketDecision.blocked_reason }, { status:409 });
 
     // RECOVER-3-FIX — the popup does NOT restate the mandate wording: it renders
     // the SAME strings the PDF is built from, served from the shared copy module.
