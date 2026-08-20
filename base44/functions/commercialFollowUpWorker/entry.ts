@@ -24,7 +24,9 @@ import {
   readCriticalFollowUpCollection,
 } from '../../shared/commercialFollowUpRecovery.ts';
 
-export const COMMERCIAL_FOLLOW_UP_WORKER_VERSION = 'commercial-follow-up-worker-v2.0.0';
+export const COMMERCIAL_FOLLOW_UP_WORKER_VERSION = 'commercial-follow-up-worker-v2.1.0';
+const FOLLOW_UP_TASK_DEADLINE_MS = 10 * 60_000;
+const FOLLOW_UP_HEARTBEAT_INTERVAL_MS = 60_000;
 
 function parseDraft(text: string) {
   const clean = text.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
@@ -83,6 +85,9 @@ Deno.serve(async (req) => {
     if (startRejected) return startRejected;
 
     const now = new Date();
+    const taskDeadlineAt = new Date(
+      now.getTime() + FOLLOW_UP_TASK_DEADLINE_MS,
+    ).toISOString();
     const manualOverride = gate.isAdmin && body?.manual_override === true;
     task = await svc.entities.AgentTask.create({
       brand_id: '_platform',
@@ -93,7 +98,33 @@ Deno.serve(async (req) => {
       risk_level: 3,
       input_summary: 'Due acquisition/provider follow-up sweep',
       started_at: now.toISOString(),
+      heartbeat_at: now.toISOString(),
+      deadline_at: taskDeadlineAt,
     });
+
+    let lastSchedulerHeartbeatAt = now.getTime();
+    const renewRunHeartbeat = async (force = false) => {
+      const heartbeatAtMs = Date.now();
+      if (
+        !force &&
+        heartbeatAtMs - lastSchedulerHeartbeatAt <
+          FOLLOW_UP_HEARTBEAT_INTERVAL_MS
+      ) return;
+
+      const schedulerHeartbeat = await heartbeatSchedulerRun(svc, claim);
+      if (!schedulerHeartbeat?.ok) {
+        throw new Error(
+          `scheduler_heartbeat_failed:${
+            schedulerHeartbeat?.reason || 'unknown'
+          }`,
+        );
+      }
+
+      await svc.entities.AgentTask.update(task.id, {
+        heartbeat_at: new Date(heartbeatAtMs).toISOString(),
+      });
+      lastSchedulerHeartbeatAt = heartbeatAtMs;
+    };
 
     // Request one extra row. Hitting the cap is UNKNOWN, never an empty or
     // complete queue, because a recovery supervisor must not report a partial
@@ -146,6 +177,7 @@ Deno.serve(async (req) => {
         deferred = Math.max(0, due.length - examined);
         break;
       }
+      await renewRunHeartbeat();
       examined += 1;
 
       const profileKey = String(thread.sending_profile_key || '').trim();
@@ -237,6 +269,7 @@ Deno.serve(async (req) => {
       ) {
         const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
         let invoked: any;
+        await renewRunHeartbeat(true);
         try {
           invoked = await svc.functions.invoke('commercialReplyAgent', {
             thread_id: thread.id,
@@ -289,6 +322,7 @@ Deno.serve(async (req) => {
         'THREAD:',
         JSON.stringify(transcript),
       ].join('\n');
+      await renewRunHeartbeat(true);
       const draft = await draftFollowUp(
         svc,
         prompt,
@@ -307,6 +341,7 @@ Deno.serve(async (req) => {
         .toISOString();
       const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
       let invoked: any;
+      await renewRunHeartbeat(true);
       try {
         invoked = await svc.functions.invoke('commercialSendMessage', {
           thread_id: thread.id,
@@ -357,13 +392,12 @@ Deno.serve(async (req) => {
       sent += 1;
     }
 
+    const totalDeferred = deferred + pendingWindow;
     const recovery = commercialFollowUpRecoveryState(
       failures,
-      deferred + pendingWindow,
+      totalDeferred,
     );
-    const recoveryComplete = recovery.recovery_complete;
     const workerSucceeded = failures.length === 0;
-    const workerComplete = workerSucceeded && recoveryComplete;
     const output = {
       worker_version: COMMERCIAL_FOLLOW_UP_WORKER_VERSION,
       ...recovery,
@@ -371,24 +405,28 @@ Deno.serve(async (req) => {
       sent,
       closed,
       skipped,
-      deferred,
+      deferred: totalDeferred,
+      budget_deferred: deferred,
+      business_window_deferred: pendingWindow,
       pending_window: pendingWindow,
       run_budget: runBudget,
       failures: failures.slice(0, 20),
     };
+    const taskCompletedAt = new Date().toISOString();
     await svc.entities.AgentTask.update(task.id, {
-      status: workerComplete ? 'completed' : workerSucceeded ? 'waiting_input' : 'failed',
+      status: workerSucceeded ? 'completed' : 'failed',
+      heartbeat_at: taskCompletedAt,
       output_summary:
-        `Due follow-ups: ${sent} sent, ${closed} closed, ${skipped} skipped, ${deferred} deferred, ${failures.length} failed`,
+        `Due follow-ups: ${sent} sent, ${closed} closed, ${skipped} skipped, ${totalDeferred} deferred, ${failures.length} failed`,
       output_payload_json: output,
-      ...(!workerSucceeded ? { error: 'commercial_followup_recovery_degraded' } : {}),
-      ...(workerComplete || !workerSucceeded
-        ? { completed_at: new Date().toISOString() }
+      ...(!workerSucceeded
+        ? { error: 'commercial_followup_recovery_degraded' }
         : {}),
+      completed_at: taskCompletedAt,
     });
-    // A partial queue sweep is useful evidence for the supervisor, but it is
-    // not a healthy/complete scheduler terminal state.
-    executionOk = workerComplete;
+    // A bounded invocation can finish successfully while work remains deferred
+    // by business hours, the approved run budget or another future window.
+    executionOk = workerSucceeded;
     response = Response.json(
       { ok: workerSucceeded, task_id: task.id, ...output },
       workerSucceeded ? undefined : { status: 503 },
