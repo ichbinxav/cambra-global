@@ -64,7 +64,7 @@ export default function CopilotBrief({ events, lastBrief }) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link to="/admin/copilot" className="inline-flex items-center h-8 px-3 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary">
+          <Link to="/admin/command" className="inline-flex items-center h-8 px-3 rounded-full border border-border/60 bg-card text-xs font-semibold text-foreground hover:bg-secondary">
             Open full
           </Link>
           <button
