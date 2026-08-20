@@ -65,4 +65,24 @@ describe('v0.90.1 commercial hardening patch',()=>{
     expect(src).toMatch(/resendProviderIdempotencyKey\s*=\s*requireResendIdempotencyKey\(\s*idempotency\s*,?\s*\)/);
     expect(src).toMatch(/["']Idempotency-Key["']:\s*resendProviderIdempotencyKey/);
   });
+
+  it('renews scheduler authority before every costly or material follow-up boundary', () => {
+    const src = read('base44/functions/commercialFollowUpWorker/entry.ts');
+    for (const boundary of [
+      'const draft = await draftFollowUp(',
+      "svc.functions.invoke('commercialReplyAgent'",
+      "svc.functions.invoke('commercialSendMessage'",
+    ]) {
+      const boundaryIndex = src.indexOf(boundary);
+      const heartbeatIndex = src.lastIndexOf(
+        'await renewRunHeartbeat(true)',
+        boundaryIndex,
+      );
+      expect(boundaryIndex).toBeGreaterThan(0);
+      expect(heartbeatIndex).toBeGreaterThan(0);
+      expect(heartbeatIndex).toBeLessThan(boundaryIndex);
+    }
+    expect(src).toContain('heartbeat_at: now.toISOString()');
+    expect(src).toContain('deadline_at: taskDeadlineAt');
+  });
 });
