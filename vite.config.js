@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 function productionChunk(id) {
+  if (id.includes('vite/preload-helper')) return 'vite-runtime'
   if (!id.includes('/node_modules/')) return undefined
   if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react-core'
   if (id.includes('/node_modules/@base44/')) return 'base44-runtime'
