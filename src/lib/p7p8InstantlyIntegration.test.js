@@ -392,7 +392,24 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(webhookHost).toContain("processInstantlyProviderEvent");
     expect(workerHost).toContain("handleInstantlyProviderEventRetryWorker");
     expect(workerHost).toContain("handleInstantlyReconciliationWorker");
-    expect(workerHost).toMatch(/host_worker_fallback:\s*true/);
+    expect(workerHost).toContain("body0?.args?.hosted_worker");
+    expect(workerHost).toContain("ambiguous_provider_maintenance_route");
+    expect(workerHost).toMatch(/host_worker_routing:\s*"dedicated"/);
+    expect(workerHost).not.toMatch(/host_worker_fallback:\s*true/);
+
+    const workerConfig = JSON.parse(source(
+      "base44/functions/processWebhookDeadLetters/function.jsonc",
+    ));
+    const hosted = workerConfig.automations
+      .filter((automation) => automation.function_args?.hosted_worker)
+      .map((automation) => ({
+        worker: automation.function_args.hosted_worker,
+        minutes: automation.repeat_interval,
+      }));
+    expect(hosted).toEqual([
+      { worker: "instantlyProviderEventRetryWorker", minutes: 5 },
+      { worker: "instantlyReconciliationWorker", minutes: 15 },
+    ]);
   });
 
   it("keeps Apollo and Instantly behind replaceable provider contracts and production calls cost-gated", () => {
