@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "9702619ab94978b49ec1e87ce59f94d14d0727d02ead871da8656e5775cb5655",
+  "input_fingerprint_sha256": "c42b1cec66fe2d2b20e24c398f318b692c04a981256b3bfdade488312688be96",
   "input_file_count": 126,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -170,9 +170,9 @@
   },
   "scheduler_inventory": {
     "schema_version": "cambra-scheduler-inventory-v3",
-    "scheduled_automation_count": 70,
-    "active_count": 68,
-    "guarded_count": 68,
+    "scheduled_automation_count": 72,
+    "active_count": 70,
+    "guarded_count": 70,
     "unguarded_active": [],
     "active_worker_keys": [
       "acquisitionAttributionWorker",
@@ -218,6 +218,8 @@
       "postMeetingWorker",
       "privacySafeIntelligenceWorker",
       "processWebhookDeadLetters",
+      "instantlyProviderEventRetryWorker",
+      "instantlyReconciliationWorker",
       "providerEconomicsAssessmentWorker",
       "providerEconomicsIntelligenceWorker",
       "providerMonitorAgent",
@@ -909,6 +911,26 @@
         "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
       },
       {
+        "worker_key": "instantlyProviderEventRetryWorker",
+        "function_directory": "processWebhookDeadLetters",
+        "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "instantlyReconciliationWorker",
+        "function_directory": "processWebhookDeadLetters",
+        "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
         "worker_key": "providerEconomicsAssessmentWorker",
         "function_directory": "providerEconomicsAssessmentWorker",
         "config_path": "base44/functions/providerEconomicsAssessmentWorker/function.jsonc",
@@ -1360,8 +1382,8 @@
         },
         {
           "path": "base44/functions/submitWaitlistSignup/entry.ts",
-          "sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
-          "bytes": 8864
+          "sha256": "411088eec623941f3875b8277c26acabf24791af87a2812c3268432604d85f6b",
+          "bytes": 9114
         },
         {
           "path": "base44/shared/costGovernance.ts",
@@ -1585,8 +1607,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-          "sha256": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
-          "bytes": 21790
+          "sha256": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
+          "bytes": 21686
         },
         {
           "path": "base44/shared/schedulerRun.ts",
@@ -1819,8 +1841,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "fcbdb2754c4953182c1977c40eec0bd547fb8c0e25aa159f296ee25849f6f880",
-          "bytes": 10264
+          "sha256": "b8c4d1dbdfce244cc5e13d353492ec5aae7c6885d7cb27946c3b75783e48a572",
+          "bytes": 10298
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
@@ -1867,13 +1889,13 @@
       "source_evidence": [
         {
           "path": "base44/functions/acceptRecoverMandate/entry.ts",
-          "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
-          "bytes": 29825
+          "sha256": "ad9c7e7be686eae6714df62cc49ae42e11a19abcdfa837a3f9c940a8653cb1f6",
+          "bytes": 30138
         },
         {
           "path": "base44/functions/startRecoverAcceptance/entry.ts",
-          "sha256": "56e5a993a4ba0aea38ffd0d5b1211a5b7b7a58b677cf6273ca5b86b8995d0006",
-          "bytes": 9174
+          "sha256": "3f097377968d4571b1505fe7115d3280ee32c0ca2b8a76e890a758946e567472",
+          "bytes": 9473
         },
         {
           "path": "base44/shared/recoverAcceptance.ts",
@@ -2927,8 +2949,8 @@
         },
         {
           "path": "base44/functions/submitWaitlistSignup/entry.ts",
-          "sha256": "76e85989f64fa887357f88b08b17b0241f76f624d4ff12764f6176c712e3fec1",
-          "bytes": 8864
+          "sha256": "411088eec623941f3875b8277c26acabf24791af87a2812c3268432604d85f6b",
+          "bytes": 9114
         },
         {
           "path": "base44/functions/xTwitterAgent/entry.ts",
@@ -3043,8 +3065,8 @@
         },
         {
           "path": "base44/functions/commercialFollowUpWorker/entry.ts",
-          "sha256": "9820e6bcc1e2cbf280efaf10181f22214505755097f715bc84ff7f1576453ee6",
-          "bytes": 15885
+          "sha256": "8627cd7bfb8aa1e5402f315f18c2569a7d45fe5a1cfb57817265b790b3017477",
+          "bytes": 17077
         },
         {
           "path": "base44/functions/commercialReplyAgent/entry.ts",
@@ -3138,8 +3160,8 @@
         },
         {
           "path": "base44/functions/outreachAgent/entry.ts",
-          "sha256": "358b81d0487297530cee74f848012296722f72371cf53b3814cbd1fc85fe4d8b",
-          "bytes": 12149
+          "sha256": "ada2ff9cbda0f1cc289bf7578450cb3b7164a6b4faf7dd14e85e3c246f20009f",
+          "bytes": 13053
         },
         {
           "path": "base44/functions/postMeetingWorker/entry.ts",
@@ -3183,8 +3205,8 @@
         },
         {
           "path": "base44/functions/recommendationEngineAgent/entry.ts",
-          "sha256": "3a9ee071c11a9b539568a8e28138e410fddcbe736e8842c1231b80bf596b9cdf",
-          "bytes": 21137
+          "sha256": "35fe77cc17f3d1e57327088e7719a6a508bcb97a339adc3fd3c48b3297a95997",
+          "bytes": 21471
         },
         {
           "path": "base44/functions/reviewProviderContract/entry.ts",
@@ -3268,8 +3290,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "fcbdb2754c4953182c1977c40eec0bd547fb8c0e25aa159f296ee25849f6f880",
-          "bytes": 10264
+          "sha256": "b8c4d1dbdfce244cc5e13d353492ec5aae7c6885d7cb27946c3b75783e48a572",
+          "bytes": 10298
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
@@ -3325,8 +3347,8 @@
         },
         {
           "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-          "sha256": "e5873034e539f832d11509a4390e33ba1d419dc92c2f3890de0bffce6712cfb1",
-          "bytes": 105701
+          "sha256": "30aebb7018e6e7b6997b4c5e971f45c69b3c4dad5f0ad54b6b6afa2997b0f862",
+          "bytes": 106120
         },
         {
           "path": "base44/functions/dataSyncAgent/entry.ts",
@@ -3390,6 +3412,8 @@
         "eclProductionHealth",
         "executiveDigestWorker",
         "getEuropeMarketsCommandCenter",
+        "instantlyProviderEventRetryWorker",
+        "instantlyReconciliationWorker",
         "intelligenceMaintenanceWorker",
         "knowledgeIntegrityWorker",
         "maintenanceEngine",
@@ -3467,8 +3491,8 @@
         },
         {
           "path": "config/scheduler-inventory.json",
-          "sha256": "f9df59e9cd4ca6c9b25be4c171b81e077e88bcfcf835d31c369c296d53e98f4e",
-          "bytes": 181548
+          "sha256": "c34c958de900fff6c30296552016875dca8ca726b8a022df75b6dbc20696b587",
+          "bytes": 186676
         }
       ]
     },
