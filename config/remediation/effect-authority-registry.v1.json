@@ -4,9 +4,9 @@
   "registry_status": "PARTIAL_LOCAL_WIRING_RUNTIME_PENDING",
   "truth_boundary": "This generated projection reuses existing domain authorities and records local facade wiring. It creates no durable authority and proves neither universal route coverage nor deployed runtime authorization.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "f041aa6caf2f55102e21a9afc4d544d50f3671678d36b258d84b78dd871bb490",
-  "material_registry_input_fingerprint_sha256": "9702619ab94978b49ec1e87ce59f94d14d0727d02ead871da8656e5775cb5655",
-  "input_fingerprint_sha256": "f1fb017c29dca751b4deb0a191f51bd9805a4499586bb23075d9f9501f287833",
+  "material_registry_sha256": "4bad0588f4c915d2bf93291944b3435fa998d566050806c04cf0718ee2e7716d",
+  "material_registry_input_fingerprint_sha256": "c42b1cec66fe2d2b20e24c398f318b692c04a981256b3bfdade488312688be96",
+  "input_fingerprint_sha256": "c7d050811ee32bb1b042a2444a5f2346303dbc102a4f4cba533a33aacf2c451f",
   "facade": {
     "source": "base44/shared/effectAuthority.ts",
     "function": "requireEffectAuthority",
@@ -879,8 +879,8 @@
       "wired_source_evidence": [
         {
           "path": "base44/functions/acceptRecoverMandate/entry.ts",
-          "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
-          "bytes": 29825
+          "sha256": "ad9c7e7be686eae6714df62cc49ae42e11a19abcdfa837a3f9c940a8653cb1f6",
+          "bytes": 30138
         }
       ],
       "implementation_status": "PARTIAL",
@@ -1955,8 +1955,8 @@
   "evidence": [
     {
       "path": "base44/functions/acceptRecoverMandate/entry.ts",
-      "sha256": "f4c5890b6bff8bfebdeeede1c42e24ad0e6c54189c95309a378625cec00ba878",
-      "bytes": 29825
+      "sha256": "ad9c7e7be686eae6714df62cc49ae42e11a19abcdfa837a3f9c940a8653cb1f6",
+      "bytes": 30138
     },
     {
       "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -1985,8 +1985,8 @@
     },
     {
       "path": "base44/shared/marketLaunchScope.ts",
-      "sha256": "d665a6d943b985aa4bdbbef777c48c921d1277a74cfeb906386586d3a2f0a9b8",
-      "bytes": 3476
+      "sha256": "1f930418cb1a6170380b372e11fd3c45fc33b2c8d026d656680bdc9ee3b4aa45",
+      "bytes": 4433
     },
     {
       "path": "base44/shared/operationalControl.ts",
