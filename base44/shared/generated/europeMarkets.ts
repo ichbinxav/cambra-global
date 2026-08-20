@@ -8,8 +8,11 @@ export const EUROPE_MARKET_REGISTRY={
     "effectiveDate": "2026-08-20",
     "decisionStatus": "FOUNDER_DECIDED",
     "canonical_market_count": 33,
+    "launch_perimeter_count": 30,
     "active_launch_count": 10,
-    "protected_market_count": 3,
+    "licensing_blocked_count": 3,
+    "not_launch_market_count": 17,
+    "outside_launch_perimeter_count": 3,
     "active": [
       "ES",
       "IT",
@@ -27,13 +30,6 @@ export const EUROPE_MARKET_REGISTRY={
       "BE",
       "NL"
     ],
-    "protectedMode": "RESEARCH_ONLY",
-    "outboundMode": "PAUSED_ZERO",
-    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED",
-    "launch_perimeter_count": 30,
-    "licensing_blocked_count": 3,
-    "not_launch_market_count": 17,
-    "outside_launch_perimeter_count": 3,
     "notLaunch": [
       "AT",
       "BG",
@@ -57,7 +53,10 @@ export const EUROPE_MARKET_REGISTRY={
       "IS",
       "LI",
       "AD"
-    ]
+    ],
+    "protectedMode": "RESEARCH_ONLY",
+    "outboundMode": "PAUSED_ZERO",
+    "regulatedCapabilitiesMode": "SPECIFIC_POLICY_REQUIRED"
   },
   "markets": [
     {
