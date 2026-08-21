@@ -38,6 +38,39 @@ Deno.serve(async (req) => {
     required: ["amount", "currency", "period", "confidence", "assumptions", "source"],
   };
 
+  const analysisRunRequestSchema = {
+    type: "object",
+    additionalProperties: false,
+    description: "Creates one AnalyzerInput. Currency is normalized and validated against ISO 4217 at runtime and is mandatory whenever a monetary amount is present.",
+    properties: {
+      brand_id: { type: "string", pattern: "^[A-Za-z0-9_][A-Za-z0-9._:/-]{0,159}$" },
+      monthly_revenue: { type: "number", minimum: 0 },
+      currency: {
+        type: "string",
+        pattern: "^[A-Za-z]{3}$",
+        description: "ISO 4217 code. Lowercase input is accepted and persisted uppercase.",
+      },
+      monthly_transactions: { type: "number", minimum: 0 },
+      avg_order_value: { type: "number", minimum: 0 },
+      payment_fee_pct: { type: "number", minimum: 0, maximum: 100 },
+      monthly_shipping_cost: { type: "number", minimum: 0 },
+      monthly_shipments: { type: "number", minimum: 0 },
+      total_saas_spend: { type: "number", minimum: 0 },
+    },
+    required: ["brand_id"],
+    allOf: [{
+      if: {
+        anyOf: [
+          { required: ["monthly_revenue"] },
+          { required: ["avg_order_value"] },
+          { required: ["monthly_shipping_cost"] },
+          { required: ["total_saas_spend"] },
+        ],
+      },
+      then: { required: ["currency"] },
+    }],
+  };
+
   const paginationParams = [
     { name: "limit", in: "query", required: false, description: "Max results, 1–200. Default 50.", schema: { type: "integer", minimum: 1, maximum: 200, default: 50 } },
   ];
@@ -175,7 +208,7 @@ Deno.serve(async (req) => {
       "/v1/brands/{id}":          { get: path("Get brand",                    "read:brands",     "getBrand",       { $ref: "#/components/schemas/Brand" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
       "/v1/analyses":             { get: path("List analyses",                "read:analyses",   "listAnalyses",   { type: "array", items: { $ref: "#/components/schemas/Analysis" } }, { parameters: [...paginationParams, { name: "brand_id", in: "query", schema: { type: "string" } }] }) },
       "/v1/analyses/{id}":        { get: path("Get analysis",                 "read:analyses",   "getAnalysis",    { $ref: "#/components/schemas/Analysis" }, { parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }] }) },
-      "/v1/analyses/run":         { post: path("Trigger analysis",            "trigger:analysis","runAnalysis",    { type: "object" }, { parameters: [idempotencyHeader] }) },
+      "/v1/analyses/run":         { post: path("Trigger analysis",            "trigger:analysis","runAnalysis",    { type: "object" }, { parameters: [idempotencyHeader], requestBody: { required: true, content: { "application/json": { schema: analysisRunRequestSchema } } } }) },
       "/v1/documents":            { get: path("List documents",               "read:documents",  "listDocuments",  { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
       "/v1/providers":            { get: path("List providers",               "read:providers",  "listProviders",  { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
       "/v1/savings":              { get: path("List savings",                 "read:savings",    "listSavings",    { type: "array", items: { type: "object" } }, { parameters: paginationParams }) },
