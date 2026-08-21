@@ -314,6 +314,35 @@
       },
       "description": "Immutable provider/domain receipt references proving observed postconditions or ambiguity."
     },
+    "terminal_event_state": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "PUBLISHED",
+        "REVIEW_REQUIRED"
+      ],
+      "description": "State of an optional terminal Event outbox intent. PENDING is not evidence that Event was published; omission means no intent was requested."
+    },
+    "terminal_event_idempotency_key": {
+      "type": "string",
+      "description": "Deterministic semantic key of the optional terminal Event intent. Event datastore uniqueness is not implied."
+    },
+    "terminal_event_payload_hash": {
+      "type": "string",
+      "description": "SHA-256 of the exact secret-redacted terminal Event semantic projection stored in the outbox intent."
+    },
+    "terminal_event_intent_json": {
+      "type": "object",
+      "description": "Immutable Event projection persisted atomically with AgentTask terminal settlement for later fenced reconciliation. It is not a published Event receipt."
+    },
+    "terminal_event_id": {
+      "type": "string",
+      "description": "Observed Event row ID after a future reconciler proves one exact matching projection."
+    },
+    "terminal_event_revision": {
+      "type": "integer",
+      "description": "Independent CAS revision for future terminal Event projection/reconciliation. It grants no authority to create Event."
+    },
     "deadline_at": {
       "type": "string",
       "format": "date-time",

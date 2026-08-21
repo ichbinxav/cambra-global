@@ -81,6 +81,14 @@ type ChildEnvelopeInput = {
   costApplicable?: boolean;
 };
 
+export type CanonicalAgentTerminalEventInput = {
+  eventType: string;
+  source: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  payload?: unknown;
+};
+
 type TerminalEnvelopeInput = {
   terminalState: Exclude<AgentTaskTerminalState, "OPEN">;
   effectState: AgentTaskEffectState;
@@ -92,6 +100,12 @@ type TerminalEnvelopeInput = {
   policyContext?: TraceContextRef;
   authorityContext?: TraceContextRef;
   intelligenceContext?: TraceContextRef;
+  /**
+   * Optional durable outbox intent. It is persisted in the same AgentTask CAS
+   * as terminal settlement, but it does not create Event and does not claim a
+   * cross-entity transaction or datastore uniqueness guarantee.
+   */
+  terminalEvent?: CanonicalAgentTerminalEventInput;
   /** @deprecated Completeness is derived from states and durable references. */
   effectCoverageComplete?: boolean;
 };
@@ -1183,9 +1197,19 @@ const TERMINAL_OWNED_TRANSITION_FIELDS = Object.freeze([
   "trace_revision",
 ] as const);
 
+const TERMINAL_EVENT_OUTBOX_FIELDS = Object.freeze([
+  "terminal_event_state",
+  "terminal_event_idempotency_key",
+  "terminal_event_payload_hash",
+  "terminal_event_intent_json",
+  "terminal_event_id",
+  "terminal_event_revision",
+] as const);
+
 const TERMINAL_PROTECTED_PATCH_FIELDS = new Set<string>([
   ...TERMINAL_IMMUTABLE_BINDING_FIELDS,
   ...TERMINAL_OWNED_TRANSITION_FIELDS,
+  ...TERMINAL_EVENT_OUTBOX_FIELDS,
 ]);
 
 function exactEnvelopeValue(left: unknown, right: unknown) {
@@ -1246,6 +1270,14 @@ export async function settleCanonicalAgentTask(
   input: TerminalEnvelopeInput,
 ) {
   if (!task?.id) throw new Error("agent_task_terminal_id_required");
+  if (task.terminal_state && task.terminal_state !== "OPEN") {
+    throw new Error("agent_task_terminal_already_settled");
+  }
+  if (
+    TERMINAL_EVENT_OUTBOX_FIELDS.some((field) =>
+      task[field] !== undefined && task[field] !== null
+    )
+  ) throw new Error("agent_task_terminal_event_outbox_preexisting");
   if (
     Object.keys(taskPatch).some((field) =>
       TERMINAL_PROTECTED_PATCH_FIELDS.has(field)
@@ -1258,7 +1290,34 @@ export async function settleCanonicalAgentTask(
     throw new Error("agent_task_terminal_trace_revision_required");
   }
   const terminal = await buildAgentTaskTerminalEnvelope(task, input);
-  const patch = { ...taskPatch, ...terminal, trace_revision: revision + 1 };
+  const nextRevision = revision + 1;
+  const settledProjection = {
+    ...task,
+    ...taskPatch,
+    ...terminal,
+    trace_revision: nextRevision,
+  };
+  const terminalEventIntent = input.terminalEvent
+    ? await buildCanonicalAgentTerminalEvent(
+      settledProjection,
+      input.terminalEvent,
+    )
+    : null;
+  const terminalEventPatch = terminalEventIntent
+    ? {
+      terminal_event_state: "PENDING",
+      terminal_event_idempotency_key: terminalEventIntent.idempotency_key,
+      terminal_event_payload_hash: terminalEventIntent.payload_content_hash,
+      terminal_event_intent_json: terminalEventIntent,
+      terminal_event_revision: 0,
+    }
+    : {};
+  const patch = {
+    ...taskPatch,
+    ...terminal,
+    ...terminalEventPatch,
+    trace_revision: nextRevision,
+  };
   // This CAS protects trace settlement only. It is not an effect-authority
   // fence and never replaces the domain claim/provider reconciliation plane.
   await updateAgentTaskTraceExactlyOnce(
@@ -1306,6 +1365,191 @@ export function buildCanonicalEventTraceEnvelope(task: any) {
     ambiguity_state: String(task.ambiguity_state),
     agent_task_id: String(task.id),
   };
+}
+
+export const AGENT_TASK_TERMINAL_EVENT_PERSISTENCE_GUARANTEE =
+  "DURABLE_TASK_OUTBOX_INTENT_ONLY_NO_CROSS_ENTITY_EXACTLY_ONCE_GUARANTEE";
+
+const TERMINAL_EVENT_REPLAY_BINDING_FIELDS = Object.freeze([
+  "brand_id",
+  "event_type",
+  "source",
+  "entity_type",
+  "entity_id",
+  "idempotency_key",
+  "payload_content_hash",
+  "agent_task_id",
+  "trace_envelope_version",
+  "trace_lineage_state",
+  "trace_id",
+  "parent_run",
+  "step",
+  "tenant_key",
+  "subject_type",
+  "subject_id",
+  "input_hash",
+  "policy_context_json",
+  "authority_context_json",
+  "intelligence_context_json",
+  "cost_record_refs_json",
+  "effect_refs_json",
+  "receipt_refs_json",
+  "terminal_result_hash",
+  "terminal_result_json",
+  "terminal_state",
+  "ambiguity_state",
+  "payload_json",
+  "execution_json",
+  "outcome_json",
+] as const);
+
+function terminalEventPayload(value: unknown) {
+  const redacted = redactForHash(value === undefined ? {} : value);
+  return redacted && typeof redacted === "object" && !Array.isArray(redacted)
+    ? redacted
+    : { value: redacted ?? null };
+}
+
+/**
+ * Builds a deterministic terminal Event outbox record from a canonical settled
+ * AgentTask projection. `settleCanonicalAgentTask` persists and reads this back
+ * in its terminal CAS; this pure builder alone proves no datastore state. The
+ * idempotency key intentionally excludes the outcome hash: one task/event type
+ * owns one semantic event, so changed content is a conflict, not a second event.
+ *
+ * This function performs no Event write. Base44 exposes neither a unique Event
+ * idempotency constraint nor a transaction spanning AgentTask and Event, so a
+ * dispatcher must retain PENDING/REVIEW_REQUIRED state and reconcile before it
+ * can claim publication.
+ */
+export async function buildCanonicalAgentTerminalEvent(
+  task: any,
+  input: CanonicalAgentTerminalEventInput,
+) {
+  const terminalState = String(task?.terminal_state || "");
+  if (
+    !["COMPLETED", "FAILED", "CANCELLED", "REVIEW_REQUIRED"].includes(
+      terminalState,
+    ) || !task?.terminal_result_hash || !task?.terminal_result_json ||
+    !Number.isSafeInteger(Number(task?.trace_revision)) ||
+    Number(task.trace_revision) < 2
+  ) throw new Error("agent_task_terminal_event_requires_settled_task");
+  if (String(task.brand_id || "") !== String(task.tenant_key || "")) {
+    throw new Error("agent_task_terminal_event_tenant_scope_conflict");
+  }
+  const tenantKey = requiredKey("terminal_event_tenant_key", task.tenant_key);
+  const eventType = requiredKey("terminal_event_type", input?.eventType);
+  const eventSource = requiredKey("terminal_event_source", input?.source);
+  const entityType = optionalKey("terminal_event_entity_type", input?.entityType);
+  const entityId = optionalKey("terminal_event_entity_id", input?.entityId);
+  if (Boolean(entityType) !== Boolean(entityId)) {
+    throw new Error("agent_task_terminal_event_entity_reference_incomplete");
+  }
+  const taskId = requiredKey("terminal_event_task_id", task.id);
+  const idempotencyKey = requiredKey(
+    "terminal_event_idempotency_key",
+    `agent-task-terminal:${tenantKey}:${taskId}:${eventType}`,
+  );
+  const trace = buildCanonicalEventTraceEnvelope(task);
+  const payloadJson = terminalEventPayload(input?.payload);
+  const semanticRecord = {
+    event_type: eventType,
+    source: eventSource,
+    entity_type: entityType,
+    entity_id: entityId,
+    payload_json: payloadJson,
+    ...trace,
+    execution_json: {
+      agent_task_id: taskId,
+      effect_state: String(task.effect_state),
+      effect_coverage_state: String(task.effect_coverage_state),
+      cost_applicable: task.cost_applicable === true,
+      cost_record_refs: trace.cost_record_refs_json,
+      effect_refs: trace.effect_refs_json,
+      receipt_refs: trace.receipt_refs_json,
+    },
+    outcome_json: {
+      agent_task_id: taskId,
+      terminal_state: terminalState,
+      ambiguity_state: String(task.ambiguity_state),
+      terminal_result_hash: String(task.terminal_result_hash),
+    },
+  };
+  const payloadContentHash =
+    `sha256:${await hashAgentTaskProjection(semanticRecord)}`;
+  return {
+    brand_id: String(task.brand_id),
+    ...semanticRecord,
+    idempotency_key: idempotencyKey,
+    payload_content_hash: payloadContentHash,
+    status: "processed",
+    retry_count: 0,
+  };
+}
+
+export type CanonicalAgentTerminalEventReplayInspection = {
+  state:
+    | "NO_OBSERVED_EVENT"
+    | "MATCHED_REPLAY"
+    | "CONTENT_CONFLICT"
+    | "AMBIGUOUS_DUPLICATES";
+  event_id: string | null;
+  event_ids: string[];
+  mismatched_fields: string[];
+};
+
+/**
+ * Classifies a bounded exact-key Event read. NO_OBSERVED_EVENT is not authority
+ * to create: the caller still needs a durable claim/dispatcher. More than one
+ * row is an ambiguity that must never be collapsed into an idempotent success.
+ */
+export function inspectCanonicalAgentTerminalEventReplay(
+  candidates: any[],
+  proposed: any,
+): CanonicalAgentTerminalEventReplayInspection {
+  if (!Array.isArray(candidates)) {
+    throw new Error("agent_task_terminal_event_candidates_unavailable");
+  }
+  const key = String(proposed?.idempotency_key || "");
+  if (!key || !proposed?.payload_content_hash) {
+    throw new Error("agent_task_terminal_event_proposal_incomplete");
+  }
+  if (candidates.some((row) => String(row?.idempotency_key || "") !== key)) {
+    throw new Error("agent_task_terminal_event_candidate_scope_conflict");
+  }
+  if (candidates.length === 0) {
+    return {
+      state: "NO_OBSERVED_EVENT",
+      event_id: null,
+      event_ids: [],
+      mismatched_fields: [],
+    };
+  }
+  if (candidates.length > 1) {
+    return {
+      state: "AMBIGUOUS_DUPLICATES",
+      event_id: null,
+      event_ids: candidates.map((row) => String(row?.id || "")).filter(Boolean),
+      mismatched_fields: [],
+    };
+  }
+  const observed = candidates[0];
+  const mismatchedFields = TERMINAL_EVENT_REPLAY_BINDING_FIELDS.filter(
+    (field) => !exactEnvelopeValue(observed?.[field], proposed?.[field]),
+  );
+  return mismatchedFields.length === 0
+    ? {
+      state: "MATCHED_REPLAY",
+      event_id: String(observed?.id || "") || null,
+      event_ids: String(observed?.id || "") ? [String(observed.id)] : [],
+      mismatched_fields: [],
+    }
+    : {
+      state: "CONTENT_CONFLICT",
+      event_id: String(observed?.id || "") || null,
+      event_ids: String(observed?.id || "") ? [String(observed.id)] : [],
+      mismatched_fields: mismatchedFields,
+    };
 }
 
 export async function createCanonicalAgentEvent(

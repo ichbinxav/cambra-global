@@ -54,6 +54,7 @@ const EVIDENCE_PATHS = Object.freeze([
   'src/lib/agentRegistry.js',
   'src/lib/agentTaskCanonicalWork.test.js',
   'src/lib/agentTaskEnvelope.test.js',
+  'src/lib/agentTaskTerminalEvent.test.js',
   'src/lib/autonomousSupervisorFailClosed.test.js',
   'src/lib/effectAuthority.test.js',
   'src/lib/eclP1Gate.test.js',
@@ -132,6 +133,10 @@ function validateComponents(components, root = REPO_ROOT) {
   exact(trace.counts.material_creator_files, 46, 'trace_material_creators');
   exact(trace.counts.material_trace_adapted_files, 0,
     'trace_material_adapted');
+  exact(trace.counts.material_terminal_adapted_files, 3,
+    'trace_material_terminal_adapted');
+  exact(trace.counts.material_event_adapted_files, 0,
+    'trace_material_event_adapted');
   exact(trace.counts.material_not_adapted_files, 43,
     'trace_material_unadapted');
   // 2026-08-18: 111 -> 107 after the logical-route migration into
@@ -331,6 +336,7 @@ export function validateArtifact(document) {
     material_boundary_count: 42,
     material_boundary_facade_wired_count: 5,
     material_trace_adapted_creator_count: 0,
+    material_terminal_adapted_creator_count: 3,
     active_general_supervisor_count: 1,
     health_plane_surface_count: 5,
     authoritative_specialized_sweep_count: 1,
@@ -407,6 +413,8 @@ export function buildArtifact(root = REPO_ROOT) {
         effect.summary.locally_wired_boundary_count,
       material_trace_adapted_creator_count:
         trace.counts.material_trace_adapted_files,
+      material_terminal_adapted_creator_count:
+        trace.counts.material_terminal_adapted_files,
       active_general_supervisor_count:
         planes.health_planes.active_general_supervisor_count,
       health_plane_surface_count: planes.health_planes.surface_count,

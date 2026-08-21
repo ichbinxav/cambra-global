@@ -98,14 +98,17 @@ const creators = allSources.flatMap(({ source, path: pathFromRoot }) => {
   // adapter and has no parallel raw Event writer.
   const eventAdapted = canonicalEventCreateSites > 0 &&
     rawEventCreateSites === 0;
+  const completeLocalAdapterSurface = terminalAdapted && eventAdapted;
   const legacyStatus = rootAdapted
     ? 'ROOT_ENVELOPE_ADAPTED'
     : canonicalRootSites > 0
     ? 'PARTIAL_MIXED_CREATORS'
     : 'NOT_ADAPTED';
   const traceStatus = material
-    ? terminalAdapted && eventAdapted
+    ? completeLocalAdapterSurface
       ? 'MATERIAL_TRACE_ADAPTED_LOCAL'
+      : terminalAdapted
+      ? 'MATERIAL_TERMINAL_ADAPTED_LOCAL'
       : rootAdapted
       ? 'MATERIAL_ROOT_ONLY'
       : 'MATERIAL_NOT_ADAPTED'
@@ -121,6 +124,10 @@ const creators = allSources.flatMap(({ source, path: pathFromRoot }) => {
     canonical_terminal_sites: terminalSites,
     raw_event_create_sites: rawEventCreateSites,
     canonical_event_create_sites: canonicalEventCreateSites,
+    root_adapter_present: rootAdapted,
+    terminal_adapter_present: terminalAdapted,
+    event_adapter_present: eventAdapted,
+    complete_local_adapter_surface: completeLocalAdapterSurface,
     status: legacyStatus,
     trace_status: traceStatus,
     classification: material
@@ -151,8 +158,12 @@ const materialRouteFiles = [...materialSources.entries()].map(([sourcePath, data
     creator_trace_status: creator?.trace_status || 'NO_LOCAL_AGENTTASK_CREATOR',
     raw_event_create_sites: rawEventCreateSites,
     canonical_event_create_sites: canonicalEventCreateSites,
-    trace_resolution: creator?.trace_status === 'MATERIAL_TRACE_ADAPTED_LOCAL'
-      ? 'LOCAL_ENVELOPE_PRESENT_RUNTIME_PENDING'
+    trace_resolution: creator?.complete_local_adapter_surface
+      ? 'LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING'
+      : creator?.terminal_adapter_present
+      ? 'PARTIAL_LOCAL_TERMINAL_WITHOUT_CANONICAL_EVENT'
+      : creator?.root_adapter_present
+      ? 'PARTIAL_LOCAL_ROOT_ONLY'
       : creator
       ? 'PARTIAL_CREATOR_TRACE'
       : 'UNRESOLVED_NO_LOCAL_AGENTTASK_CREATOR',
@@ -169,7 +180,16 @@ const legacyCreators = creators.filter(
   (row) => row.classification !== 'MATERIAL_BOUNDARY_CREATOR',
 );
 const materialAdapted = materialCreators.filter(
-  (row) => row.trace_status === 'MATERIAL_TRACE_ADAPTED_LOCAL',
+  (row) => row.complete_local_adapter_surface,
+);
+const materialTerminalAdapted = materialCreators.filter(
+  (row) => row.terminal_adapter_present,
+);
+const materialEventAdapted = materialCreators.filter(
+  (row) => row.event_adapter_present,
+);
+const materialTerminalOnly = materialCreators.filter(
+  (row) => row.trace_status === 'MATERIAL_TERMINAL_ADAPTED_LOCAL',
 );
 const materialRootOnly = materialCreators.filter(
   (row) => row.trace_status === 'MATERIAL_ROOT_ONLY',
@@ -178,13 +198,17 @@ const materialUnadapted = materialCreators.filter(
   (row) => row.trace_status === 'MATERIAL_NOT_ADAPTED',
 );
 const unresolvedMaterialRoutes = materialRouteFiles.filter(
-  (row) => row.trace_resolution !== 'LOCAL_ENVELOPE_PRESENT_RUNTIME_PENDING',
+  (row) => row.trace_resolution !==
+    'LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING',
 );
 const routesWithoutCreator = materialRouteFiles.filter(
   (row) => !row.agenttask_creator,
 );
 const sourceInventoryHash = sha256(JSON.stringify({ creators, materialRouteFiles }));
 const materialCreatorBlockers = [
+  ...materialTerminalOnly.map((row) =>
+    `${row.path}:TERMINAL_WITHOUT_CANONICAL_EVENT`
+  ),
   ...materialRootOnly.map((row) => `${row.path}:ROOT_ONLY`),
   ...materialUnadapted.map((row) => `${row.path}:NO_CANONICAL_ROOT`),
 ].sort();
@@ -223,11 +247,24 @@ const artifact = {
     material_creator_files: materialCreators.length,
     legacy_creator_files: legacyCreators.length,
     material_trace_adapted_files: materialAdapted.length,
+    material_terminal_adapted_files: materialTerminalAdapted.length,
+    material_event_adapted_files: materialEventAdapted.length,
+    material_terminal_only_files: materialTerminalOnly.length,
     material_root_only_files: materialRootOnly.length,
     material_not_adapted_files: materialUnadapted.length,
     material_route_files: materialRouteFiles.length,
     material_route_files_without_agenttask_creator: routesWithoutCreator.length,
     unresolved_material_route_files: unresolvedMaterialRoutes.length,
+  },
+  measurement_semantics: {
+    material_route_files:
+      'UNION_OF_EXISTING_REGISTRY_SOURCE_EVIDENCE_AND_MATERIAL_SCHEDULED_ROUTE_FILES_NOT_DISTINCT_PHYSICAL_EXECUTORS',
+    material_terminal_adapted_files:
+      'MATERIAL_CREATOR_FILES_WITH_CANONICAL_ROOT_AND_TERMINAL_ADAPTERS',
+    material_trace_adapted_files:
+      'MATERIAL_CREATOR_FILES_WITH_SOURCE_LOCAL_ROOT_TERMINAL_AND_EVENT_ADAPTER_SURFACE_RUNTIME_NOT_VERIFIED',
+    unresolved_material_route_files:
+      'REGISTRY_DERIVED_SOURCE_FILES_WITHOUT_FULL_SOURCE_LOCAL_ROOT_TERMINAL_EVENT_ADAPTER_SURFACE',
   },
   compatibility: {
     legacy_row_lineage: 'UNKNOWN',
@@ -243,9 +280,9 @@ const artifact = {
     local_test_status: 'PASSED_LOCAL',
     verification_level: 'LOCAL_FAILURE_INJECTION',
     blockers: [
-      `${materialCreatorBlockers.length} material creator file(s) lack a complete local terminal envelope`,
+      `${materialCreatorBlockers.length} material creator file(s) lack the full source-local root/terminal/Event adapter surface`,
       `${routesWithoutCreator.length} material route file(s) have no local AgentTask creator`,
-      `${unresolvedMaterialRoutes.length} material route file(s) do not resolve locally to a complete effect/cost/receipt envelope`,
+      `${unresolvedMaterialRoutes.length} material route file(s) do not expose the full source-local root/terminal/Event adapter surface`,
       'production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING',
     ],
     material_creator_blockers: materialCreatorBlockers,
@@ -271,12 +308,12 @@ if (CHECK) {
     process.exit(1);
   }
   console.log(
-    `agenttask-creator-inventory:check PASS — ${creators.length} creator files, ${materialCreators.length} material, ${materialAdapted.length} material terminal-adapted, ${unresolvedMaterialRoutes.length} unresolved material route files`,
+    `agenttask-creator-inventory:check PASS — ${creators.length} creator files, ${materialCreators.length} material, ${materialTerminalAdapted.length} material terminal-adapted, ${materialAdapted.length} complete local adapter surfaces, ${unresolvedMaterialRoutes.length} registry-derived material source files without a complete local surface`,
   );
 } else {
   fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, serialized);
   console.log(
-    `agenttask-creator-inventory:generate PASS — ${creators.length} creator files, ${materialCreators.length} material, ${materialAdapted.length} material terminal-adapted, ${unresolvedMaterialRoutes.length} unresolved material route files`,
+    `agenttask-creator-inventory:generate PASS — ${creators.length} creator files, ${materialCreators.length} material, ${materialTerminalAdapted.length} material terminal-adapted, ${materialAdapted.length} complete local adapter surfaces, ${unresolvedMaterialRoutes.length} registry-derived material source files without a complete local surface`,
   );
 }

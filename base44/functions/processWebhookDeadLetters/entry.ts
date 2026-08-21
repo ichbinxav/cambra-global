@@ -246,12 +246,40 @@ export default async function (req: Request): Promise<Response> {
       );
       if (!one) {
         schedulerOk = false;
+        task = await settleCanonicalAgentTask(svc, task, {
+          status: "failed",
+          error: "dead_letter_not_found",
+          completed_at: new Date().toISOString(),
+        }, {
+          terminalState: "FAILED",
+          effectState: "FAILED_PRE_EFFECT",
+          ambiguityState: "NONE",
+          result: { ok: false, error: "dead_letter_not_found" },
+          effectRefs: [],
+          receiptRefs: [],
+        });
         return Response.json({ ok: false, error: "dead_letter_not_found" }, {
           status: 404,
         });
       }
       if (one.status !== "exhausted") {
         schedulerOk = false;
+        task = await settleCanonicalAgentTask(svc, task, {
+          status: "failed",
+          error: "manual_replay_only_for_exhausted",
+          completed_at: new Date().toISOString(),
+        }, {
+          terminalState: "FAILED",
+          effectState: "FAILED_PRE_EFFECT",
+          ambiguityState: "NONE",
+          result: {
+            ok: false,
+            error: "manual_replay_only_for_exhausted",
+            observed_status: String(one.status || "unknown"),
+          },
+          effectRefs: [],
+          receiptRefs: [],
+        });
         return Response.json({
           ok: false,
           error: "manual_replay_only_for_exhausted",

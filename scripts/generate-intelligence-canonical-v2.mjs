@@ -8,6 +8,11 @@ const root = process.cwd();
 const configDir = path.join(root, "config", "intelligence");
 const specDir = process.env.CAMBRA_INTELLIGENCE_SPEC_DIR;
 const generatedAt = "2026-08-13T00:00:00Z";
+const agentTaskInventory = JSON.parse(fs.readFileSync(
+  path.join(root, "config", "agenttask-creator-inventory.json"),
+  "utf8",
+));
+const agentTaskCounts = agentTaskInventory.counts;
 
 if (!specDir) {
   throw new Error(
@@ -301,7 +306,7 @@ const p0Assessments = {
   "ROOT-OTR-010": ["DEPLOYED_SEVEN_EXECUTOR_FAILURE_AND_RECONCILIATION_RECEIPTS_MISSING", "LIVE_LEGACY_APPROVAL_AGENTTASK_RECONCILIATION_NOT_RUN"],
   "ROOT-OTR-011": ["RECOVER_CONTRACT_AND_PAYMENTS_MULTIROW_SAGA_COVERAGE_INCOMPLETE", "RECOVER_REPORT_DATASTORE_UNIQUENESS_AND_DUPLICATE_RECONCILIATION_RUNTIME_PENDING", "LEGACY_NON_RECOVER_FINANCIAL_ROUTES_OUTSIDE_UNIVERSAL_SAGA", "PAYMENTS_GO_LIVE_APPROVAL_PRODUCER_AND_ADVANCED_E_SIGNATURE_MISSING", "DEPLOYED_THREE_DOMAIN_TRANSITION_FAULT_MATRIX_MISSING"],
   "ROOT-OTR-012": ["37_OF_42_MATERIAL_BOUNDARIES_NOT_WIRED_TO_COMMON_EFFECT_AUTHORITY", "DEPLOYED_UNIVERSAL_EFFECT_DENIAL_RECEIPTS_MISSING"],
-  "ROOT-OTR-013": ["46_MATERIAL_CREATORS_HAVE_NO_COMPLETE_EFFECT_COST_RECEIPT_LINEAGE", "111_MATERIAL_ROUTE_FILES_UNRESOLVED_AND_RUNTIME_TRACE_REPORT_MISSING"],
+  "ROOT-OTR-013": ["MATERIAL_CREATOR_LOCAL_ADAPTER_SURFACE_INCOMPLETE", "MATERIAL_ROUTE_LOCAL_ADAPTER_SURFACE_INCOMPLETE_AND_RUNTIME_TRACE_REPORT_MISSING"],
   "ROOT-OTR-014": ["DEPLOYED_ALL_SURFACE_DEPENDENCY_FAILURE_DRILL_MISSING", "REAL_SUPERVISOR_DENOMINATOR_AND_RECOVERY_WINDOWS_UNOBSERVED"],
   "ROOT-OTR-015": ["DEPLOYED_CANONICAL_INCIDENT_PARITY_AND_DEDUPE_RECONCILIATION_MISSING", "FINAL_SHA_COMMAND_CENTER_COVERAGE_RECEIPT_MISSING"],
   "ROOT-OTR-016": ["PAID_ADAPTER_SCOPE_AND_IMMUTABLE_ADJUSTMENT_INVENTORY_INCOMPLETE", "DEPLOYED_RESERVATION_RECONCILIATION_CONTENTION_EVIDENCE_MISSING"],
@@ -508,7 +513,7 @@ const p0Audit = {
     implementation_existing: "AgentTask has a versioned envelope for trace, parent run, step, tenant/subject, policy/authority/intelligence, cost/effect/receipt and terminal ambiguity; the generator inventories every creator and material route.",
     material_effect_covered: "Adapted creator and settlement paths reject contradictory terminal/effect state, tenant/provenance mutation, lost fences and incomplete receipt lineage.",
     local_partial_criterion_verified: "Envelope construction, contradictory terminal, immutable provenance, exact CAS/readback and generated drift cases passed locally.",
-    local_gap: "All 46 material creator files remain incomplete for end-to-end effect/cost/receipt lineage and 111 material route files remain unresolved; root/terminal-only adaptation is not counted as complete.",
+    local_gap: `Of ${agentTaskCounts.material_creator_files} material creator files, ${agentTaskCounts.material_terminal_adapted_files} expose canonical terminal adapters and ${agentTaskCounts.material_trace_adapted_files} expose the full root/terminal/Event adapter surface; ${agentTaskCounts.unresolved_material_route_files} registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.`,
     runtime_gap: "No deployed trace-completeness report proves every material AgentTask/Event/effect/cost/receipt relationship on final SHA.",
     verification_level: "LOCAL_FAILURE_INJECTION",
   },

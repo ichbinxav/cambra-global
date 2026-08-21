@@ -20,6 +20,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
+const rootFlag = process.argv.indexOf('--root');
+if (rootFlag !== -1 && !process.argv[rootFlag + 1]) {
+  console.error('hosted-route-gates:check FAIL — --root requires a directory');
+  process.exit(1);
+}
+const sourceRoot = rootFlag === -1 ? process.cwd() : path.resolve(process.argv[rootFlag + 1]);
+const sourcePath = (...parts) => path.join(sourceRoot, ...parts);
+
 let failures = 0;
 const fail = (m) => { console.error(`hosted-route-gates:check FAIL — ${m}`); failures += 1; };
 
@@ -41,13 +49,14 @@ const stripComments = (source) => source
   .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '))
   .split('\n').map((line) => line.replace(/(^|[^:'"\\])\/\/.*$/, '$1')).join('\n');
 
-const dirs = fs.readdirSync('base44/functions', { withFileTypes: true })
+const dirs = fs.readdirSync(sourcePath('base44', 'functions'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
 let hosts = 0;
 let branches = 0;
 for (const name of dirs) {
-  const file = path.join('base44/functions', name, 'entry.ts');
+  const relativeFile = path.join('base44/functions', name, 'entry.ts');
+  const file = sourcePath(relativeFile);
   if (!fs.existsSync(file)) continue;
   const source = stripComments(fs.readFileSync(file, 'utf8'));
   if (!source.includes('guardedScheduledServe')) continue;
@@ -72,9 +81,9 @@ for (const name of dirs) {
 
     const gateAt = region.search(GATES);
     if (gateAt === -1) {
-      fail(`${file}: hosted route "${tests[index][1]}" takes asServiceRole with NO gate in its branch — guardedScheduledServe passes unauthenticated requests straight through`);
+      fail(`${relativeFile}: hosted route "${tests[index][1]}" takes asServiceRole with NO gate in its branch — guardedScheduledServe passes unauthenticated requests straight through`);
     } else if (gateAt > serviceAt) {
-      fail(`${file}: hosted route "${tests[index][1]}" takes asServiceRole BEFORE its gate (service role at +${serviceAt}, gate at +${gateAt}) — the gate is unreachable for an unauthenticated caller`);
+      fail(`${relativeFile}: hosted route "${tests[index][1]}" takes asServiceRole BEFORE its gate (service role at +${serviceAt}, gate at +${gateAt}) — the gate is unreachable for an unauthenticated caller`);
     }
   }
 }
@@ -82,7 +91,7 @@ for (const name of dirs) {
 // The premise this gate rests on. If guardedScheduledServe ever starts authenticating
 // non-scheduled requests itself, this check is protecting something that no longer needs it and
 // should be re-derived rather than left in place claiming a protection it does not provide.
-const scheduler = stripComments(fs.readFileSync('base44/shared/schedulerRun.ts', 'utf8'));
+const scheduler = stripComments(fs.readFileSync(sourcePath('base44', 'shared', 'schedulerRun.ts'), 'utf8'));
 if (!/invocationKind\(req\)\s*!==\s*'SCHEDULED'\)\s*return\s+handler\(req\)/.test(scheduler)) {
   fail('schedulerRun.ts no longer passes non-scheduled requests straight to the handler — re-derive this gate against the new contract');
 }
