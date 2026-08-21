@@ -745,7 +745,7 @@
       "implementation_existing": "AgentTask has a versioned envelope for trace, parent run, step, tenant/subject, policy/authority/intelligence, cost/effect/receipt and terminal ambiguity; the generator inventories every creator and material route.",
       "material_effect_covered": "Adapted creator and settlement paths reject contradictory terminal/effect state, tenant/provenance mutation, lost fences and incomplete receipt lineage.",
       "local_partial_criterion_verified": "Envelope construction, contradictory terminal, immutable provenance, exact CAS/readback and generated drift cases passed locally.",
-      "gap_local": "All 46 material creator files remain incomplete for end-to-end effect/cost/receipt lineage and 111 material route files remain unresolved; root/terminal-only adaptation is not counted as complete.",
+      "gap_local": "Of 46 material creator files, 3 expose canonical terminal adapters and 0 expose the full root/terminal/Event adapter surface; 107 registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.",
       "gap_runtime": "No deployed trace-completeness report proves every material AgentTask/Event/effect/cost/receipt relationship on final SHA.",
       "source_evidence_refs": [
         "base44/entities/AgentTask.jsonc",
@@ -755,8 +755,8 @@
       ],
       "runtime_evidence_refs": [],
       "blockers": [
-        "46_MATERIAL_CREATORS_HAVE_NO_COMPLETE_EFFECT_COST_RECEIPT_LINEAGE",
-        "111_MATERIAL_ROUTE_FILES_UNRESOLVED_AND_RUNTIME_TRACE_REPORT_MISSING"
+        "MATERIAL_CREATOR_LOCAL_ADAPTER_SURFACE_INCOMPLETE",
+        "MATERIAL_ROUTE_LOCAL_ADAPTER_SURFACE_INCOMPLETE_AND_RUNTIME_TRACE_REPORT_MISSING"
       ],
       "owner": "CAMBRA Intelligence Orchestration",
       "seal_impact": [
