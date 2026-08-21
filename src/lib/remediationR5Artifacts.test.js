@@ -25,8 +25,8 @@ describe('R5 authority, trace and operational-plane evidence', () => {
       effect_class_count: 10,
       material_boundary_count: 42,
       material_boundary_facade_wired_count: 5,
-      material_trace_adapted_creator_count: 3,
-      material_terminal_adapted_creator_count: 3,
+      material_trace_adapted_creator_count: 8,
+      material_terminal_adapted_creator_count: 8,
       active_general_supervisor_count: 1,
       health_plane_surface_count: 5,
       authoritative_specialized_sweep_count: 1,
@@ -71,7 +71,7 @@ describe('R5 authority, trace and operational-plane evidence', () => {
       '37 of 42 material boundaries remain SOURCE_OBSERVED_ONLY and are not wired to the common facade',
     );
     expect(trace.blockers).toContain(
-      '104 material route file(s) do not expose the full source-local root/terminal/Event adapter surface',
+      '98 material route file(s) do not expose the full source-local root/terminal/Event adapter surface',
     );
   });
 
@@ -85,11 +85,6 @@ describe('R5 authority, trace and operational-plane evidence', () => {
   });
 
   it('regenerates deterministically and detects output drift', () => {
-    const first = generateArtifact(REPO_ROOT);
-    const second = generateArtifact(REPO_ROOT);
-    expect(second).toEqual(first);
-    expect(checkArtifact(REPO_ROOT)).toEqual(first);
-
     const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'cambra-r5-evidence-'));
     try {
       fs.cpSync(REPO_ROOT, fixture, {
@@ -98,11 +93,24 @@ describe('R5 authority, trace and operational-plane evidence', () => {
           'node_modules', '.deploy', '.git', 'dist', '.release-evidence',
         ].some((segment) => source.includes(`${path.sep}${segment}${path.sep}`)),
       });
+      const first = generateArtifact(fixture);
+      const second = generateArtifact(fixture);
+      expect(second).toEqual(first);
+      expect(checkArtifact(fixture)).toEqual(first);
+
       const target = path.join(fixture, OUTPUT_PATH);
       const parsed = JSON.parse(fs.readFileSync(target, 'utf8'));
       parsed.summary.binary_closed_count = 1;
       fs.writeFileSync(target, `${JSON.stringify(parsed, null, 2)}\n`);
       expect(() => checkArtifact(fixture)).toThrow('generated_drift');
+
+      fs.appendFileSync(
+        path.join(fixture, 'base44/functions/codeReviewAgent/entry.ts'),
+        '\n// fixture source drift\n',
+      );
+      expect(() => checkArtifact(fixture)).toThrow(
+        'agenttask_inventory_freshness:canonical_stale',
+      );
     } finally {
       fs.rmSync(fixture, { recursive: true, force: true });
     }

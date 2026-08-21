@@ -79,11 +79,15 @@
         "src/lib/preEclFreeze.test.js",
         "src/lib/eclP1Gate.test.js"
       ],
-      "observed_result": {
-        "test_files_passed": 36,
-        "test_files_total": 36,
-        "tests_passed": 505,
-        "tests_total": 505
+      "current_validation": {
+        "mode": "REEXECUTE_JSON_REPORTER",
+        "reporter": "json",
+        "required_test_files": 36,
+        "zero_failed_pending_todo": true,
+        "all_tests_must_pass": true,
+        "exact_test_paths_required": true,
+        "nonempty_test_count_required": true,
+        "timeout_ms": 300000
       },
       "limitation": "These mapped local tests prove nine repository criteria and partial slices of eleven others. They are not the normative ORCH acceptance catalog, deployed Base44 evidence, provider receipts or binary closure evidence."
     }
@@ -745,7 +749,7 @@
       "implementation_existing": "AgentTask has a versioned envelope for trace, parent run, step, tenant/subject, policy/authority/intelligence, cost/effect/receipt and terminal ambiguity; the generator inventories every creator and material route.",
       "material_effect_covered": "Adapted creator and settlement paths reject contradictory terminal/effect state, tenant/provenance mutation, lost fences and incomplete receipt lineage.",
       "local_partial_criterion_verified": "Envelope construction, contradictory terminal, immutable provenance, exact CAS/readback and generated drift cases passed locally.",
-      "gap_local": "Of 46 material creator files, 3 expose canonical terminal adapters and 0 expose the full root/terminal/Event adapter surface; 107 registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.",
+      "gap_local": "Of 45 material creator files, 8 expose canonical terminal adapters and 8 expose the full root/terminal/Event adapter surface; 98 registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.",
       "gap_runtime": "No deployed trace-completeness report proves every material AgentTask/Event/effect/cost/receipt relationship on final SHA.",
       "source_evidence_refs": [
         "base44/entities/AgentTask.jsonc",

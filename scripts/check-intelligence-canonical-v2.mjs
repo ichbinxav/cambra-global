@@ -1,8 +1,11 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { requireFreshAgentTaskInventory } from "./lib/agentTaskInventoryFreshness.mjs";
+import { expectedOtr013Gap } from "./lib/intelligenceRepositoryEvidence.mjs";
 
 const root = process.cwd();
 const args = process.argv.slice(2);
@@ -13,9 +16,22 @@ const argValue = (name) => {
 const configDir = path.resolve(argValue("--config-dir") ?? path.join(root, "config", "intelligence"));
 const specDirRaw = argValue("--spec-dir") ?? process.env.CAMBRA_INTELLIGENCE_SPEC_DIR ?? null;
 const specDir = specDirRaw ? path.resolve(specDirRaw) : null;
+const requestedAgentTaskInventoryPath = path.resolve(
+  argValue("--agenttask-inventory") ??
+    path.join(root, "config", "agenttask-creator-inventory.json"),
+);
 const fail = (message) => {
   throw new Error(`intelligence_canonical_v2_invalid:${message}`);
 };
+let agentTaskInventorySnapshot;
+try {
+  agentTaskInventorySnapshot = requireFreshAgentTaskInventory(
+    root,
+    requestedAgentTaskInventoryPath,
+  );
+} catch (error) {
+  fail(error instanceof Error ? error.message : String(error));
+}
 const read = (name) => {
   const file = path.join(configDir, name);
   if (!fs.existsSync(file)) fail(`missing_file:${name}`);
@@ -136,6 +152,21 @@ const aliases = read("canonical-alias-map.v2.json");
 const precedence = read("scope-precedence.v2.json");
 const compatibility = read("compatibility-ledger.v2.json");
 const seals = read("root-seals.v2.json");
+let agentTaskInventory;
+try {
+  agentTaskInventory = JSON.parse(
+    agentTaskInventorySnapshot.canonicalBytes.toString("utf8"),
+  );
+} catch (error) {
+  fail(
+    `agenttask_inventory_read:${
+      error instanceof Error ? error.message : String(error)
+    }`,
+  );
+}
+if (agentTaskInventory.schema_version !== "agenttask-creator-inventory-v2.0.0") {
+  fail("agenttask_inventory_schema");
+}
 
 if (manifest.schema_version !== "intelligence-composition-manifest.v2") fail("manifest_schema_version");
 if (ledger.schema_version !== "intelligence-requirement-ledger.v2") fail("ledger_schema_version");
@@ -299,11 +330,15 @@ if (
 ) fail("p0_local_test_run_identity");
 exactArray(p0LocalRun.test_files, expectedP0TestFiles, "p0_local_test_files");
 if (
-  p0LocalRun.observed_result?.test_files_passed !== 36 ||
-  p0LocalRun.observed_result?.test_files_total !== 36 ||
-  p0LocalRun.observed_result?.tests_passed !== 505 ||
-  p0LocalRun.observed_result?.tests_total !== 505
-) fail("p0_local_test_result");
+  p0LocalRun.current_validation?.mode !== "REEXECUTE_JSON_REPORTER" ||
+  p0LocalRun.current_validation?.reporter !== "json" ||
+  p0LocalRun.current_validation?.required_test_files !== 36 ||
+  p0LocalRun.current_validation?.zero_failed_pending_todo !== true ||
+  p0LocalRun.current_validation?.all_tests_must_pass !== true ||
+  p0LocalRun.current_validation?.exact_test_paths_required !== true ||
+  p0LocalRun.current_validation?.nonempty_test_count_required !== true ||
+  p0LocalRun.current_validation?.timeout_ms !== 300000
+) fail("p0_current_validation_contract");
 for (const ref of expectedP0TestFiles) if (!fs.existsSync(path.join(root, ref))) fail(`p0_local_test_file:${ref}`);
 const p0LocalTestFileSet = new Set(expectedP0TestFiles);
 exactArray(p0.items.map((row) => row.otr_id), Array.from({ length: 20 }, (_, index) => `ROOT-OTR-${String(index + 1).padStart(3, "0")}`), "p0_ids");
@@ -334,6 +369,12 @@ for (const row of p0.items) {
   }
   if (row.runtime_evidence_refs.length !== 0 || row.blockers.length === 0) fail(`p0_evidence:${row.otr_id}`);
   for (const ref of row.source_evidence_refs) if (!fs.existsSync(path.join(root, ref))) fail(`p0_source_ref:${row.otr_id}:${ref}`);
+}
+const otr013 = p0.items.find((row) => row.otr_id === "ROOT-OTR-013");
+if (!otr013) fail("p0_otr_013_missing");
+const expectedOtr013GapLocal = expectedOtr013Gap(agentTaskInventory.counts);
+if (otr013.gap_local !== expectedOtr013GapLocal) {
+  fail(`p0_otr_013_gap_local:${JSON.stringify(otr013.gap_local)}`);
 }
 const p0ClosedRows = p0.items.filter((row) => row.binary_closure_status === "CLOSED");
 if (p0ClosedRows.some((row) => row.test_status !== "PASSED_LOCAL" || row.verification_level !== "RUNTIME_VERIFIED")) fail("p0_closed_without_complete_predicate");
@@ -393,6 +434,67 @@ const visitSeal = (sealType) => {
   visited.add(sealType);
 };
 for (const sealType of expectedRootSeals) visitSeal(sealType);
+
+const vitestBin = path.join(root, "node_modules", ".bin", "vitest");
+if (!fs.existsSync(vitestBin)) fail("p0_current_validation_runner_missing");
+const p0Validation = spawnSync(
+  process.execPath,
+  [vitestBin, "run", ...expectedP0TestFiles, "--reporter=json"],
+  {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+    timeout: 300_000,
+    env: { ...process.env, NO_COLOR: "1" },
+  },
+);
+if (p0Validation.error) {
+  fail(
+    `p0_current_validation_spawn:${
+      String(p0Validation.error.code || "UNKNOWN")
+    }:${p0Validation.error.message}`,
+  );
+}
+if (p0Validation.status !== 0) {
+  fail(`p0_current_validation_exit:${p0Validation.status}`);
+}
+let p0ValidationReport;
+try {
+  p0ValidationReport = JSON.parse(p0Validation.stdout);
+} catch (error) {
+  fail(
+    `p0_current_validation_json:${
+      error instanceof Error ? error.message : String(error)
+    }`,
+  );
+}
+if (
+  p0ValidationReport.success !== true ||
+  p0ValidationReport.testResults?.length !== expectedP0TestFiles.length ||
+  !Number.isSafeInteger(p0ValidationReport.numTotalTests) ||
+  p0ValidationReport.numTotalTests <= 0 ||
+  p0ValidationReport.numFailedTests !== 0 ||
+  p0ValidationReport.numPendingTests !== 0 ||
+  p0ValidationReport.numTodoTests !== 0 ||
+  p0ValidationReport.numPassedTests !== p0ValidationReport.numTotalTests
+) fail("p0_current_validation_result");
+const observedP0TestFiles = p0ValidationReport.testResults.map((result) =>
+  path.relative(root, String(result?.name || ""))
+    .split(path.sep)
+    .join("/")
+).sort();
+exactArray(
+  observedP0TestFiles,
+  [...expectedP0TestFiles].sort(),
+  "p0_current_validation_files",
+);
+if (
+  p0ValidationReport.testResults.some((result) =>
+    !Array.isArray(result?.assertionResults) ||
+    result.assertionResults.length === 0 ||
+    result.status !== "passed"
+  )
+) fail("p0_current_validation_empty_or_nonpassing_file");
 
 let attachedCanonicalSourceBindingStatus = "NOT_RUN";
 if (specDir) {

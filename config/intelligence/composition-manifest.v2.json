@@ -44,7 +44,7 @@
     },
     {
       "path": "config/intelligence/orchestration-p0-remediation.v2.json",
-      "sha256": "6a193ae7e615f541bf6a163fa6a6b401a26809a7a9316c1317628a399d4d2c5f"
+      "sha256": "8c08b390a14151b6f14fa089f5354823a2bf868e6a0c11591caed603bd108847"
     },
     {
       "path": "config/intelligence/canonical-alias-map.v2.json",
@@ -63,7 +63,7 @@
       "sha256": "72b687b3d5c84a997282a20911359a4a7c8fe173aa41b958317fbf5ca5395b44"
     }
   ],
-  "composition_hash": "b4ff4ef001c18f78b6920bba87d7e89d1a70c2b456a822cedfb973e91cfe16e2",
+  "composition_hash": "a60871f57d2438930e299534b8fcd3889127b6c26ae45b0b20ad3243710404d6",
   "source_binding": {
     "status": "PASS",
     "verification_level": "SOURCE_OBSERVED",

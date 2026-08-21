@@ -1,4 +1,4 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { safeBestEffort as observeBestEffort } from '../../shared/bestEffort.ts';
 // =============================================================================
 // CAMBRA MCP Server — Production-grade Model Context Protocol implementation.
 // Spec: https://modelcontextprotocol.io/specification (2024-11-05)
@@ -20,9 +20,22 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { consumeRateLimit, deriveRequestNetworkFingerprints, readTrustedClientAddress } from '../../shared/rateLimit.ts';
 import { recordApiUsage } from '../../shared/apiUsage.ts';
+import {
+  createTenantAuthorizedPublicAnalyzerInputFromServiceRole,
+  isAnalyzerInputBoundaryError,
+  isAnalyzerInputCurrencyError,
+} from '../../shared/analyzerInputCurrency.ts';
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = { name: "cambra-mcp", version: "1.1.0" };
+const SAFE_THROWN_ERROR_CODES = new Set(["not_found", "forbidden", "invalid_request"]);
+
+function safeBestEffort(_error, input) {
+  return observeBestEffort(
+    { name: "McpSecondaryFailure", message: "mcp_secondary_failure" },
+    input,
+  );
+}
 
 // -----------------------------------------------------------------------------
 // Crypto + CORS
@@ -83,8 +96,8 @@ function tenantFilterByCreatedBy(principal, extra = {}) {
 // Allows ownership fallback by created_by OR owner_email when the resource
 // has no organization_id; deny by default when no identity is present.
 function assertTenant(principal, resource) {
-  if (!resource) return null;
-  const deny = () => { const e = new Error("not_found"); e.code = "not_found"; throw e; };
+  const deny = () => { const e = new Error("not_found"); e.code = "not_found"; e.status = 404; throw e; };
+  if (!resource) deny();
   const userEmail = principal.user_email || principal.raw?.user_email;
   const orgId = principal.raw?.organization_id;
   const ownsResource =
@@ -303,25 +316,49 @@ const TOOLS = [
     description: "Trigger a fresh analyzer run for a brand.",
     inputSchema: {
       type: "object",
+      additionalProperties: false,
       properties: {
-        brand_id: { type: "string" },
-        monthly_revenue: { type: "number" },
-        monthly_transactions: { type: "number" },
-        avg_order_value: { type: "number" },
-        payment_fee_pct: { type: "number" },
-        monthly_shipping_cost: { type: "number" },
-        monthly_shipments: { type: "number" },
-        total_saas_spend: { type: "number" },
+        brand_id: {
+          type: "string",
+          minLength: 1,
+          maxLength: 160,
+          pattern: "^[A-Za-z0-9_][A-Za-z0-9._:/-]{0,159}$",
+        },
+        monthly_revenue: { type: "number", minimum: 0 },
+        currency: {
+          type: "string",
+          minLength: 3,
+          maxLength: 3,
+          pattern: "^[A-Za-z]{3}$",
+          description: "ISO 4217 currency; required with any monetary amount",
+        },
+        monthly_transactions: { type: "number", minimum: 0 },
+        avg_order_value: { type: "number", minimum: 0 },
+        payment_fee_pct: { type: "number", minimum: 0, maximum: 100 },
+        monthly_shipping_cost: { type: "number", minimum: 0 },
+        monthly_shipments: { type: "number", minimum: 0 },
+        total_saas_spend: { type: "number", minimum: 0 },
       },
       required: ["brand_id"],
+      allOf: [{
+        if: {
+          anyOf: [
+            { required: ["monthly_revenue"] },
+            { required: ["avg_order_value"] },
+            { required: ["monthly_shipping_cost"] },
+            { required: ["total_saas_spend"] },
+          ],
+        },
+        then: { required: ["currency"] },
+      }],
     },
     scope: "trigger:analysis",
     handler: async (base44, args, principal) => {
-      // FIX 4 — verify brand ownership before creating analyzer input
-      const brand = await base44.asServiceRole.entities.Brand.get(args.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'mcpServer',fallback:null,severity:'secondary'}));
-      assertTenant(principal, brand);
-      const input = await base44.asServiceRole.entities.AnalyzerInput.create({ ...args });
-      return { triggered: true, input_id: input.id, brand_id: args.brand_id, status: "queued" };
+      const result = await createTenantAuthorizedPublicAnalyzerInputFromServiceRole(args, {
+        serviceRole: base44.asServiceRole,
+        authorizeBrandRecord: (brand) => assertTenant(principal, brand),
+      });
+      return { triggered: true, input_id: result.created.id, brand_id: result.payload.brand_id, status: "queued" };
     },
   },
 
@@ -648,9 +685,28 @@ Deno.serve(async (req) => {
     }
 
     // All other methods require auth
-    const authRes = await authenticate(req, base44);
+    let authRes;
+    try {
+      authRes = await authenticate(req, base44);
+    } catch {
+      await logCall(base44, {
+        rpcMethod: method,
+        status: "error",
+        statusCode: 503,
+        ip,
+        userAgent,
+        duration_ms: Date.now() - startedAt,
+        error: "authentication_authority_unavailable",
+      });
+      responses.push(rpcError(
+        id,
+        -32010,
+        "authentication_authority_unavailable",
+      ));
+      continue;
+    }
     if (authRes.error) {
-      await logCall(base44, { rpcMethod: method, status: "unauthorized", statusCode: authRes.error.status, ip, userAgent, duration_ms: Date.now() - startedAt, error: authRes.error.message });
+      await logCall(base44, { rpcMethod: method, status: "unauthorized", statusCode: authRes.error.status, ip, userAgent, duration_ms: Date.now() - startedAt, error: String(authRes.error.code) });
       responses.push(rpcError(id, authRes.error.code, authRes.error.message));
       continue;
     }
@@ -664,7 +720,27 @@ Deno.serve(async (req) => {
     }
 
     // Rate limit
-    const rl = await rateLimit(base44, principal);
+    let rl;
+    try {
+      rl = await rateLimit(base44, principal);
+    } catch {
+      await logCall(base44, {
+        principal,
+        rpcMethod: method,
+        status: "error",
+        statusCode: 503,
+        ip,
+        userAgent,
+        duration_ms: Date.now() - startedAt,
+        error: "rate_limit_authority_unavailable",
+      });
+      responses.push(rpcError(
+        id,
+        -32010,
+        "rate_limit_authority_unavailable",
+      ));
+      continue;
+    }
     if (!rl.ok) {
       await logCall(base44, { principal, rpcMethod: method, status: "error", statusCode: 429, ip, userAgent, duration_ms: Date.now() - startedAt, error: "rate_limited" });
       responses.push(rpcError(id, -32005, `Rate limit exceeded (${rl.limit}/min)`));
@@ -717,9 +793,34 @@ Deno.serve(async (req) => {
       }
 
       responses.push(rpcError(id, -32601, `Method not found: ${method}`));
-    } catch (e) {
-      await logCall(base44, { principal, rpcMethod: method, status: "error", statusCode: 500, ip, userAgent, duration_ms: Date.now() - startedAt, error: e.message });
-      responses.push(rpcError(id, -32000, e.message));
+    } catch (e:any) {
+      const invalidCurrencyParams = isAnalyzerInputCurrencyError(e);
+      const typedBoundaryError = isAnalyzerInputBoundaryError(e);
+      const candidateStatus = Number(e?.status);
+      const safeClientError = Number.isInteger(candidateStatus) &&
+        candidateStatus >= 400 && candidateStatus < 500 &&
+        SAFE_THROWN_ERROR_CODES.has(String(e?.code || ""));
+      const statusCode = typedBoundaryError
+        ? Number(e.status)
+        : safeClientError
+        ? candidateStatus
+        : 500;
+      const safeCode = typedBoundaryError || safeClientError
+        ? String(e.code).toLowerCase()
+        : "internal_error";
+      const rpcCode = invalidCurrencyParams || statusCode === 400
+        ? -32602
+        : statusCode === 404
+        ? -32004
+        : statusCode === 403
+        ? -32003
+        : -32000;
+      await logCall(base44, { principal, rpcMethod: method, status: "error", statusCode, ip, userAgent, duration_ms: Date.now() - startedAt, error: safeCode });
+      responses.push(rpcError(
+        id,
+        rpcCode,
+        safeCode,
+      ));
     }
   }
 

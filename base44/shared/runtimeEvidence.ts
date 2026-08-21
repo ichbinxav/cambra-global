@@ -3,7 +3,7 @@ import { sha256Canonical } from './legalExecution.ts';
 export const RUNTIME_EVIDENCE_VERSION = 'runtime-evidence-2.0.0';
 export const RUNTIME_IDENTITY_VERSION = 'cambra-runtime-deployment-identity-v1';
 export const EXPECTED_BASE44_PHYSICAL_FUNCTIONS = 276;
-export const EXPECTED_BASE44_LOGICAL_ROUTES = 38;
+export const EXPECTED_BASE44_LOGICAL_ROUTES = 39;
 
 const SHA40 = /^[a-f0-9]{40}$/iu;
 const SHA256 = /^[a-f0-9]{64}$/iu;
@@ -50,6 +50,13 @@ const RUNTIME_EVIDENCE_PAYLOAD_FIELDS = Object.freeze([
   'evidence_refs','details_json','observed_at','expires_at','recorded_by',
 ]);
 
+const REAL_RESTORE_EXERCISE_PROJECTION_FIELDS = Object.freeze([
+  'exercise_key','environment','exercise_type','status','rpo_target_minutes',
+  'rpo_observed_minutes','rto_target_minutes','rto_observed_minutes',
+  'backup_snapshot_ref','restored_target_ref','data_integrity_checks_json',
+  'evidence_refs','conducted_by','started_at','completed_at',
+]);
+
 function runtimeIdentityFromEvidence(row:any) {
   return {
     identity_version:row?.identity_version,
@@ -79,6 +86,123 @@ export function runtimeGateEvidencePayload(row:any) {
 
 export function runtimeGateIdentityFromEvidence(row:any) {
   return runtimeIdentityFromEvidence(row);
+}
+
+export function realRestoreExerciseProjection(row:any) {
+  return withoutUndefined(Object.fromEntries(
+    REAL_RESTORE_EXERCISE_PROJECTION_FIELDS
+      .filter((field) => row?.[field] !== undefined)
+      .map((field) => [field,row[field]]),
+  ));
+}
+
+export function realRestoreExerciseProjectionHash(row:any) {
+  return sha256Canonical(realRestoreExerciseProjection(row));
+}
+
+function finalRealRestoreGateProjection(row:any) {
+  return withoutUndefined({
+    id:row?.id,
+    evidence_key:row?.evidence_key,
+    evidence_hash:row?.evidence_hash,
+    ...runtimeGateEvidencePayload(row),
+  });
+}
+
+/**
+ * Final datastore fence for consumers of REAL_RESTORE PASS. The gate snapshot
+ * selected by a caller is not authority after the Exercise and compensation
+ * marker reads: compensation can append a newer BLOCKED row in that interval.
+ * Consumers must therefore re-read both the exact evidence key and the latest
+ * two gate rows, and prove that the same PASS remains uniquely latest.
+ */
+export async function verifyFinalRealRestoreGateAuthority(
+  row:any,
+  authority:any,
+  verificationInput:any = {},
+) {
+  const blockers:string[]=[];
+  if(!String(row?.id||'')||!String(row?.evidence_key||'')||
+    !SHA256.test(String(row?.evidence_hash||''))||row?.gate_key!=='REAL_RESTORE'||
+    row?.status!=='PASS'||!String(row?.observed_at||'')){
+    blockers.push('real_restore_final_gate_binding_invalid');
+  }
+  if(
+    !authority||authority.available!==true||authority.exact_query!==true||
+    authority.latest_query!==true||!Array.isArray(authority.exact_rows)||
+    !Array.isArray(authority.latest_rows)
+  ){
+    blockers.push('real_restore_final_gate_authority_unavailable');
+  }else{
+    if(authority.exact_rows.length!==1){
+      blockers.push(authority.exact_rows.length===0
+        ?'real_restore_final_gate_exact_missing'
+        :'real_restore_final_gate_exact_ambiguous');
+    }
+    if(authority.latest_rows.length>2){
+      blockers.push('real_restore_final_gate_latest_cardinality_invalid');
+    }
+    const selectedProjectionHash=await sha256Canonical(finalRealRestoreGateProjection(row));
+    const validateFreshRow=async(fresh:any,scope:'exact'|'latest')=>{
+      try{
+        const projectionHash=await sha256Canonical(finalRealRestoreGateProjection(fresh));
+        if(projectionHash!==selectedProjectionHash){
+          blockers.push(`real_restore_final_gate_${scope}_mismatch`);
+        }
+        const expectedEvidenceHash=await sha256Canonical(runtimeGateEvidencePayload(fresh));
+        if(!SHA256.test(String(fresh?.evidence_hash||''))||
+          String(fresh.evidence_hash).toLowerCase()!==expectedEvidenceHash){
+          blockers.push(`real_restore_final_gate_${scope}_hash_mismatch`);
+        }
+        const verification=await verifyRuntimeGateEvidence(fresh,{
+          ...verificationInput,
+          expected_status:'PASS',
+        });
+        if(!verification.ok){
+          blockers.push(...verification.blockers.map((blocker:string)=>
+            `real_restore_final_gate_${scope}_${blocker}`
+          ));
+        }
+      }catch{
+        blockers.push(`real_restore_final_gate_${scope}_verification_failed`);
+      }
+    };
+    const selectedVerification=await verifyRuntimeGateEvidence(row,{
+      ...verificationInput,
+      expected_status:'PASS',
+    }).catch(()=>({ok:false,blockers:['verification_failed']}));
+    if(!selectedVerification.ok){
+      blockers.push(...selectedVerification.blockers.map((blocker:string)=>
+        `real_restore_final_gate_selected_${blocker}`
+      ));
+    }
+    const exact=authority.exact_rows[0];
+    if(exact)await validateFreshRow(exact,'exact');
+    const latest=authority.latest_rows[0];
+    if(!latest){
+      blockers.push('real_restore_final_gate_latest_missing');
+    }else{
+      await validateFreshRow(latest,'latest');
+      const latestProjectionHash=await sha256Canonical(finalRealRestoreGateProjection(latest));
+      if(latestProjectionHash!==selectedProjectionHash)blockers.push('real_restore_final_gate_not_latest');
+      if(latest.gate_key!=='REAL_RESTORE'||latest.status!=='PASS'){
+        blockers.push('real_restore_final_gate_not_pass');
+      }
+      const latestMs=Date.parse(String(latest.observed_at||''));
+      if(!Number.isFinite(latestMs)){
+        blockers.push('real_restore_final_gate_observed_at_invalid');
+      }
+      const previous=authority.latest_rows[1];
+      if(previous){
+        const previousMs=Date.parse(String(previous.observed_at||''));
+        if(!Number.isFinite(previousMs)||!Number.isFinite(latestMs)||latestMs<=previousMs){
+          blockers.push('real_restore_final_gate_latest_ambiguous');
+        }
+      }
+    }
+  }
+  const unique=[...new Set(blockers)];
+  return{ok:unique.length===0,status:unique.length===0?'VERIFIED':'BLOCKED',blockers:unique};
 }
 
 /**
@@ -136,6 +260,7 @@ export function validateRuntimeDeploymentIdentity(identity:any, expected:any = {
 export async function verifyRuntimeGateEvidence(row:any,input:any={}) {
   const blockers:string[]=[];
   const nowMs=Number.isFinite(Number(input?.now_ms))?Number(input.now_ms):Date.now();
+  const expectedStatus=String(input?.expected_status || 'PASS');
   const evidenceKind=String(row?.evidence_kind||'');
   const external=evidenceKind==='EXTERNAL';
   const authoritativeRuntime=['REAL_RUNTIME','OPERATOR_EXERCISE'].includes(evidenceKind);
@@ -144,10 +269,39 @@ export async function verifyRuntimeGateEvidence(row:any,input:any={}) {
   const currentIdentity=runtimeDeploymentIdentity();
   const rowIdentity=runtimeIdentityFromEvidence(row||{});
   if(!row||typeof row!=='object')blockers.push('runtime_evidence_missing');
-  if(row?.status!=='PASS')blockers.push('runtime_evidence_not_pass');
+  if(row?.status!==expectedStatus)blockers.push(expectedStatus==='PASS'?'runtime_evidence_not_pass':'runtime_evidence_status_mismatch');
   if(!String(row?.gate_key||'').trim())blockers.push('runtime_evidence_gate_key_missing');
   if(!String(row?.source||'').trim())blockers.push('runtime_evidence_source_missing');
   if(!authoritativeRuntime&&!(external&&allowExternal))blockers.push('runtime_evidence_kind_not_authoritative');
+  if(expectedStatus==='PASS'&&row?.gate_key==='REAL_RESTORE'){
+    const details=row?.details_json||{};
+    if(details.exercise_projection_verified!==true||details.exercise_projection_status!=='PASS'||!String(details.exercise_id||'').trim()||String(details.exercise_projection_readback_id||'')!==String(details.exercise_id||''))blockers.push('real_restore_exercise_projection_unverified');
+    if(!String(details.exercise_key||'').trim()||!SHA256.test(String(details.exercise_projection_hash||''))||!String(details.compensation_incident_key||'').trim())blockers.push('real_restore_exercise_authority_binding_invalid');
+    if(details.authenticated_aes256gcm_evidence!==true||details.manifest_chain_reverified!==true)blockers.push('real_restore_backup_anchor_unverified');
+    if(!SHA256.test(String(details.manifest_hash||''))||!String(details.manifest_path||'').startsWith('Manifests/')||!String(details.backup_id||'').trim())blockers.push('real_restore_manifest_identity_invalid');
+    if(!SHA256.test(String(details.evidence_hash||''))||!SHA256.test(String(details.evidence_file_sha256||''))||!['dev','test','staging','sandbox'].includes(String(details.target_environment||'')))blockers.push('real_restore_attestation_identity_invalid');
+    if(!String(details.source_app_id||'').trim()||details.source_environment!=='prod'||!String(details.source_release_version||'').trim()||!SHA40.test(String(details.source_git_sha||''))||!SHA256.test(String(details.source_tree_hash||'')))blockers.push('real_restore_source_identity_invalid');
+    const authority=input?.real_restore_exercise_authority;
+    if(!authority||authority.available!==true||authority.exact_query!==true||!Array.isArray(authority.rows)||!Array.isArray(authority.compensation_markers)){
+      blockers.push('real_restore_exercise_authority_unavailable');
+    }else{
+      if(authority.rows.length!==1)blockers.push(authority.rows.length===0?'real_restore_exercise_authority_missing':'real_restore_exercise_authority_ambiguous');
+      if(authority.compensation_markers.length>1)blockers.push('real_restore_compensation_authority_ambiguous');
+      if(authority.compensation_markers.some((marker:any)=>marker?.status!=='resolved'))blockers.push('real_restore_compensation_ambiguous_open');
+      const exercise=authority.rows[0];
+      if(exercise){
+        const projectionHash=await realRestoreExerciseProjectionHash(exercise);
+        if(String(exercise.id||'')!==String(details.exercise_id||'')||exercise.exercise_key!==details.exercise_key||
+          exercise.exercise_type!=='REAL_RESTORE'||exercise.status!=='PASS'||
+          exercise.environment!==`production-boundary-to-${String(details.target_environment||'')}`||
+          exercise.backup_snapshot_ref!==details.manifest_path||
+          exercise.restored_target_ref!==`base44:${String(details.source_app_id||'')}:data-env:${String(details.target_environment||'')}`||
+          String(details.exercise_projection_hash||'').toLowerCase()!==projectionHash){
+          blockers.push('real_restore_exercise_projection_mismatch');
+        }
+      }
+    }
+  }
   if(authoritativeRuntime){
     const currentValidation=validateRuntimeDeploymentIdentity(currentIdentity,{environment:String(input?.environment||'production')});
     const parityValidation=validateRuntimeDeploymentIdentity(rowIdentity,currentIdentity);

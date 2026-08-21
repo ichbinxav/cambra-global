@@ -19,6 +19,7 @@ const seoConfig = readFile("src/lib/seoConfig.js");
 const seoMeta = readFile("src/components/shared/SeoMeta.jsx");
 const indexHtml = readFile("index.html");
 const sitemap = readFile("public/sitemap.xml");
+const functionSitemap = readFile("base44/functions/sitemap/entry.ts");
 const robots = readFile("public/robots.txt");
 const securityTxt = readFile("public/.well-known/security.txt");
 const manifest = JSON.parse(readFile("public/manifest.json"));
@@ -251,6 +252,22 @@ describe("Sitemap + robots sync with seoConfig", () => {
       const url = buildCanonicalUrl(p);
       expect(sitemap).toContain(`<loc>${url}</loc>`);
     });
+
+    const staticRoutes = [...sitemap.matchAll(/<loc>https:\/\/cambra\.global(\/[^<]*)?<\/loc>/g)]
+      .map((match) => match[1] || "/");
+    expect(staticRoutes).toEqual(CANONICAL_PUBLIC_PATHS);
+  });
+
+  it("Base44 sitemap function has exactly the canonical public route set", () => {
+    const routeBlock = functionSitemap.match(
+      /const PUBLIC_ROUTES:[\s\S]*?= \[([\s\S]*?)\n\];/,
+    )?.[1] || "";
+    const functionRoutes = [...routeBlock.matchAll(/\["([^"]+)"\s*,/g)]
+      .map((match) => match[1]);
+
+    expect(functionRoutes).toEqual(CANONICAL_PUBLIC_PATHS);
+    expect(functionSitemap).not.toContain("<lastmod>${today}</lastmod>");
+    expect(functionSitemap).not.toMatch(/Error:\s*\$\{error\.(?:message|stack)\}/);
   });
 
   it("sitemap does NOT contain private or alias routes", () => {

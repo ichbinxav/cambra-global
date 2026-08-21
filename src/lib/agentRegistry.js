@@ -99,10 +99,10 @@ const CLUSTER_DEFINITIONS = [
   {
     key: "analyzer_brain",
     label: "Analyzer Brain",
-    description: "Loop de valor del brand: web → stack → gasto → recomendaciones. Parte determinista (scoreEngine) funciona sin key; Claude solo explica.",
+    description: "Loop de valor del brand: web → stack → gasto → recomendaciones. Spend Intelligence es determinista y no usa proveedor de IA; otras rutas conservan sus propias compuertas.",
     agents: [
       { name: "Discovery (Tech Stack)", fn: "discoveryTechStackAgent",   level: 1, tool: "Deterministic + Claude", secret: "ANTHROPIC_API_KEY", desc: "Escanea web pública y detecta tools del stack.", requiresInput: "url" },
-      { name: "Spend Intelligence",     fn: "spendIntelligenceAgent",    level: 1, tool: "scoreEngine + Claude",   secret: "ANTHROPIC_API_KEY", desc: "Estima gasto por tool con benchmarks tier+EU.", requiresInput: "brand" },
+      { name: "Spend Intelligence",     fn: "spendIntelligenceAgent",    level: 1, tool: "scoreEngine deterministic", secret: null, desc: "Estima gasto EUR por tool solo con fuentes observadas; no usa IA generativa.", requiresInput: "brand" },
       { name: "Recommendation Engine",  fn: "recommendationEngineAgent", level: 1, tool: "scoreEngine + Claude",   secret: "ANTHROPIC_API_KEY", desc: "Detecta oportunidades vs benchmark (savings + confidence + effort + priority).", requiresInput: "brand" },
     ],
   },

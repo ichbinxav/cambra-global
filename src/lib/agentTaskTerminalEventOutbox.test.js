@@ -6,7 +6,9 @@ import {
 } from '../../base44/shared/agentTaskEnvelope.ts';
 import {
   AGENT_TASK_TERMINAL_EVENT_RECONCILER_GUARANTEE,
+  agentTaskTerminalReconcilerFailureLog,
   reconcileCanonicalAgentTerminalEventOutboxRow,
+  stableAgentTaskTerminalWorkerErrorCode,
 } from '../../base44/shared/agentTaskTerminalEventOutbox.ts';
 
 const request = () => new Request('https://cambra.invalid/internal');
@@ -123,6 +125,36 @@ describe('AgentTask terminal Event outbox reconciler', () => {
     expect(worker).toContain('initializeMissingNextAttempt');
     expect(worker).toContain('state: "ERROR"');
     expect(worker).toContain('success = counts.worker_errors === 0');
+    expect(worker).toContain('console.error(JSON.stringify(failureLog))');
+    expect(worker).not.toMatch(/console\.error\([^\n]*,\s*error\s*\)/);
+  });
+
+  it('logs only a stable code and safe request id for a raw global worker error', () => {
+    const syntheticSecret = ["sk", "-ant-", "X".repeat(24)].join("");
+    const error = Object.assign(
+      new Error(`datastore body ${syntheticSecret} founder@example.invalid`),
+      { cause: { password: 'never-log-this' }, provider_body: syntheticSecret },
+    );
+    const log = agentTaskTerminalReconcilerFailureLog(error, 'request-safe-001');
+    expect(log).toEqual({
+      level: 'error',
+      event: 'agent_task_terminal_event_reconciler_failed',
+      error_code: 'UNEXPECTED_ERROR',
+      request_id: 'request-safe-001',
+    });
+    const serialized = JSON.stringify(log);
+    expect(serialized).not.toContain(syntheticSecret);
+    expect(serialized).not.toContain('founder@example.invalid');
+    expect(serialized).not.toContain('never-log-this');
+    expect(stableAgentTaskTerminalWorkerErrorCode(
+      new Error('agent_task_terminal_event_transition_conflict'),
+    )).toBe('AGENT_TASK_TERMINAL_EVENT_TRANSITION_CONFLICT');
+    const unsafeRequest = agentTaskTerminalReconcilerFailureLog(
+      error,
+      'founder@example.invalid',
+    );
+    expect(unsafeRequest.request_id).not.toContain('@');
+    expect(unsafeRequest.request_id).toMatch(/^[a-f0-9-]{36}$/);
   });
 
   it('quarantines a deterministically corrupted persisted intent before create', async () => {

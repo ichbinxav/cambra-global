@@ -1,425 +1,783 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { createCanonicalAgentTask, hashAgentTaskProjection, settleCanonicalAgentTask } from '../../shared/agentTaskEnvelope.ts';
+import { commercialAgentErrorResponse, commercialInferenceReviewError, completedNoEffectTerminal, reviewRequiredNoEffectTerminal } from '../../shared/commercialAgentTask.ts';
 import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import { redactSecrets } from '../../shared/internalSecret.ts';
+import {
+  revalidateLatestSpendSourceFence,
+  selectAndRevalidateLatestAnalyzerInput,
+  selectAndRevalidateLatestDiscoveryTask,
+  selectExactSpendSource,
+} from '../../shared/spendIntelligenceAuthority.ts';
+import { buildSpendEstimates, buildSpendFailureEvidenceProjection, buildSpendTotals, collectSpendBenchmarkSourceRefs, deriveSpendDiscoveryCoverageStatus, deterministicSpendSummary, MAX_SPEND_FINDINGS, requireEurSpendAnalyzerInput, spendAuthorityReadsComplete, SPEND_INTELLIGENCE_RUNTIME_VERSION, unknownSpendTotals, validateSpendCountry, validateSpendFindings } from '../../shared/spendIntelligenceRuntime.ts';
 import { requireExactBrandTask, requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
  * Spend Intelligence Agent — Brain B2
  *
- * Design principle (same as B1): DETERMINISTIC FIRST, AI only interprets.
- * All € figures come from scoreEngine benchmarks + deterministic rules.
- * Claude (optional) only writes the human-readable explanation — never the numbers.
+ * Deterministic-only until a real, observed inference policy is bound. No
+ * provider call is attempted from this route, so it cannot create hidden AI
+ * spend or let generated prose replace deterministic monetary conclusions.
  *
- * Flow:
- *   1. Read B1's last completed AgentTask for this brand → reuse its findings.
- *      We DO NOT re-scan the website.
- *   2. Read Brand to get monthly_revenue + country (best-effort; defaults applied).
- *   3. For each detected tool, estimate monthly + annual spend using a rule
- *      bound to a specific scoreEngine benchmark. Each estimate carries `basis`
- *      explaining exactly which benchmark/tier was applied.
- *   4. If ANTHROPIC_API_KEY is set: Claude takes the estimates AS-IS and writes
- *      a plain-language explanation. It is forbidden from changing any number.
- *      Without key → status `skipped_no_key`. Deterministic output still ships.
- *   5. Write an AgentTask (L1, no Approval) so it appears in Activity Log.
- *      The payload is structured so B3 can consume it directly.
- *
- * Payload: { brand_id: string, discovery_task_id?: string }
- * Returns: { ok, task_id, estimates: [...], totals: {...}, summary,
- *            interpretation_status, basis_context }
- *
- * ⚠️ The benchmark tables below MUST stay in sync with lib/scoreEngine.js
- * (getBenchmarks). Deno can't import that file; values are duplicated by
- * necessity. See the same note in functions/getBenchmarkForReport.js.
+ * Payload: { brand_id: string, discovery_task_id?: string,
+ *            analyzer_input_id?: string }
  */
 
 const AGENT_NAME = "spend_intelligence";
 const TASK_TYPE = "estimate_tool_spend";
 const RISK_LEVEL = 1;
-const SCORE_ENGINE_VERSION = "1.0.0"; // mirror of scoreEngine.ENGINE_VERSION.benchmark
+const SAFE_ID = /^[a-zA-Z0-9_][a-zA-Z0-9._:/-]{0,159}$/;
+const SHA256 = /^[a-f0-9]{64}$/i;
+const SAFE_ERROR_CODE = /^[A-Z][A-Z0-9_]{0,159}$/;
 
-// ─── Mirrored from lib/scoreEngine.js — DO NOT diverge ─────────────────────
-const EU_COUNTRIES = [
-  "France", "Germany", "Spain", "Italy", "Netherlands", "Belgium", "Portugal",
-  "Sweden", "Denmark", "Finland", "Norway", "Austria", "Switzerland", "Ireland",
-  "Poland", "Czech Republic", "Romania", "Hungary", "Greece", "Luxembourg",
-  "Malta", "Cyprus", "Slovakia", "Slovenia", "Croatia", "Estonia", "Latvia",
-  "Lithuania", "Bulgaria",
-];
-const isEU = (c) => EU_COUNTRIES.includes(c);
-
-function getRevenueTier(monthlyRevenue = 0) {
-  if (monthlyRevenue >= 500000) return "large";
-  if (monthlyRevenue >= 100000) return "mid";
-  if (monthlyRevenue >= 30000) return "small";
-  return "micro";
+function optionalRequestId(value: unknown) {
+  if (value === undefined || value === null || value === "") return null;
+  return typeof value === "string" && SAFE_ID.test(value) ? value : undefined;
 }
 
-// Mirror of scoreEngine.getBenchmarks (v1.0.0)
-function getBenchmarks(monthlyRevenue = 0, country = "") {
-  const tier = getRevenueTier(monthlyRevenue);
-  const eu = isEU(country);
-  return {
-    tier, eu,
-    payment: ({
-      micro: { rate: eu ? 2.4 : 2.9 },
-      small: { rate: eu ? 2.2 : 2.6 },
-      mid:   { rate: eu ? 1.9 : 2.3 },
-      large: { rate: eu ? 1.6 : 1.9 },
-    })[tier],
-    shipping: ({
-      micro: { perUnit: eu ? 5.80 : 7.20 },
-      small: { perUnit: eu ? 5.20 : 6.50 },
-      mid:   { perUnit: eu ? 4.60 : 5.80 },
-      large: { perUnit: eu ? 3.90 : 4.80 },
-    })[tier],
-    saas: ({
-      micro: { pct: 0.060 },
-      small: { pct: 0.040 },
-      mid:   { pct: 0.025 },
-      large: { pct: 0.015 },
-    })[tier],
-  };
+function optionalSourceHash(value: unknown) {
+  const hash = String(value || "").trim().toLowerCase();
+  return SHA256.test(hash) ? hash : null;
 }
 
-// ─── Per-vertical share heuristics ─────────────────────────────────────────
-// When B1 detects N SaaS tools in the same vertical, total SaaS spend gets
-// divided proportionally. These weights are DETERMINISTIC and bounded —
-// they don't invent a € figure, they distribute the benchmark-derived total.
-const VERTICAL_WEIGHT = {
-  saas_commerce: 0.35,
-  saas_marketing: 0.25,
-  saas_analytics: 0.10,
-  saas_support: 0.10,
-  saas_finance: 0.10,
-  saas_hr: 0.10,
-};
-
-// ─── Estimation rules (deterministic) ──────────────────────────────────────
-// Each rule binds a vertical to a scoreEngine benchmark. Returns:
-//   { monthly_spend, basis: <human-readable rule explanation> }
-function estimatePaymentSpend(monthlyRevenue, bm, toolCount) {
-  // Payments benchmark = effective rate (%) of GMV.
-  // Total payment processing cost is split equally across detected providers.
-  const totalMonthly = monthlyRevenue * (bm.payment.rate / 100);
-  const perTool = toolCount > 0 ? totalMonthly / toolCount : totalMonthly;
-  return {
-    monthly_spend: Math.round(perTool),
-    basis: `payments benchmark ${bm.payment.rate.toFixed(2)}% × monthly GMV €${Math.round(monthlyRevenue).toLocaleString()} ÷ ${toolCount} detected provider(s) [tier=${bm.tier}, region=${bm.eu ? "EU" : "non-EU"}]`,
-  };
-}
-
-function estimateShippingSpend(monthlyRevenue, bm, toolCount) {
-  // Without shipment count, we can't apply the per-unit benchmark directly.
-  // Conservative deterministic fallback: shipping spend approximated as
-  // 3% of monthly revenue (industry-standard outbound logistics share for SMB
-  // ecommerce, used only when shipment count is unknown). Equally split.
-  const SHIPPING_REVENUE_SHARE = 0.03;
-  const totalMonthly = monthlyRevenue * SHIPPING_REVENUE_SHARE;
-  const perTool = toolCount > 0 ? totalMonthly / toolCount : totalMonthly;
-  return {
-    monthly_spend: Math.round(perTool),
-    basis: `shipping share ${(SHIPPING_REVENUE_SHARE * 100).toFixed(1)}% of monthly GMV ÷ ${toolCount} detected carrier(s); benchmark per-shipment €${bm.shipping.perUnit.toFixed(2)} [tier=${bm.tier}, region=${bm.eu ? "EU" : "non-EU"}]`,
-  };
-}
-
-function estimateSaasSpend(monthlyRevenue, bm, vertical, toolCount, allSaasToolCount) {
-  // SaaS benchmark = % of monthly revenue for the WHOLE SaaS stack.
-  // We distribute by VERTICAL_WEIGHT, then split equally inside the vertical.
-  const totalSaasMonthly = monthlyRevenue * bm.saas.pct;
-  const weight = VERTICAL_WEIGHT[vertical] || (1 / Math.max(1, allSaasToolCount));
-  const verticalTotal = totalSaasMonthly * weight;
-  const perTool = toolCount > 0 ? verticalTotal / toolCount : verticalTotal;
-  return {
-    monthly_spend: Math.round(perTool),
-    basis: `SaaS benchmark ${(bm.saas.pct * 100).toFixed(1)}% of monthly GMV × vertical weight ${(weight * 100).toFixed(0)}% (${vertical}) ÷ ${toolCount} tool(s) in vertical [tier=${bm.tier}]`,
-  };
-}
-
-async function callClaude(svc, prompt, eventKey) { return (await callCambraClaude(prompt, { tier:'standard', maxTokens:1500, svc, eventKey, source:'spendIntelligenceAgent' })).text; }
-
-function safeParseJSON(text) {
-  if (!text) return null;
-  const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*$/g, "").trim();
-  try { return JSON.parse(cleaned); } catch { /* fallthrough */ }
-  const match = cleaned.match(/\{[\s\S]*\}/);
-  if (match) { try { return JSON.parse(match[0]); } catch { /* fallthrough */ } }
+function optionalSourceVersion(row: any) {
+  for (
+    const value of [
+      row?.snapshot_version,
+      row?.version,
+      row?.updated_date,
+      row?.created_date,
+    ]
+  ) {
+    const version = String(value || "").trim();
+    if (SAFE_ID.test(version)) return version;
+  }
   return null;
 }
 
+function failureShapeStatus(value: unknown) {
+  if (value === undefined) return "NOT_OBSERVED";
+  if (!Array.isArray(value)) return "NOT_ARRAY";
+  return value.length <= MAX_SPEND_FINDINGS
+    ? "ARRAY_WITHIN_LIMIT"
+    : "ARRAY_OVER_LIMIT";
+}
+
+function failureCurrencyStatus(value: unknown) {
+  if (value === undefined || value === null || value === "") return "MISSING";
+  if (typeof value !== "string") return "INVALID_TYPE";
+  return value === "EUR" ? "EUR" : "NON_EUR";
+}
+
+function presentFields(value: any, fields: string[]) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  return fields.filter((field) =>
+    Object.prototype.hasOwnProperty.call(value, field)
+  );
+}
+
+async function failureEvidence(metadata: unknown) {
+  const projection = buildSpendFailureEvidenceProjection(metadata);
+  return {
+    projection_sha256: await hashAgentTaskProjection(projection),
+    digest_scope: "ALLOWLISTED_METADATA_ONLY",
+    projection,
+  };
+}
+
+function safeFailureCode(value: unknown) {
+  const code = String(value || "").trim();
+  return SAFE_ERROR_CODE.test(code)
+    ? code
+    : "SPEND_INTELLIGENCE_REVIEW_REQUIRED";
+}
+
 Deno.serve(async (req) => {
-  let task = null;
+  let task: any = null;
+  let serviceRoleForTrace: any = null;
+  let brandForTrace: any = null;
+  let requestForTrace: any = null;
+  let discoveryTask: any = null;
+  let analyzerInput: any = null;
+  let rawFindingsForTrace: unknown = undefined;
+  let discoveryReadState = "NOT_ATTEMPTED";
+  let analyzerReadState = "NOT_REQUIRED";
+  let validationStage = "NOT_STARTED";
+  let sourceValidationComplete = false;
+  let intelligenceContext: any = { status: "UNKNOWN" };
+  let observedFindingCount: number | null = null;
+  let validatedFindings: any[] = [];
+  let discoveryCoverageStatus = "UNKNOWN";
+  let responseError: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
-    if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    if (!user) {
+      return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
 
-    const body = await req.json().catch(() => ({}));
-    const { brand_id, discovery_task_id } = body;
-    if (!brand_id) return Response.json({ ok: false, error: "Missing brand_id" }, { status: 400 });
+    const parsedBody = await req.json().catch(() => ({}));
+    const body = parsedBody && typeof parsedBody === "object" &&
+        !Array.isArray(parsedBody)
+      ? parsedBody
+      : {};
+    const brandId = typeof body.brand_id === "string" ? body.brand_id : "";
+    const discoveryTaskId = optionalRequestId(body.discovery_task_id);
+    const analyzerInputId = optionalRequestId(body.analyzer_input_id);
+    if (!brandId) {
+      return Response.json({ ok: false, error: "Missing brand_id" }, { status: 400 });
+    }
+    if (!SAFE_ID.test(brandId)) {
+      return Response.json({ ok: false, error: "Invalid brand_id" }, { status: 400 });
+    }
+    if (discoveryTaskId === undefined || analyzerInputId === undefined) {
+      return Response.json({ ok: false, error: "Invalid source id" }, { status: 400 });
+    }
 
-    const brand = await requireOwnedBrand(base44.asServiceRole, user, brand_id);
+    const brand = await requireOwnedBrand(base44.asServiceRole, user, brandId);
+    serviceRoleForTrace = base44.asServiceRole;
+    brandForTrace = brand;
+    requestForTrace = redactSecrets({
+      brand_id: brandId,
+      requested_discovery_task_id: discoveryTaskId,
+      requested_analyzer_input_id: analyzerInputId,
+      provider_inference_policy: "DISABLED_UNTIL_OBSERVED_POLICY",
+    });
 
-    // Open AgentTask (L1, no Approval) — visible in Activity Log
-    task = await base44.asServiceRole.entities.AgentTask.create({
-      brand_id,
+    // Resolve B1 by explicit id, or by a provably unique newest timestamp.
+    validationStage = "DISCOVERY_SOURCE_RESOLUTION";
+    if (discoveryTaskId) {
+      try {
+        discoveryTask = await requireExactBrandTask(
+          base44.asServiceRole,
+          discoveryTaskId,
+          {
+            brandId,
+            agentName: "discovery_tech_stack",
+            status: "completed",
+          },
+        );
+        discoveryReadState = "COMPLETE";
+      } catch (sourceError: any) {
+        discoveryReadState = String(sourceError?.code || "").includes(
+            "authority_unavailable"
+          )
+          ? "UNAVAILABLE"
+          : "COMPLETE";
+        throw sourceError;
+      }
+    } else {
+      try {
+        const rows = await requireCriticalOperation(
+          "spend_intelligence_discovery_task_read",
+          () => base44.asServiceRole.entities.AgentTask.filter(
+            {
+              brand_id: brandId,
+              agent_name: "discovery_tech_stack",
+              status: "completed",
+            },
+            "-created_date",
+            2,
+          ),
+        );
+        discoveryTask = await selectAndRevalidateLatestDiscoveryTask(
+          rows,
+          brandId,
+          (selectedTaskId) => requireExactBrandTask(
+            base44.asServiceRole,
+            selectedTaskId,
+            {
+              brandId,
+              agentName: "discovery_tech_stack",
+              status: "completed",
+            },
+          ),
+        );
+        discoveryReadState = "COMPLETE";
+      } catch (sourceError: any) {
+        discoveryReadState = String(sourceError?.code || "").includes(
+            "authority_unavailable"
+          )
+          ? "UNAVAILABLE"
+          : "COMPLETE";
+        throw sourceError;
+      }
+    }
+    if (!discoveryTask) {
+      throw commercialInferenceReviewError(
+        "SPEND_INTELLIGENCE_DISCOVERY_TASK_REQUIRED",
+      );
+    }
+    intelligenceContext = {
+      status: "OBSERVED",
+      id: String(discoveryTask.id),
+      key: `AgentTask:${String(discoveryTask.id)}`,
+      version: SPEND_INTELLIGENCE_RUNTIME_VERSION,
+    };
+
+    rawFindingsForTrace = discoveryTask.output_payload_json?.findings;
+    discoveryCoverageStatus = deriveSpendDiscoveryCoverageStatus(
+      discoveryTask.output_payload_json?.source_coverage,
+      Array.isArray(rawFindingsForTrace) ? rawFindingsForTrace.length : 0,
+    );
+    if (Array.isArray(rawFindingsForTrace) && rawFindingsForTrace.length <= MAX_SPEND_FINDINGS) {
+      observedFindingCount = rawFindingsForTrace.length;
+    }
+    // Validate before creating the success root so its input hash can bind the
+    // exact accepted findings rather than only caller-supplied source ids.
+    validationStage = "DISCOVERY_CONTENT_VALIDATION";
+    validatedFindings = validateSpendFindings(rawFindingsForTrace);
+    validationStage = "DISCOVERY_CONTENT_VALIDATED";
+    const usesPaymentInput = validatedFindings.some((finding) =>
+      finding.vertical === "payments"
+    );
+    const usesShippingInput = validatedFindings.some((finding) =>
+      finding.vertical === "shipping"
+    );
+    const usesSaasInput = validatedFindings.some((finding) =>
+      String(finding.vertical).startsWith("saas_")
+    );
+    const countryUsed = usesPaymentInput || usesShippingInput;
+    let countryForComputation = "";
+    if (countryUsed) {
+      validationStage = "BRAND_COUNTRY_VALIDATION";
+      countryForComputation = validateSpendCountry(brand.country);
+      validationStage = "BRAND_COUNTRY_VALIDATED";
+    }
+
+    let validatedAnalyzer: any = null;
+    let estimates: any[] = [];
+    let benchmarkContext: any = {
+      benchmarks_applied: {},
+      local_allocation_heuristic_applied: false,
+    };
+
+    if (validatedFindings.length > 0) {
+      analyzerReadState = "NOT_ATTEMPTED";
+      validationStage = "ANALYZER_SOURCE_RESOLUTION";
+      if (analyzerInputId) {
+        let rows: any[];
+        try {
+          rows = await requireCriticalOperation(
+            "spend_intelligence_analyzer_input_exact_read",
+            () => base44.asServiceRole.entities.AnalyzerInput.filter(
+              { id: analyzerInputId },
+              "-created_date",
+              2,
+            ),
+          );
+          analyzerReadState = "COMPLETE";
+        } catch (sourceError) {
+          analyzerReadState = "UNAVAILABLE";
+          throw sourceError;
+        }
+        analyzerInput = selectExactSpendSource(
+          rows,
+          "analyzer_input",
+          analyzerInputId,
+          brandId,
+        );
+      } else {
+        let rows: any[];
+        try {
+          rows = await requireCriticalOperation(
+            "spend_intelligence_analyzer_input_read",
+            () => base44.asServiceRole.entities.AnalyzerInput.filter(
+              { brand_id: brandId },
+              "-created_date",
+              2,
+            ),
+          );
+          analyzerReadState = "COMPLETE";
+        } catch (sourceError) {
+          analyzerReadState = "UNAVAILABLE";
+          throw sourceError;
+        }
+        analyzerInput = await selectAndRevalidateLatestAnalyzerInput(
+          rows,
+          brandId,
+          async (selectedInputId) => {
+            const exactRows = await requireCriticalOperation(
+              "spend_intelligence_analyzer_input_exact_revalidation",
+              () => base44.asServiceRole.entities.AnalyzerInput.filter(
+                { id: selectedInputId },
+                "-created_date",
+                2,
+              ),
+            );
+            return selectExactSpendSource(
+              exactRows,
+              "analyzer_input",
+              selectedInputId,
+              brandId,
+            );
+          },
+        );
+      }
+      if (!analyzerInput) {
+        throw commercialInferenceReviewError(
+          "SPEND_INTELLIGENCE_ANALYZER_INPUT_REQUIRED",
+        );
+      }
+      intelligenceContext = {
+        status: "OBSERVED",
+        id: String(discoveryTask.id),
+        key: `AgentTask:${String(discoveryTask.id)}/AnalyzerInput:${String(analyzerInput.id)}`,
+        version: SPEND_INTELLIGENCE_RUNTIME_VERSION,
+      };
+      // Missing or non-EUR currency is a review blocker. Brand revenue ranges
+      // never substitute for a durable money unit and no FX is inferred.
+      validationStage = "ANALYZER_CONTENT_VALIDATION";
+      validatedAnalyzer = requireEurSpendAnalyzerInput(analyzerInput);
+      validationStage = "ANALYZER_CONTENT_VALIDATED";
+      const built = buildSpendEstimates({
+        findings: validatedFindings,
+        analyzerInput: validatedAnalyzer,
+        analyzerInputId: String(analyzerInput.id),
+        country: countryForComputation,
+      });
+      estimates = built.estimates;
+      benchmarkContext = built.benchmark_context;
+    }
+    const totals = buildSpendTotals(estimates);
+    const summary = deterministicSpendSummary(totals);
+    const analyzerInputUsed = validatedAnalyzer
+      ? {
+        id: String(analyzerInput.id),
+        currency: validatedAnalyzer.currency,
+        monthly_revenue: validatedAnalyzer.monthly_revenue,
+        ...(usesPaymentInput
+          ? { payment_provider: validatedAnalyzer.payment_provider }
+          : {}),
+        ...(usesShippingInput
+          ? {
+            shipping_provider: validatedAnalyzer.shipping_provider,
+            monthly_shipping_cost: validatedAnalyzer.monthly_shipping_cost,
+            monthly_shipments: validatedAnalyzer.monthly_shipments,
+          }
+          : {}),
+        ...(usesSaasInput ? { saas_tools: validatedAnalyzer.saas_tools } : {}),
+      }
+      : null;
+    const canonicalInput: any = redactSecrets({
+      request: requestForTrace,
+      selected_sources: {
+        discovery_task_id: String(discoveryTask.id),
+        analyzer_input_id: analyzerInput?.id ? String(analyzerInput.id) : null,
+      },
+      discovery_coverage_status: discoveryCoverageStatus,
+      validated_findings: validatedFindings,
+      analyzer_input_used: analyzerInputUsed,
+      brand_context_used: countryUsed
+        ? {
+          country: countryForComputation || null,
+        }
+        : null,
+      benchmark_context_used: benchmarkContext,
+      runtime_version: SPEND_INTELLIGENCE_RUNTIME_VERSION,
+    });
+    const benchmarkSourceRefs = collectSpendBenchmarkSourceRefs(estimates);
+    const brandVersion = optionalSourceVersion(brand);
+    const discoveryVersion = optionalSourceVersion(discoveryTask);
+    const analyzerVersion = optionalSourceVersion(analyzerInput);
+    const discoveryOutputHash = optionalSourceHash(discoveryTask.output_hash);
+    const sourceRefs: any[] = [
+      {
+        type: "Brand",
+        id: String(brand.id),
+        ...(brandVersion ? { version: brandVersion } : {}),
+      },
+      {
+        type: "AgentTask",
+        id: String(discoveryTask.id),
+        ...(discoveryVersion ? { version: discoveryVersion } : {}),
+        ...(discoveryOutputHash ? { hash: discoveryOutputHash } : {}),
+      },
+      ...(analyzerInput?.id
+        ? [{
+          type: "AnalyzerInput",
+          id: String(analyzerInput.id),
+          ...(analyzerVersion ? { version: analyzerVersion } : {}),
+        }]
+        : []),
+      ...benchmarkSourceRefs,
+    ];
+
+    // Final optimistic datastore fence. This is deliberately the last awaited
+    // authority read before the success root write. The persisted selection
+    // label describes an exact revalidated observation, not immutable latest
+    // authority (Base44 exposes no transaction spanning these entity reads).
+    validationStage = "SOURCE_LATEST_FINAL_FENCE";
+    if (!discoveryTaskId) {
+      await revalidateLatestSpendSourceFence(
+        discoveryTask,
+        "discovery_task",
+        brandId,
+        () => requireCriticalOperation(
+          "spend_intelligence_discovery_task_final_latest_read",
+          () => base44.asServiceRole.entities.AgentTask.filter(
+            {
+              brand_id: brandId,
+              agent_name: "discovery_tech_stack",
+              status: "completed",
+            },
+            "-created_date",
+            2,
+          ),
+        ),
+      );
+    }
+    if (validatedFindings.length > 0 && !analyzerInputId) {
+      await revalidateLatestSpendSourceFence(
+        analyzerInput,
+        "analyzer_input",
+        brandId,
+        () => requireCriticalOperation(
+          "spend_intelligence_analyzer_input_final_latest_read",
+          () => base44.asServiceRole.entities.AnalyzerInput.filter(
+            { brand_id: brandId },
+            "-created_date",
+            2,
+          ),
+        ),
+      );
+    }
+    sourceValidationComplete = true;
+    validationStage = "SOURCE_VALIDATION_COMPLETE";
+
+    // The success root is created only after all source authority and monetary
+    // validation has succeeded. Its input hash therefore binds the exact
+    // findings and durable EUR facts that produced the deterministic output.
+    task = await createCanonicalAgentTask(base44.asServiceRole, req, {
+      brand_id: brandId,
       agent_name: AGENT_NAME,
       task_type: TASK_TYPE,
+      related_entity_type: "Brand",
+      related_entity_id: String(brand.id),
       status: "running",
       requires_approval: false,
       risk_level: RISK_LEVEL,
-      input_summary: `Spend estimation for brand ${brand_id}`,
+      input_summary: "Deterministic EUR spend estimation from authoritative inputs",
       started_at: new Date().toISOString(),
+    }, {
+      workflowKey: "spend_intelligence_agent",
+      workflowVersion: "v2.1.0",
+      tenantKey: brandId,
+      processingPurpose: "brand_tool_spend_estimation",
+      functionName: "spendIntelligenceAgent",
+      input: canonicalInput,
+      sourceRefs,
+      subjectType: "Brand",
+      subjectId: String(brand.id),
+      policyContext: { status: "NOT_APPLICABLE" },
+      authorityContext: {
+        status: "OBSERVED",
+        id: String(brand.id),
+        key: `Brand:${String(brand.id)}`,
+      },
+      intelligenceContext,
+      materialEffect: false,
+      costApplicable: false,
+    });
+    const benchmarkApplied = Object.keys(
+      benchmarkContext.benchmarks_applied || {},
+    ).length > 0;
+    const outputPayload: any = redactSecrets({
+      discovery_task_id: String(discoveryTask.id),
+      analyzer_input_id: analyzerInput?.id ? String(analyzerInput.id) : null,
+      basis_context: validatedAnalyzer
+        ? {
+          currency: "EUR",
+          analyzer_input_id: String(analyzerInput.id),
+          ...(benchmarkApplied
+            ? {
+              monthly_revenue: validatedAnalyzer.monthly_revenue,
+              monthly_revenue_source: "AnalyzerInput.monthly_revenue",
+              country: countryForComputation || null,
+            }
+            : {}),
+          ...benchmarkContext,
+        }
+        : {
+          currency: "EUR",
+          benchmarks_applied: {},
+          local_allocation_heuristic_applied: false,
+        },
+      estimates,
+      totals,
+      summary,
+      interpretation: null,
+      interpretation_status: "disabled_no_observed_inference_policy",
+      provider_inference: {
+        attempted: false,
+        reason: "no_observed_inference_policy",
+      },
+      source_coverage: {
+        estimate_coverage_complete: totals.coverage_complete,
+        discovery_coverage_status: discoveryCoverageStatus,
+        authority_reads_complete: true,
+        unestimated_count: totals.unestimated_count,
+        discovery_task_selection: discoveryTaskId
+          ? "explicit"
+          : "auto_exact_final_fence",
+        analyzer_input_selection: validatedFindings.length === 0
+          ? "not_required"
+          : analyzerInputId
+          ? "explicit"
+          : "auto_exact_final_fence",
+      },
+      engine: {
+        deterministic: SPEND_INTELLIGENCE_RUNTIME_VERSION,
+        interpreter: "none",
+      },
     });
 
-    // ── 1. Load B1 output — reuse, do NOT re-scan ─────────────────────────
-    let discoveryTask = null;
-    if (discovery_task_id) {
-      discoveryTask = await requireExactBrandTask(base44.asServiceRole, discovery_task_id, {
-        brandId: brand_id,
-        agentName: 'discovery_tech_stack',
-        status: 'completed',
-      });
-    }
-    if (!discoveryTask) {
-      const rows = await requireCriticalOperation(
-        'spend_intelligence_discovery_task_read',
-        () => base44.asServiceRole.entities.AgentTask
-          .filter({ brand_id, agent_name: "discovery_tech_stack", status: "completed" }, "-created_date", 2),
-      );
-      if (rows.length > 1 && String(rows[0]?.id || '') === String(rows[1]?.id || '')) {
-        throw new Error('discovery_task_authority_ambiguous');
-      }
-      discoveryTask = rows[0] || null;
-    }
-    if (!discoveryTask) {
-      const err = "No completed discovery_tech_stack task found for this brand. Run B1 first.";
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "failed", error: err, completed_at: new Date().toISOString(),
-      });
-      return Response.json({ ok: false, error: err, task_id: task.id }, { status: 400 });
-    }
-
-    const b1Findings = discoveryTask.output_payload_json?.findings || [];
-    if (b1Findings.length === 0) {
-      await base44.asServiceRole.entities.AgentTask.update(task.id, {
-        status: "completed",
-        output_summary: "No tools detected by B1 — nothing to estimate.",
-        output_payload_json: {
-          discovery_task_id: discoveryTask.id,
-          estimates: [],
-          totals: { monthly: 0, annual: 0 },
-          basis_context: null,
-        },
-        completed_at: new Date().toISOString(),
-      });
-      return Response.json({
-        ok: true, task_id: task.id,
-        estimates: [], totals: { monthly: 0, annual: 0 },
-        summary: "No tools detected by B1 — nothing to estimate.",
-        interpretation_status: "skipped_no_findings",
-      });
-    }
-
-    // ── 2. Load brand context ─────────────────────────────────────────────
-    // Revenue lives on AnalyzerInput (canonical source used by Dashboard/Results).
-    // Brand only stores a coarse `annual_revenue` range — used as fallback.
-    const country = brand?.country || "";
-
-    let monthlyRevenue = 0;
-    let revenueSource = "none";
-    const inputs = await requireCriticalOperation(
-      'spend_intelligence_analyzer_input_read',
-      () => base44.asServiceRole.entities.AnalyzerInput.filter({ brand_id }, "-created_date", 2),
-    );
-    if (inputs?.[0]?.monthly_revenue) {
-      monthlyRevenue = Math.max(0, Number(inputs[0].monthly_revenue) || 0);
-      revenueSource = "AnalyzerInput.monthly_revenue";
-    }
-
-    // Fallback: derive a conservative monthly revenue from Brand.annual_revenue range
-    if (monthlyRevenue <= 0 && brand?.annual_revenue) {
-      const RANGE_MIDPOINT_MONTHLY = {
-        under_500k: 21000,    // ~€250K/yr midpoint
-        "500k_1m": 62500,     // ~€750K/yr
-        "1m_5m": 250000,      // ~€3M/yr
-        "5m_20m": 1041000,    // ~€12.5M/yr
-        "20m_plus": 2500000,  // ~€30M/yr lower-bound estimate
-      };
-      const fallback = RANGE_MIDPOINT_MONTHLY[brand.annual_revenue];
-      if (fallback) {
-        monthlyRevenue = fallback;
-        revenueSource = `Brand.annual_revenue range "${brand.annual_revenue}" → midpoint estimate`;
-      }
-    }
-
-    const bm = getBenchmarks(monthlyRevenue, country);
-
-    // ── 3. Deterministic estimation ───────────────────────────────────────
-    // Group findings by vertical to apply per-vertical splitting rules.
-    const byVertical = {};
-    for (const f of b1Findings) {
-      const v = f.vertical || "other";
-      (byVertical[v] = byVertical[v] || []).push(f);
-    }
-    const allSaasToolCount = Object.entries(byVertical)
-      .filter(([v]) => v.startsWith("saas_"))
-      .reduce((acc, [, arr]) => acc + arr.length, 0);
-
-    const estimates = [];
-    for (const [vertical, items] of Object.entries(byVertical) as [string, any[]][]) {
-      for (const f of items) {
-        let est = null;
-        if (monthlyRevenue <= 0) {
-          // Honest: without revenue we can't anchor any benchmark.
-          est = {
-            monthly_spend: null,
-            basis: "no monthly revenue available (neither AnalyzerInput nor Brand.annual_revenue) — cannot anchor any scoreEngine benchmark.",
-          };
-        } else if (vertical === "payments") {
-          est = estimatePaymentSpend(monthlyRevenue, bm, items.length);
-        } else if (vertical === "shipping") {
-          est = estimateShippingSpend(monthlyRevenue, bm, items.length);
-        } else if (vertical.startsWith("saas_")) {
-          est = estimateSaasSpend(monthlyRevenue, bm, vertical, items.length, allSaasToolCount);
-        } else {
-          est = {
-            monthly_spend: null,
-            basis: `vertical "${vertical}" has no scoreEngine benchmark — skipped.`,
-          };
-        }
-
-        const monthly = est.monthly_spend;
-        const annual = monthly == null ? null : monthly * 12;
-        // Confidence: derived from B1's confidence + whether we have revenue.
-        const b1Conf = Number(f.confidence) || 0;
-        let confidence = "low";
-        if (monthly != null && b1Conf >= 0.9) confidence = "medium";
-        if (monthly != null && b1Conf >= 0.9 && monthlyRevenue >= 30000) confidence = "high";
-
-        estimates.push({
-          tool: f.tool,
-          vertical,
-          matched_catalog_id: f.matched_catalog_id || null,
-          estimated_spend_monthly: monthly,
-          estimated_spend_annual: annual,
-          basis: est.basis,
-          confidence,
-          source: "scoreEngine_v" + SCORE_ENGINE_VERSION,
-          detection_confidence: b1Conf,
-        });
-      }
-    }
-
-    const totalMonthly = estimates.reduce((a, e) => a + (e.estimated_spend_monthly || 0), 0);
-    const totals = { monthly: Math.round(totalMonthly), annual: Math.round(totalMonthly * 12) };
-
-    const basis_context = {
-      monthly_revenue: monthlyRevenue,
-      monthly_revenue_source: revenueSource,
-      country: country || null,
-      tier: bm.tier,
-      region: bm.eu ? "EU" : "non-EU",
-      score_engine_version: SCORE_ENGINE_VERSION,
-      benchmarks_used: {
-        payments_rate_pct: bm.payment.rate,
-        shipping_per_unit_eur: bm.shipping.perUnit,
-        saas_pct_of_revenue: bm.saas.pct,
-      },
-    };
-
-    // ── 4. AI explanation (optional, never touches numbers) ───────────────
-    let interpretation = null;
-    let interpretation_status = "skipped_no_key";
-    const hasKey = !!Deno.env.get("ANTHROPIC_API_KEY");
-
-    if (hasKey && estimates.length > 0) {
-      const prompt = [
-        "You are CAMBRA's spend explainer.",
-        "",
-        "STRICT RULES — VIOLATIONS WILL BE REJECTED:",
-        "1. You may ONLY explain the numbers provided. NEVER change any € figure.",
-        "2. NEVER invent additional tools, costs, or savings.",
-        "3. If a figure is null, say it cannot be estimated and explain why using the `basis`.",
-        "4. Be concise: a 2-3 line summary and one short sentence per tool.",
-        "",
-        "Return ONLY JSON with shape:",
-        '{ "summary": "<string>", "explanations": [{ "tool": "<string>", "explanation": "<string>" }] }',
-        "",
-        "BASIS CONTEXT:",
-        JSON.stringify(basis_context, null, 2),
-        "",
-        "ESTIMATES (DETERMINISTIC — do not change numbers):",
-        JSON.stringify(estimates, null, 2),
-      ].join("\n");
-
-      try {
-        const text = await callClaude(base44.asServiceRole, prompt, task?.id || crypto.randomUUID());
-        const parsed = safeParseJSON(text);
-        if (parsed) {
-          const allowed = new Set(estimates.map(e => e.tool));
-          const cleanExplanations = Array.isArray(parsed.explanations)
-            ? parsed.explanations.filter(x => x && allowed.has(x.tool))
-            : [];
-          interpretation = {
-            summary: typeof parsed.summary === "string" ? parsed.summary : "",
-            explanations: cleanExplanations,
-          };
-          interpretation_status = cleanExplanations.length > 0 ? "ok" : "empty_after_validation";
-        } else {
-          interpretation_status = "parse_failed";
-        }
-      } catch (e) {
-        interpretation_status = `error: ${e.message}`;
-      }
-    } else if (!hasKey) {
-      interpretation_status = "skipped_no_key";
-    }
-
-    // ── 5. Persist task output ────────────────────────────────────────────
-    const summary = interpretation?.summary
-      || `Estimated ~€${totals.monthly.toLocaleString()}/mo (€${totals.annual.toLocaleString()}/yr) across ${estimates.length} tool(s) using scoreEngine v${SCORE_ENGINE_VERSION} benchmarks.`;
-
-    await base44.asServiceRole.entities.AgentTask.update(task.id, {
+    task = await settleCanonicalAgentTask(base44.asServiceRole, task, {
       status: "completed",
-      output_summary: summary,
-      output_payload_json: {
-        discovery_task_id: discoveryTask.id,
-        basis_context,
-        estimates,
-        totals,
-        interpretation,
-        interpretation_status,
-        engine: {
-          deterministic: "scoreEngine v" + SCORE_ENGINE_VERSION + " (mirrored)",
-          interpreter: hasKey ? "anthropic/claude-sonnet-4-5" : "none",
-        },
-      },
+      output_summary: String(outputPayload.summary).slice(0, 500),
+      output_payload_json: outputPayload,
       completed_at: new Date().toISOString(),
+    }, {
+      ...completedNoEffectTerminal(),
+      intelligenceContext,
+      result: outputPayload,
+      terminalEvent: {
+        eventType: "agent.task.terminal",
+        source: "spendIntelligenceAgent",
+        payload: outputPayload,
+      },
     });
 
     return Response.json({
       ok: true,
       task_id: task.id,
-      discovery_task_id: discoveryTask.id,
-      basis_context,
-      estimates,
-      totals,
-      summary,
-      interpretation_status,
+      discovery_task_id: outputPayload.discovery_task_id,
+      analyzer_input_id: outputPayload.analyzer_input_id,
+      basis_context: outputPayload.basis_context,
+      estimates: outputPayload.estimates,
+      totals: outputPayload.totals,
+      summary: outputPayload.summary,
+      interpretation_status: outputPayload.interpretation_status,
+      source_coverage: outputPayload.source_coverage,
     });
-  } catch (error) {
-    if (task?.id) {
-      try {
-        const base44 = createClientFromRequest(req);
-        await base44.asServiceRole.entities.AgentTask.update(task.id, {
-          status: "failed", error: error.message, completed_at: new Date().toISOString(),
-        });
-      } catch { /* swallow */ }
+  } catch (error: any) {
+    if (!brandForTrace) {
+      const tenantError = tenantOwnershipErrorResponse(error);
+      if (tenantError) return tenantError;
     }
-    const tenantError = tenantOwnershipErrorResponse(error);
-    if (tenantError) return tenantError;
-    return internalErrorResponse(error, 'spendIntelligenceAgent');
+    const failureCode = safeFailureCode(error?.code);
+    responseError = error?.status === 409 && error?.review_required === true &&
+        failureCode === error?.code
+      ? error
+      : commercialInferenceReviewError(
+        failureCode,
+      );
+
+    // Invalid/ambiguous source material gets its own non-material review root.
+    // This root intentionally hashes only the request and evidence observed up
+    // to the failure; it never substitutes for the fully bound success root.
+    if (brandForTrace && serviceRoleForTrace && !task?.id) {
+      const discoveryFailureEvidence = discoveryTask?.id
+        ? await failureEvidence({
+          source_type: "discovery_task",
+          source_id: String(discoveryTask.id),
+          source_version: optionalSourceVersion(discoveryTask),
+          source_hash: optionalSourceHash(discoveryTask.output_hash),
+          observed_item_count: Array.isArray(rawFindingsForTrace)
+            ? rawFindingsForTrace.length
+            : null,
+          shape_status: failureShapeStatus(rawFindingsForTrace),
+          present_fields: rawFindingsForTrace === undefined ? [] : ["findings"],
+        })
+        : null;
+      const analyzerFailureEvidence = analyzerInput?.id
+        ? await failureEvidence({
+          source_type: "analyzer_input",
+          source_id: String(analyzerInput.id),
+          source_version: optionalSourceVersion(analyzerInput),
+          observed_item_count: Array.isArray(analyzerInput.saas_tools)
+            ? analyzerInput.saas_tools.length
+            : null,
+          shape_status: analyzerInput.saas_tools === undefined
+            ? "NOT_OBSERVED"
+            : failureShapeStatus(analyzerInput.saas_tools),
+          currency_status: failureCurrencyStatus(analyzerInput.currency),
+          present_fields: presentFields(analyzerInput, [
+            "currency",
+            "monthly_revenue",
+            "payment_provider",
+            "shipping_provider",
+            "monthly_shipping_cost",
+            "monthly_shipments",
+            "saas_tools",
+          ]),
+        })
+        : null;
+      const brandFailureEvidence = await failureEvidence({
+        source_type: "brand",
+        source_id: String(brandForTrace.id),
+        source_version: optionalSourceVersion(brandForTrace),
+        present_fields: presentFields(brandForTrace, ["country"]),
+      });
+      const reviewInput: any = redactSecrets({
+        request: requestForTrace,
+        selected_sources_observed: {
+          discovery_task_id: discoveryTask?.id
+            ? String(discoveryTask.id)
+            : null,
+          analyzer_input_id: analyzerInput?.id
+            ? String(analyzerInput.id)
+            : null,
+        },
+        observed_finding_count: observedFindingCount,
+        failure_source_evidence: {
+          brand: brandFailureEvidence,
+          discovery: discoveryFailureEvidence,
+          analyzer_input: analyzerFailureEvidence,
+        },
+        read_state: {
+          brand: "COMPLETE",
+          discovery: discoveryReadState,
+          analyzer_input: analyzerReadState,
+        },
+        validation_stage: validationStage,
+        failure: {
+          code: safeFailureCode(responseError.code),
+          message: safeFailureCode(responseError.code).toLowerCase(),
+        },
+        provider_inference_policy: "DISABLED_UNTIL_OBSERVED_POLICY",
+        runtime_version: SPEND_INTELLIGENCE_RUNTIME_VERSION,
+      });
+      const reviewBrandVersion = optionalSourceVersion(brandForTrace);
+      const reviewDiscoveryVersion = optionalSourceVersion(discoveryTask);
+      const reviewAnalyzerVersion = optionalSourceVersion(analyzerInput);
+      const reviewDiscoveryHash = optionalSourceHash(discoveryTask?.output_hash);
+      const reviewSourceRefs: any[] = [
+        {
+          type: "Brand",
+          id: String(brandForTrace.id),
+          ...(reviewBrandVersion ? { version: reviewBrandVersion } : {}),
+        },
+        ...(discoveryTask?.id
+          ? [{
+            type: "AgentTask",
+            id: String(discoveryTask.id),
+            ...(reviewDiscoveryVersion
+              ? { version: reviewDiscoveryVersion }
+              : {}),
+            ...(reviewDiscoveryHash ? { hash: reviewDiscoveryHash } : {}),
+          }]
+          : []),
+        ...(analyzerInput?.id
+          ? [{
+            type: "AnalyzerInput",
+            id: String(analyzerInput.id),
+            ...(reviewAnalyzerVersion
+              ? { version: reviewAnalyzerVersion }
+              : {}),
+          }]
+          : []),
+      ];
+      try {
+        task = await createCanonicalAgentTask(serviceRoleForTrace, req, {
+          brand_id: String(brandForTrace.id),
+          agent_name: AGENT_NAME,
+          task_type: TASK_TYPE,
+          related_entity_type: "Brand",
+          related_entity_id: String(brandForTrace.id),
+          status: "running",
+          requires_approval: false,
+          risk_level: RISK_LEVEL,
+          input_summary: "Spend estimation requires authoritative input review",
+          started_at: new Date().toISOString(),
+        }, {
+          workflowKey: "spend_intelligence_agent",
+          workflowVersion: "v2.1.0",
+          tenantKey: String(brandForTrace.id),
+          processingPurpose: "brand_tool_spend_estimation_review",
+          functionName: "spendIntelligenceAgent",
+          input: reviewInput,
+          sourceRefs: reviewSourceRefs,
+          subjectType: "Brand",
+          subjectId: String(brandForTrace.id),
+          policyContext: { status: "NOT_APPLICABLE" },
+          authorityContext: {
+            status: "OBSERVED",
+            id: String(brandForTrace.id),
+            key: `Brand:${String(brandForTrace.id)}`,
+          },
+          intelligenceContext,
+          materialEffect: false,
+          costApplicable: false,
+        });
+      } catch (traceRootError) {
+        safeBestEffort(traceRootError, {
+          operation: "spendIntelligenceAgent.trace_review_root",
+          fallback: null,
+          severity: "critical",
+        });
+      }
+    }
+
+    if (task?.id && serviceRoleForTrace) {
+      try {
+        const authorityReadsComplete = spendAuthorityReadsComplete({
+          discovery: discoveryReadState,
+          analyzer_input: analyzerReadState,
+        });
+        const outputPayload: any = redactSecrets({
+          ok: false,
+          error: String(responseError.code || responseError.message).slice(0, 160),
+          review_required: true,
+          automatic_retry_blocked: true,
+          totals: unknownSpendTotals(observedFindingCount),
+          source_coverage: {
+            estimate_coverage_complete: false,
+            discovery_coverage_status: discoveryCoverageStatus,
+            authority_reads_complete: authorityReadsComplete,
+            read_state: {
+              brand: "COMPLETE",
+              discovery: discoveryReadState,
+              analyzer_input: analyzerReadState,
+            },
+            source_validation_complete: sourceValidationComplete,
+            validation_stage: validationStage,
+            unestimated_count: observedFindingCount,
+          },
+          provider_inference: {
+            attempted: false,
+            reason: "no_observed_inference_policy",
+          },
+        });
+        task = await settleCanonicalAgentTask(serviceRoleForTrace, task, {
+          status: "waiting_input",
+          error: String(outputPayload.error).slice(0, 500),
+          output_summary: "Spend estimation requires authoritative EUR input review",
+          output_payload_json: outputPayload,
+          completed_at: new Date().toISOString(),
+        }, {
+          ...reviewRequiredNoEffectTerminal(),
+          intelligenceContext,
+          result: outputPayload,
+          terminalEvent: {
+            eventType: "agent.task.terminal",
+            source: "spendIntelligenceAgent",
+            payload: outputPayload,
+          },
+        });
+      } catch (markError) {
+        safeBestEffort(markError, {
+          operation: "spendIntelligenceAgent.trace_terminal",
+          fallback: null,
+          severity: "critical",
+        });
+      }
+    }
+    return commercialAgentErrorResponse(
+      responseError,
+      "spendIntelligenceAgent",
+      "spend_intelligence_review_required",
+    );
   }
 });

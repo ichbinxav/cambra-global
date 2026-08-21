@@ -1,15 +1,20 @@
 import { execFileSync, spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { requireFreshAgentTaskInventory } from "../../scripts/lib/agentTaskInventoryFreshness.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_DIR = path.join(ROOT, "config", "intelligence");
 const temporaryDirectories = [];
 const read = (name, directory = CONFIG_DIR) =>
   JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
+const canonicalJson = (value) => `${JSON.stringify(value, null, 2)}\n`;
+const sha256Text = (value) =>
+  crypto.createHash("sha256").update(value, "utf8").digest("hex");
 
 afterEach(() => {
   while (temporaryDirectories.length > 0) {
@@ -151,11 +156,15 @@ describe("CAMBRA Intelligence canonical reconciliation v2", () => {
       status: "PASSED_LOCAL",
       local_test_scope: "MIXED_REPOSITORY_AND_PARTIAL_CRITERIA",
       runner: "vitest@4.1.10",
-      observed_result: {
-        test_files_passed: 36,
-        test_files_total: 36,
-        tests_passed: 505,
-        tests_total: 505,
+      current_validation: {
+        mode: "REEXECUTE_JSON_REPORTER",
+        reporter: "json",
+        required_test_files: 36,
+        zero_failed_pending_todo: true,
+        all_tests_must_pass: true,
+        exact_test_paths_required: true,
+        nonempty_test_count_required: true,
+        timeout_ms: 300000,
       },
     });
     expect(ledger.local_test_runs[0].test_files).toHaveLength(36);
@@ -205,6 +214,105 @@ describe("CAMBRA Intelligence canonical reconciliation v2", () => {
     expect(ledger.items.flatMap((row) => row.local_test_refs).every((ref) =>
       fs.existsSync(path.join(ROOT, ref))
     )).toBe(true);
+    const inventory = JSON.parse(fs.readFileSync(
+      path.join(ROOT, "config", "agenttask-creator-inventory.json"),
+      "utf8",
+    ));
+    const counts = inventory.counts;
+    expect(
+      ledger.items.find((row) => row.otr_id === "ROOT-OTR-013")?.gap_local,
+    ).toBe(
+      `Of ${counts.material_creator_files} material creator files, ${counts.material_terminal_adapted_files} expose canonical terminal adapters and ${counts.material_trace_adapted_files} expose the full root/terminal/Event adapter surface; ${counts.unresolved_material_route_files} registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.`,
+    );
+  });
+
+  it("rejects an internally rehashed stale ROOT-OTR-013 repository gap", () => {
+    const temporaryRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "cambra-intel-otr013-"),
+    );
+    temporaryDirectories.push(temporaryRoot);
+    const temporaryConfig = path.join(temporaryRoot, "intelligence");
+    fs.cpSync(CONFIG_DIR, temporaryConfig, { recursive: true });
+    const p0Path = path.join(
+      temporaryConfig,
+      "orchestration-p0-remediation.v2.json",
+    );
+    const manifestPath = path.join(
+      temporaryConfig,
+      "composition-manifest.v2.json",
+    );
+    const ledger = read("orchestration-p0-remediation.v2.json", temporaryConfig);
+    ledger.items.find((row) => row.otr_id === "ROOT-OTR-013").gap_local =
+      "stale but internally rehashed repository evidence";
+    const p0Content = canonicalJson(ledger);
+    fs.writeFileSync(p0Path, p0Content, "utf8");
+    const manifest = read("composition-manifest.v2.json", temporaryConfig);
+    manifest.artifacts.find((row) =>
+      row.path ===
+        "config/intelligence/orchestration-p0-remediation.v2.json"
+    ).sha256 = sha256Text(p0Content);
+    manifest.composition_hash = sha256Text(canonicalJson({
+      composition_id: manifest.composition_id,
+      root_version: manifest.root_version,
+      sources: manifest.sources,
+      artifacts: manifest.artifacts,
+    }));
+    fs.writeFileSync(manifestPath, canonicalJson(manifest), "utf8");
+
+    const result = spawnSync(process.execPath, [
+      "scripts/check-intelligence-canonical-v2.mjs",
+      "--config-dir",
+      temporaryConfig,
+    ], { cwd: ROOT, encoding: "utf8" });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("p0_otr_013_gap_local");
+  });
+
+  it("rejects a caller-supplied AgentTask inventory that differs from canonical bytes", () => {
+    const temporaryRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "cambra-intel-agenttask-candidate-"),
+    );
+    temporaryDirectories.push(temporaryRoot);
+    const candidatePath = path.join(temporaryRoot, "inventory.json");
+    const candidate = JSON.parse(fs.readFileSync(
+      path.join(ROOT, "config", "agenttask-creator-inventory.json"),
+      "utf8",
+    ));
+    candidate.counts.unresolved_material_route_files += 1;
+    fs.writeFileSync(candidatePath, canonicalJson(candidate), "utf8");
+
+    const result = spawnSync(process.execPath, [
+      "scripts/check-intelligence-canonical-v2.mjs",
+      "--agenttask-inventory",
+      candidatePath,
+    ], { cwd: ROOT, encoding: "utf8" });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(
+      "candidate_not_byte_identical_to_canonical",
+    );
+  });
+
+  it("never consumes a byte-identical alternate inventory after verification", () => {
+    const temporaryRoot = fs.mkdtempSync(
+      path.join(os.tmpdir(), "cambra-intel-agenttask-mirror-"),
+    );
+    temporaryDirectories.push(temporaryRoot);
+    const candidatePath = path.join(temporaryRoot, "inventory.json");
+    fs.copyFileSync(
+      path.join(ROOT, "config", "agenttask-creator-inventory.json"),
+      candidatePath,
+    );
+
+    const snapshot = requireFreshAgentTaskInventory(".", candidatePath);
+
+    expect(snapshot.canonicalRoot).toBe(fs.realpathSync(ROOT));
+    expect(snapshot.canonicalPath).toBe(
+      path.join(fs.realpathSync(ROOT), "config", "agenttask-creator-inventory.json"),
+    );
+    expect(snapshot.canonicalPath).not.toBe(candidatePath);
+    expect(snapshot.canonicalBytes.equals(fs.readFileSync(candidatePath))).toBe(true);
   });
 
   it("uses scope-specific precedence, canonical aliases and no ninth seal", () => {

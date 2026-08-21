@@ -16,6 +16,7 @@ import {
   recordRuntimeGateEvidence,
   runtimeDeploymentIdentity,
   validateReleaseIdentityExpectation,
+  verifyFinalRealRestoreGateAuthority,
   verifyRuntimeGateEvidence,
 } from "../runtimeEvidence.ts";
 import {
@@ -79,23 +80,41 @@ async function verifiedRuntimeGate(
       evidence_integrity_blockers: ["runtime_gate_evidence_missing"],
     };
   }
+  const realRestoreAuthority=gateKey==='REAL_RESTORE'&&typeof input.resolve_real_restore_exercise_authority==='function'
+    ? await input.resolve_real_restore_exercise_authority(row)
+    : undefined;
   const verification = await verifyRuntimeGateEvidence(row, {
     environment: "production",
     allow_external: input.allow_external === true,
     sha_bound: input.sha_bound === true,
     final_sha: input.final_sha,
     max_age_hours: input.max_age_hours,
+    real_restore_exercise_authority: realRestoreAuthority,
   });
+  const finalGateAuthority=gateKey==='REAL_RESTORE'&&typeof input.resolve_real_restore_gate_authority==='function'
+    ?await input.resolve_real_restore_gate_authority(row)
+    :undefined;
+  const finalGate=gateKey==='REAL_RESTORE'
+    ?await verifyFinalRealRestoreGateAuthority(row,finalGateAuthority,{
+      environment:'production',
+      allow_external:input.allow_external===true,
+      sha_bound:input.sha_bound===true,
+      final_sha:input.final_sha,
+      max_age_hours:input.max_age_hours,
+      real_restore_exercise_authority:realRestoreAuthority,
+    })
+    :{ok:true,blockers:[] as string[]};
   const kindAllowed = (input.kinds || []).includes(
     String(row.evidence_kind || ""),
   );
   const blockers = [
     ...verification.blockers,
+    ...finalGate.blockers,
     ...(!kindAllowed ? ["runtime_gate_evidence_kind_not_acceptable"] : []),
   ];
   return {
     ...row,
-    status: verification.ok && kindAllowed && row.status === "PASS"
+    status: verification.ok && finalGate.ok && kindAllowed && row.status === "PASS"
       ? "PASS"
       : "BLOCKED",
     evidence_integrity: blockers.length ? "BLOCKED" : "VERIFIED",
@@ -278,6 +297,24 @@ export async function handleProductionReadinessWorker(req: Request) {
       evidence_integrity: parityVerification.ok ? "VERIFIED" : "BLOCKED",
       evidence_integrity_blockers: parityVerification.blockers,
     };
+    const resolveRealRestoreExerciseAuthority=async(row:any)=>{
+      const exerciseKey=String(row?.details_json?.exercise_key||''),incidentKey=String(row?.details_json?.compensation_incident_key||'');
+      if(!exerciseKey||!incidentKey)return{available:false,exact_query:false,rows:[],compensation_markers:[],blockers:['real_restore_authority_binding_missing']};
+      const[exerciseAuthority,compensationAuthority]=await Promise.all([
+        criticalRead('real_restore_exercise_exact_authority',()=>svc.entities.DisasterRecoveryExercise.filter({exercise_key:exerciseKey},'-updated_date',2),2),
+        criticalRead('real_restore_compensation_exact_authority',()=>svc.entities.AutonomyIncident.filter({dedupe_key:incidentKey},'-last_seen_at',2),2),
+      ]);
+      return{available:exerciseAuthority.availability!=='UNAVAILABLE'&&compensationAuthority.availability!=='UNAVAILABLE',exact_query:true,rows:exerciseAuthority.rows,compensation_markers:compensationAuthority.rows,blockers:[exerciseAuthority.error_code,compensationAuthority.error_code].filter(Boolean)};
+    };
+    const resolveRealRestoreGateAuthority=async(row:any)=>{
+      const evidenceKey=String(row?.evidence_key||'');
+      if(!evidenceKey)return{available:false,exact_query:false,latest_query:false,exact_rows:[],latest_rows:[],blockers:['real_restore_final_gate_binding_missing']};
+      const exactAuthority=await criticalRead('real_restore_gate_exact_authority',()=>svc.entities.RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE',evidence_key:evidenceKey},'-observed_at',2),2);
+      // Latest must be the last datastore read in this authority fence. A
+      // concurrent compensation appended before it is therefore observed.
+      const latestAuthority=await criticalRead('real_restore_gate_latest_authority',()=>svc.entities.RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE'},'-observed_at',2),2);
+      return{available:exactAuthority.availability!=='UNAVAILABLE'&&latestAuthority.availability!=='UNAVAILABLE',exact_query:true,latest_query:true,exact_rows:exactAuthority.rows,latest_rows:latestAuthority.rows,blockers:[exactAuthority.error_code,latestAuthority.error_code].filter(Boolean)};
+    };
     const [remoteGate, restoreGate, documentGate, dependencyGate] =
       await Promise.all([
         verifiedRuntimeGate(runtimeGateRead.rows, "REMOTE_CI_FINAL_SHA", {
@@ -293,6 +330,8 @@ export async function handleProductionReadinessWorker(req: Request) {
           final_sha: finalSha,
           max_age_hours: 2160,
           kinds: ["EXTERNAL", "OPERATOR_EXERCISE"],
+          resolve_real_restore_exercise_authority:resolveRealRestoreExerciseAuthority,
+          resolve_real_restore_gate_authority:resolveRealRestoreGateAuthority,
         }),
         verifiedRuntimeGate(runtimeGateRead.rows, "DOCUMENT_GOLDEN_CORPUS", {
           allow_external: true,
@@ -332,26 +371,6 @@ export async function handleProductionReadinessWorker(req: Request) {
       (row) => row.status === "PASS",
       "completed_at",
     );
-    const restoreBindingOk = Boolean(restoreExercise?.id) &&
-      String(restoreGate?.details_json?.exercise_id || "") ===
-        String(restoreExercise.id);
-    const verifiedRestore = {
-      ...restoreGate,
-      status: restoreGate.status === "PASS" && restoreBindingOk
-        ? "PASS"
-        : "BLOCKED",
-      evidence_integrity:
-        restoreGate.evidence_integrity === "VERIFIED" && restoreBindingOk
-          ? "VERIFIED"
-          : "BLOCKED",
-      evidence_integrity_blockers: [
-        ...(restoreGate.evidence_integrity_blockers || []),
-        ...(!restoreBindingOk
-          ? ["restore_runtime_gate_exercise_binding_mismatch"]
-          : []),
-      ],
-    };
-
     let sloResult: any = {
       snapshots: [],
       runtime_identity: runtimeIdentity,
@@ -394,13 +413,37 @@ export async function handleProductionReadinessWorker(req: Request) {
         status: "OPEN",
       });
     }
+    // Re-run the REAL_RESTORE fence after all asynchronous SLO production and
+    // immediately before deriving/persisting readiness. A compensation write
+    // during those reads must turn the snapshot into NOT_GO, never leave a
+    // previously selected PASS authoritative.
+    const finalRestoreGate=await verifiedRuntimeGate([restoreGate], "REAL_RESTORE", {
+      allow_external:true,
+      sha_bound:false,
+      final_sha:finalSha,
+      max_age_hours:2160,
+      kinds:["EXTERNAL","OPERATOR_EXERCISE"],
+      resolve_real_restore_exercise_authority:resolveRealRestoreExerciseAuthority,
+      resolve_real_restore_gate_authority:resolveRealRestoreGateAuthority,
+    });
+    const finalRestoreBindingOk=Boolean(restoreExercise?.id)&&
+      String(finalRestoreGate?.details_json?.exercise_id||'')===String(restoreExercise.id);
+    const finalVerifiedRestore={
+      ...finalRestoreGate,
+      status:finalRestoreGate.status==='PASS'&&finalRestoreBindingOk?'PASS':'BLOCKED',
+      evidence_integrity:finalRestoreGate.evidence_integrity==='VERIFIED'&&finalRestoreBindingOk?'VERIFIED':'BLOCKED',
+      evidence_integrity_blockers:[
+        ...(finalRestoreGate.evidence_integrity_blockers||[]),
+        ...(!finalRestoreBindingOk?['restore_runtime_gate_exercise_binding_mismatch']:[]),
+      ],
+    };
     const decision = evaluateProductionSeal({
       findings,
       final_sha: finalSha,
       local_checks: localChecksFromRemoteCi(verifiedRemoteCi, finalSha),
       remote_ci: verifiedRemoteCi,
       base44_runtime: verifiedParity,
-      restore_exercise: verifiedRestore,
+      restore_exercise: finalVerifiedRestore,
       document_extraction_eval: documentGate,
       dependency_monitor: dependencyGate,
       runtime_identity: {

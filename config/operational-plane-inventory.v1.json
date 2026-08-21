@@ -13,7 +13,7 @@
       "base44/functions/operatingHealthWorker/entry.ts": "b3d3fb5884040d319a065a6d87645b0eba7a69de658fbc7004cc0e116ece5cc0",
       "base44/functions/systemHealthAgent/entry.ts": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",
       "base44/shared/canonicalIncident.ts": "2d346d22341c8be10b4a5ac2b9d9946a070f8ca7cd55b0eabbfcea42b712e8b4",
-      "base44/shared/logical/productionReadinessWorker.ts": "fe4a3903b4add720a94fc022a2f3ba0ef4d6f2ab54ecd32541fd1924112696e0",
+      "base44/shared/logical/productionReadinessWorker.ts": "f6c9e15c08a10a983c2fe07fee929852c6a0d85dd426a9e49a368173f3721330",
       "base44/shared/supervisorObservation.ts": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006"
     }
   },
@@ -95,6 +95,10 @@
         "path": "base44/shared/logical/productionReadinessWorker.ts",
         "dependency_labels": [
           "production_findings",
+          "real_restore_compensation_exact_authority",
+          "real_restore_exercise_exact_authority",
+          "real_restore_gate_exact_authority",
+          "real_restore_gate_latest_authority",
           "release_verifications",
           "restore_exercises",
           "runtime_gate_evidence"

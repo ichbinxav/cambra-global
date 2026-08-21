@@ -7,28 +7,28 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "de5cddc647f1821be1abd6aeb80e086897e73ba5576562444d69a007b6df6a2b",
+  "source_inventory_hash": "7e3f2916a491100d9159199d8cc41434e8fbded19eaeab68e904944fe79c7ac5",
   "counts": {
     "creator_files": 60,
-    "raw_create_sites": 56,
-    "canonical_root_create_sites": 8,
+    "raw_create_sites": 50,
+    "canonical_root_create_sites": 15,
     "canonical_child_link_sites": 7,
-    "canonical_terminal_sites": 8,
-    "canonical_event_outbox_intent_sites": 8,
-    "root_envelope_adapted_files": 8,
+    "canonical_terminal_sites": 26,
+    "canonical_event_outbox_intent_sites": 26,
+    "root_envelope_adapted_files": 14,
     "partial_mixed_files": 0,
-    "not_adapted_files": 52,
-    "material_creator_files": 46,
-    "legacy_creator_files": 14,
-    "material_trace_adapted_files": 3,
-    "material_terminal_adapted_files": 3,
-    "material_event_adapted_files": 3,
+    "not_adapted_files": 46,
+    "material_creator_files": 45,
+    "legacy_creator_files": 15,
+    "material_trace_adapted_files": 8,
+    "material_terminal_adapted_files": 8,
+    "material_event_adapted_files": 8,
     "material_terminal_only_files": 0,
     "material_root_only_files": 0,
-    "material_not_adapted_files": 43,
-    "material_route_files": 107,
+    "material_not_adapted_files": 37,
+    "material_route_files": 106,
     "material_route_files_without_agenttask_creator": 61,
-    "unresolved_material_route_files": 104
+    "unresolved_material_route_files": 98
   },
   "measurement_semantics": {
     "material_route_files": "UNION_OF_EXISTING_REGISTRY_SOURCE_EVIDENCE_AND_MATERIAL_SCHEDULED_ROUTE_FILES_NOT_DISTINCT_PHYSICAL_EXECUTORS",
@@ -50,9 +50,9 @@
     "local_test_status": "PASSED_LOCAL",
     "verification_level": "LOCAL_FAILURE_INJECTION",
     "blockers": [
-      "43 material creator file(s) lack the full source-local root/terminal/Event adapter surface",
+      "37 material creator file(s) lack the full source-local root/terminal/Event adapter surface",
       "61 material route file(s) have no local AgentTask creator",
-      "104 material route file(s) do not expose the full source-local root/terminal/Event adapter surface",
+      "98 material route file(s) do not expose the full source-local root/terminal/Event adapter surface",
       "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
     ],
     "material_creator_blockers": [
@@ -60,7 +60,6 @@
       "base44/functions/autonomousCommercialWorker/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/autonomousPartnerWorker/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/blogAgent/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/codeReviewAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/collectiveNegotiationAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/commercialFollowUpWorker/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/commercialReplyAgent/entry.ts:NO_CANONICAL_ROOT",
@@ -73,7 +72,6 @@
       "base44/functions/discoveryTechStackAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/fixValidatorAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/followUpAgent/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/founderCopilotAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/gdprAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/investorUpdateAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/leadDiscoveryAgent/entry.ts:NO_CANONICAL_ROOT",
@@ -90,14 +88,10 @@
       "base44/functions/providerMonitorAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/providerNegotiationAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/providerResearchAgent/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/qaAgent/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/qaMonitorAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/rateIntelligenceWatchWorker/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/recommendationEngineAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/reviewProviderContract/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/securityAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/seoAgent/entry.ts:NO_CANONICAL_ROOT",
-      "base44/functions/spendIntelligenceAgent/entry.ts:NO_CANONICAL_ROOT",
       "base44/functions/xTwitterAgent/entry.ts:NO_CANONICAL_ROOT"
     ],
     "material_route_blockers": [
@@ -113,7 +107,6 @@
       "base44/functions/blogAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/chatChiefOrchestrator/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/checkVatVies/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/codeReviewAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/collectionOperationsWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/collectiveNegotiationAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/commercialFollowUpWorker/entry.ts:MATERIAL_NOT_ADAPTED",
@@ -134,7 +127,6 @@
       "base44/functions/fixValidatorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/followUpAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/founderChiefOfStaff/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/founderCopilotAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/gdprAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/generateInvoicePdf/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/generateMonthlySavingsReport/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
@@ -171,8 +163,6 @@
       "base44/functions/providerNegotiationAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/providerResearchAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/providerRevenueBillingWorker/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/qaAgent/entry.ts:MATERIAL_NOT_ADAPTED",
-      "base44/functions/qaMonitorAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/rateIntelligenceWatchWorker/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/recommendationEngineAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/reconcileInvoice/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
@@ -186,13 +176,11 @@
       "base44/functions/retryPendingRecoverContracts/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/reviewProviderContract/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/revokeMandate/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
-      "base44/functions/securityAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/seedP3RateIntelligence/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/sendMonthlySavingsSummary/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/sendRecoverContractEmail/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/sendTestWebhook/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/seoAgent/entry.ts:MATERIAL_NOT_ADAPTED",
-      "base44/functions/spendIntelligenceAgent/entry.ts:MATERIAL_NOT_ADAPTED",
       "base44/functions/startPaymentMethodSetup/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/startPaymentsMigration/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
       "base44/functions/startProviderNegotiation/entry.ts:NO_LOCAL_AGENTTASK_CREATOR",
@@ -432,7 +420,7 @@
     },
     {
       "path": "base44/functions/codeReviewAgent/entry.ts",
-      "source_sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
+      "source_sha256": "9e32a77eddf0068aaecc4563579c4065d7b63f77ef8dfeee3781c838a10c8c7d",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -441,11 +429,11 @@
         "provider_effect"
       ],
       "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "creator_trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+      "canonical_event_outbox_intent_sites": 3,
+      "trace_resolution": "LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING"
     },
     {
       "path": "base44/functions/collectionOperationsWorker/entry.ts",
@@ -720,7 +708,7 @@
     },
     {
       "path": "base44/functions/discoveryTechStackAgent/entry.ts",
-      "source_sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
+      "source_sha256": "ef8b6d8a4cdffb0b64e349c24dafeefd9aaf4586adee56d500ae8f5a18a00311",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -805,7 +793,7 @@
     },
     {
       "path": "base44/functions/founderCopilotAgent/entry.ts",
-      "source_sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
+      "source_sha256": "e72bf4bc1290be33d877434d9a6c919d12be46e1fdcd8d5e2c8eecac3001841d",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -814,11 +802,11 @@
         "provider_effect"
       ],
       "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "creator_trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+      "canonical_event_outbox_intent_sites": 3,
+      "trace_resolution": "LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING"
     },
     {
       "path": "base44/functions/gdprAgent/entry.ts",
@@ -1334,7 +1322,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "source_sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
+      "source_sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-PAID-API-ENRICHMENT"
@@ -1482,7 +1470,7 @@
     },
     {
       "path": "base44/functions/qaAgent/entry.ts",
-      "source_sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
+      "source_sha256": "2d166c1fed748f5a4ad039bc62e7f8a0c984be10d7bf56566f4ae9d384aac10f",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -1491,15 +1479,15 @@
         "provider_effect"
       ],
       "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "creator_trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+      "canonical_event_outbox_intent_sites": 3,
+      "trace_resolution": "LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING"
     },
     {
       "path": "base44/functions/qaMonitorAgent/entry.ts",
-      "source_sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
+      "source_sha256": "a19cd68e224d8bf0e9296a897c209f2abbdf8a539dc2ca78ad3f3956b773d9f7",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -1508,11 +1496,11 @@
         "provider_effect"
       ],
       "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "creator_trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+      "canonical_event_outbox_intent_sites": 4,
+      "trace_resolution": "LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING"
     },
     {
       "path": "base44/functions/rateIntelligenceWatchWorker/entry.ts",
@@ -1780,7 +1768,7 @@
     },
     {
       "path": "base44/functions/securityAgent/entry.ts",
-      "source_sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
+      "source_sha256": "c74609015e44d394ef8f10220116b6c3f13b63796d65a5d3ffea66d1870ba6a9",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -1789,11 +1777,11 @@
         "provider_effect"
       ],
       "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
+      "creator_trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
+      "canonical_event_outbox_intent_sites": 3,
+      "trace_resolution": "LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING"
     },
     {
       "path": "base44/functions/seedP3RateIntelligence/entry.ts",
@@ -1873,23 +1861,6 @@
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-PAID-API-ENRICHMENT"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
-      ],
-      "agenttask_creator": true,
-      "creator_trace_status": "MATERIAL_NOT_ADAPTED",
-      "raw_event_create_sites": 0,
-      "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "trace_resolution": "PARTIAL_CREATOR_TRACE"
-    },
-    {
-      "path": "base44/functions/spendIntelligenceAgent/entry.ts",
-      "source_sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
-      "boundary_ids": [
-        "MB-PAID-AI"
       ],
       "material_effect_kinds": [
         "paid_spend",
@@ -2284,21 +2255,21 @@
     },
     {
       "path": "base44/functions/codeReviewAgent/entry.ts",
-      "source_sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "9e32a77eddf0068aaecc4563579c4065d7b63f77ef8dfeee3781c838a10c8c7d",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 3,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "canonical_event_outbox_intent_sites": 3,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "classification": "MATERIAL_BOUNDARY_CREATOR",
       "material_boundary_ids": [
         "MB-PAID-AI"
@@ -2598,7 +2569,7 @@
     },
     {
       "path": "base44/functions/discoveryTechStackAgent/entry.ts",
-      "source_sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
+      "source_sha256": "ef8b6d8a4cdffb0b64e349c24dafeefd9aaf4586adee56d500ae8f5a18a00311",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -2751,21 +2722,21 @@
     },
     {
       "path": "base44/functions/founderCopilotAgent/entry.ts",
-      "source_sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "e72bf4bc1290be33d877434d9a6c919d12be46e1fdcd8d5e2c8eecac3001841d",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 3,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "canonical_event_outbox_intent_sites": 3,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "classification": "MATERIAL_BOUNDARY_CREATOR",
       "material_boundary_ids": [
         "MB-PAID-AI"
@@ -3343,21 +3314,21 @@
     },
     {
       "path": "base44/functions/qaAgent/entry.ts",
-      "source_sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "2d166c1fed748f5a4ad039bc62e7f8a0c984be10d7bf56566f4ae9d384aac10f",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 3,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "canonical_event_outbox_intent_sites": 3,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "classification": "MATERIAL_BOUNDARY_CREATOR",
       "material_boundary_ids": [
         "MB-PAID-AI"
@@ -3371,21 +3342,21 @@
     },
     {
       "path": "base44/functions/qaMonitorAgent/entry.ts",
-      "source_sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "a19cd68e224d8bf0e9296a897c209f2abbdf8a539dc2ca78ad3f3956b773d9f7",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 4,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "canonical_event_outbox_intent_sites": 4,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "classification": "MATERIAL_BOUNDARY_CREATOR",
       "material_boundary_ids": [
         "MB-PAID-AI"
@@ -3588,21 +3559,21 @@
     },
     {
       "path": "base44/functions/securityAgent/entry.ts",
-      "source_sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "c74609015e44d394ef8f10220116b6c3f13b63796d65a5d3ffea66d1870ba6a9",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 3,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
+      "canonical_event_outbox_intent_sites": 3,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "MATERIAL_TRACE_ADAPTED_LOCAL",
       "classification": "MATERIAL_BOUNDARY_CREATOR",
       "material_boundary_ids": [
         "MB-PAID-AI"
@@ -3645,29 +3616,24 @@
     },
     {
       "path": "base44/functions/spendIntelligenceAgent/entry.ts",
-      "source_sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
-      "raw_create_sites": 1,
-      "canonical_root_create_sites": 0,
+      "source_sha256": "5c8e794ab3eaa6c083bb9a11228f13d0418fdf104f5f516f3adf37ffca085d11",
+      "raw_create_sites": 0,
+      "canonical_root_create_sites": 2,
       "canonical_child_link_sites": 0,
-      "canonical_terminal_sites": 0,
+      "canonical_terminal_sites": 2,
       "raw_event_create_sites": 0,
       "canonical_event_create_sites": 0,
-      "canonical_event_outbox_intent_sites": 0,
-      "terminal_event_intent_coverage": false,
-      "root_adapter_present": false,
-      "terminal_adapter_present": false,
-      "event_adapter_present": false,
-      "complete_local_adapter_surface": false,
-      "status": "NOT_ADAPTED",
-      "trace_status": "MATERIAL_NOT_ADAPTED",
-      "classification": "MATERIAL_BOUNDARY_CREATOR",
-      "material_boundary_ids": [
-        "MB-PAID-AI"
-      ],
-      "material_effect_kinds": [
-        "paid_spend",
-        "provider_effect"
-      ],
+      "canonical_event_outbox_intent_sites": 2,
+      "terminal_event_intent_coverage": true,
+      "root_adapter_present": true,
+      "terminal_adapter_present": true,
+      "event_adapter_present": true,
+      "complete_local_adapter_surface": true,
+      "status": "ROOT_ENVELOPE_ADAPTED",
+      "trace_status": "LEGACY_ROOT_ADAPTED",
+      "classification": "LEGACY_COORDINATION_OR_OBSERVABILITY_CREATOR",
+      "material_boundary_ids": [],
+      "material_effect_kinds": [],
       "legacy_rows": "UNKNOWN_UNLESS_ENVELOPE_VERSION_PRESENT",
       "runtime_verified": false
     },

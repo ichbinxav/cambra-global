@@ -4,7 +4,7 @@
 // FOUR files that must stay in lockstep:
 //
 //   1. src/lib/scoreEngine.js                             ← SOURCE OF TRUTH
-//   2. base44/functions/spendIntelligenceAgent/entry.ts   ← mirror (Deno)
+//   2. base44/shared/spendIntelligenceRuntime.ts           ← B2 mirror (Deno)
 //   3. base44/functions/recommendationEngineAgent/entry.ts ← mirror (Deno)
 //   4. base44/functions/getBenchmarkForReport/entry.ts    ← mirror (Deno)
 //
@@ -32,7 +32,7 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
 const FILES = {
   scoreEngine:  path.join(REPO_ROOT, "src/lib/scoreEngine.js"),
-  spendIntel:   path.join(REPO_ROOT, "base44/functions/spendIntelligenceAgent/entry.ts"),
+  spendIntel:   path.join(REPO_ROOT, "base44/shared/spendIntelligenceRuntime.ts"),
   recEngine:    path.join(REPO_ROOT, "base44/functions/recommendationEngineAgent/entry.ts"),
   gbfr:         path.join(REPO_ROOT, "base44/functions/getBenchmarkForReport/entry.ts"),
 };

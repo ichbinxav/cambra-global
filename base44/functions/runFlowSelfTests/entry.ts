@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
       input = await base44.asServiceRole.entities.AnalyzerInput.create({
         brand_id: brand.id,
         monthly_revenue: 250000,
+        currency: "EUR",
         monthly_transactions: 2000,
         avg_order_value: 125,
         payment_provider: "Stripe",

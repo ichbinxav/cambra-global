@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import {
   compareRuntimeDeploymentIdentity,
+  EXPECTED_BASE44_LOGICAL_ROUTES,
+  EXPECTED_BASE44_PHYSICAL_FUNCTIONS,
+  realRestoreExerciseProjectionHash,
   recordRuntimeGateEvidence,
   releaseIdentityExpectation,
   runtimeGateEvidencePayload,
@@ -10,6 +13,7 @@ import {
   validateRuntimeDeploymentIdentity,
   verifyRuntimeGateEvidence,
 } from '../../base44/shared/runtimeEvidence.ts';
+import { BASE44_LOGICAL_ROUTE_TARGET, BASE44_PHYSICAL_FUNCTION_TARGET } from '../../scripts/lib/base44Bundle.mjs';
 import { sha256Canonical } from '../../base44/shared/legalExecution.ts';
 import {
   evaluateServiceLevelRows,
@@ -21,7 +25,7 @@ import { serviceLevelSnapshotBlockers } from '../../base44/shared/productionRead
 
 const SHA='0123456789abcdef0123456789abcdef01234567';
 const HASH='a'.repeat(64);
-const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:'276',CAMBRA_LOGICAL_ROUTE_COUNT:'38'};
+const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:String(EXPECTED_BASE44_PHYSICAL_FUNCTIONS),CAMBRA_LOGICAL_ROUTE_COUNT:String(EXPECTED_BASE44_LOGICAL_ROUTES)};
 const WINDOW_FROM='2026-07-14T12:00:00.000Z';
 const WINDOW_TO='2026-08-13T12:00:00.000Z';
 const RECEIPT_HASH='b'.repeat(64);
@@ -41,6 +45,11 @@ function schedulerReceipt(index,status='COMPLETED',worker='reconcileRecoverBilli
 const coverage={window_from:WINDOW_FROM,window_to:WINDOW_TO,coverage_epoch:WINDOW_FROM,coverage_status:'COMPLETE',coverage_blockers:[],runtime_identity_hash:RECEIPT_HASH,runtime_git_sha:SHA};
 
 describe('runtime identity and measured SLO evidence',()=>{
+  it('keeps runtime identity counts pinned to the reproducible bundle authority',()=>{
+    expect(EXPECTED_BASE44_PHYSICAL_FUNCTIONS).toBe(BASE44_PHYSICAL_FUNCTION_TARGET);
+    expect(EXPECTED_BASE44_LOGICAL_ROUTES).toBe(BASE44_LOGICAL_ROUTE_TARGET);
+  });
+
   it('requires one complete immutable runtime identity and detects any parity mismatch',()=>{
     const identity=runtimeDeploymentIdentity(IDENTITY_ENV);
     expect(validateRuntimeDeploymentIdentity(identity,{environment:'production'})).toMatchObject({ok:true,status:'COMPLETE'});
@@ -49,7 +58,7 @@ describe('runtime identity and measured SLO evidence',()=>{
     expect(compareRuntimeDeploymentIdentity(identity,expected)).toMatchObject({ok:true});
     expect(compareRuntimeDeploymentIdentity({...identity,logical_route_count:37},expected)).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_logical_route_count_mismatch'])});
     expect(validateRuntimeDeploymentIdentity({...identity,base44_bundle_hash:''})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_base44_bundle_hash_invalid'])});
-    expect(releaseIdentityExpectation({sourceTreeHash:HASH,sourceTreeFileCount:2500,gitSha:SHA,backendBundle:{stagedTreeSha256:HASH,stagedFileCount:2400,physicalFunctionCount:276,logicalRouteCount:38}})).toMatchObject({git_sha:SHA,source_tree_hash:HASH,source_tree_file_count:2500,physical_function_count:276,logical_route_count:38});
+    expect(releaseIdentityExpectation({sourceTreeHash:HASH,sourceTreeFileCount:2500,gitSha:SHA,backendBundle:{stagedTreeSha256:HASH,stagedFileCount:2400,physicalFunctionCount:EXPECTED_BASE44_PHYSICAL_FUNCTIONS,logicalRouteCount:EXPECTED_BASE44_LOGICAL_ROUTES}})).toMatchObject({git_sha:SHA,source_tree_hash:HASH,source_tree_file_count:2500,physical_function_count:EXPECTED_BASE44_PHYSICAL_FUNCTIONS,logical_route_count:EXPECTED_BASE44_LOGICAL_ROUTES});
   });
 
   /* global process */
@@ -61,7 +70,7 @@ describe('runtime identity and measured SLO evidence',()=>{
       const noExpected=await recordRuntimeGateEvidence(svc,{gate_key:'BASE44_RUNTIME_PARITY',environment:'production',status:'PASS',evidence_kind:'REAL_RUNTIME',source:'test'});
       expect(noExpected).toMatchObject({status:'BLOCKED',identity_status:'INCOMPLETE',identity_blockers:expect.arrayContaining(['expected_release_identity_required'])});
       const pass=await recordRuntimeGateEvidence(svc,{gate_key:'BASE44_RUNTIME_PARITY',environment:'production',status:'PASS',evidence_kind:'REAL_RUNTIME',source:'test',expected_identity:{...runtimeDeploymentIdentity(IDENTITY_ENV)}});
-      expect(pass).toMatchObject({status:'PASS',identity_status:'COMPLETE',physical_function_count:276,logical_route_count:38});
+      expect(pass).toMatchObject({status:'PASS',identity_status:'COMPLETE',physical_function_count:EXPECTED_BASE44_PHYSICAL_FUNCTIONS,logical_route_count:EXPECTED_BASE44_LOGICAL_ROUTES});
       expect(pass.identity_hash).toMatch(/^[a-f0-9]{64}$/u);
     }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
@@ -81,11 +90,39 @@ describe('runtime identity and measured SLO evidence',()=>{
       const signed={...base,identity_hash:await sha256Canonical(identity)};
       const valid={...signed,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(signed))};
       expect(await verifyRuntimeGateEvidence(valid,{now_ms:nowMs,environment:'production'})).toMatchObject({ok:true,status:'VERIFIED'});
+      const blockedPayload={...signed,status:'BLOCKED',details_json:{...signed.details_json,requested_status:'BLOCKED',effective_status:'BLOCKED'}};
+      const blocked={...blockedPayload,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(blockedPayload))};
+      expect(await verifyRuntimeGateEvidence(blocked,{now_ms:nowMs,environment:'production',expected_status:'BLOCKED'})).toMatchObject({ok:true,status:'VERIFIED'});
+      expect(await verifyRuntimeGateEvidence(blocked,{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_evidence_not_pass'])});
       expect(await verifyRuntimeGateEvidence({...valid,expires_at:undefined},{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_evidence_expiry_required','runtime_evidence_hash_mismatch'])});
       expect(await verifyRuntimeGateEvidence({...valid,expires_at:'2026-08-13T11:30:00.000Z'},{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_evidence_expired','runtime_evidence_hash_mismatch'])});
       expect(await verifyRuntimeGateEvidence({...valid,details_json:{proof:'forged'}},{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_evidence_hash_mismatch'])});
       expect(await verifyRuntimeGateEvidence({...valid,base44_bundle_hash:'b'.repeat(64)},{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_base44_bundle_hash_mismatch','runtime_identity_hash_mismatch','runtime_evidence_hash_mismatch'])});
       expect(await verifyRuntimeGateEvidence({...valid,identity_hash:'b'.repeat(64)},{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['runtime_identity_hash_mismatch','runtime_evidence_hash_mismatch'])});
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
+  });
+
+  it('blocks REAL_RESTORE runtime evidence unless the exact PASS exercise projection and backup anchor were read back',async()=>{
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));
+    Object.assign(process.env,IDENTITY_ENV);
+    try{
+      const identity=runtimeDeploymentIdentity(),nowMs=Date.parse('2026-08-13T12:00:00.000Z');
+      const base={gate_key:'REAL_RESTORE',environment:'production',...identity,identity_status:'COMPLETE',identity_blockers:[],status:'PASS',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore',evidence_refs:['Restore Evidence/proof.aes256gcm'],observed_at:'2026-08-13T11:00:00.000Z',expires_at:'2026-08-14T11:00:00.000Z',recorded_by:'operator'};
+      const incompletePayload={...base,details_json:{manifest_hash:HASH}};
+      const incompleteSigned={...incompletePayload,identity_hash:await sha256Canonical(identity)};
+      const incomplete={...incompleteSigned,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(incompleteSigned))};
+      expect(await verifyRuntimeGateEvidence(incomplete,{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_exercise_projection_unverified','real_restore_backup_anchor_unverified','real_restore_manifest_identity_invalid','real_restore_attestation_identity_invalid','real_restore_source_identity_invalid'])});
+      const exercise={id:'exercise-1',exercise_key:'real-restore:backup-1:dev:2026-08-13T10:30:00.000Z',environment:'production-boundary-to-dev',exercise_type:'REAL_RESTORE',status:'PASS',rpo_target_minutes:1440,rpo_observed_minutes:10,rto_target_minutes:480,rto_observed_minutes:20,backup_snapshot_ref:'Manifests/backup-1.manifest.json',restored_target_ref:'base44:app-1:data-env:dev',data_integrity_checks_json:{pass:true},evidence_refs:['Restore Evidence/proof.aes256gcm'],conducted_by:'operator',started_at:'2026-08-13T10:10:00.000Z',completed_at:'2026-08-13T10:30:00.000Z'};
+      const details_json={exercise_id:'exercise-1',exercise_key:exercise.exercise_key,exercise_projection_hash:await realRestoreExerciseProjectionHash(exercise),compensation_incident_key:'dr:restore:compensation:controlled',exercise_projection_verified:true,exercise_projection_status:'PASS',exercise_projection_readback_id:'exercise-1',authenticated_aes256gcm_evidence:true,manifest_chain_reverified:true,evidence_hash:HASH,evidence_file_sha256:HASH,target_environment:'dev',manifest_hash:HASH,manifest_path:'Manifests/backup-1.manifest.json',backup_id:'backup-1',source_app_id:'app-1',source_environment:'prod',source_release_version:'0.97.0',source_git_sha:SHA,source_tree_hash:HASH};
+      const completePayload={...base,details_json};
+      const completeSigned={...completePayload,identity_hash:await sha256Canonical(identity)};
+      const complete={...completeSigned,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(completeSigned))};
+      const authority={available:true,exact_query:true,rows:[exercise],compensation_markers:[]};
+      expect(await verifyRuntimeGateEvidence(complete,{now_ms:nowMs,environment:'production'})).toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_exercise_authority_unavailable'])});
+      expect(await verifyRuntimeGateEvidence(complete,{now_ms:nowMs,environment:'production',real_restore_exercise_authority:authority})).toMatchObject({ok:true,status:'VERIFIED'});
+      expect(await verifyRuntimeGateEvidence(complete,{now_ms:nowMs,environment:'production',real_restore_exercise_authority:{...authority,rows:[exercise,{...exercise,id:'exercise-racer'}]}})).toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_exercise_authority_ambiguous'])});
+      expect(await verifyRuntimeGateEvidence(complete,{now_ms:nowMs,environment:'production',real_restore_exercise_authority:{...authority,rows:[{...exercise,status:'BLOCKED'}]}})).toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_exercise_projection_mismatch'])});
+      expect(await verifyRuntimeGateEvidence(complete,{now_ms:nowMs,environment:'production',real_restore_exercise_authority:{...authority,compensation_markers:[{id:'incident',status:'open'}]}})).toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_compensation_ambiguous_open'])});
     }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
 

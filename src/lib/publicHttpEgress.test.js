@@ -15,6 +15,8 @@ describe('public HTTPS egress boundary', () => {
     const blocked = [
       'http://example.com', 'https://localhost', 'https://svc.internal',
       'https://user:pass@example.com', 'https://example.com:8443',
+      'https://example.com/?email=person@example.test',
+      'https://example.com/#reset-token',
       'https://127.0.0.1', 'https://10.0.0.1', 'https://169.254.169.254',
       'https://192.168.1.2', 'https://[::1]', 'https://[fd00::1]', 'https://[fe80::1]',
     ];
@@ -71,5 +73,14 @@ describe('public HTTPS egress boundary', () => {
     expect(src).toContain('fetchPublicHttps');
     expect(src).not.toMatch(/fetch\(url[\s\S]{0,120}redirect:\s*['"]follow/);
     expect(src.indexOf('requireOwnedBrand')).toBeLessThan(src.indexOf('entities.DiscoveryJob.create'));
+    expect(src).toContain('isEligibleDiscoveryHttpResponse');
+    expect(src).not.toContain('fetchErr.message');
+    const b1 = fs.readFileSync(
+      path.join(ROOT, 'base44/functions/discoveryTechStackAgent/entry.ts'),
+      'utf8',
+    );
+    expect(b1).toContain('normalizePublicHttpsUrl(website_url)');
+    expect(b1).not.toContain('claudeErr.message');
+    expect(b1).not.toContain('error.message');
   });
 });

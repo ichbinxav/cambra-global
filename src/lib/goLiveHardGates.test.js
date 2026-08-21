@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { costReservationDecision, costReservationStateForReconfiguration, costRuntimeSnapshot, nextCostReservationState, reservationUsageFromControl, selectSingleActiveCostBudget, summarizeCostUsage, validateCostBudget } from '../../base44/shared/costGovernance.ts';
 import { evaluateGoLiveHardGates, GO_LIVE_GATE_REQUIREMENTS } from '../../base44/shared/goLiveHardGates.ts';
 import { evaluateSchedulerEvidence, GO_CRITICAL_SCHEDULERS } from '../../base44/shared/schedulerRun.ts';
-import { runtimeDeploymentIdentity, runtimeGateEvidencePayload } from '../../base44/shared/runtimeEvidence.ts';
+import { EXPECTED_BASE44_LOGICAL_ROUTES, EXPECTED_BASE44_PHYSICAL_FUNCTIONS, realRestoreExerciseProjectionHash, runtimeDeploymentIdentity, runtimeGateEvidencePayload, verifyFinalRealRestoreGateAuthority } from '../../base44/shared/runtimeEvidence.ts';
 import { sha256Canonical } from '../../base44/shared/legalExecution.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -13,14 +13,19 @@ const source = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const NOW = Date.parse('2026-08-11T12:00:00.000Z');
 const SHA = '0123456789abcdef0123456789abcdef01234567';
 const HASH='a'.repeat(64);
-const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:'276',CAMBRA_LOGICAL_ROUTE_COUNT:'38'};
+const IDENTITY_ENV={CAMBRA_ENVIRONMENT:'production',CAMBRA_RELEASE_VERSION:'0.97.0',CAMBRA_RELEASE_BUILD_ID:'ci-42',CAMBRA_GIT_SHA:SHA,CAMBRA_SOURCE_TREE_HASH:HASH,CAMBRA_SOURCE_TREE_FILE_COUNT:'2500',CAMBRA_BASE44_BUNDLE_HASH:HASH,CAMBRA_BASE44_BUNDLE_FILE_COUNT:'2400',CAMBRA_DEPLOYMENT_TOPOLOGY_HASH:HASH,CAMBRA_SCHEDULER_INVENTORY_HASH:HASH,CAMBRA_PHYSICAL_FUNCTION_COUNT:String(EXPECTED_BASE44_PHYSICAL_FUNCTIONS),CAMBRA_LOGICAL_ROUTE_COUNT:String(EXPECTED_BASE44_LOGICAL_ROUTES)};
+const RESTORE_EXERCISE={id:'exercise-1',exercise_key:'real-restore:backup-1:dev:2026-08-11T10:30:00.000Z',environment:'production-boundary-to-dev',exercise_type:'REAL_RESTORE',status:'PASS',rpo_target_minutes:1440,rpo_observed_minutes:10,rto_target_minutes:480,rto_observed_minutes:20,backup_snapshot_ref:'Manifests/backup-1.manifest.json',restored_target_ref:'base44:app-1:data-env:dev',data_integrity_checks_json:{pass:true},evidence_refs:['test://receipt'],conducted_by:'operator',started_at:'2026-08-11T10:10:00.000Z',completed_at:'2026-08-11T10:30:00.000Z'};
+const restoreAuthority=async()=>({available:true,exact_query:true,rows:[RESTORE_EXERCISE],compensation_markers:[]});
+const restoreGateAuthority=async(row)=>({available:true,exact_query:true,latest_query:true,exact_rows:[row],latest_rows:[row]});
+const evaluate=(input)=>evaluateGoLiveHardGates({...input,resolve_real_restore_exercise_authority:input.resolve_real_restore_exercise_authority||restoreAuthority,resolve_real_restore_gate_authority:input.resolve_real_restore_gate_authority||restoreGateAuthority});
 
 async function signedEvidence(requirement,overrides={}){
   const identity=runtimeDeploymentIdentity();
-  const kind=requirement.kinds[0];
+  const kind=requirement.key==='REAL_RESTORE'?'OPERATOR_EXERCISE':requirement.kinds[0];
   const runtime=['REAL_RUNTIME','OPERATOR_EXERCISE'].includes(kind);
-  const row={gate_key:requirement.key,status:'PASS',evidence_kind:kind,source:'test-runtime',git_sha:requirement.sha_bound?SHA:'',evidence_refs:['test://receipt'],details_json:{proof:'controlled'},observed_at:new Date(NOW-60_000).toISOString(),expires_at:new Date(NOW+3600_000).toISOString(),recorded_by:'test',...(runtime?{...identity,identity_status:'COMPLETE',identity_blockers:[],identity_hash:await sha256Canonical(identity)}:{}),...overrides};
-  return {...row,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(row))};
+  const restoreDetails=requirement.key==='REAL_RESTORE'?{exercise_id:RESTORE_EXERCISE.id,exercise_key:RESTORE_EXERCISE.exercise_key,exercise_projection_hash:await realRestoreExerciseProjectionHash(RESTORE_EXERCISE),compensation_incident_key:'dr:restore:compensation:controlled',exercise_projection_verified:true,exercise_projection_status:'PASS',exercise_projection_readback_id:RESTORE_EXERCISE.id,authenticated_aes256gcm_evidence:true,manifest_chain_reverified:true,evidence_hash:HASH,evidence_file_sha256:HASH,target_environment:'dev',manifest_hash:HASH,manifest_path:RESTORE_EXERCISE.backup_snapshot_ref,backup_id:'backup-1',source_app_id:'app-1',source_environment:'prod',source_release_version:'0.97.0',source_git_sha:SHA,source_tree_hash:HASH}:{proof:'controlled'};
+  const row={gate_key:requirement.key,status:'PASS',evidence_kind:kind,source:'test-runtime',git_sha:requirement.sha_bound?SHA:'',evidence_refs:['test://receipt'],details_json:restoreDetails,observed_at:new Date(NOW-60_000).toISOString(),expires_at:new Date(NOW+3600_000).toISOString(),recorded_by:'test',...(runtime?{...identity,identity_status:'COMPLETE',identity_blockers:[],identity_hash:await sha256Canonical(identity)}:{}),...overrides};
+  return {id:`runtime-gate-${requirement.key.toLowerCase()}`,evidence_key:`${requirement.key}:${row.observed_at}:controlled`,...row,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(row))};
 }
 
 const budget = {
@@ -36,11 +41,123 @@ describe('final GO-live hard gates', () => {
     const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
     try{
       const evidence = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map(signedEvidence));
-      expect(await evaluateGoLiveHardGates({ evidence, final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'GO_READY_FOR_CANARY', allowed:true, passed:GO_LIVE_GATE_REQUIREMENTS.length });
-      expect(await evaluateGoLiveHardGates({ evidence:evidence.filter(row => row.gate_key !== 'EMERGENCY_STOP'), final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'NOT_GO_READY', allowed:false });
+      expect(await evaluate({ evidence, final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'GO_READY_FOR_CANARY', allowed:true, passed:GO_LIVE_GATE_REQUIREMENTS.length });
+      expect(await evaluate({ evidence:evidence.filter(row => row.gate_key !== 'EMERGENCY_STOP'), final_sha:SHA, now_ms:NOW })).toMatchObject({ classification:'NOT_GO_READY', allowed:false });
       const legacy=evidence.map(({evidence_hash,expires_at,...row})=>row);
-      expect(await evaluateGoLiveHardGates({evidence:legacy,final_sha:SHA,now_ms:NOW})).toMatchObject({classification:'NOT_GO_READY',allowed:false,passed:0});
+      expect(await evaluate({evidence:legacy,final_sha:SHA,now_ms:NOW})).toMatchObject({classification:'NOT_GO_READY',allowed:false,passed:0});
     }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
+  });
+
+  it('rejects a residual REAL_RESTORE PASS when live Exercise authority is blocked, duplicated or compensation-ambiguous',async()=>{
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
+    try{
+      const evidence=await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map(signedEvidence));
+      for(const authority of [
+        {available:true,exact_query:true,rows:[{...RESTORE_EXERCISE,status:'BLOCKED'}],compensation_markers:[]},
+        {available:true,exact_query:true,rows:[RESTORE_EXERCISE,{...RESTORE_EXERCISE,id:'exercise-racer'}],compensation_markers:[]},
+        {available:true,exact_query:true,rows:[RESTORE_EXERCISE],compensation_markers:[{id:'incident',status:'open'}]},
+      ]){
+        const result=await evaluateGoLiveHardGates({evidence,final_sha:SHA,now_ms:NOW,resolve_real_restore_exercise_authority:async()=>authority,resolve_real_restore_gate_authority:restoreGateAuthority});
+        expect(result).toMatchObject({classification:'NOT_GO_READY',allowed:false});
+        expect(result.gates.find(row=>row.key==='REAL_RESTORE').status).toBe('BLOCKED');
+      }
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
+  });
+
+  it('re-reads REAL_RESTORE after Exercise/marker authority and rejects an interleaved newer BLOCKED gate',async()=>{
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
+    try{
+      const evidence=await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map(signedEvidence));
+      let exerciseAndMarkerRead=false;
+      const selected=evidence.find((row)=>row.gate_key==='REAL_RESTORE');
+      const blocked={...selected,id:'runtime-gate-real-restore-blocked',evidence_key:'REAL_RESTORE:blocked',status:'BLOCKED',evidence_hash:'b'.repeat(64),observed_at:new Date(NOW-30_000).toISOString()};
+      const persistedGateRows=[selected];
+      const result=await evaluate({
+        evidence,final_sha:SHA,now_ms:NOW,
+        resolve_real_restore_exercise_authority:()=>new Promise((resolve)=>{
+          exerciseAndMarkerRead=true;
+          resolve({available:true,exact_query:true,rows:[RESTORE_EXERCISE],compensation_markers:[]});
+          // Simulate compensation committing after the Exercise/marker read
+          // resolves but before the consumer's final gate query completes.
+          queueMicrotask(()=>persistedGateRows.unshift(blocked));
+        }),
+        resolve_real_restore_gate_authority:async(row)=>{
+          expect(exerciseAndMarkerRead).toBe(true);
+          await Promise.resolve();
+          expect(persistedGateRows[0].status).toBe('BLOCKED');
+          return{available:true,exact_query:true,latest_query:true,exact_rows:persistedGateRows.filter((candidate)=>candidate.evidence_key===row.evidence_key),latest_rows:persistedGateRows.slice(0,2)};
+        },
+      });
+      expect(result).toMatchObject({classification:'NOT_GO_READY',allowed:false});
+      expect(result.gates.find((row)=>row.key==='REAL_RESTORE')).toMatchObject({
+        status:'BLOCKED',
+        blockers:expect.arrayContaining(['evidence_integrity:real_restore_final_gate_not_latest','evidence_integrity:real_restore_final_gate_not_pass']),
+      });
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
+  });
+
+  it('requires one exact row and a uniquely latest identical, freshly verified REAL_RESTORE projection',async()=>{
+    const previous=Object.fromEntries(Object.keys(IDENTITY_ENV).map((key)=>[key,process.env[key]]));Object.assign(process.env,IDENTITY_ENV);
+    try{
+      const row=await signedEvidence(GO_LIVE_GATE_REQUIREMENTS.find((item)=>item.key==='REAL_RESTORE'));
+      const verificationInput={now_ms:NOW,environment:'production',max_age_hours:2160,allow_external:true,sha_bound:false,final_sha:SHA,real_restore_exercise_authority:await restoreAuthority()};
+      const verify=(exactRows=[row],latestRows=[row])=>verifyFinalRealRestoreGateAuthority(row,{available:true,exact_query:true,latest_query:true,exact_rows:exactRows,latest_rows:latestRows},verificationInput);
+      await expect(verify()).resolves.toMatchObject({ok:true,status:'VERIFIED'});
+
+      const staleHash={...row,source:'fresh-read-tampered'};
+      await expect(verify([staleHash],[row])).resolves.toMatchObject({
+        ok:false,
+        blockers:expect.arrayContaining([
+          'real_restore_final_gate_exact_mismatch',
+          'real_restore_final_gate_exact_hash_mismatch',
+        ]),
+      });
+      await expect(verify([row],[staleHash])).resolves.toMatchObject({
+        ok:false,
+        blockers:expect.arrayContaining([
+          'real_restore_final_gate_latest_mismatch',
+          'real_restore_final_gate_latest_hash_mismatch',
+          'real_restore_final_gate_not_latest',
+        ]),
+      });
+
+      const mutate=(field,value)=>{
+        if(field==='observed_at')return new Date(Date.parse(value)-1).toISOString();
+        if(field==='expires_at')return new Date(Date.parse(value)+1).toISOString();
+        if(Array.isArray(value))return [...value,'changed'];
+        if(value&&typeof value==='object')return {...value,adversarial_change:true};
+        if(typeof value==='number')return value+1;
+        if(typeof value==='boolean')return !value;
+        return `${String(value)}-changed`;
+      };
+      for(const [field,value] of Object.entries(runtimeGateEvidencePayload(row))){
+        const changed={...row,[field]:mutate(field,value)};
+        changed.evidence_hash=await sha256Canonical(runtimeGateEvidencePayload(changed));
+        await expect(verify([changed],[row])).resolves.toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_final_gate_exact_mismatch'])});
+        await expect(verify([row],[changed])).resolves.toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_final_gate_latest_mismatch','real_restore_final_gate_not_latest'])});
+      }
+      for(const [field,value] of [['id','changed'],['evidence_key','changed'],['evidence_hash','b'.repeat(64)]]){
+        await expect(verify([{...row,[field]:value}],[row])).resolves.toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_final_gate_exact_mismatch'])});
+      }
+      await expect(verify([row],[row,{...row,id:'older',evidence_key:'older'}])).resolves.toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_final_gate_latest_ambiguous'])});
+      await expect(verify([row,{...row,id:'duplicate'}],[row])).resolves.toMatchObject({ok:false,blockers:expect.arrayContaining(['real_restore_final_gate_exact_ambiguous'])});
+    }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
+  });
+
+  it('places the readiness REAL_RESTORE re-fence after async SLO reads and before snapshot persistence',()=>{
+    const worker=source('base44/shared/logical/productionReadinessWorker.ts');
+    const slo=worker.indexOf('await produceServiceLevelSnapshots');
+    const finalFence=worker.indexOf('const finalRestoreGate=await verifiedRuntimeGate');
+    const persist=worker.indexOf('persistReadinessSnapshot(svc, snapshotPayload)');
+    expect(slo).toBeGreaterThan(-1);
+    expect(finalFence).toBeGreaterThan(slo);
+    expect(persist).toBeGreaterThan(finalFence);
+    expect(worker).toContain("RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE',evidence_key:evidenceKey}");
+    expect(worker).toContain("RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE'},'-observed_at',2)");
+    const goLiveRuntime=source('base44/shared/goLiveRuntime.ts');
+    expect(goLiveRuntime).toContain('resolve_real_restore_gate_authority:resolveRealRestoreGateAuthority');
+    expect(goLiveRuntime.indexOf("gate_key:'REAL_RESTORE',evidence_key:evidenceKey")).toBeLessThan(goLiveRuntime.indexOf("gate_key:'REAL_RESTORE'},'-observed_at',2"));
+    expect(worker.indexOf("gate_key:'REAL_RESTORE',evidence_key:evidenceKey")).toBeLessThan(worker.indexOf("gate_key:'REAL_RESTORE'},'-observed_at',2"));
   });
 
   it('serializes concurrent budget reservations through a CAS revision',()=>{
@@ -78,9 +195,9 @@ describe('final GO-live hard gates', () => {
       const changed={...row,...value};delete changed.evidence_hash;
       return {...changed,evidence_hash:await sha256Canonical(runtimeGateEvidencePayload(changed))};
     }));
-    expect((await evaluateGoLiveHardGates({ evidence:await replace({ evidence_kind:'LOCAL_STATIC' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
-    expect((await evaluateGoLiveHardGates({ evidence:await replace({ observed_at:new Date(NOW - 48 * 3600000).toISOString() }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
-    expect((await evaluateGoLiveHardGates({ evidence:await replace({ git_sha:'different' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    expect((await evaluate({ evidence:await replace({ evidence_kind:'LOCAL_STATIC' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    expect((await evaluate({ evidence:await replace({ observed_at:new Date(NOW - 48 * 3600000).toISOString() }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
+    expect((await evaluate({ evidence:await replace({ git_sha:'different' }), final_sha:SHA, now_ms:NOW })).allowed).toBe(false);
     }finally{for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
   });
 

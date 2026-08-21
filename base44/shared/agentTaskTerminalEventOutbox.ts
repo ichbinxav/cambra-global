@@ -9,6 +9,37 @@ export const AGENT_TASK_TERMINAL_EVENT_RECONCILER_GUARANTEE =
   "PER_TASK_CAS_LEASE_WITH_POST_WRITE_RECONCILIATION_NO_DATASTORE_EXACTLY_ONCE_GUARANTEE";
 export const AGENT_TASK_TERMINAL_EVENT_CLAIM_LEASE_MS = 5 * 60 * 1000;
 
+const SAFE_RECONCILER_REQUEST_ID =
+  /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,119}$/;
+
+export function stableAgentTaskTerminalWorkerErrorCode(error: any) {
+  const message = String(error?.message || "");
+  if (/^agent_task_terminal_event_[a-z0-9_:-]{1,120}$/i.test(message)) {
+    return message.toUpperCase();
+  }
+  const name = String(error?.name || "WORKER_ERROR");
+  if (name === "TypeError") return "TYPE_ERROR";
+  if (name === "AbortError") return "ABORT_ERROR";
+  return "UNEXPECTED_ERROR";
+}
+
+/** Never serialize the thrown object, its message, cause, stack or body. */
+export function agentTaskTerminalReconcilerFailureLog(
+  error: any,
+  requestId?: string | null,
+) {
+  const supplied = String(requestId || "").trim();
+  const safeRequestId = SAFE_RECONCILER_REQUEST_ID.test(supplied)
+    ? supplied
+    : crypto.randomUUID();
+  return {
+    level: "error",
+    event: "agent_task_terminal_event_reconciler_failed",
+    error_code: stableAgentTaskTerminalWorkerErrorCode(error),
+    request_id: safeRequestId,
+  } as const;
+}
+
 type OutboxState =
   | "PENDING"
   | "CLAIMED"

@@ -1,4 +1,4 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { safeBestEffort as observeBestEffort } from '../../shared/bestEffort.ts';
 // CAMBRA External API v1 — production router
 // =============================================================================
 // TENANT ISOLATION: All endpoints must filter by organization_id or created_by.
@@ -9,7 +9,9 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // response: { data, meta, error?, request_id }. Auth via API key OR OAuth 2.0
 // bearer token. Rate-limited per principal. Full audit log per request.
 //
-// Routing (POST /functions/apiV1 with body { path, method, body? }):
+// Routing: OpenAPI clients call /functions/apiV1/v1/* with the real HTTP
+// method/body. The function root also accepts the explicit legacy envelope
+// { path, method, body?, query? }; the two transports cannot be mixed.
 //   GET    /v1/brands                      list:brands
 //   GET    /v1/brands/:id                  read:brands
 //   GET    /v1/analyses                    read:analyses
@@ -28,15 +30,30 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 //   POST   /v1/ai/weekly-briefing          read + write:reports
 //   POST   /v1/ai/summarize-brand          read:brands
 //
-// Compat: legacy paths (/brands, /kpis, ...) still work — they're rewritten to /v1/*.
+// Route matching remains versioned at /v1/* for both transports.
 // =============================================================================
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { consumeRateLimit, deriveRequestNetworkFingerprints, readTrustedClientAddress } from '../../shared/rateLimit.ts';
 import { recordApiUsage } from '../../shared/apiUsage.ts';
+import {
+  createTenantAuthorizedPublicAnalyzerInputFromServiceRole,
+  isAnalyzerInputBoundaryError,
+} from '../../shared/analyzerInputCurrency.ts';
+import {
+  handleApiV1TransportRequest,
+  isApiV1TransportError,
+} from '../../shared/apiV1Transport.ts';
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
+function safeBestEffort(_error, input) {
+  return observeBestEffort(
+    { name: "ApiV1SecondaryFailure", message: "api_v1_secondary_failure" },
+    input,
+  );
+}
+
 async function sha256Hex(input) {
   const data = new TextEncoder().encode(input);
   const buf = await crypto.subtle.digest("SHA-256", data);
@@ -57,6 +74,7 @@ const CORS_HEADERS = {
 
 const MAX_REQUEST_BYTES = 256 * 1024; // 256 KB
 const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24; // 24h
+const SAFE_THROWN_ERROR_CODES = new Set(["not_found", "forbidden", "invalid_request"]);
 
 function envelope({ data = null, meta = {}, error = null, requestId, status = 200, extraHeaders = {} }) {
   const body = { request_id: requestId, ...(error ? { error } : { data }), meta: { api_version: "v1", timestamp: new Date().toISOString(), ...meta } };
@@ -233,8 +251,8 @@ function tenantFilterByCreatedBy(principal, extra = {}) {
 //   - Platform API keys → pass through.
 //   - No identity at all → deny.
 function assertTenant(principal, resource) {
-  if (!resource) return null;
   const deny = () => { const err = new Error("not_found"); err.code = "not_found"; err.status = 404; throw err; };
+  if (!resource) deny();
   const userEmail = principal.user_email || principal.raw?.user_email;
   const orgId = principal.raw?.organization_id;
   const ownsResource =
@@ -310,23 +328,11 @@ const RESOURCES = {
   "POST /v1/analyses/run": {
     scope: "trigger:analysis",
     handler: async (base44, { body, principal }) => {
-      if (!body.brand_id) {
-        const e = new Error("brand_id is required"); e.code = "invalid_request"; e.status = 400; throw e;
-      }
-      // FIX 3 — assert the caller owns this brand before creating the input
-      const brand = await base44.asServiceRole.entities.Brand.get(body.brand_id).catch((error:any)=>safeBestEffort(error,{operation:'apiV1',fallback:null,severity:'secondary'}));
-      assertTenant(principal, brand);
-      const input = await base44.asServiceRole.entities.AnalyzerInput.create({
-        brand_id: body.brand_id,
-        monthly_revenue: body.monthly_revenue,
-        monthly_transactions: body.monthly_transactions,
-        avg_order_value: body.avg_order_value,
-        payment_fee_pct: body.payment_fee_pct,
-        monthly_shipping_cost: body.monthly_shipping_cost,
-        monthly_shipments: body.monthly_shipments,
-        total_saas_spend: body.total_saas_spend,
+      const result = await createTenantAuthorizedPublicAnalyzerInputFromServiceRole(body, {
+        serviceRole: base44.asServiceRole,
+        authorizeBrandRecord: (brand) => assertTenant(principal, brand),
       });
-      return { data: { triggered: true, input_id: input.id, brand_id: body.brand_id, status: "queued" } };
+      return { data: { triggered: true, input_id: result.created.id, brand_id: result.payload.brand_id, status: "queued" } };
     },
   },
 
@@ -729,32 +735,22 @@ Deno.serve(async (req) => {
       return err({ code: "request_too_large", message: "Request body exceeds 256 KB limit", status: 413, requestId });
     }
 
-    // Body parsing — supports both { path, method, body } and direct routing via URL query
-    let path, method, body, query = {};
+    // OpenAPI-direct requests derive route/method from the URL and HTTP method.
+    // The legacy function-root envelope remains explicit and cannot be mixed
+    // with the direct transport.
     const idempotencyKey = req.headers.get("idempotency-key") || req.headers.get("Idempotency-Key") || null;
-    if (req.method === "POST") {
-      const raw = await req.text();
-      if (raw.length > MAX_REQUEST_BYTES) {
-        return err({ code: "request_too_large", message: "Request body exceeds 256 KB limit", status: 413, requestId });
-      }
-      const payload = raw ? JSON.parse(raw) : {};
-      path = payload.path || "/v1/users/me";
-      method = (payload.method || "GET").toUpperCase();
-      body = payload.body || {};
-      query = payload.query || {};
-    } else {
-      const url = new URL(req.url);
-      path = url.searchParams.get("path") || "/v1/users/me";
-      method = (url.searchParams.get("method") || "GET").toUpperCase();
-      url.searchParams.forEach((v, k) => { if (k !== "path" && k !== "method") query[k] = v; });
-      body = {};
-    }
+    const transportRequest = await handleApiV1TransportRequest(
+      req,
+      (request) => request,
+      MAX_REQUEST_BYTES,
+    );
+    const { path, method, body, query } = transportRequest;
 
     // Auth
     const authRes = await authenticate(req, base44);
     if (authRes.error) {
       const e = authRes.error;
-      await logActivity(base44, { endpoint: path, method, status: "unauthorized", status_code: e.status, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: e.message });
+      await logActivity(base44, { endpoint: path, method, status: "unauthorized", status_code: e.status, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: e.code });
       return err({ code: e.code, message: e.message, status: e.status, requestId });
     }
     const principal = authRes.principal;
@@ -837,12 +833,27 @@ Deno.serve(async (req) => {
       payload_summary: { params: matched.params },
     });
     return envelope({ data: result.data, meta: result.meta || {}, requestId, status: 200, extraHeaders: rlHeaders });
-  } catch (e) {
-    const status = e.status || 500;
-    const code = e.code || "internal_error";
-    // Never leak internal stack traces in 5xx responses
-    const message = status >= 500 ? "An internal error occurred. Reference the request_id when contacting support." : e.message;
-    await logActivity(base44, { endpoint: "error", method: req.method, status: "error", status_code: status, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: e.message });
+  } catch (e:any) {
+    const typedBoundaryError = isAnalyzerInputBoundaryError(e);
+    const typedTransportError = isApiV1TransportError(e);
+    const candidateStatus = Number(e?.status);
+    const safeClientError = Number.isInteger(candidateStatus) &&
+      candidateStatus >= 400 && candidateStatus < 500 &&
+      SAFE_THROWN_ERROR_CODES.has(String(e?.code || ""));
+    const status = typedBoundaryError || typedTransportError
+      ? Number(e.status)
+      : safeClientError
+      ? candidateStatus
+      : 500;
+    const code = typedBoundaryError || typedTransportError || safeClientError
+      ? String(e.code)
+      : "internal_error";
+    const message = typedBoundaryError || typedTransportError || safeClientError
+      ? code.toLowerCase()
+      : "An internal error occurred. Reference the request_id when contacting support.";
+    // Persist only a stable code. SDK/provider messages can contain request data,
+    // credentials, URIs, or tenant identifiers and are never audit-log payloads.
+    await logActivity(base44, { endpoint: "error", method: req.method, status: "error", status_code: status, ip, user_agent: userAgent, duration_ms: Date.now() - startedAt, request_id: requestId, error_message: code });
     return err({ code, message, status, requestId });
   }
 });

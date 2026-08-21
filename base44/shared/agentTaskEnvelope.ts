@@ -26,6 +26,23 @@ export type AgentTaskTerminalState =
   | "CANCELLED"
   | "REVIEW_REQUIRED";
 export type AgentTaskAmbiguityState = "NONE" | "UNKNOWN" | "REVIEW_REQUIRED";
+export type AgentTaskCostState =
+  | "NOT_APPLICABLE"
+  | "NOT_STARTED"
+  | "NOT_RESERVED"
+  | "RESERVATION_AMBIGUOUS"
+  | "RESERVED"
+  | "SETTLED"
+  | "UNKNOWN";
+
+export type AgentTaskCostEvidence = {
+  version: "agent-task-cost-evidence-v1";
+  code: string;
+  observed_at: string;
+  reservation_started: boolean;
+  reservation_persisted: boolean;
+  settlement_persisted: boolean;
+};
 
 type SourceRef = {
   type: string;
@@ -95,6 +112,8 @@ type TerminalEnvelopeInput = {
   ambiguityState?: AgentTaskAmbiguityState;
   result: unknown;
   costRecordRefs?: SourceRef[];
+  costState?: AgentTaskCostState;
+  costEvidence?: AgentTaskCostEvidence;
   effectRefs?: SourceRef[];
   receiptRefs?: SourceRef[];
   policyContext?: TraceContextRef;
@@ -214,6 +233,94 @@ function optionalDate(name: string, value: unknown) {
   return new Date(parsed).toISOString();
 }
 
+function costEvidence(
+  name: string,
+  value: AgentTaskCostEvidence | undefined,
+): AgentTaskCostEvidence | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (value.version !== "agent-task-cost-evidence-v1") {
+    throw new Error(`invalid_agent_task_envelope_${name}_version`);
+  }
+  const code = requiredKey(`${name}_code`, value.code);
+  const observedAt = optionalDate(`${name}_observed_at`, value.observed_at);
+  if (!observedAt) {
+    throw new Error(`invalid_agent_task_envelope_${name}_observed_at`);
+  }
+  for (const field of [
+    "reservation_started",
+    "reservation_persisted",
+    "settlement_persisted",
+  ] as const) {
+    if (typeof value[field] !== "boolean") {
+      throw new Error(`invalid_agent_task_envelope_${name}_${field}`);
+    }
+  }
+  return {
+    version: "agent-task-cost-evidence-v1",
+    code,
+    observed_at: observedAt,
+    reservation_started: value.reservation_started,
+    reservation_persisted: value.reservation_persisted,
+    settlement_persisted: value.settlement_persisted,
+  };
+}
+
+function rootCostEvidence(costApplicable: boolean, at: string): AgentTaskCostEvidence {
+  return {
+    version: "agent-task-cost-evidence-v1",
+    code: costApplicable ? "ROOT_BOUND_PRE_RESERVATION" : "COST_NOT_APPLICABLE",
+    observed_at: at,
+    reservation_started: false,
+    reservation_persisted: false,
+    settlement_persisted: false,
+  };
+}
+
+function costStateCoherent(input: {
+  costApplicable: boolean;
+  terminalState: AgentTaskTerminalState;
+  costState: AgentTaskCostState;
+  costEvidence: AgentTaskCostEvidence | null;
+  costRecordRefs: SourceRef[];
+}) {
+  const evidence = input.costEvidence;
+  if (!input.costApplicable) {
+    return input.costState === "NOT_APPLICABLE" &&
+      input.costRecordRefs.length === 0 && Boolean(evidence) &&
+      evidence!.reservation_started === false &&
+      evidence!.reservation_persisted === false &&
+      evidence!.settlement_persisted === false;
+  }
+  if (!evidence) return false;
+  if (input.costState === "NOT_RESERVED") {
+    return input.costRecordRefs.length === 0 &&
+      evidence.reservation_started === false &&
+      evidence.reservation_persisted === false &&
+      evidence.settlement_persisted === false;
+  }
+  if (input.costState === "RESERVATION_AMBIGUOUS") {
+    return input.terminalState === "REVIEW_REQUIRED" &&
+      input.costRecordRefs.length === 0 &&
+      evidence.reservation_started === true &&
+      evidence.reservation_persisted === false &&
+      evidence.settlement_persisted === false;
+  }
+  if (input.costState === "RESERVED") {
+    return input.terminalState === "REVIEW_REQUIRED" &&
+      input.costRecordRefs.length > 0 &&
+      evidence.reservation_started === true &&
+      evidence.reservation_persisted === true &&
+      evidence.settlement_persisted === false;
+  }
+  if (input.costState === "SETTLED") {
+    return input.costRecordRefs.length > 0 &&
+      evidence.reservation_started === true &&
+      evidence.reservation_persisted === true &&
+      evidence.settlement_persisted === true;
+  }
+  return false;
+}
+
 function sourceRefs(values: SourceRef[] = []) {
   if (values.length > 250) {
     throw new Error("agent_task_source_refs_limit_exceeded");
@@ -330,13 +437,16 @@ function terminalEffectCoherent(input: {
   ambiguityState: AgentTaskAmbiguityState;
   effectRefs: SourceRef[];
   receiptRefs: SourceRef[];
+  costState?: AgentTaskCostState;
 }) {
   const noEffectEvidence = input.effectRefs.length === 0 &&
     input.receiptRefs.length === 0;
   if (!input.material) {
     return input.effectState === "NOT_APPLICABLE" && noEffectEvidence &&
       input.ambiguityState === "NONE" &&
-      ["COMPLETED", "FAILED", "CANCELLED"].includes(input.terminalState);
+      ["COMPLETED", "FAILED", "CANCELLED", "REVIEW_REQUIRED"].includes(
+        input.terminalState,
+      );
   }
   if (input.terminalState === "COMPLETED") {
     return input.effectState === "EXECUTED" &&
@@ -348,6 +458,13 @@ function terminalEffectCoherent(input: {
       input.ambiguityState === "NONE";
   }
   if (input.terminalState === "REVIEW_REQUIRED") {
+    if (
+      input.effectState === "FAILED_PRE_EFFECT" && noEffectEvidence &&
+      input.ambiguityState === "REVIEW_REQUIRED" &&
+      ["RESERVATION_AMBIGUOUS", "RESERVED"].includes(
+        String(input.costState || ""),
+      )
+    ) return true;
     return ["FAILED_POST_EFFECT", "REVIEW_REQUIRED"].includes(
       input.effectState,
     ) && input.effectRefs.length > 0 &&
@@ -363,6 +480,7 @@ function objectiveEffectCoverage(input: {
   ambiguityState: AgentTaskAmbiguityState;
   effectRefs: SourceRef[];
   receiptRefs: SourceRef[];
+  costState?: AgentTaskCostState;
 }) {
   if (!input.material) {
     return terminalEffectCoherent(input) ? "NOT_APPLICABLE" : "PARTIAL";
@@ -504,6 +622,8 @@ export async function buildRootAgentTaskEnvelope(
     material_effect: materialEffect,
     ...(effectClass ? { effect_class: effectClass } : {}),
     cost_applicable: costApplicable,
+    cost_state: costApplicable ? "NOT_STARTED" : "NOT_APPLICABLE",
+    cost_evidence_json: rootCostEvidence(costApplicable, now),
     effect_state: materialEffect ? "NOT_STARTED" : "NOT_APPLICABLE",
     effect_coverage_state: materialEffect ? "UNKNOWN" : "NOT_APPLICABLE",
     ambiguity_state: "NONE",
@@ -527,13 +647,13 @@ async function closeCreatedRootTaskAfterBindFailure(
   created: any,
   envelope: any,
   revision: number,
-  cause: any,
+  _cause: any,
 ) {
   const at = new Date().toISOString();
   const failure = {
     ok: false,
     error: "agent_task_root_bind_failed",
-    cause_code: String(cause?.code || cause?.message || "unknown").slice(0, 200),
+    cause_code: "agent_task_root_bind_failed",
   };
   const failureHash = await hashAgentTaskProjection(failure);
   const filter: Record<string, unknown> = {
@@ -570,6 +690,15 @@ async function closeCreatedRootTaskAfterBindFailure(
       terminal_result_hash: failureHash,
       terminal_result_json: { value: failure },
       cost_record_refs_json: [],
+      cost_state: envelope.cost_applicable ? "NOT_RESERVED" : "NOT_APPLICABLE",
+      cost_evidence_json: {
+        version: "agent-task-cost-evidence-v1",
+        code: "ROOT_BIND_FAILED_PRE_RESERVATION",
+        observed_at: at,
+        reservation_started: false,
+        reservation_persisted: false,
+        settlement_persisted: false,
+      },
       effect_refs_json: [],
       receipt_refs_json: [],
       trace_revision: revision + 1,
@@ -766,6 +895,35 @@ export function inspectAgentTaskLineage(task: any) {
     ) {
       invalid.push("terminal_state");
     }
+    const costStatePresent = task.cost_state !== null &&
+      task.cost_state !== undefined && task.cost_state !== "";
+    const costEvidencePresent = task.cost_evidence_json !== null &&
+      task.cost_evidence_json !== undefined;
+    if (costStatePresent !== costEvidencePresent) {
+      invalid.push("cost_projection_incomplete");
+    }
+    if (
+      costStatePresent && ![
+        "NOT_APPLICABLE",
+        "NOT_STARTED",
+        "NOT_RESERVED",
+        "RESERVATION_AMBIGUOUS",
+        "RESERVED",
+        "SETTLED",
+        "UNKNOWN",
+      ].includes(String(task.cost_state))
+    ) invalid.push("cost_state");
+    let persistedCostEvidence: AgentTaskCostEvidence | null = null;
+    if (costEvidencePresent) {
+      try {
+        persistedCostEvidence = costEvidence(
+          "persisted_cost_evidence",
+          task.cost_evidence_json,
+        );
+      } catch {
+        invalid.push("cost_evidence_json");
+      }
+    }
     if (task.material_effect === true && !task.effect_class) {
       invalid.push("effect_class");
     }
@@ -783,6 +941,7 @@ export function inspectAgentTaskLineage(task: any) {
         ambiguityState: task.ambiguity_state,
         effectRefs: persistedEffectRefs,
         receiptRefs: persistedReceiptRefs,
+        costState: task.cost_state,
       });
       const persistedCoverage = objectiveEffectCoverage({
         material: task.material_effect === true,
@@ -791,7 +950,18 @@ export function inspectAgentTaskLineage(task: any) {
         ambiguityState: task.ambiguity_state,
         effectRefs: persistedEffectRefs,
         receiptRefs: persistedReceiptRefs,
+        costState: task.cost_state,
       });
+      const persistedCostRefs = Array.isArray(task.cost_record_refs_json)
+        ? task.cost_record_refs_json
+        : [];
+      if (!costStateCoherent({
+        costApplicable: task.cost_applicable === true,
+        terminalState: task.terminal_state,
+        costState: task.cost_state,
+        costEvidence: persistedCostEvidence,
+        costRecordRefs: persistedCostRefs,
+      })) invalid.push("terminal_cost_coherence");
       if (!persistedCoherence) invalid.push("terminal_effect_coherence");
       if (task.effect_coverage_state !== persistedCoverage) {
         invalid.push("effect_coverage_state");
@@ -896,6 +1066,11 @@ export async function buildChildAgentTaskEnvelope(
     material_effect: materialEffect,
     ...(effectClass ? { effect_class: effectClass } : {}),
     cost_applicable: input.costApplicable === true,
+    cost_state: input.costApplicable === true ? "NOT_STARTED" : "NOT_APPLICABLE",
+    cost_evidence_json: rootCostEvidence(
+      input.costApplicable === true,
+      new Date().toISOString(),
+    ),
     effect_state: materialEffect ? "NOT_STARTED" : "NOT_APPLICABLE",
     effect_coverage_state: materialEffect ? "UNKNOWN" : "NOT_APPLICABLE",
     ambiguity_state: "NONE",
@@ -1006,6 +1181,8 @@ function terminalLineageComplete(task: any, terminal: {
   effectState: AgentTaskEffectState;
   ambiguityState: AgentTaskAmbiguityState;
   costRecordRefs: SourceRef[];
+  costState: AgentTaskCostState;
+  costEvidence: AgentTaskCostEvidence | null;
   effectRefs: SourceRef[];
   receiptRefs: SourceRef[];
   policyContext: TraceContextRef;
@@ -1019,9 +1196,16 @@ function terminalLineageComplete(task: any, terminal: {
     terminal.intelligenceContext,
   ];
   if (!contexts.every(contextComplete)) return false;
-  if (task.cost_applicable === true && terminal.costRecordRefs.length === 0) {
-    return false;
-  }
+  if (["RESERVATION_AMBIGUOUS", "RESERVED", "UNKNOWN", "NOT_STARTED"].includes(
+    terminal.costState,
+  )) return false;
+  if (!costStateCoherent({
+    costApplicable: task.cost_applicable === true,
+    terminalState: terminal.terminalState,
+    costState: terminal.costState,
+    costEvidence: terminal.costEvidence,
+    costRecordRefs: terminal.costRecordRefs,
+  })) return false;
   const coherent = terminalEffectCoherent({
     material: task.material_effect === true,
     terminalState: terminal.terminalState,
@@ -1029,6 +1213,7 @@ function terminalLineageComplete(task: any, terminal: {
     ambiguityState: terminal.ambiguityState,
     effectRefs: terminal.effectRefs,
     receiptRefs: terminal.receiptRefs,
+    costState: terminal.costState,
   });
   if (!coherent) return false;
   return task.material_effect === true
@@ -1097,6 +1282,46 @@ export async function buildAgentTaskTerminalEnvelope(
     input.intelligenceContext || task.intelligence_context_json,
   );
   const costRecordRefs = sourceRefs(input.costRecordRefs);
+  const costState = String(
+    input.costState ||
+      (task.cost_applicable === true ? "UNKNOWN" : "NOT_APPLICABLE"),
+  ) as AgentTaskCostState;
+  if (![
+    "NOT_APPLICABLE",
+    "NOT_STARTED",
+    "NOT_RESERVED",
+    "RESERVATION_AMBIGUOUS",
+    "RESERVED",
+    "SETTLED",
+    "UNKNOWN",
+  ].includes(costState)) {
+    throw new Error("invalid_agent_task_terminal_cost_state");
+  }
+  const terminalCostEvidence = costEvidence(
+    "terminal_cost_evidence",
+    input.costEvidence || (task.cost_applicable === true
+      ? undefined
+      : {
+        version: "agent-task-cost-evidence-v1",
+        code: "COST_NOT_APPLICABLE",
+        observed_at: new Date().toISOString(),
+        reservation_started: false,
+        reservation_persisted: false,
+        settlement_persisted: false,
+      }),
+  );
+  const terminalCostCoherent = costStateCoherent({
+    costApplicable: task.cost_applicable === true,
+    terminalState: input.terminalState,
+    costState,
+    costEvidence: terminalCostEvidence,
+    costRecordRefs,
+  });
+  // UNKNOWN is an honest partial projection. Every affirmative cost state is
+  // rejected unless its booleans, refs and terminal state agree exactly.
+  if (costState !== "UNKNOWN" && !terminalCostCoherent) {
+    throw new Error("agent_task_terminal_cost_evidence_incoherent");
+  }
   const effectRefs = sourceRefs(input.effectRefs);
   const receiptRefs = sourceRefs(input.receiptRefs);
   const effectCoverageState = objectiveEffectCoverage({
@@ -1106,12 +1331,15 @@ export async function buildAgentTaskTerminalEnvelope(
     ambiguityState,
     effectRefs,
     receiptRefs,
+    costState,
   });
   const complete = terminalLineageComplete(task, {
     terminalState: input.terminalState,
     effectState: input.effectState,
     ambiguityState,
     costRecordRefs,
+    costState,
+    costEvidence: terminalCostEvidence,
     effectRefs,
     receiptRefs,
     policyContext,
@@ -1132,6 +1360,15 @@ export async function buildAgentTaskTerminalEnvelope(
     authority_context_json: authorityContext,
     intelligence_context_json: intelligenceContext,
     cost_record_refs_json: costRecordRefs,
+    cost_state: costState,
+    cost_evidence_json: terminalCostEvidence || {
+      version: "agent-task-cost-evidence-v1",
+      code: "COST_EVIDENCE_UNKNOWN",
+      observed_at: new Date().toISOString(),
+      reservation_started: false,
+      reservation_persisted: false,
+      settlement_persisted: false,
+    },
     effect_refs_json: effectRefs,
     receipt_refs_json: receiptRefs,
     heartbeat_at: new Date().toISOString(),
@@ -1191,6 +1428,8 @@ const TERMINAL_OWNED_TRANSITION_FIELDS = Object.freeze([
   "terminal_result_hash",
   "terminal_result_json",
   "cost_record_refs_json",
+  "cost_state",
+  "cost_evidence_json",
   "effect_refs_json",
   "receipt_refs_json",
   "heartbeat_at",
@@ -1362,6 +1601,8 @@ export function buildCanonicalEventTraceEnvelope(task: any) {
     authority_context_json: task.authority_context_json,
     intelligence_context_json: task.intelligence_context_json,
     cost_record_refs_json: sourceRefs(task.cost_record_refs_json || []),
+    cost_state: String(task.cost_state),
+    cost_evidence_json: task.cost_evidence_json,
     effect_refs_json: sourceRefs(task.effect_refs_json || []),
     receipt_refs_json: sourceRefs(task.receipt_refs_json || []),
     ...(task.terminal_result_hash
@@ -1401,6 +1642,8 @@ const TERMINAL_EVENT_REPLAY_BINDING_FIELDS = Object.freeze([
   "authority_context_json",
   "intelligence_context_json",
   "cost_record_refs_json",
+  "cost_state",
+  "cost_evidence_json",
   "effect_refs_json",
   "receipt_refs_json",
   "terminal_result_hash",
@@ -1473,6 +1716,8 @@ export async function buildCanonicalAgentTerminalEvent(
       effect_state: String(task.effect_state),
       effect_coverage_state: String(task.effect_coverage_state),
       cost_applicable: task.cost_applicable === true,
+      cost_state: trace.cost_state,
+      cost_evidence: trace.cost_evidence_json,
       cost_record_refs: trace.cost_record_refs_json,
       effect_refs: trace.effect_refs_json,
       receipt_refs: trace.receipt_refs_json,

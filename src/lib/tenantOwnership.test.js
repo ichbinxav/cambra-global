@@ -78,6 +78,8 @@ describe('canonical tenant ownership boundary', () => {
       const ownershipCall = src.indexOf('await requireOwnedBrand');
       const taskWrite = name === 'brainOrchestrator'
         ? src.indexOf('parent = await createCanonicalAgentTask')
+        : name === 'spendIntelligenceAgent'
+        ? src.indexOf('task = await createCanonicalAgentTask')
         : src.indexOf('task = await base44.asServiceRole.entities.AgentTask.create');
       expect(ownershipCall, `${name} ownership call`).toBeGreaterThan(-1);
       expect(taskWrite, `${name} first task write`).toBeGreaterThan(-1);

@@ -4,6 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import {
+  AGENTTASK_INVENTORY_PATH,
+  requireFreshAgentTaskInventory,
+} from './lib/agentTaskInventoryFreshness.mjs';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const REPO_ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
@@ -50,6 +54,7 @@ const EVIDENCE_PATHS = Object.freeze([
   'scripts/generate-agenttask-creator-inventory.mjs',
   'scripts/generate-operational-plane-inventory.mjs',
   'scripts/generate-remediation-r0.mjs',
+  'scripts/lib/agentTaskInventoryFreshness.mjs',
   'scripts/lib/preEclFreeze.mjs',
   'src/lib/agentRegistry.js',
   'src/lib/agentTaskCanonicalWork.test.js',
@@ -130,20 +135,19 @@ function validateComponents(components, root = REPO_ROOT) {
   exact(trace.envelope_version, 'agent-task-envelope-v2.0.0',
     'trace_envelope_version');
   exact(trace.counts.creator_files, 60, 'trace_creator_count');
-  exact(trace.counts.material_creator_files, 46, 'trace_material_creators');
-  exact(trace.counts.material_trace_adapted_files, 3,
+  exact(trace.counts.material_creator_files, 45, 'trace_material_creators');
+  exact(trace.counts.material_trace_adapted_files, 8,
     'trace_material_adapted');
-  exact(trace.counts.material_terminal_adapted_files, 3,
+  exact(trace.counts.material_terminal_adapted_files, 8,
     'trace_material_terminal_adapted');
-  exact(trace.counts.material_event_adapted_files, 3,
+  exact(trace.counts.material_event_adapted_files, 8,
     'trace_material_event_adapted');
-  exact(trace.counts.material_not_adapted_files, 43,
+  exact(trace.counts.material_not_adapted_files, 37,
     'trace_material_unadapted');
-  // 2026-08-18: 111 -> 107 after the logical-route migration into
-  // base44/shared/logical/ (four hosted route files are now discovered at their
-  // canonical shared path instead of a duplicated function directory). The
-  // invariant stays exact; it is lowered deliberately, never loosened.
-  exact(trace.counts.unresolved_material_route_files, 104,
+  // The registry-derived source universe is 106. Five one-shot,
+  // task-only routes now join the three pre-existing complete local surfaces;
+  // keep the lowered unresolved count exact rather than weakening the gate.
+  exact(trace.counts.unresolved_material_route_files, 98,
     'trace_unresolved_routes');
   exact(trace.root_otr_013.implementation_status, 'PARTIAL',
     'trace_implementation_status');
@@ -335,8 +339,8 @@ export function validateArtifact(document) {
     effect_class_count: 10,
     material_boundary_count: 42,
     material_boundary_facade_wired_count: 5,
-    material_trace_adapted_creator_count: 3,
-    material_terminal_adapted_creator_count: 3,
+    material_trace_adapted_creator_count: 8,
+    material_terminal_adapted_creator_count: 8,
     active_general_supervisor_count: 1,
     health_plane_surface_count: 5,
     authoritative_specialized_sweep_count: 1,
@@ -355,13 +359,33 @@ export function validateArtifact(document) {
 }
 
 export function buildArtifact(root = REPO_ROOT) {
+  let inventorySnapshot;
+  try {
+    inventorySnapshot = requireFreshAgentTaskInventory(root);
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
+  }
   const components = Object.fromEntries(
     Object.entries(COMPONENT_PATHS).map(([key, relative]) => {
-      const document = readJson(root, relative);
+      let document;
+      let componentSha;
+      if (relative === AGENTTASK_INVENTORY_PATH) {
+        try {
+          document = JSON.parse(
+            inventorySnapshot.canonicalBytes.toString('utf8'),
+          );
+        } catch {
+          fail(`invalid_json:${relative}`);
+        }
+        componentSha = sha256(inventorySnapshot.canonicalBytes);
+      } else {
+        document = readJson(root, relative);
+        componentSha = sha256File(path.join(root, relative));
+      }
       return [key, {
         path: relative,
         document,
-        sha256: sha256File(path.join(root, relative)),
+        sha256: componentSha,
       }];
     }),
   );

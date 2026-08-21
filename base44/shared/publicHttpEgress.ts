@@ -62,6 +62,16 @@ export function normalizePublicHttpsUrl(raw: unknown, base?: string): URL {
   }
   if (url.protocol !== 'https:') throw new PublicHttpEgressError('public_url_https_required');
   if (url.username || url.password) throw new PublicHttpEgressError('public_url_credentials_forbidden');
+  // Infrastructure discovery needs a public document, never a personalized or
+  // signed URL. Query strings and fragments commonly carry email addresses,
+  // session identifiers, API keys, or reset tokens; reject them before DNS,
+  // transport, persistence, and logging instead of trying to redact selectively.
+  if (url.search || url.hash) {
+    throw new PublicHttpEgressError(
+      'public_url_query_or_fragment_forbidden',
+      422,
+    );
+  }
   if (url.port && url.port !== '443') throw new PublicHttpEgressError('public_url_port_forbidden');
   const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, '');
   if (!hostname || hostname === 'localhost' || hostname.endsWith('.localhost') ||
@@ -71,7 +81,6 @@ export function normalizePublicHttpsUrl(raw: unknown, base?: string): URL {
   if ((ipv4Parts(hostname) || hostname.includes(':')) && !isPublicIpAddress(hostname)) {
     throw new PublicHttpEgressError('public_url_private_address_forbidden');
   }
-  url.hash = '';
   return url;
 }
 

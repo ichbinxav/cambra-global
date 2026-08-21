@@ -53,6 +53,9 @@ const docs=[
   'src/docs/CAMBRA_DISASTER_RECOVERY.md',
   'src/docs/P12_EUROPEAN_LAUNCH_GROWTH.md',
   'docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.md',
+  'docs/COMMERCIAL_ANTHROPIC_EGRESS_POLICY.md',
+  'docs/GITHUB_ADMIN_HARDENING.md',
+  'docs/RECOVER_V2_LEGAL_APPROVAL_PACKET_2026-08-21.md',
 ];
 for(const path of docs)if(!fs.existsSync(path))throw new Error(`documentation_manifest_missing:${path}`);
 const manifest={registryVersion:version,systemVersion:system,packageVersion:pkg.version,generatedAt:new Date().toISOString(),sourcePaths:Object.fromEntries(paths.map((path)=>[path,sha(path)])),documentationFiles:Object.fromEntries(docs.map((path)=>[path,sha(path)]))};

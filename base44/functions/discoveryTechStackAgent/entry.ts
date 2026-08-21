@@ -1,8 +1,14 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
+import {
+  dedupeDiscoveryFindings,
+  normalizeDiscoveryTaskSourceCoverage,
+} from '../../shared/discoveryCoverage.ts';
+import {
+  normalizePublicHttpsUrl,
+  PublicHttpEgressError,
+} from '../../shared/publicHttpEgress.ts';
 import { requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
 
 /**
@@ -30,6 +36,22 @@ import { requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/te
 const AGENT_NAME = "discovery_tech_stack";
 const TASK_TYPE = "discover_tech_stack";
 const RISK_LEVEL = 1;
+const SCANNER_ERROR_CODES = new Set([
+  "public_fetch_failed",
+  "internal_error",
+  "public_url_required",
+  "public_url_invalid",
+  "public_url_https_required",
+  "public_url_credentials_forbidden",
+  "public_url_query_or_fragment_forbidden",
+  "public_url_port_forbidden",
+  "public_url_hostname_forbidden",
+  "public_url_private_address_forbidden",
+  "public_dns_unavailable",
+  "public_dns_private_or_ambiguous",
+  "public_redirect_location_required",
+  "public_redirect_limit_exceeded",
+]);
 
 // CAMBRA verticals — Claude must classify into one of these or "other"
 const CAMBRA_VERTICALS = [
@@ -86,6 +108,19 @@ Deno.serve(async (req) => {
     if (!brand_id) return Response.json({ ok: false, error: "Missing brand_id" }, { status: 400 });
     if (!website_url) return Response.json({ ok: false, error: "Missing website_url" }, { status: 400 });
 
+    let canonicalWebsiteUrl: string;
+    try {
+      canonicalWebsiteUrl = normalizePublicHttpsUrl(website_url).toString();
+    } catch (urlError) {
+      if (urlError instanceof PublicHttpEgressError) {
+        return Response.json(
+          { ok: false, error: urlError.code },
+          { status: urlError.status },
+        );
+      }
+      throw urlError;
+    }
+
     await requireOwnedBrand(base44.asServiceRole, user, brand_id);
 
     // Open AgentTask (L1, no Approval) — visible in Activity Log
@@ -96,19 +131,22 @@ Deno.serve(async (req) => {
       status: "running",
       requires_approval: false,
       risk_level: RISK_LEVEL,
-      input_summary: `Tech stack discovery for ${website_url}`,
+      input_summary: `Tech stack discovery for ${canonicalWebsiteUrl}`,
       started_at: new Date().toISOString(),
     });
 
     // ── 1. Deterministic detection ────────────────────────────────────────
     // Reuse the existing scanner — single source of truth, no duplication.
     const discoveryRes = await base44.functions.invoke("discoverCompanyInfrastructure", {
-      website_url,
+      website_url: canonicalWebsiteUrl,
       brand_id,
     });
     const discoveryPayload = discoveryRes?.data || discoveryRes;
     if (!discoveryPayload?.ok) {
-      const err = discoveryPayload?.error || "Discovery scanner failed";
+      const candidate = String(discoveryPayload?.error || "").toLowerCase();
+      const err = SCANNER_ERROR_CODES.has(candidate)
+        ? candidate
+        : "discovery_scanner_failed";
       await base44.asServiceRole.entities.AgentTask.update(task.id, {
         status: "failed",
         error: err,
@@ -116,7 +154,13 @@ Deno.serve(async (req) => {
       });
       return Response.json({ ok: false, error: err, task_id: task.id, job_id: discoveryPayload?.job_id || null });
     }
-    const rawFindings = Array.isArray(discoveryPayload.findings) ? discoveryPayload.findings : [];
+    const rawFindings = dedupeDiscoveryFindings(
+      Array.isArray(discoveryPayload.findings) ? discoveryPayload.findings : [],
+    );
+    const sourceCoverage = normalizeDiscoveryTaskSourceCoverage(
+      discoveryPayload?.source_coverage,
+      rawFindings.length,
+    );
 
     // Load full DiscoveryFinding rows for this job to recover evidence_value
     const jobId = discoveryPayload.job_id;
@@ -149,7 +193,7 @@ Deno.serve(async (req) => {
 
     // Merge raw scanner output with the persisted finding rows so we keep
     // the evidence trail (evidence_type + evidence_value).
-    const enriched = rawFindings.map(f => {
+    const enriched: any[] = rawFindings.map(f => {
       const row = findingRows.find(r =>
         r.provider_or_tool === f.provider_or_tool && r.category === f.category
       );
@@ -239,8 +283,8 @@ Deno.serve(async (req) => {
         } else {
           interpretation_status = "parse_failed";
         }
-      } catch (claudeErr) {
-        interpretation_status = `error: ${claudeErr.message}`;
+      } catch (_claudeErr) {
+        interpretation_status = "error_model_interpretation_failed";
       }
     } else if (!hasKey) {
       interpretation_status = "skipped_no_key";
@@ -257,9 +301,10 @@ Deno.serve(async (req) => {
       status: "completed",
       output_summary: detectedSummary,
       output_payload_json: {
-        website_url,
+        website_url: canonicalWebsiteUrl,
         job_id: jobId,
         findings: enriched,
+        source_coverage: sourceCoverage,
         interpretation,
         interpretation_status,
         engine: {
@@ -275,10 +320,11 @@ Deno.serve(async (req) => {
       task_id: task.id,
       job_id: jobId,
       findings: enriched,
+      source_coverage: sourceCoverage,
       summary: interpretation?.summary || detectedSummary,
       interpretation_status,
     });
-  } catch (error) {
+  } catch (error:any) {
     const tenantError = tenantOwnershipErrorResponse(error);
     if (tenantError) return tenantError;
     if (task?.id) {
@@ -286,11 +332,21 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
         await base44.asServiceRole.entities.AgentTask.update(task.id, {
           status: "failed",
-          error: error.message,
+          error: "internal_error",
           completed_at: new Date().toISOString(),
         });
       } catch (_) { /* swallow */ }
     }
-    return internalErrorResponse(error, 'discoveryTechStackAgent');
+    const requestId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      level: "error",
+      event: "discovery_tech_stack_internal_error",
+      request_id: requestId,
+      error: "internal_error",
+    }));
+    return Response.json(
+      { ok: false, error: "internal_error", request_id: requestId },
+      { status: 500 },
+    );
   }
 });

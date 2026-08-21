@@ -6,9 +6,9 @@
   <url><loc>https://cambra.global/Pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://cambra.global/Partners</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://cambra.global/ForProviders</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://cambra.global/Help</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://cambra.global/Contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://cambra.global/Security</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://cambra.global/Help</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://cambra.global/Privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://cambra.global/Terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://cambra.global/Dpa</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>

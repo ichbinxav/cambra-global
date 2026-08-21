@@ -23,7 +23,12 @@ import {
 } from "../../scripts/generate-remediation-r0.mjs";
 
 const temporaryDirectories = [];
-const FILESYSTEM_TAMPER_TEST_TIMEOUT_MS = 15_000;
+const FILESYSTEM_TAMPER_TEST_TIMEOUT_MS = 30_000;
+// Building the TypeScript Program for the live 300-entrypoint repository can
+// legitimately exceed Vitest's 5 s default when the release suite runs two
+// worker processes. Keep the assertion strict while removing scheduler-load
+// flakiness from the canonical evidence run.
+const LIVE_INVENTORY_TEST_TIMEOUT_MS = 60_000;
 
 afterEach(() => {
   for (const directory of temporaryDirectories.splice(0)) {
@@ -64,7 +69,7 @@ function copyInputsToTemporaryRepo() {
 }
 
 describe("R0.C material boundary registry", () => {
-  it("derives every material class, the exact scheduler census and the 38 AI callers", () => {
+  it("derives every material class, the exact scheduler census and dynamic AI callers", () => {
     const document = buildMaterialBoundaryRegistry(REPO_ROOT);
     expect(document.summary.boundary_count).toBe(42);
     expect(Object.keys(document.summary.material_kind_counts).sort()).toEqual([
@@ -93,7 +98,13 @@ describe("R0.C material boundary registry", () => {
       guarded_count: 71,
       unguarded_active: [],
     });
-    expect(document.paid_ai_inventory.caller_count).toBe(38);
+    expect(document.paid_ai_inventory.caller_count).toBeGreaterThan(0);
+    expect(
+      document.boundaries.find((row) => row.boundary_id === "MB-PAID-AI")
+        ?.actor,
+    ).toBe(
+      `Inherited from ${document.paid_ai_inventory.caller_count} physical callers`,
+    );
     // COMMAND-C0 (2026-08-17) closed the AI emergency gap: category=ai maps onto
     // the paid_discovery capability and reservePaidOperation captures the epoch
     // from it. This assertion and the registry both still claimed "NONE" and
@@ -128,6 +139,151 @@ describe("R0.C material boundary registry", () => {
       logical_route: "generateInvoicePdf",
     });
   });
+
+  it(
+    "resolves canonical primitive symbols, lexical shadowing, and owner-gate intersection",
+    () => {
+      const root = copyInputsToTemporaryRepo();
+      const baseline = buildMaterialBoundaryRegistry(root);
+      const baselineCount = baseline.paid_ai_inventory.caller_count;
+      const writeProbe = (name, lines) => {
+        const directory = path.join(root, `base44/functions/${name}`);
+        fs.mkdirSync(directory, { recursive: true });
+        fs.writeFileSync(path.join(directory, "entry.ts"), lines.join("\n"));
+        return directory;
+      };
+
+      const falseProbeNames = [
+        "astLexicalNoiseProbe",
+        "astShadowProbe",
+        "astTypeImportProbe",
+        "astTypeSpecifierProbe",
+        "astTypeNamespaceProbe",
+        "astSideEffectImportProbe",
+        "astDefaultImportProbe",
+        "astFakeUrlProbe",
+        "astFakeSuffixProbe",
+      ];
+      writeProbe("astLexicalNoiseProbe", [
+        "import { callCambraClaude } from '../../shared/commercialModelRouter.ts';",
+        "// callCambraClaude('comment-only')",
+        "export const stringOnly = \"callCambraClaude('string-only')\";",
+        "export const regexOnly = /callCambraClaude\\('regex-only'/;",
+        "export const referenceOnly = callCambraClaude;",
+        "export const unrelated = { callCambraClaude() { return null; } };",
+        "unrelated.callCambraClaude();",
+      ]);
+      writeProbe("astShadowProbe", [
+        "import { callCambraClaude } from '../../shared/commercialModelRouter.ts';",
+        "export function parameterShadow(callCambraClaude: (...args: any[]) => any) { callCambraClaude('parameter'); }",
+        "export function localShadow() { callCambraClaude('tdz'); const callCambraClaude = (..._args: any[]) => null; }",
+        "export function blockShadow() { { function callCambraClaude() {} callCambraClaude(); } }",
+      ]);
+      writeProbe("astTypeImportProbe", [
+        "import type { callCambraClaude } from '../../shared/commercialModelRouter.ts';",
+        "callCambraClaude('type-only');",
+      ]);
+      writeProbe("astTypeSpecifierProbe", [
+        "import { type callCambraClaude } from '../../shared/commercialModelRouter.ts';",
+        "callCambraClaude('specifier-type-only');",
+      ]);
+      writeProbe("astTypeNamespaceProbe", [
+        "import type * as router from '../../shared/commercialModelRouter.ts';",
+        "router.callCambraClaude('namespace-type-only');",
+      ]);
+      writeProbe("astSideEffectImportProbe", [
+        "import '../../shared/commercialModelRouter.ts';",
+        "globalThis.callCambraClaude?.('side-effect-import');",
+      ]);
+      writeProbe("astDefaultImportProbe", [
+        "import callCambraClaude from '../../shared/commercialModelRouter.ts';",
+        "callCambraClaude('default-import');",
+      ]);
+      writeProbe("astFakeUrlProbe", [
+        "import { callCambraClaude } from 'https://evil.test/base44/shared/commercialModelRouter.ts';",
+        "callCambraClaude('fake-url');",
+      ]);
+      const fakeSuffixDirectory = writeProbe("astFakeSuffixProbe", [
+        "import { callCambraClaude } from './fake/base44/shared/commercialModelRouter.ts';",
+        "callCambraClaude('fake-suffix');",
+      ]);
+      const fakeModule = path.join(
+        fakeSuffixDirectory,
+        "fake/base44/shared/commercialModelRouter.ts",
+      );
+      fs.mkdirSync(path.dirname(fakeModule), { recursive: true });
+      fs.writeFileSync(
+        fakeModule,
+        "export function callCambraClaude() { return null; }\n",
+      );
+
+      const falseOnly = buildMaterialBoundaryRegistry(root);
+      expect(falseOnly.paid_ai_inventory.caller_count).toBe(baselineCount);
+      for (const name of falseProbeNames) {
+        expect(falseOnly.paid_ai_inventory.callers, name).not.toContain(name);
+      }
+
+      const positiveProbeNames = [
+        "astAliasCallProbe",
+        "astExtensionlessCallProbe",
+        "astNamespaceCallProbe",
+        "astWrappedDirectCallProbe",
+      ];
+      writeProbe("astAliasCallProbe", [
+        "import { callCambraClaude as localClaude } from '../../shared/commercialModelRouter.ts';",
+        "export function run() { return ((localClaude as typeof localClaude))!('alias', {}); }",
+      ]);
+      writeProbe("astExtensionlessCallProbe", [
+        "import { callCambraClaude } from '../../shared/commercialModelRouter';",
+        "export function run() { return callCambraClaude('extensionless', {}); }",
+      ]);
+      writeProbe("astNamespaceCallProbe", [
+        "import * as router from '../../shared/commercialModelRouter.ts';",
+        "export function run() { return ((router.callCambraClaude satisfies typeof router.callCambraClaude))('namespace', {}); }",
+      ]);
+      writeProbe("astWrappedDirectCallProbe", [
+        "import { callCambraModel } from '../../shared/commandModelRouter.ts';",
+        "export function run() { return ((<typeof callCambraModel>callCambraModel))('wrapped', {}); }",
+      ]);
+      const withActualCall = buildMaterialBoundaryRegistry(root);
+      expect(withActualCall.paid_ai_inventory.caller_count)
+        .toBe(baselineCount + positiveProbeNames.length);
+      for (const name of positiveProbeNames) {
+        expect(withActualCall.paid_ai_inventory.callers, name).toContain(name);
+      }
+
+      const recommendationPath = path.join(
+        root,
+        "base44/functions/recommendationEngineAgent/entry.ts",
+      );
+      const recommendationSource = fs.readFileSync(recommendationPath, "utf8");
+      const withoutCall = recommendationSource.replace(
+        "callCambraClaude(prompt,",
+        "notCambraClaude(prompt,",
+      );
+      expect(withoutCall).not.toBe(recommendationSource);
+      fs.writeFileSync(recommendationPath, withoutCall);
+      const material = buildMaterialBoundaryRegistry(root);
+      const authorization = buildTenantAuthorizationInventory(root, material);
+      const aiBoundary = material.boundaries.find((row) =>
+        row.boundary_id === "MB-PAID-AI"
+      );
+      const aiAuthorization = authorization.routes.find((row) =>
+        row.boundary_id === "MB-PAID-AI"
+      );
+      expect(aiBoundary.callers).not.toContain("recommendationEngineAgent");
+      expect(aiAuthorization.covered_route_members).toEqual([
+        "discoveryTechStackAgent",
+      ]);
+      expect(aiAuthorization.remaining_gaps).toContain(
+        `only 1 of the ${aiBoundary.callers.length} dynamically inventoried AI callers are wired to the canonical owner gate`,
+      );
+      expect(aiAuthorization.remaining_gaps).toContain(
+        "configured owner-gated route is not an observed AI caller: recommendationEngineAgent",
+      );
+    },
+    FILESYSTEM_TAMPER_TEST_TIMEOUT_MS,
+  );
 
   it("keeps route-level actor, tenant, policy, emergency, claim, effect, reconciliation and receipt evidence", () => {
     const document = buildMaterialBoundaryRegistry(REPO_ROOT);
@@ -215,12 +371,15 @@ describe("R1.E material tenant authorization proof inventory", () => {
     expect(byId.get("MB-PAID-AI").covered_route_members).toEqual([
       "discoveryTechStackAgent",
       "recommendationEngineAgent",
-      "spendIntelligenceAgent",
     ]);
+    const material = buildMaterialBoundaryRegistry(REPO_ROOT);
+    const callerCount = material.boundaries.find((row) =>
+      row.boundary_id === "MB-PAID-AI"
+    ).callers.length;
     expect(byId.get("MB-PAID-AI").remaining_gaps).toContain(
-      "only 3 of the dynamically inventoried AI callers are wired to the canonical owner gate",
+      `only 2 of the ${callerCount} dynamically inventoried AI callers are wired to the canonical owner gate`,
     );
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
   it("keeps unmapped and source-only route gaps explicit instead of upgrading them from a static tripwire", () => {
     const document = buildTenantAuthorizationInventory(REPO_ROOT);

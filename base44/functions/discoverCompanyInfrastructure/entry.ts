@@ -1,8 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { requireCriticalOperation } from '../../shared/criticalExecution.ts';
 import { fetchPublicHttps, normalizePublicHttpsUrl, PublicHttpEgressError } from '../../shared/publicHttpEgress.ts';
 import { requireOwnedBrand, tenantOwnershipErrorResponse } from '../../shared/tenantOwnership.ts';
+import {
+  dedupeDiscoveryFindings,
+  isEligibleDiscoveryHttpResponse,
+} from '../../shared/discoveryCoverage.ts';
 
 /**
  * M4 — discoverCompanyInfrastructure
@@ -161,6 +164,11 @@ Deno.serve(async (req) => {
     // Fetch public HTML — non-fatal on failure
     let html = '';
     let headers: Record<string, string> = {};
+    let bodyTruncated = false;
+    let bodyEofObserved = false;
+    let httpStatus: number | null = null;
+    let contentType: string | null = null;
+    let responseEligible = false;
     try {
       const fetched = await fetchPublicHttps(url, {
         headers: { 'User-Agent': 'CAMBRA-Discovery/1.0 (+https://cambra.global)' },
@@ -168,39 +176,64 @@ Deno.serve(async (req) => {
       });
       const res = fetched.response;
       url = fetched.finalUrl;
+      httpStatus = res.status;
+      contentType = String(res.headers.get('content-type') || '').slice(0, 160) || null;
+      responseEligible = res.ok &&
+        isEligibleDiscoveryHttpResponse(httpStatus, contentType);
       res.headers.forEach((value, key) => {
         headers[key] = value;
       });
       // Cap body at 512KB — we only need signal substrings, never full HTML
-      const reader = res.body?.getReader();
+      const reader = responseEligible ? res.body?.getReader() : null;
       const decoder = new TextDecoder();
       let received = 0;
       const cap = 512 * 1024;
       if (reader) {
         while (received < cap) {
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) {
+            bodyEofObserved = true;
+            html += decoder.decode();
+            break;
+          }
+          const remaining = cap - received;
+          if (value.byteLength > remaining) {
+            html += decoder.decode(value.slice(0, remaining), { stream: true });
+            received += remaining;
+            bodyTruncated = true;
+            break;
+          }
           html += decoder.decode(value, { stream: true });
           received += value.byteLength;
         }
-        try { reader.cancel(); } catch (_) { /* ignore */ }
+        // Conservatively mark an exact-cap response partial: proving EOF would
+        // require another read after the configured evidence boundary.
+        if (received >= cap) bodyTruncated = true;
+        if (!bodyEofObserved) {
+          try { reader.cancel(); } catch (_) { /* ignore */ }
+        }
+      } else if (res.body) {
+        try { await res.body.cancel(); } catch (_) { /* ignore */ }
       }
-    } catch (fetchErr: any) {
+    } catch (_fetchErr: any) {
       await base44.asServiceRole.entities.DiscoveryJob.update(job.id, {
         status: 'failed',
         completed_at: new Date().toISOString(),
-        error_message: `Fetch failed: ${fetchErr.message}`,
+        error_message: 'public_fetch_failed',
       });
-      return Response.json({ ok: false, error: `Could not fetch ${url}: ${fetchErr.message}`, job_id: job.id });
+      return Response.json(
+        { ok: false, error: 'public_fetch_failed', job_id: job.id },
+        { status: 502 },
+      );
     }
 
     // Run signal detection — capture only short evidence substrings, never full HTML
-    const findings = [];
+    const detectedFindings = [];
     for (const sig of SIGNALS) {
       const m = html.match(sig.pattern);
       if (m) {
         const matched = String(m[0]).slice(0, 200);
-        findings.push({
+        detectedFindings.push({
           discovery_job_id: job.id,
           brand_id,
           category: sig.category,
@@ -218,8 +251,8 @@ Deno.serve(async (req) => {
 
     // Header-based signal: x-shopify-stage
     if (headers['x-shopify-stage'] || headers['x-shopid']) {
-      if (!findings.some(f => f.provider_or_tool === 'Shopify')) {
-        findings.push({
+      if (!detectedFindings.some(f => f.provider_or_tool === 'Shopify')) {
+        detectedFindings.push({
           discovery_job_id: job.id,
           brand_id,
           category: 'commerce_platform',
@@ -234,6 +267,8 @@ Deno.serve(async (req) => {
         });
       }
     }
+
+    const findings = dedupeDiscoveryFindings(detectedFindings);
 
     // Persist findings (bulk)
     if (findings.length) {
@@ -262,7 +297,11 @@ Deno.serve(async (req) => {
     }
 
     // Finalize job
-    const finalStatus = findings.length > 0 ? 'completed' : 'partial';
+    const scanCoverageStatus = findings.length > 0 && responseEligible &&
+        bodyEofObserved && !bodyTruncated
+      ? 'COMPLETE'
+      : 'PARTIAL';
+    const finalStatus = scanCoverageStatus === 'COMPLETE' ? 'completed' : 'partial';
     await base44.asServiceRole.entities.DiscoveryJob.update(job.id, {
       status: finalStatus,
       completed_at: new Date().toISOString(),
@@ -272,6 +311,17 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       job_id: job.id,
+      source_coverage: {
+        status: scanCoverageStatus,
+        scope: 'PRIMARY_DOCUMENT_HTTPS_RESPONSE',
+        scanner: 'discoverCompanyInfrastructure',
+        engine_version: ENGINE_VERSION,
+        body_truncated: bodyTruncated,
+        body_eof_observed: bodyEofObserved,
+        http_status: httpStatus,
+        content_type: contentType,
+        finding_count: findings.length,
+      },
       findings: findings.map(f => ({
         category: f.category,
         provider_or_tool: f.provider_or_tool,
@@ -285,6 +335,16 @@ Deno.serve(async (req) => {
     if (error instanceof PublicHttpEgressError) {
       return Response.json({ ok: false, error: error.code }, { status: error.status });
     }
-    return internalErrorResponse(error, 'discoverCompanyInfrastructure');
+    const requestId = crypto.randomUUID();
+    console.error(JSON.stringify({
+      level: 'error',
+      event: 'discover_company_infrastructure_internal_error',
+      request_id: requestId,
+      error: 'internal_error',
+    }));
+    return Response.json(
+      { ok: false, error: 'internal_error', request_id: requestId },
+      { status: 500 },
+    );
   }
 });

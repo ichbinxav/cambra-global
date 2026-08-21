@@ -220,8 +220,9 @@ async function projectAccepted(base44: any, brandId: string, projection: any, ca
   const analyzerPatch: any = { brand_id: brandId, data_source: 'file_upload' };
   if (aggregates.payments) Object.assign(analyzerPatch, { monthly_revenue: aggregates.payments.total_volume_eur, currency: 'EUR' /* FX-2: projection output is EUR-normalized by construction */, payment_fee_pct: aggregates.payments.fee_pct, ...(aggregates.payments.provider ? { payment_provider: aggregates.payments.provider } : {}) });
   if (aggregates.payments) {
-    const [row] = await base44.entities.AnalyzerInput.filter({ brand_id: brandId }, '-updated_date', 1);
-    row?.id ? await base44.entities.AnalyzerInput.update(row.id, analyzerPatch) : await base44.entities.AnalyzerInput.create(analyzerPatch);
+    const analyzerInputs = base44.asServiceRole.entities.AnalyzerInput;
+    const [row] = await analyzerInputs.filter({ brand_id: brandId }, '-updated_date', 1);
+    row?.id ? await analyzerInputs.update(row.id, analyzerPatch) : await analyzerInputs.create(analyzerPatch);
   }
   return { aggregates, updates, document_type: canonical.documentType };
 }

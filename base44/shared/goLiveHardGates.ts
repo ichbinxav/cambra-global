@@ -1,6 +1,7 @@
 import {
   EXPECTED_BASE44_LOGICAL_ROUTES,
   EXPECTED_BASE44_PHYSICAL_FUNCTIONS,
+  verifyFinalRealRestoreGateAuthority,
   verifyRuntimeGateEvidence,
 } from './runtimeEvidence.ts';
 
@@ -48,6 +49,9 @@ export async function evidenceForGate(rows:any[], requirement:any, input:any) {
   if (row && (!Number.isFinite(observed) || observed > input.now_ms + 5 * 60_000 || input.now_ms - observed > requirement.max_age_hours * 3600000)) blockers.push(observed > input.now_ms + 5 * 60_000 ? 'evidence_from_future':'evidence_stale');
   if (row?.expires_at && (!Number.isFinite(Date.parse(row.expires_at)) || Date.parse(row.expires_at) <= input.now_ms)) blockers.push(!Number.isFinite(Date.parse(row.expires_at)) ? 'evidence_expiry_invalid':'evidence_expired');
   if (row) {
+    const realRestoreAuthority=requirement.key==='REAL_RESTORE'&&typeof input.resolve_real_restore_exercise_authority==='function'
+      ? await input.resolve_real_restore_exercise_authority(row)
+      : undefined;
     const integrity=await verifyRuntimeGateEvidence(row,{
       now_ms:input.now_ms,
       environment:'production',
@@ -55,15 +59,31 @@ export async function evidenceForGate(rows:any[], requirement:any, input:any) {
       allow_external:requirement.kinds.includes('EXTERNAL'),
       sha_bound:requirement.sha_bound,
       final_sha:input.final_sha,
+      real_restore_exercise_authority:realRestoreAuthority,
     });
     if(!integrity.ok)blockers.push(...integrity.blockers.map((blocker:string)=>`evidence_integrity:${blocker}`));
+    if(requirement.key==='REAL_RESTORE'){
+      const finalGateAuthority=typeof input.resolve_real_restore_gate_authority==='function'
+        ?await input.resolve_real_restore_gate_authority(row)
+        :undefined;
+      const finalGate=await verifyFinalRealRestoreGateAuthority(row,finalGateAuthority,{
+        now_ms:input.now_ms,
+        environment:'production',
+        max_age_hours:requirement.max_age_hours,
+        allow_external:requirement.kinds.includes('EXTERNAL'),
+        sha_bound:requirement.sha_bound,
+        final_sha:input.final_sha,
+        real_restore_exercise_authority:realRestoreAuthority,
+      });
+      if(!finalGate.ok)blockers.push(...finalGate.blockers.map((blocker:string)=>`evidence_integrity:${blocker}`));
+    }
   }
   return { key:requirement.key, label:requirement.label, category:requirement.category, status:blockers.length ? 'BLOCKED':'PASS', blockers, evidence:row, requirement };
 }
 
 export async function evaluateGoLiveHardGates(input:any = {}) {
   const nowMs = Number(input.now_ms || Date.now());
-  const rows = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map((requirement) => evidenceForGate(input.evidence || [], requirement, { final_sha:String(input.final_sha || ''), now_ms:nowMs })));
+  const rows = await Promise.all(GO_LIVE_GATE_REQUIREMENTS.map((requirement) => evidenceForGate(input.evidence || [], requirement, { final_sha:String(input.final_sha || ''), now_ms:nowMs,resolve_real_restore_exercise_authority:input.resolve_real_restore_exercise_authority,resolve_real_restore_gate_authority:input.resolve_real_restore_gate_authority })));
   const directBlockers = Array.isArray(input.direct_blockers) ? input.direct_blockers.filter(Boolean).map(String) : [];
   const gateBlockers = rows.filter((row) => row.status !== 'PASS').map((row) => `${row.key}:${row.blockers.join(',')}`);
   const blockers = [...new Set([...directBlockers, ...gateBlockers])];

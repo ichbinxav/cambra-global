@@ -8,8 +8,8 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "3b1e56ebaa70208eae7edff19ddf8f85633e9c10f6d63044f0b7d25820528c8d",
-  "input_file_count": 126,
+  "input_fingerprint_sha256": "d862c8880287da296b3c398a3b2ba0af74a6dda55c41f21a010967b14281c287",
+  "input_file_count": 125,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
@@ -83,7 +83,7 @@
   },
   "paid_ai_inventory": {
     "primitive": "callCambraClaude|callCambraModel",
-    "caller_count": 38,
+    "caller_count": 37,
     "callers": [
       "autonomousCommercialWorker",
       "autonomousPartnerWorker",
@@ -121,7 +121,6 @@
       "reviewProviderContract",
       "securityAgent",
       "seoAgent",
-      "spendIntelligenceAgent",
       "xTwitterAgent"
     ],
     "cost_category": "ai",
@@ -2905,8 +2904,8 @@
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
-          "sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
-          "bytes": 21831
+          "sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
+          "bytes": 21858
         },
         {
           "path": "base44/functions/providerContactResolver/entry.ts",
@@ -3021,10 +3020,9 @@
         "reviewProviderContract",
         "securityAgent",
         "seoAgent",
-        "spendIntelligenceAgent",
         "xTwitterAgent"
       ],
-      "actor": "Inherited from 38 physical callers",
+      "actor": "Inherited from 37 physical callers",
       "tenant_key": "Caller brand/entity or _platform",
       "policy": [
         "CostBudgetControl",
@@ -3066,8 +3064,8 @@
         },
         {
           "path": "base44/functions/codeReviewAgent/entry.ts",
-          "sha256": "bb53608091858818ed0016de35a5a70e1743bedf67e9fa08ee17d8dd00bf5fd2",
-          "bytes": 5860
+          "sha256": "9e32a77eddf0068aaecc4563579c4065d7b63f77ef8dfeee3781c838a10c8c7d",
+          "bytes": 10977
         },
         {
           "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
@@ -3106,8 +3104,8 @@
         },
         {
           "path": "base44/functions/discoveryTechStackAgent/entry.ts",
-          "sha256": "8298745295b6de7917623f4933a80194c150812ad641dc1b639d5d62ce980b9d",
-          "bytes": 12530
+          "sha256": "ef8b6d8a4cdffb0b64e349c24dafeefd9aaf4586adee56d500ae8f5a18a00311",
+          "bytes": 14209
         },
         {
           "path": "base44/functions/fixValidatorAgent/entry.ts",
@@ -3126,8 +3124,8 @@
         },
         {
           "path": "base44/functions/founderCopilotAgent/entry.ts",
-          "sha256": "3500e1b2be239143c9b6b98899fe88b5c9a79d751753b3b7cfd9de5e3dee78fa",
-          "bytes": 5486
+          "sha256": "e72bf4bc1290be33d877434d9a6c919d12be46e1fdcd8d5e2c8eecac3001841d",
+          "bytes": 11587
         },
         {
           "path": "base44/functions/gdprAgent/entry.ts",
@@ -3181,8 +3179,8 @@
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
-          "sha256": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
-          "bytes": 21831
+          "sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
+          "bytes": 21858
         },
         {
           "path": "base44/functions/providerMonetizationAgent/entry.ts",
@@ -3206,13 +3204,13 @@
         },
         {
           "path": "base44/functions/qaAgent/entry.ts",
-          "sha256": "767aa77e18036ba8c3b55fa226c9f677f872ce632eb84afb432ee7c6b78f1928",
-          "bytes": 3540
+          "sha256": "2d166c1fed748f5a4ad039bc62e7f8a0c984be10d7bf56566f4ae9d384aac10f",
+          "bytes": 9831
         },
         {
           "path": "base44/functions/qaMonitorAgent/entry.ts",
-          "sha256": "a6466737f3d48a9a72f3c28911047182ba569c4948b9f4859200a2aa7c668c65",
-          "bytes": 7281
+          "sha256": "a19cd68e224d8bf0e9296a897c209f2abbdf8a539dc2ca78ad3f3956b773d9f7",
+          "bytes": 13792
         },
         {
           "path": "base44/functions/recommendationEngineAgent/entry.ts",
@@ -3226,18 +3224,13 @@
         },
         {
           "path": "base44/functions/securityAgent/entry.ts",
-          "sha256": "756dca1361b6f297808a8c41c231344233b1b288091dca87b1217192a5a01c8d",
-          "bytes": 5536
+          "sha256": "c74609015e44d394ef8f10220116b6c3f13b63796d65a5d3ffea66d1870ba6a9",
+          "bytes": 9905
         },
         {
           "path": "base44/functions/seoAgent/entry.ts",
           "sha256": "c48bfd72f3eb4fbe4edda74c342b4b9a33b037608e76ef7034badb634e90f4af",
           "bytes": 4925
-        },
-        {
-          "path": "base44/functions/spendIntelligenceAgent/entry.ts",
-          "sha256": "cbe6e8aca827024cf2b57d0494cb1f9924ddc4c6b09e7ba1a7fffbb354bd75a2",
-          "bytes": 18637
         },
         {
           "path": "base44/functions/xTwitterAgent/entry.ts",
@@ -3246,8 +3239,8 @@
         },
         {
           "path": "base44/shared/commercialModelRouter.ts",
-          "sha256": "a46d99dd01265b5b585c80f5a6723590821dc56523c578ffbb0bf3a6a2109448",
-          "bytes": 5305
+          "sha256": "55b7ad60340dafedef9875cc1a764231f3ca6b5fd4168286a8c278a57547d3de",
+          "bytes": 24008
         },
         {
           "path": "base44/shared/costGovernance.ts",
@@ -3311,8 +3304,8 @@
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
-          "sha256": "1faff854f4a47aabc7a38a050faa5f885cba28c2c1e6ac200bb58d4ac2a596a7",
-          "bytes": 40473
+          "sha256": "5627bed37d861f5d1c1ddb770bdd5ce51bf5d968410dd18afc3e0c24a20acbe7",
+          "bytes": 56213
         }
       ]
     },

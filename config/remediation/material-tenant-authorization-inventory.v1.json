@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "7f883796e9d2f948e72f57af862f2332a39e071296533a58803b4a370747d5ad",
-  "material_registry_input_fingerprint_sha256": "3b1e56ebaa70208eae7edff19ddf8f85633e9c10f6d63044f0b7d25820528c8d",
-  "input_fingerprint_sha256": "41fdbf8acd6a72f610289a5f8c88b24b59cc5681523fde2d48621e05f2cbe0c6",
+  "material_registry_sha256": "87d82316cdde6bb99f4704beacb8d929c6c5eff5f526009a72b9f3c76e7e6bee",
+  "material_registry_input_fingerprint_sha256": "d862c8880287da296b3c398a3b2ba0af74a6dda55c41f21a010967b14281c287",
+  "input_fingerprint_sha256": "c968a4ec790154150b7aaaf61783165a505163050eceba81e2daf0c6a9474a53",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1771,7 +1771,7 @@
         "paid_spend",
         "provider_effect"
       ],
-      "actor": "Inherited from 38 physical callers",
+      "actor": "Inherited from 37 physical callers",
       "tenant_key": "Caller brand/entity or _platform",
       "material_registry_status": "PARTIAL_HARD_GAP",
       "material_registry_gap_codes": [
@@ -1825,7 +1825,6 @@
         "base44/functions/reviewProviderContract/entry.ts",
         "base44/functions/securityAgent/entry.ts",
         "base44/functions/seoAgent/entry.ts",
-        "base44/functions/spendIntelligenceAgent/entry.ts",
         "base44/functions/xTwitterAgent/entry.ts",
         "base44/shared/commercialModelRouter.ts",
         "base44/shared/costGovernance.ts",
@@ -1833,8 +1832,7 @@
       ],
       "covered_route_members": [
         "discoveryTechStackAgent",
-        "recommendationEngineAgent",
-        "spendIntelligenceAgent"
+        "recommendationEngineAgent"
       ],
       "gate_coverage": {
         "assertions": [
@@ -1865,13 +1863,13 @@
         },
         {
           "path": "src/lib/tenantOwnership.test.js",
-          "sha256": "856bb3ada1cdca1ab5c5099059c1e1da9468e9c73824705f8677500ea5dffe7e",
-          "bytes": 4843
+          "sha256": "b3efc9a0cb187929c272a2883d2352342fc3fba47ee7fe010419ad566a4b16b0",
+          "bytes": 4950
         }
       ],
       "remaining_gaps": [
         "no deployed Base44 authorization trace proves this complete material path",
-        "only 3 of the dynamically inventoried AI callers are wired to the canonical owner gate",
+        "only 2 of the 37 dynamically inventoried AI callers are wired to the canonical owner gate",
         "the material registry still records paid-AI emergency and provider-receipt hard gaps"
       ]
     },
@@ -1916,8 +1914,8 @@
       "gate_evidence": [
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
-          "sha256": "1faff854f4a47aabc7a38a050faa5f885cba28c2c1e6ac200bb58d4ac2a596a7",
-          "bytes": 40473
+          "sha256": "5627bed37d861f5d1c1ddb770bdd5ce51bf5d968410dd18afc3e0c24a20acbe7",
+          "bytes": 56213
         },
         {
           "path": "base44/shared/internalGate.ts",
@@ -1928,8 +1926,8 @@
       "test_evidence": [
         {
           "path": "src/lib/disasterRecovery.test.js",
-          "sha256": "50443716e7a435179a8e62fe990d58164d89f394942e4a650d46725a579fd6cd",
-          "bytes": 6315
+          "sha256": "197e286207f0cfbfb63c0e0e6194edca9114bfd78f073aa9487346cc98160bfd",
+          "bytes": 62443
         },
         {
           "path": "src/lib/materialTenantAuthorization.test.js",

@@ -10,7 +10,9 @@ import {
   AGENT_TASK_TERMINAL_EVENT_CLAIM_LEASE_MS,
   AGENT_TASK_TERMINAL_EVENT_RECONCILER_GUARANTEE,
   AGENT_TASK_TERMINAL_EVENT_RECONCILER_VERSION,
+  agentTaskTerminalReconcilerFailureLog,
   reconcileCanonicalAgentTerminalEventOutboxRow,
+  stableAgentTaskTerminalWorkerErrorCode,
 } from "../agentTaskTerminalEventOutbox.ts";
 
 const MAX_BATCH = 50;
@@ -26,17 +28,6 @@ function updatedExactlyOne(result: any) {
     .map((key) => Number(result[key]));
   return counts.length > 0 &&
     counts.every((value) => Number.isInteger(value) && value === 1);
-}
-
-function stableWorkerErrorCode(error: any) {
-  const message = String(error?.message || "");
-  if (/^agent_task_terminal_event_[a-z0-9_:-]{1,120}$/i.test(message)) {
-    return message.toUpperCase();
-  }
-  const name = String(error?.name || "WORKER_ERROR");
-  if (name === "TypeError") return "TYPE_ERROR";
-  if (name === "AbortError") return "ABORT_ERROR";
-  return "UNEXPECTED_ERROR";
 }
 
 async function recordWorkerError(svc: any, task: any, code: string) {
@@ -214,7 +205,7 @@ export async function handleAgentTaskTerminalEventReconciler(req: Request) {
           ),
         );
       } catch (error: any) {
-        const code = stableWorkerErrorCode(error);
+        const code = stableAgentTaskTerminalWorkerErrorCode(error);
         let errorRecorded = false;
         try {
           errorRecorded = await recordWorkerError(svc, task, code);
@@ -255,10 +246,15 @@ export async function handleAgentTaskTerminalEventReconciler(req: Request) {
     }, { status: success ? 200 : 500 });
   } catch (error) {
     success = false;
-    console.error("agentTaskTerminalEventReconciler failed", error);
+    const failureLog = agentTaskTerminalReconcilerFailureLog(
+      error,
+      req.headers.get("x-request-id") || req.headers.get("x-correlation-id"),
+    );
+    console.error(JSON.stringify(failureLog));
     return Response.json({
       ok: false,
       error: "agent_task_terminal_event_reconciler_failed",
+      request_id: failureLog.request_id,
       exactly_once_claimed: false,
     }, { status: 500 });
   } finally {

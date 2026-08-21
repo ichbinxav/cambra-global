@@ -62,7 +62,25 @@ export async function collectGoLiveRuntime(svc:any, input:any = {}) {
   const outbound=outboundAuthority.ok?outboundAuthority.row:null;
   if(outbound?.instantly_enabled===true&&!['AUTHENTICATED','ACTIVE'].includes(String(instantlyState?.status||'')))directBlockers.push('instantly_enabled_without_authenticated_provider_state');
   if(providerRetryEvents.some((row:any)=>row.status==='DEAD_LETTER'))directBlockers.push('outbound_provider_dead_letters_open');
-  const decision = await evaluateGoLiveHardGates({ evidence:[...runtimeEvidence, ...normalized], final_sha:finalSha, direct_blockers:directBlockers });
+  const resolveRealRestoreExerciseAuthority=async(row:any)=>{
+    const exerciseKey=String(row?.details_json?.exercise_key||''),incidentKey=String(row?.details_json?.compensation_incident_key||'');
+    if(!exerciseKey||!incidentKey)return{available:false,exact_query:false,rows:[],compensation_markers:[],blockers:['real_restore_authority_binding_missing']};
+    const[exerciseAuthority,compensationAuthority]=await Promise.all([
+      gateRead('restore_exercise_exact_authority',()=>svc.entities.DisasterRecoveryExercise.filter({exercise_key:exerciseKey},'-updated_date',2),[]),
+      gateRead('restore_compensation_exact_authority',()=>svc.entities.AutonomyIncident.filter({dedupe_key:incidentKey},'-last_seen_at',2),[]),
+    ]);
+    return{available:exerciseAuthority.available&&compensationAuthority.available,exact_query:true,rows:exerciseAuthority.value,compensation_markers:compensationAuthority.value,blockers:[exerciseAuthority.blocker,compensationAuthority.blocker].filter(Boolean)};
+  };
+  const resolveRealRestoreGateAuthority=async(row:any)=>{
+    const evidenceKey=String(row?.evidence_key||'');
+    if(!evidenceKey)return{available:false,exact_query:false,latest_query:false,exact_rows:[],latest_rows:[],blockers:['real_restore_final_gate_binding_missing']};
+    const exact=await gateRead('restore_gate_exact_authority',()=>svc.entities.RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE',evidence_key:evidenceKey},'-observed_at',2),[]);
+    // Keep the unscoped latest query last: this is the consumer's final
+    // datastore observation after the Exercise/marker and exact-row reads.
+    const latest=await gateRead('restore_gate_latest_authority',()=>svc.entities.RuntimeGateEvidence.filter({gate_key:'REAL_RESTORE'},'-observed_at',2),[]);
+    return{available:exact.available&&latest.available,exact_query:true,latest_query:true,exact_rows:exact.value,latest_rows:latest.value,blockers:[exact.blocker,latest.blocker].filter(Boolean)};
+  };
+  const decision = await evaluateGoLiveHardGates({ evidence:[...runtimeEvidence, ...normalized], final_sha:finalSha, direct_blockers:directBlockers,resolve_real_restore_exercise_authority:resolveRealRestoreExerciseAuthority,resolve_real_restore_gate_authority:resolveRealRestoreGateAuthority });
   // Base44 has a strict response-size ceiling. Gate evaluation still consumes
   // the complete immutable evidence above, but Admin only needs provenance and
   // status—not every historical details_json blob in every refresh response.

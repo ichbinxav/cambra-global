@@ -2,30 +2,30 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "a2000f9d0a8d625f47e17338eb9a720064dc2131ac66c8ff8bd97ca3d50ff621",
+  "input_fingerprint_sha256": "af66a6eea06c1a51b07ffaffc3c43531ba4eaed44a0e3a328d8a39cfaf27bfca",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "a6c3a2c018e77c08ef34189dc7724d6bce02cc5454716e0f585dc7e044c2c442",
+      "sha256": "ec712845b858b76fba61f813ee0eeba7f605256f913cb5b10de70ef6fe336f01",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "3d4b35a7adc9d55b8d9f5333c72c3ca34f777bc8816ce50a02cf3b7d9e50e387",
+      "sha256": "a0d36d88df7c215802ca0faafc7b1ccf5f50abdeed9bcd651353d4a63799d6c1",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
       "key": "workforce",
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "3100a719ac182767fe7ac8efa877b5c4ffd7e0922aee95c962a198300830951e",
+      "sha256": "f7c35c122a99d30d479a0fdc97820eec6b521c64e703bfec69bf8404dc3b6745",
       "schema_version": "agent-workforce-catalog-v1.0.0"
     },
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "79d0ec49d1d27dc20be31a88c29dea6fbdca9b3b59f103f2367f7998cef56cd4",
+      "sha256": "88414750022d2cf2d4ad88b212a246aa3607c021291d216d3929eb12fb3d0ceb",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -39,8 +39,8 @@
     "effect_class_count": 10,
     "material_boundary_count": 42,
     "material_boundary_facade_wired_count": 5,
-    "material_trace_adapted_creator_count": 3,
-    "material_terminal_adapted_creator_count": 3,
+    "material_trace_adapted_creator_count": 8,
+    "material_terminal_adapted_creator_count": 8,
     "active_general_supervisor_count": 1,
     "health_plane_surface_count": 5,
     "authoritative_specialized_sweep_count": 1,
@@ -74,9 +74,9 @@
       "runtime_verified": false,
       "evidence_component": "agent_task_trace",
       "blockers": [
-        "43 material creator file(s) lack the full source-local root/terminal/Event adapter surface",
+        "37 material creator file(s) lack the full source-local root/terminal/Event adapter surface",
         "61 material route file(s) have no local AgentTask creator",
-        "104 material route file(s) do not expose the full source-local root/terminal/Event adapter surface",
+        "98 material route file(s) do not expose the full source-local root/terminal/Event adapter surface",
         "production trace completeness, orphan counts and actual provider receipt linkage are RUNTIME_PENDING"
       ]
     },
@@ -138,8 +138,8 @@
     },
     {
       "path": "base44/entities/AgentTask.jsonc",
-      "sha256": "d1af3106832430cc947f4a82ea7a08af3eee4afc65263adde0e3274399d30ef5",
-      "bytes": 18010
+      "sha256": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
+      "bytes": 18720
     },
     {
       "path": "base44/entities/AutonomyIncident.jsonc",
@@ -148,8 +148,8 @@
     },
     {
       "path": "base44/entities/Event.jsonc",
-      "sha256": "08a443b4d91669a19beb93f9e41b2f27d93ccdbe171d551a008903ddd7138a10",
-      "bytes": 9597
+      "sha256": "1ceafd59c18c8371fb01a709d34426fba5ec98a49e3f44b2b65aa32505068345",
+      "bytes": 9875
     },
     {
       "path": "base44/entities/IncidentAlertDelivery.jsonc",
@@ -243,8 +243,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "3c86cfa1684c9e05973b3f1e6782139ada42f5993c4ce4738a4f5a4b44a6d2d7",
-      "bytes": 51890
+      "sha256": "fba6b09c3dd82937c9b0541163ca905052c35b6191ed2aa108a145ee4e4a0410",
+      "bytes": 60220
     },
     {
       "path": "base44/shared/canonicalIncident.ts",
@@ -263,12 +263,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "a7ce3a69a2a39d2f6432abf5957e4eaf259cdfe7cf70aa2d150ae48bd02da7ee",
-      "bytes": 45253
+      "sha256": "2e2fed78df9d3e3c2d85f016fc0b6d6714a20435c8b8ffb8756b36f398f37abf",
+      "bytes": 45965
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "df4c13eba11e95c21e401c2bb87c64acca2cf9a129efc2cc133aeb3d0825aad6",
+      "sha256": "da31ffca0860821bebd012ecab1cd25666d69e6aa0023f77a8c66bf44fe5f8f3",
       "bytes": 8229
     },
     {
@@ -288,8 +288,13 @@
     },
     {
       "path": "scripts/generate-remediation-r0.mjs",
-      "sha256": "3380158f526c7a9022aed2bbf412e4860b7d80f0c1fd4f0e246223f0fdab411a",
-      "bytes": 130976
+      "sha256": "ced7c44328a17af5add4457199e7551c95cc2af913cc9379b7f2ad4794e34840",
+      "bytes": 141331
+    },
+    {
+      "path": "scripts/lib/agentTaskInventoryFreshness.mjs",
+      "sha256": "358a3088ee875ccf3e91b94aef1e1d2d2ceac9b836c9968bbdde334f88124758",
+      "bytes": 2696
     },
     {
       "path": "scripts/lib/preEclFreeze.mjs",
@@ -298,8 +303,8 @@
     },
     {
       "path": "src/lib/agentRegistry.js",
-      "sha256": "68ca8ac77ec9e076cef25979980a3d7b4c4449e53dd397eec70c98f0de981199",
-      "bytes": 11152
+      "sha256": "b616a64db72099f88985e12b65629be80e1408d4deb3ac05cd94c76ed10c3cdc",
+      "bytes": 11206
     },
     {
       "path": "src/lib/agentTaskCanonicalWork.test.js",
@@ -308,8 +313,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "f5c99d9861903cd584b1da6c664869f39da108b10ad1ff50b39e2720c150a77d",
-      "bytes": 29807
+      "sha256": "a177936f901041e127b2049348baa6b91adb0cb29e4e669631aaa64053379c1b",
+      "bytes": 35585
     },
     {
       "path": "src/lib/agentTaskTerminalEvent.test.js",
@@ -343,8 +348,8 @@
     },
     {
       "path": "src/lib/remediationR0Artifacts.test.js",
-      "sha256": "2996e3f0a5301839a4ceb44ba4f119ed546ffbf9b46ec01dcf0454c17f20acbf",
-      "bytes": 18200
+      "sha256": "b9ed46521d552a3e4bb27174ac40ffc1f2a1c279cb65f40e2753c4cc889b57fe",
+      "bytes": 25625
     }
   ]
 }

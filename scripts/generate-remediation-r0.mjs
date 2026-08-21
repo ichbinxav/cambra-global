@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 export const REPO_ROOT = path.resolve(path.dirname(SCRIPT_PATH), "..");
@@ -1498,7 +1499,7 @@ const BOUNDARY_SPECS = [
     physical_host: "shared/commercialModelRouter|shared/commandModelRouter",
     route_selector: "category=ai",
     callers: "__DYNAMIC_AI_CALLERS__",
-    actor: "Inherited from 38 physical callers",
+    actor: "Inherited from the dynamic physical caller census",
     tenant_key: "Caller brand/entity or _platform",
     policy: ["CostBudgetControl", "CostUsageEvent reservation"],
     emergency: {
@@ -1860,6 +1861,8 @@ const MATERIAL_SCHEDULED_ROUTES = {
 };
 
 const TENANT_AUTHORIZATION_PROOF_SPECS = {};
+const DYNAMIC_AI_OWNER_GATE_COVERAGE_GAP =
+  "__DYNAMIC_AI_OWNER_GATE_COVERAGE_GAP__";
 
 function registerTenantAuthorizationProof(boundaryIds, spec) {
   for (const boundaryId of boundaryIds) {
@@ -2136,7 +2139,6 @@ registerTenantAuthorizationProof(["MB-PAID-AI"], {
   ],
   covered_route_members: [
     "discoveryTechStackAgent",
-    "spendIntelligenceAgent",
     "recommendationEngineAgent",
   ],
   assertions: [
@@ -2147,7 +2149,7 @@ registerTenantAuthorizationProof(["MB-PAID-AI"], {
   authority_unavailable: "PASSED_LOCAL",
   authority_ambiguous: "PASSED_LOCAL",
   remaining_gaps: [
-    "only 3 of the dynamically inventoried AI callers are wired to the canonical owner gate",
+    DYNAMIC_AI_OWNER_GATE_COVERAGE_GAP,
     "the material registry still records paid-AI emergency and provider-receipt hard gaps",
   ],
 });
@@ -2268,12 +2270,311 @@ function listFunctionEntrySources(root) {
     );
 }
 
-function findFunctionCallers(root, pattern) {
-  return listFunctionEntrySources(root)
-    .filter((entry) =>
-      pattern.test(fs.readFileSync(path.join(root, entry.relativePath), "utf8"))
-    )
-    .map((entry) => entry.functionName);
+const MATERIAL_PRIMITIVE_MODULES = Object.freeze({
+  callCambraClaude: "base44/shared/commercialModelRouter.ts",
+  callCambraModel: "base44/shared/commandModelRouter.ts",
+  paidProviderFetch: "base44/shared/costGovernance.ts",
+  sendCostGovernedEmail: "base44/shared/costGovernance.ts",
+  reservePaidOperation: "base44/shared/costGovernance.ts",
+});
+const AI_PRIMITIVE_NAMES = new Set([
+  "callCambraClaude",
+  "callCambraModel",
+]);
+const PAID_PRIMITIVE_NAMES = new Set([
+  "paidProviderFetch",
+  "sendCostGovernedEmail",
+  "reservePaidOperation",
+]);
+const MATERIAL_CENSUS_COMPILER_OPTIONS = Object.freeze({
+  noLib: true,
+  noEmit: true,
+  skipLibCheck: true,
+  target: ts.ScriptTarget.ESNext,
+  module: ts.ModuleKind.ESNext,
+  moduleResolution: ts.ModuleResolutionKind.Bundler,
+  allowImportingTsExtensions: true,
+});
+
+function unwrapDirectCallTarget(expression) {
+  let target = expression;
+  while (
+    ts.isParenthesizedExpression(target) ||
+    ts.isNonNullExpression(target) ||
+    ts.isAsExpression(target) ||
+    ts.isTypeAssertionExpression(target) ||
+    ts.isSatisfiesExpression(target)
+  ) target = target.expression;
+  return target;
+}
+
+function safeRealPath(candidate) {
+  try {
+    return fs.realpathSync(candidate);
+  } catch {
+    return null;
+  }
+}
+
+function canonicalPrimitiveModules(root) {
+  const byRealPath = new Map();
+  for (const [exportName, relativePath] of Object.entries(
+    MATERIAL_PRIMITIVE_MODULES,
+  )) {
+    const realPath = safeRealPath(path.resolve(root, relativePath));
+    assert(realPath, `material_primitive_module_missing:${relativePath}`);
+    const current = byRealPath.get(realPath) || {
+      realPath,
+      exportNames: new Set(),
+    };
+    current.exportNames.add(exportName);
+    byRealPath.set(realPath, current);
+  }
+  return byRealPath;
+}
+
+function resolveCanonicalPrimitiveImport(
+  moduleName,
+  containingFile,
+  canonicalByRealPath,
+) {
+  if (
+    typeof moduleName !== "string" ||
+    !(moduleName.startsWith("./") || moduleName.startsWith("../"))
+  ) return null;
+  const resolved = ts.resolveModuleName(
+    moduleName,
+    containingFile,
+    MATERIAL_CENSUS_COMPILER_OPTIONS,
+    ts.sys,
+  ).resolvedModule;
+  const resolvedRealPath = resolved
+    ? safeRealPath(resolved.resolvedFileName)
+    : null;
+  return resolvedRealPath
+    ? canonicalByRealPath.get(resolvedRealPath) || null
+    : null;
+}
+
+function sourceHasCanonicalPrimitiveValueImport(
+  source,
+  fileName,
+  canonicalByRealPath,
+) {
+  const sourceFile = ts.createSourceFile(
+    fileName,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  return sourceFile.statements.some((statement) => {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      statement.importClause?.isTypeOnly ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    ) return false;
+    const canonical = resolveCanonicalPrimitiveImport(
+      statement.moduleSpecifier.text,
+      fileName,
+      canonicalByRealPath,
+    );
+    if (!canonical) return false;
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings) return false;
+    if (ts.isNamespaceImport(bindings)) return true;
+    return ts.isNamedImports(bindings) && bindings.elements.some((element) => {
+      const importedName = element.propertyName?.text || element.name.text;
+      return !element.isTypeOnly && canonical.exportNames.has(importedName);
+    });
+  });
+}
+
+function fullyAliasedSymbol(checker, symbol) {
+  let current = symbol;
+  const seen = new Set();
+  while (current && (current.flags & ts.SymbolFlags.Alias)) {
+    if (seen.has(current)) return null;
+    seen.add(current);
+    const next = checker.getAliasedSymbol(current);
+    if (!next || next === current) return null;
+    current = next;
+  }
+  return current || null;
+}
+
+function symbolIsCanonicalPrimitive(
+  checker,
+  symbol,
+  expectedExportName,
+  canonical,
+) {
+  const target = fullyAliasedSymbol(checker, symbol);
+  if (
+    !target ||
+    target.name !== expectedExportName ||
+    !(target.flags & ts.SymbolFlags.Value) ||
+    !Array.isArray(target.declarations) ||
+    target.declarations.length === 0
+  ) return false;
+  return target.declarations.every((declaration) =>
+    safeRealPath(declaration.getSourceFile().fileName) === canonical.realPath
+  );
+}
+
+function collectCanonicalImportBindings(
+  sourceFile,
+  checker,
+  canonicalByRealPath,
+) {
+  const named = new Map();
+  const namespaces = new Map();
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      statement.importClause?.isTypeOnly ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    ) continue;
+    const canonical = resolveCanonicalPrimitiveImport(
+      statement.moduleSpecifier.text,
+      sourceFile.fileName,
+      canonicalByRealPath,
+    );
+    if (!canonical) continue;
+    const bindings = statement.importClause?.namedBindings;
+    if (!bindings) continue;
+    if (ts.isNamespaceImport(bindings)) {
+      const symbol = checker.getSymbolAtLocation(bindings.name);
+      if (symbol) namespaces.set(symbol, canonical);
+      continue;
+    }
+    if (!ts.isNamedImports(bindings)) continue;
+    for (const element of bindings.elements) {
+      const importedName = element.propertyName?.text || element.name.text;
+      if (element.isTypeOnly || !canonical.exportNames.has(importedName)) {
+        continue;
+      }
+      const symbol = checker.getSymbolAtLocation(element.name);
+      if (symbol) named.set(symbol, { canonical, importedName });
+    }
+  }
+  return { named, namespaces };
+}
+
+function directCanonicalPrimitiveCall(call, checker, bindings) {
+  const target = unwrapDirectCallTarget(call.expression);
+  if (ts.isIdentifier(target)) {
+    const symbol = checker.getSymbolAtLocation(target);
+    const binding = symbol ? bindings.named.get(symbol) : null;
+    return binding && symbolIsCanonicalPrimitive(
+        checker,
+        symbol,
+        binding.importedName,
+        binding.canonical,
+      )
+      ? binding.importedName
+      : null;
+  }
+
+  let namespaceExpression = null;
+  let exportName = null;
+  let exportSymbol = null;
+  if (ts.isPropertyAccessExpression(target)) {
+    namespaceExpression = unwrapDirectCallTarget(target.expression);
+    exportName = target.name.text;
+    exportSymbol = checker.getSymbolAtLocation(target.name);
+  } else if (
+    ts.isElementAccessExpression(target) &&
+    (ts.isStringLiteral(target.argumentExpression) ||
+      ts.isNoSubstitutionTemplateLiteral(target.argumentExpression))
+  ) {
+    namespaceExpression = unwrapDirectCallTarget(target.expression);
+    exportName = target.argumentExpression.text;
+    exportSymbol = checker.getTypeAtLocation(namespaceExpression)
+      .getProperty(exportName);
+  }
+  if (!ts.isIdentifier(namespaceExpression) || !exportName) return null;
+  const namespaceSymbol = checker.getSymbolAtLocation(namespaceExpression);
+  const canonical = namespaceSymbol
+    ? bindings.namespaces.get(namespaceSymbol)
+    : null;
+  return canonical?.exportNames.has(exportName) &&
+      symbolIsCanonicalPrimitive(
+        checker,
+        exportSymbol,
+        exportName,
+        canonical,
+      )
+    ? exportName
+    : null;
+}
+
+function buildMaterialPrimitiveCallerCensus(root) {
+  const canonicalByRealPath = canonicalPrimitiveModules(root);
+  const candidates = listFunctionEntrySources(root).filter((entry) => {
+    const absolutePath = path.resolve(root, entry.relativePath);
+    return sourceHasCanonicalPrimitiveValueImport(
+      fs.readFileSync(absolutePath, "utf8"),
+      absolutePath,
+      canonicalByRealPath,
+    );
+  });
+  if (candidates.length === 0) {
+    return { aiCallers: [], paidPrimitiveCallers: [] };
+  }
+
+  const compilerOptions = MATERIAL_CENSUS_COMPILER_OPTIONS;
+  const host = ts.createCompilerHost(compilerOptions, true);
+  host.resolveModuleNames = (moduleNames, containingFile) =>
+    moduleNames.map((moduleName) => {
+      const canonical = resolveCanonicalPrimitiveImport(
+        moduleName,
+        containingFile,
+        canonicalByRealPath,
+      );
+      return canonical
+        ? {
+          resolvedFileName: canonical.realPath,
+          extension: ts.Extension.Ts,
+          isExternalLibraryImport: false,
+        }
+        : undefined;
+    });
+  const rootNames = candidates.map((entry) =>
+    path.resolve(root, entry.relativePath)
+  );
+  const program = ts.createProgram(rootNames, compilerOptions, host);
+  const checker = program.getTypeChecker();
+  const aiCallers = [];
+  const paidPrimitiveCallers = [];
+
+  for (const entry of candidates) {
+    const sourceFile = program.getSourceFile(
+      path.resolve(root, entry.relativePath),
+    );
+    if (!sourceFile) continue;
+    const bindings = collectCanonicalImportBindings(
+      sourceFile,
+      checker,
+      canonicalByRealPath,
+    );
+    const observed = new Set();
+    const visit = (node) => {
+      if (ts.isCallExpression(node)) {
+        const primitive = directCanonicalPrimitiveCall(node, checker, bindings);
+        if (primitive) observed.add(primitive);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+    if ([...observed].some((name) => AI_PRIMITIVE_NAMES.has(name))) {
+      aiCallers.push(entry.functionName);
+    }
+    if ([...observed].some((name) => PAID_PRIMITIVE_NAMES.has(name))) {
+      paidPrimitiveCallers.push(entry.functionName);
+    }
+  }
+  return { aiCallers, paidPrimitiveCallers };
 }
 
 function inputFingerprint(evidence) {
@@ -2431,11 +2732,8 @@ export function buildMaterialBoundaryRegistry(root = REPO_ROOT) {
   // COMMAND-C5 (2026-08-17): callCambraModel is the second AI primitive
   // (commandModelRouter). Matching only callCambraClaude made a real AI
   // spender invisible to this census the moment a caller was migrated.
-  const aiCallers = findFunctionCallers(root, /\bcallCambra(?:Claude|Model)\b/);
-  const paidPrimitiveCallers = findFunctionCallers(
-    root,
-    /\b(?:paidProviderFetch|sendCostGovernedEmail|reservePaidOperation)\b/,
-  );
+  const { aiCallers, paidPrimitiveCallers } =
+    buildMaterialPrimitiveCallerCensus(root);
   const schedulerKeys = scheduler.automations.map((row) => row.worker_key);
   const activeSchedulerKeys = scheduler.automations.filter((row) =>
     row.is_active
@@ -2459,6 +2757,9 @@ export function buildMaterialBoundaryRegistry(root = REPO_ROOT) {
     ]);
     return {
       ...spec,
+      actor: spec.boundary_id === "MB-PAID-AI"
+        ? `Inherited from ${aiCallers.length} physical callers`
+        : spec.actor,
       callers: [...callers].sort((left, right) =>
         left.localeCompare(right, "en")
       ),
@@ -3023,6 +3324,14 @@ export function validateTenantAuthorizationInventory(
         `tenant_authorization_pass_without_real_gate:${boundary.boundary_id}`,
       );
     }
+    if (boundary.boundary_id === "MB-PAID-AI") {
+      assert(
+        row.covered_route_members.every((member) =>
+          boundary.callers.includes(member)
+        ),
+        "tenant_authorization_ai_covered_route_not_in_caller_census",
+      );
+    }
   }
 
   for (
@@ -3079,6 +3388,24 @@ export function buildTenantAuthorizationInventory(
     );
     const passedLocal = testEvidence.length > 0 &&
       spec.proof_class.startsWith("REAL_");
+    const configuredCoveredRouteMembers = sortStrings(
+      spec.covered_route_members,
+    );
+    const coveredRouteMembers = boundary.boundary_id === "MB-PAID-AI"
+      ? configuredCoveredRouteMembers.filter((member) =>
+        boundary.callers.includes(member)
+      )
+      : configuredCoveredRouteMembers;
+    const configuredButNotCalling = boundary.boundary_id === "MB-PAID-AI"
+      ? configuredCoveredRouteMembers.filter((member) =>
+        !boundary.callers.includes(member)
+      )
+      : [];
+    const remainingGaps = spec.remaining_gaps.map((gap) =>
+      gap === DYNAMIC_AI_OWNER_GATE_COVERAGE_GAP
+        ? `only ${coveredRouteMembers.length} of the ${boundary.callers.length} dynamically inventoried AI callers are wired to the canonical owner gate`
+        : gap
+    );
     return {
       boundary_id: boundary.boundary_id,
       logical_route: boundary.logical_route,
@@ -3099,7 +3426,7 @@ export function buildTenantAuthorizationInventory(
       proof_class: spec.proof_class,
       route_wiring_status: "SOURCE_OBSERVED",
       route_source_refs: boundary.source_evidence.map((entry) => entry.path),
-      covered_route_members: sortStrings(spec.covered_route_members),
+      covered_route_members: coveredRouteMembers,
       gate_coverage: {
         assertions: spec.assertions,
         actor_denial_equivalence: spec.actor_denial_equivalence,
@@ -3109,7 +3436,10 @@ export function buildTenantAuthorizationInventory(
       gate_evidence: gateEvidence,
       test_evidence: testEvidence,
       remaining_gaps: sortStrings([
-        ...spec.remaining_gaps,
+        ...remainingGaps,
+        ...configuredButNotCalling.map((member) =>
+          `configured owner-gated route is not an observed AI caller: ${member}`
+        ),
         "no deployed Base44 authorization trace proves this complete material path",
       ]),
     };

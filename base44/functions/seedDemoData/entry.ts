@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
       const inp = await base44.asServiceRole.entities.AnalyzerInput.create({
         brand_id: brand.id,
         monthly_revenue: b.annual_revenue === "5m_20m" ? 750000 : b.annual_revenue === "1m_5m" ? 200000 : 60000,
+        currency: "EUR",
         monthly_transactions: 1500,
         avg_order_value: 95,
         payment_provider: "Stripe",

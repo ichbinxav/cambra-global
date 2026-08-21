@@ -3,15 +3,32 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { requireFreshAgentTaskInventory } from "./lib/agentTaskInventoryFreshness.mjs";
+import {
+  expectedOtr013Gap,
+  refreshIntelligenceRepositoryEvidence,
+} from "./lib/intelligenceRepositoryEvidence.mjs";
 
 const root = process.cwd();
 const configDir = path.join(root, "config", "intelligence");
 const specDir = process.env.CAMBRA_INTELLIGENCE_SPEC_DIR;
 const generatedAt = "2026-08-13T00:00:00Z";
-const agentTaskInventory = JSON.parse(fs.readFileSync(
-  path.join(root, "config", "agenttask-creator-inventory.json"),
-  "utf8",
-));
+const refreshRepositoryEvidence = process.argv.includes(
+  "--refresh-repository-evidence",
+);
+
+if (refreshRepositoryEvidence) {
+  const refreshed = refreshIntelligenceRepositoryEvidence(root);
+  console.log(
+    `intelligence-canonical-v2:refresh-repository-evidence PASS — material_trace_adapted=${refreshed.material_trace_adapted_files}/${refreshed.material_creator_files} unresolved_material_routes=${refreshed.unresolved_material_route_files} changed=${refreshed.changed}`,
+  );
+  process.exit(0);
+}
+
+const agentTaskInventorySnapshot = requireFreshAgentTaskInventory(root);
+const agentTaskInventory = JSON.parse(
+  agentTaskInventorySnapshot.canonicalBytes.toString("utf8"),
+);
 const agentTaskCounts = agentTaskInventory.counts;
 
 if (!specDir) {
@@ -513,7 +530,7 @@ const p0Audit = {
     implementation_existing: "AgentTask has a versioned envelope for trace, parent run, step, tenant/subject, policy/authority/intelligence, cost/effect/receipt and terminal ambiguity; the generator inventories every creator and material route.",
     material_effect_covered: "Adapted creator and settlement paths reject contradictory terminal/effect state, tenant/provenance mutation, lost fences and incomplete receipt lineage.",
     local_partial_criterion_verified: "Envelope construction, contradictory terminal, immutable provenance, exact CAS/readback and generated drift cases passed locally.",
-    local_gap: `Of ${agentTaskCounts.material_creator_files} material creator files, ${agentTaskCounts.material_terminal_adapted_files} expose canonical terminal adapters and ${agentTaskCounts.material_trace_adapted_files} expose the full root/terminal/Event adapter surface; ${agentTaskCounts.unresolved_material_route_files} registry-derived material source files remain without that full source-local surface. Static source inventory does not itself prove effect/cost/receipt lineage.`,
+    local_gap: expectedOtr013Gap(agentTaskCounts),
     runtime_gap: "No deployed trace-completeness report proves every material AgentTask/Event/effect/cost/receipt relationship on final SHA.",
     verification_level: "LOCAL_FAILURE_INJECTION",
   },
@@ -653,11 +670,15 @@ const p0Ledger = {
     status: "PASSED_LOCAL",
     local_test_scope: "MIXED_REPOSITORY_AND_PARTIAL_CRITERIA",
     test_files: p0LocalTestFiles,
-    observed_result: {
-      test_files_passed: 36,
-      test_files_total: 36,
-      tests_passed: 505,
-      tests_total: 505,
+    current_validation: {
+      mode: "REEXECUTE_JSON_REPORTER",
+      reporter: "json",
+      required_test_files: 36,
+      zero_failed_pending_todo: true,
+      all_tests_must_pass: true,
+      exact_test_paths_required: true,
+      nonempty_test_count_required: true,
+      timeout_ms: 300000,
     },
     limitation: "These mapped local tests prove nine repository criteria and partial slices of eleven others. They are not the normative ORCH acceptance catalog, deployed Base44 evidence, provider receipts or binary closure evidence.",
   }],

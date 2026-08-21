@@ -1,18 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from './internalGate.ts';
-import { recordRuntimeGateEvidence } from './runtimeEvidence.ts';
+import { realRestoreExerciseProjectionHash, recordRuntimeGateEvidence, runtimeDeploymentIdentity, verifyRuntimeGateEvidence } from './runtimeEvidence.ts';
 import { DISASTER_RECOVERY_ENTITY_CATALOG, DISASTER_RECOVERY_ENTITY_CATALOG_VERSION } from './generated/disasterRecoveryEntityCatalog.ts';
 import {
   DISASTER_RECOVERY_VERSION, DISASTER_RECOVERY_SCHEMA_VERSION, DR_EPHEMERAL_SECRET_ENTITIES,
   DR_NON_RESTORABLE_ENTITIES, DR_PAGE_SIZE, DR_RETENTION_DAYS, DR_RPO_TARGET_MINUTES,
-  DR_RTO_TARGET_MINUTES, assertIsolatedRestoreTarget, backupTier, collectExactReferences,
+  DR_RTO_TARGET_MINUTES, assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, collectExactReferences,
   collectOwnedFileReferences, decryptEnvelope, deepRemap, diffRecords, encryptEnvelope,
-  gzipBytes, gunzipBytes, indexRecords, parseAes256Key, redactSecrets, retentionCutoff,
-  restoreEnvironment, safeFileName, secretLikePaths, sha256Hex, snapshotType, stableJson, stripSystemFields,
+  evaluateDisasterRecoveryScheduler,
+  gzipBytes, gunzipBytes, indexRecords, parseAes256Key, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, retentionCutoff,
+  restoreEnvironment, restoreEvidenceAad, safeFileName, secretLikePaths, sha256Hex, snapshotType,
+  stableJson, strictMinuteDifference, stripSystemFields, persistRestoreAttestationAuthority, validateLatestCheckpointIdentity,
+  validateRestoreEvidenceAttestation, validateRestoreManifestChain, validateSnapshotManifestIdentity,
 } from './disasterRecoveryCore.ts';
 import {
   createSharePointBackupStorage, DisasterRecoveryConfigurationError, MicrosoftGraphError,
-  readSharePointBackupConfiguration,
+  openSharePointBackupStorage, readDisasterRecoveryPreflightConfiguration,
+  verifySharePointBackupStorage,
 } from './sharePointBackupStorage.ts';
 import { readRuntimeRows, requireRuntimeSource, runtimeSourceCoverage } from './runtimeSourceRead.ts';
 
@@ -23,10 +27,15 @@ const ENTITY_CONCURRENCY=10;
 const RESTORE_BATCH=200;
 
 function now(){return new Date().toISOString()}
+function authorityTimestampAfter(...values:any[]){let latest=Date.now();for(const value of values){const parsed=Date.parse(String(value||''));if(Number.isFinite(parsed))latest=Math.max(latest,parsed)}return new Date(latest+1).toISOString()}
 function getEnv(name:string){return String(Deno.env.get(name)||'').trim()}
+function drMaxFileBytes(){return parseDrMaxFileBytes(getEnv('DR_MAX_FILE_BYTES'))}
+function assertDrPayloadWithinLimit(bytes:Uint8Array,representation:string){const max=drMaxFileBytes();if(bytes.byteLength>max)throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit'),{code:'DR_OWNED_FILE_TOO_LARGE',representation,bytes:bytes.byteLength,max});return max}
+function drErrorCode(error:any,fallback='DISASTER_RECOVERY_FAILED'){const value=String(error?.code||'').trim();return/^[a-zA-Z0-9_-]{1,120}$/.test(value)?value:fallback}
+function drConfigurationNames(values:any){return Array.isArray(values)?[...new Set(values.map((value)=>String(value||'').replace(/[^a-zA-Z0-9_ -]/g,'_').slice(0,160)).filter(Boolean))].slice(0,50):[]}
+function logDrFailure(event:string,error:any){console.error(JSON.stringify({level:'error',event,error_code:drErrorCode(error)}))}
 function jsonBytes(value:any){return encoder.encode(stableJson(value))}
 function jsonFromBytes(bytes:Uint8Array){return JSON.parse(decoder.decode(bytes))}
-function minuteDifference(later:any,earlier:any){return Math.max(0,(Date.parse(String(later||''))-Date.parse(String(earlier||'')))/60000)}
 function pathAllowed(path:any,prefix:string,suffix:string){const value=String(path||'');return value.startsWith(prefix)&&value.endsWith(suffix)&&!value.includes('..')&&/^[a-zA-Z0-9 ./_-]+$/.test(value)}
 
 function assertProductionControlPlane(req:Request,operation:string){
@@ -42,11 +51,17 @@ async function mapLimit<T,R>(values:readonly T[],limit:number,handler:(value:T,i
 }
 
 function configurationStatus(){
- const graph=readSharePointBackupConfiguration(Deno.env),missing=[...graph.missing];
- if(!getEnv('DR_BACKUP_AES256_KEY_B64'))missing.push('DR_BACKUP_AES256_KEY_B64');
- if(!getEnv('CAMBRA_GIT_SHA'))missing.push('CAMBRA_GIT_SHA');
- if(!getEnv('CAMBRA_SOURCE_TREE_HASH'))missing.push('CAMBRA_SOURCE_TREE_HASH');
- return{ok:missing.length===0,missing:[...new Set(missing)],destination:{hostname:graph.configuration.siteHostname,site_id_configured:!!graph.configuration.siteId,site_path_configured:!!graph.configuration.sitePath,drive_id_configured:!!graph.configuration.driveId,drive_name:graph.configuration.driveName,root_folder:graph.configuration.rootFolder},security:{application_identity:true,least_privilege_required:'Microsoft Graph application permission Sites.Selected plus site-specific write grant',encryption:'AES-256-GCM',compression:'gzip',hash:'SHA-256',secrets_in_payload:false}};
+ const graph=readDisasterRecoveryPreflightConfiguration(Deno.env,{requireCanonicalTarget:true});
+ return{ok:graph.ok,missing:graph.missing,invalid:graph.invalid,destination:{hostname:graph.configuration.siteHostname,site_id_configured:!!graph.configuration.siteId,site_path_configured:!!graph.configuration.sitePath,site_resolution:graph.target.site_resolution,drive_id_configured:!!graph.configuration.driveId,drive_name:graph.configuration.driveName,drive_resolution:graph.target.drive_resolution,root_folder:graph.configuration.rootFolder,canonical_root:graph.target.canonical_root,canonical_target:graph.target.canonical_target},release_identity:graph.release_identity,encryption_key:graph.encryption_key,file_size_limit:graph.file_size_limit,security:{application_identity:true,least_privilege_required:'Microsoft Graph application permission Sites.Selected plus write grant on the exact root site; the grant covers that site and its libraries',encryption:'AES-256-GCM',compression:'gzip',hash:'SHA-256',secrets_in_payload:false}};
+}
+
+async function latestRuntimeGateAuthority(service:any,gateKey:string,source:string){
+ return requireRuntimeSource(await readRuntimeRows({source,read:()=>service.entities.RuntimeGateEvidence.filter({gate_key:gateKey},'-observed_at',2)}));
+}
+
+function exactExerciseProjection(expected:any,observed:any,id:any){
+ if(!observed||String(observed.id||'')!==String(id||''))return false;
+ return Object.keys(expected||{}).every((field)=>stableJson(observed[field]??null)===stableJson(expected[field]??null));
 }
 
 async function listAll(service:any,entityName:string){
@@ -64,12 +79,16 @@ async function readLatestCheckpoint(storage:any,key:Uint8Array){
  const indexBytes=await storage.downloadIfExists('Manifests/latest.index.json.gz.aes256gcm');
  if(!manifestBytes||!indexBytes)return null;
  const manifest=jsonFromBytes(manifestBytes);
+ await verifyManifest(manifest);
  if(!manifest?.index?.aad||!manifest?.index?.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_manifest_invalid'),{code:'DR_CHECKPOINT_INVALID'});
+ if(manifest.dr_version!==DISASTER_RECOVERY_VERSION||manifest.source_app_id!==APP_ID||manifest.source_environment!=='prod')throw Object.assign(new Error('dr_latest_checkpoint_source_identity_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
+ const expectedCatalog=[...DISASTER_RECOVERY_ENTITY_CATALOG].sort(),observedCatalog=Object.keys(manifest.entity_counts||{}).sort();if(manifest.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest.entity_catalog_count!==expectedCatalog.length||observedCatalog.length!==expectedCatalog.length||observedCatalog.some((name,index)=>name!==expectedCatalog[index]))throw Object.assign(new Error('dr_latest_checkpoint_catalog_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
  if(await sha256Hex(indexBytes)!==manifest.index.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const decrypted=await decryptEnvelope(indexBytes,key,manifest.index.aad);
- const decompressed=await gunzipBytes(decrypted.bytes);
+ const decompressed=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
+ if(await sha256Hex(decompressed)!==manifest.index.payload_sha256)throw Object.assign(new Error('dr_latest_checkpoint_payload_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const index=jsonFromBytes(decompressed);
- if(index.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION)throw Object.assign(new Error('dr_checkpoint_schema_mismatch'),{code:'DR_CHECKPOINT_SCHEMA_MISMATCH'});
+ validateLatestCheckpointIdentity(manifest,index);
  return{manifest,index};
 }
 
@@ -79,17 +98,16 @@ function backupIdentity(){
 }
 
 async function uploadEncryptedJson(storage:any,path:string,value:any,key:Uint8Array,aad:string){
- const raw=jsonBytes(value),compressed=await gzipBytes(raw),envelope=await encryptEnvelope(compressed,key,aad);
+ const raw=jsonBytes(value),max=assertDrPayloadWithinLimit(raw,'json'),compressed=await gzipBytes(raw,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'encrypted_envelope');
  await storage.upload(path,envelope,'application/octet-stream');
  return{path,aad,encrypted_bytes:envelope.byteLength,uncompressed_bytes:raw.byteLength,compressed_bytes:compressed.byteLength,encrypted_sha256:await sha256Hex(envelope),payload_sha256:await sha256Hex(raw),compression:'gzip',encryption:'AES-256-GCM',envelope_version:'CAMBRA-DR-AES256GCM-1'};
 }
 
 async function fetchOwnedFile(url:string){
- const response=await fetch(url,{redirect:'error',headers:{Accept:'application/octet-stream'}});
- if(!response.ok)throw Object.assign(new Error('dr_owned_file_download_failed'),{code:'DR_OWNED_FILE_DOWNLOAD_FAILED',status:response.status});
- const bytes=new Uint8Array(await response.arrayBuffer());
- const max=Math.max(1,Number(getEnv('DR_MAX_FILE_BYTES')||100*1024*1024));
- if(bytes.byteLength>max)throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit'),{code:'DR_OWNED_FILE_TOO_LARGE',bytes:bytes.byteLength,max});
+  const response=await fetch(url,{redirect:'error',headers:{Accept:'application/octet-stream'}});
+  if(!response.ok){await response.body?.cancel('dr_owned_file_download_failed').catch(()=>undefined);throw Object.assign(new Error('dr_owned_file_download_failed'),{code:'DR_OWNED_FILE_DOWNLOAD_FAILED',status:response.status})}
+ const max=drMaxFileBytes();
+ const bytes=await readBoundedDrResponseBytes(response,max);
  return{bytes,contentType:String(response.headers.get('content-type')||'application/octet-stream')};
 }
 
@@ -107,13 +125,13 @@ async function applyRetention(storage:any){
 }
 
 async function recordBackupFailure(service:any,error:any){
- const at=now(),code=String(error?.code||'DR_BACKUP_FAILED'),dedupe='dr:backup:failure';
+ const at=now(),code=drErrorCode(error,'DR_BACKUP_FAILED'),providerCode=error instanceof MicrosoftGraphError?error.graphCode:null,dedupe='dr:backup:failure',missing=drConfigurationNames(error?.missing),invalid=drConfigurationNames(error?.invalid);
  const rows=requireRuntimeSource(await readRuntimeRows({source:'dr_backup_failure_incident',read:()=>service.entities.AutonomyIncident.filter({dedupe_key:dedupe,status:'open'},'-last_seen_at',2)}));
  if(rows.length>1)throw Object.assign(new Error('dr_backup_failure_incident_ambiguous'),{code:'DR_INCIDENT_AUTHORITY_AMBIGUOUS'});
  const old=rows[0];
- const row={dedupe_key:dedupe,domain:'data',severity:'critical',status:'open',subject_type:'DisasterRecoveryExercise',subject_id:'_backup',summary:`Disaster recovery backup blocked: ${code}`,details_json:{code,configuration_required:error instanceof DisasterRecoveryConfigurationError,missing:error?.missing||[]},workflow_state:'human_review',owner_type:'founder',automation_eligibility:'human_required',financial_impact_minor:0,customer_impact:'high',legal_risk:'medium',first_seen_at:old?.first_seen_at||at,last_seen_at:at};
+ const row={dedupe_key:dedupe,domain:'data',severity:'critical',status:'open',subject_type:'DisasterRecoveryExercise',subject_id:'_backup',summary:`Disaster recovery backup blocked: ${code}`,details_json:{code,provider_code:providerCode,configuration_required:error instanceof DisasterRecoveryConfigurationError,missing,invalid},workflow_state:'human_review',owner_type:'founder',automation_eligibility:'human_required',financial_impact_minor:0,customer_impact:'high',legal_risk:'medium',first_seen_at:old?.first_seen_at||at,last_seen_at:at};
  if(old)await service.entities.AutonomyIncident.update(old.id,row);else await service.entities.AutonomyIncident.create(row);
- await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_failed',message:code,data_json:{code,missing:error?.missing||[]},actor_email:'disaster_recovery',created_at:at});
+ await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_failed',message:code,data_json:{code,provider_code:providerCode,missing,invalid},actor_email:'disaster_recovery',created_at:at});
 }
 
 async function closeBackupFailure(service:any){
@@ -123,12 +141,33 @@ async function closeBackupFailure(service:any){
  if(old)await service.entities.AutonomyIncident.update(old.id,{status:'resolved',workflow_state:'resolved',resolved_at:now(),root_cause:'backup_completed_and_verified',recovery_json:{verified:true}});
 }
 
+async function persistRestoreCompensationAmbiguity(service:any,input:any){
+ const at=now(),dedupe=String(input.dedupe_key||''),exerciseKey=String(input.exercise_key||'');
+ if(!dedupe||!exerciseKey)throw Object.assign(new Error('dr_restore_compensation_marker_identity_missing'),{code:'DR_RESTORE_COMPENSATION_AMBIGUOUS'});
+ const before=requireRuntimeSource(await readRuntimeRows({source:'dr_restore_compensation_incident_before',read:()=>service.entities.AutonomyIncident.filter({dedupe_key:dedupe},'-last_seen_at',2)}));
+ if(before.length>1)throw Object.assign(new Error('dr_restore_compensation_marker_ambiguous'),{code:'DR_RESTORE_COMPENSATION_AMBIGUOUS'});
+ const row={dedupe_key:dedupe,domain:'data',severity:'critical',status:'open',subject_type:'DisasterRecoveryExercise',subject_id:String(input.exercise_id||exerciseKey),summary:'REAL_RESTORE compensation is ambiguous; residual PASS evidence must not be trusted',details_json:{exercise_key:exerciseKey,exercise_id:String(input.exercise_id||''),runtime_gate_id:String(input.gate_id||''),failure_code:drErrorCode(input.compensation_error),original_error_code:drErrorCode(input.error),evidence_hash:String(input.evidence_hash||''),evidence_path:String(input.evidence_path||'')},first_seen_at:before[0]?.first_seen_at||at,last_seen_at:at,workflow_state:'human_review',owner_type:'founder',automation_eligibility:'human_required',financial_impact_minor:0,customer_impact:'high',legal_risk:'medium'};
+ const stored=before[0]?await service.entities.AutonomyIncident.update(before[0].id,row):await service.entities.AutonomyIncident.create(row);
+ const readback=await service.entities.AutonomyIncident.get(stored.id);
+ const after=requireRuntimeSource(await readRuntimeRows({source:'dr_restore_compensation_incident_after',read:()=>service.entities.AutonomyIncident.filter({dedupe_key:dedupe},'-last_seen_at',2)}));
+ if(after.length!==1||String(after[0]?.id||'')!==String(readback?.id||'')||readback?.dedupe_key!==dedupe||readback?.status!=='open'||readback?.severity!=='critical'||readback?.details_json?.exercise_key!==exerciseKey)throw Object.assign(new Error('dr_restore_compensation_marker_readback_mismatch'),{code:'DR_RESTORE_COMPENSATION_AMBIGUOUS'});
+ return readback;
+}
+
+async function readRestoreExerciseConsumerAuthority(service:any,exerciseKey:string,incidentKey:string,source:string){
+ const [exerciseRead,markerRead]=await Promise.all([
+  readRuntimeRows({source:`${source}_exercise`,limit:2,read:()=>service.entities.DisasterRecoveryExercise.filter({exercise_key:exerciseKey},'-updated_date',2)}),
+  readRuntimeRows({source:`${source}_compensation`,limit:2,read:()=>service.entities.AutonomyIncident.filter({dedupe_key:incidentKey},'-last_seen_at',2)}),
+ ]);
+ return{available:exerciseRead.status==='COMPLETE'&&markerRead.status==='COMPLETE',exact_query:true,rows:exerciseRead.value,compensation_markers:markerRead.value,blockers:[...exerciseRead.blockers,...markerRead.blockers]};
+}
+
 async function executeBackup(req:Request,service:any,input:any,actor:string){
  const sourceEnvironment=assertProductionControlPlane(req,'backup');
- const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing);
- const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage(),identity=backupIdentity(),tier=String(input.retention_tier||backupTier(new Date(identity.at))) as any;
+ const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true,initializeFolders:true}),identity=backupIdentity(),tier=String(input.retention_tier||backupTier(new Date(identity.at))) as any;
  if(!['Daily','Weekly','Monthly'].includes(tier))throw Object.assign(new Error('dr_retention_tier_invalid'),{code:'DR_RETENTION_TIER_INVALID'});
- const latest=await readLatestCheckpoint(storage,key),type=snapshotType(input.backup_mode,tier,!!latest),checkpointFrom=latest?.index?.checkpoint_to||null,checkpointTo=identity.at;
+ const latest=await readLatestCheckpoint(storage,key),type=snapshotType(input.backup_mode,tier,!!latest),checkpointFrom=type==='FULL'?null:(latest?.index?.checkpoint_to||null),checkpointTo=identity.at;
  const previousEntityIndexes=latest?.index?.entities||{};
  const entityResults=await mapLimit(DISASTER_RECOVERY_ENTITY_CATALOG,ENTITY_CONCURRENCY,async(entityName)=>{
   if(DR_EPHEMERAL_SECRET_ENTITIES.has(entityName))return{entity_name:entityName,excluded:true,exclusion_reason:'ephemeral_auth_material_not_recoverable_or_required',source_count:0,records:[],tombstones:[],index:{},redacted_fields:0};
@@ -142,23 +181,26 @@ async function executeBackup(req:Request,service:any,input:any,actor:string){
  const attachments:any[]=[];let attachmentIndex=0;
  for(const sourceUrl of [...allFiles].sort()){
   const fetched=await fetchOwnedFile(sourceUrl),number=String(++attachmentIndex).padStart(5,'0'),name=safeFileName(new URL(sourceUrl).pathname.split('/').pop(),`attachment-${number}.bin`),path=`${backupRoot}/attachments/${number}-${name}.gz.aes256gcm`,aad=`${identity.backupId}|attachment|${number}`;
-  const compressed=await gzipBytes(fetched.bytes),envelope=await encryptEnvelope(compressed,key,aad);await storage.upload(path,envelope,'application/octet-stream');
+  const max=assertDrPayloadWithinLimit(fetched.bytes,'attachment_plaintext'),compressed=await gzipBytes(fetched.bytes,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'attachment_envelope');await storage.upload(path,envelope,'application/octet-stream');
   attachments.push({source_ref:sourceUrl,source_ref_sha256:await sha256Hex(sourceUrl),file_name:name,content_type:fetched.contentType,storage_path:path,aad,original_bytes:fetched.bytes.byteLength,compressed_bytes:compressed.byteLength,encrypted_bytes:envelope.byteLength,plaintext_sha256:await sha256Hex(fetched.bytes),encrypted_sha256:await sha256Hex(envelope)});
  }
  const entityPayload=Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.records,tombstones:row.tombstones}]));
- const counts=Object.fromEntries(entityResults.map((row:any)=>[row.entity_name,{source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:row.restorable!==false,redacted_fields:row.redacted_fields}]));
- const manifestPath=`Manifests/${identity.backupId}.manifest.json`,previousManifestPath=latest?.manifest?.manifest_path||null,baseFullManifestPath=type==='FULL'?manifestPath:(latest?.manifest?.base_full_manifest_path||null);
- const payload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,created_at:identity.at,entities:entityPayload,attachments,security:{raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)}};
+ const counts=Object.fromEntries(entityResults.map((row:any)=>[row.entity_name,{source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:!row.excluded&&row.restorable!==false,redacted_fields:row.redacted_fields}]));
+ const entityTotals={source:entityResults.reduce((sum:any,row:any)=>sum+Number(row.source_count||0),0),included:entityResults.reduce((sum:any,row:any)=>sum+Number(row.records?.length||0),0),tombstones:entityResults.reduce((sum:any,row:any)=>sum+Number(row.tombstones?.length||0),0),excluded_entities:entityResults.filter((row:any)=>row.excluded).map((row:any)=>row.entity_name),non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES],redacted_fields:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)};
+ const attachmentsSummary={count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'};
+ const deploymentIdentity=runtimeDeploymentIdentity(),releaseIdentity={release_version:deploymentIdentity.release_version,git_sha:deploymentIdentity.git_sha,source_tree_hash:deploymentIdentity.source_tree_hash,source_tree_hash_algorithm:'sha256-tree-v1'};
+ const manifestPath=`Manifests/${identity.backupId}.manifest.json`,previousManifestPath=type==='FULL'?null:(latest?.manifest?.manifest_path||null),baseFullManifestPath=type==='FULL'?manifestPath:(latest?.manifest?.base_full_manifest_path||null);
+ const payload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,...releaseIdentity,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,created_at:identity.at,entity_counts:counts,entity_totals:entityTotals,entities:entityPayload,attachments,attachments_summary:attachmentsSummary,security:{raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)}};
  const snapshotPath=`${backupRoot}/snapshot.json.gz.aes256gcm`,snapshotAad=`${identity.backupId}|snapshot`,snapshotArtifact=await uploadEncryptedJson(storage,snapshotPath,payload,key,snapshotAad);
  const checkpointIndex={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:identity.backupId,checkpoint_to:checkpointTo,entities:Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.index}]))};
  const indexPath=`Manifests/${identity.backupId}.index.json.gz.aes256gcm`,indexAad=`${identity.backupId}|index`,indexArtifact=await uploadEncryptedJson(storage,indexPath,checkpointIndex,key,indexAad);
- const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,release_version:'0.97.0',git_sha:getEnv('CAMBRA_GIT_SHA'),source_tree_hash:getEnv('CAMBRA_SOURCE_TREE_HASH'),source_tree_hash_algorithm:'sha256-tree-v1',entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:identity.at,created_by:actor,storage_identity:storage.identity,backup_root_path:backupRoot,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:{source:entityResults.reduce((sum:any,row:any)=>sum+Number(row.source_count||0),0),included:entityResults.reduce((sum:any,row:any)=>sum+Number(row.records?.length||0),0),tombstones:entityResults.reduce((sum:any,row:any)=>sum+Number(row.tombstones?.length||0),0),excluded_entities:entityResults.filter((row:any)=>row.excluded).map((row:any)=>row.entity_name),non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES],redacted_fields:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)},/* AUDIT P2-06 (2026-08-17): this used to be `all_verified_before_upload: true`, sealed into the
+ const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,...releaseIdentity,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:identity.at,created_by:actor,storage_identity:storage.identity,backup_root_path:backupRoot,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:entityTotals,/* AUDIT P2-06 (2026-08-17): this used to be `all_verified_before_upload: true`, sealed into the
    backup manifest with no verification behind it. Nothing in executeBackup compares an attachment
    against an independent reference: fetchOwnedFile checks only response.ok and a size ceiling,
    and the sha256 on each row is a digest of the fetched copy itself, not a check against a source-
    side digest. So the field asserted a property the code did not deliver. Replaced by an
    attachment_verification note that describes what actually happened. */
-attachments:{count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'},retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}};
+attachments:attachmentsSummary,retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}};
  const manifest={...manifestCore,manifest_hash:await sha256Hex(stableJson(manifestCore))},manifestBytes=jsonBytes(manifest);
  await storage.upload(manifestPath,manifestBytes,'application/json');
  await storage.upload('Manifests/latest.index.json.gz.aes256gcm',await storage.download(indexPath),'application/octet-stream');
@@ -176,7 +218,7 @@ function verifyManifest(manifest:any){
 
 async function loadManifest(storage:any,path:string){
  if(!pathAllowed(path,'Manifests/','.manifest.json'))throw Object.assign(new Error('dr_manifest_path_invalid'),{code:'DR_MANIFEST_PATH_INVALID'});
- const bytes=await storage.download(path),manifest=jsonFromBytes(bytes);await verifyManifest(manifest);return manifest;
+ const bytes=await storage.download(path),manifest=jsonFromBytes(bytes);await verifyManifest(manifest);if(manifest.manifest_path!==path)throw Object.assign(new Error('dr_manifest_path_identity_mismatch'),{code:'DR_MANIFEST_IDENTITY_MISMATCH'});return manifest;
 }
 
 async function loadRestoreChain(storage:any,selectedPath:string){
@@ -187,15 +229,18 @@ async function loadRestoreChain(storage:any,selectedPath:string){
   path=String(manifest.previous_manifest_path||'');if(!path)throw Object.assign(new Error('dr_incremental_chain_missing_full'),{code:'DR_INCREMENTAL_CHAIN_INVALID'});
  }
  if(!reverse.length||reverse.at(-1)?.snapshot_type!=='FULL')throw Object.assign(new Error('dr_restore_chain_too_long_or_missing_full'),{code:'DR_INCREMENTAL_CHAIN_INVALID'});
- return reverse.reverse();
+ const chain=reverse.reverse();
+ validateRestoreManifestChain(chain,{source_app_id:APP_ID,source_environment:'prod',entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,entity_catalog:DISASTER_RECOVERY_ENTITY_CATALOG,excluded_entities:[...DR_EPHEMERAL_SECRET_ENTITIES],non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES]});
+ return chain;
 }
 
 async function loadSnapshot(storage:any,manifest:any,key:Uint8Array){
  const bytes=await storage.download(String(manifest.snapshot.path));
  if(await sha256Hex(bytes)!==manifest.snapshot.encrypted_sha256)throw Object.assign(new Error('dr_snapshot_ciphertext_hash_mismatch'),{code:'DR_SNAPSHOT_HASH_MISMATCH',backup_id:manifest.backup_id});
- const decrypted=await decryptEnvelope(bytes,key,String(manifest.snapshot.aad)),plain=await gunzipBytes(decrypted.bytes);
+ const decrypted=await decryptEnvelope(bytes,key,String(manifest.snapshot.aad)),plain=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
  if(await sha256Hex(plain)!==manifest.snapshot.payload_sha256)throw Object.assign(new Error('dr_snapshot_plaintext_hash_mismatch'),{code:'DR_SNAPSHOT_HASH_MISMATCH',backup_id:manifest.backup_id});
- const payload=jsonFromBytes(plain);if(payload.backup_id!==manifest.backup_id||payload.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION)throw Object.assign(new Error('dr_snapshot_identity_mismatch'),{code:'DR_SNAPSHOT_IDENTITY_MISMATCH'});
+ const payload=jsonFromBytes(plain);validateSnapshotManifestIdentity(manifest,payload,{entity_catalog:DISASTER_RECOVERY_ENTITY_CATALOG});
+ for(const attachment of payload.attachments||[])if(await sha256Hex(String(attachment.source_ref||''))!==String(attachment.source_ref_sha256||''))throw Object.assign(new Error('dr_attachment_source_reference_hash_mismatch'),{code:'DR_SNAPSHOT_ATTACHMENT_INVALID',backup_id:manifest.backup_id});
  return payload;
 }
 
@@ -224,10 +269,10 @@ async function restoreAttachments(service:any,storage:any,attachments:any[],key:
  const mapping=new Map<string,string>(),evidence:any[]=[];
  for(const attachment of attachments){
   const encrypted=await storage.download(String(attachment.storage_path));if(await sha256Hex(encrypted)!==attachment.encrypted_sha256)throw Object.assign(new Error('dr_attachment_ciphertext_hash_mismatch'),{code:'DR_ATTACHMENT_HASH_MISMATCH'});
-  const decrypted=await decryptEnvelope(encrypted,key,String(attachment.aad)),bytes=await gunzipBytes(decrypted.bytes);if(await sha256Hex(bytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_plaintext_hash_mismatch'),{code:'DR_ATTACHMENT_HASH_MISMATCH'});
-  const file=new File([bytes],String(attachment.file_name||'restored.bin'),{type:String(attachment.content_type||'application/octet-stream')});
+  const decrypted=await decryptEnvelope(encrypted,key,String(attachment.aad)),bytes=await gunzipBytes(decrypted.bytes,drMaxFileBytes());assertAttachmentByteLengths(attachment,{encrypted:encrypted.byteLength,compressed:decrypted.bytes.byteLength,original:bytes.byteLength});if(await sha256Hex(bytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_plaintext_hash_mismatch'),{code:'DR_ATTACHMENT_HASH_MISMATCH'});
+  const fileBuffer=new ArrayBuffer(bytes.byteLength);new Uint8Array(fileBuffer).set(bytes);const file=new File([fileBuffer],String(attachment.file_name||'restored.bin'),{type:String(attachment.content_type||'application/octet-stream')});
   const uploaded=await service.integrations.Core.UploadFile({file});const targetUrl=String(uploaded?.file_url||'');if(!targetUrl)throw Object.assign(new Error('dr_attachment_target_upload_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
-  const check=await fetch(targetUrl,{redirect:'error'}),targetBytes=new Uint8Array(await check.arrayBuffer());if(!check.ok||await sha256Hex(targetBytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
+  const check=await fetch(targetUrl,{redirect:'error'});if(!check.ok){await check.body?.cancel('dr_attachment_target_verification_failed').catch(()=>undefined);throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'})}const max=drMaxFileBytes(),targetBytes=await readBoundedDrResponseBytes(check,max);if(targetBytes.byteLength!==bytes.byteLength||await sha256Hex(targetBytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
   mapping.set(String(attachment.source_ref),targetUrl);evidence.push({source_ref_sha256:attachment.source_ref_sha256,target_ref_sha256:await sha256Hex(targetUrl),plaintext_sha256:attachment.plaintext_sha256,bytes:bytes.byteLength,verified:true});
  }
  return{mapping,evidence};
@@ -273,44 +318,71 @@ async function validateRestoredState(service:any,desired:Map<string,Map<string,a
 
 async function executeRestore(req:Request,service:any,input:any,actor:string){
  const environment=assertIsolatedRestoreTarget(req,input.confirmation);if(input.wipe_target!==true)throw Object.assign(new Error('dr_restore_requires_clean_target_confirmation'),{code:'DR_RESTORE_WIPE_CONFIRMATION_REQUIRED'});
- const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing);
- const started=now(),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage();
+ const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const started=now(),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true});
  let selectedPath=String(input.manifest_path||'');if(!selectedPath){const latest=await storage.download('Manifests/latest.manifest.json');selectedPath=String(jsonFromBytes(latest).manifest_path||'')}
  const chain=await loadRestoreChain(storage,selectedPath),selected=chain.at(-1),desired=await desiredStateFromChain(storage,chain,key);
  const sourceUser=desired.entities.get('User'),users=await targetUserMapping(service,sourceUser);if(users.missing.length)throw Object.assign(new Error('dr_restore_target_users_missing'),{code:'DR_RESTORE_TARGET_USERS_MISSING',missing_count:users.missing.length,missing_user_hashes:await Promise.all(users.missing.map((item)=>sha256Hex(item)))});
  const entityNames=[...desired.entities.keys()].filter((name)=>!DR_NON_RESTORABLE_ENTITIES.has(name)&&!DR_EPHEMERAL_SECRET_ENTITIES.has(name));
  const wiped=await wipeRestoreTarget(service,entityNames),attachments=await restoreAttachments(service,storage,desired.attachments,key),created=await createRestoredRecords(service,desired.entities,users.mapping),mapping=new Map([...created.idMapping,...attachments.mapping]);
  await remapRestoredRecords(service,created.recordsByEntity,mapping);
- const integrity=await validateRestoredState(service,desired.entities,mapping,created.recordsByEntity),completed=now(),rpo=minuteDifference(started,selected.checkpoint_to),rto=minuteDifference(completed,started),pass=integrity.pass&&rpo<=DR_RPO_TARGET_MINUTES&&rto<=DR_RTO_TARGET_MINUTES&&attachments.evidence.every((row)=>row.verified);
- const exerciseKey=`real-restore:${selected.backup_id}:${environment}:${completed}`,evidenceCore={schema_version:'cambra-dr-restore-evidence-v1',dr_version:DISASTER_RECOVERY_VERSION,exercise_key:exerciseKey,status:pass?'PASS':'FAIL',/* AUDIT P2-07 (2026-08-17): this was the literal `'prod'`, and attestRestore then ANDed
-   `evidence.source_environment === 'prod'` into the REAL_RESTORE pass condition. Since the
-   literal was the only writer, that clause could never fail: dead weight in a boolean and a
-   self-assertion in the sealed evidence JSON. Read from the manifest chain the function just
-   loaded, which recorded the true source_environment at backup time. */
-source_environment:String(selected?.source_environment||'unknown'),source_app_id:APP_ID,target_environment:environment,target_isolated:true,target_production:false,manifest_path:selected.manifest_path,manifest_hash:selected.manifest_hash,backup_id:selected.backup_id,backup_checkpoint_at:selected.checkpoint_to,chain:chain.map((row)=>({backup_id:row.backup_id,manifest_path:row.manifest_path,manifest_hash:row.manifest_hash,snapshot_type:row.snapshot_type})),started_at:started,completed_at:completed,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rpo_observed_minutes:rpo,rto_target_minutes:DR_RTO_TARGET_MINUTES,rto_observed_minutes:rto,integrity,wiped_counts:wiped,created_counts:created.createdByEntity,user_identity_reconciliation:{source:users.source,matched:users.matched,missing:0},attachments:{count:attachments.evidence.length,pass:attachments.evidence.every((row)=>row.verified),items:attachments.evidence},security:{source_secrets_restored:false,secret_material_required_after_disaster:'provider/OAuth/webhook credentials must be reconnected or rotated; they are intentionally absent from backups',backup_encryption_verified:true,ciphertext_hashes_verified:true},conducted_by:actor};
- const evidence={...evidenceCore,evidence_hash:await sha256Hex(stableJson(evidenceCore))},evidenceBytes=jsonBytes(evidence),evidencePath=`Restore Evidence/${safeFileName(exerciseKey)}.json`,evidenceFileHash=await sha256Hex(evidenceBytes);await storage.upload(evidencePath,evidenceBytes,'application/json');
- await service.entities.DisasterRecoveryExercise.create({exercise_key:exerciseKey,environment,exercise_type:'REAL_RESTORE',status:pass?'PASS':'FAIL',rpo_target_minutes:DR_RPO_TARGET_MINUTES,rpo_observed_minutes:rpo,rto_target_minutes:DR_RTO_TARGET_MINUTES,rto_observed_minutes:rto,backup_snapshot_ref:selected.manifest_path,restored_target_ref:`base44:${APP_ID}:data-env:${environment}`,data_integrity_checks_json:{...integrity,attachments:evidence.attachments,evidence_hash:evidence.evidence_hash,evidence_file_sha256:evidenceFileHash},evidence_refs:[evidencePath],conducted_by:actor,started_at:started,completed_at:completed});
- return{ok:pass,status:pass?'PASS':'FAIL',exercise_key:exerciseKey,evidence_path:evidencePath,evidence_file_sha256:evidenceFileHash,evidence_hash:evidence.evidence_hash,rpo_observed_minutes:rpo,rto_observed_minutes:rto,integrity,attachments:evidence.attachments,target_environment:environment,next_action:pass?'attest_restore_evidence_in_production':'resolve_integrity_failure_and_repeat'};
+ const integrity=await validateRestoredState(service,desired.entities,mapping,created.recordsByEntity),completed=now(),measurementNow=Date.now();
+ const rpo=strictMinuteDifference(started,selected.checkpoint_to,measurementNow),rto=strictMinuteDifference(completed,started,measurementNow),attachmentsPass=attachments.evidence.every((row)=>row.verified),pass=integrity.pass&&rpo<=DR_RPO_TARGET_MINUTES&&rto<=DR_RTO_TARGET_MINUTES&&attachmentsPass;
+ const exerciseKey=`real-restore:${selected.backup_id}:${environment}:${completed}`,restoredTargetRef=`base44:${APP_ID}:data-env:${environment}`;
+ const evidenceCore={schema_version:'cambra-dr-restore-evidence-v1',dr_version:DISASTER_RECOVERY_VERSION,exercise_key:exerciseKey,status:pass?'PASS':'FAIL',source_environment:String(selected.source_environment),source_app_id:String(selected.source_app_id),source_release_version:String(selected.release_version),source_git_sha:String(selected.git_sha),source_tree_hash:String(selected.source_tree_hash),source_tree_hash_algorithm:String(selected.source_tree_hash_algorithm),target_environment:environment,target_isolated:true,target_production:false,restored_target_ref:restoredTargetRef,manifest_path:selected.manifest_path,manifest_hash:selected.manifest_hash,backup_id:selected.backup_id,backup_checkpoint_at:selected.checkpoint_to,snapshot_encrypted_sha256:selected.snapshot.encrypted_sha256,snapshot_payload_sha256:selected.snapshot.payload_sha256,chain:chain.map((row)=>({backup_id:row.backup_id,manifest_path:row.manifest_path,manifest_hash:row.manifest_hash,snapshot_type:row.snapshot_type,checkpoint_from:row.checkpoint_from??null,checkpoint_to:row.checkpoint_to})),started_at:started,completed_at:completed,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rpo_observed_minutes:rpo,rto_target_minutes:DR_RTO_TARGET_MINUTES,rto_observed_minutes:rto,integrity,wiped_counts:wiped,created_counts:created.createdByEntity,user_identity_reconciliation:{source:users.source,matched:users.matched,missing:0},attachments:{count:attachments.evidence.length,pass:attachmentsPass,items:attachments.evidence},security:{source_secrets_restored:false,secret_material_required_after_disaster:'provider/OAuth/webhook credentials must be reconnected or rotated; they are intentionally absent from backups',backup_encryption_verified:true,ciphertext_hashes_verified:true,evidence_authentication:'AES-256-GCM'},conducted_by:actor};
+ const evidence={...evidenceCore,evidence_hash:await sha256Hex(stableJson(evidenceCore))},evidenceAad=restoreEvidenceAad(evidence),evidencePlain=jsonBytes(evidence),evidenceMax=assertDrPayloadWithinLimit(evidencePlain,'restore_evidence_json'),evidenceEnvelope=await encryptEnvelope(await gzipBytes(evidencePlain,evidenceMax),key,evidenceAad),evidencePath=`Restore Evidence/${safeFileName(exerciseKey)}.json.gz.aes256gcm`;assertDrPayloadWithinLimit(evidenceEnvelope,'restore_evidence_envelope');const evidenceFileHash=await sha256Hex(evidenceEnvelope);
+ await storage.upload(evidencePath,evidenceEnvelope,'application/octet-stream');
+ await service.entities.DisasterRecoveryExercise.create({exercise_key:exerciseKey,environment,exercise_type:'REAL_RESTORE',status:pass?'BLOCKED':'FAIL',rpo_target_minutes:DR_RPO_TARGET_MINUTES,rpo_observed_minutes:rpo,rto_target_minutes:DR_RTO_TARGET_MINUTES,rto_observed_minutes:rto,backup_snapshot_ref:selected.manifest_path,restored_target_ref:restoredTargetRef,data_integrity_checks_json:{...integrity,attachments:evidence.attachments,evidence_hash:evidence.evidence_hash,evidence_file_sha256:evidenceFileHash,evidence_aad:evidenceAad,production_attestation_pending:pass},evidence_refs:[evidencePath],conducted_by:actor,started_at:started,completed_at:completed});
+ return{ok:pass,status:pass?'PENDING_PRODUCTION_ATTESTATION':'FAIL',evidence_status:evidence.status,exercise_key:exerciseKey,evidence_path:evidencePath,evidence_file_sha256:evidenceFileHash,evidence_hash:evidence.evidence_hash,rpo_observed_minutes:rpo,rto_observed_minutes:rto,integrity,attachments:evidence.attachments,target_environment:environment,next_action:pass?'attest_restore_evidence_in_production':'resolve_integrity_failure_and_repeat'};
 }
 
 async function attestRestore(req:Request,service:any,input:any,actor:string){
  assertProductionControlPlane(req,'restore_attestation');
- const path=String(input.evidence_path||'');if(!pathAllowed(path,'Restore Evidence/','.json'))throw Object.assign(new Error('dr_restore_evidence_path_invalid'),{code:'DR_RESTORE_EVIDENCE_PATH_INVALID'});
- const storage=await createSharePointBackupStorage(),bytes=await storage.download(path),fileHash=await sha256Hex(bytes);if(fileHash!==String(input.evidence_file_sha256||''))throw Object.assign(new Error('dr_restore_evidence_file_hash_mismatch'),{code:'DR_RESTORE_EVIDENCE_HASH_MISMATCH'});
- const evidence=jsonFromBytes(bytes),{evidence_hash,...core}=evidence;if(await sha256Hex(stableJson(core))!==evidence_hash)throw Object.assign(new Error('dr_restore_evidence_payload_hash_mismatch'),{code:'DR_RESTORE_EVIDENCE_HASH_MISMATCH'});
- const target=String(evidence.target_environment||'').toLowerCase(),fresh=Date.now()-Date.parse(evidence.completed_at||'')<7*86400000,integrityPass=evidence.integrity?.pass===true&&evidence.attachments?.pass===true,within=Number(evidence.rpo_observed_minutes)<=Number(evidence.rpo_target_minutes)&&Number(evidence.rto_observed_minutes)<=Number(evidence.rto_target_minutes),pass=evidence.status==='PASS'&&evidence.source_environment==='prod'&&['dev','test','staging','sandbox'].includes(target)&&evidence.target_production===false&&fresh&&integrityPass&&within;
- if(!pass)throw Object.assign(new Error('dr_restore_evidence_not_eligible_for_pass'),{code:'DR_RESTORE_EVIDENCE_NOT_ELIGIBLE'});
- const existingRows=requireRuntimeSource(await readRuntimeRows({source:'dr_restore_exercise_authority',read:()=>service.entities.DisasterRecoveryExercise.filter({exercise_key:evidence.exercise_key},'-completed_at',2)}));if(existingRows.length>1)throw Object.assign(new Error('dr_restore_exercise_authority_ambiguous'),{code:'DR_RESTORE_EXERCISE_AUTHORITY_AMBIGUOUS'});const existing=existingRows[0],row={exercise_key:evidence.exercise_key,environment:`production-boundary-to-${target}`,exercise_type:'REAL_RESTORE',status:'PASS',rpo_target_minutes:evidence.rpo_target_minutes,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_target_minutes:evidence.rto_target_minutes,rto_observed_minutes:evidence.rto_observed_minutes,backup_snapshot_ref:evidence.manifest_path,restored_target_ref:`base44:${APP_ID}:data-env:${target}`,data_integrity_checks_json:{...evidence.integrity,attachments:evidence.attachments,evidence_hash,evidence_file_sha256:fileHash,independently_downloaded_from_sharepoint:true},evidence_refs:[path],conducted_by:actor,started_at:evidence.started_at,completed_at:evidence.completed_at};
- const exercise=existing?await service.entities.DisasterRecoveryExercise.update(existing.id,row):await service.entities.DisasterRecoveryExercise.create(row),gitSha=getEnv('CAMBRA_GIT_SHA');
- await recordRuntimeGateEvidence(service,{gate_key:'REAL_RESTORE',environment:'production',git_sha:gitSha,status:'PASS',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore',evidence_refs:[path],details_json:{exercise_id:exercise.id,evidence_hash,evidence_file_sha256:fileHash,target_environment:target,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_observed_minutes:evidence.rto_observed_minutes,integrity:evidence.integrity,attachments:evidence.attachments},observed_at:evidence.completed_at,expires_at:new Date(Date.parse(evidence.completed_at)+90*86400000).toISOString(),recorded_by:actor});
- await service.entities.OperationalLog.create({event_type:'disaster_recovery_restore_attested',message:evidence.exercise_key,data_json:{exercise_id:exercise.id,evidence_path:path,evidence_hash,file_sha256:fileHash,target_environment:target},actor_email:actor,created_at:now()});
- return{ok:true,status:'PASS',exercise_id:exercise.id,evidence_path:path,evidence_hash,file_sha256:fileHash,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_observed_minutes:evidence.rto_observed_minutes};
+ const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const path=String(input.evidence_path||'');if(!pathAllowed(path,'Restore Evidence/','.json.gz.aes256gcm'))throw Object.assign(new Error('dr_restore_evidence_path_invalid'),{code:'DR_RESTORE_EVIDENCE_PATH_INVALID'});
+ const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true}),bytes=await storage.download(path),fileHash=await sha256Hex(bytes);if(fileHash!==String(input.evidence_file_sha256||'').trim().toLowerCase())throw Object.assign(new Error('dr_restore_evidence_file_hash_mismatch'),{code:'DR_RESTORE_EVIDENCE_HASH_MISMATCH'});
+ const opened=await decryptEnvelope(bytes,key),plain=await gunzipBytes(opened.bytes,drMaxFileBytes()),evidence=jsonFromBytes(plain),{evidence_hash,...core}=evidence;if(await sha256Hex(stableJson(core))!==evidence_hash)throw Object.assign(new Error('dr_restore_evidence_payload_hash_mismatch'),{code:'DR_RESTORE_EVIDENCE_HASH_MISMATCH'});
+ if(opened.aad!==restoreEvidenceAad(evidence))throw Object.assign(new Error('dr_restore_evidence_aad_mismatch'),{code:'DR_RESTORE_EVIDENCE_AUTHENTICATION_FAILED'});
+ const chain=await loadRestoreChain(storage,String(evidence.manifest_path||'')),selected=chain.at(-1);
+ for(const manifest of chain)await loadSnapshot(storage,manifest,key);
+ if(evidence.snapshot_encrypted_sha256!==selected.snapshot.encrypted_sha256||evidence.snapshot_payload_sha256!==selected.snapshot.payload_sha256)throw Object.assign(new Error('dr_restore_evidence_snapshot_anchor_mismatch'),{code:'DR_RESTORE_EVIDENCE_ANCHOR_MISMATCH'});
+ const attestation=validateRestoreEvidenceAttestation(evidence,selected,chain,{source_app_id:APP_ID}),target=attestation.target;
+ const existingRows=requireRuntimeSource(await readRuntimeRows({source:'dr_restore_exercise_authority',read:()=>service.entities.DisasterRecoveryExercise.filter({exercise_key:evidence.exercise_key},'-updated_date',2)}));if(existingRows.length>1)throw Object.assign(new Error('dr_restore_exercise_authority_ambiguous'),{code:'DR_RESTORE_EXERCISE_AUTHORITY_AMBIGUOUS'});const existing=existingRows[0],row={exercise_key:evidence.exercise_key,environment:`production-boundary-to-${target}`,exercise_type:'REAL_RESTORE',rpo_target_minutes:evidence.rpo_target_minutes,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_target_minutes:evidence.rto_target_minutes,rto_observed_minutes:evidence.rto_observed_minutes,backup_snapshot_ref:evidence.manifest_path,restored_target_ref:`base44:${APP_ID}:data-env:${target}`,data_integrity_checks_json:{...evidence.integrity,attachments:evidence.attachments,evidence_hash,evidence_file_sha256:fileHash,independently_downloaded_from_sharepoint:true},evidence_refs:[path],conducted_by:actor,started_at:evidence.started_at,completed_at:evidence.completed_at};
+ const blockedRow={...row,status:'BLOCKED',data_integrity_checks_json:{...row.data_integrity_checks_json,authenticated_aes256gcm_evidence:true,manifest_chain_reverified:true,runtime_gate_pending:true}};
+ let exercise=existing?await service.entities.DisasterRecoveryExercise.update(existing.id,blockedRow):await service.entities.DisasterRecoveryExercise.create(blockedRow),gitSha=getEnv('CAMBRA_GIT_SHA');
+ const compensationIncidentKey=`dr:restore:compensation:${(await sha256Hex(evidence.exercise_key)).slice(0,32)}`,gateDetails={exercise_id:exercise.id,exercise_key:evidence.exercise_key,compensation_incident_key:compensationIncidentKey,evidence_hash,evidence_file_sha256:fileHash,target_environment:target,manifest_path:evidence.manifest_path,manifest_hash:evidence.manifest_hash,backup_id:evidence.backup_id,source_app_id:evidence.source_app_id,source_environment:evidence.source_environment,source_release_version:evidence.source_release_version,source_git_sha:evidence.source_git_sha,source_tree_hash:evidence.source_tree_hash,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_observed_minutes:evidence.rto_observed_minutes,integrity:evidence.integrity,attachments:evidence.attachments,authenticated_aes256gcm_evidence:true,manifest_chain_reverified:true};
+ let probeObservedAt='',gateObservedAt='',expectedPassProjection:any=null,expectedBlockedProjection:any=null;
+ const authority=await persistRestoreAttestationAuthority({
+  record_probe:async()=>{const at=now();probeObservedAt=at;return recordRuntimeGateEvidence(service,{gate_key:'REAL_RESTORE_ATTESTATION_PROBE',environment:'production',git_sha:gitSha,status:'PASS',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore.preflight',evidence_refs:[path],details_json:{...gateDetails,exercise_projection_required_status:'PASS'},observed_at:at,expires_at:new Date(Date.parse(at)+15*60000).toISOString(),recorded_by:actor})},
+  read_probe:(probe:any)=>service.entities.RuntimeGateEvidence.get(probe.id),
+  read_latest_probe:()=>latestRuntimeGateAuthority(service,'REAL_RESTORE_ATTESTATION_PROBE','dr_restore_probe_authority'),
+  verify_probe:(probe:any)=>verifyRuntimeGateEvidence(probe,{environment:'production',max_age_hours:1}),
+  block_probe:async({error,reason,probe}:any)=>{const at=authorityTimestampAfter(probeObservedAt,probe?.observed_at);return recordRuntimeGateEvidence(service,{gate_key:'REAL_RESTORE_ATTESTATION_PROBE',environment:'production',git_sha:gitSha,status:'BLOCKED',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore.preflight_closure',evidence_refs:[path],details_json:{...gateDetails,exercise_projection_verified:false,compensates_runtime_gate_id:probe?.id||null,closure_reason:String(reason||'preflight_failed'),failure_code:error?drErrorCode(error):null},observed_at:at,expires_at:new Date(Date.parse(at)+15*60000).toISOString(),recorded_by:actor})},
+  verify_blocked_probe:(probe:any)=>verifyRuntimeGateEvidence(probe,{environment:'production',max_age_hours:1,expected_status:'BLOCKED'}),
+  promote_exercise:async(probe:any)=>{expectedPassProjection={...row,status:'PASS',data_integrity_checks_json:{...row.data_integrity_checks_json,authenticated_aes256gcm_evidence:true,manifest_chain_reverified:true,runtime_gate_pending:false,runtime_gate_ready:true,runtime_gate_probe_status:'PASS',runtime_gate_identity_status:'COMPLETE',runtime_gate_probe_id:probe.id}};exercise=await service.entities.DisasterRecoveryExercise.update(exercise.id,expectedPassProjection);return exercise},
+  read_exercise:(promoted:any)=>service.entities.DisasterRecoveryExercise.get(promoted.id),
+  read_latest_exercise:async()=>requireRuntimeSource(await readRuntimeRows({source:'dr_restore_exercise_exact_authority',read:()=>service.entities.DisasterRecoveryExercise.filter({exercise_key:evidence.exercise_key},'-updated_date',2)})),
+  readback_valid:(readback:any)=>exactExerciseProjection(expectedPassProjection,readback,exercise.id),
+  record_gate:async(_promoted:any,readback:any)=>{const at=now();gateObservedAt=at;return recordRuntimeGateEvidence(service,{gate_key:'REAL_RESTORE',environment:'production',git_sha:gitSha,status:'PASS',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore',evidence_refs:[path],details_json:{...gateDetails,exercise_projection_verified:true,exercise_projection_status:'PASS',exercise_projection_readback_id:readback.id,exercise_projection_hash:await realRestoreExerciseProjectionHash(readback)},observed_at:at,expires_at:new Date(Date.parse(at)+90*86400000).toISOString(),recorded_by:actor})},
+  read_gate:(gate:any)=>service.entities.RuntimeGateEvidence.get(gate.id),
+  read_latest_gate:()=>latestRuntimeGateAuthority(service,'REAL_RESTORE','dr_restore_runtime_gate_authority'),
+  verify_gate:async(gate:any)=>verifyRuntimeGateEvidence(gate,{environment:'production',max_age_hours:1,real_restore_exercise_authority:await readRestoreExerciseConsumerAuthority(service,evidence.exercise_key,compensationIncidentKey,'dr_restore_gate_verify')}),
+  block_gate:async({error,gate}:any)=>{const at=authorityTimestampAfter(gateObservedAt,gate?.observed_at);return recordRuntimeGateEvidence(service,{gate_key:'REAL_RESTORE',environment:'production',git_sha:gitSha,status:'BLOCKED',evidence_kind:'OPERATOR_EXERCISE',source:'disasterRecovery.attest_restore.compensation',evidence_refs:[path],details_json:{...gateDetails,exercise_projection_verified:false,compensates_runtime_gate_id:gate?.id||null,failure_code:drErrorCode(error)},observed_at:at,expires_at:new Date(Date.parse(at)+15*60000).toISOString(),recorded_by:actor})},
+  verify_blocked_gate:(gate:any)=>verifyRuntimeGateEvidence(gate,{environment:'production',max_age_hours:1,expected_status:'BLOCKED'}),
+  block_exercise:async({error}:any)=>{expectedBlockedProjection={...blockedRow,data_integrity_checks_json:{...blockedRow.data_integrity_checks_json,runtime_gate_pending:false,runtime_gate_status:'BLOCKED',runtime_gate_failure_code:drErrorCode(error)}};exercise=await service.entities.DisasterRecoveryExercise.update(exercise.id,expectedBlockedProjection);return exercise},
+  blocked_exercise_valid:(readback:any)=>exactExerciseProjection(expectedBlockedProjection,readback,exercise.id),
+  persist_compensation_ambiguity:({error,compensation_error,exercise:failedExercise,gate:failedGate}:any)=>persistRestoreCompensationAmbiguity(service,{dedupe_key:compensationIncidentKey,exercise_key:evidence.exercise_key,exercise_id:failedExercise?.id||exercise?.id,gate_id:failedGate?.id,error,compensation_error,evidence_hash,evidence_path:path}),
+  compensation_failed:(stage:string,error:any)=>logDrFailure(`disaster_recovery_restore_${stage}_compensation_failed`,error),
+ });
+ exercise=authority.exercise;const gateEvidence=authority.gate;
+ try{await service.entities.OperationalLog.create({event_type:'disaster_recovery_restore_attested',message:evidence.exercise_key,data_json:{exercise_id:exercise.id,evidence_path:path,evidence_hash,file_sha256:fileHash,target_environment:target,runtime_gate_evidence_id:gateEvidence.id},actor_email:actor,created_at:now()})}catch(logError){logDrFailure('disaster_recovery_restore_attestation_log_failed',logError)}
+ return{ok:true,status:'PASS',exercise_id:exercise.id,runtime_gate_evidence_id:gateEvidence.id,evidence_path:path,evidence_hash,file_sha256:fileHash,rpo_observed_minutes:evidence.rpo_observed_minutes,rto_observed_minutes:evidence.rto_observed_minutes};
 }
 
 function errorResponse(error:any){
- if(error instanceof DisasterRecoveryConfigurationError)return Response.json({ok:false,error:'dr_configuration_required',missing:error.missing,required_consent:'Microsoft Graph application permission Sites.Selected with admin consent, followed by a site-specific write grant on CAMBRA INFRASTRUCTURE. Store values only in Base44 secrets.'},{status:409});
- if(error instanceof MicrosoftGraphError)return Response.json({ok:false,error:'microsoft_graph_authorization_or_storage_failed',graph_status:error.status,graph_code:error.graphCode,required_consent:'Sites.Selected (Application) + site-specific write role on CAMBRA INFRASTRUCTURE'},{status:409});
- const code=String(error?.code||'DISASTER_RECOVERY_FAILED');console.error('disasterRecovery failed',code,error);return Response.json({ok:false,error:code.toLowerCase()},{status:code.includes('FORBIDDEN')?403:code.includes('CONFIRMATION')||code.includes('INVALID')?400:409});
+ if(error instanceof DisasterRecoveryConfigurationError)return Response.json({ok:false,error:'dr_configuration_required',missing:error.missing,invalid:error.invalid,required_consent:'Microsoft Graph application permission Sites.Selected with admin consent, followed by a write grant on the exact root site (covering its libraries). Store credentials only in Base44 secrets; configure exact site/drive resource IDs as environment values.'},{status:409});
+ if(error instanceof MicrosoftGraphError)return Response.json({ok:false,error:'microsoft_graph_authorization_or_storage_failed',graph_status:error.status,graph_code:error.graphCode,required_consent:'Sites.Selected (Application) + write role on the exact root site; CAMBRA INFRASTRUCTURE is a document library, not the grant target'},{status:409});
+ const code=drErrorCode(error);logDrFailure('disaster_recovery_failed',error);return Response.json({ok:false,error:code.toLowerCase()},{status:code.includes('FORBIDDEN')?403:code.includes('CONFIRMATION')||code.includes('INVALID')?400:409});
 }
 
 export async function handleDisasterRecovery(req:Request){
@@ -318,13 +390,14 @@ export async function handleDisasterRecovery(req:Request){
  const service=base44.asServiceRole,actor=String(gate.user?.email||body.actor_email||'internal'),routed=body.host_action==='disaster_recovery_backup',action=routed?'backup':String(body.action||'status').replace(/^dr_/,'');
  try{
   if(action==='status'){
-   const[exerciseRead,logRead]=await Promise.all([readRuntimeRows({source:'dr_status_exercises',limit:20,read:()=>service.entities.DisasterRecoveryExercise.list('-completed_at',20)}),readRuntimeRows({source:'dr_status_events',limit:50,read:()=>service.entities.OperationalLog.filter({event_type:{$in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested']}},'-created_at',50)})]);const exercises=exerciseRead.value,logs=logRead.value,sourceCoverage=runtimeSourceCoverage({exercises:exerciseRead,events:logRead});
-   const config=configurationStatus();let remote:any=null;if(body.verify_remote===true&&config.ok){const storage=await createSharePointBackupStorage();remote={ok:true,identity:storage.identity,folders:Object.fromEntries(await Promise.all(['Daily','Weekly','Monthly','Manifests','Restore Evidence'].map(async(folder)=>[folder,(await storage.list(folder)).length])))};}
-   return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
+   if(body.verify_remote===true)assertProductionControlPlane(req,'status_remote');
+   const[exerciseRead,logRead,schedulerRead]=await Promise.all([readRuntimeRows({source:'dr_status_exercises',limit:20,read:()=>service.entities.DisasterRecoveryExercise.list('-completed_at',20)}),readRuntimeRows({source:'dr_status_events',limit:50,read:()=>service.entities.OperationalLog.filter({event_type:{$in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested']}},'-created_at',50)}),readRuntimeRows({source:'dr_status_scheduler',limit:20,read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackup',invocation_kind:'SCHEDULED'},'-started_at',20)})]);const exercises=exerciseRead.value,logs=logRead.value,scheduler=evaluateDisasterRecoveryScheduler(schedulerRead.value),sourceCoverage=runtimeSourceCoverage({exercises:exerciseRead,events:logRead,scheduler:schedulerRead});
+   const config=configurationStatus();let remote:any=null;if(body.verify_remote===true){if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);const storage=await verifySharePointBackupStorage(Deno.env,{requireCanonicalTarget:true});remote={ok:true,read_only:true,identity:storage.identity,folders:Object.fromEntries(await Promise.all(['Daily','Weekly','Monthly','Manifests','Restore Evidence'].map(async(folder)=>[folder,(await storage.list(folder)).length])))};}
+   return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
   }
   if(action==='backup')return Response.json(await executeBackup(req,service,body,actor));
   if(action==='restore')return Response.json(await executeRestore(req,service,body,actor));
   if(action==='attest_restore')return Response.json(await attestRestore(req,service,body,actor));
   return Response.json({ok:false,error:'dr_action_unsupported'},{status:400});
- }catch(error){if(action==='backup'){try{await recordBackupFailure(service,error)}catch(recordError){console.error('disasterRecovery failure evidence persistence failed',recordError);}}return errorResponse(error)}
+ }catch(error){if(action==='backup'){try{await recordBackupFailure(service,error)}catch(recordError){logDrFailure('disaster_recovery_failure_evidence_persistence_failed',recordError)}}return errorResponse(error)}
 }

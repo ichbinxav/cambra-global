@@ -28,9 +28,14 @@ const adaptedCoordinators = [
   'researchOrchestrator',
 ];
 const adaptedMaterialWorkers = [
+  'codeReviewAgent',
+  'founderCopilotAgent',
   'processWebhookDeadLetters',
+  'qaAgent',
+  'qaMonitorAgent',
   'reconcileRecoverBilling',
   'recoverAutopilotWorker',
+  'securityAgent',
 ];
 
 const request = (headers = {}) => new Request('https://cambra.invalid/internal', { headers });
@@ -330,6 +335,8 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     const partial = await buildAgentTaskTerminalEnvelope(task, {
       terminalState: 'COMPLETED', effectState: 'EXECUTED', result: { ok: true },
       costRecordRefs: [{ type: 'CostUsageEvent', id: 'cost-1' }],
+      costState: 'SETTLED',
+      costEvidence: { version: 'agent-task-cost-evidence-v1', code: 'COST_SETTLEMENT_PERSISTED', observed_at: '2026-08-21T12:00:00.000Z', reservation_started: true, reservation_persisted: true, settlement_persisted: true },
       effectRefs: [{ type: 'effect_key', id: 'effect-1' }],
       receiptRefs: [{ type: 'provider_receipt', id: 'receipt-1' }],
       effectCoverageComplete: false,
@@ -342,6 +349,8 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     const complete = await buildAgentTaskTerminalEnvelope(task, {
       terminalState: 'COMPLETED', effectState: 'EXECUTED', result: { ok: true },
       costRecordRefs: [{ type: 'CostUsageEvent', id: 'cost-1' }],
+      costState: 'SETTLED',
+      costEvidence: { version: 'agent-task-cost-evidence-v1', code: 'COST_SETTLEMENT_PERSISTED', observed_at: '2026-08-21T12:00:00.000Z', reservation_started: true, reservation_persisted: true, settlement_persisted: true },
       effectRefs: [{ type: 'effect_key', id: 'effect-1' }],
       receiptRefs: [{ type: 'provider_receipt', id: 'receipt-1' }],
       effectCoverageComplete: true,
@@ -418,6 +427,52 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     })).rejects.toThrow('agent_task_terminal_readback_mismatch');
   });
 
+  it('proves no reservation explicitly and keeps reservation ambiguity in review without fake cost refs', async () => {
+    const root = await buildRootAgentTaskEnvelope(request(), rootInput({
+      materialEffect: true,
+      effectClass: 'SPEND',
+      costApplicable: true,
+      policyContext: { status: 'OBSERVED', id: 'policy-cost-state' },
+      authorityContext: { status: 'NOT_APPLICABLE' },
+      intelligenceContext: { status: 'NOT_APPLICABLE' },
+    }));
+    const task = { ...root, id: 'task-cost-state', root_task_id: 'task-cost-state', brand_id: '_platform', trace_revision: 1 };
+    const notReserved = await buildAgentTaskTerminalEnvelope(task, {
+      terminalState: 'FAILED',
+      effectState: 'FAILED_PRE_EFFECT',
+      ambiguityState: 'NONE',
+      result: { ok: false, error: 'anthropic_not_configured' },
+      costState: 'NOT_RESERVED',
+      costEvidence: { version: 'agent-task-cost-evidence-v1', code: 'ANTHROPIC_NOT_CONFIGURED', observed_at: '2026-08-21T12:00:00.000Z', reservation_started: false, reservation_persisted: false, settlement_persisted: false },
+      costRecordRefs: [], effectRefs: [], receiptRefs: [],
+    });
+    expect(notReserved).toMatchObject({ lineage_state: 'COMPLETE', cost_state: 'NOT_RESERVED', cost_record_refs_json: [], effect_coverage_state: 'COMPLETE' });
+
+    const unknown = await buildAgentTaskTerminalEnvelope(task, {
+      terminalState: 'FAILED', effectState: 'FAILED_PRE_EFFECT', result: { ok: false },
+      costRecordRefs: [], effectRefs: [], receiptRefs: [],
+    });
+    expect(unknown).toMatchObject({ lineage_state: 'PARTIAL', cost_state: 'UNKNOWN', cost_record_refs_json: [] });
+
+    const ambiguous = await buildAgentTaskTerminalEnvelope(task, {
+      terminalState: 'REVIEW_REQUIRED',
+      effectState: 'FAILED_PRE_EFFECT',
+      ambiguityState: 'REVIEW_REQUIRED',
+      result: { ok: false, error: 'cost_reservation_review_required' },
+      costState: 'RESERVATION_AMBIGUOUS',
+      costEvidence: { version: 'agent-task-cost-evidence-v1', code: 'COST_RESERVATION_PERSISTENCE_AMBIGUOUS', observed_at: '2026-08-21T12:00:00.000Z', reservation_started: true, reservation_persisted: false, settlement_persisted: false },
+      costRecordRefs: [], effectRefs: [], receiptRefs: [],
+    });
+    expect(ambiguous).toMatchObject({ lineage_state: 'PARTIAL', terminal_state: 'REVIEW_REQUIRED', cost_state: 'RESERVATION_AMBIGUOUS', cost_record_refs_json: [], effect_state: 'FAILED_PRE_EFFECT' });
+
+    await expect(buildAgentTaskTerminalEnvelope(task, {
+      terminalState: 'FAILED', effectState: 'FAILED_PRE_EFFECT', result: { ok: false },
+      costState: 'RESERVATION_AMBIGUOUS',
+      costEvidence: { version: 'agent-task-cost-evidence-v1', code: 'COST_RESERVATION_PERSISTENCE_AMBIGUOUS', observed_at: '2026-08-21T12:00:00.000Z', reservation_started: true, reservation_persisted: false, settlement_persisted: false },
+      costRecordRefs: [], effectRefs: [], receiptRefs: [],
+    })).rejects.toThrow('agent_task_terminal_cost_evidence_incoherent');
+  });
+
   it('allows only one concurrent terminal settlement for the same trace fence', async () => {
     const root = await buildRootAgentTaskEnvelope(request(), rootInput({
       materialEffect: true,
@@ -464,6 +519,39 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     expect(stored.trace_revision).toBe(2);
   });
 
+  it('persists the same safe public payload in task output, terminal result, and durable outbox intent', async () => {
+    const root = await buildRootAgentTaskEnvelope(request(), rootInput({
+      policyContext: { status: 'NOT_APPLICABLE' },
+      authorityContext: { status: 'NOT_APPLICABLE' },
+      intelligenceContext: { status: 'NOT_APPLICABLE' },
+    }));
+    let stored = { ...root, id: 'task-payload-equivalence', root_task_id: 'task-payload-equivalence', brand_id: '_platform', trace_revision: 1 };
+    const svc = { entities: { AgentTask: {
+      updateMany: vi.fn(async (filter, patch) => {
+        if (filter.id !== stored.id || filter.trace_revision !== stored.trace_revision) return { success: true, updated: 0 };
+        stored = { ...stored, ...structuredClone(patch.$set) };
+        return { success: true, updated: 1 };
+      }),
+      get: vi.fn(async () => structuredClone(stored)),
+    } } };
+    const outputPayload = { ok: false, error: 'commercial_egress_output_review_required' };
+    const settled = await settleCanonicalAgentTask(svc, stored, {
+      status: 'waiting_input', error: outputPayload.error,
+      output_payload_json: outputPayload,
+    }, {
+      terminalState: 'REVIEW_REQUIRED', effectState: 'NOT_APPLICABLE',
+      ambiguityState: 'NONE', result: outputPayload,
+      terminalEvent: { eventType: 'agent.task.terminal', source: 'protectedCommercialTest', payload: outputPayload },
+    });
+    expect(settled.output_payload_json).toEqual(outputPayload);
+    expect(settled.terminal_result_json.value).toEqual(outputPayload);
+    expect(settled.terminal_event_intent_json.payload_json).toEqual(outputPayload);
+    expect(settled.terminal_event_intent_json.execution_json).toMatchObject({
+      cost_state: 'NOT_APPLICABLE',
+      cost_evidence: settled.cost_evidence_json,
+    });
+  });
+
   it('projects the exact canonical task trace into Event and blocks cross-tenant writes', async () => {
     const root = await buildRootAgentTaskEnvelope(request(), rootInput({
       policyContext: { status: 'NOT_APPLICABLE' },
@@ -502,7 +590,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
       'processing_purpose', 'input_hash', 'output_hash', 'policy_snapshot_id', 'policy_snapshot_hash',
       'authority_snapshot_id', 'authority_snapshot_hash', 'intelligence_snapshot_id', 'intelligence_snapshot_hash',
       'policy_context_json', 'authority_context_json', 'intelligence_context_json', 'material_effect', 'effect_class',
-      'cost_applicable', 'effect_state', 'effect_coverage_state', 'ambiguity_state', 'terminal_state',
+      'cost_applicable', 'cost_state', 'cost_evidence_json', 'effect_state', 'effect_coverage_state', 'ambiguity_state', 'terminal_state',
       'terminal_result_hash', 'terminal_result_json', 'cost_record_refs_json', 'effect_refs_json', 'receipt_refs_json',
       'terminal_event_state', 'terminal_event_idempotency_key', 'terminal_event_payload_hash',
       'terminal_event_intent_json', 'terminal_event_id', 'terminal_event_revision', 'trace_revision',
@@ -515,7 +603,7 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     for (const field of [
       'trace_envelope_version', 'trace_lineage_state', 'trace_id', 'parent_run', 'step', 'tenant_key',
       'subject_type', 'subject_id', 'input_hash', 'policy_context_json', 'authority_context_json',
-      'intelligence_context_json', 'cost_record_refs_json', 'effect_refs_json', 'receipt_refs_json',
+      'intelligence_context_json', 'cost_record_refs_json', 'cost_state', 'cost_evidence_json', 'effect_refs_json', 'receipt_refs_json',
       'terminal_result_hash', 'terminal_result_json', 'terminal_state', 'ambiguity_state',
     ]) expect(eventSchema.properties[field]).toBeTruthy();
     expect(schema.required).toEqual(['brand_id', 'agent_name', 'task_type', 'status']);
@@ -551,15 +639,15 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     const output = execFileSync(process.execPath, ['scripts/generate-agenttask-creator-inventory.mjs', '--check'], { cwd: root, encoding: 'utf8' });
     expect(output).toContain('agenttask-creator-inventory:check PASS');
     expect(inventory.counts.creator_files).toBe(60);
-    expect(inventory.counts.material_creator_files).toBe(46);
-    expect(inventory.counts.legacy_creator_files).toBe(14);
-    expect(inventory.counts.root_envelope_adapted_files).toBe(8);
-    expect(inventory.counts.material_terminal_adapted_files).toBe(3);
-    expect(inventory.counts.material_event_adapted_files).toBe(3);
-    expect(inventory.counts.material_trace_adapted_files).toBe(3);
-    // 111 -> 107 (2026-08-18): four hosted route files now resolve at their
-    // canonical base44/shared/logical/ path instead of a function directory.
-    expect(inventory.counts.unresolved_material_route_files).toBe(104);
+    expect(inventory.counts.material_creator_files).toBe(45);
+    expect(inventory.counts.legacy_creator_files).toBe(15);
+    expect(inventory.counts.root_envelope_adapted_files).toBe(14);
+    expect(inventory.counts.material_terminal_adapted_files).toBe(8);
+    expect(inventory.counts.material_event_adapted_files).toBe(8);
+    expect(inventory.counts.material_trace_adapted_files).toBe(8);
+    // The material registry resolves to 106 source files. Five one-shot,
+    // task-only routes now join the three pre-existing complete local surfaces.
+    expect(inventory.counts.unresolved_material_route_files).toBe(98);
     expect(inventory.measurement_semantics.material_route_files).toBe(
       'UNION_OF_EXISTING_REGISTRY_SOURCE_EVIDENCE_AND_MATERIAL_SCHEDULED_ROUTE_FILES_NOT_DISTINCT_PHYSICAL_EXECUTORS',
     );
@@ -572,9 +660,14 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
       row.terminal_adapter_present
     );
     expect(terminalAdaptedMaterialCreators.map((row) => row.path)).toEqual([
+      'base44/functions/codeReviewAgent/entry.ts',
+      'base44/functions/founderCopilotAgent/entry.ts',
       'base44/functions/processWebhookDeadLetters/entry.ts',
+      'base44/functions/qaAgent/entry.ts',
+      'base44/functions/qaMonitorAgent/entry.ts',
       'base44/functions/reconcileRecoverBilling/entry.ts',
       'base44/functions/recoverAutopilotWorker/entry.ts',
+      'base44/functions/securityAgent/entry.ts',
     ]);
     expect(terminalAdaptedMaterialCreators.every((row) =>
       row.trace_status === 'MATERIAL_TRACE_ADAPTED_LOCAL' &&

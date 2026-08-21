@@ -5,7 +5,7 @@
     "sources": [
       {
         "path": "src/lib/agentRegistry.js",
-        "sha256": "68ca8ac77ec9e076cef25979980a3d7b4c4449e53dd397eec70c98f0de981199"
+        "sha256": "b616a64db72099f88985e12b65629be80e1408d4deb3ac05cd94c76ed10c3cdc"
       },
       {
         "path": "base44/shared/agentAuthority.ts",
@@ -380,12 +380,12 @@
       "name": "Spend Intelligence",
       "function_name": "spendIntelligenceAgent",
       "level": 1,
-      "tool": "scoreEngine + Claude",
-      "secret_name": "ANTHROPIC_API_KEY",
+      "tool": "scoreEngine deterministic",
+      "secret_name": null,
       "input_requirement": "brand",
       "status": "DECLARED_ACTIVE",
       "canonical_replacement": null,
-      "description": "Estima gasto por tool con benchmarks tier+EU."
+      "description": "Estima gasto EUR por tool solo con fuentes observadas; no usa IA generativa."
     },
     {
       "cluster_key": "analyzer_brain",

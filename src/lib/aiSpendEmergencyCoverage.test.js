@@ -82,6 +82,7 @@ describe("End to end: an emergency stops a real LLM call before the provider is 
       reservation_recent_event_keys: [],
     };
     let current = { ...budget };
+    let costEvent = null;
     return {
       entities: {
         EmergencyControl: { filter: async () => [structuredClone(control)] },
@@ -96,8 +97,16 @@ describe("End to end: an emergency stops a real LLM call before the provider is 
         },
         CostUsageEvent: {
           filter: async () => [],
-          create: async (value) => ({ id: "cost-e2e", ...structuredClone(value) }),
-          update: async () => ({}),
+          create: async (value) => {
+            costEvent = { id: "cost-e2e", ...structuredClone(value) };
+            return structuredClone(costEvent);
+          },
+          update: async (id, patch) => {
+            costEvent = { ...costEvent, id, ...structuredClone(patch) };
+            return structuredClone(costEvent);
+          },
+          get: async (id) =>
+            costEvent?.id === id ? structuredClone(costEvent) : null,
         },
       },
     };
@@ -117,7 +126,7 @@ describe("End to end: an emergency stops a real LLM call before the provider is 
     globalThis.Deno = { env: { get: (name) => (name === "ANTHROPIC_API_KEY" ? "test-key" : undefined) } };
     globalThis.fetch = async () => {
       providerCalls += 1;
-      return new Response(JSON.stringify({ content: [{ type: "text", text: "should never happen" }] }), {
+      return new Response(JSON.stringify({ type: "message", id: "msg_e2e_real", content: [{ type: "text", text: "should never happen" }] }), {
         status: 200, headers: { "content-type": "application/json" },
       });
     };
@@ -143,9 +152,18 @@ describe("End to end: an emergency stops a real LLM call before the provider is 
 
   it("allows the same call once the emergency is cleared", async () => {
     const svc = svcWith({ ...PAUSED, safe_mode: false, paid_discovery_paused: false, communications_paused: false, resume_check_required: false });
+    let inference;
     const providerCalls = await withStubbedRuntime(async () => {
-      await callCambraClaude("anything", { svc, eventKey: "emergency-cleared", source: "aiSpendEmergencyCoverageTest" });
+      inference = await callCambraClaude("anything", { svc, eventKey: "emergency-cleared", source: "aiSpendEmergencyCoverageTest" });
     });
     expect(providerCalls).toBe(1);
+    expect(inference.agent_task_evidence).toMatchObject({
+      cost_record_refs: [{ type: "CostUsageEvent", id: "cost-e2e" }],
+      effect_refs: [{ type: "AnthropicMessage", id: "msg_e2e_real" }],
+      receipt_refs: [{ type: "AnthropicMessage", id: "msg_e2e_real" }],
+      transport_started: true,
+      transport_evidence_persisted: true,
+      provider_http_status: 200,
+    });
   });
 });
