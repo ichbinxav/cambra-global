@@ -1,6 +1,7 @@
 {
   "name": "AnalyzerInput",
   "type": "object",
+  "description": "Analyzer input facts. Direct client mutation is forbidden: only authorized backend functions using service role may create, update or delete rows after enforcing tenant ownership and monetary currency validation. Owners retain read access.",
   "properties": {
     "brand_id": {
       "type": "string",
@@ -215,17 +216,8 @@
         }
       ]
     },
-    "write": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "created_by": "{{user.email}}"
-        }
-      ]
-    }
+    "create": false,
+    "update": false,
+    "delete": false
   }
 }
