@@ -1,31 +1,10 @@
-import React, { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
-// SWEEP-1 T3 (2026-07-24): dictionaries split into per-language files.
-// Parity verified programmatically at extraction: 537/537 keys per language,
-// zero value diffs (+2 new SWEEP-1 T2 keys). API of this module is unchanged.
-import en from "@/lib/locales/en";
-import fr from "@/lib/locales/fr";
-import es from "@/lib/locales/es";
-// I18N-30M (2026-08-15) — native product languages for the 30 active markets.
-import de from "@/lib/locales/de";
-import it from "@/lib/locales/it";
-import pl from "@/lib/locales/pl";
-import pt from "@/lib/locales/pt";
-import el from "@/lib/locales/el";
-import sv from "@/lib/locales/sv";
-import da from "@/lib/locales/da";
-import fi from "@/lib/locales/fi";
-import cs from "@/lib/locales/cs";
-import ro from "@/lib/locales/ro";
-import hu from "@/lib/locales/hu";
-import bg from "@/lib/locales/bg";
-import hr from "@/lib/locales/hr";
-import et from "@/lib/locales/et";
-import lv from "@/lib/locales/lv";
-import lt from "@/lib/locales/lt";
-import sk from "@/lib/locales/sk";
-import sl from "@/lib/locales/sl";
-import nb from "@/lib/locales/nb";
-import is from "@/lib/locales/is";
+import React, { useState, useEffect, createContext, useContext, useCallback, useMemo, useRef } from "react";
+import {
+  EN_DICTIONARY,
+  getCachedLanguageDictionary,
+  isSupportedLanguage,
+  loadLanguageDictionary,
+} from "@/lib/localeLoader.js";
 import { formatMoneyMajor, localeForLanguage } from "../../base44/shared/localeRuntime";
 
 /* ──────────────────────────────────────────────────────────────
@@ -90,9 +69,6 @@ export function formatDate(date, lang = "en") {
   }
 }
 
-/* ── dictionaries (flat keys) — see src/lib/locales/{code}.js ── */
-const DICT = { en, fr, es, de, it, pl, pt, el, sv, da, fi, cs, ro, hu, bg, hr, et, lv, lt, sk, sl, nb, is };
-
 /* ── Legacy nested-object translations (kept for older landing components) ── */
 export const translations = {
   /* legacy passthrough — older components import { translations, t } from i18n
@@ -143,7 +119,7 @@ export function detectBrowserLang() {
       : [navigator.language];
     for (const raw of candidates) {
       const code = String(raw || "").slice(0, 2).toLowerCase();
-      if (DICT[code]) return code;
+      if (isSupportedLanguage(code)) return code;
     }
   } catch {}
   return "en";
@@ -159,10 +135,10 @@ function hasStoredLang() {
 function readStoredLang() {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    if (v && DICT[v]) return v;
+    if (v && isSupportedLanguage(v)) return v.toLowerCase();
     for (const legacy of LEGACY_KEYS) {
       const lv = localStorage.getItem(legacy);
-      if (lv && DICT[lv]) return lv;
+      if (lv && isSupportedLanguage(lv)) return lv.toLowerCase();
     }
   } catch {}
   return detectBrowserLang();
@@ -180,40 +156,159 @@ function updateMetaTags(lang) {
   } catch {}
 }
 
-export function LanguageProvider({ children }) {
-  const [detectedLang, setDetectedLang] = useState(() => detectBrowserLang());
-  const [lang, setLangState] = useState(() => readStoredLang());
-  const [isAutomatic, setIsAutomatic] = useState(() => !hasStoredLang());
+function currentLanguagePreference() {
+  const detectedLang = detectBrowserLang();
+  return {
+    detectedLang,
+    isAutomatic: !hasStoredLang(),
+    requestedLang: readStoredLang(),
+  };
+}
 
-  const setLang = useCallback((next) => {
-    if (!DICT[next]) return;
-    setLangState(next);
-    setIsAutomatic(false);
-    try { localStorage.setItem(STORAGE_KEY, next); } catch {}
-    updateMetaTags(next);
+// main.jsx awaits this before mounting React. The existing static landing
+// markup therefore stays visible while one small language chunk is fetched,
+// and the first React frame is already in the correct language.
+export async function preloadInitialLanguage({ dictionaryLoader = loadLanguageDictionary } = {}) {
+  const preference = currentLanguagePreference();
+  try {
+    const dictionary = await dictionaryLoader(preference.requestedLang);
+    return {
+      lang: preference.requestedLang,
+      dictionaryLanguage: preference.requestedLang,
+      dictionary,
+      detectedLang: preference.detectedLang,
+      isAutomatic: preference.isAutomatic,
+    };
+  } catch {
+    return {
+      lang: "en",
+      dictionaryLanguage: "en",
+      dictionary: EN_DICTIONARY,
+      detectedLang: preference.detectedLang,
+      isAutomatic: preference.isAutomatic,
+    };
+  }
+}
+
+function providerInitialState(initialLanguageState) {
+  if (
+    initialLanguageState
+    && isSupportedLanguage(initialLanguageState.lang)
+    && initialLanguageState.dictionary
+    && typeof initialLanguageState.dictionary === "object"
+  ) {
+    return {
+      lang: initialLanguageState.lang,
+      dictionaryLanguage: initialLanguageState.dictionaryLanguage || initialLanguageState.lang,
+      dictionary: initialLanguageState.dictionary,
+      detectedLang: isSupportedLanguage(initialLanguageState.detectedLang)
+        ? initialLanguageState.detectedLang
+        : initialLanguageState.lang,
+      isAutomatic: Boolean(initialLanguageState.isAutomatic),
+    };
+  }
+
+  // Direct consumers (tests and isolated component renders) still work without
+  // the application bootstrap. They render with the eager English fallback and
+  // replace it atomically as soon as the preferred chunk resolves.
+  const preference = currentLanguagePreference();
+  const cached = getCachedLanguageDictionary(preference.requestedLang);
+  return {
+    lang: preference.requestedLang,
+    dictionaryLanguage: cached ? preference.requestedLang : "en",
+    dictionary: cached || EN_DICTIONARY,
+    detectedLang: preference.detectedLang,
+    isAutomatic: preference.isAutomatic,
+  };
+}
+
+export function LanguageProvider({
+  children,
+  initialLanguageState = null,
+  dictionaryLoader = loadLanguageDictionary,
+}) {
+  const initial = useMemo(() => providerInitialState(initialLanguageState), [initialLanguageState]);
+  const [detectedLang, setDetectedLang] = useState(initial.detectedLang);
+  const [lang, setLangState] = useState(initial.lang);
+  const [isAutomatic, setIsAutomatic] = useState(initial.isAutomatic);
+  const [dictionaryState, setDictionaryState] = useState({
+    lang: initial.dictionaryLanguage,
+    dictionary: initial.dictionary,
+  });
+  const latestLanguageRequest = useRef(0);
+
+  useEffect(() => () => {
+    latestLanguageRequest.current += 1;
   }, []);
+
+  const activateLanguage = useCallback(async (next, options = {}) => {
+    const normalized = String(next || "").toLowerCase();
+    if (!isSupportedLanguage(normalized)) return false;
+    const requestId = ++latestLanguageRequest.current;
+
+    try {
+      const dictionary = await dictionaryLoader(normalized);
+      // A slower, older request must never overwrite the user's latest choice.
+      if (requestId !== latestLanguageRequest.current) return false;
+
+      setDictionaryState({ lang: normalized, dictionary });
+      setLangState(normalized);
+      setIsAutomatic(Boolean(options.automatic));
+      try {
+        if (options.persistence === "store") {
+          localStorage.setItem(STORAGE_KEY, normalized);
+        } else if (options.persistence === "clear") {
+          localStorage.removeItem(STORAGE_KEY);
+          for (const key of LEGACY_KEYS) localStorage.removeItem(key);
+        }
+      } catch {}
+      updateMetaTags(normalized);
+      return true;
+    } catch {
+      if (requestId !== latestLanguageRequest.current) return false;
+      // Initial isolated renders cannot keep a non-English lang attribute over
+      // English fallback copy. Normal user-initiated failures keep the current
+      // fully-loaded language and do not persist a broken preference.
+      if (options.fallbackToEnglish) {
+        setDictionaryState({ lang: "en", dictionary: EN_DICTIONARY });
+        setLangState("en");
+        updateMetaTags("en");
+      }
+      return false;
+    }
+  }, [dictionaryLoader]);
+
+  const setLang = useCallback((next) => (
+    activateLanguage(next, { automatic: false, persistence: "store" })
+  ), [activateLanguage]);
 
   const setAutoLang = useCallback(() => {
     const detected = detectBrowserLang();
     setDetectedLang(detected);
-    setLangState(detected);
-    setIsAutomatic(true);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      for (const key of LEGACY_KEYS) localStorage.removeItem(key);
-    } catch {}
-    updateMetaTags(detected);
-  }, []);
+    return activateLanguage(detected, { automatic: true, persistence: "clear" });
+  }, [activateLanguage]);
+
+  useEffect(() => {
+    if (dictionaryState.lang === lang) return undefined;
+    void activateLanguage(lang, {
+      automatic: isAutomatic,
+      persistence: "preserve",
+      fallbackToEnglish: true,
+    });
+    return undefined;
+  }, [activateLanguage, dictionaryState.lang, isAutomatic, lang]);
 
   useEffect(() => {
     const syncDetectedLanguage = () => {
       const detected = detectBrowserLang();
       setDetectedLang(detected);
-      if (isAutomatic) setLangState(detected);
+      if (isAutomatic) {
+        void activateLanguage(detected, { automatic: true, persistence: "preserve" });
+      }
     };
     window.addEventListener?.("languagechange", syncDetectedLanguage);
     return () => window.removeEventListener?.("languagechange", syncDetectedLanguage);
-  }, [isAutomatic]);
+  }, [activateLanguage, isAutomatic]);
 
   useEffect(() => {
     updateMetaTags(lang);
@@ -224,14 +319,14 @@ export function LanguageProvider({ children }) {
      - t(obj, "en")                          → legacy nested-object lookup */
   const t = useCallback((keyOrObj, paramsOrLang) => {
     if (keyOrObj && typeof keyOrObj === "object") {
-      const requested = (typeof paramsOrLang === "string" && DICT[paramsOrLang]) ? paramsOrLang : lang;
+      const requested = (typeof paramsOrLang === "string" && isSupportedLanguage(paramsOrLang)) ? paramsOrLang : lang;
       return keyOrObj?.[requested] ?? keyOrObj?.en ?? "";
     }
     const key = String(keyOrObj);
-    const dict = DICT[lang] || DICT.en;
-    const raw = dict[key] ?? DICT.en[key] ?? key;
+    const dict = dictionaryState.lang === lang ? dictionaryState.dictionary : EN_DICTIONARY;
+    const raw = dict[key] ?? EN_DICTIONARY[key] ?? key;
     return interpolate(raw, typeof paramsOrLang === "object" ? paramsOrLang : null);
-  }, [lang]);
+  }, [dictionaryState, lang]);
 
   const value = useMemo(() => ({
     lang,
@@ -254,10 +349,10 @@ export function useTranslation() { return useContext(LanguageContext); }
 /* Standalone t() for non-React callers (rare): falls back to English only. */
 export function t(keyOrObj, paramsOrLang) {
   if (keyOrObj && typeof keyOrObj === "object") {
-    const requested = (typeof paramsOrLang === "string" && DICT[paramsOrLang]) ? paramsOrLang : "en";
+    const requested = (typeof paramsOrLang === "string" && isSupportedLanguage(paramsOrLang)) ? paramsOrLang : "en";
     return keyOrObj?.[requested] ?? keyOrObj?.en ?? "";
   }
   const key  = String(keyOrObj);
-  const raw  = DICT.en[key] ?? key;
+  const raw  = EN_DICTIONARY[key] ?? key;
   return interpolate(raw, typeof paramsOrLang === "object" ? paramsOrLang : null);
 }

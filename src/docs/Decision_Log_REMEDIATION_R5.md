@@ -20,7 +20,8 @@ El árbol actual sigue siendo la autoridad. No se hizo `reset`, `checkout`, borr
 
 - La autoridad de efectos contiene exactamente diez clases canónicas: `SEND`, `NEGOTIATE`, `SCHEDULE_MATERIAL`, `EXECUTE`, `APPROVE`, `SIGN_MANDATE`, `SPEND`, `BILL_CHARGE`, `MIGRATE_GO_LIVE` y `PROMOTE_LEARNING`.
 - El registro material conserva 42 fronteras. Cinco están conectadas a la fachada común y 37 permanecen observadas en source sin cobertura universal; por ello ROOT-OTR-012 continúa `PARTIAL`.
-- El inventario AgentTask observa 60 creator files después de cuarentenarse `systemHealthAgent`; 46 son materiales. Tres tienen raíz/terminal AgentTask pero ninguno demuestra todavía el adaptador Event canónico completo, por lo que los 46 siguen incompletos y 111 rutas materiales quedan sin resolución local completa; ROOT-OTR-013 continúa `PARTIAL`.
+- El inventario AgentTask observa 60 creator files después de cuarentenarse `systemHealthAgent`; 46 son materiales. Tres exponen adaptadores canónicos de raíz y terminal, pero ninguno expone todavía la superficie local completa raíz/terminal/Event; 107 archivos fuente marcados por el registro material siguen sin esa superficie local completa. Este inventario estático no prueba por sí solo el linaje effect/cost/receipt; ROOT-OTR-013 continúa `PARTIAL`.
+- No se añadió `createCanonicalAgentEvent` a esos tres workers: hoy termina en `Event.create`, `Event.idempotency_key` no tiene unicidad declarada y Base44 no ofrece una transacción entre el CAS de `AgentTask` y `Event`. El contrato compartido solo puede persistir un intent determinista `PENDING` dentro del mismo CAS terminal y clasificar replay/conflicto/duplicados; no publica ni declara exactly-once. `processWebhookDeadLetters` sí cierra ahora como `FAILED_PRE_EFFECT` las dos salidas manuales (`dead_letter_not_found` y estado distinto de `exhausted`) que antes dejaban la tarea `running/OPEN`.
 - El catálogo workforce deriva 34 agentes, cinco orquestadores y 33 filas explícitas de autoridad; ninguna fila concede autoridad material. `systemHealthAgent` queda como superficie legacy en cuarentena.
 - Existe un único supervisor general activo, `autonomousOperationsSupervisor`; `operatingHealthWorker` es proyección advisory y `productionReadinessWorker` es evaluador de release. `eclProductionHealth` se inventaría como sweep ECL autoritativo separado, no como un segundo supervisor general.
 - Los tres ledgers de incidentes tienen propósito distinto: `AutonomyIncident` es la autoridad operativa canónica, `OperationalIncident` es compatibilidad ECL proyectada y `IncidentAlertDelivery` es únicamente delivery. No apareció un cuarto ledger ni ningún writer de `AgentRun`.
@@ -51,11 +52,11 @@ Los paths materiales quedan enumerados y hash-bound por `config/remediation/auth
 
 ## 5. Frozen
 
-Los tres cambios frozen R5 se registraron exclusivamente mediante `scripts/update-freeze.mjs`; no se editó manualmente el manifest:
+Los cambios frozen R5 y sus endurecimientos posteriores se registraron exclusivamente mediante `scripts/update-freeze.mjs`; no se editó manualmente el manifest:
 
 - `base44/entities/OperationalIncident.jsonc`: `null → fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782`, para restringir el ledger ECL de compatibilidad a writers service-role.
 - `base44/functions/eclProductionHealth/entry.ts`: `null → 04319755697ef8cc260039dbcfdd1c81050526f64aba3127b4d39532fecc201a`, para que lecturas fallidas, malformadas, truncadas o con episodios activos duplicados bloqueen `healthy` y auto-resolución. No se añadió recovery worker, efecto económico ni acción de producción.
-- `base44/functions/processWebhookDeadLetters/entry.ts`: `7cfdc87ab8f5077ae17635c2c2deaab553702cb8d0a6af4042245efc2ad168a4 → 52747e27fc56469c5d87a8d2ea939890a3d620e4f12f7315f291c4680801f3fe`, para ligar el AgentTask ya existente al envelope de trace R5, sin cambiar delivery, retries, receiver ni semántica post-efecto.
+- `base44/functions/processWebhookDeadLetters/entry.ts`: el cambio R5 original ligó el AgentTask existente al envelope de trace; el endurecimiento gobernado del 21 de agosto actualiza `f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef → 5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9` para cerrar como `FAILED_PRE_EFFECT` las dos salidas manuales rechazadas. No cambia delivery, retries, receiver, ECL, economía ni semántica post-efecto.
 
 El verificador de freeze mantiene prohibidos los imports ECL en cualquier handler ordinario frozen. Únicamente admite congelar por hash un handler cuyo propio path sea ECL y figure exactamente en la allowlist code-owned del stage declarado; el caso positivo y el rechazo del handler ordinario tienen prueba focal.
 
@@ -75,7 +76,7 @@ Resultados observados antes del gate global:
 
 - suite R5 focal/adversarial: **7/7 files, 78/78 tests PASS**;
 - catálogo canónico mapeado R5: **36/36 files, 505/505 tests PASS**, 0 skips observados;
-- `agenttask:check`: 60 creators, 46 materiales, 0 trace completo y 111 rutas materiales no resueltas;
+- `agenttask:check`: 60 creators, 46 materiales, 3 terminal-adapted, 0 superficies locales raíz/terminal/Event completas y 107 archivos fuente materiales no resueltos;
 - `workforce:check`: 34 agentes, 5 orquestadores, 33 filas de autoridad y un supervisor general;
 - `operational-planes:check`: cinco superficies, una general, una ECL especializada, tres entidades de incidentes y 0 writers AgentRun;
 - `remediation:r0:check`, `remediation:r5:check`, `ecl:check`, lint y TypeScript critical: PASS;

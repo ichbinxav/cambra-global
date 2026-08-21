@@ -422,9 +422,9 @@ const AuthenticatedApp = () => {
   );
 };
 
-function App() {
+function App({ initialLanguageState = null }) {
   return (
-    <LanguageProvider>
+    <LanguageProvider initialLanguageState={initialLanguageState}>
       <MarketProvider>
       <ErrorBoundary>
         <ToastProvider>
