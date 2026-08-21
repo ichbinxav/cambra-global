@@ -231,7 +231,25 @@
     "cost_applicable": {
       "type": "boolean",
       "default": false,
-      "description": "True when complete lineage requires at least one immutable CostUsageEvent reference."
+      "description": "True when cost lineage is required. A terminal NOT_RESERVED state may omit cost refs only with explicit durable pre-reservation evidence."
+    },
+    "cost_state": {
+      "type": "string",
+      "enum": [
+        "NOT_APPLICABLE",
+        "NOT_STARTED",
+        "NOT_RESERVED",
+        "RESERVATION_AMBIGUOUS",
+        "RESERVED",
+        "SETTLED",
+        "UNKNOWN"
+      ],
+      "default": "NOT_APPLICABLE",
+      "description": "Observed cost lifecycle. RESERVATION_AMBIGUOUS/RESERVED require human review; SETTLED requires a real CostUsageEvent ref."
+    },
+    "cost_evidence_json": {
+      "type": "object",
+      "description": "Durable v1 cost evidence with a stable code and reservation_started/reservation_persisted/settlement_persisted booleans; never a fabricated cost reference."
     },
     "effect_state": {
       "type": "string",
