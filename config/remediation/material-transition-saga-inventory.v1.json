@@ -477,7 +477,7 @@
   "evidence": [
     {
       "path": "base44/entities/AgentTask.jsonc",
-      "sha256": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3"
+      "sha256": "403af1bdc2050e12afb0427e59be884a262b5a5258c452c119d2c3f6330689e2"
     },
     {
       "path": "base44/entities/Approval.jsonc",

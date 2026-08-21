@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "c42b1cec66fe2d2b20e24c398f318b692c04a981256b3bfdade488312688be96",
+  "input_fingerprint_sha256": "c9497aa381ed4bd1bf19ec14cadb9c003ef5ac958771c4d65a7daee3676366ac",
   "input_file_count": 126,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -1607,8 +1607,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-          "sha256": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
-          "bytes": 21686
+          "sha256": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
+          "bytes": 22675
         },
         {
           "path": "base44/shared/schedulerRun.ts",
