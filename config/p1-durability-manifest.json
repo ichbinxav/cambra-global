@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-20T15:16:02.210Z",
+  "generatedAt": "2026-08-21T12:43:28.534Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -24,8 +24,8 @@
   "files": [
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "e015a688f4c5728e0dc12b11c351a4483ac6750c22e1bfe61375c483534a351d",
-      "bytes": 2897
+      "sha256": "28128453163961d49bb0e97b3a1ce586c56c0426e6c6583e18d6c37d23ae2367",
+      "bytes": 2315
     },
     {
       "path": "README.md",
@@ -59,8 +59,8 @@
     },
     {
       "path": "base44/entities/AgentTask.jsonc",
-      "sha256": "2290499e512dd9fddc8b2970b2aeadaa92bb3bee95499a3752331e8b5d7965f3",
-      "bytes": 14829
+      "sha256": "403af1bdc2050e12afb0427e59be884a262b5a5258c452c119d2c3f6330689e2",
+      "bytes": 16156
     },
     {
       "path": "base44/entities/AnalyzerResult.jsonc",
@@ -1094,8 +1094,8 @@
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-      "sha256": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
-      "bytes": 21686
+      "sha256": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
+      "bytes": 22675
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/function.jsonc",
@@ -1429,8 +1429,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "06c846b62f003900a7d27d92133e705bc6f1268b37e80afa0e25db54f2dd6d0b",
-      "bytes": 43349
+      "sha256": "9258b04d0bec182e437a2de332309d16661d7628eae301f2e6573c6858052739",
+      "bytes": 51554
     },
     {
       "path": "base44/shared/analyzerFx.ts",
@@ -2009,18 +2009,18 @@
     },
     {
       "path": "ci/github-workflow-ci.yml",
-      "sha256": "e015a688f4c5728e0dc12b11c351a4483ac6750c22e1bfe61375c483534a351d",
-      "bytes": 2897
+      "sha256": "28128453163961d49bb0e97b3a1ce586c56c0426e6c6583e18d6c37d23ae2367",
+      "bytes": 2315
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "9090c24e8dc05485f670ac7c8a263b95e570a12e6d248558104abea3db36024b",
+      "sha256": "c69f1cfe11899a0ab3383817d373be7e4246b0a00eefe78088b02b16257cba77",
       "bytes": 30598
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "12a33c1accce1b34c25f0b19956809bad8c7f012e82aa6470d627f16d5008555",
-      "bytes": 121589
+      "sha256": "c6ad3c1d5a96495c57083a5e24b65f626310974d32df799ce5451e80812a63f4",
+      "bytes": 132324
     },
     {
       "path": "config/data-retention-matrix.json",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "75e9f8c7481a81fe308c77e7fbcce665be6d8b9322bab15da1d87f770f51f0c0",
+      "sha256": "fb40f2cd7888fce3c54b01e99962200a6d7b63dea2e0c265847a882a9a102b83",
       "bytes": 42987
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "1d76ebba661f2179ddbe2cb9039935506220b379713df5f3d83b47dd056c537e",
-      "bytes": 44081
+      "sha256": "d5a38dd634dc6c20c6a42e1e990fa6c13a915778ea4175f40350d7bf3a55bf1d",
+      "bytes": 44722
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2064,7 +2064,7 @@
     },
     {
       "path": "config/intelligence/composition-manifest.v2.json",
-      "sha256": "b256cf710fb6317055661e52ea40cbc1876d0905f1e6f2d2439e98ed36126353",
+      "sha256": "1e18e73c90d0491e80604fb376674c0b90a8a52960d69f19f1e4db004c68e1fe",
       "bytes": 11641
     },
     {
@@ -2109,8 +2109,8 @@
     },
     {
       "path": "config/intelligence/orchestration-p0-remediation.v2.json",
-      "sha256": "976654d2b93435f3cde01b934d8959cc7d212922fbe883abeee263a9714667ed",
-      "bytes": 71610
+      "sha256": "6a193ae7e615f541bf6a163fa6a6b401a26809a7a9316c1317628a399d4d2c5f",
+      "bytes": 71700
     },
     {
       "path": "config/intelligence/prediction-registry.v1.json",
@@ -2179,7 +2179,7 @@
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "dace425a9489e729921948ea6cf81b19f225bb1a469a2031574c16af495284a3",
+      "sha256": "6c49e85efec8924197f33501239e23f1acb63023b69687501fc5711786532910",
       "bytes": 8229
     },
     {
@@ -2189,27 +2189,27 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "7392844dcea3b6cf951215cb5bf58fc4f256f82bcaf9ce12f9037c02c831b855",
-      "bytes": 13241
+      "sha256": "6ef28c5d387e52cc35282335243d7feb35820895042b393872a5bf67ea2d3b80",
+      "bytes": 13494
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "714c91eb0bfdd62a2e3b67f44295ebca6a56a762054a7de48fb0197d90ca7928",
+      "sha256": "ea2a2ba37b60a02fdbc26b164a768ed2d64478c017332a4c6920c79fe355ebfc",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "4bad0588f4c915d2bf93291944b3435fa998d566050806c04cf0718ee2e7716d",
+      "sha256": "7b071712ced33802ff51d14af906ca2e3459cd66421eeefe63d4110233817c91",
       "bytes": 144147
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "a2924ec7f0c9eac432946efd376b70f32ed65e50d2c7d9797a789d77a98c180a",
+      "sha256": "b5c7db562d8723ff284799acca68c0864a94b6408929d995ca8755c1638aabce",
       "bytes": 98046
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "4ff369f1fc09397ac343d5e5428b625d28d43ec1aa0cf60d16087337ca1499ff",
+      "sha256": "a39535c86ce3a1ea7549ae3ae02cde48d175aef2bd4b42a76dd66f2077804e21",
       "bytes": 25748
     },
     {
@@ -2269,8 +2269,8 @@
     },
     {
       "path": "package.json",
-      "sha256": "19d00962de8d66313508cf8375b9d8f449f4c2ced3c101884b50a4ed46d6fdb9",
-      "bytes": 13090
+      "sha256": "2083e42bb0561f8b992b30fc63395efd0b3ae728c0d5718bb62db5486b130b33",
+      "bytes": 13212
     },
     {
       "path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
@@ -2414,8 +2414,8 @@
     },
     {
       "path": "scripts/generate-agenttask-creator-inventory.mjs",
-      "sha256": "32fea5bdf533d9f4f53e2fe0560ba458aa53363517c0bd68b0808f04bfa51e52",
-      "bytes": 11682
+      "sha256": "3354d844953abf3533028809191eb637e7404752fca0c7b37cf82c250aad46e8",
+      "bytes": 13587
     },
     {
       "path": "scripts/generate-documentation-manifest.mjs",
@@ -2449,8 +2449,8 @@
     },
     {
       "path": "scripts/generate-intelligence-canonical-v2.mjs",
-      "sha256": "3c9b6b30e12b79bcd1d6e34f01a48d34c12469202facb441529ae83871f8878b",
-      "bytes": 63138
+      "sha256": "f14005810ee08ef7b1129ffae72092fc4e754179374aed7ab38ed77f1a751c63",
+      "bytes": 63594
     },
     {
       "path": "scripts/generate-operational-plane-inventory.mjs",
@@ -2474,8 +2474,8 @@
     },
     {
       "path": "scripts/generate-remediation-r5.mjs",
-      "sha256": "30463ba12fe1bbe5576f967a8d3f4da23f46f2de3955ea4953316ad7bd7b71a6",
-      "bytes": 19491
+      "sha256": "336f1f4622b1fe7b2122ff6c905a2fc68b9b904d081186f175f2788bd253d1de",
+      "bytes": 19873
     },
     {
       "path": "scripts/generate-scheduler-inventory.mjs",
@@ -2559,8 +2559,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "3e41c15e7f39e900f316be1caa2f05c3cba8c6ff095a1be34b64e54726168333",
-      "bytes": 28446
+      "sha256": "1a1087175d7a641bc4a49cbaa5dab13270f189d1bc53fb8e2c19e14617fbd8a9",
+      "bytes": 28521
     },
     {
       "path": "src/README.md",
@@ -2799,8 +2799,8 @@
     },
     {
       "path": "src/docs/Decision_Log_REMEDIATION_R5.md",
-      "sha256": "f460718a19c6ed43842258e761562e8d8687cc854a15db8ac894cd0cbdb16e8b",
-      "bytes": 12098
+      "sha256": "6e66771509c22d3e5688707d9558ee1f6b8d9d06f5f4988a8bacbaf339a5e5c4",
+      "bytes": 13058
     },
     {
       "path": "src/docs/Decision_Log_REMEDIATION_R6.md",
@@ -2919,8 +2919,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "d62267c5fc6b7321566d6a27c5e430afc7f6b0672914604388476b0177ee4cc8",
-      "bytes": 28012
+      "sha256": "08b18f06e1d3d44d391c5f1457c7686c698ec00519d9fafd5749b68b10d4b3b3",
+      "bytes": 29397
     },
     {
       "path": "src/lib/analyzerFx.test.js",
@@ -3169,8 +3169,8 @@
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
-      "sha256": "ed51b97e087b392059bbbbe2184ebaa837bcdec3c4bf3e2eed4ba787f2c2c819",
-      "bytes": 16242
+      "sha256": "1604b04edeb2bca78f332a554152f4a5638f152f726aa7d6abe02f8ebc01f263",
+      "bytes": 16460
     },
     {
       "path": "src/lib/eclP6Closure.test.js",
@@ -3329,8 +3329,8 @@
     },
     {
       "path": "src/lib/i18n.jsx",
-      "sha256": "e5c836f6bcadcd510d65b35d25856f29961c9cf167eb3025c3536d4113832099",
-      "bytes": 11667
+      "sha256": "d403ad4f9b7e95ac48d195f66b01b7b9afaa941bc49abe5be6b5d4ba3d2806d4",
+      "bytes": 15153
     },
     {
       "path": "src/lib/i18nParity.test.js",
@@ -3484,8 +3484,8 @@
     },
     {
       "path": "src/lib/p11ProductionSecurityReliability.test.js",
-      "sha256": "1b7aafd58e925483699594745042b9b00f2aa403bd84fbffeec7ee50c4a887a1",
-      "bytes": 8115
+      "sha256": "dc4adb1d4025d5ffb00511b797d780401a1057f2ade098910117362a6ada174d",
+      "bytes": 8486
     },
     {
       "path": "src/lib/p12Intelligence.test.js",
@@ -3679,8 +3679,8 @@
     },
     {
       "path": "src/lib/remediationR5Artifacts.test.js",
-      "sha256": "6f6d9392383052ab11239d83597008681cc9d8f7880b9d425747de049a7523d4",
-      "bytes": 3955
+      "sha256": "2407b491204919603909b531a0681abe1a1156192089c95ce7fc67aeafa4ce69",
+      "bytes": 4012
     },
     {
       "path": "src/lib/researchKnowledgeCatalog.test.js",

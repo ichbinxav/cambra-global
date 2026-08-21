@@ -504,7 +504,9 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
       'policy_context_json', 'authority_context_json', 'intelligence_context_json', 'material_effect', 'effect_class',
       'cost_applicable', 'effect_state', 'effect_coverage_state', 'ambiguity_state', 'terminal_state',
       'terminal_result_hash', 'terminal_result_json', 'cost_record_refs_json', 'effect_refs_json', 'receipt_refs_json',
-      'trace_revision', 'deadline_at', 'heartbeat_at', 'source_refs_json',
+      'terminal_event_state', 'terminal_event_idempotency_key', 'terminal_event_payload_hash',
+      'terminal_event_intent_json', 'terminal_event_id', 'terminal_event_revision', 'trace_revision',
+      'deadline_at', 'heartbeat_at', 'source_refs_json',
     ]) expect(schema.properties[field]).toBeTruthy();
     for (const field of [
       'trace_envelope_version', 'trace_lineage_state', 'trace_id', 'parent_run', 'step', 'tenant_key',
@@ -548,11 +550,33 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     expect(inventory.counts.material_creator_files).toBe(46);
     expect(inventory.counts.legacy_creator_files).toBe(14);
     expect(inventory.counts.root_envelope_adapted_files).toBe(8);
+    expect(inventory.counts.material_terminal_adapted_files).toBe(3);
+    expect(inventory.counts.material_event_adapted_files).toBe(0);
     expect(inventory.counts.material_trace_adapted_files).toBe(0);
     // 111 -> 107 (2026-08-18): four hosted route files now resolve at their
     // canonical base44/shared/logical/ path instead of a function directory.
     expect(inventory.counts.unresolved_material_route_files).toBe(107);
+    expect(inventory.measurement_semantics.material_route_files).toBe(
+      'UNION_OF_EXISTING_REGISTRY_SOURCE_EVIDENCE_AND_MATERIAL_SCHEDULED_ROUTE_FILES_NOT_DISTINCT_PHYSICAL_EXECUTORS',
+    );
+    expect(inventory.measurement_semantics.unresolved_material_route_files).toBe(
+      'REGISTRY_DERIVED_SOURCE_FILES_WITHOUT_FULL_SOURCE_LOCAL_ROOT_TERMINAL_EVENT_ADAPTER_SURFACE',
+    );
     expect(inventory.counts.not_adapted_files).toBeGreaterThan(0);
+    const terminalAdaptedMaterialCreators = inventory.creators.filter((row) =>
+      row.classification === 'MATERIAL_BOUNDARY_CREATOR' &&
+      row.terminal_adapter_present
+    );
+    expect(terminalAdaptedMaterialCreators.map((row) => row.path)).toEqual([
+      'base44/functions/processWebhookDeadLetters/entry.ts',
+      'base44/functions/reconcileRecoverBilling/entry.ts',
+      'base44/functions/recoverAutopilotWorker/entry.ts',
+    ]);
+    expect(terminalAdaptedMaterialCreators.every((row) =>
+      row.trace_status === 'MATERIAL_TERMINAL_ADAPTED_LOCAL' &&
+      row.event_adapter_present === false &&
+      row.complete_local_adapter_surface === false
+    )).toBe(true);
     expect(inventory.root_otr_013).toMatchObject({
       implementation_status: 'PARTIAL',
       binary_closure_status: 'NOT_MET',

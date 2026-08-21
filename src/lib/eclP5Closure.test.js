@@ -39,6 +39,7 @@ const SOURCE = read("base44/shared/eclRecoverEvidence.ts");
 const CLEAN = read("scripts/clean-check.mjs");
 const CI_TEMPLATE = read("ci/github-workflow-ci.yml");
 const CI_INSTALLED = read(".github/workflows/ci.yml");
+const VERIFY_SCRIPT = JSON.parse(read("package.json")).scripts.verify;
 
 function confidenceResult(overrides = {}) {
   return {
@@ -299,9 +300,12 @@ describe("ECL P5 — Economic Enforcement", () => {
     expect(PROCESS).toContain("user?.role !== 'admin' && !isInternal");
   });
 
-  it("keeps GitHub workflow byte-identical to the installed remote while clean:check transitively enforces ECL + durability", () => {
+  it("keeps GitHub workflow byte-identical and delegates to the complete governed verification", () => {
     expect(CI_INSTALLED).toBe(CI_TEMPLATE);
-    expect(CI_TEMPLATE).toContain("- run: npm run clean:check");
+    expect(CI_TEMPLATE).toContain("run: npm run verify");
+    expect(VERIFY_SCRIPT).toContain("npm run clean:check");
+    expect(VERIFY_SCRIPT).toContain("npm run ecl:check");
+    expect(VERIFY_SCRIPT).toContain("npm run durability:check");
     expect(CLEAN).toContain('runRequiredGate("ecl:check", "scripts/generate-ecl-policy.mjs")');
     expect(CLEAN).toContain('runRequiredGate("durability:check", "scripts/generate-durability-manifest.mjs")');
     expect(CLEAN).toContain('spawnSync(process.execPath, [scriptPath, "--check"]');

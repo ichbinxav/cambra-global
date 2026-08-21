@@ -26,6 +26,7 @@ describe('R5 authority, trace and operational-plane evidence', () => {
       material_boundary_count: 42,
       material_boundary_facade_wired_count: 5,
       material_trace_adapted_creator_count: 0,
+      material_terminal_adapted_creator_count: 3,
       active_general_supervisor_count: 1,
       health_plane_surface_count: 5,
       authoritative_specialized_sweep_count: 1,
@@ -70,7 +71,7 @@ describe('R5 authority, trace and operational-plane evidence', () => {
       '37 of 42 material boundaries remain SOURCE_OBSERVED_ONLY and are not wired to the common facade',
     );
     expect(trace.blockers).toContain(
-      '107 material route file(s) do not resolve locally to a complete effect/cost/receipt envelope',
+      '107 material route file(s) do not expose the full source-local root/terminal/Event adapter surface',
     );
   });
 

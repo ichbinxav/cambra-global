@@ -70,10 +70,18 @@ describe('P11 production security and reliability', () => {
   });
 
   it('runs the complete local drift gates in authoritative CI', () => {
+    const verify = json('package.json').scripts.verify;
     for (const path of ['.github/workflows/ci.yml','ci/github-workflow-ci.yml']) {
       const ci = read(path);
-      for (const command of ['markets:check','locales:check','ecl:check','durability:check','documentation:check','ci:check','release:check:ci']) expect(ci).toContain(command);
+      expect(ci).toContain('npm install --global npm@11.17.0');
+      expect(ci.indexOf('npm install --global npm@11.17.0')).toBeLessThan(ci.indexOf('npm ci'));
+      expect(ci).toContain('run: npm run verify');
     }
+    for (const command of [
+      'markets:check','locales:check','ecl:check','durability:check',
+      'documentation:check','agenttask:check','hosted-route-gates:check',
+      'remediation:r5:check','typecheck:backend','release:check',
+    ]) expect(verify).toContain(command);
   });
 
   it('models findings, SLOs, restore evidence, external verification and readiness snapshots', () => {

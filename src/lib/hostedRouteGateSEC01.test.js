@@ -12,11 +12,15 @@
 // the gate's own verdict rather than grepping for a string.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const runGate = () => {
+const runGate = (root) => {
   try {
-    return { ok: true, out: execFileSync("node", ["scripts/check-hosted-route-gates.mjs"], { encoding: "utf8" }) };
+    const args = ["scripts/check-hosted-route-gates.mjs"];
+    if (root) args.push("--root", root);
+    return { ok: true, out: execFileSync("node", args, { encoding: "utf8" }) };
   } catch (error) {
     return { ok: false, out: `${error.stdout || ""}${error.stderr || ""}` };
   }
@@ -38,21 +42,30 @@ describe("SEC-01 — the gate that keeps an unauthenticated caller out of a host
   });
 
   it("fails when the gate call is removed from the branch it protects", () => {
-    // Drives the detector rather than trusting it. Restores the file whatever happens.
+    // Drive the detector against an isolated fixture. Mutating the live source used to race the
+    // audit sweep and every other test process reading the repository concurrently.
     const file = "base44/functions/maintenanceEngine/entry.ts";
     const original = fs.readFileSync(file, "utf8");
     const gateCall = original.match(/\n\s*const sweepGate=await requireAdminOrInternal\([^\n]*\n[^\n]*\n/);
     expect(gateCall, "the gate call must be present to remove").toBeTruthy();
+    const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cambra-hosted-route-gate-"));
+    const fixtureFile = path.join(fixtureRoot, file);
     try {
-      fs.writeFileSync(file, original.replace(gateCall[0], "\n"));
-      const result = runGate();
+      fs.mkdirSync(path.dirname(fixtureFile), { recursive: true });
+      fs.mkdirSync(path.join(fixtureRoot, "base44/shared"), { recursive: true });
+      fs.writeFileSync(fixtureFile, original.replace(gateCall[0], "\n"));
+      fs.copyFileSync(
+        "base44/shared/schedulerRun.ts",
+        path.join(fixtureRoot, "base44/shared/schedulerRun.ts"),
+      );
+      const result = runGate(fixtureRoot);
       expect(result.ok).toBe(false);
       expect(result.out).toContain("command_run_sweep");
       expect(result.out).toContain("NO gate in its branch");
     } finally {
-      fs.writeFileSync(file, original);
+      fs.rmSync(fixtureRoot, { recursive: true, force: true });
     }
-    // And the tree is back as it was.
+    // The source was never touched.
     expect(fs.readFileSync(file, "utf8")).toBe(original);
   });
 });
