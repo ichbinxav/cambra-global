@@ -848,6 +848,15 @@
       "oldHash": "ffc84093765e88e914287823b0a38edd97e1e1043dcd22ad4cd3b2262dcda91a",
       "newHash": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
       "reason": "Split ambiguous hosted Instantly maintenance into explicit retry and reconciliation routes; preserve fail-closed replay and no economic semantics change"
+    },
+    {
+      "date": "2026-08-21T12:35:40.878Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
+      "newHash": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
+      "reason": "2026-08-21 AgentTask safety closure: settle two manual pre-effect rejection exits as FAILED_PRE_EFFECT so no canonical task remains running/OPEN; webhook delivery, retry, receiver, ECL, economic and post-effect semantics unchanged"
     }
   ]
 }
