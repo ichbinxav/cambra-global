@@ -220,6 +220,14 @@
       },
       "description": "Immutable CostUsageEvent references copied from the linked task."
     },
+    "cost_state": {
+      "type": "string",
+      "description": "Exact cost lifecycle state copied from the linked task."
+    },
+    "cost_evidence_json": {
+      "type": "object",
+      "description": "Exact stable cost lifecycle evidence copied from the linked task."
+    },
     "effect_refs_json": {
       "type": "array",
       "items": {
