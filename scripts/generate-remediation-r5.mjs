@@ -131,11 +131,11 @@ function validateComponents(components, root = REPO_ROOT) {
     'trace_envelope_version');
   exact(trace.counts.creator_files, 60, 'trace_creator_count');
   exact(trace.counts.material_creator_files, 46, 'trace_material_creators');
-  exact(trace.counts.material_trace_adapted_files, 0,
+  exact(trace.counts.material_trace_adapted_files, 3,
     'trace_material_adapted');
   exact(trace.counts.material_terminal_adapted_files, 3,
     'trace_material_terminal_adapted');
-  exact(trace.counts.material_event_adapted_files, 0,
+  exact(trace.counts.material_event_adapted_files, 3,
     'trace_material_event_adapted');
   exact(trace.counts.material_not_adapted_files, 43,
     'trace_material_unadapted');
@@ -143,7 +143,7 @@ function validateComponents(components, root = REPO_ROOT) {
   // base44/shared/logical/ (four hosted route files are now discovered at their
   // canonical shared path instead of a duplicated function directory). The
   // invariant stays exact; it is lowered deliberately, never loosened.
-  exact(trace.counts.unresolved_material_route_files, 107,
+  exact(trace.counts.unresolved_material_route_files, 104,
     'trace_unresolved_routes');
   exact(trace.root_otr_013.implementation_status, 'PARTIAL',
     'trace_implementation_status');
@@ -335,7 +335,7 @@ export function validateArtifact(document) {
     effect_class_count: 10,
     material_boundary_count: 42,
     material_boundary_facade_wired_count: 5,
-    material_trace_adapted_creator_count: 0,
+    material_trace_adapted_creator_count: 3,
     material_terminal_adapted_creator_count: 3,
     active_general_supervisor_count: 1,
     health_plane_surface_count: 5,

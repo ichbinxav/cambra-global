@@ -85,11 +85,12 @@ describe("R0.C material boundary registry", () => {
       ),
     ).toBe(true);
     expect(document.scheduler_inventory).toMatchObject({
-      // PROMPT_LAUNCH_10 (2026-08-20): includes both explicit Instantly hosted
-      // routes. Guarded count moves with active so an unguarded route still fails.
-      scheduled_automation_count: 72,
-      active_count: 70,
-      guarded_count: 70,
+      // AGENTTASK-OUTBOX (2026-08-21): includes both explicit Instantly hosted
+      // routes and the terminal Event reconciler. Guarded moves with active so
+      // an unguarded route still fails this strict artifact contract.
+      scheduled_automation_count: 73,
+      active_count: 71,
+      guarded_count: 71,
       unguarded_active: [],
     });
     expect(document.paid_ai_inventory.caller_count).toBe(38);

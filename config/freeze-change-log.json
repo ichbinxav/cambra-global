@@ -857,6 +857,15 @@
       "oldHash": "f2cef5805ef034d0b8196e352fcb91b0d096b6b860fccf80cd5a10a596a04cef",
       "newHash": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
       "reason": "2026-08-21 AgentTask safety closure: settle two manual pre-effect rejection exits as FAILED_PRE_EFFECT so no canonical task remains running/OPEN; webhook delivery, retry, receiver, ECL, economic and post-effect semantics unchanged"
+    },
+    {
+      "date": "2026-08-21T13:54:41.567Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processWebhookDeadLetters/entry.ts",
+      "oldHash": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
+      "newHash": "a12c3cfcb1058e586c19a67e3db1ff517d95ed3c023b4c2e29d2ede41e50352c",
+      "reason": "Add durable terminal Event outbox intents and route the fail-closed CAS reconciler; no external replay or go-live effect"
     }
   ]
 }

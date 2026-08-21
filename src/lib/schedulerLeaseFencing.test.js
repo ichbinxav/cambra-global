@@ -135,6 +135,7 @@ describe("scheduler lease and fencing authority", () => {
   it("routes every direct scheduler claimant through the centralized denied response", () => {
     const callers = schedulerCallerInventory();
     expect(callers.map(({ name }) => name).sort()).toEqual([
+      "agentTaskTerminalEventReconciler",
       "alwaysOnLeadDiscoveryWorker",
       "autonomousCompanyOrchestrator",
       "autonomousPartnerWorker",

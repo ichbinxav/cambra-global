@@ -157,6 +157,11 @@ guardedScheduledServe(
         effectRefs: traceEffectRefs,
         receiptRefs: [],
         effectCoverageComplete: false,
+        terminalEvent: {
+          eventType: "agent.task.terminal",
+          source: "recoverAutopilotWorker",
+          payload: terminalResult,
+        },
       });
 
       return Response.json({
@@ -188,6 +193,11 @@ guardedScheduledServe(
             effectRefs: traceEffectRefs,
             receiptRefs: [],
             effectCoverageComplete: traceEffectRefs.length === 0,
+            terminalEvent: {
+              eventType: "agent.task.terminal",
+              source: "recoverAutopilotWorker",
+              payload: { ok: false, error: "recover_autopilot_failed" },
+            },
           });
         } catch (markError) {
           safeBestEffort(markError, {

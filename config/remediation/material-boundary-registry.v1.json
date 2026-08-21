@@ -8,13 +8,13 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "c9497aa381ed4bd1bf19ec14cadb9c003ef5ac958771c4d65a7daee3676366ac",
+  "input_fingerprint_sha256": "3b1e56ebaa70208eae7edff19ddf8f85633e9c10f6d63044f0b7d25820528c8d",
   "input_file_count": 126,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
     "physical_function_target": 276,
-    "logical_route_count": 38,
+    "logical_route_count": 39,
     "stale_production_surface_inventory_declared_functions": 162,
     "stale_production_surface_inventory_detected": true
   },
@@ -170,9 +170,9 @@
   },
   "scheduler_inventory": {
     "schema_version": "cambra-scheduler-inventory-v3",
-    "scheduled_automation_count": 72,
-    "active_count": 70,
-    "guarded_count": 70,
+    "scheduled_automation_count": 73,
+    "active_count": 71,
+    "guarded_count": 71,
     "unguarded_active": [],
     "active_worker_keys": [
       "acquisitionAttributionWorker",
@@ -220,6 +220,7 @@
       "processWebhookDeadLetters",
       "instantlyProviderEventRetryWorker",
       "instantlyReconciliationWorker",
+      "agentTaskTerminalEventReconciler",
       "providerEconomicsAssessmentWorker",
       "providerEconomicsIntelligenceWorker",
       "providerMonitorAgent",
@@ -931,6 +932,16 @@
         "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
       },
       {
+        "worker_key": "agentTaskTerminalEventReconciler",
+        "function_directory": "processWebhookDeadLetters",
+        "config_path": "base44/functions/processWebhookDeadLetters/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "UNKNOWN",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
         "worker_key": "providerEconomicsAssessmentWorker",
         "function_directory": "providerEconomicsAssessmentWorker",
         "config_path": "base44/functions/providerEconomicsAssessmentWorker/function.jsonc",
@@ -1607,8 +1618,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/processWebhookDeadLetters/entry.ts",
-          "sha256": "5f0937af9462ea088bf3c80d5fb5c10260002e9ca22237bf5acc9080a544b4c9",
-          "bytes": 22675
+          "sha256": "a12c3cfcb1058e586c19a67e3db1ff517d95ed3c023b4c2e29d2ede41e50352c",
+          "bytes": 23933
         },
         {
           "path": "base44/shared/schedulerRun.ts",
@@ -1841,8 +1852,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "b8c4d1dbdfce244cc5e13d353492ec5aae7c6885d7cb27946c3b75783e48a572",
-          "bytes": 10298
+          "sha256": "787f7760c7e30a027d4a306633a517719bba4a2a13748c30281faf79c968332e",
+          "bytes": 10630
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
@@ -2427,8 +2438,8 @@
         },
         {
           "path": "base44/functions/reconcileRecoverBilling/entry.ts",
-          "sha256": "69fb995dc76b16eddb4a737b71cb1fe8b83efad1967c7d191278f3cacaa2f784",
-          "bytes": 18308
+          "sha256": "a5768f91a2c093a0af14cdcb699dcf61eb3b949ae79d5785f489414363b04934",
+          "bytes": 18647
         },
         {
           "path": "base44/functions/stripeBillingWebhook/entry.ts",
@@ -3290,8 +3301,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "b8c4d1dbdfce244cc5e13d353492ec5aae7c6885d7cb27946c3b75783e48a572",
-          "bytes": 10298
+          "sha256": "787f7760c7e30a027d4a306633a517719bba4a2a13748c30281faf79c968332e",
+          "bytes": 10630
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
@@ -3389,6 +3400,7 @@
         "acquisitionAttributionWorker",
         "acquisitionLearningWorker",
         "agentPerformanceWorker",
+        "agentTaskTerminalEventReconciler",
         "aggregateAgreementWorker",
         "aggregateDemandWorker",
         "aggregateEligibilityWorker",
@@ -3491,8 +3503,8 @@
         },
         {
           "path": "config/scheduler-inventory.json",
-          "sha256": "c34c958de900fff6c30296552016875dca8ca726b8a022df75b6dbc20696b587",
-          "bytes": 186676
+          "sha256": "58d33a75bbe964f4643617a9ef3f94b1a56661a56fb15141ff587c6b7786b9b6",
+          "bytes": 189448
         }
       ]
     },

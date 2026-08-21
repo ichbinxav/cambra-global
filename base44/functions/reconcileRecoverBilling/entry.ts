@@ -443,6 +443,11 @@ export default async function (req: Request): Promise<Response> {
         effectCoverageComplete: traceEffectRefs.length > 0 &&
           unresolvedProviderReads.length === 0 &&
           traceReceiptRefs.length === traceEffectRefs.length,
+        terminalEvent: {
+          eventType: "agent.task.terminal",
+          source: "reconcileRecoverBilling",
+          payload: summary,
+        },
       });
     }
     return Response.json(summary);
@@ -467,6 +472,11 @@ export default async function (req: Request): Promise<Response> {
           effectRefs: traceEffectRefs,
           receiptRefs: traceReceiptRefs,
           effectCoverageComplete: traceEffectRefs.length === 0,
+          terminalEvent: {
+            eventType: "agent.task.terminal",
+            source: "reconcileRecoverBilling",
+            payload: { ok: false, error: message },
+          },
         });
       } catch (traceError) {
         safeBestEffort(traceError, {

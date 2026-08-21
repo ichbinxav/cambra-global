@@ -1204,6 +1204,14 @@ const TERMINAL_EVENT_OUTBOX_FIELDS = Object.freeze([
   "terminal_event_intent_json",
   "terminal_event_id",
   "terminal_event_revision",
+  "terminal_event_last_attempt_at",
+  "terminal_event_next_attempt_at",
+  "terminal_event_published_at",
+  "terminal_event_error",
+  "terminal_event_conflicting_ids_json",
+  "terminal_event_claim_token",
+  "terminal_event_claimed_at",
+  "terminal_event_lease_expires_at",
 ] as const);
 
 const TERMINAL_PROTECTED_PATCH_FIELDS = new Set<string>([
@@ -1310,6 +1318,7 @@ export async function settleCanonicalAgentTask(
       terminal_event_payload_hash: terminalEventIntent.payload_content_hash,
       terminal_event_intent_json: terminalEventIntent,
       terminal_event_revision: 0,
+      terminal_event_next_attempt_at: new Date().toISOString(),
     }
     : {};
   const patch = {

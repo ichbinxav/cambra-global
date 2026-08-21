@@ -318,10 +318,12 @@
       "type": "string",
       "enum": [
         "PENDING",
+        "CLAIMED",
+        "PUBLISHING",
         "PUBLISHED",
         "REVIEW_REQUIRED"
       ],
-      "description": "State of an optional terminal Event outbox intent. PENDING is not evidence that Event was published; omission means no intent was requested."
+      "description": "State of an optional terminal Event outbox intent. PENDING/CLAIMED/PUBLISHING are not evidence that Event was published; stale PUBLISHING is never automatically replayed."
     },
     "terminal_event_idempotency_key": {
       "type": "string",
@@ -342,6 +344,46 @@
     "terminal_event_revision": {
       "type": "integer",
       "description": "Independent CAS revision for future terminal Event projection/reconciliation. It grants no authority to create Event."
+    },
+    "terminal_event_last_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time the bounded terminal Event reconciler attempted an authoritative exact-key read or publication."
+    },
+    "terminal_event_next_attempt_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Always-populated due time for an open terminal Event outbox. The worker filters and orders on this field so new or failed rows cannot be hidden by null ordering."
+    },
+    "terminal_event_published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time one exact matching Event was authoritatively read back. This is absent for pending or ambiguous outcomes."
+    },
+    "terminal_event_error": {
+      "type": "string",
+      "description": "Stable reconciliation blocker code. It never authorizes automatic replay after an ambiguous create outcome."
+    },
+    "terminal_event_conflicting_ids_json": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Bounded Event IDs observed when the exact-key projection conflicts, duplicates, or cannot be proven unique."
+    },
+    "terminal_event_claim_token": {
+      "type": "string",
+      "description": "Fencing token for the one reconciler attempt currently allowed to advance this outbox row."
+    },
+    "terminal_event_claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Time the per-task outbox CAS claim was acquired."
+    },
+    "terminal_event_lease_expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Claim expiry. Only an expired CLAIMED row with no observed Event may be retried; expired PUBLISHING requires review."
     },
     "deadline_at": {
       "type": "string",

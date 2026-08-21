@@ -49,6 +49,23 @@
       "ends_type": "never",
       "function_name": "processWebhookDeadLetters",
       "starts_at": "2026-08-11T00:00:00.000Z"
+    },
+    {
+      "type": "scheduled",
+      "name": "AgentTask terminal Event reconciliation",
+      "description": "Reconciles durable terminal Event outbox intents through an exact-key read, one bounded create attempt and post-write readback. Ambiguity is quarantined and exactly-once is not claimed.",
+      "function_args": {
+        "hosted_worker": "agentTaskTerminalEventReconciler",
+        "limit": 50
+      },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 5,
+      "ends_type": "never",
+      "function_name": "processWebhookDeadLetters",
+      "starts_at": "2026-08-21T14:00:00.000Z"
     }
   ]
 }

@@ -84,6 +84,10 @@ const creators = allSources.flatMap(({ source, path: pathFromRoot }) => {
     source,
     /createCanonicalAgentEvent\s*\(/g,
   );
+  const canonicalEventOutboxIntentSites = count(
+    source,
+    /terminalEvent\s*:/g,
+  );
   const material = materialSources.get(pathFromRoot);
   const materialBoundaryIds = material
     ? [...material.boundary_ids].sort()
@@ -94,10 +98,14 @@ const creators = allSources.flatMap(({ source, path: pathFromRoot }) => {
   const rootAdapted = canonicalRootSites > 0 && rawCreateSites === 0;
   const terminalAdapted = rootAdapted && terminalSites > 0;
   // Absence of raw Event writes is not evidence of a canonical trace. A
-  // material creator is Event-adapted only when it emits through the shared
-  // adapter and has no parallel raw Event writer.
-  const eventAdapted = canonicalEventCreateSites > 0 &&
-    rawEventCreateSites === 0;
+  // creator is Event-adapted only when every terminal settlement persists a
+  // durable outbox intent (or it writes through the direct canonical adapter)
+  // and no parallel raw Event writer remains. Outbox coverage proves a local
+  // adapter surface, never Event publication or datastore exactly-once.
+  const terminalEventIntentCoverage = terminalSites > 0 &&
+    canonicalEventOutboxIntentSites === terminalSites;
+  const eventAdapted = rawEventCreateSites === 0 &&
+    (canonicalEventCreateSites > 0 || terminalEventIntentCoverage);
   const completeLocalAdapterSurface = terminalAdapted && eventAdapted;
   const legacyStatus = rootAdapted
     ? 'ROOT_ENVELOPE_ADAPTED'
@@ -124,6 +132,8 @@ const creators = allSources.flatMap(({ source, path: pathFromRoot }) => {
     canonical_terminal_sites: terminalSites,
     raw_event_create_sites: rawEventCreateSites,
     canonical_event_create_sites: canonicalEventCreateSites,
+    canonical_event_outbox_intent_sites: canonicalEventOutboxIntentSites,
+    terminal_event_intent_coverage: terminalEventIntentCoverage,
     root_adapter_present: rootAdapted,
     terminal_adapter_present: terminalAdapted,
     event_adapter_present: eventAdapted,
@@ -158,6 +168,8 @@ const materialRouteFiles = [...materialSources.entries()].map(([sourcePath, data
     creator_trace_status: creator?.trace_status || 'NO_LOCAL_AGENTTASK_CREATOR',
     raw_event_create_sites: rawEventCreateSites,
     canonical_event_create_sites: canonicalEventCreateSites,
+    canonical_event_outbox_intent_sites:
+      creator?.canonical_event_outbox_intent_sites || 0,
     trace_resolution: creator?.complete_local_adapter_surface
       ? 'LOCAL_ADAPTER_SURFACE_PRESENT_RUNTIME_PENDING'
       : creator?.terminal_adapter_present
@@ -241,6 +253,10 @@ const artifact = {
       (sum, row) => sum + row.canonical_terminal_sites,
       0,
     ),
+    canonical_event_outbox_intent_sites: creators.reduce(
+      (sum, row) => sum + row.canonical_event_outbox_intent_sites,
+      0,
+    ),
     root_envelope_adapted_files: adapted.length,
     partial_mixed_files: partial.length,
     not_adapted_files: unadapted.length,
@@ -262,7 +278,7 @@ const artifact = {
     material_terminal_adapted_files:
       'MATERIAL_CREATOR_FILES_WITH_CANONICAL_ROOT_AND_TERMINAL_ADAPTERS',
     material_trace_adapted_files:
-      'MATERIAL_CREATOR_FILES_WITH_SOURCE_LOCAL_ROOT_TERMINAL_AND_EVENT_ADAPTER_SURFACE_RUNTIME_NOT_VERIFIED',
+      'MATERIAL_CREATOR_FILES_WITH_SOURCE_LOCAL_ROOT_TERMINAL_AND_DIRECT_EVENT_OR_COMPLETE_TERMINAL_OUTBOX_INTENT_SURFACE_RUNTIME_NOT_VERIFIED',
     unresolved_material_route_files:
       'REGISTRY_DERIVED_SOURCE_FILES_WITHOUT_FULL_SOURCE_LOCAL_ROOT_TERMINAL_EVENT_ADAPTER_SURFACE',
   },

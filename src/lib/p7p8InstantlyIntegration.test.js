@@ -370,7 +370,7 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(emergency).toContain("pauseAllInstantlyCampaigns");
   });
 
-  it("hosts the new routes inside already-deployed functions when the Base44 function quota is saturated", () => {
+  it("hosts provider recovery and AgentTask Event reconciliation inside already-deployed functions", () => {
     const adminHost = source("base44/functions/outboundControlAdmin/entry.ts");
     const webhookHost = source(
       "base44/functions/resendInboundWebhook/entry.ts",
@@ -409,6 +409,7 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(hosted).toEqual([
       { worker: "instantlyProviderEventRetryWorker", minutes: 5 },
       { worker: "instantlyReconciliationWorker", minutes: 15 },
+      { worker: "agentTaskTerminalEventReconciler", minutes: 5 },
     ]);
   });
 

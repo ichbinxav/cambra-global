@@ -14,6 +14,7 @@ import {
 } from "../../shared/schedulerRun.ts";
 import { handleInstantlyProviderEventRetryWorker } from "../../shared/logical/instantlyProviderEventRetryWorker.ts";
 import { handleInstantlyReconciliationWorker } from "../../shared/logical/instantlyReconciliationWorker.ts";
+import { handleAgentTaskTerminalEventReconciler } from "../../shared/logical/agentTaskTerminalEventReconciler.ts";
 import {
   claimWebhookDeadLetter,
   finishWebhookDeadLetterClaim,
@@ -127,6 +128,11 @@ export default async function (req: Request): Promise<Response> {
       }
       if (hostedWorker === "instantlyReconciliationWorker") {
         return await handleInstantlyReconciliationWorker(
+          workerRequest(req, workerBody),
+        );
+      }
+      if (hostedWorker === "agentTaskTerminalEventReconciler") {
+        return await handleAgentTaskTerminalEventReconciler(
           workerRequest(req, workerBody),
         );
       }
@@ -257,6 +263,11 @@ export default async function (req: Request): Promise<Response> {
           result: { ok: false, error: "dead_letter_not_found" },
           effectRefs: [],
           receiptRefs: [],
+          terminalEvent: {
+            eventType: "agent.task.terminal",
+            source: "processWebhookDeadLetters",
+            payload: { ok: false, error: "dead_letter_not_found" },
+          },
         });
         return Response.json({ ok: false, error: "dead_letter_not_found" }, {
           status: 404,
@@ -279,6 +290,15 @@ export default async function (req: Request): Promise<Response> {
           },
           effectRefs: [],
           receiptRefs: [],
+          terminalEvent: {
+            eventType: "agent.task.terminal",
+            source: "processWebhookDeadLetters",
+            payload: {
+              ok: false,
+              error: "manual_replay_only_for_exhausted",
+              observed_status: String(one.status || "unknown"),
+            },
+          },
         });
         return Response.json({
           ok: false,
@@ -601,6 +621,11 @@ export default async function (req: Request): Promise<Response> {
           traceEffectRefs.length === 0 ||
           reviewRequired ||
           traceReceiptRefs.length === traceEffectRefs.length,
+        terminalEvent: {
+          eventType: "agent.task.terminal",
+          source: "processWebhookDeadLetters",
+          payload: summary,
+        },
       });
     }
     if (reviewRequired) schedulerOk = false;
@@ -636,6 +661,15 @@ export default async function (req: Request): Promise<Response> {
           effectRefs: traceEffectRefs,
           receiptRefs: traceReceiptRefs,
           effectCoverageComplete: traceEffectRefs.length === 0,
+          terminalEvent: {
+            eventType: "agent.task.terminal",
+            source: "processWebhookDeadLetters",
+            payload: {
+              ok: false,
+              error: "webhook_dead_letter_worker_failed",
+              message,
+            },
+          },
         });
       } catch (traceError) {
         safeBestEffort(traceError, {

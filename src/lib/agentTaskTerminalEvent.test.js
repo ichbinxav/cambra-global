@@ -106,6 +106,8 @@ describe('canonical AgentTask terminal Event outbox contract', () => {
       terminal_event_revision: 0,
     });
     expect(settled.terminal_event_payload_hash).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(Date.parse(settled.terminal_event_next_attempt_at))
+      .toBeGreaterThan(0);
     expect(settled.terminal_event_intent_json).toMatchObject({
       agent_task_id: 'task-terminal-1',
       trace_lineage_state: 'COMPLETE',
@@ -266,6 +268,14 @@ describe('canonical AgentTask terminal Event outbox contract', () => {
       terminal_event_intent_json: {},
       terminal_event_id: 'event-preexisting',
       terminal_event_revision: 0,
+      terminal_event_last_attempt_at: '2026-08-21T10:00:00.000Z',
+      terminal_event_next_attempt_at: '2026-08-21T10:00:00.000Z',
+      terminal_event_published_at: '2026-08-21T10:00:00.000Z',
+      terminal_event_error: 'preexisting-error',
+      terminal_event_conflicting_ids_json: ['event-conflict'],
+      terminal_event_claim_token: 'claim-preexisting',
+      terminal_event_claimed_at: '2026-08-21T10:00:00.000Z',
+      terminal_event_lease_expires_at: '2026-08-21T10:05:00.000Z',
     })) {
       await expect(settleCanonicalAgentTask(svc, {
         ...task,
