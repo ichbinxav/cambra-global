@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-21T19:26:52.970Z",
+  "generatedAt": "2026-08-21T19:59:53.117Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "a1ee25730c72d2824d936fa283adfdbdd6ce3233b98e7921a1d002b76ced479a",
+      "sha256": "596634def9b30dec98672ed4f10c11e75bb6979ccc867080e3b28d37e32ccfca",
       "bytes": 43456
     },
     {
@@ -3354,8 +3354,8 @@
     },
     {
       "path": "src/lib/intelligenceCanonicalReconciliationV2.test.js",
-      "sha256": "3029e724c3be7bb122ff792a6aeb256fe21f521cb57aa87aca4d53376e787986",
-      "bytes": 16457
+      "sha256": "e26f04244e1dc530a90d7ec2bfad817957e584553f1364d422e222ccff4d2fec",
+      "bytes": 16763
     },
     {
       "path": "src/lib/intelligenceEvaluationContract.test.js",
