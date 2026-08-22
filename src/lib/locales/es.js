@@ -1481,7 +1481,7 @@ export default {
        Evalúa el COSTE del comercio, nunca al proveedor. */
     score_ctx_A: "Tu tasa efectiva está en el suelo alcanzable: costes de pago de primer nivel.",
     score_ctx_B: "Tu tasa efectiva está cerca del suelo alcanzable: lo estás haciendo bien.",
-    score_ctx_C: "Tu tasa efectiva está en la media del mercado. Hay margen para bajarla.",
+    score_ctx_C: "Observado entre comercios diagnosticados por CAMBRA. Puede haber margen para reducirla.",
     score_ctx_D: "Tu tasa efectiva está por encima de lo alcanzable: merece la pena actuar.",
     score_ctx_F: "Tu tasa efectiva está muy por encima de lo alcanzable: hay un margen de recuperación importante.",
 

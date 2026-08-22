@@ -1492,7 +1492,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Il tuo tasso effettivo è al minimo raggiungibile — costi di pagamento al top.",
     score_ctx_B: "Il tuo tasso effettivo è vicino al minimo raggiungibile — stai andando bene.",
-    score_ctx_C: "Il tuo tasso effettivo è nella media di mercato. C'è spazio per abbassarlo.",
+    score_ctx_C: "Osservato tra gli esercenti analizzati da CAMBRA. Potrebbe esserci margine per ridurlo.",
     score_ctx_D: "Il tuo tasso effettivo è sopra il raggiungibile — vale la pena agire.",
     score_ctx_F: "Il tuo tasso effettivo è ben sopra il raggiungibile — ampio margine di recupero.",
 

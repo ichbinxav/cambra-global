@@ -21,7 +21,7 @@ import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
 // example (Stripe = the merchant, plus cheaper providers used for the ambition
 // line). Values match the live PaymentsRateTable read on 2026-07-14.
 const RATE_TABLE = [
-  { cohort_key: "stripe|ANY|EU",  provider_slug: "stripe",  channel: "online", region: "EU", tier: "ANY", percent_bps: 150, fixed_fee_minor_units: 25, fixed_fee_currency: "EUR", achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 25, verified: true,  savings_band_pct: 0.20, active: true },
+  { cohort_key: "stripe|ANY|EU",  provider_slug: "stripe",  channel: "online", region: "EU", tier: "ANY", percent_bps: 150, fixed_fee_minor_units: 25, fixed_fee_currency: "EUR", achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 25, verified: true, verified_at: new Date().toISOString(), savings_band_pct: 0.20, active: true },
   { cohort_key: "stancer|ANY|EU", provider_slug: "stancer", channel: "online", region: "EU", tier: "ANY", percent_bps: 70,  fixed_fee_minor_units: 15, fixed_fee_currency: "EUR", verified: false, savings_band_pct: 0.35, active: true },
   { cohort_key: "adyen|ANY|EU",   provider_slug: "adyen",   channel: "online", region: "EU", tier: "ANY", percent_bps: 100, fixed_fee_minor_units: 11, fixed_fee_currency: "EUR", verified: false, savings_band_pct: 0.35, active: true },
   { cohort_key: "ANY|ANY|EU",     provider_slug: "ANY",     channel: "online", region: "EU", tier: "ANY", percent_bps: 200, fixed_fee_minor_units: 25, fixed_fee_currency: "EUR", achievable_percent_bps: 100, achievable_fixed_fee_minor_units: 25, verified: false, savings_band_pct: 0.35, active: true },

@@ -103,8 +103,8 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
-      "freezeReason": "Functional freeze — ECL must not leak into the upload pipeline; the P1 fields stay inert until the writer is migrated in a later prompt",
+      "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
+      "freezeReason": "Functional freeze — sanctioned pre-provider PII fail-closed hardening; ECL must not leak into the upload pipeline",
       "allowedChange": false
     },
     {

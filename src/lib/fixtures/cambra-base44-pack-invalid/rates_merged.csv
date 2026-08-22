@@ -1,0 +1,2 @@
+cc,provider,card_class,rate_bps,verified_url,verified_quote,confidence,scheme,funding,issuer_region,tier,rate_is_blended,comparison_eligible,seed_status,provenance,note
+ES,Fixture PSP,,149,,,,cards,debit,eea,consumer_v,True,conditional,SEEDABLE,primary_verified,This fixture deliberately has incomplete evidence

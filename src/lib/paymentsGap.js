@@ -137,7 +137,31 @@
 //                       1.5.0, y un motor cuyos resultados cambian merece traza
 //                       de versión. La resolución country-aware es de M5; este
 //                       bump la acompaña ahora que los datos la activan.
-const ENGINE_VERSION = "payments-gap-1.6.0";
+const ENGINE_VERSION = "payments-gap-1.7.0";
+const RATE_FRESHNESS_MAX_AGE_DAYS = 90;
+const RATE_FRESHNESS_MAX_AGE_MS = RATE_FRESHNESS_MAX_AGE_DAYS * 86_400_000;
+const RATE_FRESHNESS_MAX_CLOCK_SKEW_MS = 5 * 60_000;
+
+function rateRowFreshness(row, nowMs = Date.now()) {
+  if (!row || row.active === false) {
+    return { current: false, status: "INACTIVE", reason: "rate_row_inactive" };
+  }
+  if (row.verified !== true) {
+    return { current: true, status: "NOT_APPLICABLE", reason: "rate_not_verified" };
+  }
+  const verifiedAtMs = Date.parse(row.verified_at || "");
+  if (!Number.isFinite(verifiedAtMs) || verifiedAtMs > nowMs + RATE_FRESHNESS_MAX_CLOCK_SKEW_MS) {
+    return { current: false, status: "STALE", reason: "verification_missing_invalid_or_future" };
+  }
+  const ageMs = Math.max(0, nowMs - verifiedAtMs);
+  const current = ageMs <= RATE_FRESHNESS_MAX_AGE_MS;
+  return {
+    current,
+    status: current ? "CURRENT" : "STALE",
+    reason: current ? null : "verification_older_than_90_days",
+    age_days: ageMs / 86_400_000,
+  };
+}
 
 // Currency minor-unit divisor. All PaymentsRateTable rows store fixed fees
 // in minor units (cents / pence). 100 minor units = 1 major (EUR / GBP / USD).
@@ -389,13 +413,21 @@ function validateRateTable(rows, opts) {
     return { ok: false, reason: "rate_table_not_array", missing: required };
   }
   const activeByKey = new Map();
+  const staleByKey = new Map();
   for (const r of rows) {
     if (!r || r.active === false) continue;
-    if (typeof r.cohort_key === "string") activeByKey.set(r.cohort_key, r);
+    if (typeof r.cohort_key !== "string") continue;
+    const freshness = rateRowFreshness(r);
+    if (freshness.current) activeByKey.set(r.cohort_key, r);
+    else staleByKey.set(r.cohort_key, freshness);
   }
-  const missing = required.filter((k) => !activeByKey.has(k));
+  const missing = required.filter((k) => !activeByKey.has(k) && !staleByKey.has(k));
   if (missing.length > 0) {
     return { ok: false, reason: "rate_table_incomplete", missing };
+  }
+  const stale = required.filter((k) => staleByKey.has(k));
+  if (stale.length > 0) {
+    return { ok: false, reason: "rate_table_stale", stale, missing: [] };
   }
   return { ok: true };
 }
@@ -596,6 +628,7 @@ function selectMultiAnchorAchievable(rows, region, ticket, monthlyGmv, currentPr
   for (const r of rows) {
     if (!r || r.active === false) continue;
     if (r.verified !== true) continue;
+    if (!rateRowFreshness(r).current) continue;
     if (r.channel !== "in_store") continue;
     if (r.region !== region) continue;
     // M5 — country guard on the anchor pool: an anchor pinned to a specific
@@ -988,6 +1021,15 @@ function calculateGap(rawInput, rateTable) {
       : `ANY|ANY|${input.region}`;
     return { ok: false, error: "rate_table_incomplete", missing: [missKey] };
   }
+  const selectedFreshness = rateRowFreshness(row);
+  if (!selectedFreshness.current) {
+    return {
+      ok: false,
+      error: "rate_table_stale",
+      stale: [row.cohort_key].filter(Boolean),
+      rate_freshness: selectedFreshness,
+    };
+  }
 
   // Read intl uplifts DIRECTLY from the row. Missing → 0 (engine never fills
   // in a number from code). We track "modeled" separately so we can emit the
@@ -1367,5 +1409,7 @@ export {
   INTL_UPLIFT_NOT_MODELED_ASSUMPTION,
   ALREADY_OPTIMIZED_EUR_ANNUAL_THRESHOLD,
   ALREADY_OPTIMIZED_BPS_THRESHOLD,
+  RATE_FRESHNESS_MAX_AGE_DAYS,
+  rateRowFreshness,
   ENGINE_VERSION,
 };

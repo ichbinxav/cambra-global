@@ -9,7 +9,8 @@
 import { normalizeCurrencyCode, normalizeMoney, resolveFX } from './marketMoney.ts';
 import { analyzerReliableFxSnapshots } from './analyzerFx.ts';
 
-export const DOCUMENT_EXTRACTION_VERSION = 'document-extraction-2.0.0';
+export const DOCUMENT_EXTRACTION_VERSION = 'document-extraction-2.2.0';
+export const DOCUMENT_SANITIZATION_VERSION = 'local-pii-redaction-1.1.0';
 export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
 export const DOCUMENT_TYPES = [
@@ -25,7 +26,188 @@ export const DOCUMENT_TYPES = [
 ] as const;
 
 type DocumentType = typeof DOCUMENT_TYPES[number];
-type FileKind = 'pdf' | 'png' | 'jpeg' | 'webp' | 'gif' | 'csv' | 'json';
+export type FileKind = 'pdf' | 'png' | 'jpeg' | 'webp' | 'gif' | 'csv' | 'json' | 'text';
+
+type RedactionCategory = 'email' | 'phone' | 'address' | 'vat' | 'iban' | 'name';
+type RedactionCounts = Record<RedactionCategory, number>;
+
+const REDACTION_MARKERS: Record<RedactionCategory, string> = {
+  email: '[REDACTED_EMAIL]',
+  phone: '[REDACTED_PHONE]',
+  address: '[REDACTED_ADDRESS]',
+  vat: '[REDACTED_VAT]',
+  iban: '[REDACTED_IBAN]',
+  name: '[REDACTED_NAME]',
+};
+
+const BINARY_FILE_KINDS = new Set<FileKind>(['pdf', 'png', 'jpeg', 'webp', 'gif']);
+const EMAIL_PATTERN = /\b[\p{L}\p{N}._%+-]+@(?:[\p{L}\p{N}-]+\.)+[\p{L}]{2,}\b/giu;
+const IBAN_PATTERN = /\b[A-Z]{2}\d{2}(?:[ -]?[A-Z0-9]){11,30}\b/giu;
+const VAT_PATTERN = /\b[A-Z]{2}[ .-]?[A-Z0-9](?:[ .-]?[A-Z0-9]){7,11}\b/giu;
+const ADDRESS_PATTERN = /\b\d{1,5}\s+(?:rue|calle|carrer|street|road|avenida|avenue|boulevard|paseo|plaza|via|viale|rua|straat|strasse|straße)\s+[^\r\n;]{2,80}/giu;
+// Intentionally conservative for privacy: a long phone-shaped numeric token is
+// redacted even when its semantic label is missing. Financial decimals and ISO
+// dates do not match this shape.
+const PHONE_PATTERN = /(?:\+\d{1,3}[ .()-]*)?(?:\d[ .()-]*){8,14}\d/gu;
+
+const LABELS: Record<Exclude<RedactionCategory, 'email' | 'phone' | 'iban'>, RegExp> = {
+  address: /^(?:address|addr|address_?line_?[12]|street_?address|adresse|direcci[oó]n|direccion|direccion_?[12]|street|rue|calle|postal_?address|billing_?address|shipping_?address|postcode|postal_?code|zip|zip_?code|city|town|locality|municipality|ciudad|ville)$/iu,
+  vat: /^(?:vat|vat_?id|vat_?number|company_?vat|tax_?id|taxpayer_?id|tax_?number|nif|nif_?iva|tva)$/iu,
+  name: /^(?:name|full_?name|customer_?(?:full_?)?name|merchant_?(?:full_?)?name|contact_?(?:full_?)?name|legal_?name|billing_?name|cardholder_?name|account_?holder|owner_?name|contact_?person|nombre|nom|raison_?sociale)$/iu,
+};
+
+const DIRECT_LABELS: Record<RedactionCategory, RegExp> = {
+  ...LABELS,
+  email: /^(?:email|email_?address|e_?mail|correo|courriel)$/iu,
+  phone: /^(?:phone|phone_?number|telephone|telephone_?number|tel|mobile|mobile_?number|telefono|t[eé]l[eé]phone)$/iu,
+  iban: /^(?:iban|bank_?iban|bank_?account|account_?number)$/iu,
+};
+
+function emptyRedactionCounts(): RedactionCounts {
+  return { email: 0, phone: 0, address: 0, vat: 0, iban: 0, name: 0 };
+}
+
+function replaceAndCount(text: string, pattern: RegExp, category: RedactionCategory, counts: RedactionCounts): string {
+  return text.replace(pattern, () => {
+    counts[category] += 1;
+    return REDACTION_MARKERS[category];
+  });
+}
+
+function redactDirectIdentifiers(text: string, counts: RedactionCounts): string {
+  // IBAN must run before the deliberately broad VAT and phone patterns.
+  let sanitized = replaceAndCount(text, EMAIL_PATTERN, 'email', counts);
+  sanitized = replaceAndCount(sanitized, IBAN_PATTERN, 'iban', counts);
+  sanitized = replaceAndCount(sanitized, VAT_PATTERN, 'vat', counts);
+  sanitized = replaceAndCount(sanitized, ADDRESS_PATTERN, 'address', counts);
+  sanitized = replaceAndCount(sanitized, PHONE_PATTERN, 'phone', counts);
+  return sanitized;
+}
+
+function categoryForLabel(label: string): RedactionCategory | null {
+  const normalized = label.trim().replace(/[\s.-]+/g, '_');
+  for (const [category, pattern] of Object.entries(DIRECT_LABELS) as Array<[RedactionCategory, RegExp]>) {
+    if (pattern.test(normalized)) return category;
+  }
+  return null;
+}
+
+function redactLabeledText(text: string, counts: RedactionCounts): string {
+  return text.replace(/^(\s*["']?([\p{L}\d_. -]+)["']?\s*[:=]\s*)([^\r\n]*)$/gimu, (line, prefix, label, value) => {
+    const category = categoryForLabel(String(label));
+    if (!category || !String(value).trim()) return line;
+    counts[category] += 1;
+    return `${prefix}${REDACTION_MARKERS[category]}`;
+  });
+}
+
+function parseCsv(text: string, delimiter: string): string[][] {
+  const rows: string[][] = []; let row: string[] = []; let cell = ''; let quoted = false;
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (quoted) {
+      if (char === '"' && text[index + 1] === '"') { cell += '"'; index++; }
+      else if (char === '"') quoted = false;
+      else cell += char;
+    } else if (char === '"') quoted = true;
+    else if (char === delimiter) { row.push(cell); cell = ''; }
+    else if (char === '\n') { row.push(cell.replace(/\r$/u, '')); rows.push(row); row = []; cell = ''; }
+    else cell += char;
+  }
+  if (cell || row.length) { row.push(cell.replace(/\r$/u, '')); rows.push(row); }
+  return rows;
+}
+
+function delimiterScore(text: string, delimiter: string): number {
+  let score = 0; let quoted = false;
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (char === '"' && quoted && text[index + 1] === '"') { index++; continue; }
+    if (char === '"') { quoted = !quoted; continue; }
+    if (!quoted && (char === '\n' || char === '\r')) break;
+    if (!quoted && char === delimiter) score++;
+  }
+  return score;
+}
+
+function serializeCsv(rows: string[][], delimiter: string): string {
+  return rows.map((row) => row.map((cell) => {
+    const value = String(cell ?? '');
+    return value.includes(delimiter) || /["\r\n]/u.test(value) ? `"${value.replace(/"/gu, '""')}"` : value;
+  }).join(delimiter)).join('\n');
+}
+
+function sanitizeCsv(text: string, counts: RedactionCounts): string {
+  const source = text.replace(/^\uFEFF/u, '');
+  const delimiter = [';', '\t', ','].reduce((best, candidate) => delimiterScore(source, candidate) > delimiterScore(source, best) ? candidate : best, ',');
+  const rows = parseCsv(source, delimiter);
+  if (!rows.length) return '';
+  const categories = rows[0].map((header) => categoryForLabel(header));
+  for (let rowIndex = 1; rowIndex < rows.length; rowIndex++) {
+    rows[rowIndex] = rows[rowIndex].map((cell, columnIndex) => {
+      const category = categories[columnIndex];
+      if (category && cell.trim()) {
+        counts[category] += 1;
+        return REDACTION_MARKERS[category];
+      }
+      return redactDirectIdentifiers(cell, counts);
+    });
+  }
+  return serializeCsv(rows, delimiter);
+}
+
+function sanitizeJson(text: string, counts: RedactionCounts): string {
+  const visit = (value: unknown, key = ''): unknown => {
+    const category = categoryForLabel(key);
+    if (category && value != null && String(value).trim()) {
+      counts[category] += 1;
+      return REDACTION_MARKERS[category];
+    }
+    if (Array.isArray(value)) return value.map((item) => visit(item));
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([childKey, child]) => [childKey, visit(child, childKey)]));
+    }
+    return typeof value === 'string' ? redactDirectIdentifiers(value, counts) : value;
+  };
+  return JSON.stringify(visit(JSON.parse(text)));
+}
+
+/**
+ * The only allowed boundary from an uploaded document to an external model.
+ * Binary documents fail closed because a local OCR/redaction implementation is
+ * not yet available. Textual documents are locally transformed and only the
+ * returned bytes may be used to construct a provider payload.
+ */
+export function prepareDocumentForExternalExtraction(input: { kind: FileKind; bytes: Uint8Array }):
+  | { ok: true; bytes: Uint8Array; text: string; sanitizationVersion: string; redactionCounts: RedactionCounts; redactedCategories: RedactionCategory[] }
+  | { ok: false; status: 'needs_review'; httpStatus: 422; reason: 'local_redaction_required_for_binary_document' | 'local_text_decoding_failed' | 'local_redaction_failed' } {
+  if (BINARY_FILE_KINDS.has(input.kind)) {
+    return { ok: false, status: 'needs_review', httpStatus: 422, reason: 'local_redaction_required_for_binary_document' };
+  }
+  const counts = emptyRedactionCounts();
+  let originalText: string;
+  try { originalText = new TextDecoder('utf-8', { fatal: true }).decode(input.bytes); }
+  catch { return { ok: false, status: 'needs_review', httpStatus: 422, reason: 'local_text_decoding_failed' }; }
+  let sanitized: string;
+  try {
+    sanitized = input.kind === 'json'
+      ? sanitizeJson(originalText, counts)
+      : input.kind === 'csv'
+        ? sanitizeCsv(originalText, counts)
+        : redactDirectIdentifiers(redactLabeledText(originalText, counts), counts);
+  } catch {
+    return { ok: false, status: 'needs_review', httpStatus: 422, reason: 'local_redaction_failed' };
+  }
+  const bytes = new TextEncoder().encode(sanitized);
+  return {
+    ok: true,
+    bytes,
+    text: sanitized,
+    sanitizationVersion: DOCUMENT_SANITIZATION_VERSION,
+    redactionCounts: counts,
+    redactedCategories: (Object.keys(counts) as RedactionCategory[]).filter((category) => counts[category] > 0),
+  };
+}
 
 const ISO_CURRENCY = /^[A-Z]{3}$/;
 const PROVIDER_SLUG = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/;
@@ -88,6 +270,18 @@ function signatureStarts(bytes: Uint8Array, signature: number[]): boolean {
   return signature.every((byte, index) => bytes[index] === byte);
 }
 
+function signatureWithin(bytes: Uint8Array, signature: number[], maxOffset: number): boolean {
+  const lastOffset = Math.min(maxOffset, bytes.length - signature.length);
+  for (let offset = 0; offset <= lastOffset; offset++) {
+    if (signature.every((byte, index) => bytes[offset + index] === byte)) return true;
+  }
+  return false;
+}
+
+function binaryMime(kind: FileKind): string {
+  return kind === 'pdf' ? 'application/pdf' : `image/${kind}`;
+}
+
 function looksTextual(bytes: Uint8Array): boolean {
   const sample = bytes.subarray(0, Math.min(bytes.length, 4096));
   if (!sample.length) return false;
@@ -101,7 +295,7 @@ function looksTextual(bytes: Uint8Array): boolean {
 export function detectFileKind(fileName: unknown, bytes: Uint8Array): { ok: true; kind: FileKind; mime: string } | { ok: false; reason: string } {
   const name = String(fileName || '').split('?')[0].toLowerCase();
   const ext = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1) : '';
-  const byMagic = signatureStarts(bytes, [0x25, 0x50, 0x44, 0x46, 0x2d]) ? 'pdf'
+  const byMagic: FileKind | null = signatureWithin(bytes, [0x25, 0x50, 0x44, 0x46, 0x2d], 1024) ? 'pdf'
     : signatureStarts(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) ? 'png'
     : signatureStarts(bytes, [0xff, 0xd8, 0xff]) ? 'jpeg'
     : signatureStarts(bytes, [0x47, 0x49, 0x46, 0x38]) ? 'gif'
@@ -115,6 +309,10 @@ export function detectFileKind(fileName: unknown, bytes: Uint8Array): { ok: true
       ? { ok: true, kind: expected, mime: expected === 'pdf' ? 'application/pdf' : `image/${expected}` }
       : { ok: false, reason: 'extension_signature_mismatch' };
   }
+  // A binary renamed as text must enter the same local-redaction gate as a
+  // correctly named binary. Treating a printable PDF as CSV/TXT would bypass
+  // the provider boundary because PDF syntax is predominantly ASCII.
+  if (['csv', 'json', 'txt'].includes(ext) && byMagic) return { ok: true, kind: byMagic, mime: binaryMime(byMagic) };
   if (ext === 'csv') return looksTextual(bytes) ? { ok: true, kind: 'csv', mime: 'text/csv' } : { ok: false, reason: 'csv_not_textual' };
   if (ext === 'json') {
     if (!looksTextual(bytes)) return { ok: false, reason: 'json_not_textual' };
@@ -122,6 +320,7 @@ export function detectFileKind(fileName: unknown, bytes: Uint8Array): { ok: true
     catch { return { ok: false, reason: 'json_invalid' }; }
     return { ok: true, kind: 'json', mime: 'application/json' };
   }
+  if (ext === 'txt') return looksTextual(bytes) ? { ok: true, kind: 'text', mime: 'text/plain' } : { ok: false, reason: 'text_not_textual' };
   return { ok: false, reason: 'unsupported_file_type' };
 }
 

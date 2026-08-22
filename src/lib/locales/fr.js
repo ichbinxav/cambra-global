@@ -1482,7 +1482,7 @@ export default {
        Évalue le COÛT du commerçant, jamais le prestataire. */
     score_ctx_A: "Votre taux effectif est au plancher atteignable — des coûts de paiement au meilleur niveau.",
     score_ctx_B: "Votre taux effectif est proche du plancher atteignable — vous vous en sortez bien.",
-    score_ctx_C: "Votre taux effectif se situe dans la moyenne du marché. Il y a de la marge pour le baisser.",
+    score_ctx_C: "Observé parmi les commerçants diagnostiqués par CAMBRA. Une réduction peut être possible.",
     score_ctx_D: "Votre taux effectif est supérieur à ce qui est atteignable — cela vaut la peine d'agir.",
     score_ctx_F: "Votre taux effectif est bien supérieur à ce qui est atteignable — une marge de récupération importante.",
 

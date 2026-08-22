@@ -26,6 +26,8 @@ import {
   REQUIRED_FALLBACK_KEYS,
   FALLBACK_ASSUMPTION,
   INTL_UPLIFT_NOT_MODELED_ASSUMPTION,
+  RATE_FRESHNESS_MAX_AGE_DAYS,
+  rateRowFreshness,
   ENGINE_VERSION,
 } from './paymentsGap.js';
 
@@ -48,6 +50,9 @@ function row(overrides) {
     intl_uplift_bps: overrides.intl_uplift_bps ?? null,
     achievable_intl_uplift_bps: overrides.achievable_intl_uplift_bps ?? null,
     verified: overrides.verified,
+    verified_at: overrides.verified === true
+      ? (overrides.verified_at ?? new Date().toISOString())
+      : (overrides.verified_at ?? null),
     savings_band_pct: overrides.savings_band_pct,
     achievable_breakdown_json: overrides.achievable_breakdown_json ?? null,
     active: overrides.active !== false,
@@ -157,6 +162,35 @@ describe('validateRateTable', () => {
     expect(REQUIRED_FALLBACK_KEYS).toEqual([
       'ANY|ANY|EU', 'ANY|ANY|UK', 'ANY|ANY|US', 'ANY|ANY|RoW',
     ]);
+  });
+});
+
+describe('verified rate freshness', () => {
+  it('uses a non-reducible 90-day boundary', () => {
+    expect(RATE_FRESHNESS_MAX_AGE_DAYS).toBe(90);
+    const nowMs = Date.parse('2026-08-22T00:00:00.000Z');
+    expect(rateRowFreshness({ active: true, verified: true, verified_at: '2026-05-24T00:00:00.000Z' }, nowMs).status).toBe('CURRENT');
+    expect(rateRowFreshness({ active: true, verified: true, verified_at: '2026-05-23T23:59:59.999Z' }, nowMs)).toMatchObject({
+      current: false,
+      status: 'STALE',
+      reason: 'verification_older_than_90_days',
+    });
+  });
+
+  it('fails closed when the selected verified rate lacks fresh verification', () => {
+    const staleTable = FULL_TABLE.map((candidate) => candidate.cohort_key === 'stripe|ANY|EU'
+      ? { ...candidate, verified_at: '2020-01-01T00:00:00.000Z' }
+      : candidate);
+    expect(calculateGap({
+      monthly_gmv_eur: 10_000,
+      avg_ticket_eur: 50,
+      region: 'EU',
+      provider_slug: 'stripe',
+    }, staleTable)).toMatchObject({
+      ok: false,
+      error: 'rate_table_stale',
+      stale: ['stripe|ANY|EU'],
+    });
   });
 });
 
@@ -557,8 +591,8 @@ describe('calculateGap — end-to-end', () => {
     // first country=ES rows + ES anchors in the multi-anchor pool change real
     // results for ES merchants, so the version gets a trace. Every numeric
     // assertion in this file is untouched (fixture has no country rows).
-    expect(result.engine_version).toBe('payments-gap-1.6.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.6.0');
+    expect(result.engine_version).toBe('payments-gap-1.7.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.7.0');
   });
 });
 

@@ -4,6 +4,7 @@ import {
   buildAnalyzerProjection,
   crossValidateCandidates,
   normalizeExtractionCandidate,
+  prepareDocumentForExternalExtraction,
   validateDocumentEnvelope,
 } from '../../shared/documentExtraction.ts';
 import { reservePaidOperation, settlePaidOperation } from '../../shared/costGovernance.ts';
@@ -15,11 +16,12 @@ import {
 
 // processUploadedFile v2 — authenticated, tenant-scoped and fail-closed.
 //
-// A file is fetched once from Base44 storage, signature-checked, hashed and
-// shown independently to two model families. Only an exact normalized
-// agreement can update AnalyzerInput/profile projections. One-model output,
-// invalid dates/currency/units, mismatches and unsupported layouts remain an
-// auditable StatementImport with no financial side effect.
+// A file is fetched once from Base44 storage, signature-checked and hashed.
+// Binary files stop at a needs_review/422 privacy boundary until local OCR and
+// redaction exist. Text files are locally sanitized before two model families
+// receive the same redacted text. Only exact normalized agreement can update
+// AnalyzerInput/profile projections; every other outcome has no financial side
+// effect.
 
 const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
 const MAX_TEXT_DOCUMENT_BYTES = 1024 * 1024;
@@ -35,14 +37,6 @@ function validateTrustedUploadUrl(raw: unknown): { ok: true; url: string } | { o
   } catch {
     return { ok: false, reason: 'untrusted_file_url' };
   }
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return btoa(binary);
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
@@ -125,27 +119,24 @@ function parseJson(text: string): unknown {
   try { return JSON.parse(cleaned); } catch { return null; }
 }
 
-function anthropicContent(kind: string, mime: string, base64: string, bytes: Uint8Array) {
-  if (kind === 'pdf') return { type: 'document', source: { type: 'base64', media_type: mime, data: base64 } };
-  if (['png', 'jpeg', 'webp', 'gif'].includes(kind)) return { type: 'image', source: { type: 'base64', media_type: mime, data: base64 } };
-  if (bytes.length > MAX_TEXT_DOCUMENT_BYTES) return null;
-  const text = new TextDecoder().decode(bytes);
+function anthropicContent(kind: string, text: string) {
+  if (!['csv', 'json', 'text'].includes(kind)) return null;
   return { type: 'text', text: `<untrusted_document>\n${text}\n</untrusted_document>` };
 }
 
-async function callAnthropic(svc:any, checksum:string, kind: string, mime: string, base64: string, bytes: Uint8Array) {
-  if (Deno.env.get('EXTRACTION_LLM_ENABLED') !== 'true') return { ok: false, reason: 'primary_disabled' };
+async function callAnthropic(svc:any, checksum:string, kind: string, sanitizedText: string) {
+  if (Deno.env.get('EXTRACTION_LLM_ENABLED') !== 'true') return { ok: false, providerCalled: false, reason: 'primary_disabled' };
   const key = Deno.env.get('ANTHROPIC_API_KEY');
-  if (!key) return { ok: false, reason: 'primary_key_missing' };
-  const document = anthropicContent(kind, mime, base64, bytes);
-  if (!document) return { ok: false, reason: 'text_document_too_large_for_independent_review' };
+  if (!key) return { ok: false, providerCalled: false, reason: 'primary_key_missing' };
+  const document = anthropicContent(kind, sanitizedText);
+  if (!document) return { ok: false, providerCalled: false, reason: 'local_redaction_required_for_binary_document' };
   const model = Deno.env.get('ANTHROPIC_EXTRACTION_MODEL') || 'claude-sonnet-4-5';
   const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:anthropic:${checksum}`, category:'ai', provider:'anthropic', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
   // A duplicate reservation means another invocation already owns (or has
   // completed) this paid effect. Never turn an idempotency replay into a second
   // provider call. The durable StatementImport replay above will serve the
   // completed result; an in-flight owner leaves this attempt in review.
-  if (reservation?.duplicate) return { ok: false, duplicate: true, reason: 'primary_reservation_duplicate' };
+  if (reservation?.duplicate) return { ok: false, providerCalled: false, duplicate: true, reason: 'primary_reservation_duplicate' };
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
@@ -154,22 +145,17 @@ async function callAnthropic(svc:any, checksum:string, kind: string, mime: strin
     });
     const data = await response.json().catch(() => ({}));
     await settlePaidOperation(svc, reservation, { ok:response.ok, usage_json:data?.usage || {}, amount_quality:'CONSERVATIVE_RESERVATION' });
-    if (!response.ok) return { ok: false, reason: `primary_http_${response.status}` };
+    if (!response.ok) return { ok: false, providerCalled: true, reason: `primary_http_${response.status}` };
     const parsed = parseJson(data?.content?.find((part: any) => part?.type === 'text')?.text || '');
-    return parsed ? { ok: true, model, parsed } : { ok: false, reason: 'primary_invalid_json' };
+    return parsed ? { ok: true, providerCalled: true, model, parsed } : { ok: false, providerCalled: true, reason: 'primary_invalid_json' };
   } catch (error) {
-    return { ok: false, reason: error?.name === 'TimeoutError' ? 'primary_timeout' : 'primary_unavailable' };
+    return { ok: false, providerCalled: true, reason: error?.name === 'TimeoutError' ? 'primary_timeout' : 'primary_unavailable' };
   }
 }
 
-function openAiContent(kind: string, mime: string, base64: string, fileName: string, bytes: Uint8Array) {
-  if (['png', 'jpeg', 'webp', 'gif'].includes(kind)) {
-    return [{ type: 'input_image', image_url: `data:${mime};base64,${base64}`, detail: 'high' }, { type: 'input_text', text: EXTRACTION_PROMPT }];
-  }
-  if (kind === 'json') {
-    return [{ type: 'input_text', text: `${EXTRACTION_PROMPT}\n<untrusted_document>\n${new TextDecoder().decode(bytes)}\n</untrusted_document>` }];
-  }
-  return [{ type: 'input_file', filename: fileName, file_data: `data:${mime};base64,${base64}` }, { type: 'input_text', text: EXTRACTION_PROMPT }];
+function openAiContent(kind: string, sanitizedText: string) {
+  if (!['csv', 'json', 'text'].includes(kind)) return null;
+  return [{ type: 'input_text', text: `${EXTRACTION_PROMPT}\n<untrusted_document>\n${sanitizedText}\n</untrusted_document>` }];
 }
 
 function openAiOutputText(data: any): string {
@@ -177,30 +163,32 @@ function openAiOutputText(data: any): string {
   return '';
 }
 
-async function callOpenAI(svc:any, checksum:string, kind: string, mime: string, base64: string, fileName: string, bytes: Uint8Array) {
-  if (Deno.env.get('EXTRACTION_L3_ENABLED') !== 'true') return { ok: false, reason: 'secondary_disabled' };
+async function callOpenAI(svc:any, checksum:string, kind: string, sanitizedText: string) {
+  if (Deno.env.get('EXTRACTION_L3_ENABLED') !== 'true') return { ok: false, providerCalled: false, reason: 'secondary_disabled' };
   const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return { ok: false, reason: 'secondary_key_missing' };
+  if (!key) return { ok: false, providerCalled: false, reason: 'secondary_key_missing' };
+  const content = openAiContent(kind, sanitizedText);
+  if (!content) return { ok: false, providerCalled: false, reason: 'local_redaction_required_for_binary_document' };
   const model = Deno.env.get('OPENAI_EXTRACTION_MODEL') || 'gpt-4.1';
   const reservation = await reservePaidOperation(svc, { event_key:`ai:document-extraction:openai:${checksum}`, category:'ai', provider:'openai', source:'processUploadedFile', related_entity_type:'StatementImport', related_entity_id:checksum });
-  if (reservation?.duplicate) return { ok: false, duplicate: true, reason: 'secondary_reservation_duplicate' };
+  if (reservation?.duplicate) return { ok: false, providerCalled: false, duplicate: true, reason: 'secondary_reservation_duplicate' };
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST', signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model, store: false, temperature: 0, max_output_tokens: 1800,
-        input: [{ role: 'user', content: openAiContent(kind, mime, base64, fileName, bytes) }],
+        input: [{ role: 'user', content }],
         text: { format: { type: 'json_schema', name: 'cambra_document_extraction', strict: true, schema: EXTRACTION_SCHEMA } },
       }),
     });
     const data = await response.json().catch(() => ({}));
     await settlePaidOperation(svc, reservation, { ok:response.ok, usage_json:data?.usage || {}, amount_quality:'CONSERVATIVE_RESERVATION' });
-    if (!response.ok) return { ok: false, reason: `secondary_http_${response.status}` };
+    if (!response.ok) return { ok: false, providerCalled: true, reason: `secondary_http_${response.status}` };
     const parsed = parseJson(openAiOutputText(data));
-    return parsed ? { ok: true, model, parsed } : { ok: false, reason: 'secondary_invalid_json' };
+    return parsed ? { ok: true, providerCalled: true, model, parsed } : { ok: false, providerCalled: true, reason: 'secondary_invalid_json' };
   } catch (error) {
-    return { ok: false, reason: error?.name === 'TimeoutError' ? 'secondary_timeout' : 'secondary_unavailable' };
+    return { ok: false, providerCalled: true, reason: error?.name === 'TimeoutError' ? 'secondary_timeout' : 'secondary_unavailable' };
   }
 }
 
@@ -270,7 +258,7 @@ Deno.serve(async (req) => {
     }
     const envelope = validateDocumentEnvelope({ fileName, bytes });
     if (envelope.ok === false) return Response.json({ error: envelope.reason }, { status: envelope.reason === 'file_too_large' ? 413 : 400 });
-    if (['csv', 'json'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {
+    if (['csv', 'json', 'text'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {
       return Response.json({ error: 'text_document_too_large_for_independent_review' }, { status: 413 });
     }
     const checksum = await sha256Hex(bytes);
@@ -280,17 +268,52 @@ Deno.serve(async (req) => {
     const previous = await base44.entities.StatementImport.filter({ brand_id: brand.id, checksum }, '-imported_at', 1);
     const replay = previous[0];
     if (replay?.metadata_json?.extraction_version === DOCUMENT_EXTRACTION_VERSION) {
+      if (replay?.metadata_json?.privacy_boundary?.blocked === true) {
+        const replayBlockReason = replay.metadata_json.privacy_boundary.reason || 'local_redaction_required_for_binary_document';
+        return serviceLevelResult(
+          Response.json({ ok: false, duplicate: true, statement_import_id: replay.id, status: 'needs_review', error: replayBlockReason }, { status: 422 }),
+          { outcome: 'FAILED', reason: replayBlockReason, source_refs: [{ entity: 'StatementImport', id: replay.id, checksum }] },
+        );
+      }
       return excludedServiceLevelResult(
         Response.json({ ok: true, duplicate: true, statement_import_id: replay.id, status: replay.parsed_status, extraction_confidence: replay.extraction_confidence, provider_detected: replay.provider_detected || '', detected: replay.vertical || 'unknown', aggregates: replay.metadata_json?.aggregates || {}, updates: { payments: false, shipping: false, saas: false }, layer_verdicts: replay.metadata_json?.model_verdicts || {}, fields: replay.metadata_json?.canonical?.fields || {} }),
         'idempotent_replay',
       );
     }
 
-    const base64 = bytesToBase64(bytes);
+    const prepared = prepareDocumentForExternalExtraction({ kind: envelope.kind, bytes });
+    if (prepared.ok === false) {
+      const stored = await base44.entities.StatementImport.create({
+        brand_id: brand.id,
+        file_url: trusted.url,
+        parser: parserFor(envelope.kind),
+        parsed_status: 'needs_review',
+        checksum,
+        extraction_confidence: 'unverified',
+        provider_detected: '',
+        imported_at: new Date().toISOString(),
+        metadata_json: {
+          extraction_version: DOCUMENT_EXTRACTION_VERSION,
+          file: { kind: envelope.kind, mime: envelope.mime, size: envelope.size, checksum },
+          privacy_boundary: { blocked: true, reason: prepared.reason, provider_calls: 0 },
+          model_verdicts: { primary: { ok: false, model: null, reason: prepared.reason }, secondary: { ok: false, model: null, reason: prepared.reason } },
+          comparison: { accepted: false, disagreements: [], problems: [{ field: '$', reason: prepared.reason }] },
+          canonical: null,
+          projection: { eligible: false, reason: prepared.reason },
+          aggregates: {},
+        },
+      });
+      return serviceLevelResult(
+        Response.json({ ok: false, duplicate: false, statement_import_id: stored.id, status: prepared.status, error: prepared.reason }, { status: prepared.httpStatus }),
+        { outcome: 'FAILED', reason: prepared.reason, source_refs: [{ entity: 'StatementImport', id: stored.id, checksum }] },
+      );
+    }
+
     const [primaryRaw, secondaryRaw] = await Promise.all([
-      callAnthropic(svc, checksum, envelope.kind, envelope.mime, base64, bytes),
-      callOpenAI(svc, checksum, envelope.kind, envelope.mime, base64, fileName, bytes),
+      callAnthropic(svc, checksum, envelope.kind, prepared.text),
+      callOpenAI(svc, checksum, envelope.kind, prepared.text),
     ]);
+    const providerCallCount = Number(primaryRaw.providerCalled === true) + Number(secondaryRaw.providerCalled === true);
     const primary = primaryRaw.ok ? normalizeExtractionCandidate(primaryRaw.parsed, { checksum, model: primaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: primaryRaw.reason }], candidate: null };
     const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed, { checksum, model: secondaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: secondaryRaw.reason }], candidate: null };
     const comparison = crossValidateCandidates(primary, secondary);
@@ -320,7 +343,8 @@ Deno.serve(async (req) => {
       imported_at: new Date().toISOString(),
       metadata_json: {
         extraction_version: DOCUMENT_EXTRACTION_VERSION,
-        file: { name: fileName, kind: envelope.kind, mime: envelope.mime, size: envelope.size, checksum },
+        file: { kind: envelope.kind, mime: envelope.mime, size: envelope.size, checksum },
+        privacy_boundary: { blocked: false, provider_calls: providerCallCount, sanitization_version: prepared.sanitizationVersion, redaction_counts: prepared.redactionCounts, redacted_categories: prepared.redactedCategories },
         model_verdicts: { primary: { ok: primaryRaw.ok, model: primaryRaw.ok ? primaryRaw.model : null, reason: primaryRaw.ok ? null : primaryRaw.reason }, secondary: { ok: secondaryRaw.ok, model: secondaryRaw.ok ? secondaryRaw.model : null, reason: secondaryRaw.ok ? null : secondaryRaw.reason } },
         comparison: { accepted: comparison.accepted, disagreements: comparison.disagreements, problems: comparison.problems },
         canonical: comparison.canonical,
@@ -360,8 +384,10 @@ Deno.serve(async (req) => {
     );
       },
     );
-  } catch (error) {
-    console.error('processUploadedFile failed', error);
+  } catch {
+    // Do not log exception objects here: provider/decoder errors can contain a
+    // fragment of the uploaded document. The public error code is sufficient.
+    console.error('processUploadedFile failed');
     return Response.json({ error: 'process_uploaded_file_failed' }, { status: 500 });
   }
 });

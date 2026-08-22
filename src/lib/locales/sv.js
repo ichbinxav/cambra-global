@@ -1491,7 +1491,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Din effektiva avgift ligger på det uppnåbara golvet — betalningskostnader i toppskiktet.",
     score_ctx_B: "Din effektiva avgift ligger nära det uppnåbara golvet — du ligger bra till.",
-    score_ctx_C: "Din effektiva avgift ligger mitt i marknaden. Det finns utrymme att sänka den.",
+    score_ctx_C: "Observerat bland handlare som analyserats av CAMBRA. Det kan finnas utrymme att sänka avgiften.",
     score_ctx_D: "Din effektiva avgift ligger över det uppnåbara — värt att agera på.",
     score_ctx_F: "Din effektiva avgift ligger långt över det uppnåbara — betydande utrymme att återvinna.",
 

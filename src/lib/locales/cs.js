@@ -1490,7 +1490,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Vaše efektivní sazba je na dosažitelném dně — špičkové platební náklady.",
     score_ctx_B: "Vaše efektivní sazba je blízko dosažitelného dna — vedete si dobře.",
-    score_ctx_C: "Vaše efektivní sazba je uprostřed trhu. Je prostor ji snížit.",
+    score_ctx_C: "Pozorováno u obchodníků analyzovaných společností CAMBRA. Sazbu může být možné snížit.",
     score_ctx_D: "Vaše efektivní sazba je nad dosažitelným — stojí za to jednat.",
     score_ctx_F: "Vaše efektivní sazba je výrazně nad dosažitelným — značný prostor k obnově.",
 

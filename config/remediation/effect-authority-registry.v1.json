@@ -4,9 +4,9 @@
   "registry_status": "PARTIAL_LOCAL_WIRING_RUNTIME_PENDING",
   "truth_boundary": "This generated projection reuses existing domain authorities and records local facade wiring. It creates no durable authority and proves neither universal route coverage nor deployed runtime authorization.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "87d82316cdde6bb99f4704beacb8d929c6c5eff5f526009a72b9f3c76e7e6bee",
-  "material_registry_input_fingerprint_sha256": "d862c8880287da296b3c398a3b2ba0af74a6dda55c41f21a010967b14281c287",
-  "input_fingerprint_sha256": "c7d050811ee32bb1b042a2444a5f2346303dbc102a4f4cba533a33aacf2c451f",
+  "material_registry_sha256": "5a5c8bb39f288c41ba8ff99fd966e0db865ce98059b50d10417804c6a555c4be",
+  "material_registry_input_fingerprint_sha256": "29b693bf1f856d6ad70d5b68c12bdb8542f5f65e06a03ff9653ddd46650f1321",
+  "input_fingerprint_sha256": "9d83e5a7234dbc089daf97b975915646c8f936c2576ef19a7332b2b53e075560",
   "facade": {
     "source": "base44/shared/effectAuthority.ts",
     "function": "requireEffectAuthority",
@@ -1985,8 +1985,8 @@
     },
     {
       "path": "base44/shared/marketLaunchScope.ts",
-      "sha256": "1f930418cb1a6170380b372e11fd3c45fc33b2c8d026d656680bdc9ee3b4aa45",
-      "bytes": 4433
+      "sha256": "1ba1ef67a0518d35832e4a533f81ca9f1d1ca191e7663aa48c6d5cd622895343",
+      "bytes": 6163
     },
     {
       "path": "base44/shared/operationalControl.ts",

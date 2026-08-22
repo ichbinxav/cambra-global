@@ -1491,7 +1491,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Twoja stawka efektywna jest na osiągalnym minimum — koszty płatności w czołówce.",
     score_ctx_B: "Twoja stawka efektywna jest blisko osiągalnego minimum — dobrze Ci idzie.",
-    score_ctx_C: "Twoja stawka efektywna jest w środku rynku. Jest przestrzeń, by ją obniżyć.",
+    score_ctx_C: "Zaobserwowano wśród sprzedawców zdiagnozowanych przez CAMBRA. Może istnieć możliwość obniżenia stawki.",
     score_ctx_D: "Twoja stawka efektywna jest powyżej osiągalnej — warto działać.",
     score_ctx_F: "Twoja stawka efektywna jest znacznie powyżej osiągalnej — duża przestrzeń do odzyskania.",
 

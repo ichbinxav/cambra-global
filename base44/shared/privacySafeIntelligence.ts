@@ -3,6 +3,7 @@ import {
   P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS,
 } from "./intelligenceCore.ts";
 import { validateStoredIntelligenceRecord } from "./intelligenceTenantScope.ts";
+import { isP4PublishableObservedCohort } from "./p4BenchmarkIntelligence.ts";
 
 export const PRIVACY_SAFE_INTELLIGENCE_VERSION =
   "privacy-safe-intelligence-1.3.0";
@@ -318,13 +319,12 @@ export function latestVerifiedOutcomeAggregateSnapshots(
 }
 
 export function privacySafeBenchmarkAggregate(row: any) {
-  const sampleSize = observedFiniteNumber(row?.n);
-  if (
-    sampleSize === null ||
-    sampleSize < MIN_ANONYMIZED_DISTINCT_MERCHANTS
-  ) return null;
+  if (!isP4PublishableObservedCohort(row)) return null;
+  const sampleSize = observedFiniteNumber(row?.n) as number;
+  const sourcePopulation = normalizedBucket(row?.source_population);
   const payload = {
     kind: "benchmark",
+    source_population: sourcePopulation,
     vertical: String(row.vertical || "unknown"),
     country: String(row.country || "unknown"),
     revenue_tier: String(row.revenue_tier || "unknown"),

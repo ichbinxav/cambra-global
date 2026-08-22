@@ -1535,7 +1535,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Virka hlutfallið þitt er á næanlega gólfinu — greiðslukostnaður í efsta lagi.",
     score_ctx_B: "Virka hlutfallið þitt er nálægt næanlega gólfinu — þér gengur vel.",
-    score_ctx_C: "Virka hlutfallið þitt er á miðjum markaði. Það er svigrúm til að lækka það.",
+    score_ctx_C: "Sést meðal söluaðila sem CAMBRA hefur greint. Hugsanlega er svigrúm til lækkunar.",
     score_ctx_D: "Virka hlutfallið þitt er yfir því næanlega — það borgar sig að bregðast við.",
     score_ctx_F: "Virka hlutfallið þitt er langt yfir því næanlega — verulegt svigrúm til endurheimtar.",
 

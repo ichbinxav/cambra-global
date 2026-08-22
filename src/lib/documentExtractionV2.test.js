@@ -6,6 +6,7 @@ import {
   crossValidateCandidates,
   decimalMajorToMinor,
   normalizeExtractionCandidate,
+  prepareDocumentForExternalExtraction,
   validateDocumentEnvelope,
 } from '../../base44/shared/documentExtraction.ts';
 
@@ -49,6 +50,12 @@ describe('document extraction v2 · file boundary', () => {
     expect(validateDocumentEnvelope({ fileName: 'statement.png', bytes })).toEqual({ ok: false, reason: 'extension_signature_mismatch' });
   });
 
+  it.each(['csv', 'txt', 'json'])('routes a PDF renamed as %s to the binary privacy gate', (extension) => {
+    const bytes = new TextEncoder().encode('harmless-prefix\n%PDF-1.7\nprintable PDF body');
+    expect(validateDocumentEnvelope({ fileName: `statement.${extension}`, bytes })).toMatchObject({ ok: true, kind: 'pdf', mime: 'application/pdf' });
+    expect(prepareDocumentForExternalExtraction({ kind: 'pdf', bytes })).toMatchObject({ ok: false, status: 'needs_review', httpStatus: 422 });
+  });
+
   it('rejects renamed binaries, empty files and unsupported XLSX instead of pretending to parse them', () => {
     expect(validateDocumentEnvelope({ fileName: 'malware.pdf', bytes: new Uint8Array([0, 1, 2]) })).toEqual({ ok: false, reason: 'extension_signature_mismatch' });
     expect(validateDocumentEnvelope({ fileName: 'empty.csv', bytes: new Uint8Array() })).toEqual({ ok: false, reason: 'empty_file' });
@@ -58,6 +65,67 @@ describe('document extraction v2 · file boundary', () => {
   it('validates JSON content, not only its extension', () => {
     expect(validateDocumentEnvelope({ fileName: 'statement.json', bytes: new TextEncoder().encode('{"ok":true}') }).ok).toBe(true);
     expect(validateDocumentEnvelope({ fileName: 'statement.json', bytes: new TextEncoder().encode('{nope') })).toEqual({ ok: false, reason: 'json_invalid' });
+  });
+});
+
+describe('document extraction v2 · pre-provider privacy boundary', () => {
+  const canaries = [
+    'Alice Dupont',
+    'alice@example.com',
+    '+33 6 12 34 56 78',
+    '12 rue de Rivoli, 75001 Paris',
+    'FR12345678901',
+    'FR7630006000011234567890189',
+  ];
+
+  it.each([
+    ['csv', 'name,email,phone,address,vat,iban,gross_amount_major\nAlice Dupont,alice@example.com,+33 6 12 34 56 78,"12 rue de Rivoli, 75001 Paris",FR12345678901,FR7630006000011234567890189,10000.00'],
+    ['json', JSON.stringify({ name: canaries[0], email: canaries[1], phone: canaries[2], address: canaries[3], vat: canaries[4], iban: canaries[5], gross_amount_major: '10000.00' })],
+    ['text', `Name: ${canaries[0]}\nEmail: ${canaries[1]}\nPhone: ${canaries[2]}\nAddress: ${canaries[3]}\nVAT: ${canaries[4]}\nIBAN: ${canaries[5]}\nGross: 10000.00`],
+  ])('removes every canary from the effective %s provider payload while retaining financial data', (kind, sourceText) => {
+    const prepared = prepareDocumentForExternalExtraction({ kind, bytes: new TextEncoder().encode(sourceText) });
+    expect(prepared.ok).toBe(true);
+    const effectivePayload = new TextDecoder().decode(prepared.bytes);
+    expect(effectivePayload).toBe(prepared.text);
+    for (const canary of canaries) expect(effectivePayload).not.toContain(canary);
+    expect(effectivePayload).toContain('10000.00');
+    expect(prepared.redactedCategories).toEqual(expect.arrayContaining(['email', 'phone', 'address', 'vat', 'iban', 'name']));
+  });
+
+  it.each(['pdf', 'png', 'jpeg', 'webp', 'gif'])('blocks %s before any provider payload exists', (kind) => {
+    expect(prepareDocumentForExternalExtraction({ kind, bytes: new Uint8Array([1, 2, 3]) })).toEqual({
+      ok: false,
+      status: 'needs_review',
+      httpStatus: 422,
+      reason: 'local_redaction_required_for_binary_document',
+    });
+  });
+
+  it('fails closed on invalid UTF-8 instead of forwarding replacement characters', () => {
+    expect(prepareDocumentForExternalExtraction({ kind: 'text', bytes: new Uint8Array([0xff, 0xfe]) })).toEqual({
+      ok: false,
+      status: 'needs_review',
+      httpStatus: 422,
+      reason: 'local_text_decoding_failed',
+    });
+  });
+
+  it('fails closed when structured sanitization itself cannot complete', () => {
+    expect(prepareDocumentForExternalExtraction({ kind: 'json', bytes: new TextEncoder().encode('{not-json') })).toEqual({
+      ok: false,
+      status: 'needs_review',
+      httpStatus: 422,
+      reason: 'local_redaction_failed',
+    });
+  });
+
+  it('uses BOM-safe, quote-aware CSV delimiter detection before mapping PII columns', () => {
+    const sourceText = '\uFEFFcustomer_full_name;amount;"notes,a,b,c,d"\nAlice Dupont;10000.00;"safe,a,b,c,d"';
+    const prepared = prepareDocumentForExternalExtraction({ kind: 'csv', bytes: new TextEncoder().encode(sourceText) });
+    expect(prepared.ok).toBe(true);
+    expect(prepared.text).not.toContain('Alice Dupont');
+    expect(prepared.text).toContain('[REDACTED_NAME]');
+    expect(prepared.text).toContain('10000.00');
   });
 });
 
@@ -206,17 +274,18 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(source).toContain("crypto.subtle.digest('SHA-256', bytes.slice().buffer)");
   });
 
-  it('uses the official OpenAI Responses file-input and structured-output shapes', () => {
+  it('uses OpenAI Responses structured output with sanitized text only', () => {
     expect(source).toContain("https://api.openai.com/v1/responses");
-    expect(source).toContain("type: 'input_file'");
+    expect(source).toContain("type: 'input_text'");
     expect(source).toContain("type: 'json_schema'");
     expect(source).toContain('store: false');
-    expect(source).not.toMatch(/type: 'input_file'[^\n]+detail:/);
-    expect(source).toContain("kind === 'json'");
+    expect(source).not.toContain("type: 'input_file'");
+    expect(source).not.toContain("type: 'input_image'");
+    expect(source).toContain("!['csv', 'json', 'text'].includes(kind)");
   });
 
   it('rejects oversized text documents before either independent reader is called', () => {
-    expect(source).toContain("['csv', 'json'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES");
+    expect(source).toContain("['csv', 'json', 'text'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES");
     expect(source).toContain("error: 'text_document_too_large_for_independent_review'");
   });
 
@@ -240,6 +309,36 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(source.match(/callAnthropic\(svc, checksum/g)).toHaveLength(1);
     expect(source.match(/callOpenAI\(svc, checksum/g)).toHaveLength(1);
     expect(source).toContain("outcome: status === 'format_unknown' ? 'FAILED' : 'SUCCEEDED'");
+  });
+
+  it('constructs both effective provider payloads only from the locally sanitized text', () => {
+    expect(source).toContain('const prepared = prepareDocumentForExternalExtraction({ kind: envelope.kind, bytes })');
+    expect(source).toContain('callAnthropic(svc, checksum, envelope.kind, prepared.text)');
+    expect(source).toContain('callOpenAI(svc, checksum, envelope.kind, prepared.text)');
+    expect(source).not.toContain('bytesToBase64(bytes)');
+    expect(source).not.toMatch(/call(?:Anthropic|OpenAI)\([^\n]+\bbytes\b/u);
+    expect(source).not.toMatch(/call(?:Anthropic|OpenAI)\([^\n]+\bfileName\b/u);
+  });
+
+  it('records binary uploads as needs_review/422 without provider calls and never logs exception objects', () => {
+    const privacyGate = source.indexOf('if (prepared.ok === false)');
+    const providerCalls = source.indexOf('const [primaryRaw, secondaryRaw] = await Promise.all');
+    expect(privacyGate).toBeGreaterThan(-1);
+    expect(privacyGate).toBeLessThan(providerCalls);
+    expect(source).toContain("parsed_status: 'needs_review'");
+    expect(source).toContain('status: prepared.httpStatus');
+    expect(source).toContain('provider_calls: 0');
+    expect(source).toContain("const replayBlockReason = replay.metadata_json.privacy_boundary.reason || 'local_redaction_required_for_binary_document'");
+    expect(source).toContain('error: replayBlockReason');
+    expect(source).not.toContain("console.error('processUploadedFile failed', error)");
+  });
+
+  it('records the actual number of external provider attempts instead of claiming two calls', () => {
+    expect(source).toContain('providerCalled: false');
+    expect(source).toContain('providerCalled: true');
+    expect(source).toContain('const providerCallCount = Number(primaryRaw.providerCalled === true) + Number(secondaryRaw.providerCalled === true)');
+    expect(source).toContain('provider_calls: providerCallCount');
+    expect(source).not.toContain('blocked: false, provider_calls: 2');
   });
 
   it('does not persist raw model responses', () => {

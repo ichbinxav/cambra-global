@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "87d82316cdde6bb99f4704beacb8d929c6c5eff5f526009a72b9f3c76e7e6bee",
-  "material_registry_input_fingerprint_sha256": "d862c8880287da296b3c398a3b2ba0af74a6dda55c41f21a010967b14281c287",
-  "input_fingerprint_sha256": "c968a4ec790154150b7aaaf61783165a505163050eceba81e2daf0c6a9474a53",
+  "material_registry_sha256": "5a5c8bb39f288c41ba8ff99fd966e0db865ce98059b50d10417804c6a555c4be",
+  "material_registry_input_fingerprint_sha256": "29b693bf1f856d6ad70d5b68c12bdb8542f5f65e06a03ff9653ddd46650f1321",
+  "input_fingerprint_sha256": "3284e771609e6bb513c90ddf289abb21d109f5af65633e199a62a1993bc039cb",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [

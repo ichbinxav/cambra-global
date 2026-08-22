@@ -15,6 +15,51 @@ export const REGULATED_CAPABILITIES = Object.freeze([
   'ACT_AS_PSP_AGENT',
 ]);
 
+export const RATE_FRESHNESS_MAX_AGE_DAYS = 90;
+const RATE_FRESHNESS_MAX_AGE_MS = RATE_FRESHNESS_MAX_AGE_DAYS * 86_400_000;
+const MAX_CLOCK_SKEW_MS = 5 * 60_000;
+
+function timestampMs(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string' || value.trim() === '') return null;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * Rates remain stored while a market is inactive, but they are informational
+ * only. Commercial use and market reactivation both fail closed when the
+ * latest verification is missing, in the future, or older than 90 days.
+ */
+export function rateFreshnessDecision(input: {
+  verified_at?: unknown;
+  launch_active?: boolean;
+  now?: unknown;
+}) {
+  const nowMs = timestampMs(input?.now) ?? Date.now();
+  const verifiedAtMs = timestampMs(input?.verified_at);
+  const invalid = verifiedAtMs === null || verifiedAtMs > nowMs + MAX_CLOCK_SKEW_MS;
+  const ageMs = invalid ? null : Math.max(0, nowMs - verifiedAtMs);
+  const current = ageMs !== null && ageMs <= RATE_FRESHNESS_MAX_AGE_MS;
+  const launchActive = input?.launch_active === true;
+  const reason = current
+    ? null
+    : invalid
+      ? 'verification_missing_invalid_or_future'
+      : 'verification_older_than_90_days';
+  return Object.freeze({
+    status: launchActive
+      ? (current ? 'CURRENT' : 'STALE_BLOCKED')
+      : (current ? 'INFORMATIONAL_INACTIVE_CURRENT' : 'INFORMATIONAL_INACTIVE_STALE'),
+    current,
+    age_days: ageMs === null ? null : ageMs / 86_400_000,
+    commercial_use_allowed: launchActive && current,
+    reactivation_allowed: current,
+    reason,
+    max_age_days: RATE_FRESHNESS_MAX_AGE_DAYS,
+  });
+}
+
 export type PaymentsMarketValidation =
   | {
     ok: true;

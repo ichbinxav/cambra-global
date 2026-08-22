@@ -1532,7 +1532,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Rata ta efectivă e la pragul minim posibil — costuri de plată de top.",
     score_ctx_B: "Rata ta efectivă e aproape de pragul minim posibil — stai bine.",
-    score_ctx_C: "Rata ta efectivă e la mijlocul pieței. Există loc să o cobori.",
+    score_ctx_C: "Observat în rândul comercianților analizați de CAMBRA. Este posibil să existe loc pentru reducere.",
     score_ctx_D: "Rata ta efectivă e peste ce e posibil — merită să acționezi.",
     score_ctx_F: "Rata ta efectivă e mult peste ce e posibil — loc semnificativ de recuperat.",
 

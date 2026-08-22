@@ -2,6 +2,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireUserOrInternal } from '../../shared/internalGate.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
 
 function num(v) { const n = Number(v || 0); return isFinite(n) ? n : 0; }
 function clamp01(v) { return Math.max(0, Math.min(1, v)); }
@@ -71,6 +72,16 @@ Deno.serve(async (req) => {
 
     // Cargar señales
     const brand = await base44.asServiceRole.entities.Brand.get(brandId);
+    const marketDecision = commercialMarketDecision(brand?.country);
+    if (!marketDecision.ok) {
+      return Response.json({
+        ok: false,
+        error: marketDecision.error,
+        blocked_reason: marketDecision.blocked_reason,
+        market: marketDecision.iso2,
+        material_effects_fail_closed: true,
+      }, { status: 409 });
+    }
     const brandEmail = brand?.created_by;
 
     const [results, activations, reports, baselines, mandates, tasks, providers] = await Promise.all([

@@ -62,7 +62,7 @@ guardedScheduledServe({"worker_key":"scheduledBenchmarkRecompute","cadence_secon
     // into the DB filter later.
     const perBrandKeyMap = new Map<string, { hasVerified: boolean; rows: any[] }>();
     for (const c of contributions || []) {
-      const brandKey = `${c.source_anon_id}::${c.cohort_key}::${c.metric_key}::${c.month}`;
+      const brandKey = `${c.source_anon_id}::${c.cohort_key}::${c.metric_key}::${c.month}::${c.source_population}`;
       let entry = perBrandKeyMap.get(brandKey);
       if (!entry) {
         entry = { hasVerified: false, rows: [] };
@@ -96,9 +96,12 @@ guardedScheduledServe({"worker_key":"scheduledBenchmarkRecompute","cadence_secon
       const cohort_key = sample.cohort_key;
       const metric_key = sample.metric_key;
       const month = sample.month;
+      const source_population = derived.sourcePopulation;
 
       const payload = {
         cohort_key,
+        source_population,
+        data_origin: "observed_contributions",
         vertical: sample.vertical,
         metric_key,
         revenue_tier: sample.revenue_tier,
@@ -113,6 +116,9 @@ guardedScheduledServe({"worker_key":"scheduledBenchmarkRecompute","cadence_secon
         best_in_class: derived.p10,
         engine_version: sample.engine_version || "",
         is_public: derived.isPublic,
+        publication_status: derived.publicationStatus,
+        max_merchant_weight: derived.maxMerchantWeight,
+        weighting_policy: derived.weightingPolicy,
         benchmark_version: derived.derivationVersion,
         derivation_version: derived.derivationVersion,
         minimum_cohort_size: derived.minimumDistinctMerchants,
@@ -128,7 +134,7 @@ guardedScheduledServe({"worker_key":"scheduledBenchmarkRecompute","cadence_secon
       };
 
       const existing = await base44.asServiceRole.entities.BenchmarkCohort.filter(
-        { cohort_key, metric_key, month },
+        { cohort_key, metric_key, month, source_population },
         "-created_date",
         1
       );

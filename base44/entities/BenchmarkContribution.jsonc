@@ -10,6 +10,14 @@
       "type": "string",
       "description": "Format: 'tier|country|vertical', e.g. 'small|France|payments'"
     },
+    "source_population": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "description": "Merchant acquisition population. Required on every new contribution so self-selected inbound merchants are never mixed with outbound-origin merchants. Missing legacy values fail closed and are not aggregated."
+    },
     "vertical": {
       "type": "string",
       "enum": [
@@ -51,7 +59,7 @@
     },
     "contribution_hash": {
       "type": "string",
-      "description": "SHA-256(source_anon_id + cohort_key + metric_key + month + contribution_source) for idempotent dedup. Including contribution_source in the hash lets estimated and verified from the same brand-cohort-month coexist as separate rows (the aggregator in scheduledBenchmarkRecompute then keeps only the verified one via a per-brand precedence pre-filter). Historical rows (created before contribution_source existed) used the legacy hash without the source segment; those keep their old hash and are treated as contribution_source='estimated' by default."
+      "description": "SHA-256(source_anon_id + cohort_key + metric_key + month + contribution_source + source_population) for idempotent dedup without merging inbound/outbound populations. Including contribution_source lets estimated and verified from the same brand-cohort-month coexist as separate rows; scheduledBenchmarkRecompute keeps only the verified one within the same population. Historical rows without source_population fail closed and are not aggregated."
     },
     "month": {
       "type": "string",
@@ -82,6 +90,7 @@
   "required": [
     "source_anon_id",
     "cohort_key",
+    "source_population",
     "vertical",
     "metric_key",
     "metric_value"

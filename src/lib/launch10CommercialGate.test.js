@@ -41,6 +41,31 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
     expect(src.slice(gate, rates)).toContain("NOT_AVAILABLE_IN_MARKET");
   });
 
+  it("loads the complete rate corpus at every legacy boundary", () => {
+    const configuredLimit = 5000;
+    expect(configuredLimit).toBeGreaterThan(548);
+
+    const submit = read("base44/functions/submitPaymentsAnalysis/entry.ts");
+    expect(
+      submit.match(/PaymentsRateTable\.list\('-created_date', 5000\)/g),
+    ).toHaveLength(2);
+
+    const stripe = read("base44/functions/computeStripeVerifiedGap/entry.ts");
+    expect(
+      stripe.match(/PaymentsRateTable\.list\('-created_date', 5000\)/g),
+    ).toHaveLength(2);
+
+    const seed = read("base44/functions/seedPaymentsRateTable/entry.ts");
+    expect(
+      seed.match(/PaymentsRateTable\.list\('-created_date', 5000\)/g),
+    ).toHaveLength(1);
+
+    const results = read("src/pages/PaymentsResults.jsx");
+    expect(results).toContain(
+      '.filter({ active: true }, "-created_date", 5000)',
+    );
+  });
+
   it("provider recommendations are blocked before Recommendation writes", () => {
     const legacy = read("base44/functions/generateRecommendations/entry.ts");
     expect(legacy.indexOf("const marketDecision = commercialMarketDecision(brand?.country)")).toBeLessThan(
@@ -54,6 +79,85 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
     expect(gate).toBeLessThan(agent.indexOf("entities.AgentTask.create"));
     expect(gate).toBeLessThan(agent.indexOf("entities.Recommendation.create"));
     expect(agent.slice(gate, agent.indexOf("entities.AgentTask.create"))).toContain("NOT_AVAILABLE_IN_MARKET");
+  });
+
+  it("brand recommendation regeneration gates the market before every Recommendation mutation", () => {
+    const src = read(
+      "base44/functions/regenerateRecommendationsForBrand/entry.ts",
+    );
+    const gate = src.indexOf(
+      "const marketDecision = commercialMarketDecision(brand?.country)",
+    );
+    const deletion = src.indexOf("entities.Recommendation.delete", gate);
+    const creation = src.indexOf("entities.Recommendation.bulkCreate", gate);
+    expect(gate).toBeGreaterThan(-1);
+    expect(src.slice(gate, deletion)).toContain("if (!marketDecision.ok)");
+    expect(src.slice(gate, deletion)).toContain(
+      "material_effects_fail_closed: true",
+    );
+    expect(gate).toBeLessThan(deletion);
+    expect(gate).toBeLessThan(creation);
+  });
+
+  it("legacy autonomous acquisition gates policy and lead markets before mutations", () => {
+    const src = read(
+      "base44/functions/autonomousCommercialWorker/entry.ts",
+    );
+    const policyGate = src.indexOf("commercialMarketDecision(value)");
+    const taskMutation = src.indexOf("entities.AgentTask.create");
+    expect(policyGate).toBeGreaterThan(-1);
+    expect(policyGate).toBeLessThan(taskMutation);
+    expect(src.slice(policyGate, taskMutation)).toContain(
+      "material_effects_fail_closed:true",
+    );
+
+    const leadGate = src.indexOf(
+      "const marketDecision=commercialMarketDecision(lead.country)",
+    );
+    const threadMutation = src.indexOf(
+      "entities.CommunicationThread.create",
+      leadGate,
+    );
+    const leadMutation = src.indexOf("entities.OutboundLead.update", leadGate);
+    expect(leadGate).toBeGreaterThan(-1);
+    expect(leadGate).toBeLessThan(threadMutation);
+    expect(leadGate).toBeLessThan(leadMutation);
+    expect(src.slice(leadGate, threadMutation)).toContain(
+      "if(!marketDecision.ok)",
+    );
+  });
+
+  it("volume acquisition gates policy before scheduler effects and lead before commercial writes", () => {
+    const src = read("base44/functions/outboundVolumeWorker/entry.ts");
+    const policyGate = src.indexOf("commercialMarketDecision(value)");
+    const schedulerClaim = src.indexOf("claimSchedulerRun(svc, req");
+    const schedulerEffect = src.indexOf("markSchedulerEffectStarted(");
+    expect(policyGate).toBeGreaterThan(-1);
+    expect(policyGate).toBeLessThan(schedulerClaim);
+    expect(policyGate).toBeLessThan(schedulerEffect);
+    expect(src.slice(policyGate, schedulerClaim)).toContain(
+      "material_effects_fail_closed: true",
+    );
+
+    const leadGate = src.indexOf(
+      "const marketDecision = commercialMarketDecision(x.country)",
+    );
+    const strategyMutation = src.indexOf(
+      "entities.CommercialStrategy.create",
+      leadGate,
+    );
+    const threadMutation = src.indexOf(
+      "entities.CommunicationThread.create",
+      leadGate,
+    );
+    const leadMutation = src.indexOf("entities.OutboundLead.update", leadGate);
+    expect(leadGate).toBeGreaterThan(-1);
+    expect(leadGate).toBeLessThan(strategyMutation);
+    expect(leadGate).toBeLessThan(threadMutation);
+    expect(leadGate).toBeLessThan(leadMutation);
+    expect(src.slice(leadGate, strategyMutation)).toContain(
+      "if (!marketDecision.ok",
+    );
   });
 
   it("Recover context/start/accept all re-check market eligibility and expose no success fee off-market", () => {

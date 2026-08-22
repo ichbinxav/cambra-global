@@ -11,9 +11,11 @@ import {
   PROTECTED_MARKETS,
 } from "./generated/europeMarkets.js";
 import {
+  RATE_FRESHNESS_MAX_AGE_DAYS,
   REGULATED_CAPABILITIES,
   evaluateMarketLaunchScope,
   marketSeedLaunchProjection,
+  rateFreshnessDecision,
   validatePaymentsLaunchMarketInput,
 } from "../../base44/shared/marketLaunchScope.ts";
 
@@ -163,6 +165,45 @@ describe("founder market launch authority", () => {
     }
   });
 
+  it("enforces a non-reducible 90-day rate freshness gate without deleting inactive-market history", () => {
+    expect(RATE_FRESHNESS_MAX_AGE_DAYS).toBe(90);
+    const now = "2026-08-22T00:00:00.000Z";
+    expect(rateFreshnessDecision({
+      verified_at: "2026-05-24T00:00:00.000Z",
+      launch_active: true,
+      now,
+    })).toMatchObject({
+      status: "CURRENT",
+      commercial_use_allowed: true,
+      reactivation_allowed: true,
+    });
+    expect(rateFreshnessDecision({
+      verified_at: "2026-05-23T23:59:59.999Z",
+      launch_active: true,
+      now,
+    })).toMatchObject({
+      status: "STALE_BLOCKED",
+      commercial_use_allowed: false,
+      reactivation_allowed: false,
+      reason: "verification_older_than_90_days",
+    });
+    expect(rateFreshnessDecision({
+      verified_at: "2026-08-01T00:00:00.000Z",
+      launch_active: false,
+      now,
+    })).toMatchObject({
+      status: "INFORMATIONAL_INACTIVE_CURRENT",
+      commercial_use_allowed: false,
+      reactivation_allowed: true,
+    });
+    expect(rateFreshnessDecision({ launch_active: false, now })).toMatchObject({
+      status: "INFORMATIONAL_INACTIVE_STALE",
+      commercial_use_allowed: false,
+      reactivation_allowed: false,
+      reason: "verification_missing_invalid_or_future",
+    });
+  });
+
   it("wires the authority into submit, seed and Analyzer without FR/ES scope hardcodes", () => {
     const submit = fs.readFileSync("base44/functions/submitPaymentsAnalysis/entry.ts", "utf8");
     const seed = fs.readFileSync("base44/functions/seedEuropeMarketFoundation/entry.ts", "utf8");
@@ -173,6 +214,11 @@ describe("founder market launch authority", () => {
     );
     expect(submit).not.toContain("countryToRegion");
     expect(seed).toContain("marketSeedLaunchProjection(market.iso2)");
+    expect(seed).toContain("market_reactivation_requires_rate_reverification");
+    expect(seed).toContain("writes_applied: 0");
+    expect(seed.indexOf("reactivationBlockers.length > 0")).toBeLessThan(
+      seed.indexOf("for (const market of EUROPE_MARKETS as any[]) {", seed.indexOf("reactivationBlockers.length > 0")),
+    );
     expect(seed).toContain("outbound_globally_paused_zero");
     expect(seed).toContain("regulated_activity_not_authorized");
     expect(seed).toContain("launch_status: launch.launch_status");

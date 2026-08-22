@@ -2,14 +2,19 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { quarantineProbe } from '../../shared/internalGate.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import {
+  P4_BENCHMARK_POLICY_VERSION,
+  P4_MIN_DISTINCT_MERCHANTS,
+  selectSyntheticBenchmarkSeedTarget,
+} from '../../shared/p4BenchmarkIntelligence.ts';
 
 /**
  * Admin-only, idempotent seeder for BenchmarkCohort rows.
  *
- * Goal: stop getBenchmarkForReport from falling back to the static reference
- * table on every request. Seeds ~30 synthetic-but-realistic public cohorts
- * (n=12–48) aligned with scoreEngine.getBenchmarks() values, so the frontend
- * sees source='network' with a 'medium' or 'high' confidence label.
+ * Seeds synthetic development fixtures aligned with scoreEngine.getBenchmarks().
+ * Synthetic rows are always data_origin='synthetic_seed', ABSTAIN and private;
+ * getBenchmarkForReport must continue using the honest static-reference path
+ * until observed merchant contributions meet the publication policy.
  *
  * Idempotency: upsert by (cohort_key, metric_key, month).
  *
@@ -50,6 +55,21 @@ const SAAS_BENCH = {
 // Spread the synthetic sample sizes so we get a mix of medium/high confidence
 const SAMPLE_BY_TIER = { micro: 12, small: 28, mid: 22, large: 14 };
 
+function benchmarkPolicy(n) {
+  return {
+    source_population: "inbound",
+    data_origin: "synthetic_seed",
+    is_public: false,
+    publication_status: "ABSTAIN",
+    max_merchant_weight: Number((1 / n).toFixed(8)),
+    weighting_policy: "EQUAL_ONE_VOTE_PER_DISTINCT_MERCHANT",
+    derivation_status: "INSUFFICIENT_DATA",
+    insufficient_data_reason: "SYNTHETIC_SEED_NOT_OBSERVED_NETWORK_DATA",
+    minimum_cohort_size: P4_MIN_DISTINCT_MERCHANTS,
+    derivation_version: P4_BENCHMARK_POLICY_VERSION,
+  };
+}
+
 function buildCohorts() {
   const rows = [];
   const allCountries = [...EU_COUNTRIES, ...NON_EU_COUNTRIES];
@@ -79,7 +99,7 @@ function buildCohorts() {
         best_in_class: +(pMedian - 0.45).toFixed(3),
         engine_version: ENGINE_VERSION,
         benchmark_version: BENCHMARK_VERSION,
-        is_public: true,
+        ...benchmarkPolicy(n),
       });
 
       // Shipping
@@ -100,7 +120,7 @@ function buildCohorts() {
         best_in_class: +(sMedian - 0.90).toFixed(2),
         engine_version: ENGINE_VERSION,
         benchmark_version: BENCHMARK_VERSION,
-        is_public: true,
+        ...benchmarkPolicy(n),
       });
 
       // SaaS (% of monthly revenue)
@@ -121,7 +141,7 @@ function buildCohorts() {
         best_in_class: +(saasMedian * 0.55).toFixed(4),
         engine_version: ENGINE_VERSION,
         benchmark_version: BENCHMARK_VERSION,
-        is_public: true,
+        ...benchmarkPolicy(n),
       });
     }
   }
@@ -141,15 +161,44 @@ Deno.serve(async (req) => {
     const rows = buildCohorts();
     let created = 0;
     let updated = 0;
+    let skipped_conflicting_legacy = 0;
 
     for (const row of rows) {
-      const existing = await base44.asServiceRole.entities.BenchmarkCohort
-        .filter({ cohort_key: row.cohort_key, metric_key: row.metric_key, month: row.month })
+      const seedFingerprint = {
+        engine_version: ENGINE_VERSION,
+        benchmark_version: BENCHMARK_VERSION,
+        source_population: row.source_population,
+      };
+      const scopedRows = await base44.asServiceRole.entities.BenchmarkCohort
+        .filter({ cohort_key: row.cohort_key, metric_key: row.metric_key, month: row.month, source_population: row.source_population })
         .catch((error:any)=>safeBestEffort(error,{operation:'seedBenchmarkCohorts',fallback:[],severity:'secondary'}));
+      let existing = selectSyntheticBenchmarkSeedTarget(
+        scopedRows,
+        [],
+        seedFingerprint,
+      );
+      let legacyRows:any[] = [];
+      if (!existing) {
+        // Migration fallback: live legacy synthetic rows predate
+        // source_population/data_origin. Reuse the tuple row instead of
+        // creating a duplicate, then stamp the new fail-closed policy fields.
+        legacyRows = await base44.asServiceRole.entities.BenchmarkCohort
+          .filter({ cohort_key: row.cohort_key, metric_key: row.metric_key, month: row.month })
+          .catch((error:any)=>safeBestEffort(error,{operation:'seedBenchmarkCohorts',fallback:[],severity:'secondary'}));
+        existing = selectSyntheticBenchmarkSeedTarget(
+          scopedRows,
+          legacyRows,
+          seedFingerprint,
+        );
+      }
 
-      if (existing && existing.length > 0) {
-        await base44.asServiceRole.entities.BenchmarkCohort.update(existing[0].id, row);
+      if (existing) {
+        await base44.asServiceRole.entities.BenchmarkCohort.update(existing.id, row);
         updated++;
+      } else if (legacyRows.length > 0) {
+        // A tuple already exists but is not provably this synthetic fixture.
+        // Never overwrite it and never create a second row beside it.
+        skipped_conflicting_legacy++;
       } else {
         await base44.asServiceRole.entities.BenchmarkCohort.create(row);
         created++;
@@ -161,6 +210,7 @@ Deno.serve(async (req) => {
       total: rows.length,
       created,
       updated,
+      skipped_conflicting_legacy,
       month: MONTH,
       engine_version: ENGINE_VERSION,
     });

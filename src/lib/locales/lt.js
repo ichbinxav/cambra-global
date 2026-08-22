@@ -1534,7 +1534,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Tavo efektyvus tarifas yra pasiekiamoje apačioje — aukščiausio lygio mokėjimų sąnaudos.",
     score_ctx_B: "Tavo efektyvus tarifas arti pasiekiamos apačios — tau sekasi gerai.",
-    score_ctx_C: "Tavo efektyvus tarifas yra rinkos viduryje. Yra vietos jį sumažinti.",
+    score_ctx_C: "Pastebėta tarp CAMBRA išanalizuotų prekybininkų. Gali būti galimybė tarifą sumažinti.",
     score_ctx_D: "Tavo efektyvus tarifas viršija pasiekiamą — verta veikti.",
     score_ctx_F: "Tavo efektyvus tarifas gerokai viršija pasiekiamą — didelė erdvė susigrąžinimui.",
 

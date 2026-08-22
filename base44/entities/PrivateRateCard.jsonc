@@ -30,6 +30,20 @@
     "segment_json": {
       "type": "object"
     },
+    "confidential": {
+      "type": "boolean",
+      "default": true,
+      "description": "Fail-closed disclosure flag. Missing legacy values are treated as confidential; raw negotiated terms may be returned only when this is explicitly false and disclosure_mode is TERMS_VISIBLE."
+    },
+    "disclosure_mode": {
+      "type": "string",
+      "enum": [
+        "ELIGIBILITY_ONLY",
+        "TERMS_VISIBLE"
+      ],
+      "default": "ELIGIBILITY_ONLY",
+      "description": "Merchant-facing disclosure policy. TERMS_VISIBLE alone is insufficient: confidential must also be explicitly false."
+    },
     "variable_rate_bps": {
       "type": "number"
     },

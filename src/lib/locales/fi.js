@@ -1491,7 +1491,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Efektiivinen kulusi on saavutettavissa olevalla pohjalla — huipputason maksukustannukset.",
     score_ctx_B: "Efektiivinen kulusi on lähellä saavutettavaa pohjaa — pärjäät hyvin.",
-    score_ctx_C: "Efektiivinen kulusi on markkinoiden keskitasoa. On tilaa laskea sitä.",
+    score_ctx_C: "Havaittu CAMBRAn analysoimien kauppiaiden joukossa. Maksua voi olla mahdollista alentaa.",
     score_ctx_D: "Efektiivinen kulusi on saavutettavan yläpuolella — kannattaa toimia.",
     score_ctx_F: "Efektiivinen kulusi on reilusti saavutettavan yläpuolella — merkittävää palautusvaraa.",
 

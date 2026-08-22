@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "7e3f2916a491100d9159199d8cc41434e8fbded19eaeab68e904944fe79c7ac5",
+  "source_inventory_hash": "6e9ef7a21b417943335716667219a9cf56064761c68a30af0d9a26942c484cea",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -313,7 +313,7 @@
     },
     {
       "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-      "source_sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
+      "source_sha256": "22b948c5ecd77e3287a8ce4645497b3b047e59a76111e556456ea59205169c90",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -571,7 +571,7 @@
     },
     {
       "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-      "source_sha256": "30aebb7018e6e7b6997b4c5e971f45c69b3c4dad5f0ad54b6b6afa2997b0f862",
+      "source_sha256": "d637bbdaf0eb07651a529984577dc7e222f5ea9f0475fae5bad34e67aa2da9bf",
       "boundary_ids": [
         "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
       ],
@@ -879,7 +879,7 @@
     },
     {
       "path": "base44/functions/intelligenceAccess/entry.ts",
-      "source_sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
+      "source_sha256": "47c59bf9930d445b89dc02dc00d2377457f942014cd37a9f5d17c3b695e4add0",
       "boundary_ids": [
         "MB-INTEL-CLAIM-UPSERT",
         "MB-INTEL-OUTCOME-RECORD"
@@ -1052,7 +1052,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "1ba8f82defec9323d54acac0c0930a51e5d4b89598ab8f54980b5b92f7f89bdc",
+      "source_sha256": "14bf98988f92a6cc53d7b0613962eadfd846adf166f4c65f1248928e312223f0",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"
@@ -1230,7 +1230,7 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "source_sha256": "5485c7e73b9b5782a188d095f69e6df4bd89ff8223a262b60bf4fd0024d5f705",
+      "source_sha256": "e5432dc7e5708e0b19874acd7777432e62fdbd582f424d600aac81d0297b8d45",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-SCHEDULER-BASE"
@@ -1322,7 +1322,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "source_sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
+      "source_sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-PAID-API-ENRICHMENT"
@@ -2120,7 +2120,7 @@
     },
     {
       "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-      "source_sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
+      "source_sha256": "22b948c5ecd77e3287a8ce4645497b3b047e59a76111e556456ea59205169c90",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,

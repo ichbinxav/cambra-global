@@ -1534,7 +1534,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Tava efektīvā likme ir sasniedzamajā zemākajā līmenī — augstākā līmeņa maksājumu izmaksas.",
     score_ctx_B: "Tava efektīvā likme ir tuvu sasniedzamajam zemākajam līmenim — tev iet labi.",
-    score_ctx_C: "Tava efektīvā likme ir tirgus vidū. Ir vieta to samazināt.",
+    score_ctx_C: "Novērots starp CAMBRA analizētajiem tirgotājiem. Iespējams, likmi var samazināt.",
     score_ctx_D: "Tava efektīvā likme ir virs sasniedzamā — ir vērts rīkoties.",
     score_ctx_F: "Tava efektīvā likme ir krietni virs sasniedzamā — ievērojama vieta atgūšanai.",
 

@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
-import { P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS } from '../../shared/intelligenceCore.ts';
+import {
+  isP4PublishableObservedCohort,
+  normalizeP4SourcePopulation,
+} from '../../shared/p4BenchmarkIntelligence.ts';
 
 /**
  * M2 — Public-facing benchmark accessor.
@@ -10,7 +13,8 @@ import { P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS } from '../../shared/intelligence
  *   - source_anon_id
  *   - individual contribution values
  *   - cohort internals beyond aggregates
- *   - cohorts with fewer than 10 distinct merchants
+ *   - cohorts with fewer than 20 distinct merchants
+ *   - internal INDICATIVE cohorts
  *
  * Confidence labels are ALWAYS attached and MUST be shown when rendering.
  */
@@ -92,6 +96,9 @@ Deno.serve(async (req) => {
     const vertical = String(body?.vertical || "").toLowerCase();
     const revenue_tier = String(body?.revenue_tier || "small").toLowerCase();
     const country = String(body?.country || "unknown");
+    const source_population = normalizeP4SourcePopulation(
+      body?.source_population || "inbound",
+    );
 
     if (!vertical) {
       return Response.json({ error: "vertical is required" }, { status: 400 });
@@ -101,29 +108,38 @@ Deno.serve(async (req) => {
     if (!metric_key) {
       return Response.json({ error: "unsupported vertical" }, { status: 400 });
     }
+    if (!source_population) {
+      return Response.json({ error: "unsupported source_population" }, {
+        status: 400,
+      });
+    }
 
     const cohort_key = `${revenue_tier}|${country}|${vertical}`;
 
     // Look up most recent public cohort
     const cohorts = await base44.asServiceRole.entities.BenchmarkCohort.filter(
-      { cohort_key, metric_key, is_public: true },
+      {
+        cohort_key,
+        metric_key,
+        source_population,
+        data_origin: "observed_contributions",
+        publication_status: "PUBLISHABLE",
+        is_public: true,
+      },
       "-month",
       1
     );
 
-    if (cohorts && cohorts.length > 0 && Number(cohorts[0].n) >= P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS) {
+    if (cohorts && cohorts.length > 0 && isP4PublishableObservedCohort(cohorts[0])) {
       const c = cohorts[0];
       const n = Number(c.n || 0);
       const confidence = confidenceFor(n);
-      const note =
-        confidence === "low"
-          ? `Benchmark based on ${n} anonymized companies — low confidence`
-          : confidence === "medium"
-          ? `Benchmark based on ${n} anonymized companies`
-          : `Benchmark based on ${n} anonymized companies — high confidence`;
+      const note = `Observed among ${n} merchants diagnosed by CAMBRA.`;
 
       return Response.json({
         source: "network",
+        source_population,
+        publication_status: "PUBLISHABLE",
         confidence,
         n,
         median: c.median ?? null,
@@ -141,6 +157,7 @@ Deno.serve(async (req) => {
     const staticVal = staticFor(vertical, revenue_tier, country);
     return Response.json({
       source: "static",
+      source_population,
       confidence: "static",
       n: 0,
       median: staticVal,

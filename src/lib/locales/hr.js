@@ -1534,7 +1534,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Tvoja efektivna stopa na dostižnom je dnu — troškovi plaćanja u samom vrhu.",
     score_ctx_B: "Tvoja efektivna stopa blizu je dostižnog dna — dobro ti ide.",
-    score_ctx_C: "Tvoja efektivna stopa u sredini je tržišta. Ima prostora da je spustiš.",
+    score_ctx_C: "Zabilježeno među trgovcima koje je analizirala CAMBRA. Možda postoji prostor za smanjenje.",
     score_ctx_D: "Tvoja efektivna stopa iznad je dostižnog — vrijedi djelovati.",
     score_ctx_F: "Tvoja efektivna stopa daleko je iznad dostižnog — značajan prostor za povrat.",
 

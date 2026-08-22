@@ -388,7 +388,7 @@ export default function PaymentsResults() {
     if (status !== "ready" || rateTable) return;
     let cancelled = false;
     base44.entities.PaymentsRateTable
-      .filter({ active: true }, "-created_date", 200)
+      .filter({ active: true }, "-created_date", 5000)
       .then((rows) => { if (!cancelled) setRateTable(Array.isArray(rows) ? rows : []); })
       .catch(() => { if (!cancelled) setRateTable([]); });
     return () => { cancelled = true; };

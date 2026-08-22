@@ -1491,7 +1491,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Din effektive sats ligger på det opnåelige gulv — betalingsomkostninger i topklassen.",
     score_ctx_B: "Din effektive sats ligger tæt på det opnåelige gulv — du klarer dig godt.",
-    score_ctx_C: "Din effektive sats ligger midt i markedet. Der er plads til at sænke den.",
+    score_ctx_C: "Observeret blandt forhandlere analyseret af CAMBRA. Der kan være mulighed for at sænke satsen.",
     score_ctx_D: "Din effektive sats ligger over det opnåelige — værd at handle på.",
     score_ctx_F: "Din effektive sats ligger langt over det opnåelige — betydeligt rum at genvinde.",
 

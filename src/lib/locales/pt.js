@@ -1491,7 +1491,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "A sua taxa efetiva está no mínimo alcançável — custos de pagamento de topo.",
     score_ctx_B: "A sua taxa efetiva está perto do mínimo alcançável — está bem posicionado.",
-    score_ctx_C: "A sua taxa efetiva está a meio do mercado. Há espaço para a baixar.",
+    score_ctx_C: "Observado entre comerciantes diagnosticados pela CAMBRA. Pode haver margem para reduzir a taxa.",
     score_ctx_D: "A sua taxa efetiva está acima do alcançável — vale a pena agir.",
     score_ctx_F: "A sua taxa efetiva está bem acima do alcançável — margem de recuperação significativa.",
 

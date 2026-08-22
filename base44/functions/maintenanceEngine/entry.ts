@@ -73,10 +73,18 @@ guardedScheduledServe({"worker_key":"maintenanceEngine","cadence_seconds":600,"r
   // bypassed the scheduler lease.
   //
   // Gated here, at the top of the branch, in the same shape the siblings use.
-  const sweepClient=createClientFromRequest(req);
-  const sweepGate=await requireAdminOrInternal(req,sweepClient,routed);
-  if(!sweepGate.ok)return sweepGate.response||Response.json({error:'authorization_failed'},{status:503});
-  const svc=sweepClient.asServiceRole;
+  const sweepClient = createClientFromRequest(req);
+  const sweepGate = await requireAdminOrInternal(req, sweepClient, routed);
+  if (!sweepGate.ok) {
+    return sweepGate.response || Response.json({
+      ok: false,
+      error: 'authorization_failed',
+      material_effects_fail_closed: true,
+    }, { status: 503 });
+  }
+  // Service-role authority is deliberately materialized only after the
+  // canonical gate has returned an affirmative verdict.
+  const svc = sweepClient.asServiceRole;
   const sha=async(value:any)=>{const bytes=new TextEncoder().encode(JSON.stringify(value));const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map((b)=>b.toString(16).padStart(2,'0')).join('')};
   const registry=buildToolRegistry(CHAT_TOOLS as any[]);
   const result=await sweepCommandRuns({

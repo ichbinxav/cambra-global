@@ -4,10 +4,12 @@ import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import {
   INTELLIGENCE_VERSION,
   P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS,
+  P12_MIN_PUBLIC_DISTINCT_MERCHANTS,
   observedFiniteNumber,
   sha256,
   pricingAt,
 } from '../../shared/intelligenceCore.ts';
+import { P4_MAX_MERCHANT_WEIGHT, normalizeP4SourcePopulation } from '../../shared/p4BenchmarkIntelligence.ts';
 import { capabilityAllows } from '../../shared/intelligenceCapabilities.ts';
 import { buildPrivacySafeOutcomeCalibration } from '../../shared/outcomeCalibration.ts';
 import { readCompleteEntityPages } from '../../shared/privacySafeIntelligence.ts';
@@ -373,20 +375,35 @@ Deno.serve(async (req) => {
 
     if(a==='get_benchmark') {
       const q = body.query || {};
+      const sourcePopulation = normalizeP4SourcePopulation(q.source_population);
+      if (!sourcePopulation) {
+        return rejected('benchmark_source_population_required', 400, {
+          allowed_values: ['inbound', 'outbound'],
+        });
+      }
       const rows = await strictFilter(
         s, 'BenchmarkCohort',
-        { vertical: q.vertical || 'payments', metric_key: q.metric_key, country: q.country }, '-month', 100,
+        { vertical: q.vertical || 'payments', metric_key: q.metric_key, country: q.country, source_population: sourcePopulation, data_origin: 'observed_contributions' }, '-month', 100,
         'benchmark_read',
       );
       assertCompletePage(rows, 100, 'benchmark_read');
-      const visible = rows.filter((r: any) => r.is_public === true && (observedFiniteNumber(r.n) ?? -1) >= P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS);
+      const visible = rows.filter((r: any) =>
+        ['INDICATIVE', 'PUBLISHABLE'].includes(String(r.publication_status || '')) &&
+        (observedFiniteNumber(r.n) ?? -1) >= P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS &&
+        (observedFiniteNumber(r.max_merchant_weight) ?? Infinity) <= P4_MAX_MERCHANT_WEIGHT
+      );
       return Response.json({
         ok: true,
         benchmark: visible[0] || null,
         suppressed: visible.length === 0,
         n: visible[0]?.n ?? null,
+        source_population: sourcePopulation,
+        publication_status: visible[0]?.publication_status || 'ABSTAIN',
+        public: visible[0]?.publication_status === 'PUBLISHABLE' &&
+          (observedFiniteNumber(visible[0]?.n) ?? -1) >= P12_MIN_PUBLIC_DISTINCT_MERCHANTS,
         minimum_distinct_merchants: P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS,
-        note: 'Aggregate only; BenchmarkContribution rows are never returned. Missing sample size remains unknown and is suppressed.',
+        minimum_publishable_distinct_merchants: P12_MIN_PUBLIC_DISTINCT_MERCHANTS,
+        note: 'Aggregate only; 10-19 is internal INDICATIVE, 20+ may be PUBLISHABLE. BenchmarkContribution rows are never returned.',
       });
     }
 

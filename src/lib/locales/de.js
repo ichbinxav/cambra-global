@@ -1490,7 +1490,7 @@ export default {
     /* Checkpoint H — payments efficiency verdict (score grade → copy). */
     score_ctx_A: "Ihr Effektivsatz liegt am erreichbaren Boden — Spitzenklasse bei den Zahlungskosten.",
     score_ctx_B: "Ihr Effektivsatz liegt nahe am erreichbaren Boden — Sie stehen gut da.",
-    score_ctx_C: "Ihr Effektivsatz liegt im Marktmittel. Es gibt Spielraum nach unten.",
+    score_ctx_C: "Beobachtet bei von CAMBRA analysierten Händlern. Eine Senkung könnte möglich sein.",
     score_ctx_D: "Ihr Effektivsatz liegt über dem Erreichbaren — es lohnt sich zu handeln.",
     score_ctx_F: "Ihr Effektivsatz liegt deutlich über dem Erreichbaren — erhebliches Rückgewinnungspotenzial.",
 

@@ -2,8 +2,9 @@ import { createHash } from 'node:crypto';
 import { EUROPE_MARKETS } from './generated/europeMarkets.js';
 
 export const P3_SCHEMA_VERSION='p3-rate-truth-1.0.0';
-export const P3_RESOLVER_POLICY_VERSION='p3-resolver-1.0.0';
+export const P3_RESOLVER_POLICY_VERSION='p3-resolver-1.1.0';
 export const P3_PROMOTION_POLICY_VERSION='p3-promotion-1.0.0';
+export const P3_RATE_FRESHNESS_MAX_AGE_DAYS=90;
 export const P3_MARKETS=Object.freeze(EUROPE_MARKETS.map(m=>m.iso2));
 export const VERIFIED_STATUSES=Object.freeze(['VERIFIED_PRIMARY','VERIFIED_SECONDARY','VERIFIED_MULTI_SOURCE','CONTRACT_VERIFIED','NEGOTIATED_VERIFIED']);
 export const TERMINAL_RESEARCH_STATES=Object.freeze(['PUBLIC_PRICING_FOUND','PUBLIC_PARTIAL_PRICING_FOUND','CUSTOM_PRICING_CONFIRMED','NO_PUBLIC_PRICING_FOUND_AFTER_RESEARCH','CONFLICTING_SOURCES','READY','NOT_APPLICABLE','UNKNOWN_AFTER_RESEARCH']);
@@ -108,6 +109,15 @@ function marketMatches(obs,market){
 function fieldMatch(obs,key,value){if(value==null||value==='')return true;const ov=obs[key];return ov==null||ov===''||ov===value;}
 function specificityScore(obs,ctx){let s=0;for(const k of ['provider_id','provider_legal_entity_id','provider_product_id','channel','pricing_plan_id','payment_method_id','card_scope_id','merchant_segment_scope_id'])if(ctx[k]!=null&&obs[k]===ctx[k])s+=10;if((obs.market||obs.country)===ctx.market)s+=20;else if(marketMatches(obs,ctx.market))s+=5;if(VERIFIED_STATUSES.includes(obs.verification_status))s+=4;if(obs.verification_status==='VERIFIED_PRIMARY'||obs.verification_status==='VERIFIED_MULTI_SOURCE')s+=2;return s;}
 
+export function pricingFreshnessDecision(obs,asOf=new Date().toISOString()){
+  if(obs?.status==='STALE'||obs?.verification_status==='STALE')return{current:false,status:'STALE',reason:'explicit_stale_status',max_age_days:P3_RATE_FRESHNESS_MAX_AGE_DAYS};
+  if(!VERIFIED_STATUSES.includes(obs?.verification_status))return{current:null,status:'NOT_APPLICABLE',reason:'rate_not_verified',max_age_days:P3_RATE_FRESHNESS_MAX_AGE_DAYS};
+  const verified=Date.parse(obs?.verified_at||''),at=typeof asOf==='number'?asOf:Date.parse(String(asOf||''));
+  if(!Number.isFinite(verified)||!Number.isFinite(at))return{current:false,status:'STALE',reason:'verification_timestamp_invalid',max_age_days:P3_RATE_FRESHNESS_MAX_AGE_DAYS};
+  const ageMs=Math.max(0,at-verified),current=ageMs<=P3_RATE_FRESHNESS_MAX_AGE_DAYS*86_400_000;
+  return{current,status:current?'CURRENT':'STALE',reason:current?null:'verification_older_than_90_days',age_days:ageMs/86_400_000,max_age_days:P3_RATE_FRESHNESS_MAX_AGE_DAYS};
+}
+
 export function resolvePricing(observations,ctx){
   if(!ctx?.market||!P3_MARKETS.includes(ctx.market))return{outcome:'UNKNOWN',reason:'market_required',matches:[]};
   const candidates=(observations||[]).filter(o=>o.status!=='REJECTED'&&o.status!=='QUARANTINED'&&marketMatches(o,ctx.market)&&fieldMatch(o,'provider_id',ctx.provider_id)&&fieldMatch(o,'provider_slug',ctx.provider_slug)&&fieldMatch(o,'provider_legal_entity_id',ctx.provider_legal_entity_id)&&fieldMatch(o,'provider_product_id',ctx.provider_product_id)&&fieldMatch(o,'channel',ctx.channel)&&fieldMatch(o,'pricing_plan_id',ctx.pricing_plan_id)&&fieldMatch(o,'payment_method_id',ctx.payment_method_id)&&fieldMatch(o,'card_scope_id',ctx.card_scope_id)&&dateWithin(o,ctx.date||new Date().toISOString())&&knowledgeKnownAt(o,ctx.known_as_of));
@@ -120,7 +130,8 @@ export function resolvePricing(observations,ctx){
   if(best.length>1){const fps=new Set(best.map(x=>x.semantic_fingerprint||x.content_hash||x.pricing_key));if(fps.size>1)return{outcome:'MULTIPLE_MATCHES',matches:best};}
   const chosen=best[0];
   const missing=[];for(const k of ['provider_legal_entity_id','provider_product_id','channel','pricing_plan_id','payment_method_id','card_scope_id'])if(ctx[k]!=null&&(chosen[k]==null||chosen[k]===''))missing.push(k);
-  if(chosen.verification_status==='STALE'||chosen.status==='STALE')return{outcome:'STALE',match:chosen,matches:[chosen],missing_dimensions:missing};
+  const freshness=pricingFreshnessDecision(chosen,ctx.freshness_as_of||ctx.date||new Date().toISOString());
+  if(freshness.status==='STALE')return{outcome:'STALE',reason:freshness.reason,freshness,match:chosen,matches:[chosen],missing_dimensions:missing};
   if(missing.length)return{outcome:'PARTIAL_MATCH',match:chosen,matches:[chosen],matched_dimensions:Object.keys(ctx).filter(k=>ctx[k]!=null&&!missing.includes(k)),missing_dimensions:missing,unresolved_conditions:[],reason_for_partial_match:'observation broader than requested context'};
   return{outcome:'EXACT_MATCH',match:chosen,matches:[chosen],missing_dimensions:[]};
 }

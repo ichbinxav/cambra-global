@@ -1542,7 +1542,7 @@ Deno.serve(async (req) => {
 
     // Idempotent upsert by cohort_key.
     // Fetch existing rows first, then update or create as needed.
-    const existing = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 500);
+    const existing = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 5000);
     const byCohortKey = new Map(existing.map(r => [r.cohort_key, r]));
 
     const results = { created: [], updated: [], errors: [] };

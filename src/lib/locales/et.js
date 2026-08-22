@@ -1534,7 +1534,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Sinu efektiivne määr on saavutataval põhjal — tipptasemel maksekulud.",
     score_ctx_B: "Sinu efektiivne määr on saavutatava põhja lähedal — sul läheb hästi.",
-    score_ctx_C: "Sinu efektiivne määr on turu keskel. On ruumi seda alandada.",
+    score_ctx_C: "Täheldatud CAMBRA analüüsitud kaupmeeste seas. Tasu võib olla võimalik vähendada.",
     score_ctx_D: "Sinu efektiivne määr on saavutatavast kõrgem — tasub tegutseda.",
     score_ctx_F: "Sinu efektiivne määr on saavutatavast palju kõrgem — märkimisväärne taastamisruum.",
 

@@ -2,6 +2,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
+import { normalizeP4SourcePopulation } from '../../shared/p4BenchmarkIntelligence.ts';
 
 /**
  * M2 — Benchmark Learning Engine
@@ -125,6 +126,20 @@ Deno.serve(async (req) => {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const engine_version = result.benchmark_version || "unknown";
+    // Acquisition population is an explicit provenance fact, never inferred
+    // from a missing value. This prevents self-selected inbound merchants from
+    // contaminating outbound cohorts (and vice versa).
+    const source_population = normalizeP4SourcePopulation(
+      body?.source_population ?? result?.details?.source_population ??
+        input?.source_population,
+    );
+    if (!source_population) {
+      return Response.json({
+        ok: false,
+        reason: "source_population_required",
+        allowed_values: ["inbound", "outbound"],
+      }, { status: 409 });
+    }
 
     const source_anon_id = await sha256Hex(SALT + brandId);
 
@@ -180,11 +195,12 @@ Deno.serve(async (req) => {
 
     for (const c of candidates) {
       const cohort_key = `${tier}|${country}|${c.vertical}`;
-      // contribution_source is part of the hash so estimated and verified from
-      // the same brand-cohort-month DO NOT collide and are BOTH persisted.
+      // contribution_source and source_population are part of the hash so
+      // estimated/verified and inbound/outbound observations never collide.
       // The aggregator (scheduledBenchmarkRecompute) enforces precedence.
       const contribution_hash = await sha256Hex(
-        source_anon_id + cohort_key + c.metric_key + month + contribution_source
+        source_anon_id + cohort_key + c.metric_key + month +
+          contribution_source + source_population
       );
 
       // Dedup — retries with the same (brand, cohort, metric, month, source)
@@ -216,6 +232,7 @@ Deno.serve(async (req) => {
           validated: true,
           flagged: false,
           contribution_source,
+          source_population,
         },
         "-created_date",
         500
@@ -234,6 +251,7 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.BenchmarkContribution.create({
         source_anon_id,
         cohort_key,
+        source_population,
         vertical: c.vertical,
         metric_key: c.metric_key,
         metric_value: c.metric_value,
@@ -250,7 +268,9 @@ Deno.serve(async (req) => {
       });
 
       created.push(c.metric_key);
-      affectedCohorts.add(`${cohort_key}::${c.metric_key}`);
+      affectedCohorts.add(
+        `${cohort_key}::${c.metric_key}::${source_population}`,
+      );
     }
 
     // Trigger cohort recompute for affected cohorts (non-blocking)

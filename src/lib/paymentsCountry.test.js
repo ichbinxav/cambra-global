@@ -36,6 +36,9 @@ function row(overrides) {
     intl_uplift_bps: overrides.intl_uplift_bps ?? null,
     achievable_intl_uplift_bps: overrides.achievable_intl_uplift_bps ?? null,
     verified: overrides.verified ?? true,
+    verified_at: (overrides.verified ?? true)
+      ? (overrides.verified_at ?? new Date().toISOString())
+      : (overrides.verified_at ?? null),
     savings_band_pct: overrides.savings_band_pct ?? 0.20,
     achievable_breakdown_json: overrides.achievable_breakdown_json ?? null,
     active: overrides.active !== false,

@@ -267,6 +267,7 @@ guardedScheduledServe(
           aggregate.country,
           aggregate.revenue_tier,
           aggregate.metric_key,
+          aggregate.source_population,
           aggregate.period,
         ].join(":");
         (await appendAggregateSnapshot(service, key, payload, runAt)) ===

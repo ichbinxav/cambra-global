@@ -1535,7 +1535,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Tvoja efektívna sadzba je na dosiahnuteľnom dne — špičkové náklady na platby.",
     score_ctx_B: "Tvoja efektívna sadzba je blízko dosiahnuteľného dna — darí sa ti.",
-    score_ctx_C: "Tvoja efektívna sadzba je v strede trhu. Je priestor ju znížiť.",
+    score_ctx_C: "Pozorované u obchodníkov analyzovaných spoločnosťou CAMBRA. Sadzbu možno bude možné znížiť.",
     score_ctx_D: "Tvoja efektívna sadzba je nad dosiahnuteľným — oplatí sa konať.",
     score_ctx_F: "Tvoja efektívna sadzba je výrazne nad dosiahnuteľným — významný priestor na návratnosť.",
 

@@ -439,6 +439,7 @@ describe("P4 reuse through the CPIC contract", () => {
     cohort_key: "small|FR|payments",
     metric_key: "payment_effective_rate",
     month: "2026-07",
+    source_population: "inbound",
     validated: true,
     flagged: false,
     contribution_hash: `hash-${index}`,

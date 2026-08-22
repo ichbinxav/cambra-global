@@ -1547,7 +1547,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Your effective rate is at the achievable floor — top-tier payment costs.",
     score_ctx_B: "Your effective rate is close to the achievable floor — you're doing well.",
-    score_ctx_C: "Your effective rate sits mid-market. There's room to bring it down.",
+    score_ctx_C: "Observed among merchants diagnosed by CAMBRA. There may be room to reduce it.",
     score_ctx_D: "Your effective rate is above what's achievable — worth acting on.",
     score_ctx_F: "Your effective rate is well above what's achievable — significant room to recover.",
 

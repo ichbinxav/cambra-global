@@ -39,11 +39,25 @@ describe("privacy-safe retained intelligence", () => {
       .toBe(false);
   });
 
-  it("suppresses cohorts below k=10 and removes row-level identity", () => {
+  it("retains the k=10 floor but publishes benchmark aggregates only from 20 observed merchants", () => {
     expect(MIN_ANONYMIZED_DISTINCT_MERCHANTS).toBe(10);
     expect(privacySafeBenchmarkAggregate({ n: 9 })).toBe(null);
-    const aggregate = privacySafeBenchmarkAggregate({
+    expect(privacySafeBenchmarkAggregate({
       n: 10,
+      data_origin: "observed_contributions",
+      publication_status: "INDICATIVE",
+      is_public: false,
+      source_population: "inbound",
+    })).toBe(null);
+    const aggregate = privacySafeBenchmarkAggregate({
+      n: 20,
+      data_origin: "observed_contributions",
+      publication_status: "PUBLISHABLE",
+      is_public: true,
+      source_population: "inbound",
+      max_merchant_weight: 0.05,
+      weighting_policy: "EQUAL_ONE_VOTE_PER_DISTINCT_MERCHANT",
+      derivation_status: "AVAILABLE",
       vertical: "payments",
       country: "France",
       revenue_tier: "mid",
@@ -53,8 +67,17 @@ describe("privacy-safe retained intelligence", () => {
       p25: 1.1,
       p75: 1.4,
     });
-    expect(aggregate.sample_size).toBe(10);
+    expect(aggregate.sample_size).toBe(20);
+    expect(aggregate.source_population).toBe("inbound");
     expect(JSON.stringify(aggregate)).not.toMatch(/brand_id|source_anon_id|email/i);
+    expect(privacySafeBenchmarkAggregate({
+      n: 100,
+      data_origin: "synthetic_seed",
+      publication_status: "PUBLISHABLE",
+      is_public: true,
+      source_population: "inbound",
+      max_merchant_weight: 0.01,
+    })).toBe(null);
   });
 
   it("requires ten distinct merchants for outcome learning retention", () => {

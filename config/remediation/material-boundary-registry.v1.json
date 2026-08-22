@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "d862c8880287da296b3c398a3b2ba0af74a6dda55c41f21a010967b14281c287",
+  "input_fingerprint_sha256": "29b693bf1f856d6ad70d5b68c12bdb8542f5f65e06a03ff9653ddd46650f1321",
   "input_file_count": 125,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2904,8 +2904,8 @@
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
-          "sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
-          "bytes": 21858
+          "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
+          "bytes": 23798
         },
         {
           "path": "base44/functions/providerContactResolver/entry.ts",
@@ -3049,8 +3049,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/autonomousCommercialWorker/entry.ts",
-          "sha256": "e1a813236c027fdbd7889a00f025193ce30ed6a37c1888474193677b197208b5",
-          "bytes": 11166
+          "sha256": "22b948c5ecd77e3287a8ce4645497b3b047e59a76111e556456ea59205169c90",
+          "bytes": 11692
         },
         {
           "path": "base44/functions/autonomousPartnerWorker/entry.ts",
@@ -3164,8 +3164,8 @@
         },
         {
           "path": "base44/functions/outboundVolumeWorker/entry.ts",
-          "sha256": "5485c7e73b9b5782a188d095f69e6df4bd89ff8223a262b60bf4fd0024d5f705",
-          "bytes": 22380
+          "sha256": "e5432dc7e5708e0b19874acd7777432e62fdbd582f424d600aac81d0297b8d45",
+          "bytes": 23584
         },
         {
           "path": "base44/functions/outreachAgent/entry.ts",
@@ -3179,8 +3179,8 @@
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
-          "sha256": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
-          "bytes": 21858
+          "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
+          "bytes": 23798
         },
         {
           "path": "base44/functions/providerMonetizationAgent/entry.ts",
@@ -3299,8 +3299,8 @@
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
-          "sha256": "1ba8f82defec9323d54acac0c0930a51e5d4b89598ab8f54980b5b92f7f89bdc",
-          "bytes": 28671
+          "sha256": "14bf98988f92a6cc53d7b0613962eadfd846adf166f4c65f1248928e312223f0",
+          "bytes": 28899
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
@@ -3351,8 +3351,8 @@
         },
         {
           "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-          "sha256": "30aebb7018e6e7b6997b4c5e971f45c69b3c4dad5f0ad54b6b6afa2997b0f862",
-          "bytes": 106120
+          "sha256": "d637bbdaf0eb07651a529984577dc7e222f5ea9f0475fae5bad34e67aa2da9bf",
+          "bytes": 107767
         },
         {
           "path": "base44/functions/dataSyncAgent/entry.ts",
@@ -3539,8 +3539,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/intelligenceAccess/entry.ts",
-          "sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
-          "bytes": 25815
+          "sha256": "47c59bf9930d445b89dc02dc00d2377457f942014cd37a9f5d17c3b695e4add0",
+          "bytes": 26825
         },
         {
           "path": "base44/shared/intelligenceFoundationContracts.ts",
@@ -3584,8 +3584,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/intelligenceAccess/entry.ts",
-          "sha256": "cdd9bbb6e6212386b619f0c7d2ad4d1ead1f5076570c12a5c4c5c94ae528aecb",
-          "bytes": 25815
+          "sha256": "47c59bf9930d445b89dc02dc00d2377457f942014cd37a9f5d17c3b695e4add0",
+          "bytes": 26825
         },
         {
           "path": "base44/shared/intelligenceFoundationContracts.ts",

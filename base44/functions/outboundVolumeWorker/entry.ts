@@ -31,6 +31,7 @@ import { validateDurableOutreachWorthySnapshot } from "../../shared/contactLast.
 import { verifyCommittedAdaptiveLeadDecisionProjection } from "../../shared/intelligenceFoundationContracts.ts";
 import { readSingletonAuthority } from "../../shared/singletonAuthority.ts";
 import { COMMUNICATION_TENANT_RESOLVER_VERSION } from "../../shared/communicationTenant.ts";
+import { commercialMarketDecision } from "../../shared/marketLaunchScope.ts";
 function dayStart() {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
@@ -148,6 +149,61 @@ Deno.serve(async (req) => {
         Response.json({ ok: false, error: "forbidden" }, { status: 403 });
     }
     const svc = base44.asServiceRole;
+    let policyRows: any = null;
+    try {
+      policyRows = await svc.entities.CommercialPolicy.filter(
+        { engine: "merchant_acquisition", status: "active" },
+        "-approved_at",
+        10,
+      );
+    } catch (error: any) {
+      safeBestEffort(error, {
+        operation: "outboundVolumeWorker.policyLookup",
+        fallback: null,
+        severity: "critical",
+      });
+    }
+    const activePolicies = Array.isArray(policyRows)
+      ? policyRows.filter((p: any) => policyIsActive(p))
+      : [];
+    if (activePolicies.length !== 1) {
+      return Response.json({
+        ok: false,
+        sent: 0,
+        queued: 0,
+        reason: Array.isArray(policyRows)
+          ? activePolicies.length > 1
+            ? "ambiguous_active_commercial_policies"
+            : "exactly_one_active_commercial_policy_required"
+          : "commercial_policy_lookup_unavailable",
+        active_policy_count: activePolicies.length,
+        material_effects_fail_closed: true,
+      }, { status: 409 });
+    }
+    const mp = activePolicies[0];
+    const policy = mp;
+    const policyMarketDecisions = (
+      Array.isArray(policy.countries) ? policy.countries : []
+    ).map((value: any) => commercialMarketDecision(value));
+    const blockedPolicyMarket = policyMarketDecisions.find(
+      (decision: any) => !decision.ok,
+    ) || null;
+    if (!policyMarketDecisions.length || blockedPolicyMarket) {
+      return Response.json({
+        ok: false,
+        sent: 0,
+        queued: 0,
+        reason: blockedPolicyMarket?.error ||
+          "commercial_policy_market_scope_required",
+        blocked_reason: blockedPolicyMarket?.blocked_reason ||
+          "commercial_policy_market_scope_required",
+        market: blockedPolicyMarket?.iso2 || null,
+        material_effects_fail_closed: true,
+      }, { status: 409 });
+    }
+    const allowedPolicyMarkets = new Set(
+      policyMarketDecisions.map((decision: any) => decision.iso2),
+    );
     __schedulerSvc = svc;
     __schedulerClaim = await claimSchedulerRun(svc, req, {
       worker_key: "outboundVolumeWorker",
@@ -180,38 +236,6 @@ Deno.serve(async (req) => {
         reason: "volume_outbound_paused",
       });
     }
-    let policyRows: any = null;
-    try {
-      policyRows = await svc.entities.CommercialPolicy.filter(
-        { engine: "merchant_acquisition", status: "active" },
-        "-approved_at",
-        10,
-      );
-    } catch (error: any) {
-      safeBestEffort(error, {
-        operation: "outboundVolumeWorker.policyLookup",
-        fallback: null,
-        severity: "critical",
-      });
-    }
-    const activePolicies = Array.isArray(policyRows)
-      ? policyRows.filter((p: any) => policyIsActive(p))
-      : [];
-    if (activePolicies.length !== 1) {
-      return Response.json({
-        ok: false,
-        sent: 0,
-        queued: 0,
-        reason: Array.isArray(policyRows)
-          ? activePolicies.length > 1
-            ? "ambiguous_active_commercial_policies"
-            : "exactly_one_active_commercial_policy_required"
-          : "commercial_policy_lookup_unavailable",
-        active_policy_count: activePolicies.length,
-      }, { status: 409 });
-    }
-    const mp = activePolicies[0];
-    const policy = mp;
     if (!isBusinessHour(policy, new Date())) {
       return Response.json({
         ok: true,
@@ -381,6 +405,11 @@ Deno.serve(async (req) => {
         skipped++;
         continue;
       }
+      const marketDecision = commercialMarketDecision(x.country);
+      if (!marketDecision.ok || !allowedPolicyMarkets.has(marketDecision.iso2)) {
+        skipped++;
+        continue;
+      }
       const initialSuppression = await strictOutboundSuppressionClear(
         svc,
         email,
@@ -478,7 +507,7 @@ Deno.serve(async (req) => {
           created_at: new Date().toISOString(),
           created_by: "outbound_volume_worker",
         });
-      const country = String(x.country || "");
+      const country = String(marketDecision.iso2 || "");
       const lang = strategy.language;
       const facts = compactFacts(personalizationFacts(x, "merchant"));
       const variant = chooseVariant(

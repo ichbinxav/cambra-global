@@ -46,7 +46,7 @@ const TABLE = [
     percent_bps: 150, fixed_fee_minor_units: 25, fixed_fee_currency: "EUR",
     achievable_percent_bps: 86, achievable_fixed_fee_minor_units: 25,
     intl_uplift_bps: 175, achievable_intl_uplift_bps: 90,
-    verified: true, savings_band_pct: 0.20, active: true,
+    verified: true, verified_at: new Date().toISOString(), savings_band_pct: 0.20, active: true,
     achievable_breakdown_json: { interchange_bps: 20, scheme_fees_bps: 6, processor_margin_bps: 60, processor_margin_band_bps: 15, sources: [] } },
   { cohort_key: "ANY|ANY|EU",  provider_slug: "ANY", tier: "ANY", region: "EU",  channel: "online",
     percent_bps: 200, fixed_fee_minor_units: 25, fixed_fee_currency: "EUR",
@@ -70,12 +70,12 @@ const TABLE = [
   { cohort_key: "stripe_terminal|ANY|EU|in_store", provider_slug: "stripe_terminal", tier: "ANY", region: "EU", channel: "in_store",
     percent_bps: 140, fixed_fee_minor_units: 10, fixed_fee_currency: "EUR",
     terminal_rental_monthly_minor: 0, achievable_terminal_rental_monthly_minor: 0,
-    verified: true, savings_band_pct: 0.25, active: true,
+    verified: true, verified_at: new Date().toISOString(), savings_band_pct: 0.25, active: true,
     achievable_breakdown_json: { anchor_provider: "stripe_terminal", anchor_percent_bps: 140, anchor_fixed_fee_minor_units: 10 } },
   { cohort_key: "sumup|ANY|EU|in_store", provider_slug: "sumup", tier: "ANY", region: "EU", channel: "in_store",
     percent_bps: 175, fixed_fee_minor_units: 0, fixed_fee_currency: "EUR",
     terminal_rental_monthly_minor: 0, achievable_terminal_rental_monthly_minor: 0,
-    verified: true, savings_band_pct: 0.25, active: true,
+    verified: true, verified_at: new Date().toISOString(), savings_band_pct: 0.25, active: true,
     achievable_breakdown_json: { anchor_provider: "sumup", anchor_percent_bps: 175, anchor_fixed_fee_minor_units: 0 } },
   // Regional fallback rows — required by validateRateTable for the in-store channel.
   { cohort_key: "ANY|ANY|EU|in_store", provider_slug: "other", tier: "ANY", region: "EU", channel: "in_store",
@@ -108,7 +108,7 @@ describe("classifyResult — matrix from Decision_Log_Iter4", () => {
     // country=ES rows + ES anchors change real ES results; zero logic change).
     // Same pin update as paymentsGap.test.js — this second pin was missed in
     // the original chunk and caught by external verification.
-    expect(ENGINE_VERSION).toBe("payments-gap-1.6.0");
+    expect(ENGINE_VERSION).toBe("payments-gap-1.7.0");
   });
 
   const base = { monthly_gmv_eur: 40000, ticket_present: true, multi_anchor_ran: false, multi_anchor_empty: false, channel: "online" };

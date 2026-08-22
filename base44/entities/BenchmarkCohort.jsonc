@@ -6,6 +6,22 @@
       "type": "string",
       "description": "Format: 'tier|country|vertical'"
     },
+    "source_population": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "description": "Acquisition population represented by this cohort. Inbound and outbound cohorts are stored and queried separately."
+    },
+    "data_origin": {
+      "type": "string",
+      "enum": [
+        "observed_contributions",
+        "synthetic_seed"
+      ],
+      "description": "Whether statistics were derived from validated merchant contributions or are synthetic development fixtures. synthetic_seed is never publishable or served as a network benchmark."
+    },
     "vertical": {
       "type": "string"
     },
@@ -51,7 +67,28 @@
     "is_public": {
       "type": "boolean",
       "default": false,
-      "description": "True only when n >= 10 distinct merchants under the versioned P4 policy. Frontend must never see is_public=false cohorts."
+      "description": "True only when publication_status=PUBLISHABLE, n >= 20 distinct merchants and the merchant-weight cap is satisfied. Frontend must never see is_public=false cohorts."
+    },
+    "publication_status": {
+      "type": "string",
+      "enum": [
+        "ABSTAIN",
+        "INDICATIVE",
+        "PUBLISHABLE"
+      ],
+      "description": "ABSTAIN below 10 distinct merchants (no statistics), INDICATIVE for 10-19 (internal only), PUBLISHABLE from 20 (eligible for public access)."
+    },
+    "max_merchant_weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.2,
+      "description": "Largest merchant weight in the derived cohort. P4 uses equal one-vote-per-distinct-merchant weighting and never permits a merchant to exceed 20%."
+    },
+    "weighting_policy": {
+      "type": "string",
+      "enum": [
+        "EQUAL_ONE_VOTE_PER_DISTINCT_MERCHANT"
+      ]
     },
     "benchmark_version": {
       "type": "string"
@@ -96,6 +133,8 @@
   },
   "required": [
     "cohort_key",
+    "source_population",
+    "data_origin",
     "vertical",
     "metric_key"
   ],

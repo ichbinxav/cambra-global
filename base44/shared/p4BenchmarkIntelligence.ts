@@ -1,14 +1,89 @@
 // P4 repository-native statistical benchmark policy.
 // Merchant pseudonyms are used only for distinct-count/deduplication and are
-// never returned from this module. Public/retained outputs require k >= 10.
+// never returned from this module. Internal descriptive statistics require
+// k >= 10; public/retained outputs require k >= 20.
 
-import { P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS } from "./intelligenceCore.ts";
+import {
+  P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS,
+  P12_MIN_PUBLIC_DISTINCT_MERCHANTS,
+} from "./intelligenceCore.ts";
 import { buildCpicEstimateV0 } from "./cpicFoundation.ts";
 
-export const P4_BENCHMARK_POLICY_VERSION = "p4-benchmark-policy-1.0.0";
+export const P4_BENCHMARK_POLICY_VERSION = "p4-benchmark-policy-2.0.0";
 // Compatibility alias: P4 derivation and P12 access share one privacy floor.
 export const P4_MIN_DISTINCT_MERCHANTS = P12_MIN_ANONYMIZED_DISTINCT_MERCHANTS;
+export const P4_MIN_PUBLISHABLE_DISTINCT_MERCHANTS =
+  P12_MIN_PUBLIC_DISTINCT_MERCHANTS;
+export const P4_MAX_MERCHANT_WEIGHT = 0.2;
 export const P4_OUTLIER_POLICY = "tukey-iqr-1.5-v1";
+export const P4_SOURCE_POPULATIONS = ["inbound", "outbound"] as const;
+
+export function normalizeP4SourcePopulation(value: unknown): string | null {
+  const normalized = String(value || "").trim().toLowerCase();
+  return (P4_SOURCE_POPULATIONS as readonly string[]).includes(normalized)
+    ? normalized
+    : null;
+}
+
+export function isP4PublishableObservedCohort(row: any): boolean {
+  const sampleSize = Number(row?.n);
+  const maxMerchantWeight = Number(row?.max_merchant_weight);
+  const finiteStatistic = (value: unknown) =>
+    value !== null && value !== undefined && value !== "" &&
+      Number.isFinite(Number(value))
+      ? Number(value)
+      : null;
+  const median = finiteStatistic(row?.median);
+  const p25 = finiteStatistic(row?.p25);
+  const p75 = finiteStatistic(row?.p75);
+  const expectedEqualWeight = Number.isInteger(sampleSize) && sampleSize > 0
+    ? 1 / sampleSize
+    : NaN;
+  return Boolean(
+    Number.isInteger(sampleSize) &&
+      sampleSize >= P4_MIN_PUBLISHABLE_DISTINCT_MERCHANTS &&
+      row?.data_origin === "observed_contributions" &&
+      row?.publication_status === "PUBLISHABLE" &&
+      row?.is_public === true &&
+      normalizeP4SourcePopulation(row?.source_population) &&
+      row?.weighting_policy === "EQUAL_ONE_VOTE_PER_DISTINCT_MERCHANT" &&
+      Number.isFinite(maxMerchantWeight) &&
+      maxMerchantWeight > 0 &&
+      maxMerchantWeight <= P4_MAX_MERCHANT_WEIGHT &&
+      Math.abs(maxMerchantWeight - expectedEqualWeight) <= 1e-8 &&
+      row?.derivation_status === "AVAILABLE" &&
+      median !== null && p25 !== null && p75 !== null &&
+      p25 <= median && median <= p75
+  );
+}
+
+export function selectSyntheticBenchmarkSeedTarget(
+  scopedRows: any[],
+  legacyRows: any[],
+  expected: {
+    engine_version?: string;
+    benchmark_version?: string;
+    source_population?: string;
+  } = {},
+): any | null {
+  const expectedPopulation = normalizeP4SourcePopulation(
+    expected.source_population,
+  );
+  const explicitSynthetic = (row: any) =>
+    row?.data_origin === "synthetic_seed";
+  const exactLegacySeed = (row: any) => {
+    if (!row || row?.data_origin || !expected.engine_version ||
+      !expected.benchmark_version) return false;
+    const rowPopulation = normalizeP4SourcePopulation(row?.source_population);
+    return String(row?.engine_version || "") === expected.engine_version &&
+      String(row?.benchmark_version || "") === expected.benchmark_version &&
+      (!rowPopulation || rowPopulation === expectedPopulation);
+  };
+  return (scopedRows || []).find(explicitSynthetic) ||
+    (scopedRows || []).find(exactLegacySeed) ||
+    (legacyRows || []).find(explicitSynthetic) ||
+    (legacyRows || []).find(exactLegacySeed) || null;
+}
 
 export function percentile(sortedValues: number[], q: number): number | null {
   if (!sortedValues.length) return null;
@@ -43,9 +118,12 @@ function preferredMerchantObservation(rows: any[]): any | null {
 }
 
 export function benchmarkGroupKey(row: any): string {
-  return [row?.cohort_key, row?.metric_key, row?.month].map((value) =>
-    String(value || "")
-  ).join("::");
+  return [
+    row?.cohort_key,
+    row?.metric_key,
+    row?.month,
+    normalizeP4SourcePopulation(row?.source_population),
+  ].map((value) => String(value || "")).join("::");
 }
 
 export function groupBenchmarkContributions(rows: any[]): Map<string, any[]> {
@@ -53,7 +131,7 @@ export function groupBenchmarkContributions(rows: any[]): Map<string, any[]> {
   for (const row of rows || []) {
     if (
       !row?.validated || row?.flagged || !row?.cohort_key || !row?.metric_key ||
-      !row?.month
+      !row?.month || !normalizeP4SourcePopulation(row?.source_population)
     ) continue;
     const key = benchmarkGroupKey(row);
     groups.set(key, [...(groups.get(key) || []), row]);
@@ -72,9 +150,18 @@ export function deriveBenchmarkCohort(
       ? requestedMinimum
       : P4_MIN_DISTINCT_MERCHANTS,
   );
+  const eligibleRows = (rows || []).filter((row) =>
+    row?.validated && !row?.flagged &&
+    normalizeP4SourcePopulation(row?.source_population)
+  );
+  const sourcePopulations = [...new Set(eligibleRows.map((row) =>
+    normalizeP4SourcePopulation(row?.source_population)
+  ))];
+  const sourcePopulation = sourcePopulations.length === 1
+    ? sourcePopulations[0]
+    : null;
   const byMerchant = new Map<string, any[]>();
-  for (const row of rows || []) {
-    if (!row?.validated || row?.flagged) continue;
+  for (const row of sourcePopulation ? eligibleRows : []) {
     const merchant = String(row?.source_anon_id || "");
     const value = Number(row?.metric_value);
     if (!merchant || !Number.isFinite(value)) continue;
@@ -97,6 +184,18 @@ export function deriveBenchmarkCohort(
   const excludedOutliers = rawValues.length - values.length;
   const sampleSize = values.length;
   const sufficient = sampleSize >= minimum;
+  const publishable = sufficient &&
+    sampleSize >= P4_MIN_PUBLISHABLE_DISTINCT_MERCHANTS;
+  const publicationStatus = !sufficient
+    ? "ABSTAIN"
+    : publishable
+    ? "PUBLISHABLE"
+    : "INDICATIVE";
+  const maxMerchantWeight = sufficient && sampleSize > 0
+    ? 1 / sampleSize
+    : null;
+  const merchantWeightCompliant = maxMerchantWeight === null ||
+    maxMerchantWeight <= P4_MAX_MERCHANT_WEIGHT;
   const average = sufficient
     ? values.reduce((sum, value) => sum + value, 0) / values.length
     : null;
@@ -115,13 +214,24 @@ export function deriveBenchmarkCohort(
 
   return {
     status: sufficient ? "AVAILABLE" : "INSUFFICIENT_DATA",
-    isPublic: sufficient,
+    publicationStatus,
+    isPublic: publishable && merchantWeightCompliant,
+    statisticsAvailable: sufficient,
+    sourcePopulation,
     sampleSize,
     rawDistinctMerchants,
     minimumDistinctMerchants: minimum,
+    minimumPublishableDistinctMerchants:
+      P4_MIN_PUBLISHABLE_DISTINCT_MERCHANTS,
+    maxMerchantWeight,
+    merchantWeightCap: P4_MAX_MERCHANT_WEIGHT,
+    merchantWeightCompliant,
+    weightingPolicy: "EQUAL_ONE_VOTE_PER_DISTINCT_MERCHANT",
     insufficientDataReason: sufficient
       ? null
-      : "MINIMUM_DISTINCT_MERCHANT_THRESHOLD_NOT_MET",
+      : sourcePopulation
+      ? "MINIMUM_DISTINCT_MERCHANT_THRESHOLD_NOT_MET"
+      : "SOURCE_POPULATION_MISSING_OR_MIXED",
     median: sufficient ? percentile(values, .5) : null,
     p25: sufficient ? percentile(values, .25) : null,
     p75: sufficient ? percentile(values, .75) : null,

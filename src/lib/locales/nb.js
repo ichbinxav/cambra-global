@@ -1536,7 +1536,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Den effektive satsen din er på det oppnåelige gulvet — betalingskostnader i toppsjiktet.",
     score_ctx_B: "Den effektive satsen din er nær det oppnåelige gulvet — du gjør det bra.",
-    score_ctx_C: "Den effektive satsen din ligger midt i markedet. Det er rom for å få den ned.",
+    score_ctx_C: "Observert blant forhandlere analysert av CAMBRA. Det kan være mulig å redusere satsen.",
     score_ctx_D: "Den effektive satsen din er over det oppnåelige — verdt å gjøre noe med.",
     score_ctx_F: "Den effektive satsen din er godt over det oppnåelige — betydelig rom for gjenvinning.",
 

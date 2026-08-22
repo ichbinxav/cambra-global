@@ -1534,7 +1534,7 @@ export default {
        Grades the merchant's COST EFFICIENCY, never the provider. */
     score_ctx_A: "Az effektív díjad az elérhető alsó határon van — élvonalbeli fizetési költségek.",
     score_ctx_B: "Az effektív díjad közel van az elérhető alsó határhoz — jól állsz.",
-    score_ctx_C: "Az effektív díjad a piac közepén van. Van tér lejjebb vinni.",
+    score_ctx_C: "A CAMBRA által elemzett kereskedők körében megfigyelt érték. Lehet lehetőség a díj csökkentésére.",
     score_ctx_D: "Az effektív díjad az elérhető fölött van — érdemes lépni.",
     score_ctx_F: "Az effektív díjad jóval az elérhető fölött van — jelentős tér a visszaszerzésre.",
 

@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
       const createdMs = new Date(lr.created_date || 0).getTime();
       const fresh = createdMs && (Date.now() - createdMs) < BENCHMARK_FRESH_DAYS * 24 * 60 * 60 * 1000;
       if (fresh) {
-        const benchRes = await base44.functions.invoke('benchmarkLearningEngine', { resultId: lr.id, internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' })
+        const benchRes = await base44.functions.invoke('benchmarkLearningEngine', { resultId: lr.id, source_population: 'outbound', internal_secret: Deno.env.get('INTERNAL_CALL_SECRET') || '' })
           .catch((e) => { throw new Error('benchmarkLearningEngine: ' + (e?.message || e)); });
         const bp = benchRes?.data || benchRes;
         if (bp?.ok !== false) benchmarks_refreshed = 1;

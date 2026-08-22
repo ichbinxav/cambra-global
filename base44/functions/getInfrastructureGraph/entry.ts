@@ -108,6 +108,7 @@ Deno.serve(async (req) => {
             vertical:     'payments',
             revenue_tier: tier,
             country,
+            source_population: 'inbound',
           });
           const bench = benchRes?.data || benchRes;
           const median = Number(bench?.median || 0);

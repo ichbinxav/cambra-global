@@ -15,6 +15,7 @@ import { normalizeLocale } from '../../shared/emailLocale.ts';
 import { checkboxTextFor, evidenceAttestationTextFor, mandateCopy, MANDATE_COPY_VERSION, RECOVER_EVIDENCE_ATTESTATION_VERSION } from '../../shared/recoverMandateCopy.ts';
 import { inspectRecoverEvidenceSource } from '../../shared/eclRecoverEvidence.ts';
 import { commercialMarketDecision } from '../../shared/marketLaunchScope.ts';
+import { recoverPrivateRateTerms } from '../../shared/privateRateDisclosure.ts';
 import { recoveryEconomicsCopy, recoveryEconomicsAcceptanceText, RECOVERY_ECONOMICS_COPY_VERSION } from '../../shared/recoveryEconomicsCopy.ts';
 import { PRODUCT_POLICY, getSuccessFeePct } from '../../shared/generated/productPolicy.ts';
 import {
@@ -103,10 +104,10 @@ export default async function (req: Request): Promise<Response> {
       const rate = await svc.entities.PrivateRateCard.get(e.rate_card_id).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:null,severity:'critical'}));
       if (!rate || rate.status !== 'active') continue;
       const provider = await svc.entities.Provider.get(e.provider_id).catch((error:any)=>safeBestEffort(error,{operation:'getRecoverAcceptanceContext',fallback:null,severity:'critical'}));
+      const disclosedTerms = recoverPrivateRateTerms(rate, e.status);
       aggregatePrograms.push({
         eligibility_id: e.id, status: e.status, provider_name: provider?.name || '', provider_id: e.provider_id,
-        currency: rate.currency, negotiated_variable_rate_bps: e.status === 'eligible' ? rate.variable_rate_bps : null,
-        negotiated_fixed_fee_minor: e.status === 'eligible' ? rate.fixed_fee_minor : null,
+        currency: rate.currency, ...disclosedTerms,
         provider_underwriting_status: e.provider_underwriting_status, confidence: e.confidence,
         reason_codes: e.reason_codes || [], rate_guaranteed: e.status === 'eligible' && e.provider_underwriting_status !== 'pending' && e.provider_underwriting_status !== 'not_started'
       });

@@ -63,6 +63,14 @@ describe('global i18n contract — EN / FR / ES', () => {
     for (const key of INTENTIONAL_BLANKS) for (const dict of Object.values(dictionaries)) expect(dict[key]).toBe('');
   });
 
+  it('never presents score context C as a market average', () => {
+    const marketAverageClaim = /mid-market|market average|market mean|media del mercado|moyenne du marché|marktmittel|media di mercato|meio do mercado|μέσο της αγοράς|mitt i marknaden|midt i markedet|markkinoiden keskitasoa|uprostřed trhu|mijlocul pieței|piac közepén|средата на пазара|sredini tržišta|turu keskel|tirgus vidū|rinkos viduryje|strede trhu|sredini trga|miðjum markaði/i;
+    for (const [lang, dict] of Object.entries(dictionaries)) {
+      expect(dict.score_ctx_C, `${lang}:score_ctx_C must identify the observed CAMBRA population`).toContain('CAMBRA');
+      expect(dict.score_ctx_C, `${lang}:score_ctx_C must not claim a market average`).not.toMatch(marketAverageClaim);
+    }
+  });
+
   it('keeps the supported language contract explicit and in rollout order', () => {
     // Deliberately widened from the fixed ['en','fr','es'] launch contract
     // (I18N-30M): the list is still EXACT — an unregistered dictionary or a

@@ -16,6 +16,7 @@ import {
   REGULATED_CAPABILITIES,
   evaluateMarketLaunchScope,
   marketSeedLaunchProjection,
+  rateFreshnessDecision,
 } from '../../shared/marketLaunchScope.ts';
 
 const POLICY_VERSION = `${MARKET_SCOPE_VERSION}:capability-v1`;
@@ -28,6 +29,15 @@ const ACTIVE_INTELLIGENCE_CAPABILITIES = new Set([
   'RECOMMEND',
 ]);
 const OUTBOUND_CAPABILITIES = new Set(['OUTREACH', 'PROVIDER_CONTACT']);
+const VERIFIED_RATE_STATUSES = new Set([
+  'VERIFIED_PRIMARY',
+  'VERIFIED_SECONDARY',
+  'VERIFIED_MULTI_SOURCE',
+  'MERCHANT_OBSERVED',
+  'CONTRACT_VERIFIED',
+  'NEGOTIATED_VERIFIED',
+  'STALE',
+]);
 
 function regulatorySystem(iso2: string) {
   if (iso2 === 'GB') return 'UK_PSR';
@@ -109,6 +119,63 @@ Deno.serve(async (req) => {
     let countries_updated = 0;
     let policies_created = 0;
     let profiles_created = 0;
+
+    // Read the complete reactivation surface before the first write. A future
+    // scope change from blocked to active must never partially activate a
+    // market whose last verified pricing evidence is missing or over 90 days
+    // old. Inactive-market rate history remains untouched and informational.
+    const [currentProfiles, pricingRows] = await Promise.all([
+      service.entities.CountryProfile.list('-updated_at', 200),
+      service.entities.ProviderPricingVersion.filter(
+        { vertical: 'payments' },
+        '-verified_at',
+        5000,
+      ),
+    ]);
+    const profileByIso2 = new Map(
+      (currentProfiles as any[]).map((profile: any) => [String(profile.iso2 || '').toUpperCase(), profile]),
+    );
+    const reactivationBlockers: any[] = [];
+    for (const market of EUROPE_MARKETS as any[]) {
+      const launch = marketSeedLaunchProjection(market.iso2);
+      const existingProfile: any = profileByIso2.get(market.iso2);
+      const wasInactive = existingProfile?.commercial_eligibility === 'BLOCKED'
+        || ['DISABLED', 'REGULATORY_HOLD'].includes(existingProfile?.launch_status);
+      if (!launch || launch.commercial_eligibility !== 'ELIGIBLE' || !wasInactive) continue;
+
+      const marketRates = (pricingRows as any[]).filter((row: any) => (
+        String(row.market || row.country || '').toUpperCase() === market.iso2
+        && !['REJECTED', 'QUARANTINED', 'ARCHIVED'].includes(String(row.status || '').toUpperCase())
+        && VERIFIED_RATE_STATUSES.has(String(row.verification_status || '').toUpperCase())
+      ));
+      if (marketRates.length === 0) {
+        reactivationBlockers.push({ market: market.iso2, reason: 'rate_unverified' });
+        continue;
+      }
+      for (const rate of marketRates) {
+        const freshness = rateFreshnessDecision({ verified_at: rate.verified_at, launch_active: true, now });
+        if (String(rate.status || '').toUpperCase() === 'STALE'
+          || String(rate.verification_status || '').toUpperCase() === 'STALE'
+          || !freshness.reactivation_allowed) {
+          reactivationBlockers.push({
+            market: market.iso2,
+            reason: 'rate_stale',
+            pricing_observation_id: rate.id,
+            verified_at: rate.verified_at || null,
+            freshness_reason: freshness.reason,
+          });
+        }
+      }
+    }
+    if (reactivationBlockers.length > 0) {
+      return Response.json({
+        ok: false,
+        error: 'market_reactivation_requires_rate_reverification',
+        blockers: reactivationBlockers,
+        max_rate_age_days: 90,
+        writes_applied: 0,
+      }, { status: 409 });
+    }
 
     for (const market of EUROPE_MARKETS as any[]) {
       const launch = marketSeedLaunchProjection(market.iso2);
