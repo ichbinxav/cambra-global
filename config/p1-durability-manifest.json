@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T16:23:36.587Z",
+  "generatedAt": "2026-08-23T16:25:34.551Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "e85b6d354440ca089a1d5002c0197c3f9f57775c9c4be6aa0b2d65d19f0f7681",
+      "sha256": "3009d150477575e87cd7df7bb23835cc083804e153c0306fdd1fe44af6a4f17a",
       "bytes": 43456
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "eafe9ba26fbcaff6b7bb31883c217f2b3a7c1c25cd1a1516de4aaf88a44e7ea8",
+      "sha256": "a59cddb023986d6dbf5dda32acbcac3c86657aa488098687bc1ba0515d4288eb",
       "bytes": 13671
     },
     {
@@ -2209,7 +2209,7 @@
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "57604522d09a6daa3bd3d68d9aec868f6e426f29233d8c20c6581f7bdc9734ee",
+      "sha256": "2ade3aeb27cbfba1cad32e33d789eca1ae6d8c3fb87e42498e8591ba2ee0a420",
       "bytes": 25748
     },
     {
