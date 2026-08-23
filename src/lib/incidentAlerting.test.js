@@ -384,6 +384,29 @@ describe('aggregated founder incident alerting', () => {
       .toMatchObject({ control_state: 'RUNNING', control_token: 'parent-token' });
   });
 
+  it('uses a reserved request clone after the parent handler consumes its body', async () => {
+    const state = createAlertState();
+    const parentRequest = new Request('https://example.test/maintenanceEngine', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-cambra-internal': 'true',
+        'idempotency-key': 'reserved-request-clone',
+      },
+      body: JSON.stringify({ action: 'health_sweep' }),
+    });
+    const alertRequest = parentRequest.clone();
+    await parentRequest.json();
+    const send = vi.fn(async () => ({ id: 'reserved-clone-effect' }));
+
+    await expect(dispatchIncidentAlertBatch(state.svc, alertRequest, {
+      now: BASE_TIME,
+      recipient: 'founder@example.com',
+      send,
+    })).resolves.toMatchObject({ status: 'ACCEPTED' });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
   it('fails closed on missing sender, Emergency authority failure and outbound containment', async () => {
     const senderMissing = createAlertState({ senderAvailable: false });
     await expect(dispatchIncidentAlertBatch(
@@ -566,7 +589,10 @@ describe('aggregated founder incident alerting', () => {
       'base44/entities/IncidentAlertDelivery.jsonc',
       'utf8',
     );
-    expect(maintenance).toContain('dispatchIncidentAlertBatch(s,req)');
+    expect(maintenance).toContain('const alertRequest=req.clone();');
+    expect(maintenance).toContain('dispatchIncidentAlertBatch(s,alertRequest)');
+    expect(maintenance.indexOf('const alertRequest=req.clone();'))
+      .toBeLessThan(maintenance.indexOf('const body=await req.json()'));
     expect(maintenance).not.toContain('dispatchIncidentAlert(s,incident)');
     expect(alerting).toContain("worker_key: INCIDENT_ALERT_BATCH_WORKER_KEY");
     expect(alerting).toContain('sendCostGovernedEmail');

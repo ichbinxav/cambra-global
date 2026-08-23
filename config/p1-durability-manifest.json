@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T20:14:05.379Z",
+  "generatedAt": "2026-08-23T20:46:14.317Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -954,8 +954,8 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "sha256": "14bf98988f92a6cc53d7b0613962eadfd846adf166f4c65f1248928e312223f0",
-      "bytes": 28899
+      "sha256": "6cf1b7a94c315fb7c6f68d2e2238f95f08458ee98d98f1b4621f4c238286a7a7",
+      "bytes": 28939
     },
     {
       "path": "base44/functions/maintenanceEngine/function.jsonc",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "aa4d2207eb00d29fca08dc9244a9d3522ca6a7ef5ec1c3fa62ea1bb30ce04754",
+      "sha256": "9fe37032df33a3d05e69a33bf3d0cc4b1556e05442bc2a0bd33747dd7eb2bc3c",
       "bytes": 141405
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "55d7309d93c156ddd593db0cfd99fc25b1178f0a0029cc6cc7a1702492889b49",
+      "sha256": "6b01be58630b3fee1ec85cec5978c0a4f3b796b9b6b0054302165195fdd76857",
       "bytes": 43456
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "01bd63dd7660b23162f215fa308e705f5597ed421c38d5ec48cd88145677e302",
+      "sha256": "a6a01ade88e947df148cbae233185f394f4befea8faebb898ccd5f7d70fa2be6",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "db241d72da6c686a7d5581402e3d8fb2e6a770d77082ecd553616ac4185cfe5d",
+      "sha256": "1909e9ea120e7e27e19bc2fd1c65b46246856eea2ddae8b1db0e6d353d64bb67",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "26d0570e406371cac3c5cd023c9f8fe95b196c8e380856fc3e6f8af78c1da083",
+      "sha256": "05d23fb9f3055737bc1f103f05b814a791f6bd2124aa5e535bd9dab5f60aa6a5",
       "bytes": 144436
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "e8cda839c79c49731db5893f24144062ee9062a83f49e945ccce63edbe74ba47",
+      "sha256": "e2519a52c0bf184149d9e1d53cd9b08ea2e6df2cb64dbd518751bc27cd6ee06f",
       "bytes": 97956
     },
     {
@@ -3339,8 +3339,8 @@
     },
     {
       "path": "src/lib/incidentAlerting.test.js",
-      "sha256": "46b0d1080cc08e08d9a1102f1b03244d9ed1000fe1944592fc09bf4203b6d5d6",
-      "bytes": 21319
+      "sha256": "686baee9d9324741c2a01d7fda5fed3eb0f12e3bef5457f3217222301b74457f",
+      "bytes": 22402
     },
     {
       "path": "src/lib/integrationCredentialBoundary.test.js",
