@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "8c9e530c1b0ffe2a334a8f7bfdfde71ac07a4c61f6551951122706039d76523d",
+  "input_fingerprint_sha256": "95227a3e6f62a6bae80d6346985b7fe0d9795c2f45e81c6eadab40055ac66f33",
   "components": [
     {
       "key": "effect_authority",
@@ -243,8 +243,8 @@
     },
     {
       "path": "base44/shared/agentTaskEnvelope.ts",
-      "sha256": "fba6b09c3dd82937c9b0541163ca905052c35b6191ed2aa108a145ee4e4a0410",
-      "bytes": 60220
+      "sha256": "8319266436218c8745ce87047e63754a6d682e7533a2f975f52ae8ff9703d4c9",
+      "bytes": 60631
     },
     {
       "path": "base44/shared/canonicalIncident.ts",
@@ -318,8 +318,8 @@
     },
     {
       "path": "src/lib/agentTaskTerminalEvent.test.js",
-      "sha256": "4ba8d80822a9ed50afbaa67a634a217aced3bc64290afe166f42c045cde1b55a",
-      "bytes": 11692
+      "sha256": "1053791145a30f3b02f0ef9f13f79290c0d9fc5d9a9c173b0e2bab8246aaa5a2",
+      "bytes": 12847
     },
     {
       "path": "src/lib/autonomousSupervisorFailClosed.test.js",
@@ -348,8 +348,8 @@
     },
     {
       "path": "src/lib/remediationR0Artifacts.test.js",
-      "sha256": "f8b9ecfebf39965dc67114be441075dfe5efc1687354315be0645cf987e75103",
-      "bytes": 25657
+      "sha256": "4dfa69fb7f5ca00e3fc9e2889c1233523e1b52339fe0bf8c5f6eb7482fc8da85",
+      "bytes": 25665
     }
   ]
 }

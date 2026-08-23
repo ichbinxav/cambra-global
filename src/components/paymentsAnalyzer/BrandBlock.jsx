@@ -24,14 +24,74 @@
 // custom control.
 
 const SECTOR_OPTIONS = [
-  { value: "fashion",       label: "Fashion" },
-  { value: "beauty",        label: "Beauty" },
-  { value: "food_beverage", label: "Food & Beverage" },
-  { value: "home_living",   label: "Home & Living" },
-  { value: "electronics",   label: "Electronics" },
-  { value: "health_wellness", label: "Health & Wellness" },
-  { value: "other",         label: "Other" },
+  { value: "fashion" },
+  { value: "beauty" },
+  { value: "food_beverage" },
+  { value: "home_living" },
+  { value: "electronics" },
+  { value: "health_wellness" },
+  { value: "other" },
 ];
+
+const BRAND_COPY = {
+  en: {
+    about: "About your brand",
+    compare: "Compare with your sector",
+    help: "Helps us compare you with similar businesses. Still anonymous, with no account required.",
+    brandPlaceholder: "e.g. Aime Studio",
+    website: "Website",
+    sector: "Sector",
+    optional: "optional",
+    selectSector: "Select a sector...",
+    sectors: {
+      fashion: "Fashion",
+      beauty: "Beauty",
+      food_beverage: "Food & Beverage",
+      home_living: "Home & Living",
+      electronics: "Electronics",
+      health_wellness: "Health & Wellness",
+      other: "Other",
+    },
+  },
+  fr: {
+    about: "À propos de votre marque",
+    compare: "Comparer à votre secteur",
+    help: "Nous aide à vous comparer à des entreprises similaires. Toujours anonyme, sans compte requis.",
+    brandPlaceholder: "ex. Aime Studio",
+    website: "Site web",
+    sector: "Secteur",
+    optional: "facultatif",
+    selectSector: "Sélectionnez un secteur...",
+    sectors: {
+      fashion: "Mode",
+      beauty: "Beauté",
+      food_beverage: "Alimentation et boissons",
+      home_living: "Maison et décoration",
+      electronics: "Électronique",
+      health_wellness: "Santé et bien-être",
+      other: "Autre",
+    },
+  },
+  es: {
+    about: "Sobre tu marca",
+    compare: "Compara con tu sector",
+    help: "Nos ayuda a compararte con negocios similares. Sigue siendo anónimo y no requiere cuenta.",
+    brandPlaceholder: "p. ej., Aime Studio",
+    website: "Sitio web",
+    sector: "Sector",
+    optional: "opcional",
+    selectSector: "Selecciona un sector...",
+    sectors: {
+      fashion: "Moda",
+      beauty: "Belleza",
+      food_beverage: "Alimentación y bebidas",
+      home_living: "Hogar y decoración",
+      electronics: "Electrónica",
+      health_wellness: "Salud y bienestar",
+      other: "Otro",
+    },
+  },
+};
 
 // Exported so the parent (and tests) can reuse the enum without drift.
 export const BRAND_SECTOR_SLUGS = SECTOR_OPTIONS.map((s) => s.value);
@@ -46,18 +106,19 @@ export default function BrandBlock({
   sector,
   onSectorChange,
 }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const copy = BRAND_COPY[lang] || BRAND_COPY.en;
   return (
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-baseline justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-          About your brand
+          {copy.about}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>Compare vs. industry</span>
+        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{copy.compare}</span>
       </div>
       <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>
-        Helps us compare you with similar businesses. Still no account, still anonymous.
+        {copy.help}
       </p>
 
       {/* Brand name — OPTIONAL (SWEEP-1 T2) */}
@@ -77,7 +138,7 @@ export default function BrandBlock({
           maxLength={80}
           value={brandName}
           onChange={(e) => onBrandNameChange(e.target.value)}
-          placeholder="e.g. Aime Studio"
+          placeholder={copy.brandPlaceholder}
           className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
           style={{
             color: "#ffffff",
@@ -96,7 +157,7 @@ export default function BrandBlock({
             className="text-[11px] font-medium"
             style={{ color: "rgba(255,255,255,0.75)" }}
           >
-            Website <span style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
+            {copy.website} <span style={{ color: "rgba(255,255,255,0.5)" }}>({copy.optional})</span>
           </label>
           <input
             id="brand-website-input"
@@ -123,7 +184,7 @@ export default function BrandBlock({
             className="text-[11px] font-medium"
             style={{ color: "rgba(255,255,255,0.75)" }}
           >
-            Sector <span style={{ color: "rgba(255,255,255,0.5)" }}>(optional)</span>
+            {copy.sector} <span style={{ color: "rgba(255,255,255,0.5)" }}>({copy.optional})</span>
           </label>
           <select
             id="brand-sector-input"
@@ -138,11 +199,11 @@ export default function BrandBlock({
             }}
           >
             <option value="">
-              Select a sector…
+              {copy.selectSector}
             </option>
             {SECTOR_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
-                {s.label}
+                {copy.sectors[s.value] || BRAND_COPY.en.sectors[s.value]}
               </option>
             ))}
           </select>

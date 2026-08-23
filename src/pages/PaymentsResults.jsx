@@ -1,6 +1,6 @@
-// PaymentsResults — dual-mode results page.
+// PaymentsResults — three-path results page.
 //
-// TWO reader paths, chosen by URL query param — never both, never fallback:
+// THREE reader paths, chosen by URL query param — one wins by explicit precedence:
 //   A) ?session=<uuid>   → anonymous form path (getPaymentsGapTeaser)
 //                          engine_result.mode === "estimated"
 //                          Badge: "PUBLIC PRICING" or "REGIONAL ESTIMATE"
@@ -9,6 +9,8 @@
 //                          engine_result.mode === "verified"
 //                          Badge: "VERIFIED" — the one legitimate use of
 //                          the word in the whole app (Decision_Log vocabulary rule)
+//   C) ?result=<oid>     → authenticated owned estimated result
+//                          (getMyPaymentsHistory tenant-scoped detail read)
 //
 // Renders three cards:
 //   1. PaymentsGapCard    — hero: current vs achievable, annual savings RANGE
@@ -198,14 +200,17 @@ export default function PaymentsResults() {
   const { t, formatCurrency } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [params] = useSearchParams();
-  // Two mutually-exclusive URL contracts:
+  // Three mutually-exclusive URL contracts:
   //   ?session=<uuid>   → anonymous form path (estimated)
   //   ?verified=<oid>   → authenticated real-data path (verified)
-  // If both are present, verified wins (real data > form data). If neither
-  // is present, the page is "invalid" — never a blank screen.
+  //   ?result=<oid>     → authenticated owned estimate from history
+  // Precedence is verified > result > session. If none is present, the page
+  // shows history for an authenticated user and a neutral prompt otherwise.
   const verifiedId = params.get("verified") || "";
+  const resultId = params.get("result") || "";
   const sessionId  = params.get("session") || params.get("anon_session_id") || "";
   const isVerifiedPath = !!verifiedId;
+  const isOwnedResultPath = !isVerifiedPath && !!resultId;
 
   const [status, setStatus] = useState("loading");
   // 'loading' | 'ready' | 'not_found' | 'invalid' | 'rate_limited' | 'error' | 'unauthorized'
@@ -227,8 +232,8 @@ export default function PaymentsResults() {
   const resultsTrackedRef = useRef(false);
 
   useEffect(() => {
-    if(status==='ready'&&!resultsTrackedRef.current){resultsTrackedRef.current=true;trackProductEvent('results_viewed',{source:'payments_results',mode:isVerifiedPath?'verified':'estimated'});}
-  },[status,isVerifiedPath]);
+    if(status==='ready'&&!resultsTrackedRef.current){resultsTrackedRef.current=true;trackProductEvent('results_viewed',{source:'payments_results',mode:isVerifiedPath?'verified':isOwnedResultPath?'owned':'estimated'});}
+  },[status,isVerifiedPath,isOwnedResultPath]);
 
   useEffect(() => {
     // ── PATH B — verified (authenticated real-data read) ───────────────
@@ -248,6 +253,35 @@ export default function PaymentsResults() {
           setStatus("ready");
         } catch {
           if (!cancelled) setStatus("error");
+        }
+      })();
+      return () => { cancelled = true; };
+    }
+
+    // ── PATH C — owned estimate selected from authenticated history ─────
+    if (isOwnedResultPath) {
+      if (!isAuthenticated) { setStatus("unauthorized"); return; }
+      if (!OBJECT_ID.test(resultId)) { setStatus("invalid"); return; }
+      let cancelled = false;
+      setPayload(null);
+      setStatus("loading");
+      (async () => {
+        try {
+          const resp = await base44.functions.invoke("getMyPaymentsHistory", { result_id: resultId });
+          if (cancelled) return;
+          const body = resp?.data || resp;
+          if (body?.error === "Unauthorized") { setStatus("unauthorized"); return; }
+          if (body?.error === "invalid_result_id") { setStatus("invalid"); return; }
+          if (body?.error === "not_found" || !body?.ok) { setStatus("not_found"); return; }
+          setPayload(body);
+          setStatus("ready");
+        } catch (error) {
+          if (cancelled) return;
+          const body = error?.response?.data || error?.data || null;
+          if (body?.error === "Unauthorized") { setStatus("unauthorized"); return; }
+          if (body?.error === "invalid_result_id") { setStatus("invalid"); return; }
+          if (body?.error === "not_found") { setStatus("not_found"); return; }
+          setStatus("error");
         }
       })();
       return () => { cancelled = true; };
@@ -380,7 +414,7 @@ export default function PaymentsResults() {
       }
     })();
     return () => { cancelled = true; };
-  }, [sessionId, verifiedId, isVerifiedPath, attempt, isAuthenticated]);
+  }, [sessionId, verifiedId, resultId, isVerifiedPath, isOwnedResultPath, attempt, isAuthenticated]);
 
   // Load the rate table once a result is ready — used ONLY for the roadmap's
   // neutral ambition line. Best-effort: failure just omits the ambition copy.
@@ -483,11 +517,11 @@ export default function PaymentsResults() {
     );
   }
 
-  // ── no session AND no verified id in the URL — the "bare /Results" case.
+  // ── no target id in the URL — the "bare /Results" case.
   //    Authenticated → show the user's own analysis history (server-side,
   //    getMyPaymentsHistory). Anonymous → neutral "run your analysis" prompt,
   //    NOT the scary "this link isn't valid" (there was never a link).
-  const hasNoTarget = !verifiedId && !sessionId;
+  const hasNoTarget = !verifiedId && !resultId && !sessionId;
   if (hasNoTarget && (status === "invalid" || status === "not_found")) {
     return (
       <ResultsShell withSidebar={isAuthenticated}>
@@ -550,8 +584,11 @@ export default function PaymentsResults() {
     );
   }
 
-  // ── unauthorized (verified path only — verified rows are private)
+  // ── unauthorized (verified and owned-result paths are private)
   if (status === "unauthorized") {
+    const privateTarget = isOwnedResultPath
+      ? `/Results?result=${resultId}`
+      : `/Results?verified=${verifiedId}`;
     return (
       <ResultsShell>
         <EmptyState
@@ -559,7 +596,7 @@ export default function PaymentsResults() {
           title={t("res_auth_title")}
           message={t("res_auth_msg")}
           ctaLabel={t("res_auth_cta")}
-          onCta={() => navigate(`/LoginGate?next=${encodeURIComponent("/Results?verified=" + verifiedId)}`)}
+          onCta={() => navigate(`/LoginGate?next=${encodeURIComponent(privateTarget)}`)}
         />
       </ResultsShell>
     );

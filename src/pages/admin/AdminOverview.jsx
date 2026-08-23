@@ -34,6 +34,7 @@ export default function AdminOverview() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const inFlightRef = useRef(false);
   const pendingRef = useRef(false);
   const debounceTimerRef = useRef(null);
@@ -44,6 +45,7 @@ export default function AdminOverview() {
     if (inFlightRef.current) { pendingRef.current = true; return; }
     inFlightRef.current = true;
     try {
+      setLoadError("");
       const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await Promise.all([
         base44.entities.User.list(),
         base44.entities.Brand.list(),
@@ -58,10 +60,12 @@ export default function AdminOverview() {
         base44.entities.Invoice.list("-issued_at", 500),
       ]);
       setData({ users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices });
+      return true;
     } catch (err) {
-      // Rate-limit or transient failure — leave existing data in place and
-      // retry on the next subscription event. Never crash the page.
+      // Never turn an unreadable admin source into a zero or an endless spinner.
+      setLoadError("CAMBRA could not read every Founder OS source. No incomplete totals are being shown.");
       console.warn("[AdminOverview] loadAll failed:", err?.message || err);
+      return false;
     } finally {
       inFlightRef.current = false;
       if (pendingRef.current) {
@@ -107,10 +111,28 @@ export default function AdminOverview() {
   }, [timeRange]);
   const prevSince = useMemo(() => new Date(since.getTime() - (now.getTime() - since.getTime())), [since, now]);
 
-  if (loading || !data) {
+  const retryLoad = async () => {
+    setLoading(true);
+    await loadAll();
+    setLoading(false);
+  };
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-40">
         <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div data-testid="founder-os-data-unavailable" className="rounded-2xl border border-amber-300/40 bg-amber-500/10 p-6 text-sm">
+        <p className="font-black">Founder OS data unavailable</p>
+        <p className="mt-2 text-muted-foreground">{loadError || "CAMBRA could not verify the dashboard data sources."}</p>
+        <button onClick={retryLoad} className="mt-4 h-9 rounded-lg border border-border px-4 text-xs font-bold">
+          Retry
+        </button>
       </div>
     );
   }
@@ -296,6 +318,11 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-5">
+      {loadError && (
+        <div role="alert" className="rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 py-3 text-xs">
+          {loadError} Displayed values are the last complete snapshot.
+        </div>
+      )}
       <CommandHero
         title="Command Center"
         subtitle="CAMBRA · Infrastructure intelligence"

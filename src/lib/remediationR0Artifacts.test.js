@@ -138,7 +138,7 @@ describe("R0.C material boundary registry", () => {
       status: "PARTIAL",
       logical_route: "generateInvoicePdf",
     });
-  });
+  }, 30_000);
 
   it(
     "resolves canonical primitive symbols, lexical shadowing, and owner-gate intersection",

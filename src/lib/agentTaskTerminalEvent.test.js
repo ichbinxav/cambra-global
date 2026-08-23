@@ -289,6 +289,45 @@ describe('canonical AgentTask terminal Event outbox contract', () => {
     expect(updateMany).not.toHaveBeenCalled();
   });
 
+  it('treats Base44 materialized empty conflict IDs as an unset outbox', async () => {
+    let stored = {
+      ...await openMaterialTask(),
+      terminal_event_conflicting_ids_json: [],
+    };
+    const updateMany = vi.fn(async (_filter, update) => {
+      stored = { ...stored, ...update.$set };
+      return { success: true, updated: 1 };
+    });
+    const svc = { entities: { AgentTask: {
+      updateMany,
+      get: vi.fn(async () => stored),
+    } } };
+
+    const settled = await settleCanonicalAgentTask(svc, stored, {
+      status: 'completed',
+      completed_at: '2026-08-23T18:45:00.000Z',
+    }, {
+      terminalState: 'COMPLETED',
+      effectState: 'NOT_STARTED',
+      ambiguityState: 'NONE',
+      result: { ok: true, processed: 0 },
+      effectRefs: [],
+      receiptRefs: [],
+      terminalEvent: {
+        eventType: 'agent.task.terminal',
+        source: 'agent_task_envelope',
+        payload: { processed: 0 },
+      },
+    });
+
+    expect(settled).toMatchObject({
+      status: 'completed',
+      terminal_state: 'COMPLETED',
+      terminal_event_state: 'PENDING',
+    });
+    expect(updateMany).toHaveBeenCalledTimes(1);
+  });
+
   it('closes both manual dead-letter rejection branches before returning and emits no Event directly', () => {
     const source = fs.readFileSync(
       new URL('../../base44/functions/processWebhookDeadLetters/entry.ts', import.meta.url),
