@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "c5d2a267d73232a01df0a9f194ede8af21eff6c20727dc38c448aab5915e57f0",
+  "input_fingerprint_sha256": "8c9e530c1b0ffe2a334a8f7bfdfde71ac07a4c61f6551951122706039d76523d",
   "components": [
     {
       "key": "effect_authority",
@@ -183,8 +183,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "a671239302e59b6024ca8335b03d33104bbb19b964daaf3b322c3683e6dc200e",
-      "bytes": 7978
+      "sha256": "1773d2285a3308bc66db7fdcc337027f16660e46c69d6291d8f963360a413959",
+      "bytes": 12114
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
