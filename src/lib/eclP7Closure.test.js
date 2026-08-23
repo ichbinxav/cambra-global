@@ -138,7 +138,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     for (const source of [INSTANTLY_EVENT_RETRY, INSTANTLY_RECONCILIATION]) {
       expect(source).toContain('await req.clone().json().catch(()=>({}))');
       expect(source).not.toContain('await req.json().catch(()=>({}))');
-      expect(source.indexOf('req.clone().json')).toBeLessThan(source.indexOf('claimSchedulerRun'));
+      expect(source.indexOf('req.clone().json')).toBeLessThan(source.indexOf('claim=await claimSchedulerRun'));
     }
     expect(DLQ.indexOf('createCanonicalAgentTask')).toBeLessThan(DLQ.indexOf('let pending'));
     expect(RECONCILER.indexOf('createCanonicalAgentTask')).toBeLessThan(RECONCILER.indexOf('svc.entities.Invoice.filter'));
