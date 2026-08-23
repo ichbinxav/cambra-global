@@ -107,6 +107,16 @@ async function handleReadState(base44: any, input: any) {
 }
 
 const BULK_THRESHOLD = 5;
+
+function effectiveToolInput(tool: any, toolInput: any) {
+  const modelInput = toolInput && typeof toolInput === "object" ? toolInput : {};
+  const effectiveInput = { ...modelInput, ...(tool.fixed_input || {}) };
+  if (tool.inject_internal_secret) {
+    effectiveInput.internal_secret = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+  }
+  return effectiveInput;
+}
+
 const SYSTEM_PROMPT = `You are ASK CAMBRA, the operating interface of CAMBRA Founder OS. Your job is to help the founder OBSERVE → UNDERSTAND → DECIDE → ACT while preserving human governance.
 
 Prefer founder_os_query for LIVE company questions because it performs governed cross-domain joins and returns evidence. Use documentation_query for SYSTEM-BEHAVIOR questions ("how does this work?", authority, workflow, emergency controls). Never answer a live-state question from documentation or a system-behavior question from stale chat memory. Use founder_chief_of_staff for an executive brief. Use founder_simulation for what-if questions. Use founder_command for governed actions. Use read_state only for narrow raw operational lookups that Founder OS does not cover.
@@ -290,7 +300,7 @@ Deno.serve(async (req) => {
           return { ok: !!read?.ok, summary: read?.ok ? `${read.count} rows from ${read.entity}` : `read failed: ${read?.error || 'unknown'}` };
         }
         try {
-          const res = await base44.asServiceRole.functions.invoke(tool.function, { ...(tool.fixed_input || {}), ...input });
+          const res = await base44.asServiceRole.functions.invoke(tool.function, effectiveToolInput(tool, input));
           const data = res?.data || res;
           // A step that comes back asking for confirmation is NOT a completed
           // step. Treat it as ambiguous so the loop escalates instead of
@@ -410,10 +420,7 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
   const forcedDraft = tool.risk_level >= 2;
   // Fixed server policy wins over model-generated input. This prevents a
   // tool call from replacing a read-only action/capability with a write.
-  const effectiveInput = { ...toolInput, ...(tool.fixed_input || {}) };
-  if (tool.inject_internal_secret) {
-    effectiveInput.internal_secret = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-  }
+  const effectiveInput = effectiveToolInput(tool, toolInput);
   const auditedInput = { ...effectiveInput };
   delete auditedInput.internal_secret;
   delete auditedInput.confirmation_nonce;
