@@ -30,11 +30,14 @@ describe('research knowledge consumers', () => {
     expect(chief).toContain('function: "intelligenceAccess"');
     expect(chief).toContain('action: "search_research_knowledge"');
     expect(chief).toContain('actor_capability: "moat"');
-    expect(chief).toContain('const effectiveInput = { ...toolInput, ...(tool.fixed_input || {}) }');
+    expect(chief).toContain('function effectiveToolInput(tool: any, toolInput: any)');
+    expect(chief).toContain('const effectiveInput = { ...modelInput, ...(tool.fixed_input || {}) }');
     expect(chief).toContain("effectiveInput.internal_secret = Deno.env.get('INTERNAL_CALL_SECRET') || ''");
+    expect(chief.match(/effectiveToolInput\(tool, (?:input|toolInput)\)/g)).toHaveLength(2);
     expect(chief).toContain('delete auditedInput.internal_secret');
     expect(chief).toContain('input: auditedInput');
     expect(chief).not.toContain('const effectiveInput = { ...(tool.fixed_input || {}), ...toolInput }');
+    expect(chief).not.toContain('functions.invoke(tool.function, { ...(tool.fixed_input || {}), ...input })');
   });
 
   it('adds bounded local priors to provider research without another paid lookup', () => {
