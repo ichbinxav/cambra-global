@@ -292,13 +292,29 @@ export default function AdminFounderControl() {
   const invoke = useCallback(async (name, body = {}) => {
     try {
       const data = payload(await base44.functions.invoke(name, body));
-      if (data?.ok === false) throw Object.assign(new Error(data.error || tr("Operation blocked")), { data });
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw Object.assign(new Error(tr("Operation blocked")), { data:{ error:"invalid_function_response", function:name } });
+      }
+      if (data.ok === false) throw Object.assign(new Error(data.error || tr("Operation blocked")), { data });
       return data;
     } catch (cause) {
       if (cause?.data) throw cause;
       const data = payload(cause?.response?.data || cause?.data || {});
       throw Object.assign(new Error(data?.error || cause?.message || tr("Operation failed")), { data });
     }
+  }, [tr]);
+
+  const requireCanonical = useCallback((data, paths) => {
+    const missing = paths.filter(path => {
+      const value = path.split(".").reduce((current, key) => current?.[key], data);
+      return value === undefined || value === null || value === "";
+    });
+    if (!data || typeof data !== "object" || Array.isArray(data) || missing.length) {
+      throw Object.assign(new Error(tr("Operation blocked")), {
+        data:{ error:"canonical_preview_incomplete", missing_fields:missing },
+      });
+    }
+    return data;
   }, [tr]);
 
   const load = useCallback(async (silent = false) => {
@@ -320,30 +336,69 @@ export default function AdminFounderControl() {
     finally { await load(true); setBusy(""); }
   };
 
-  const prepareStop = () => run("stop-preview", async () => { const prepared = await invoke("emergencyControlAdmin", { action:"safe_mode_preview" }); setReason(""); setModal({ kind:"stop", ...prepared }); return prepared; }, tr("Emergency Stop preview ready"));
+  const prepareStop = () => run("stop-preview", async () => {
+    const prepared = requireCanonical(await invoke("emergencyControlAdmin", { action:"safe_mode_preview" }), ["preview.state_fingerprint", "command_key", "confirmation_required"]);
+    setReason(""); setModal({ kind:"stop", ...prepared }); return prepared;
+  }, tr("Emergency Stop preview ready"));
   const confirmStop = () => run("stop-confirm", async () => {
-    const result = await invoke("emergencyControlAdmin", { action:"safe_mode_on", confirmation:modal.confirmation_required, command_key:modal.command_key, preview_hash:modal.preview.state_fingerprint, reason, correlation_id:commandKey("emergency") });
+    const current = requireCanonical(modal, ["preview.state_fingerprint", "command_key", "confirmation_required"]);
+    const result = await invoke("emergencyControlAdmin", { action:"safe_mode_on", confirmation:current.confirmation_required, command_key:current.command_key, preview_hash:current.preview.state_fingerprint, reason, correlation_id:commandKey("emergency") });
     setModal(null); return result;
   }, tr("Global Emergency Stop applied"));
 
   const openResume = () => { const paused = RESUME_OPTIONS.filter(item => snapshot?.emergency?.[`${item.key}_paused`] !== false).map(item => item.key); setSelectedResume(paused); setReason(""); setModal({ kind:"resume", stage:"select" }); };
-  const prepareResume = () => run("resume-preview", async () => { const prepared = await invoke("emergencyControlAdmin", { action:"resume_preflight", selected_capabilities:selectedResume }); setModal({ kind:"resume", stage:"review", ...prepared }); return prepared; }, tr("Safe Resume dependencies checked"));
-  const confirmResume = () => run("resume-confirm", async () => { const result = await invoke("emergencyControlAdmin", { action:"resume_selected", selected_capabilities:selectedResume, confirmation:modal.confirmation_required, command_key:modal.command_key, preflight_hash:modal.preflight.preflight_hash, reason, correlation_id:commandKey("resume") }); setModal(null); return result; }, tr("Selected capabilities resumed safely"));
+  const prepareResume = () => run("resume-preview", async () => {
+    const prepared = requireCanonical(await invoke("emergencyControlAdmin", { action:"resume_preflight", selected_capabilities:selectedResume }), ["preflight.preflight_hash", "command_key", "confirmation_required"]);
+    setModal({ kind:"resume", stage:"review", ...prepared }); return prepared;
+  }, tr("Safe Resume dependencies checked"));
+  const confirmResume = () => run("resume-confirm", async () => {
+    const current = requireCanonical(modal, ["preflight.preflight_hash", "command_key", "confirmation_required"]);
+    const result = await invoke("emergencyControlAdmin", { action:"resume_selected", selected_capabilities:selectedResume, confirmation:current.confirmation_required, command_key:current.command_key, preflight_hash:current.preflight.preflight_hash, reason, correlation_id:commandKey("resume") });
+    setModal(null); return result;
+  }, tr("Selected capabilities resumed safely"));
 
-  const prepareApproval = (approval, decision) => run(`approval-${approval.id}`, async () => { const prepared = await invoke("founderOSCommand", { action:"resolve_approval", approval_id:approval.id, decision }); setReason(""); setModal({ kind:"approval", approval, decision, ...prepared }); return prepared; }, tr("Approval preview ready"));
-  const confirmApproval = () => run("approval-confirm", async () => { const result = await invoke("founderOSCommand", { action:"resolve_approval", approval_id:modal.approval.id, decision:modal.decision, confirmed:true, command_key:modal.command_key, confirmation_nonce:modal.confirmation_nonce, reason }); setModal(null); return result; }, tr("Action {decision}", { decision:tr(modal?.decision === "approve" ? "approved" : "rejected") }));
+  const prepareApproval = (approval, decision) => run(`approval-${approval.id}`, async () => {
+    const prepared = requireCanonical(await invoke("founderOSCommand", { action:"resolve_approval", approval_id:approval.id, decision }), ["preview", "command_key", "confirmation_nonce"]);
+    setReason(""); setModal({ kind:"approval", approval, decision, ...prepared }); return prepared;
+  }, tr("Approval preview ready"));
+  const confirmApproval = () => run("approval-confirm", async () => {
+    const current = requireCanonical(modal, ["approval.id", "decision", "command_key", "confirmation_nonce"]);
+    const result = await invoke("founderOSCommand", { action:"resolve_approval", approval_id:current.approval.id, decision:current.decision, confirmed:true, command_key:current.command_key, confirmation_nonce:current.confirmation_nonce, reason });
+    setModal(null); return result;
+  }, tr("Action {decision}", { decision:tr(modal?.decision === "approve" ? "approved" : "rejected") }));
 
   const budgetInput = useMemo(() => ({ ...budgetDraft, version:budgetDraft.version || commandKey("founder-budget") }), [budgetDraft]);
   const openBudget = () => { setBudgetDraft(value => ({ ...value, version:commandKey("founder-budget") })); setReason(""); setModal({ kind:"budget", stage:"edit" }); };
-  const prepareBudget = () => run("budget-preview", async () => { const prepared = await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...budgetInput }); setModal({ kind:"budget", stage:"review", ...prepared, budgetInput }); return prepared; }, tr("Budget impact preview ready"));
-  const confirmBudget = () => run("budget-confirm", async () => { const result = await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...modal.budgetInput, confirmed:true, confirmation:modal.confirmation_required, command_key:modal.command_key, preview_hash:modal.preview.preview_hash }); setModal(null); return result; }, tr("Hard budget updated and audited"));
+  const prepareBudget = () => run("budget-preview", async () => {
+    const prepared = requireCanonical(await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...budgetInput }), ["preview.preview_hash", "command_key", "confirmation_required"]);
+    setModal({ kind:"budget", stage:"review", ...prepared, budgetInput }); return prepared;
+  }, tr("Budget impact preview ready"));
+  const confirmBudget = () => run("budget-confirm", async () => {
+    const current = requireCanonical(modal, ["budgetInput", "preview.preview_hash", "command_key", "confirmation_required"]);
+    const result = await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...current.budgetInput, confirmed:true, confirmation:current.confirmation_required, command_key:current.command_key, preview_hash:current.preview.preview_hash });
+    setModal(null); return result;
+  }, tr("Hard budget updated and audited"));
 
   const runCanaryPreflight = () => run("canary-preflight", async () => {
-    try { const prepared = await invoke("outboundControlAdmin", { action:"preflight", provider_scope:providerScope }); setCanaryPreflight(prepared); return prepared; }
-    catch (cause) { setCanaryPreflight({ allowed:false, ...(cause.data || {}), error:cause.message }); throw cause; }
+    try {
+      const prepared = requireCanonical(await invoke("outboundControlAdmin", { action:"preflight", provider_scope:providerScope }), ["preflight_hash", "allowed"]);
+      setCanaryPreflight(prepared); return prepared;
+    } catch (cause) { setCanaryPreflight({ allowed:false, ...(cause.data || {}), error:cause.message }); throw cause; }
   }, tr("Canary preflight passed"));
-  const prepareCanary = () => setModal({ kind:"canary", providerScope, preflight:canaryPreflight });
-  const confirmCanary = () => run("canary-start", async () => { const result = await invoke("outboundControlAdmin", { action:providerActions[modal.providerScope], confirmation:"START_CANARY_OUTBOUND", preflight_hash:modal.preflight.preflight_hash }); setModal(null); setCanaryPreflight(null); return result; }, tr("Controlled canary started"));
+  const prepareCanary = () => {
+    try {
+      const prepared = requireCanonical(canaryPreflight, ["preflight_hash", "allowed"]);
+      if (prepared.allowed !== true) throw Object.assign(new Error(tr("Operation blocked")), { data:{ error:"canary_preflight_blocked", blockers:prepared.blockers || [] } });
+      setModal({ kind:"canary", providerScope, preflight:prepared });
+    } catch (cause) { setNotice({ type:"error", text:cause.message, detail:cause.data }); }
+  };
+  const confirmCanary = () => run("canary-start", async () => {
+    const current = requireCanonical(modal, ["providerScope", "preflight.preflight_hash"]);
+    const action = providerActions[current.providerScope];
+    if (!action) throw Object.assign(new Error(tr("Operation blocked")), { data:{ error:"unsupported_canary_provider" } });
+    const result = await invoke("outboundControlAdmin", { action, confirmation:"START_CANARY_OUTBOUND", preflight_hash:current.preflight.preflight_hash });
+    setModal(null); setCanaryPreflight(null); return result;
+  }, tr("Controlled canary started"));
   const pauseOutbound = () => run("outbound-pause", () => invoke("outboundControlAdmin", { action:"pause_all" }), tr("Outbound paused"));
 
   if (loading && !snapshot) return <div className="flex min-h-[45vh] items-center justify-center"><Loader2 className="animate-spin text-cyan-300" /></div>;
