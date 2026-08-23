@@ -439,7 +439,13 @@ const vitestBin = path.join(root, "node_modules", ".bin", "vitest");
 if (!fs.existsSync(vitestBin)) fail("p0_current_validation_runner_missing");
 const p0Validation = spawnSync(
   process.execPath,
-  [vitestBin, "run", ...expectedP0TestFiles, "--reporter=json"],
+  [
+    vitestBin,
+    "run",
+    ...expectedP0TestFiles,
+    "--reporter=json",
+    "--maxWorkers=1",
+  ],
   {
     cwd: root,
     encoding: "utf8",

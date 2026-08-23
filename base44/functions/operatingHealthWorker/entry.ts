@@ -291,15 +291,18 @@ Deno.serve(async (req) => {
     }
     const persisted = await persistAssessment(svc, assessment);
     if (!dependencySummary.automated_action_allowed) {
-      schedulerOk = false;
+      // Persisting a fail-closed diagnostic is a completed scheduler run, not a
+      // failed effect. The degraded assessment still grants no action authority.
       return Response.json({
-        ok: false,
-        error: "operating_health_dependencies_unknown",
+        ok: true,
+        execution_status: "COMPLETED_WITH_DEGRADED_INPUTS",
+        diagnostic_only: true,
+        reason: "operating_health_dependencies_unknown",
         health_status: "DEGRADED",
         readiness_status: "UNKNOWN",
         automated_action_allowed: false,
         assessment: persisted,
-      }, { status: 503 });
+      });
     }
     return Response.json({
       ok: true,

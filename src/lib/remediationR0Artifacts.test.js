@@ -23,7 +23,7 @@ import {
 } from "../../scripts/generate-remediation-r0.mjs";
 
 const temporaryDirectories = [];
-const FILESYSTEM_TAMPER_TEST_TIMEOUT_MS = 30_000;
+const FILESYSTEM_TAMPER_TEST_TIMEOUT_MS = 60_000;
 // Building the TypeScript Program for the live 300-entrypoint repository can
 // legitimately exceed Vitest's 5 s default when the release suite runs two
 // worker processes. Keep the assertion strict while removing scheduler-load
@@ -138,7 +138,7 @@ describe("R0.C material boundary registry", () => {
       status: "PARTIAL",
       logical_route: "generateInvoicePdf",
     });
-  }, 30_000);
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
   it(
     "resolves canonical primitive symbols, lexical shadowing, and owner-gate intersection",
@@ -312,7 +312,7 @@ describe("R0.C material boundary registry", () => {
       status: "ABSENT",
       logical_route: "NONE_FOUND",
     });
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 });
 
 describe("R1.E material tenant authorization proof inventory", () => {
@@ -342,7 +342,7 @@ describe("R1.E material tenant authorization proof inventory", () => {
       binary_closed_count: 0,
       runtime_verified_count: 0,
     });
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
   it("binds real gate execution tests to the high-risk owned material routes", () => {
     const document = buildTenantAuthorizationInventory(REPO_ROOT);
@@ -381,27 +381,33 @@ describe("R1.E material tenant authorization proof inventory", () => {
     );
   }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
-  it("keeps unmapped and source-only route gaps explicit instead of upgrading them from a static tripwire", () => {
-    const document = buildTenantAuthorizationInventory(REPO_ROOT);
-    const sourceOnly = document.routes.filter((row) =>
-      row.proof_class === "SOURCE_OBSERVED_ONLY"
-    );
-    expect(sourceOnly.length).toBeGreaterThan(0);
-    expect(sourceOnly.every((row) => row.test_status === "NOT_RUN")).toBe(true);
-    expect(
-      sourceOnly.every((row) =>
-        row.gate_coverage.actor_denial_equivalence === "NOT_PROVEN"
-      ),
-    ).toBe(true);
-    const absent = document.routes.find((row) =>
-      row.boundary_id === "MB-DATASET-PROMOTION-ABSENT"
-    );
-    expect(absent).toMatchObject({
-      proof_class: "NO_PHYSICAL_ROUTE",
-      implementation_status: "PARTIAL",
-      binary_closure_status: "NOT_MET",
-    });
-  });
+  it(
+    "keeps unmapped and source-only route gaps explicit instead of upgrading them from a static tripwire",
+    () => {
+      const document = buildTenantAuthorizationInventory(REPO_ROOT);
+      const sourceOnly = document.routes.filter((row) =>
+        row.proof_class === "SOURCE_OBSERVED_ONLY"
+      );
+      expect(sourceOnly.length).toBeGreaterThan(0);
+      expect(sourceOnly.every((row) => row.test_status === "NOT_RUN")).toBe(
+        true,
+      );
+      expect(
+        sourceOnly.every((row) =>
+          row.gate_coverage.actor_denial_equivalence === "NOT_PROVEN"
+        ),
+      ).toBe(true);
+      const absent = document.routes.find((row) =>
+        row.boundary_id === "MB-DATASET-PROMOTION-ABSENT"
+      );
+      expect(absent).toMatchObject({
+        proof_class: "NO_PHYSICAL_ROUTE",
+        implementation_status: "PARTIAL",
+        binary_closure_status: "NOT_MET",
+      });
+    },
+    LIVE_INVENTORY_TEST_TIMEOUT_MS,
+  );
 });
 
 describe("R5.A generated effect authority registry", () => {
@@ -444,7 +450,7 @@ describe("R5.A generated effect authority registry", () => {
     expect(
       document.effect_classes.every((row) => row.wired_boundary_ids.length > 0),
     ).toBe(true);
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
   it("keeps local route wiring partial and lists every unwired boundary literally", () => {
     const document = buildEffectAuthorityRegistry(REPO_ROOT);
@@ -476,7 +482,7 @@ describe("R5.A generated effect authority registry", () => {
       ),
     )
       .toHaveLength(37);
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 });
 
 describe("R0.D physical research corpus inventory", () => {

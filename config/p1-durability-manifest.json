@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T20:46:14.317Z",
+  "generatedAt": "2026-08-23T22:06:11.942Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1024,8 +1024,8 @@
     },
     {
       "path": "base44/functions/operatingHealthWorker/entry.ts",
-      "sha256": "b3d3fb5884040d319a065a6d87645b0eba7a69de658fbc7004cc0e116ece5cc0",
-      "bytes": 10916
+      "sha256": "756fd4f42709c63ccb657a1c99f4cfec3e585e26a1f77a76eaa8e870854a488f",
+      "bytes": 11126
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
@@ -1664,8 +1664,8 @@
     },
     {
       "path": "base44/shared/generated/disasterRecoveryEntityCatalog.ts",
-      "sha256": "89818c9b875e630e10c4dbccf1dd610c0c2944b23653ce15f3c7b4ab669b3b3f",
-      "bytes": 6529
+      "sha256": "88524240bb64c18bdfd432ab0d5d0bcfcc07fec36b38c85562a5eb73a431d6be",
+      "bytes": 6429
     },
     {
       "path": "base44/shared/generated/eclDomain.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "6b01be58630b3fee1ec85cec5978c0a4f3b796b9b6b0054302165195fdd76857",
+      "sha256": "5efb97f1b63f7e5426beec095157e5d1034db345fb9b5dd622435086e694ed04",
       "bytes": 43456
     },
     {
@@ -2174,7 +2174,7 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "88414750022d2cf2d4ad88b212a246aa3607c021291d216d3929eb12fb3d0ceb",
+      "sha256": "b1105eb58d39a2c14fe055aa789209317702b3b7b531b8343260213423cb0c77",
       "bytes": 8260
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "a6a01ade88e947df148cbae233185f394f4befea8faebb898ccd5f7d70fa2be6",
+      "sha256": "ba5fafcd38ec5adcc8c185b3bb4fb2a9df4682af8871f8decbabc98779e7bc9d",
       "bytes": 13672
     },
     {
@@ -2349,8 +2349,8 @@
     },
     {
       "path": "scripts/check-intelligence-canonical-v2.mjs",
-      "sha256": "86a720dcb7a2cb16b218c153f160adb83c36a6e984cad39c4d63abad5b871f4d",
-      "bytes": 30047
+      "sha256": "619f60ff5efe49f075e6bb38515a09e8067eecef2a99e6bfbd846d1183f3f6b2",
+      "bytes": 30090
     },
     {
       "path": "scripts/check-intelligence-evaluation-contract.mjs",
@@ -3259,8 +3259,8 @@
     },
     {
       "path": "src/lib/finalRevenueEngineSeal.test.js",
-      "sha256": "78d3afce0c65f4b94bcf1a18dcf6be2bd62f3da310032ba5824d50d657e33b8c",
-      "bytes": 6149
+      "sha256": "56463413e8b0dac0803a1b39dfecad97221130fd6ef12bf74e8a8edbd8101c6b",
+      "bytes": 6158
     },
     {
       "path": "src/lib/financialEntityServiceRoleRls.test.js",
@@ -3354,8 +3354,8 @@
     },
     {
       "path": "src/lib/intelligenceCanonicalReconciliationV2.test.js",
-      "sha256": "e26f04244e1dc530a90d7ec2bfad817957e584553f1364d422e222ccff4d2fec",
-      "bytes": 16763
+      "sha256": "c1ca333822e698aa325d143d9ec5c3c2fab79b671e6ef605be80f7492c9e7b63",
+      "bytes": 16954
     },
     {
       "path": "src/lib/intelligenceEvaluationContract.test.js",
@@ -3669,8 +3669,8 @@
     },
     {
       "path": "src/lib/remediationR0Artifacts.test.js",
-      "sha256": "4dfa69fb7f5ca00e3fc9e2889c1233523e1b52339fe0bf8c5f6eb7482fc8da85",
-      "bytes": 25665
+      "sha256": "9d6b4fb82bce6714b0e9272feb1820826b523e14b8926a30fc79982bd3706544",
+      "bytes": 25923
     },
     {
       "path": "src/lib/remediationR4Artifacts.test.js",

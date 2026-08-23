@@ -10,7 +10,7 @@
       "base44/functions/autonomousOperationsSupervisor/entry.ts": "95bbd45445316c48c84659b66d1d1aa570bef31f89ceeacf086a42ef37aaf271",
       "base44/functions/eclProductionHealth/entry.ts": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "base44/functions/getAdminOperationsCockpit/entry.ts": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
-      "base44/functions/operatingHealthWorker/entry.ts": "b3d3fb5884040d319a065a6d87645b0eba7a69de658fbc7004cc0e116ece5cc0",
+      "base44/functions/operatingHealthWorker/entry.ts": "756fd4f42709c63ccb657a1c99f4cfec3e585e26a1f77a76eaa8e870854a488f",
       "base44/functions/systemHealthAgent/entry.ts": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",
       "base44/shared/canonicalIncident.ts": "2d346d22341c8be10b4a5ac2b9d9946a070f8ca7cd55b0eabbfcea42b712e8b4",
       "base44/shared/logical/productionReadinessWorker.ts": "f6c9e15c08a10a983c2fe07fee929852c6a0d85dd426a9e49a368173f3721330",

@@ -10,10 +10,10 @@ import { requireFreshAgentTaskInventory } from "../../scripts/lib/agentTaskInven
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_DIR = path.join(ROOT, "config", "intelligence");
 const temporaryDirectories = [];
-// The checker intentionally reruns the 36-file P0 ledger. It completes in a
-// few seconds on the release runner but can exceed Vitest's 5 s default in the
-// Base44 sandbox, so give this integration assertion a deterministic budget.
-const CANONICAL_CHECK_TIMEOUT_MS = 30_000;
+// The checker intentionally reruns the 36-file P0 ledger with one worker so a
+// parent Vitest run cannot overcommit the host. Keep a deterministic budget
+// for slower release and Base44 runners without weakening any assertion.
+const CANONICAL_CHECK_TIMEOUT_MS = 120_000;
 const read = (name, directory = CONFIG_DIR) =>
   JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
 const canonicalJson = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -46,6 +46,12 @@ describe("CAMBRA Intelligence canonical reconciliation v2", () => {
     );
     expect(output).toContain("20/20 OTR NOT_MET");
     expect(output).toContain("8/8 root seals NOT_SEALED");
+
+    const checkerSource = fs.readFileSync(
+      path.join(ROOT, "scripts", "check-intelligence-canonical-v2.mjs"),
+      "utf8",
+    );
+    expect(checkerSource).toContain('"--maxWorkers=1"');
   }, CANONICAL_CHECK_TIMEOUT_MS);
 
   it("pins the four authoritative physical locators and forbids filename-only legacy loaders", () => {

@@ -103,14 +103,10 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "growth-path-snapshot",
   "growth-scenario",
   "growth-target-registry",
-  "GrowthAssumptionRegistry",
   "GrowthCostLedger",
   "GrowthDecision",
   "GrowthDecisionOutcome",
   "GrowthExperiment",
-  "GrowthPathSnapshot",
-  "GrowthScenario",
-  "GrowthTargetRegistry",
   "IdempotencyKey",
   "IncidentAlertDelivery",
   "InfrastructureEdge",
@@ -269,4 +265,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:268';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:264';
