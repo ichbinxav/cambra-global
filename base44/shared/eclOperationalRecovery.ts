@@ -10,6 +10,8 @@ export const P7_WORKERS = Object.freeze({
 export const P7_ACTIVE_INCIDENT_STATUSES = Object.freeze(['open', 'acknowledged', 'recovering']);
 export const INCIDENT_BUCKET_MINUTES = 10;
 
+const SAFE_PRE_EFFECT_STATES = new Set(['NOT_STARTED', 'FAILED_PRE_EFFECT', 'NOT_APPLICABLE']);
+
 export type P7RecoveryAction = 'run_ecl_lifecycle_scheduler' | 'run_recover_billing_reconciler' | 'run_webhook_dead_letters' | 'replay_webhook_dead_letter' | 'inspect_manual';
 export type P7IncidentSignal = {
   dedupeKey: string;
@@ -91,4 +93,46 @@ export function recoveryInvocation(action: P7RecoveryAction | string, subjectId?
   }
   if (action === 'inspect_manual') return null;
   throw new Error(`unsupported_recovery_action:${action}`);
+}
+
+function hasPersistedReferences(value: any) {
+  if (value === undefined || value === null) return false;
+  return !Array.isArray(value) || value.length > 0;
+}
+
+export function schedulerControlRecoveryDecision(
+  control: any,
+  attempt: any,
+  tasks: any[],
+  options: { allowNoTaskProof?: boolean } = {},
+) {
+  if (!control) return { ok: true, action: 'not_required', reason: 'scheduler_control_absent' };
+  const state = String(control.control_state || 'IDLE');
+  if (state === 'IDLE') return { ok: true, action: 'not_required', reason: 'scheduler_control_idle' };
+  if (state !== 'REVIEW_REQUIRED') return { ok: false, action: 'blocked', reason: 'scheduler_control_not_recoverable' };
+  if (!attempt || String(attempt.id || '') !== String(control.active_attempt_id || '')) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_active_attempt_unproven' };
+  }
+  const runKey = String(attempt.run_key || '');
+  if (!runKey || (control.active_run_key && String(control.active_run_key) !== runKey)) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_attempt_run_key_unproven' };
+  }
+  if (!Array.isArray(tasks)) return { ok: false, action: 'blocked', reason: 'scheduler_task_evidence_unavailable' };
+  const matchingTasks = tasks.filter((task) => String(task?.parent_run || '') === runKey);
+  if (matchingTasks.length > 1) return { ok: false, action: 'blocked', reason: 'scheduler_attempt_task_ambiguous' };
+  if (matchingTasks.length === 0) {
+    if (options.allowNoTaskProof !== true) {
+      return { ok: false, action: 'blocked', reason: 'scheduler_no_task_not_proof' };
+    }
+    return { ok: true, action: 'reset_control', reason: 'no_task_created_before_effect', taskId: null };
+  }
+  const task = matchingTasks[0];
+  if (
+    !task.id || task.execution_effects_started === true || hasPersistedReferences(task.effect_refs_json) ||
+    hasPersistedReferences(task.receipt_refs_json) ||
+    !SAFE_PRE_EFFECT_STATES.has(String(task.effect_state || ''))
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_effect_nonoccurrence_unproven' };
+  }
+  return { ok: true, action: 'reset_control', reason: 'task_proves_no_effect_started', taskId: task.id };
 }
