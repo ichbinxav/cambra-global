@@ -34,6 +34,7 @@ capability, not proof that every external production dependency is healthy.
 | Ask CAMBRA | Fresh bounded snapshot; prose may explain/propose but cannot mutate authority | Implemented |
 | Change history | FounderCommandAudit + material OperationalLog projection | Implemented |
 | Fail-closed authority read | Missing/unreadable EmergencyControl produces contained state and denies material effects | Implemented |
+| Closed budget dialog | Preview fields use null-safe reads while no material preview exists; opening or confirming still requires the canonical preview flow | Implemented |
 
 ## Safe Resume gates
 
@@ -49,3 +50,7 @@ This surface is a control projection, not a new source of authority. A green
 card describes current canonical evidence; it does not manufacture provider,
 legal, financial or production proof. Missing authority is UNKNOWN/DEGRADED and
 material execution fails closed.
+
+The closed budget dialog must remain render-safe when its modal state is null.
+This is a presentation guard only: it does not synthesize a preview, relax a
+confirmation requirement or change any authority, budget or outbound state.

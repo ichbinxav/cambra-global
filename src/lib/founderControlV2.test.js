@@ -188,6 +188,10 @@ describe("Founder Control V2 canonical authority projection", () => {
     expect(ui).toContain('["preflight.preflight_hash", "command_key", "confirmation_required"]');
     expect(ui).toContain('["preview.preview_hash", "command_key", "confirmation_required"]');
     expect(ui).toContain('requireCanonical(canaryPreflight, ["preflight_hash", "allowed"])');
+    expect(ui).toContain("modal?.preview?.old_value");
+    expect(ui).toContain("modal?.preview?.new_value");
+    expect(ui).toContain("modal?.preview?.impact");
+    expect(ui).not.toMatch(/modal\.preview\?\.(?:old_value|new_value|impact)/);
     expect(ui).not.toContain("VITE_CAMBRA_GIT_SHA");
     expect(ui).not.toContain("meetingPolicy");
     expect(ui).not.toContain("dkim_selectors");

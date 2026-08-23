@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T19:09:59.680Z",
+  "generatedAt": "2026-08-23T20:14:05.379Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "290994b0bcee5e8973df99a9acb4cb2b609511d6aecdf0ac1261a2e4ca32a6fb",
+      "sha256": "55d7309d93c156ddd593db0cfd99fc25b1178f0a0029cc6cc7a1702492889b49",
       "bytes": 43456
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "4810a7f6a86d5c389fac2b933ef30c62d1b1eb90497e88d6ca96105bc8c4b159",
+      "sha256": "01bd63dd7660b23162f215fa308e705f5597ed421c38d5ec48cd88145677e302",
       "bytes": 13672
     },
     {
@@ -2724,8 +2724,8 @@
     },
     {
       "path": "src/docs/CAMBRA_FOUNDER_CONTROL_V2_IMPLEMENTATION_MATRIX.md",
-      "sha256": "606c44d227360f1d625e2b063d5f9544cb2f11c70da05779caa6ed3585d738a8",
-      "bytes": 3447
+      "sha256": "6841b23a81a28e39305aab766ae65f4f4be1613c35288900d1852bfed21cd7c0",
+      "bytes": 3854
     },
     {
       "path": "src/docs/CAMBRA_FOUNDER_HANDBOOK.md",
@@ -3284,8 +3284,8 @@
     },
     {
       "path": "src/lib/founderControlV2.test.js",
-      "sha256": "10068e0412aca5c713daffb099e7010b6bff9db9b5bf4e893d284d761a699be2",
-      "bytes": 12754
+      "sha256": "507322dfaeaa78891aa0161e6299e39c7bbd77d0711afbd1fced3970729579ba",
+      "bytes": 12997
     },
     {
       "path": "src/lib/founderMerchantsV2.test.js",
@@ -3669,8 +3669,8 @@
     },
     {
       "path": "src/lib/remediationR0Artifacts.test.js",
-      "sha256": "f8b9ecfebf39965dc67114be441075dfe5efc1687354315be0645cf987e75103",
-      "bytes": 25657
+      "sha256": "4dfa69fb7f5ca00e3fc9e2889c1233523e1b52339fe0bf8c5f6eb7482fc8da85",
+      "bytes": 25665
     },
     {
       "path": "src/lib/remediationR4Artifacts.test.js",
@@ -3904,8 +3904,8 @@
     },
     {
       "path": "src/pages/admin/AdminFounderControl.jsx",
-      "sha256": "c83e6099726984127241aad057ee1b460a879a252193c953e2d8c32fb9799148",
-      "bytes": 88947
+      "sha256": "1f669687a1962d6ac0fc668fb0d04a8dd7456b75f18a3de97e66a4a51bc20d1f",
+      "bytes": 88953
     },
     {
       "path": "src/pages/admin/AdminGrowth.jsx",
