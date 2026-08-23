@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T16:25:34.551Z",
+  "generatedAt": "2026-08-23T18:12:44.021Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "a671239302e59b6024ca8335b03d33104bbb19b964daaf3b322c3683e6dc200e",
-      "bytes": 7978
+      "sha256": "1773d2285a3308bc66db7fdcc337027f16660e46c69d6291d8f963360a413959",
+      "bytes": 12114
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -1614,8 +1614,8 @@
     },
     {
       "path": "base44/shared/eclOperationalRecovery.ts",
-      "sha256": "64f05086807f59843ef993a88136b1e2e9a0cf173d27fb0521469bfd03e3398b",
-      "bytes": 4590
+      "sha256": "34560764feea9eb8c638d074c1a280f824a76952a76ea51ab909ba49a65eab4e",
+      "bytes": 6881
     },
     {
       "path": "base44/shared/eclPersistence.ts",
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "bbcdef3d9dc269f29634d325c31ed6c9fea7794881e682cc2d59d50a59df2315",
-      "bytes": 7181
+      "sha256": "3eb80f62ec929e7d23efb35b5c3260a8820abf6fd06c2c6266eeade6f0b0d1a3",
+      "bytes": 10013
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
