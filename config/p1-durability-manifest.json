@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-23T18:12:44.021Z",
+  "generatedAt": "2026-08-23T18:14:03.876Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2189,8 +2189,8 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "a59cddb023986d6dbf5dda32acbcac3c86657aa488098687bc1ba0515d4288eb",
-      "bytes": 13671
+      "sha256": "00e54baf6840fd27a5a03bf2ce01a0936f6a7c29052ecad349ab696ea243062c",
+      "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
