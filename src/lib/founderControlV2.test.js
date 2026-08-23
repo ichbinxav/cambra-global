@@ -182,6 +182,12 @@ describe("Founder Control V2 canonical authority projection", () => {
     expect(ui).toContain('context_scope:"FOUNDER_CONTROL"');
     expect(ui).not.toContain("founderControlContext");
     expect(ui).toContain("Confirm with fresh preview");
+    expect(ui).toContain("const requireCanonical = useCallback");
+    expect(ui).toContain('error:"canonical_preview_incomplete"');
+    expect(ui).toContain('["preview.state_fingerprint", "command_key", "confirmation_required"]');
+    expect(ui).toContain('["preflight.preflight_hash", "command_key", "confirmation_required"]');
+    expect(ui).toContain('["preview.preview_hash", "command_key", "confirmation_required"]');
+    expect(ui).toContain('requireCanonical(canaryPreflight, ["preflight_hash", "allowed"])');
     expect(ui).not.toContain("VITE_CAMBRA_GIT_SHA");
     expect(ui).not.toContain("meetingPolicy");
     expect(ui).not.toContain("dkim_selectors");
