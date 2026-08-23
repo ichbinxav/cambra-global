@@ -4,7 +4,8 @@ import {
   P6_ALLOWLIST, P7_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage,
 } from '../../scripts/lib/preEclFreeze.mjs';
 import {
-  P7_WORKERS, buildIncidentRecord, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation, workerFreshness,
+  P7_WORKERS, buildIncidentRecord, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation,
+  schedulerControlRecoveryDecision, workerFreshness,
 } from '../../base44/shared/eclOperationalRecovery.ts';
 
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -14,6 +15,8 @@ const WORKFLOW = read('base44/functions/eclIncidentWorkflow/entry.ts');
 const DLQ = read('base44/functions/processWebhookDeadLetters/entry.ts');
 const DLQ_CFG = JSON.parse(read('base44/functions/processWebhookDeadLetters/function.jsonc'));
 const RECONCILER = read('base44/functions/reconcileRecoverBilling/entry.ts');
+const INSTANTLY_EVENT_RETRY = read('base44/shared/logical/instantlyProviderEventRetryWorker.ts');
+const INSTANTLY_RECONCILIATION = read('base44/shared/logical/instantlyReconciliationWorker.ts');
 const UI = read('src/pages/admin/EclOperations.jsx');
 const APP = read('src/App.jsx');
 const ADMIN = read('src/pages/admin/AdminLayout.jsx');
@@ -64,6 +67,44 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(() => recoveryInvocation('arbitrary_function')).toThrow('unsupported_recovery_action');
   });
 
+  it('only releases a quarantined scheduler control when task evidence proves no effect started', () => {
+    const control = { control_state: 'REVIEW_REQUIRED', active_attempt_id: 'attempt_1' };
+    const attempt = { id: 'attempt_1', run_key: 'run_1' };
+    expect(schedulerControlRecoveryDecision(control, attempt, [], { allowNoTaskProof: true })).toMatchObject({
+      ok: true,
+      action: 'reset_control',
+      reason: 'no_task_created_before_effect',
+    });
+    expect(schedulerControlRecoveryDecision(control, attempt, [])).toMatchObject({
+      ok: false,
+      reason: 'scheduler_no_task_not_proof',
+    });
+    expect(schedulerControlRecoveryDecision(control, attempt, [{
+      id: 'task_1',
+      parent_run: 'run_1',
+      execution_effects_started: false,
+      effect_state: 'NOT_STARTED',
+      effect_refs_json: [],
+      receipt_refs_json: [],
+    }])).toMatchObject({ ok: true, reason: 'task_proves_no_effect_started', taskId: 'task_1' });
+    expect(schedulerControlRecoveryDecision(control, attempt, [{
+      id: 'task_1',
+      parent_run: 'run_1',
+      execution_effects_started: true,
+      effect_state: 'EXECUTED',
+      effect_refs_json: [{ id: 'effect_1' }],
+      receipt_refs_json: [],
+    }])).toMatchObject({ ok: false, reason: 'scheduler_effect_nonoccurrence_unproven' });
+    expect(schedulerControlRecoveryDecision(control, attempt, [{
+      id: 'task_1',
+      parent_run: 'run_1',
+      execution_effects_started: false,
+      effect_state: 'NOT_STARTED',
+      effect_refs_json: { unexpected: 'shape' },
+      receipt_refs_json: [],
+    }])).toMatchObject({ ok: false, reason: 'scheduler_effect_nonoccurrence_unproven' });
+  });
+
   it('health uses authoritative reads, never invokes recovery, and reopens a manually-cleared live signal', () => {
     expect(HEALTH).toContain("Promise.all([");
     expect(HEALTH).not.toMatch(/entities\.(StatementImport|SavingsEvidence|Invoice|WebhookDeadLetter|ReviewCase)\.(filter|list)\([^\n]+\)\.catch\(\(\) => \[\]\)/);
@@ -87,6 +128,20 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain('recoveryInvocation(incident.recovery_action');
     expect(WORKFLOW).not.toMatch(/body\.(functionName|function_name)/);
     expect(WORKFLOW).toContain("manual_inspection_required");
+    expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
+    expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
+    expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
+    expect(WORKFLOW).toContain("control_state: 'IDLE'");
+  });
+
+  it('preserves the request body for hosted worker authentication and scheduler identity', () => {
+    for (const source of [INSTANTLY_EVENT_RETRY, INSTANTLY_RECONCILIATION]) {
+      expect(source).toContain('await req.clone().json().catch(()=>({}))');
+      expect(source).not.toContain('await req.json().catch(()=>({}))');
+      expect(source.indexOf('req.clone().json')).toBeLessThan(source.indexOf('claimSchedulerRun'));
+    }
+    expect(DLQ.indexOf('createCanonicalAgentTask')).toBeLessThan(DLQ.indexOf('let pending'));
+    expect(RECONCILER.indexOf('createCanonicalAgentTask')).toBeLessThan(RECONCILER.indexOf('svc.entities.Invoice.filter'));
   });
 
   it('versions the DLQ scheduler and makes exhausted replay explicit admin-only', () => {
