@@ -1,4 +1,3 @@
-import { safeBestEffort } from '../../shared/bestEffort.ts';
 // getMyPaymentsHistory — server-side, RLS-independent history feed for /Results.
 //
 // SECURITY INVARIANT (non-negotiable, Xavi 2026-07-13):
@@ -18,15 +17,17 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // scoreEngine rows with details_shape=null, correctly excluded by the shape
 // filter below). No owner_email denormalization needed — it would be dead work.
 //
-// Returns a MINIMAL projection — the list needs date, PSP, country, the point
-// figure + range, and the session id to deep-link into the full report. It
-// does NOT ship the full engine_result (that's read on the detail page).
+// List mode returns a MINIMAL projection — date, PSP, country, currency and
+// savings. Detail mode accepts an owned result id and returns the engine payload
+// only after the tenant-scoped query and a second ownership check.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 
 function normalizeEmail(email) {
   if (typeof email !== 'string') return '';
   return email.trim().toLowerCase();
 }
+
+const OBJECT_ID = /^[0-9a-f]{24}$/i;
 
 Deno.serve(async (req) => {
   try {
@@ -43,6 +44,35 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const email = normalizeEmail(user.email);
+    const body = await req.json().catch(() => ({}));
+    const result_id = typeof body?.result_id === 'string' ? body.result_id.trim() : '';
+
+    // Detail reads use the same endpoint so history cards remain useful after
+    // the anonymous session id is cleared during claim. The service-role query
+    // is tenant-scoped before the row is read, then ownership is checked again
+    // before any engine payload is returned.
+    if (result_id) {
+      if (!OBJECT_ID.test(result_id)) {
+        return Response.json({ error: 'invalid_result_id' }, { status: 400 });
+      }
+      const detailRows = await base44.asServiceRole.entities.AnalyzerResult
+        .filter({ id: result_id, created_by: user.email }, '-created_date', 2);
+      const row = (Array.isArray(detailRows) ? detailRows : []).find(
+        (candidate) =>
+          candidate?.id === result_id &&
+          normalizeEmail(candidate?.created_by) === email
+      );
+      if (!row || !row?.details?.engine_result) {
+        return Response.json({ error: 'not_found' }, { status: 404 });
+      }
+      return Response.json({
+        ok: true,
+        engine_result: row.details.engine_result,
+        engine_version: row.details?.engine_version || row.savings_model_version || null,
+        input_snapshot: row.details?.input_snapshot || null,
+        owned: true,
+      });
+    }
 
     // EXPLICIT server-side filter — created_by scoped to the caller ONLY.
     // asServiceRole is used so the read does not depend on implicit RLS; the
@@ -57,8 +87,7 @@ Deno.serve(async (req) => {
     // created_by server-side and do the shape/engine_result check in JS below,
     // the same robust pattern PaymentsResults already uses.
     const rows = await base44.asServiceRole.entities.AnalyzerResult
-      .filter({ created_by: user.email }, '-created_date', 100)
-      .catch((error:any)=>safeBestEffort(error,{operation:'getMyPaymentsHistory',fallback:[],severity:'secondary'}));
+      .filter({ created_by: user.email }, '-created_date', 100);
 
     // Defense-in-depth + shape gate, all in JS (no dependence on nested-path
     // filtering):
@@ -80,6 +109,7 @@ Deno.serve(async (req) => {
       savings_range: r.details?.savings_range || null,
       provider_slug: r.details?.input_snapshot?.provider_slug || null,
       country: r.details?.input_snapshot?.country || null,
+      currency: r.currency || r.details?.input_snapshot?.currency || 'EUR',
     }));
 
     return Response.json({ ok: true, items });

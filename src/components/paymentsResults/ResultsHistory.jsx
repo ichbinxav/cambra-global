@@ -10,16 +10,57 @@ import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2, History, Plus } from "lucide-react";
+import { useTranslation } from "@/lib/i18n.jsx";
 
-function fmtEUR(n) {
-  if (typeof n !== "number" || !isFinite(n)) return "—";
-  return `€${Math.round(n).toLocaleString("en-US")}`;
-}
+const HISTORY_COPY = {
+  en: {
+    estimate: "Estimate",
+    annualGap: "Annual gap",
+    openReport: "Open report",
+    otherProvider: "Other provider",
+    eyebrow: "Your analyses",
+    title: "Payments audit history",
+    newAnalysis: "New analysis",
+    loading: "Loading your history...",
+    error: "We couldn't load your history right now. Please try again in a moment.",
+    emptyTitle: "No analyses yet",
+    emptyMessage: "Run your first payments audit. It takes about two minutes.",
+    runAnalysis: "Run your analysis",
+  },
+  fr: {
+    estimate: "Estimation",
+    annualGap: "Écart annuel",
+    openReport: "Ouvrir le rapport",
+    otherProvider: "Autre prestataire",
+    eyebrow: "Vos analyses",
+    title: "Historique des audits de paiement",
+    newAnalysis: "Nouvelle analyse",
+    loading: "Chargement de votre historique...",
+    error: "Impossible de charger votre historique pour le moment. Réessayez dans un instant.",
+    emptyTitle: "Aucune analyse pour le moment",
+    emptyMessage: "Lancez votre premier audit de paiement. Cela prend environ deux minutes.",
+    runAnalysis: "Lancer votre analyse",
+  },
+  es: {
+    estimate: "Estimación",
+    annualGap: "Brecha anual",
+    openReport: "Abrir informe",
+    otherProvider: "Otro proveedor",
+    eyebrow: "Tus análisis",
+    title: "Historial de auditorías de pagos",
+    newAnalysis: "Nuevo análisis",
+    loading: "Cargando tu historial...",
+    error: "No hemos podido cargar tu historial ahora. Inténtalo de nuevo en unos instantes.",
+    emptyTitle: "Aún no hay análisis",
+    emptyMessage: "Ejecuta tu primera auditoría de pagos. Tarda unos dos minutos.",
+    runAnalysis: "Ejecutar tu análisis",
+  },
+};
 
-function fmtDate(iso) {
+function fmtDate(iso, locale) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+    return new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
   } catch {
     return "";
   }
@@ -34,15 +75,20 @@ const PROVIDER_LABELS = {
   stripe_terminal: "Stripe Terminal", smile_and_pay: "Smile & Pay", yavin: "Yavin",
   other: "Other provider",
 };
-function providerLabel(slug) {
+function providerLabel(slug, otherProvider) {
   if (!slug) return "—";
+  if (slug === "other") return otherProvider;
   if (PROVIDER_LABELS[slug]) return PROVIDER_LABELS[slug];
   return String(slug).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function HistoryCard({ item, onOpen }) {
+function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
   const range = item.savings_range;
   const point = range?.point ?? item.total_savings;
+  const currency = item.currency || "EUR";
+  const money = (value) => typeof value === "number" && isFinite(value)
+    ? formatCurrency(Math.round(value), currency)
+    : "—";
   return (
     <button
       onClick={() => onOpen(item)}
@@ -52,20 +98,20 @@ function HistoryCard({ item, onOpen }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[15px] font-bold text-white truncate">{providerLabel(item.provider_slug)}</span>
+            <span className="text-[15px] font-bold text-white truncate">{providerLabel(item.provider_slug, copy.otherProvider)}</span>
             <span
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full shrink-0"
               style={{ background: "rgba(34,211,238,0.12)", color: "rgba(34,211,238,0.95)", border: "1px solid rgba(34,211,238,0.25)" }}
             >
-              Estimate
+              {copy.estimate}
             </span>
           </div>
           <p className="text-[11px] text-white/40">
-            {fmtDate(item.created_date)}{item.country ? ` · ${item.country}` : ""}
+            {fmtDate(item.created_date, locale)}{item.country ? ` · ${item.country}` : ""}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[10px] uppercase tracking-[0.14em] font-bold text-white/40 mb-0.5">Annual gap</p>
+          <p className="text-[10px] uppercase tracking-[0.14em] font-bold text-white/40 mb-0.5">{copy.annualGap}</p>
           <p
             className="text-[20px] font-black tabular-nums leading-none"
             style={{
@@ -73,17 +119,17 @@ function HistoryCard({ item, onOpen }) {
               WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
             }}
           >
-            {fmtEUR(point)}
+            {money(point)}
           </p>
           {range && (range.lo !== range.hi) && (
             <p className="text-[10px] text-white/35 tabular-nums mt-0.5">
-              {fmtEUR(range.lo)}–{fmtEUR(range.hi)}
+              {money(range.lo)}–{money(range.hi)}
             </p>
           )}
         </div>
       </div>
       <div className="mt-3 flex items-center gap-1 text-[11px] text-cyan-300/70 group-hover:text-cyan-300 transition-colors">
-        Open report <ArrowRight size={11} />
+        {copy.openReport} <ArrowRight size={11} />
       </div>
     </button>
   );
@@ -91,6 +137,8 @@ function HistoryCard({ item, onOpen }) {
 
 export default function ResultsHistory() {
   const navigate = useNavigate();
+  const { lang, locale, formatCurrency } = useTranslation();
+  const copy = HISTORY_COPY[lang] || HISTORY_COPY.en;
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [items, setItems] = useState([]);
 
@@ -112,8 +160,8 @@ export default function ResultsHistory() {
   }, []);
 
   const openReport = (item) => {
-    if (item.anon_session_id) {
-      navigate(`/Results?session=${encodeURIComponent(item.anon_session_id)}`);
+    if (item.id) {
+      navigate(`/Results?result=${encodeURIComponent(item.id)}`);
     }
   };
 
@@ -125,13 +173,13 @@ export default function ResultsHistory() {
             style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
           >
             <History size={11} className="text-cyan-300" />
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">Your analyses</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">{copy.eyebrow}</span>
           </div>
           <h1
             className="text-white"
             style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 900, letterSpacing: "-0.03em" }}
           >
-            Payments audit history
+            {copy.title}
           </h1>
         </div>
         <Button
@@ -139,13 +187,13 @@ export default function ResultsHistory() {
           className="h-10 rounded-full px-5 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
           style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)", boxShadow: "0 0 24px rgba(34,211,238,0.3)" }}
         >
-          <Plus className="h-4 w-4" /> New analysis
+          <Plus className="h-4 w-4" /> {copy.newAnalysis}
         </Button>
       </div>
 
       {status === "loading" && (
         <div className="flex items-center gap-2 text-white/50 text-sm py-10 justify-center">
-          <Loader2 size={16} className="animate-spin text-cyan-300" /> Loading your history…
+          <Loader2 size={16} className="animate-spin text-cyan-300" /> {copy.loading}
         </div>
       )}
 
@@ -153,7 +201,7 @@ export default function ResultsHistory() {
         <div className="rounded-2xl p-6 text-center text-[13px] text-white/55"
           style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
         >
-          We couldn't load your history right now. Please try again in a moment.
+          {copy.error}
         </div>
       )}
 
@@ -161,14 +209,14 @@ export default function ResultsHistory() {
         <div className="rounded-2xl p-8 text-center"
           style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
         >
-          <p className="text-white font-bold text-[16px] mb-1.5">No analyses yet</p>
-          <p className="text-[13px] text-white/55 mb-5">Run your first payments audit — it takes about two minutes.</p>
+          <p className="text-white font-bold text-[16px] mb-1.5">{copy.emptyTitle}</p>
+          <p className="text-[13px] text-white/55 mb-5">{copy.emptyMessage}</p>
           <Button
             onClick={() => navigate("/Analyzer")}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
             style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}
           >
-            Run your analysis <ArrowRight className="h-4 w-4" />
+            {copy.runAnalysis} <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       )}
@@ -176,7 +224,14 @@ export default function ResultsHistory() {
       {status === "ready" && items.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((item) => (
-            <HistoryCard key={item.id} item={item} onOpen={openReport} />
+            <HistoryCard
+              key={item.id}
+              item={item}
+              onOpen={openReport}
+              copy={copy}
+              locale={locale}
+              formatCurrency={formatCurrency}
+            />
           ))}
         </div>
       )}
