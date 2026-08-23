@@ -7,7 +7,7 @@ import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarte
 import { processInstantlyProviderEvent } from '../outboundProviderEventProcessing.ts';
 
 export async function handleInstantlyProviderEventRetryWorker(req:Request){let svc:any=null,claim:any=null,success=true;try{
-  const base44=createClientFromRequest(req);const body=await req.json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;svc=base44.asServiceRole;
+  const base44=createClientFromRequest(req);const body=await req.clone().json().catch(()=>({}));const gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;svc=base44.asServiceRole;
   claim=await claimSchedulerRun(svc,req,{worker_key:'instantlyProviderEventRetryWorker',cadence_seconds:300});{const denied=schedulerClaimDeniedResponse(claim);if(denied)return denied;}claim=await markSchedulerEffectStarted(svc,claim);{const denied=schedulerClaimDeniedResponse(claim);if(denied)return denied;}
   const due=await svc.entities.OutboundProviderEvent.filter({provider:'instantly',status:'PENDING_RETRY',next_retry_at:{$lte:new Date().toISOString()}},'next_retry_at',50).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderEventRetryWorker',fallback:[],severity:'secondary'}));
   const results=[];for(const row of due)results.push(await processInstantlyProviderEvent(svc,row.raw_event_json,row));
