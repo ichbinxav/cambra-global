@@ -628,7 +628,7 @@ describe("R0 artifact drift and tamper checks", () => {
     expect(serializeArtifact(material)).toBe(
       serializeArtifact(buildMaterialBoundaryRegistry(REPO_ROOT)),
     );
-  });
+  }, LIVE_INVENTORY_TEST_TIMEOUT_MS);
 
   it(
     "detects a one-byte corpus tamper through the physical SHA binding",
