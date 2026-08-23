@@ -1467,16 +1467,6 @@ function exactEnvelopeValue(left: unknown, right: unknown) {
   }
 }
 
-function hasTerminalEventOutboxState(field: string, value: unknown) {
-  if (value === undefined || value === null) return false;
-  // Base44 materializes an unset array field as []. That empty default is not
-  // a persisted outbox claim; non-empty conflict IDs still fail closed.
-  if (field === "terminal_event_conflicting_ids_json" && Array.isArray(value)) {
-    return value.length > 0;
-  }
-  return true;
-}
-
 function terminalSettlementFence(task: any, revision: number) {
   const filter: Record<string, unknown> = { id: task.id };
   for (
@@ -1532,7 +1522,7 @@ export async function settleCanonicalAgentTask(
   }
   if (
     TERMINAL_EVENT_OUTBOX_FIELDS.some((field) =>
-      hasTerminalEventOutboxState(field, task[field])
+      task[field] !== undefined && task[field] !== null
     )
   ) throw new Error("agent_task_terminal_event_outbox_preexisting");
   if (

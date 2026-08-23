@@ -3,70 +3,12 @@ import { motion } from "framer-motion";
 import { TrendingUp, Gauge, Sparkles } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-const KPI_COPY = {
-  en: {
-    verified: "Verified",
-    provisional: "Provisional",
-    modelled: "Modelled",
-    eligible: "Eligible",
-    notStarted: "Not started",
-    latestOpportunity: "Latest opportunity",
-    annualSavings: "Annualized payment savings",
-    runScan: "Run an analysis",
-    cumulative: "Cumulative identified",
-    scan: "analysis",
-    scans: "analyses",
-    dataQuality: "Data quality",
-    latestAnalysis: "Latest analysis",
-    recovery: "Recovery",
-    verifiedSavings: "Verified savings",
-    verifyToActivate: "Verify to activate",
-  },
-  fr: {
-    verified: "Vérifié",
-    provisional: "Provisoire",
-    modelled: "Modélisé",
-    eligible: "Éligible",
-    notStarted: "Non démarré",
-    latestOpportunity: "Dernière opportunité",
-    annualSavings: "Économies de paiement annualisées",
-    runScan: "Lancer une analyse",
-    cumulative: "Total identifié",
-    scan: "analyse",
-    scans: "analyses",
-    dataQuality: "Qualité des données",
-    latestAnalysis: "Dernière analyse",
-    recovery: "Récupération",
-    verifiedSavings: "Économies vérifiées",
-    verifyToActivate: "Vérifier pour activer",
-  },
-  es: {
-    verified: "Verificado",
-    provisional: "Provisional",
-    modelled: "Modelado",
-    eligible: "Elegible",
-    notStarted: "Sin iniciar",
-    latestOpportunity: "Última oportunidad",
-    annualSavings: "Ahorro anualizado en pagos",
-    runScan: "Ejecutar un análisis",
-    cumulative: "Total identificado",
-    scan: "análisis",
-    scans: "análisis",
-    dataQuality: "Calidad de datos",
-    latestAnalysis: "Último análisis",
-    recovery: "Recuperación",
-    verifiedSavings: "Ahorro verificado",
-    verifyToActivate: "Verifica para activar",
-  },
-};
-
 /**
  * KPI strip for Reports — 4 dense premium cells.
  * Aggregates totals from the analyzer results list.
  */
 export default function ReportsKPIStrip({ results }) {
-  const { lang, locale, formatCurrency } = useTranslation();
-  const copy = KPI_COPY[lang] || KPI_COPY.en;
+  const { locale, formatCurrency } = useTranslation();
   const latest = results[0];
   const totalSavings = results.reduce((acc, r) => acc + (r.total_savings || 0), 0);
   // FX-2 Fase C — compact currency in the currency of the newest result
@@ -87,43 +29,43 @@ export default function ReportsKPIStrip({ results }) {
   const dataQualityLabel = !latest
     ? "—"
     : latest.verification_status === "verified"
-      ? copy.verified
+      ? "Verified"
       : latest.verification_status === "pending_verification"
-        ? copy.provisional
-        : copy.modelled;
+        ? "Provisional"
+        : "Modelled";
 
   const recoveryLabel = !latest
     ? "—"
     : latest.verification_status === "verified"
-      ? copy.eligible
-      : copy.notStarted;
+      ? "Eligible"
+      : "Not started";
 
   const items = [
     {
-      label: copy.latestOpportunity,
+      label: "Latest opportunity",
       value: latest ? compact(latest.total_savings || 0) : "—",
-      hint: latest ? copy.annualSavings : copy.runScan,
+      hint: latest ? "Annualized payment savings" : "Run a scan",
       Icon: Sparkles,
       accent: "from-[#5B4CF5] to-[#39C6F0]",
     },
     {
-      label: copy.cumulative,
+      label: "Cumulative identified",
       value: compact(totalSavings),
-      hint: `${results.length} ${results.length === 1 ? copy.scan : copy.scans}`,
+      hint: `${results.length} scan${results.length === 1 ? "" : "s"}`,
       Icon: TrendingUp,
       accent: "from-[#39C6F0] to-[#2FE0A8]",
     },
     {
-      label: copy.dataQuality,
+      label: "Data quality",
       value: dataQualityLabel,
-      hint: latest ? copy.latestAnalysis : copy.runScan,
+      hint: latest ? "Latest analysis" : "Run a scan",
       Icon: Gauge,
       accent: "from-[#8B7BFF] to-[#5B4CF5]",
     },
     {
-      label: copy.recovery,
+      label: "Recovery",
       value: recoveryLabel,
-      hint: latest?.verification_status === "verified" ? copy.verifiedSavings : copy.verifyToActivate,
+      hint: latest?.verification_status === "verified" ? "Verified savings" : "Verify to activate",
       Icon: Sparkles,
       accent: "from-[#2FE0A8] to-[#39C6F0]",
     },
