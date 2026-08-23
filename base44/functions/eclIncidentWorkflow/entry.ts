@@ -3,13 +3,112 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only incident queue and bounded recovery. Recovery actions are mapped
 // by the pure P7 contract; arbitrary function names/payloads are never accepted.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES } from '../../shared/eclOperationalRecovery.ts';
+import { recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES, schedulerControlRecoveryDecision } from '../../shared/eclOperationalRecovery.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const LIST_MAX = 200;
 
 function updatedExactlyOne(result: any) {
   return Boolean(result && (result.updated === 1 || result.modified_count === 1 || result.matched_count === 1));
+}
+
+const RECOVERY_WORKER_KEYS: Record<string, string> = Object.freeze({
+  eclLifecycleScheduler: 'eclLifecycleScheduler',
+  reconcileRecoverBilling: 'reconcileRecoverBilling',
+  processWebhookDeadLetters: 'processWebhookDeadLetters',
+});
+
+const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
+  'reconcileRecoverBilling',
+  'processWebhookDeadLetters',
+]);
+
+async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
+  const rows = await entity.filter(query, '-created_date', 2);
+  if (!Array.isArray(rows)) throw new Error(`${operation}_unavailable`);
+  if (rows.length > 1) throw new Error(`${operation}_ambiguous`);
+  return rows;
+}
+
+async function reconcileSchedulerControlBeforeRecovery(svc: any, functionName: string, actor: string) {
+  const workerKey = RECOVERY_WORKER_KEYS[functionName];
+  if (!workerKey) return { ok: true, action: 'not_required', reason: 'non_scheduler_recovery' };
+  const controlKey = `scheduler-control:${workerKey}`;
+  const [control] = await exactRows(
+    svc.entities.SchedulerRun,
+    { record_kind: 'CONTROL', control_key: controlKey },
+    'scheduler_recovery_control_read',
+  );
+  let attempt: any = null;
+  let tasks: any[] = [];
+  if (control?.active_attempt_id) {
+    [attempt] = await exactRows(
+      svc.entities.SchedulerRun,
+      { id: control.active_attempt_id, record_kind: 'ATTEMPT' },
+      'scheduler_recovery_attempt_read',
+    );
+    if (attempt?.run_key) {
+      tasks = await svc.entities.AgentTask.filter({ parent_run: attempt.run_key }, '-created_date', 2);
+      if (!Array.isArray(tasks)) throw new Error('scheduler_recovery_task_read_unavailable');
+    }
+  }
+  const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
+    allowNoTaskProof: NO_TASK_PRE_EFFECT_PROOF_WORKERS.has(functionName),
+  });
+  if (!decision.ok) throw new Error(`scheduler_recovery_blocked:${decision.reason}`);
+  if (decision.action !== 'reset_control') return decision;
+
+  const now = new Date().toISOString();
+  const task = decision.taskId ? tasks.find((row) => row.id === decision.taskId) : null;
+  if (task?.status === 'running') {
+    const taskUpdate = await svc.entities.AgentTask.updateMany({
+      id: task.id,
+      status: 'running',
+      parent_run: attempt.run_key,
+      effect_state: task.effect_state,
+    }, { $set: {
+      status: 'failed',
+      terminal_state: 'FAILED',
+      effect_state: 'FAILED_PRE_EFFECT',
+      ambiguity_state: 'NONE',
+      error: 'scheduler_control_reconciled_pre_effect',
+      output_summary: 'Reconciled as failed before effects; no effect or receipt reference was observed.',
+      completed_at: now,
+    } });
+    if (!updatedExactlyOne(taskUpdate)) throw new Error('scheduler_recovery_task_changed_concurrently');
+  }
+
+  const controlUpdate = await svc.entities.SchedulerRun.updateMany({
+    id: control.id,
+    record_kind: 'CONTROL',
+    control_key: controlKey,
+    control_state: 'REVIEW_REQUIRED',
+    control_revision: Number(control.control_revision || 0),
+    active_attempt_id: String(control.active_attempt_id || ''),
+  }, { $set: {
+    control_state: 'IDLE',
+    control_revision: Number(control.control_revision || 0) + 1,
+    control_token: '',
+    control_owner: '',
+    control_claimed_at: '',
+    control_expires_at: '',
+    control_effects_started: false,
+    active_attempt_id: '',
+    active_run_key: '',
+    active_operation_key: '',
+    active_effect_key: '',
+    details_json: {
+      ...(control.details_json || {}),
+      reason: 'admin_reconciled_pre_effect',
+      reconciled_at: now,
+      reconciled_by: actor,
+      reconciliation_proof: decision.reason,
+      reconciled_attempt_id: attempt.id,
+      reconciled_task_id: decision.taskId || null,
+    },
+  } });
+  if (!updatedExactlyOne(controlUpdate)) throw new Error('scheduler_recovery_control_changed_concurrently');
+  return { ...decision, workerKey, controlId: control.id, attemptId: attempt.id, reconciledAt: now };
 }
 
 function project(row: any) {
@@ -81,11 +180,12 @@ export default async function (req: Request): Promise<Response> {
     if (!updatedExactlyOne(claim)) return Response.json({ ok: false, error: 'incident_recovery_already_claimed' }, { status: 409 });
 
     try {
+      const schedulerRecovery = await reconcileSchedulerControlBeforeRecovery(svc, invocation.functionName, user.email || user.id || 'admin');
       const response = await base44.asServiceRole.functions.invoke(invocation.functionName, invocation.payload);
       const result = response?.data || response;
       if (!result || result.ok === false || result.error) throw new Error(String(result?.message || result?.error || 'recovery_worker_failed'));
       await svc.entities.OperationalIncident.updateMany({ id: incident.id, status: 'recovering' }, { $set: { status: 'acknowledged', acknowledged_at: incident.acknowledged_at || now, acknowledged_by: incident.acknowledged_by || user.email, last_recovery_at: new Date().toISOString(), last_recovery_by: user.email, recovery_attempts: Number(incident.recovery_attempts || 0) + 1, last_recovery_error: '' } });
-      return Response.json({ ok: true, action: 'recover', incidentId: incident.id, status: 'acknowledged', recoveryAction: incident.recovery_action, worker: invocation.functionName, result });
+      return Response.json({ ok: true, action: 'recover', incidentId: incident.id, status: 'acknowledged', recoveryAction: incident.recovery_action, worker: invocation.functionName, schedulerRecovery, result });
     } catch (error) {
       const message = String((error as Error)?.message || error || 'recovery_failed').slice(0, 500);
       await svc.entities.OperationalIncident.updateMany({ id: incident.id, status: 'recovering' }, { $set: { status: 'acknowledged', acknowledged_at: incident.acknowledged_at || now, acknowledged_by: incident.acknowledged_by || user.email, last_recovery_at: new Date().toISOString(), last_recovery_by: user.email, recovery_attempts: Number(incident.recovery_attempts || 0) + 1, last_recovery_error: message } }).catch((error:any)=>safeBestEffort(error,{operation:'eclIncidentWorkflow',fallback:null,severity:'secondary'}));
