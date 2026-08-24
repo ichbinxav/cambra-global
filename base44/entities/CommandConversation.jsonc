@@ -1,41 +1,119 @@
 {
   "name": "CommandConversation",
   "type": "object",
-  "description": "Durable CAMBRA Command conversation. Replaces the client-generated sessionStorage identifier the legacy admin chat used, so conversations can be listed, resumed on another device, branched, pinned and audited. Memory belongs to CAMBRA, not to any model provider. Note on required fields: created_by is deliberately not required, because a conversation migrated from the legacy admin chat genuinely has no author (ChatMessage never declared one). attribution_state is required instead, so every row states how well its authorship is supported; a row claiming OBSERVED with no created_by is then detectably wrong, which a required-but-blank created_by would not be.",
+  "description": "Durable CAMBRA Command conversation. Replaces the client-generated sessionStorage identifier the legacy admin chat used, so conversations can be listed, resumed on another device, branched, pinned and audited. Memory belongs to CAMBRA, not to any model provider. Base44 reserves created_by and overwrites it on service-role writes, so owner_actor is the explicit access-scope key and attributed_actor carries supported authorship. Legacy rows may legitimately have neither actor when their source messages do not prove one; attribution_state records that uncertainty instead of inventing provenance.",
   "properties": {
-    "conversation_id": { "type": "string" },
-    "title": { "type": "string" },
-    "created_by": { "type": "string" },
-    "project": { "type": "string" },
+    "conversation_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "owner_actor": {
+      "type": "string",
+      "description": "Authenticated actor that owns this conversation. Never use Base44's system-managed created_by for this scope: asServiceRole writes replace it with the service identity."
+    },
+    "attributed_actor": {
+      "type": "string",
+      "description": "Actor supported by the source evidence as the conversation author. May be blank for unattributed legacy history and must not be filled from the migration operator."
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Base44 system-managed creator metadata. It is not an application ownership or authorship field."
+    },
+    "project": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
-      "enum": ["ACTIVE", "PINNED", "ARCHIVED"],
+      "enum": [
+        "ACTIVE",
+        "PINNED",
+        "ARCHIVED"
+      ],
       "default": "ACTIVE"
     },
-    "branched_from_conversation_id": { "type": "string" },
-    "branched_from_message_id": { "type": "string" },
-    "legacy_session_key": { "type": "string", "description": "The old sessionStorage identifier, kept so historical ChatMessage rows can be attached without inventing a link. Also the idempotency key for the migration: a key already claimed is never migrated twice." },
+    "branched_from_conversation_id": {
+      "type": "string"
+    },
+    "branched_from_message_id": {
+      "type": "string"
+    },
+    "legacy_session_key": {
+      "type": "string",
+      "description": "The old sessionStorage identifier, kept so historical ChatMessage rows can be attached without inventing a link. Also the idempotency key for the migration: a key already claimed is never migrated twice."
+    },
     "attribution_state": {
       "type": "string",
-      "enum": ["OBSERVED", "UNKNOWN", "CONFLICTED"],
+      "enum": [
+        "OBSERVED",
+        "UNKNOWN",
+        "CONFLICTED"
+      ],
       "default": "OBSERVED",
-      "description": "How well created_by is supported. Legacy ChatMessage declared no author field, so a migrated conversation is UNKNOWN unless the platform created_by was present, and CONFLICTED when the legacy rows disagree. Never silently attributed to whoever ran the migration."
+      "description": "How well attributed_actor is supported. Legacy ChatMessage declared no author field, so a migrated conversation is UNKNOWN unless source rows identify one, and CONFLICTED when those rows disagree. Never silently attributed to whoever ran the migration."
     },
-    "migrated_from": { "type": "string", "enum": ["legacy_admin_chat"], "description": "Present only on migrated conversations; its absence means the conversation was born in Command." },
-    "migrated_at": { "type": "string", "format": "date-time" },
-    "message_count": { "type": "number", "minimum": 0, "default": 0 },
-    "last_run_id": { "type": "string" },
-    "receipt_chain_key": { "type": "string" },
-    "last_receipt_hash": { "type": "string" },
-    "memory_snapshot_hash": { "type": "string", "description": "Non-authoritative compaction. A snapshot can never override a live canonical read." },
-    "tenant_scope": { "type": "string" },
-    "last_message_at": { "type": "string", "format": "date-time" },
-    "created_at": { "type": "string", "format": "date-time" },
-    "updated_at": { "type": "string", "format": "date-time" }
+    "migrated_from": {
+      "type": "string",
+      "enum": [
+        "legacy_admin_chat"
+      ],
+      "description": "Present only on migrated conversations; its absence means the conversation was born in Command."
+    },
+    "migrated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "message_count": {
+      "type": "number",
+      "minimum": 0,
+      "default": 0
+    },
+    "last_run_id": {
+      "type": "string"
+    },
+    "receipt_chain_key": {
+      "type": "string"
+    },
+    "last_receipt_hash": {
+      "type": "string"
+    },
+    "memory_snapshot_hash": {
+      "type": "string",
+      "description": "Non-authoritative compaction. A snapshot can never override a live canonical read."
+    },
+    "tenant_scope": {
+      "type": "string"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
   },
-  "required": ["conversation_id", "attribution_state", "status", "created_at"],
+  "required": [
+    "conversation_id",
+    "attribution_state",
+    "status",
+    "created_at"
+  ],
   "rls": {
-    "read": { "user_condition": { "role": "admin" } },
-    "write": { "user_condition": { "role": "__service_role_only__" } }
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "__service_role_only__"
+      }
+    }
   }
 }
