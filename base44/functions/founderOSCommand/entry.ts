@@ -24,6 +24,7 @@ import {
   assertFreshApprovalConfirmationNonce,
   installApprovalConfirmationPreview,
 } from "../../shared/approvalResolutionSaga.ts";
+import { inspectCommandFunctionResponse } from "../../shared/commandFunctionResult.ts";
 
 type ApprovalResolutionMode =
   | "commercial"
@@ -2173,7 +2174,7 @@ Deno.serve(async (req) => {
     if (action === "run_system_health" || action === "investigate_developer") {
       const fn =
         action === "run_system_health"
-          ? "systemHealthAgent"
+          ? "getMaintenanceCenter"
           : "developerSignalWorker";
       const response = await base44.functions.invoke(
         fn,
@@ -2181,7 +2182,11 @@ Deno.serve(async (req) => {
           ? { incident_id: body.incident_id || undefined }
           : {},
       );
-      const result = response?.data || response;
+      const inspected = inspectCommandFunctionResponse(response, action === "run_system_health" ? "system_health_check" : "investigate_developer");
+      if (!inspected.ok) {
+        return Response.json({ ok: false, error: inspected.error || "governed_command_failed" }, { status: 502 });
+      }
+      const result = inspected.data;
       return persistExecution(svc, user, body, {
         command_key: commandKey || newKey(),
         action,
