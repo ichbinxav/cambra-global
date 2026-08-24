@@ -25,7 +25,7 @@ import { handleIntelligenceAdminAction } from '../../shared/intelligenceAdminCor
 import { handleIntegrationAdminAction } from '../../shared/integrationAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
-// deploy-marker: 2026-08-24 — refresh the preview/runtime build after verified
+// deploy-marker: 2026-08-24-preview-refresh — refresh the preview/runtime build after verified
 // source sync left command_conversation_* routing stale in the executable.
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
