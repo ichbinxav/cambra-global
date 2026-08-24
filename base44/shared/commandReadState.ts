@@ -1,6 +1,3 @@
-/Users/xavimartinezcontero/.zprofile:1: no such file or directory: /opt/homebrew/bin/brew
-/Users/xavimartinezcontero/.zprofile:2: no such file or directory: /opt/homebrew/bin/brew
-/Users/xavimartinezcontero/.zprofile:3: no such file or directory: /opt/homebrew/bin/brew
 // One allowlisted projection for both interactive Command chat and durable runs.
 // Raw entity rows never enter model context.
 
