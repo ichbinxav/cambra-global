@@ -10,6 +10,12 @@ import { CHAT_TOOLS, READ_ENTITIES } from '../../shared/commandToolCatalog.ts';
 // executeToolWithGates below, so every existing gate still applies unchanged.
 import { buildToolRegistry } from '../../shared/commandToolRegistry.ts';
 import { runCommandLoop } from '../../shared/commandToolLoop.ts';
+import {
+  commandActorKey,
+  resolveCommandConversationAccess,
+  syncCommandConversationMetadata,
+} from '../../shared/commandConversationRuntime.ts';
+// deploy-marker: 2026-08-24-command-owner-runtime
 
 // ════════════════════════════════════════════════════════════════════
 // Chief Orchestrator Chat
@@ -162,6 +168,8 @@ async function callClaude(svc, messages, tools, eventKey) {
 }
 
 Deno.serve(async (req) => {
+  let conversationForSync: any = null;
+  let serviceForSync: any = null;
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
@@ -180,6 +188,17 @@ Deno.serve(async (req) => {
 
     if (!conversation_id) return Response.json({ ok: false, error: "conversation_id required" }, { status: 400 });
     if (!message && !pending_tool) return Response.json({ ok: false, error: "message required" }, { status: 400 });
+
+    const service = base44.asServiceRole;
+    serviceForSync = service;
+    const conversationRows = await service.entities.CommandConversation
+      .filter({ conversation_id }, '-created_at', 2)
+      .catch((error: any) => safeBestEffort(error, {
+        operation: 'chatChiefOrchestrator:conversation_access', fallback: null, severity: 'critical',
+      }));
+    const access = resolveCommandConversationAccess(conversationRows, commandActorKey(user));
+    if (!access.ok) return Response.json({ ok: false, error: access.error }, { status: access.status });
+    conversationForSync = access.conversation;
 
     // Record the user message
     if (message) {
@@ -347,6 +366,16 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     return internalErrorResponse(error, 'chatChiefOrchestrator');
+  } finally {
+    if (serviceForSync && conversationForSync) {
+      try {
+        await syncCommandConversationMetadata(serviceForSync, conversationForSync);
+      } catch (error) {
+        safeBestEffort(error, {
+          operation: 'chatChiefOrchestrator:conversation_metadata', fallback: null, severity: 'secondary',
+        });
+      }
+    }
   }
 });
 
