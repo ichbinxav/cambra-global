@@ -402,6 +402,7 @@ export default function AdminCommandChat() {
   };
 
   const active = conversations.find((row) => row.conversation_id === activeId);
+  const isArchived = active?.status === "ARCHIVED";
   const timeline = detail?.timeline || [];
 
   return (
@@ -441,10 +442,10 @@ export default function AdminCommandChat() {
                 <StatusChip status={active.status} />
               </div>
               <div className="flex items-center gap-1.5">
-                <button type="button" onClick={() => setStatus(active.status === "PINNED" ? "ACTIVE" : "PINNED")}
+                <button type="button" onClick={() => setStatus(isArchived ? "ACTIVE" : (active.status === "PINNED" ? "ACTIVE" : "PINNED"))}
                   disabled={busy}
                   className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border/60 text-[11px] font-bold hover:bg-secondary disabled:opacity-50">
-                  <Pin size={11} /> {active.status === "PINNED" ? "Unpin" : "Pin"}
+                  <Pin size={11} /> {isArchived ? "Reactivate" : (active.status === "PINNED" ? "Unpin" : "Pin")}
                 </button>
                 <button type="button" onClick={() => setStatus("ARCHIVED")} disabled={busy || active.status === "ARCHIVED"}
                   className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full border border-border/60 text-[11px] font-bold hover:bg-secondary disabled:opacity-50">
@@ -484,8 +485,8 @@ export default function AdminCommandChat() {
                       "What should I do today?",
                       "Simulate what happens if we double acquisition",
                     ].map((suggestion) => (
-                      <button key={suggestion} type="button" onClick={() => send(suggestion)}
-                        className="block w-full text-left px-3 py-2 rounded-lg border border-border/60 bg-card text-xs text-foreground hover:bg-secondary">
+                      <button key={suggestion} type="button" onClick={() => send(suggestion)} disabled={isArchived}
+                        className="block w-full text-left px-3 py-2 rounded-lg border border-border/60 bg-card text-xs text-foreground hover:bg-secondary disabled:opacity-50">
                         “{suggestion}”
                       </button>
                     ))}
@@ -520,20 +521,20 @@ export default function AdminCommandChat() {
           >
             <input
               type="text" value={input} onChange={(event) => setInput(event.target.value)}
-              disabled={sending || !activeId}
-              placeholder={activeId ? "Ask CAMBRA: why, compare, find, simulate or do…" : "Start a conversation first"}
+              disabled={sending || !activeId || isArchived}
+              placeholder={isArchived ? "Reactivate this conversation to continue" : (activeId ? "Ask CAMBRA: why, compare, find, simulate or do…" : "Start a conversation first")}
               className="flex-1 h-10 px-3 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
               type="button" onClick={startRun}
-              disabled={busy || !input.trim() || !activeId}
+              disabled={busy || !input.trim() || !activeId || isArchived}
               title="Run this as a durable background run instead of a single turn"
               className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full border border-border/60 text-xs font-bold hover:bg-secondary disabled:opacity-50"
             >
               <Play size={12} /> Run in background
             </button>
             <button
-              type="submit" disabled={sending || !input.trim() || !activeId}
+              type="submit" disabled={sending || !input.trim() || !activeId || isArchived}
               className="inline-flex items-center gap-1.5 h-10 px-4 rounded-full bg-foreground text-background text-sm font-bold hover:opacity-90 disabled:opacity-50"
             >
               {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
