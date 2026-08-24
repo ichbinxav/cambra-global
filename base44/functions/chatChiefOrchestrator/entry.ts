@@ -4,7 +4,7 @@ import { paidProviderFetch } from '../../shared/costGovernance.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 // COMMAND-C7: the tool catalogue moved to a side-effect-free shared module so the
 // scheduled run sweep can read the same list the chat offers the model.
-import { CHAT_TOOLS, READ_ENTITIES } from '../../shared/commandToolCatalog.ts';
+import { CHAT_TOOLS } from '../../shared/commandToolCatalog.ts';
 // COMMAND-C4: the multi-step coordinator. Scoped to read/analysis chaining here;
 // anything that writes, drafts or needs approval is handed straight back to
 // executeToolWithGates below, so every existing gate still applies unchanged.
@@ -15,7 +15,9 @@ import {
   resolveCommandConversationAccess,
   syncCommandConversationMetadata,
 } from '../../shared/commandConversationRuntime.ts';
-// deploy-marker: 2026-08-24-command-owner-runtime
+import { inspectCommandFunctionResponse } from '../../shared/commandFunctionResult.ts';
+import { handleCommandReadState } from '../../shared/commandReadState.ts';
+// deploy-marker: 2026-08-24-command-tool-truth
 
 // ════════════════════════════════════════════════════════════════════
 // Chief Orchestrator Chat
@@ -54,63 +56,6 @@ const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 // If you want to allow silent L2 execution or full root, change the
 // forced_draft threshold in executeToolWithGates() — never here.
 // ────────────────────────────────────────────────────────────────
-
-// Entities the read_state tool can query. Everything is admin-scoped
-// (asServiceRole below), so add/remove entries here to control visibility.
-const READ_SAFE_FIELDS: Record<string, string[]> = {
-  AgentTask: ['id','brand_id','agent_name','task_type','status','risk_level','requires_approval','input_summary','output_summary','error','created_date','started_at','completed_at'],
-  AgentQuestion: ['id','brand_id','agent_name','question','status','created_date','answered_at'],
-  Approval: ['id','brand_id','action_type','status','risk_level','summary','created_date','approved_at','rejected_at'],
-  Event: ['id','brand_id','event_type','source','entity_type','entity_id','status','created_date'],
-  ChatMessage: ['id','conversation_id','role','content','blocked_by_gate','created_date'],
-  Brand: ['id','name','category','country','sector','annual_revenue','created_date'],
-  AnalyzerInput: ['id','brand_id','vertical','created_date'],
-  AnalyzerResult: ['id','brand_id','infra_score','total_savings','payment_savings','created_date'],
-  Integration: ['id','brand_id','provider','category','status','scopes','connected_at','last_sync_at','last_sync_status','provider_account_id'],
-  IntegrationCatalog: ['id','provider','category','name','status','created_date'],
-  OutboundLead: ['id','company_name','company_domain','country','industry','stage','score','pre_score','revenue_opportunity_score','revenue_confidence','employee_range','revenue_range','ecommerce_platform','probable_payment_stack','estimated_tpv_min_eur','estimated_tpv_max_eur','estimation_status','contactability','outreach_eligibility','compliance_status','source','created_date'],
-  CommercialCampaign:['id','campaign_key','name','status','target_profile_id','policy_key','policy_version','provider_mode','lead_ids','sending_profile_keys','capacity_preview_json','blockers','metrics_json','created_at','updated_at'],
-  CommercialPolicy:['id','policy_key','version','engine','status','mode','countries','icp_json','excluded_domains','daily_send_limit','min_lead_score','min_opportunity_score','min_confidence','sending_profile_keys','created_date','updated_date'],
-  OutboundSendingProfile:['id','profile_key','provider','domain','from_address','status','current_daily_cap','target_daily_cap','bounce_rate_pct','complaint_rate_pct','webhook_status','last_provider_health_at'],
-  CommunicationThread:['id','thread_key','engine','lead_id','company_name','status','conversation_state','last_message_at','next_action_at','automation_paused','pause_reason','sending_profile_key','sending_profile_resolution_status'],
-  Lead: ['id','company','country','status','source','created_date'],
-  ProviderLead: ['id','provider_name','category','country','status','created_date'],
-  BenchmarkContribution: ['id','brand_id','cohort_key','vertical','created_date'],
-  BenchmarkCohort: ['id','cohort_key','vertical','sample_size','is_public','created_date'],
-  StatementImport: ['id','brand_id','provider','status','confidence','owner_email','created_date'],
-  Recommendation: ['id','brand_id','vertical','title','status','priority','created_date'],
-  FounderDecision: ['id','decision_key','decision_type','status','title','summary','recommended_option','confidence','approval_id','created_at','updated_at'],
-  FounderSimulation: ['id','simulation_key','simulation_type','status','scenario','confidence','production_effect','created_at'],
-  StrategyDirective: ['id','directive_key','scope','directive','status','priority','effective_from','effective_to','created_at'],
-  FounderCommandAudit: ['id','command_key','intent','action','risk_level','material','requires_confirmation','confirmed','status','created_at'],
-  User: ['id','name','role','created_date'],
-};
-
-function projectReadRow(entity: string, row: any) {
-  const fields = READ_SAFE_FIELDS[entity] || [];
-  const out: Record<string, unknown> = {};
-  for (const field of fields) if (row?.[field] !== undefined) out[field] = row[field];
-  return out;
-}
-
-// Inline handler for read_state. Returns a safe operational projection only.
-async function handleReadState(base44: any, input: any) {
-  const entity = String(input?.entity || "");
-  if (!READ_ENTITIES.includes(entity)) {
-    return { error: `Entity '${entity}' not in read-allowed list.` };
-  }
-  const filter = (input && typeof input.filter === "object" && input.filter) ? input.filter : {};
-  const sort   = typeof input?.sort === "string" ? input.sort : "-created_date";
-  const limit  = Math.min(Math.max(Number(input?.limit || 25), 1), 100);
-  try {
-    const rows = Object.keys(filter).length > 0
-      ? await base44.asServiceRole.entities[entity].filter(filter, sort, limit)
-      : await base44.asServiceRole.entities[entity].list(sort, limit);
-    return { ok: true, entity, count: rows.length, rows: rows.map((row: any) => projectReadRow(entity, row)) };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
-}
 
 const BULK_THRESHOLD = 5;
 
@@ -315,17 +260,17 @@ Deno.serve(async (req) => {
         const tool = CHAT_TOOLS.find((row: any) => row.name === name);
         if (!tool) return { ok: false, summary: 'tool_not_found' };
         if (tool.function === "__READ_STATE__") {
-          const read = await handleReadState(base44, input);
+          const read = await handleCommandReadState(base44.asServiceRole, input);
           return { ok: !!read?.ok, summary: read?.ok ? `${read.count} rows from ${read.entity}` : `read failed: ${read?.error || 'unknown'}` };
         }
         try {
           const res = await base44.asServiceRole.functions.invoke(tool.function, effectiveToolInput(tool, input));
-          const data = res?.data || res;
+          const inspected = inspectCommandFunctionResponse(res, name);
           // A step that comes back asking for confirmation is NOT a completed
           // step. Treat it as ambiguous so the loop escalates instead of
           // reporting success for something that has not happened.
-          if (data?.requires_confirmation) return { ok: true, ambiguous: true, summary: 'requires_confirmation' };
-          return { ok: data?.ok !== false, summary: String(data?.summary || data?.status || 'ok').slice(0, 300) };
+          if (inspected.ambiguous) return { ok: true, ambiguous: true, summary: 'requires_confirmation' };
+          return { ok: inspected.ok, summary: inspected.summary };
         } catch (error: any) {
           return { ok: false, summary: String(error?.message || 'invoke_failed').slice(0, 300) };
         }
@@ -397,7 +342,7 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
 
   // Special-case: read_state runs inline, no agent invocation.
   if (tool.function === "__READ_STATE__") {
-    const readResult = await handleReadState(base44, toolInput);
+    const readResult = await handleCommandReadState(base44.asServiceRole, toolInput);
     const preview = readResult?.ok
       ? `Leí ${readResult.count} filas de ${readResult.entity}.`
       : `No pude leer ${toolInput?.entity}: ${readResult?.error || "error"}.`;
@@ -463,7 +408,9 @@ async function executeToolWithGates({ base44, conversation_id, toolName, toolInp
   let invokeError = null;
   try {
     const res = await base44.asServiceRole.functions.invoke(tool.function, effectiveInput);
-    invokeResult = res?.data || res;
+    const inspected = inspectCommandFunctionResponse(res, toolName);
+    invokeResult = inspected.data;
+    if (!inspected.ok && !inspected.ambiguous) invokeError = inspected.error || 'tool_reported_failure';
   } catch (e) {
     invokeError = e?.message || String(e);
   }
