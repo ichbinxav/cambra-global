@@ -1,6 +1,3 @@
-/Users/xavimartinezcontero/.zprofile:1: no such file or directory: /opt/homebrew/bin/brew
-/Users/xavimartinezcontero/.zprofile:2: no such file or directory: /opt/homebrew/bin/brew
-/Users/xavimartinezcontero/.zprofile:3: no such file or directory: /opt/homebrew/bin/brew
 // Base44 function invocations can wrap JSON in one or more `data`/string layers.
 // Command must classify the decoded payload, never the transport wrapper.
 
