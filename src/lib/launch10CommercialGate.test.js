@@ -127,15 +127,19 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
     );
   });
 
-  it("volume acquisition gates policy before scheduler effects and lead before commercial writes", () => {
+  it("volume acquisition records a paused heartbeat, then gates policy before effects and leads before writes", () => {
     const src = read("base44/functions/outboundVolumeWorker/entry.ts");
     const policyGate = src.indexOf("commercialMarketDecision(value)");
     const schedulerClaim = src.indexOf("claimSchedulerRun(svc, req");
+    const controlGate = src.indexOf("const controlAuthority = await readSingletonAuthority");
+    const paused = src.indexOf('reason: "volume_outbound_paused"');
     const schedulerEffect = src.indexOf("markSchedulerEffectStarted(");
     expect(policyGate).toBeGreaterThan(-1);
-    expect(policyGate).toBeLessThan(schedulerClaim);
+    expect(schedulerClaim).toBeLessThan(controlGate);
+    expect(controlGate).toBeLessThan(paused);
+    expect(paused).toBeLessThan(policyGate);
     expect(policyGate).toBeLessThan(schedulerEffect);
-    expect(src.slice(policyGate, schedulerClaim)).toContain(
+    expect(src.slice(policyGate, schedulerEffect)).toContain(
       "material_effects_fail_closed: true",
     );
 

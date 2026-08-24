@@ -139,10 +139,13 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
-    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES'");
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT'");
     expect(WORKFLOW).toContain("RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}");
     expect(WORKFLOW).toContain('historical_attempt_replayed: false');
     expect(WORKFLOW).toContain("['GrowthTargetRegistry', ['created_at', 'updated_date']");
+    expect(WORKFLOW).toContain('maintenance_failed_run_proves_no_downstream_effects');
+    expect(WORKFLOW).toContain('legacy_time_bounded_task_proves_no_effect_started');
+    expect(WORKFLOW).toContain("['Invoice', ['created_date', 'updated_date', 'issued_at']]");
     expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
     expect(WORKFLOW).toContain("control_state: 'IDLE'");
   });

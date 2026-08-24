@@ -18,6 +18,8 @@ The live merchant surface centers on onboarding/brand state, Connect Tools/uploa
 
 Lead discovery/enrichment/scoring, CRM synchronization, outbound acquisition, reply handling, follow-up, meeting coordination and acquisition learning exist as separate functions/agents. Every commercial email path, including the legacy approval flows, converges on `commercialSendMessage`; routine external communication is allowed only inside active policy/sending controls and deterministic suppression, approval-binding, quality, cost and deliverability gates. Opt-out stops the thread; material commitments escalate. P18 SAFE MODE sits above the sending boundary and acquisition controls, so containment does not depend on an LLM obeying a prompt.
 
+The outbound volume scheduler records a healthy no-op heartbeat while the founder acquisition switch is off; it does not require an active commercial policy or mark material effects in that state. Discovery remains independently observable while sending is paused. Its reservoir projection is write-on-change, with bounded verification refresh, so an hourly sweep does not rewrite every unchanged lead.
+
 Commercial conversations persist relationship type, language, participant identity, context summary, open questions, objection history, promises, commitments and the next step on the canonical `CommunicationThread`. CAMBRA communicates as CAMBRA or the Founder Office. It may disclose that automation assists when asked, but it may never impersonate Xavi or claim that he personally wrote an automated message. Public proof must be evidence-backed; anonymous/unverified waitlist estimates are excluded from economic totals.
 
 Founder meeting escalation is governed by a versioned `FounderMeetingPolicy`. The default is recommend-only. Automatic booking requires an explicit founder switch, an allowed meeting type and relationship, P10/P11 readiness, business hours and daily/weekly capacity. Availability and booking use the connected Outlook calendar only; failure returns a blocker and never invents a slot. Briefs and post-meeting outcomes remain attached to the same thread, and discussed, agreed, proposed and approval-required facts remain separate.
@@ -69,6 +71,8 @@ UI labels or prompts cannot widen authority. Material commitments remain governe
 ## 8. Autonomous Maintenance — IMPLEMENTED
 
 P17 uses the loop MONITOR → DETECT → DIAGNOSE → SAFE FIX → VERIFY → LOG → LEARN. Allowlisted reversible remediation includes selected OAuth refresh, webhook retry, provider-intelligence refresh, deterministic billing reconciliation and conservative stale-task closure. A repair is not considered resolved until post-action verification succeeds.
+
+Maintenance treats low reservoir coverage as actionable only when approved send capacity is greater than zero. Cost-warning incidents resolve only from a valid current budget snapshot below the configured warning threshold. Scheduler controls in `REVIEW_REQUIRED` remain fail-closed unless an admin uses an allowlisted evidence inspection and an exact attempt/revision confirmation; reconciliation never replays the historical attempt.
 
 Security, contracts, permissions, money movement and code cutover do not become automatic repair authority. Failed repairs escalate and are recorded in remediation knowledge.
 

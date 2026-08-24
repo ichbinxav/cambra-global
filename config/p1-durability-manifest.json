@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-24T15:44:38.705Z",
+  "generatedAt": "2026-08-24T16:48:27.516Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -474,8 +474,8 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "sha256": "b5a4f47c6c51ce23dadc7604ae7889281fae769d899cfdc88c8b067952addd77",
-      "bytes": 22233
+      "sha256": "a81230c96c7c15c193544dcd369e1556280e415a8b81256bcf1f2d125afa9648",
+      "bytes": 22851
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "1194282c9acd007c2509f1dc5ecb6a6b802a152e4d0d2b87188fde7e0f8c9016",
-      "bytes": 19586
+      "sha256": "721ec56a66dd2b9b445d5493008430da26f7fb5193a9ae8ab3ae95d174b4ec95",
+      "bytes": 25193
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -954,8 +954,8 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "sha256": "439eb0c98adb5dd83c7fa4de2f45101414002b8e7c615da546d630a4dc7d7038",
-      "bytes": 31505
+      "sha256": "51811f6b0ba391e518a01504461faf1bc52813abcbd7deaf8a6b1d769f77ae68",
+      "bytes": 31555
     },
     {
       "path": "base44/functions/maintenanceEngine/function.jsonc",
@@ -1039,8 +1039,8 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "sha256": "f36be1b95c4008394d06df63dd469b6817c65e5abdeaed6291f6426cf573f8e1",
-      "bytes": 23602
+      "sha256": "3d51f4af2ed38449f5deaab65855b479166c86786d87cc86dd0d6cb05872a17b",
+      "bytes": 23727
     },
     {
       "path": "base44/functions/outcomeLearningWorker/entry.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "44ac7d9f8759244c393c865f903593abdc985a597e27dfccd5a8e7960a707ce8",
+      "sha256": "c4c9cc871dd31829ed5165fa7c04ec4e16bdb7dc0b11a174b05d0a89a8e14d5a",
       "bytes": 141405
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "0f5632825a1b8852e821f5200f57c6506d20a6094a9006bfbee0cfa2457bbcf7",
+      "sha256": "e2f4f2b10343218dfc8a6256c49a9d1fb16c29feba605cc25e9b4c9d2a7dcc16",
       "bytes": 43456
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "71af86e699e931d9be6b2947cd971610dc13c76173a2a8803d46facc2445d210",
+      "sha256": "bb599860aca9a4ec804537306874ba6d29000a1993dcea441982d85b85b9c53b",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "4b219a4ee96f359975215a083f8b25159b6d47db7a4878016cd752b24e953fb1",
+      "sha256": "de66d604987f56e4bd3e8f213207d43b89acdc5f2af551563575de8a1395e05b",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "86e18e6a0c96d377b4bcea5dbfcc8b3839c73e5adf89b14ffa3d3a97f0a3fc02",
+      "sha256": "5039ee9c013c16e1310c873c0cea3e88915305f9be386d3f5884f15f92a75ce2",
       "bytes": 144436
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "89f667b831823a2dc5ce78685eae85ccc3dcee5d969e864e840c886b60336a1c",
+      "sha256": "55556aa2803a715b36228e14174d49653ac4b41a6e51441da70c4751d3542f27",
       "bytes": 97956
     },
     {
@@ -2749,8 +2749,8 @@
     },
     {
       "path": "src/docs/CAMBRA_OPERATING_BIBLE.md",
-      "sha256": "8b3ebe800ae83f6a9c62c663c89acdc329a68a0ef31f266e7bc319abd42e834e",
-      "bytes": 14480
+      "sha256": "ae6a858d2a8926cd60ffd4239f9d1a0ff9126694b2b3384822bef6399d810b52",
+      "bytes": 15321
     },
     {
       "path": "src/docs/CAMBRA_RESEARCH_KNOWLEDGE_BASE.md",
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "559ab7210d620adac7a3a68a4db4bfe679c875422e5e64aed269654264c68252",
-      "bytes": 10757
+      "sha256": "a2d8bdf0b67c05a502286c8e5b8047c8053aa831507a5bf775e37a5d05cbefe7",
+      "bytes": 11080
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
@@ -3459,8 +3459,8 @@
     },
     {
       "path": "src/lib/outboundSendingSafety.test.js",
-      "sha256": "c05ba6846357cf6ea8280e11747d891765beaffc1da87baec308ed561fd48ce3",
-      "bytes": 3233
+      "sha256": "0ea72b6018a550cfd7882ad743b49297743285d5deda3466a2aba45bf740cded",
+      "bytes": 4069
     },
     {
       "path": "src/lib/outcomeCalibration.test.js",
@@ -3509,8 +3509,8 @@
     },
     {
       "path": "src/lib/p17Maintenance.test.js",
-      "sha256": "2188501fbac1d29705e50840e19dacc39fe445aaceb876497237605644a56212",
-      "bytes": 6265
+      "sha256": "3d9ab66e2fbd7a0d10bfe36e59c19759f394f49b92db19441222195821e28718",
+      "bytes": 6977
     },
     {
       "path": "src/lib/p18Documentation.test.js",
@@ -3539,8 +3539,8 @@
     },
     {
       "path": "src/lib/p6p8AutonomousCompany.test.js",
-      "sha256": "ad2e63d98ba05e89b296253617a5511a04956652f31d0fa3076609e49a5dea15",
-      "bytes": 4812
+      "sha256": "623e7c524521a757ac4fea8b415d497e48fad6c7ad773421669d28a13c325cc5",
+      "bytes": 5276
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",

@@ -25,13 +25,18 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
     proof: 'TASK_NO_EFFECT',
   },
   getEuropeMarketsCommandCenter: { proof: 'GROWTH_ZERO_WRITES' },
+  maintenanceEngine: { proof: 'MAINTENANCE_PRE_EFFECT' },
+  recoverAutopilotWorker: {
+    taskAgent: 'recover_autopilot',
+    proof: 'LEGACY_RECOVER_PRE_EFFECT',
+  },
 });
 
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
@@ -141,12 +146,26 @@ async function changedRows(
   return [...observed.values()];
 }
 
-async function growthAttemptZeroWriteProof(svc: any, attempt: any) {
+function attemptWindow(attempt: any, prefix: string) {
   const from = String(attempt?.started_at || '');
   const to = String(attempt?.completed_at || attempt?.heartbeat_at || '');
   if (!Number.isFinite(Date.parse(from)) || !Number.isFinite(Date.parse(to)) || Date.parse(to) < Date.parse(from)) {
-    return { ok: false, reason: 'growth_attempt_window_unproven', from, to };
+    return { ok: false as const, reason: `${prefix}_attempt_window_unproven`, from, to };
   }
+  return { ok: true as const, from, to };
+}
+
+function hasEvidence(value: any) {
+  if (value === undefined || value === null || value === '') return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return true;
+}
+
+async function growthAttemptZeroWriteProof(svc: any, attempt: any) {
+  const window = attemptWindow(attempt, 'growth');
+  if (!window.ok) return window;
+  const { from, to } = window;
   const checks = [
     ['GrowthTargetRegistry', ['created_at', 'updated_date'], {}],
     ['GrowthAssumptionRegistry', ['created_at', 'updated_date'], {}],
@@ -168,6 +187,98 @@ async function growthAttemptZeroWriteProof(svc: any, attempt: any) {
     reason: changed.length === 0 ? 'growth_domain_zero_writes_in_attempt_window' : 'growth_domain_writes_observed',
     from,
     to,
+    evidence,
+    changed,
+  };
+}
+
+async function maintenanceAttemptPreEffectProof(svc: any, attempt: any) {
+  const window = attemptWindow(attempt, 'maintenance');
+  if (!window.ok) return window;
+  const { from, to } = window;
+  const runs = await svc.entities.MaintenanceRun.filter({ started_at: { $gte: from, $lte: to } }, '-started_at', 3);
+  if (!Array.isArray(runs)) throw new Error('maintenance_run_proof_unavailable');
+  if (runs.length !== 1) {
+    return { ok: false, reason: runs.length ? 'maintenance_run_proof_ambiguous' : 'maintenance_run_missing', from, to, run_ids: runs.map((row: any) => row.id) };
+  }
+  const run = runs[0];
+  const runStoppedPreEffect = run.status === 'failed' &&
+    (run.health_score === undefined || run.health_score === null) &&
+    Number(run.signals_detected || 0) === 0 &&
+    Number(run.automatic_repairs || 0) === 0 &&
+    Number(run.repairs_verified || 0) === 0 &&
+    Number(run.repairs_failed || 0) === 0 &&
+    Number(run.escalations || 0) === 0 &&
+    Number(run.learning_updates || 0) === 0 &&
+    !hasEvidence(run.evidence_json);
+  const checks = [
+    ['AutonomyIncident', ['first_seen_at', 'last_seen_at', 'resolved_at']],
+    ['AgentTask', ['created_date', 'started_at']],
+    ['RemediationKnowledge', ['created_date', 'last_verified_at']],
+    ['RetentionExecutionEvidence', ['created_date', 'started_at']],
+    ['IncidentAlertDelivery', ['created_at']],
+  ] as const;
+  const evidence: any[] = [];
+  for (const [entityName, fields] of checks) {
+    const rows = await changedRows(svc.entities[entityName], [...fields], from, to);
+    evidence.push({ entity: entityName, changed_ids: rows.map((row: any) => row.id) });
+  }
+  const changed = evidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  return {
+    ok: runStoppedPreEffect && changed.length === 0,
+    reason: !runStoppedPreEffect
+      ? 'maintenance_failed_run_does_not_prove_pre_effect_stop'
+      : changed.length
+      ? 'maintenance_downstream_writes_observed'
+      : 'maintenance_failed_run_proves_no_downstream_effects',
+    from,
+    to,
+    maintenance_run_id: run.id,
+    run_status: run.status,
+    evidence,
+    changed,
+  };
+}
+
+async function legacyRecoverAttemptPreEffectProof(svc: any, attempt: any) {
+  const window = attemptWindow(attempt, 'legacy_recover');
+  if (!window.ok) return window;
+  const { from, to } = window;
+  const tasks = await svc.entities.AgentTask.filter({ agent_name: 'recover_autopilot', started_at: { $gte: from, $lte: to } }, '-started_at', 3);
+  if (!Array.isArray(tasks)) throw new Error('legacy_recover_task_proof_unavailable');
+  if (tasks.length !== 1) {
+    return { ok: false, reason: tasks.length ? 'legacy_recover_task_proof_ambiguous' : 'legacy_recover_task_missing', from, to, task_ids: tasks.map((row: any) => row.id) };
+  }
+  const task = tasks[0];
+  const taskStoppedPreEffect = task.status === 'failed' &&
+    ['FAILED_PRE_EFFECT', 'NOT_STARTED'].includes(String(task.effect_state || '')) &&
+    String(task.ambiguity_state || 'NONE') === 'NONE' &&
+    task.execution_effects_started !== true &&
+    !hasEvidence(task.effect_refs_json) &&
+    !hasEvidence(task.receipt_refs_json);
+  const checks = [
+    ['Invoice', ['created_date', 'updated_date', 'issued_at']],
+    ['MonthlySavingsReport', ['created_date', 'updated_date', 'verified_at']],
+  ] as const;
+  const evidence: any[] = [];
+  for (const [entityName, fields] of checks) {
+    const rows = await changedRows(svc.entities[entityName], [...fields], from, to);
+    evidence.push({ entity: entityName, changed_ids: rows.map((row: any) => row.id) });
+  }
+  const changed = evidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  return {
+    ok: taskStoppedPreEffect && changed.length === 0,
+    reason: !taskStoppedPreEffect
+      ? 'legacy_recover_task_does_not_prove_pre_effect_stop'
+      : changed.length
+      ? 'legacy_recover_economic_writes_observed'
+      : 'legacy_time_bounded_task_proves_no_effect_started',
+    from,
+    to,
+    task_id: task.id,
+    task_status: task.status,
+    effect_state: task.effect_state,
+    ambiguity_state: task.ambiguity_state,
     evidence,
     changed,
   };
@@ -205,14 +316,28 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
+  if (spec.proof === 'MAINTENANCE_PRE_EFFECT') {
+    domainProof = await maintenanceAttemptPreEffectProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
+  if (spec.proof === 'LEGACY_RECOVER_PRE_EFFECT') {
+    domainProof = await legacyRecoverAttemptPreEffectProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
+  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT'].includes(spec.proof) && domainProof?.ok === true;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
-    allowNoTaskProof: spec.proof === 'GROWTH_ZERO_WRITES' && domainProof?.ok === true,
+    allowNoTaskProof: domainNoTaskProof,
   });
-  const task = decision.taskId ? tasks.find((row) => row.id === decision.taskId) : null;
+  const taskId = decision.taskId || domainProof?.task_id || null;
+  const task = taskId ? tasks.find((row) => row.id === taskId) : null;
   if (spec.proof === 'TASK_NO_EFFECT' && task?.material_effect === true) {
     return { ok: false, action: 'blocked', reason: 'scheduler_task_is_material', workerKey, control, attempt, task, domainProof };
   }
-  return { ...decision, workerKey, control, attempt, task, domainProof };
+  return { ...decision, taskId, workerKey, control, attempt, task, domainProof };
 }
 
 async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: string) {

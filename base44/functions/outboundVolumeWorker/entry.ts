@@ -149,6 +149,37 @@ Deno.serve(async (req) => {
         Response.json({ ok: false, error: "forbidden" }, { status: 403 });
     }
     const svc = base44.asServiceRole;
+    __schedulerSvc = svc;
+    __schedulerClaim = await claimSchedulerRun(svc, req, {
+      worker_key: "outboundVolumeWorker",
+      cadence_seconds: 3600,
+    });
+    { const denied = schedulerClaimDeniedResponse(__schedulerClaim); if (denied) return denied; }
+    const controlAuthority = await readSingletonAuthority(svc, {
+      entity: "OutboundControl",
+      query: { control_key: "global" },
+      sort: "-created_date",
+      authority: "outbound_control",
+    });
+    if (!controlAuthority.ok) {
+      __schedulerOk = false;
+      return Response.json({
+        ok: false,
+        sent: 0,
+        queued: 0,
+        reason: controlAuthority.blocker ||
+          "outbound_control_authority_unavailable",
+      }, { status: 409 });
+    }
+    const control = controlAuthority.row;
+    if (!control?.acquisition_enabled) {
+      return Response.json({
+        ok: true,
+        sent: 0,
+        queued: 0,
+        reason: "volume_outbound_paused",
+      });
+    }
     let policyRows: any = null;
     try {
       policyRows = await svc.entities.CommercialPolicy.filter(
@@ -167,6 +198,7 @@ Deno.serve(async (req) => {
       ? policyRows.filter((p: any) => policyIsActive(p))
       : [];
     if (activePolicies.length !== 1) {
+      __schedulerOk = false;
       return Response.json({
         ok: false,
         sent: 0,
@@ -189,6 +221,7 @@ Deno.serve(async (req) => {
       (decision: any) => !decision.ok,
     ) || null;
     if (!policyMarketDecisions.length || blockedPolicyMarket) {
+      __schedulerOk = false;
       return Response.json({
         ok: false,
         sent: 0,
@@ -204,38 +237,6 @@ Deno.serve(async (req) => {
     const allowedPolicyMarkets = new Set(
       policyMarketDecisions.map((decision: any) => decision.iso2),
     );
-    __schedulerSvc = svc;
-    __schedulerClaim = await claimSchedulerRun(svc, req, {
-      worker_key: "outboundVolumeWorker",
-      cadence_seconds: 3600,
-    });
-    { const denied = schedulerClaimDeniedResponse(__schedulerClaim); if (denied) return denied; }
-    __schedulerClaim = await markSchedulerEffectStarted(svc, __schedulerClaim);
-    { const denied = schedulerClaimDeniedResponse(__schedulerClaim); if (denied) return denied; }
-    const controlAuthority = await readSingletonAuthority(svc, {
-      entity: "OutboundControl",
-      query: { control_key: "global" },
-      sort: "-created_date",
-      authority: "outbound_control",
-    });
-    if (!controlAuthority.ok) {
-      return Response.json({
-        ok: false,
-        sent: 0,
-        queued: 0,
-        reason: controlAuthority.blocker ||
-          "outbound_control_authority_unavailable",
-      }, { status: 409 });
-    }
-    const control = controlAuthority.row;
-    if (!control?.acquisition_enabled) {
-      return Response.json({
-        ok: true,
-        sent: 0,
-        queued: 0,
-        reason: "volume_outbound_paused",
-      });
-    }
     if (!isBusinessHour(policy, new Date())) {
       return Response.json({
         ok: true,
@@ -392,6 +393,10 @@ Deno.serve(async (req) => {
     );
     const seenCompanies = new Set<string>();
     let sent = 0, queued = 0, skipped = 0;
+    if (queue.length > 0) {
+      __schedulerClaim = await markSchedulerEffectStarted(svc, __schedulerClaim);
+      { const denied = schedulerClaimDeniedResponse(__schedulerClaim); if (denied) return denied; }
+    }
     for (const item of queue) {
       if (sent + queued >= remaining) break;
       const x = item.x;

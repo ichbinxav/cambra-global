@@ -27,6 +27,13 @@ describe('P6 · continuous commercial intelligence wiring', () => {
     expect(worker).toContain('duplicateLeadIds.has(lead.id)');
   });
 
+  it('does not rewrite unchanged reservoir projections on every hourly sweep', () => {
+    expect(worker).toContain("lead.reservoir_state!=='disqualified'||lead.suppression_reason!==duplicateReason");
+    expect(worker).toContain("lead.reservoir_state!=='suppressed'||lead.outreach_eligibility!=='BLOCKED'");
+    expect(worker).toContain("lastVerifiedAt<Date.now()-24*3600000");
+    expect(worker).toContain('lead.reservoir_state!==desiredReservoirState');
+  });
+
   it('records source coverage rather than claiming it scanned all Europe', () => {
     expect(worker).toContain('countries_this_run');
     expect(read('base44/shared/commercialIntelligence.ts')).toContain('claimed_continuous_universe_coverage: false');
