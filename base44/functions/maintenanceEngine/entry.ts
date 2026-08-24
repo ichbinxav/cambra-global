@@ -18,6 +18,8 @@ import { internalErrorResponse } from '../../shared/publicErrors.ts';
 import { retentionCutoff, retentionEvidenceStart, retentionEvidenceComplete } from '../../shared/retentionPolicy.ts';
 import { handleDisasterRecovery } from '../../shared/disasterRecoveryRuntime.ts';
 import { readIntegrationCredential } from '../../shared/integrationCredentials.ts';
+import { inspectCommandFunctionResponse } from '../../shared/commandFunctionResult.ts';
+import { handleCommandReadState } from '../../shared/commandReadState.ts';
 
 const now=()=>new Date().toISOString();
 const DAY=86400000,HOUR=3600000;
@@ -108,11 +110,17 @@ guardedScheduledServe({"worker_key":"maintenanceEngine","cadence_seconds":600,"r
     executeTool:async({name,input})=>{
       const tool=(CHAT_TOOLS as any[]).find((row:any)=>row.name===name);
       if(!tool)return{ok:false,summary:'tool_not_found'};
+      if(tool.function==='__READ_STATE__'){
+        const read=await handleCommandReadState(svc,input);
+        return{ok:read?.ok===true,summary:read?.ok?`${read.count} rows from ${read.entity}`:`read failed: ${read?.error||'unknown'}`};
+      }
       try{
-        const res=await svc.functions.invoke(tool.function,{...(tool.fixed_input||{}),...input});
-        const data=res?.data||res;
-        if(data?.requires_confirmation)return{ok:true,ambiguous:true,summary:'requires_confirmation'};
-        return{ok:data?.ok!==false,summary:String(data?.summary||data?.status||'ok').slice(0,300)};
+        const effectiveInput={...(input&&typeof input==='object'?input:{}),...(tool.fixed_input||{})};
+        if(tool.inject_internal_secret)effectiveInput.internal_secret=Deno.env.get('INTERNAL_CALL_SECRET')||'';
+        const res=await svc.functions.invoke(tool.function,effectiveInput);
+        const inspected=inspectCommandFunctionResponse(res,name);
+        if(inspected.ambiguous)return{ok:true,ambiguous:true,summary:'requires_confirmation'};
+        return{ok:inspected.ok,summary:inspected.summary};
       }catch(error:any){return{ok:false,summary:String(error?.message||'invoke_failed').slice(0,300)}}
     },
     readEmergency:async()=>{try{const rows=await svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_date',1);const control=rows?.[0]||null;if(!control)return{available:false,control:null,revision:null};return{available:true,control,revision:Number(control.control_revision??0)}}catch{return{available:false,control:null,revision:null}}},
