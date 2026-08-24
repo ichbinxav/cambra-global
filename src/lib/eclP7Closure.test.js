@@ -88,6 +88,15 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
       receipt_refs_json: [],
     }])).toMatchObject({ ok: true, reason: 'task_proves_no_effect_started', taskId: 'task_1' });
     expect(schedulerControlRecoveryDecision(control, attempt, [{
+      id: 'task_source_ref',
+      parent_run: '',
+      source_refs_json: [{ type: 'SchedulerRun', id: 'attempt_1' }],
+      execution_effects_started: false,
+      effect_state: 'NOT_APPLICABLE',
+      effect_refs_json: [],
+      receipt_refs_json: [],
+    }])).toMatchObject({ ok: true, reason: 'task_proves_no_effect_started', taskId: 'task_source_ref' });
+    expect(schedulerControlRecoveryDecision(control, attempt, [{
       id: 'task_1',
       parent_run: 'run_1',
       execution_effects_started: true,
@@ -130,6 +139,10 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES'");
+    expect(WORKFLOW).toContain("RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}");
+    expect(WORKFLOW).toContain('historical_attempt_replayed: false');
+    expect(WORKFLOW).toContain("['GrowthTargetRegistry', ['created_at', 'updated_date']");
     expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
     expect(WORKFLOW).toContain("control_state: 'IDLE'");
   });

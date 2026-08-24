@@ -65,6 +65,8 @@ describe('P8 · company nervous system', () => {
     }
     expect(automation.automations[0]).toMatchObject({ is_active: true, repeat_unit: 'hours', repeat_interval: 6 });
     expect(orchestrator).toContain("event_type: 'company.coordination.completed'");
+    expect(orchestrator).toContain('observation_only: true');
+    expect(orchestrator).not.toContain('service.functions.invoke(');
   });
 
   it('does not invoke external sending or material execution', () => {

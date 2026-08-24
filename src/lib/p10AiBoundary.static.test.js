@@ -4,6 +4,7 @@ import fs from 'node:fs';
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 const CHAT = read('base44/functions/chatChiefOrchestrator/entry.ts');
 const ADMIN_AGENTS = read('base44/functions/adminAgentOperations/entry.ts');
+const READ_STATE = read('base44/shared/commandReadState.ts');
 
 const ECONOMIC_AUTHORITIES = [
   'approveRecoverReportForInvoicing', 'createEligibleRecoverInvoices',
@@ -27,12 +28,17 @@ describe('P10 — AI/tool authority and data minimization', () => {
   });
 
   it('projects read_state through an explicit allowlist instead of raw rows', () => {
-    expect(CHAT).toContain('READ_SAFE_FIELDS');
-    expect(CHAT).toContain('projectReadRow(entity, row)');
-    const safeMap = CHAT.slice(CHAT.indexOf('READ_SAFE_FIELDS'), CHAT.indexOf('async function handleReadState'));
+    expect(CHAT).toContain("from '../../shared/commandReadState.ts'");
+    expect(CHAT).toContain('handleCommandReadState');
+    expect(READ_STATE).toContain('COMMAND_READ_SAFE_FIELDS');
+    expect(READ_STATE).toContain('rows.map((row: any) => projectRow(entity, row))');
+    const safeMap = READ_STATE.slice(
+      READ_STATE.indexOf('COMMAND_READ_SAFE_FIELDS'),
+      READ_STATE.indexOf('function projectRow'),
+    );
     for (const forbidden of ['access_token','refresh_token','file_url','metadata_json','billing_address_line1','contact_email']) {
       expect(safeMap).not.toContain(forbidden);
     }
-    expect(CHAT).not.toContain('return { ok: true, entity, count: rows.length, rows };');
+    expect(READ_STATE).not.toContain('return { ok: true, entity, count: rows.length, rows };');
   });
 });

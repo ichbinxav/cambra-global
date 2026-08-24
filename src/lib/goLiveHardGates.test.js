@@ -219,6 +219,16 @@ describe('final GO-live hard gates', () => {
     expect(evaluateSchedulerEvidence([...runs, { ...runs[0], started_at:new Date(NOW - 1000).toISOString() }], NOW)).toMatchObject({ no_duplicate_execution:false });
   });
 
+  it('classifies one transient scheduler failure as degraded and repeated failures as failed', () => {
+    const worker=GO_CRITICAL_SCHEDULERS[0];
+    const completed={worker_key:worker.worker_key,invocation_kind:'SCHEDULED',status:'COMPLETED',run_key:'completed-slot',started_at:new Date(NOW-worker.cadence_seconds*500).toISOString()};
+    const failed={worker_key:worker.worker_key,invocation_kind:'SCHEDULED',status:'FAILED',run_key:'failed-slot',started_at:new Date(NOW-1000).toISOString()};
+    const transient=evaluateSchedulerEvidence([completed,failed],NOW).rows.find(row=>row.worker_key===worker.worker_key);
+    expect(transient).toMatchObject({status:'DEGRADED',active:false,consecutive_failures:1});
+    const repeated=evaluateSchedulerEvidence([completed,failed,{...failed,run_key:'failed-slot-2',started_at:new Date(NOW-500).toISOString()}],NOW).rows.find(row=>row.worker_key===worker.worker_key);
+    expect(repeated).toMatchObject({status:'FAILED',active:false,consecutive_failures:2});
+  });
+
   it('keeps control and external effects behind explicit real-runtime paths', () => {
     const admin = source('base44/shared/logical/goLiveControlAdmin.ts');
     for (const token of ['runtime_git_sha_mismatch','RUN_GLOBAL_EMERGENCY_STOP_DRILL','RUN_COST_KILL_SWITCH_DRILL','CONFIGURE_OUTBOUND_SENDING_PROFILE','ENABLE_SENDING_PROFILE_WARMUP','PAUSE_SENDING_PROFILE','fresh_matching_deliverability_evidence_required','SPF','DKIM','DMARC']) expect(admin.toUpperCase()).toContain(token.toUpperCase());

@@ -13,7 +13,7 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
   let success = true;
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json().catch(() => ({}));
+    const body = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;
@@ -46,6 +46,6 @@ export async function handleRegulatoryMonitoringWorker(req: Request) {
     console.error(error);
     return Response.json({ ok:false,error:'regulatory_monitoring_failed' }, { status:500 });
   } finally {
-    if (svc && claim) await finishSchedulerRunOrThrow(svc,claim,{ worker_key:'regulatoryMonitoringWorker' },success);
+    if (svc && claim?.allowed === true) await finishSchedulerRunOrThrow(svc,claim,{ worker_key:'regulatoryMonitoringWorker' },success);
   }
 }

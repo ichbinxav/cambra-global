@@ -3,6 +3,7 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { internalErrorResponse } from "../../shared/publicErrors.ts";
 import { attachCanonicalChildTask, createCanonicalAgentTask } from "../../shared/agentTaskEnvelope.ts";
+import { unwrapCommandFunctionResponse } from "../../shared/commandFunctionResult.ts";
 
 const ORCHESTRATOR_NAME = "lead_orchestrator";
 const TASK_TYPE = "orchestrate";
@@ -134,19 +135,19 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      const payload = {
+        ...step.payload,
+        ...(step.phase !== "DISCOVERY"
+          ? { lead_ids: chainLeadIds, limit: chainLeadIds.length }
+          : {}),
+        ...(step.phase === "CONTACT_RESOLUTION" && body?.discovery_run_id
+          ? { discovery_run_id: body.discovery_run_id }
+          : {}),
+        internal_secret: internal,
+      };
       try {
-        const payload = {
-          ...step.payload,
-          ...(step.phase !== "DISCOVERY"
-            ? { lead_ids: chainLeadIds, limit: chainLeadIds.length }
-            : {}),
-          ...(step.phase === "CONTACT_RESOLUTION" && body?.discovery_run_id
-            ? { discovery_run_id: body.discovery_run_id }
-            : {}),
-          internal_secret: internal,
-        };
         const result = await base44.functions.invoke(step.name, payload);
-        const data = result?.data || result || {};
+        const data = unwrapCommandFunctionResponse(result) || {};
         if (step.phase === "DISCOVERY") {
           chainLeadIds = Array.isArray(data.created_ids)
             ? data.created_ids.map(String).filter(Boolean)
@@ -194,8 +195,34 @@ Deno.serve(async (req) => {
           stepError = data.error || "agent reported ok=false";
         }
       } catch (error: any) {
-        childStatus = "failed";
-        stepError = String(error?.message || error).slice(0, 200);
+        const data = unwrapCommandFunctionResponse(
+          error?.response?.data ?? error?.data ?? null,
+        ) || {};
+        childTaskId = data?.task_id || null;
+        stepError = String(data?.error || error?.message || error).slice(0, 200);
+        if (childTaskId) {
+          await attachCanonicalChildTask(base44.asServiceRole, childTaskId, parent, {
+            stepKey: step.phase.toLowerCase(),
+            stepIndex: index + 1,
+            input: payload,
+            sourceRefs: [{ type: "function", id: step.name }],
+          });
+          const child = await base44.asServiceRole.entities.AgentTask.get(
+            childTaskId,
+          ).catch((readError: any) =>
+            safeBestEffort(readError, {
+              operation: "leadOrchestrator.readRejectedChild",
+              fallback: null,
+              severity: "secondary",
+            })
+          );
+          childStatus = child?.status ||
+            (data?.review_required === true ? "waiting_input" : "failed");
+        } else {
+          childStatus = data?.review_required === true
+            ? "waiting_input"
+            : "failed";
+        }
       }
 
       executed.push({
@@ -213,7 +240,7 @@ Deno.serve(async (req) => {
           stepError ? ` — ${stepError}` : ""
         }`;
         await base44.asServiceRole.entities.AgentTask.update(parent.id, {
-          status: childStatus === "failed" ? "failed" : "waiting_approval",
+          status: childStatus,
           output_summary: summary,
           output_payload_json: {
             chain_version: CONTACT_LAST_CHAIN_VERSION,

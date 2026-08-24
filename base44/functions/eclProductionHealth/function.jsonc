@@ -1,6 +1,6 @@
 {
   "name": "eclProductionHealth",
-  "entry": "entry.ts",
+  "entry": "serve.ts",
   "automations": [
     {
       "type": "scheduled",

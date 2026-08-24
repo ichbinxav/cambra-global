@@ -621,7 +621,13 @@ describe('ROOT-OTR-013 minimum-delta AgentTask envelope', () => {
     for (const name of adaptedCoordinators) {
       const source = readRoute(name);
       expect(source).toContain('createCanonicalAgentTask');
-      expect(source).toContain('attachCanonicalChildTask');
+      if (name === 'autonomousCompanyOrchestrator') {
+        expect(source).not.toContain('attachCanonicalChildTask');
+        expect(source).toContain("type:'SchedulerRun'");
+        expect(source).not.toContain('service.functions.invoke');
+      } else {
+        expect(source).toContain('attachCanonicalChildTask');
+      }
       expect(source).not.toContain('.entities.AgentTask.create(');
       expect(source).not.toContain('AgentRun');
     }

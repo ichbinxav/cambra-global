@@ -2,18 +2,18 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "3b4e29ffaff5e7ea83eedebae565558b65e6d23de8fa6602bbb2d95e77be7dd4",
+  "input_fingerprint_sha256": "1f16acd0f66851019cd320ff490c57b431d3d5a8eb6fc3056fa711110c94f76b",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "1909e9ea120e7e27e19bc2fd1c65b46246856eea2ddae8b1db0e6d353d64bb67",
+      "sha256": "4b219a4ee96f359975215a083f8b25159b6d47db7a4878016cd752b24e953fb1",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "9fe37032df33a3d05e69a33bf3d0cc4b1556e05442bc2a0bd33747dd7eb2bc3c",
+      "sha256": "44ac7d9f8759244c393c865f903593abdc985a597e27dfccd5a8e7960a707ce8",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
@@ -25,7 +25,7 @@
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "b1105eb58d39a2c14fe055aa789209317702b3b7b531b8343260213423cb0c77",
+      "sha256": "3addc26e67494587e02bea9dda73d8112ca35094f561227856087d8525c1b804",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -183,8 +183,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "1773d2285a3308bc66db7fdcc337027f16660e46c69d6291d8f963360a413959",
-      "bytes": 12114
+      "sha256": "1194282c9acd007c2509f1dc5ecb6a6b802a152e4d0d2b87188fde7e0f8c9016",
+      "bytes": 19586
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
@@ -203,8 +203,8 @@
     },
     {
       "path": "base44/functions/operatingHealthWorker/entry.ts",
-      "sha256": "756fd4f42709c63ccb657a1c99f4cfec3e585e26a1f77a76eaa8e870854a488f",
-      "bytes": 11126
+      "sha256": "525417a35c82728a12cd5fb9d3b81b1b2c60f34b450920cd667d30562fe903c5",
+      "bytes": 11144
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -223,8 +223,8 @@
     },
     {
       "path": "base44/functions/recoverAutopilotWorker/entry.ts",
-      "sha256": "1dc70b062874c94214d08d98772312c5c2f1881b040b3ef9bdd42f51430114d2",
-      "bytes": 7879
+      "sha256": "3ab3096898f842b2a2f440b2bfff0992a0fe3d58f07e1e6bfa1791245e9fd33d",
+      "bytes": 9256
     },
     {
       "path": "base44/functions/startPaymentsMigration/entry.ts",
@@ -313,8 +313,8 @@
     },
     {
       "path": "src/lib/agentTaskEnvelope.test.js",
-      "sha256": "a177936f901041e127b2049348baa6b91adb0cb29e4e669631aaa64053379c1b",
-      "bytes": 35585
+      "sha256": "711eb4fe52ed4d788de19197936f9a53460bd4684ffc8c62600ae06f73b01e46",
+      "bytes": 35853
     },
     {
       "path": "src/lib/agentTaskTerminalEvent.test.js",
@@ -338,8 +338,8 @@
     },
     {
       "path": "src/lib/operationalPlaneReconciliation.test.js",
-      "sha256": "18ad17579fb5e0c31db35c4898066d8048021fea32a4a728299246b190993503",
-      "bytes": 10423
+      "sha256": "4a85da705147768915121941517fc381eb67a10e106f52a5a8ffaec4919d13eb",
+      "bytes": 10857
     },
     {
       "path": "src/lib/preEclFreeze.test.js",

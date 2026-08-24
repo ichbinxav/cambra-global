@@ -20,9 +20,23 @@ for(const dir of fs.readdirSync(root,{withFileTypes:true}).filter((x)=>x.isDirec
   if(!fs.existsSync(entryPath)){failures.push(`${dir.name}:entry_missing`);continue}
   let source=fs.readFileSync(entryPath,'utf8');
   if(source.includes('guardedScheduledServe')){
-    if(fix&&!/guardedScheduledServe\(\{.*\},\s*createClientFromRequest\s*,/.test(source)){
-      source=source.replace(/guardedScheduledServe\((\{.*?\}),\s*(async)/, 'guardedScheduledServe($1,createClientFromRequest,$2');
-      fs.writeFileSync(entryPath,source);changed+=1;
+    const completeGuard=/guardedScheduledServe\s*\(\s*\{[\s\S]*?\}\s*,\s*createClientFromRequest\s*,/.test(source);
+    if(!completeGuard){
+      failures.push(`${dir.name}:scheduled_guard_missing_client_factory`);
+      if(fix){
+        const repaired=source.replace(
+          /guardedScheduledServe\s*\(\s*(\{[\s\S]*?\})\s*,\s*(async|[A-Za-z_$][\w$]*)/,
+          'guardedScheduledServe($1,createClientFromRequest,$2',
+        );
+        if(repaired===source)failures.push(`${dir.name}:scheduled_guard_signature_unrepairable`);
+        else{
+          source=repaired;
+          if(!source.includes("from 'npm:@base44/sdk@0.8.41'")){
+            source="import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';\n"+source;
+          }
+          fs.writeFileSync(entryPath,source);changed+=1;
+        }
+      }
     }
     continue;
   }

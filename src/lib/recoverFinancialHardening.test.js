@@ -567,12 +567,13 @@ describe("Recover financial P0/P1 hardening", () => {
     expect(source).toContain("status: ok ? 200 : 409");
   });
 
-  it("autopilot records and returns child failures instead of a false completed run", () => {
+  it("autopilot separates policy review from technical failure", () => {
     const source = read("base44/functions/recoverAutopilotWorker/entry.ts");
-    expect(source).toContain("status: ok ? 'completed' : 'failed'");
-    expect(source).toContain("status: ok ? 200 : 503");
-    expect(source).toContain("!successful(invoices)");
-    expect(source).toContain("!successful(reconciliation)");
+    expect(source).toContain('"waiting_input"');
+    expect(source).toContain('review_required: waitingInput');
+    expect(source).toContain('status: failures.length > 0 ? 503 : 200');
+    expect(source).toContain('invoiceOutcome.state === "FAILED"');
+    expect(source).toContain('reconciliationOutcome.state === "FAILED"');
   });
 
   it("revocation re-reads activation authority and clears mandate bindings", () => {

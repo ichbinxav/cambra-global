@@ -181,6 +181,8 @@ describe('ROOT-OTR-015 — canonical incident view and exact producer plane', ()
 describe('ROOT-OTR-020 — one work plane, one general supervisor, exact catalog', () => {
   it('quarantines the former parallel system-health plane and removes invocation paths', () => {
     const source = SOURCES.systemHealthAgent;
+    const commandCatalog = read('base44/shared/commandToolCatalog.ts');
+    const founderCommand = read('base44/functions/founderOSCommand/entry.ts');
     expect(source).toContain('QUARANTINED_COMPATIBILITY_NO_WRITES');
     expect(source).toContain('{ status: 410 }');
     expect(source).toContain('operational_plane_writes: 0');
@@ -195,6 +197,10 @@ describe('ROOT-OTR-020 — one work plane, one general supervisor, exact catalog
       admin_invocation_removed: true,
     });
     expect(read('src/lib/agentRegistry.js')).toContain('status: "QUARANTINED_COMPATIBILITY"');
+    expect(commandCatalog).toContain('function: "getMaintenanceCenter"');
+    expect(commandCatalog).not.toContain('function: "systemHealthAgent"');
+    expect(founderCommand).toContain('? "getMaintenanceCenter"');
+    expect(founderCommand).not.toContain('? "systemHealthAgent"');
   });
 
   it('keeps AgentRun service-only legacy history with zero repository writers', () => {

@@ -509,7 +509,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "sha256": "4e70cd2eb513a67e53fb2f02aa9ed12c6bdc16e9d8afa8d7e7f897559ba8d2b0"
+      "sha256": "a785b0fdaf9d6ada1bf56d258ce73e62563b83a23506ab885a572f6c218d69e3"
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",
@@ -521,7 +521,7 @@
     },
     {
       "path": "base44/functions/founderOSCommand/entry.ts",
-      "sha256": "61d5defc3b8e1195e76f6b704d2f1e46a5c21ae00664818ff7582bda50522f7b"
+      "sha256": "b9d96ffee30b1dbd09dce2f4fadd5b49e6ec5f83f0dd32fbb43b4d591a1f2eac"
     },
     {
       "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
@@ -645,7 +645,7 @@
     },
     {
       "path": "src/lib/recoverFinancialHardening.test.js",
-      "sha256": "f14b53485409016332d7f84472bcd2d89ea5a49fd465faca5bb6cb81fe9d5bd8"
+      "sha256": "9c7f3f6c81c873ce6663bd116859a0829cd1bfe614c7464d6207a8d9242097d7"
     },
     {
       "path": "src/pages/admin/AdminChat.jsx",

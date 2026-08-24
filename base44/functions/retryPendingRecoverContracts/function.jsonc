@@ -14,5 +14,5 @@
       "function_args": {}
     }
   ],
-  "entry": "entry.ts"
+  "entry": "serve.ts"
 }

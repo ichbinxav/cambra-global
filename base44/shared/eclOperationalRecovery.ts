@@ -100,6 +100,14 @@ function hasPersistedReferences(value: any) {
   return !Array.isArray(value) || value.length > 0;
 }
 
+function referencesSchedulerAttempt(task: any, attempt: any, runKey: string) {
+  if (String(task?.parent_run || '') === runKey) return true;
+  return Array.isArray(task?.source_refs_json) && task.source_refs_json.some((ref: any) =>
+    String(ref?.type || '').toLowerCase() === 'schedulerrun' &&
+    String(ref?.id || '') === String(attempt?.id || '')
+  );
+}
+
 export function schedulerControlRecoveryDecision(
   control: any,
   attempt: any,
@@ -118,7 +126,7 @@ export function schedulerControlRecoveryDecision(
     return { ok: false, action: 'blocked', reason: 'scheduler_attempt_run_key_unproven' };
   }
   if (!Array.isArray(tasks)) return { ok: false, action: 'blocked', reason: 'scheduler_task_evidence_unavailable' };
-  const matchingTasks = tasks.filter((task) => String(task?.parent_run || '') === runKey);
+  const matchingTasks = tasks.filter((task) => referencesSchedulerAttempt(task, attempt, runKey));
   if (matchingTasks.length > 1) return { ok: false, action: 'blocked', reason: 'scheduler_attempt_task_ambiguous' };
   if (matchingTasks.length === 0) {
     if (options.allowNoTaskProof !== true) {

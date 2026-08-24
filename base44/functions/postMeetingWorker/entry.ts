@@ -62,5 +62,5 @@ Deno.serve(async(req)=>{
     }
     return Response.json({ok:true,due:rows.length,sent,skipped,waiting_outcome:waitingOutcome});
   }catch(error){schedulerOk=false;console.error('postMeetingWorker failed',error);return Response.json({ok:false,error:'post_meeting_worker_failed'},{status:500});}
-  finally{if(schedulerSvc&&schedulerClaim)await finishSchedulerRunOrThrow(schedulerSvc,schedulerClaim,{worker_key:'postMeetingWorker'},schedulerOk);}
+  finally{if(schedulerSvc&&schedulerClaim?.allowed===true)await finishSchedulerRunOrThrow(schedulerSvc,schedulerClaim,{worker_key:'postMeetingWorker'},schedulerOk);}
 });

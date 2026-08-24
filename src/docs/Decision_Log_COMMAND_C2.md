@@ -87,6 +87,15 @@ consume shared shell keys (`nav.*`, sidebar chrome), not workspace copy.
 This is a declared deviation, not an oversight. Translating this workspace means running the
 full locale protocol across 23 languages, and it should be a decision taken on its own.
 
+### 8. Ownership does not use Base44's reserved `created_by`
+
+Live verification on 2026-08-24 proved that `asServiceRole.create()` overwrites
+`created_by` with the service identity. Filtering conversations by that field therefore
+made a newly created conversation disappear on the next read. `owner_actor` is now the
+explicit access-scope key, while `attributed_actor` separately records supported authorship.
+Keeping those meanings separate also preserves the C1 rule: an unattributed legacy turn is
+never credited to the operator who ran its migration.
+
 ## Carried forward
 
 - The legacy `ChatMessage` migration planned in C1 (`commandLegacyChatMigration.ts`) is not

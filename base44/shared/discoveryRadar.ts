@@ -72,6 +72,28 @@ export function discoveryPartitionKey(source: string, partition: any): string {
   ].join(":");
 }
 
+export function discoveryAttemptNumber(completedApiCalls: unknown): number {
+  return Math.max(0, Math.floor(Number(completedApiCalls) || 0)) + 1;
+}
+
+export function discoveryOperationKey(input: {
+  provider: unknown;
+  operation: unknown;
+  checkpointKey: unknown;
+  page: unknown;
+  completedApiCalls: unknown;
+}) {
+  const attempt = discoveryAttemptNumber(input.completedApiCalls);
+  return [
+    "api",
+    text(input.provider).toLowerCase() || "unknown",
+    text(input.operation).toLowerCase() || "unknown",
+    text(input.checkpointKey) || "unknown",
+    `page:${Math.max(1, Math.floor(Number(input.page) || 1))}`,
+    `attempt:${attempt}`,
+  ].join(":");
+}
+
 export function checkpointBackoff(failures: unknown, now = new Date()) {
   const count = Math.max(1, Math.min(8, Math.floor(Number(failures) || 1)));
   const delayMinutes = Math.min(24 * 60, 5 * (2 ** (count - 1)));

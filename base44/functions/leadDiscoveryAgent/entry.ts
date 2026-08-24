@@ -18,6 +18,8 @@ import {
   cheapDiscoveryPreScore,
   checkpointBackoff,
   DISCOVERY_ENGINE_VERSION,
+  discoveryAttemptNumber,
+  discoveryOperationKey,
   discoveryPartitionKey,
   discoveryProviderStatus,
   normalizeDiscoveryDomain,
@@ -737,8 +739,16 @@ Deno.serve(async (req) => {
     // Broad discovery is strictly company-only. Person lookup lives exclusively
     // behind leadEnrichmentAgent's explicit CONTACT_RESOLUTION gate.
     const discoveryRunId = String(body?.discovery_run_id || "");
+    const discoveryAttempt = discoveryAttemptNumber(checkpoint.api_calls);
+    const discoveryCostEventKey = discoveryOperationKey({
+      provider: "apollo",
+      operation: "organization-search",
+      checkpointKey,
+      page,
+      completedApiCalls: checkpoint.api_calls,
+    });
     const costReservation = await reservePaidOperation(service, {
-      event_key: `api:apollo:organization-search:${checkpointKey}:page:${page}`,
+      event_key: discoveryCostEventKey,
       category: "api",
       provider: "apollo",
       source: "leadDiscoveryAgent",
@@ -750,6 +760,7 @@ Deno.serve(async (req) => {
       usage_json: {
         discovery_run_id: discoveryRunId || null,
         checkpoint_id: checkpoint.id,
+        discovery_attempt: discoveryAttempt,
         stage: body?.cost_stage || "NATIVE_DISCOVERY",
         reason: body?.cost_reason || "provider_native_search",
       },
@@ -758,7 +769,7 @@ Deno.serve(async (req) => {
       await service.entities.AgentTask.update(task.id, {
         status: "waiting_input",
         output_summary:
-          "A prior Apollo cost reservation exists without a run receipt; provider replay was blocked and requires reconciliation",
+          "A prior Apollo reservation exists for this exact discovery attempt; provider replay was blocked and requires reconciliation",
         error: "DUPLICATE_PAID_DISCOVERY_EFFECT_REVIEW_REQUIRED",
         completed_at: now(),
       });
@@ -798,7 +809,7 @@ Deno.serve(async (req) => {
     }
     const result = await guardReservedPaidProviderEffect(service,costReservation,{
       category:'api',provider:'apollo',source:'leadDiscoveryAgent',
-      event_key:costReservation.event?.event_key,effect_key:`apollo_organization_search:${checkpointKey}:page:${page}`,
+      event_key:costReservation.event?.event_key,effect_key:`apollo_organization_search:${checkpointKey}:page:${page}:attempt:${discoveryAttempt}`,
     },()=>providerAdapter.searchCompanies(organizationSearchBody));
     const organizations = Array.isArray(result.payload?.organizations)
       ? result.payload.organizations

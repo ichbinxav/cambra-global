@@ -166,7 +166,7 @@ export async function handleProductionReadinessWorker(req: Request) {
   let schedulerSvc: any = null, schedulerClaim: any = null, schedulerOk = true;
   try {
     const base44 = createClientFromRequest(req),
-      body = await req.json().catch(() => ({})),
+      body = await req.clone().json().catch(() => ({})),
       gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     const svc = base44.asServiceRole;
@@ -502,7 +502,7 @@ export async function handleProductionReadinessWorker(req: Request) {
       automated_action_allowed: false,
     }, { status: 500 });
   } finally {
-    if (schedulerSvc && schedulerClaim) {
+    if (schedulerSvc && schedulerClaim?.allowed === true) {
       await finishSchedulerRunOrThrow(schedulerSvc, schedulerClaim, {
         worker_key: "productionReadinessWorker",
       }, schedulerOk);

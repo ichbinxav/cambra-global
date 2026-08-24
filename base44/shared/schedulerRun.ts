@@ -171,6 +171,14 @@ function invocationKind(req: Request) {
   return 'MANUAL';
 }
 
+/** Returns the exact outer scheduler claim for handlers wrapped by
+ * guardedScheduledServe. It is read-only lineage evidence, not authority for
+ * another request or effect. */
+export function schedulerClaimForRequest(req: Request) {
+  const claim = ACTIVE_REQUEST_CLAIMS.get(req);
+  return claim?.allowed === true ? claim : null;
+}
+
 function updatedExactlyOne(result: any) {
   if (!result || typeof result !== 'object') return false;
   const explicitStatuses = ['success', 'ok']
@@ -1380,6 +1388,13 @@ export async function finishSchedulerRunOrThrow(
   details: any = {},
   ok = true,
 ) {
+  // A denied claim owns no fence and has nothing to finalize. Callers commonly
+  // return the centralized duplicate/ambiguity response from inside `try`;
+  // their `finally` blocks must not replace that response with a false fence
+  // failure.
+  if (claim?.allowed !== true) {
+    return { ok: true, skipped: true, reason: 'scheduler_claim_not_owned' };
+  }
   const finished = await finishSchedulerRun(svc, claim, details, ok);
   if (finished?.ok) return finished;
   const reason = String(finished?.reason || 'scheduler_finalize_unknown');
@@ -1658,6 +1673,12 @@ export function evaluateSchedulerEvidence(
     const latest = ordered.find((run: any) => run.status === 'COMPLETED') ||
       null;
     const ageSeconds = latest ? Math.max(0, (nowMs - Date.parse(latest.started_at || '')) / 1000) : null;
+    const consecutiveFailures = ordered.findIndex((run: any) =>
+      run.status !== 'FAILED'
+    );
+    const failedRunCount = consecutiveFailures === -1
+      ? ordered.length
+      : consecutiveFailures;
     const duplicates = workerRuns.filter((run: any) =>
       run.status === 'DUPLICATE_BLOCKED' &&
       nowMs - Date.parse(run.started_at || '') <=
@@ -1674,7 +1695,11 @@ export function evaluateSchedulerEvidence(
     }
     const duplicateExecutions = [...executedByKey.values()].filter((count) => count > 1).length;
     let status: 'HEALTHY' | 'DEGRADED' | 'STALE' | 'FAILED' | 'UNKNOWN' = 'UNKNOWN';
-    if (latestRun?.status === 'FAILED') status = 'FAILED';
+    if (latestRun?.status === 'FAILED') {
+      const recentCompletion = latest && Number.isFinite(ageSeconds) &&
+        Number(ageSeconds) <= required.cadence_seconds * 2.5;
+      status = recentCompletion && failedRunCount === 1 ? 'DEGRADED' : 'FAILED';
+    }
     else if (
       latest && Number.isFinite(ageSeconds) &&
       Number(ageSeconds) > required.cadence_seconds * 2.5
@@ -1696,6 +1721,7 @@ export function evaluateSchedulerEvidence(
       active,
       duplicate_attempts_blocked: duplicates,
       duplicate_executions: duplicateExecutions,
+      consecutive_failures: failedRunCount,
     };
   });
   return {

@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
       { status: 500 },
     );
   } finally {
-    if (__schedulerSvc && __schedulerClaim) {
+    if (__schedulerSvc && __schedulerClaim?.allowed === true) {
       await finishSchedulerRunOrThrow(__schedulerSvc, __schedulerClaim, {
         worker_key: "outboundDeliverabilityManager",
       }, __schedulerOk);

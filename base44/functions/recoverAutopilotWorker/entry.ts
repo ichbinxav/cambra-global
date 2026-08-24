@@ -1,18 +1,27 @@
 import { safeBestEffort } from "../../shared/bestEffort.ts";
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.41";
 import { requireAdminOrInternal } from "../../shared/internalGate.ts";
-import { guardedScheduledServe } from "../../shared/schedulerRun.ts";
+import {
+  guardedScheduledServe,
+  schedulerClaimForRequest,
+} from "../../shared/schedulerRun.ts";
 import {
   createCanonicalAgentTask,
   settleCanonicalAgentTask,
 } from "../../shared/agentTaskEnvelope.ts";
+import {
+  classifyRecoverChildOutcome,
+  decodeRecoverInvocationError,
+} from "../../shared/recoverAutopilotOutcome.ts";
 
-function payload(result: any) {
-  return result?.data ?? result ?? null;
-}
-
-function successful(result: any) {
-  return payload(result)?.ok === true;
+async function invokeChild(svc: any, name: string, input: any) {
+  try {
+    const response = await svc.functions.invoke(name, input);
+    return classifyRecoverChildOutcome(response);
+  } catch (error: any) {
+    const decoded = decodeRecoverInvocationError(error);
+    return classifyRecoverChildOutcome(decoded, Number(decoded.http_status || 0));
+  }
 }
 
 guardedScheduledServe(
@@ -31,6 +40,7 @@ guardedScheduledServe(
       }
       const svc = base44.asServiceRole;
       const internal = Deno.env.get("INTERNAL_CALL_SECRET") || "";
+      const schedulerClaim = schedulerClaimForRequest(req);
       task = await createCanonicalAgentTask(svc, req, {
         brand_id: "_platform",
         agent_name: "recover_autopilot",
@@ -43,7 +53,7 @@ guardedScheduledServe(
         started_at: new Date().toISOString(),
       }, {
         workflowKey: "recover_autopilot_orchestration",
-        workflowVersion: "v2.0.0",
+        workflowVersion: "v2.1.0",
         tenantKey: "_platform",
         processingPurpose: "recover_measurement_billing_orchestration",
         functionName: "recoverAutopilotWorker",
@@ -51,13 +61,26 @@ guardedScheduledServe(
         subjectType: "RecoverPortfolio",
         subjectId: "_platform",
         policyContext: { status: "NOT_APPLICABLE" },
-        // guardedScheduledServe owns the scheduler fence but does not expose
-        // its durable SchedulerRun id to this callback, so no id is invented.
+        // Authority remains unknown until each child revalidates its own gate;
+        // the exact outer SchedulerRun is recorded separately as lineage only.
         authorityContext: { status: "UNKNOWN" },
         intelligenceContext: { status: "NOT_APPLICABLE" },
         materialEffect: true,
         effectClass: "SCHEDULE_MATERIAL",
         costApplicable: false,
+        ...(schedulerClaim
+          ? {
+            parentRun: String(schedulerClaim.run_key),
+            sourceRefs: [{
+              type: "SchedulerRun",
+              id: String(schedulerClaim.run.id),
+              version: String(
+                schedulerClaim.run?.details_json?.guard_version ||
+                  "scheduler-guard-unknown",
+              ),
+            }],
+          }
+          : {}),
       });
 
       // This is an authority-bearing source read. An outage is not equivalent to
@@ -76,83 +99,96 @@ guardedScheduledServe(
           type: "internal_function_effect",
           id: `invoke:generateMonthlySavingsReport:${brand_id}`,
         });
-        try {
-          const result = await svc.functions.invoke(
-            "generateMonthlySavingsReport",
-            { brand_id, internal_secret: internal },
-          );
-          measurements.push({ brand_id, result: payload(result) });
-        } catch (error: any) {
-          measurements.push({
-            brand_id,
-            result: { ok: false, error: String(error?.message || error) },
-          });
-        }
+        const outcome = await invokeChild(svc, "generateMonthlySavingsReport", {
+          brand_id,
+          internal_secret: internal,
+        });
+        measurements.push({ brand_id, state: outcome.state, result: outcome.data });
       }
 
-      let invoices: any;
-      let reconciliation: any;
-      try {
-        traceEffectRefs.push({
-          type: "internal_function_effect",
-          id: "invoke:createEligibleRecoverInvoices:_platform",
-        });
-        invoices = payload(
-          await svc.functions.invoke("createEligibleRecoverInvoices", {
-            internal_secret: internal,
-          }),
-        );
-      } catch (error: any) {
-        invoices = { ok: false, error: String(error?.message || error) };
-      }
-      try {
-        traceEffectRefs.push({
-          type: "internal_function_effect",
-          id: "invoke:reconcileRecoverBilling:_platform",
-        });
-        reconciliation = payload(
-          await svc.functions.invoke("reconcileRecoverBilling", {
-            internal_secret: internal,
-          }),
-        );
-      } catch (error: any) {
-        reconciliation = { ok: false, error: String(error?.message || error) };
-      }
+      traceEffectRefs.push({
+        type: "internal_function_effect",
+        id: "invoke:createEligibleRecoverInvoices:_platform",
+      });
+      const invoiceOutcome = await invokeChild(
+        svc,
+        "createEligibleRecoverInvoices",
+        { internal_secret: internal },
+      );
+      const invoices = invoiceOutcome.data;
+      traceEffectRefs.push({
+        type: "internal_function_effect",
+        id: "invoke:reconcileRecoverBilling:_platform",
+      });
+      const reconciliationOutcome = await invokeChild(
+        svc,
+        "reconcileRecoverBilling",
+        { internal_secret: internal },
+      );
+      const reconciliation = reconciliationOutcome.data;
 
       const failedMeasurements = measurements.filter((row) =>
-        !successful(row.result)
+        row.state === "FAILED"
+      );
+      const reviewMeasurements = measurements.filter((row) =>
+        row.state === "WAITING_INPUT"
       );
       const failures = [
         ...failedMeasurements.map((row) => `measurement:${row.brand_id}`),
-        ...(!successful(invoices) ? ["invoice_issuance"] : []),
-        ...(!successful(reconciliation) ? ["billing_reconciliation"] : []),
+        ...(invoiceOutcome.state === "FAILED" ? ["invoice_issuance"] : []),
+        ...(reconciliationOutcome.state === "FAILED"
+          ? ["billing_reconciliation"]
+          : []),
       ];
-      const ok = failures.length === 0;
+      const reviewBlocks = [
+        ...reviewMeasurements.map((row) => `measurement:${row.brand_id}`),
+        ...(invoiceOutcome.state === "WAITING_INPUT"
+          ? ["invoice_issuance"]
+          : []),
+        ...(reconciliationOutcome.state === "WAITING_INPUT"
+          ? ["billing_reconciliation"]
+          : []),
+      ];
+      const ok = failures.length === 0 && reviewBlocks.length === 0;
+      const waitingInput = failures.length === 0 && reviewBlocks.length > 0;
+      const taskStatus = failures.length > 0
+        ? "failed"
+        : waitingInput
+        ? "waiting_input"
+        : "completed";
       const terminalResult = {
         ok,
         failures,
+        review_required: waitingInput,
+        review_blocks: reviewBlocks,
         measurements: measurements.slice(0, 100),
         invoices,
         reconciliation,
       };
-      // Static contract marker retained for the existing failure-visibility test:
-      // status: ok ? 'completed' : 'failed'
       await settleCanonicalAgentTask(svc, task, {
-        status: ok ? "completed" : "failed",
+        status: taskStatus,
         output_summary: ok
           ? `Recover autopilot completed for ${brands.length} active brand(s)`
+          : waitingInput
+          ? `Recover autopilot requires input: ${reviewBlocks.join(", ")}`
           : `Recover autopilot incomplete: ${failures.join(", ")}`,
         output_payload_json: terminalResult,
-        ...(ok ? {} : { error: "recover_autopilot_incomplete" }),
+        ...(failures.length > 0 ? { error: "recover_autopilot_incomplete" } : {}),
         completed_at: new Date().toISOString(),
       }, {
-        terminalState: ok ? "COMPLETED" : "FAILED",
+        terminalState: ok
+          ? "COMPLETED"
+          : waitingInput
+          ? "REVIEW_REQUIRED"
+          : "FAILED",
         // Child functions do not return canonical task/receipt refs in a
         // universal contract yet. Keep this root trace explicitly partial.
         effectState: traceEffectRefs.length > 0
           ? "EFFECT_STARTED"
           : "NOT_STARTED",
-        ambiguityState: traceEffectRefs.length > 0 ? "UNKNOWN" : "NONE",
+        ambiguityState: failures.length > 0 && traceEffectRefs.length > 0
+          ? "UNKNOWN"
+          : "NONE",
         result: terminalResult,
         effectRefs: traceEffectRefs,
         receiptRefs: [],
@@ -166,14 +202,16 @@ guardedScheduledServe(
 
       return Response.json({
         ok,
+        review_required: waitingInput,
         active_brands: brands.length,
         failures,
+        review_blocks: reviewBlocks,
         measurements,
         invoices,
         reconciliation,
         note:
           "No report approval is automated. Only already-eligible reports can be invoiced.",
-      }, { status: ok ? 200 : 503 });
+      }, { status: failures.length > 0 ? 503 : 200 });
     } catch (error) {
       console.error(error);
       if (task?.id) {

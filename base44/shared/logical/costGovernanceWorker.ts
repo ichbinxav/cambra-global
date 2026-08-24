@@ -13,7 +13,7 @@ export async function handleCostGovernanceWorker(req: Request) {
   let svc:any = null, claim:any = null;
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json().catch(() => ({}));
+    const body = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;

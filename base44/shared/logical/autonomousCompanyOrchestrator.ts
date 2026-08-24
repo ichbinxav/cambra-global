@@ -7,22 +7,62 @@ import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarte
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../internalGate.ts';
 import { emergencyState } from '../operationalControl.ts';
-import { attachCanonicalChildTask, createCanonicalAgentTask } from '../agentTaskEnvelope.ts';
+import { createCanonicalAgentTask } from '../agentTaskEnvelope.ts';
 import { sha256Canonical } from '../legalExecution.ts';
 import { runtimeDeploymentIdentity, validateRuntimeDeploymentIdentity } from '../runtimeEvidence.ts';
 
-const VERSION = 'autonomous-company-orchestrator-p8-1.0.0';
+const VERSION = 'autonomous-company-orchestrator-p8-1.1.0';
 
-async function invokeStep(service: any, name: string, internalSecret: string, parent: any, stepIndex: number, payload: any = {}) {
-  const startedAt = new Date().toISOString();
-  try {
-    const result = await service.functions.invoke(name, { ...payload,internal_secret: internalSecret });
-    const data = result?.data || result || {};
-    if (data?.task_id) await attachCanonicalChildTask(service, data.task_id, parent, { stepKey:name, stepIndex, input:payload, sourceRefs:[{type:'function',id:name}] });
-    return { name, ok: data?.ok !== false, started_at: startedAt, completed_at: new Date().toISOString(), result: data };
-  } catch (error: any) {
-    return { name, ok: false, started_at: startedAt, completed_at: new Date().toISOString(), error: String(error?.message || error).slice(0, 500) };
-  }
+const COORDINATED_WORKERS = Object.freeze([
+  { name: 'alwaysOnLeadDiscoveryWorker', cadenceSeconds: 3600 },
+  { name: 'salesPipelineWorker', cadenceSeconds: 3600 },
+  { name: 'outreachExperimentLearningWorker', cadenceSeconds: 86400 },
+  { name: 'executiveDigestWorker', cadenceSeconds: 86400 },
+]);
+
+function observedAt(run: any) {
+  const raw = run?.completed_at || run?.heartbeat_at || run?.started_at;
+  const parsed = Date.parse(String(raw || ''));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function projectScheduledWorkerEvidence(spec: any, rows: any[], nowMs = Date.now()) {
+  const attempts = (Array.isArray(rows) ? rows : [])
+    .filter((row: any) => row?.record_kind !== 'CONTROL' && row?.invocation_kind === 'SCHEDULED')
+    .sort((a: any, b: any) => Number(observedAt(b) || 0) - Number(observedAt(a) || 0));
+  const latest = attempts[0] || null;
+  const latestCompleted = attempts.find((row: any) => row?.status === 'COMPLETED') || null;
+  const completedAt = observedAt(latestCompleted);
+  const ageSeconds = completedAt === null ? null : Math.max(0, (nowMs - completedAt) / 1000);
+  const fresh = ageSeconds !== null && ageSeconds <= Number(spec.cadenceSeconds) * 2.5;
+  let status = 'UNKNOWN';
+  if (latest?.status === 'COMPLETED') status = fresh ? 'HEALTHY' : 'STALE';
+  else if (latest?.status === 'FAILED') status = fresh ? 'DEGRADED' : 'FAILED';
+  else if (latest?.status === 'REVIEW_REQUIRED') status = 'REVIEW_REQUIRED';
+  else if (['CLAIMED', 'RUNNING', 'DUPLICATE_BLOCKED'].includes(String(latest?.status || ''))) status = 'DEGRADED';
+  else if (latestCompleted) status = fresh ? 'HEALTHY' : 'STALE';
+  return {
+    name: spec.name,
+    ok: status === 'HEALTHY',
+    observation_only: true,
+    status,
+    cadence_seconds: Number(spec.cadenceSeconds),
+    latest_run_id: latest?.id || null,
+    latest_run_status: latest?.status || null,
+    latest_completed_run_id: latestCompleted?.id || null,
+    latest_completed_at: latestCompleted?.completed_at || latestCompleted?.heartbeat_at || null,
+    age_seconds: ageSeconds,
+  };
+}
+
+async function observeStep(service: any, spec: any) {
+  const rows = await service.entities.SchedulerRun.filter({
+    worker_key: spec.name,
+    record_kind: 'ATTEMPT',
+    invocation_kind: 'SCHEDULED',
+  }, '-started_at', 20);
+  if (!Array.isArray(rows)) throw new Error(`scheduler_evidence_unavailable:${spec.name}`);
+  return projectScheduledWorkerEvidence(spec, rows);
 }
 
 async function upsertMarketDecision(service: any, snapshot: any) {
@@ -60,13 +100,12 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
   let task: any = null;
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json().catch(() => ({}));
+    const body = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response as Response;
     const service = base44.asServiceRole;__schedulerSvc=service;__schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'autonomousCompanyOrchestrator',cadence_seconds:21600});{const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}__schedulerClaim=await markSchedulerEffectStarted(service,__schedulerClaim);{const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
     const __runtimeIdentity=runtimeDeploymentIdentity(),__runtimeValidation=validateRuntimeDeploymentIdentity(__runtimeIdentity,{environment:'production'});
     __schedulerRuntime={runtime_identity_hash:await sha256Canonical(__runtimeIdentity),runtime_git_sha:__runtimeIdentity.git_sha,runtime_identity_status:__runtimeValidation.status,runtime_identity_blockers:__runtimeValidation.blockers};
-    const internalSecret = Deno.env.get('INTERNAL_CALL_SECRET') || '';
     const emergency = await emergencyState(service);
     task = await createCanonicalAgentTask(service, req, {
       brand_id: '_platform', agent_name: 'autonomous_company_orchestrator', task_type: 'p8_company_coordination',
@@ -77,6 +116,7 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       workflowKey:'autonomous_company_coordination', workflowVersion:VERSION, tenantKey:'_platform',
       processingPurpose:'company_intelligence_coordination', functionName:'autonomousCompanyOrchestrator',
       input:{host_action:body?.host_action||null}, triggerType:gate.isInternal?'INTERNAL':undefined,
+      parentRun:String(__schedulerClaim.run.run_key || __schedulerClaim.run.id),
       sourceRefs:[
         {type:'platform_scope',id:'_platform'},
         {
@@ -87,14 +127,10 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       ],
     });
 
-    // These steps are deliberately intelligence/projection-only. External
-    // sending, contract acceptance, migration cutover, spend and charging stay
-    // behind their existing policy/authority gates and are not invoked here.
-    const steps = [];
-    steps.push(await invokeStep(service, 'alwaysOnLeadDiscoveryWorker', internalSecret, task, 1));
-    steps.push(await invokeStep(service, 'salesPipelineWorker', internalSecret, task, 2));
-    steps.push(await invokeStep(service, 'outreachExperimentLearningWorker', internalSecret, task, 3));
-    steps.push(await invokeStep(service, 'executiveDigestWorker', internalSecret, task, 4));
+    // Each dependency already owns a durable schedule. Coordination observes
+    // those scheduler receipts instead of re-invoking four long-running jobs.
+    // This keeps the six-hour task bounded and cannot send, charge or spend.
+    const steps = await Promise.all(COORDINATED_WORKERS.map((spec) => observeStep(service, spec)));
 
     const [commercialRows, maintenanceRows, criticalIncidents] = await Promise.all([
       service.entities.CommercialIntelligenceSnapshot.list('-generated_at', 1).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
@@ -102,8 +138,8 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       service.entities.AutonomyIncident.filter({ status: 'open', severity: 'critical' }, '-last_seen_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:[],severity:'secondary'})),
     ]);
     const decision = await upsertMarketDecision(service, commercialRows[0] || null).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:null,severity:'secondary'}));
-    const failedSteps = steps.filter((step) => !step.ok);
-    const state = failedSteps.length || criticalIncidents.length ? 'degraded' : emergency.safe_mode ? 'contained' : 'healthy';
+    const degradedSteps = steps.filter((step) => !step.ok);
+    const state = degradedSteps.length || criticalIncidents.length ? 'degraded' : emergency.safe_mode ? 'contained' : 'healthy';
     const output = {
       orchestrator_version: VERSION,
       state,
@@ -117,18 +153,17 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       truth_boundary: 'Coordination status is operational evidence. It is not financial truth and cannot grant approve/sign/spend/charge authority.',
     };
     await service.entities.AgentTask.update(task.id, {
-      status: failedSteps.length ? 'failed' : 'completed',
-      output_summary: `P8 coordination ${state}: ${steps.length - failedSteps.length}/${steps.length} intelligence steps completed`,
+      status: 'completed',
+      output_summary: `P8 coordination ${state}: ${steps.length - degradedSteps.length}/${steps.length} scheduled dependencies healthy`,
       output_payload_json: output,
-      ...(failedSteps.length ? { error: `${failedSteps.length} coordinated step(s) failed` } : {}),
       completed_at: new Date().toISOString(),
     });
     await service.entities.Event.create({
       brand_id: '_platform', event_type: 'company.coordination.completed', source: 'autonomous_company_orchestrator',
       entity_type: 'AgentTask', entity_id: task.id, agent_task_id: task.id,
-      payload_json: { orchestrator_version: VERSION, state, failed_steps: failedSteps.map((step) => step.name), commercial_intelligence_snapshot_id: output.commercial_intelligence_snapshot_id, founder_decision_id: output.founder_decision_id }, status: 'pending',
+      payload_json: { orchestrator_version: VERSION, state, degraded_dependencies: degradedSteps.map((step) => step.name), commercial_intelligence_snapshot_id: output.commercial_intelligence_snapshot_id, founder_decision_id: output.founder_decision_id }, status: 'pending',
     }).catch((error:any)=>safeBestEffort(error,{operation:'autonomousCompanyOrchestrator',fallback:null,severity:'secondary'}));
-    return Response.json({ ok: failedSteps.length === 0, task_id: task.id, ...output }, { status: failedSteps.length ? 207 : 200 });
+    return Response.json({ ok: true, task_id: task.id, ...output });
   } catch (error) {
     __schedulerOk=false;
     console.error('autonomousCompanyOrchestrator failed', error);
@@ -139,5 +174,5 @@ export async function handleAutonomousCompanyOrchestrator(req: Request) {let __s
       } catch {__schedulerOk=false; /* best effort */ }
     }
     return Response.json({ ok: false, error: 'autonomous_company_orchestration_failed', task_id: task?.id || null }, { status: 500 });
-  }finally{if(__schedulerSvc&&__schedulerClaim)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator',...(__schedulerRuntime||{runtime_identity_status:'INCOMPLETE',runtime_identity_blockers:['runtime_binding_not_recorded']})},__schedulerOk)}
+  }finally{if(__schedulerSvc&&__schedulerClaim?.allowed===true)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:'autonomousCompanyOrchestrator',...(__schedulerRuntime||{runtime_identity_status:'INCOMPLETE',runtime_identity_blockers:['runtime_binding_not_recorded']})},__schedulerOk)}
 }

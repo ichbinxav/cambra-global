@@ -13,6 +13,7 @@ import { handleCommandConversationAction } from "../../../base44/shared/commandC
 globalThis.React = React;
 
 const FOUNDER = { id: "founder-1", email: "founder@cambra.global", role: "admin" };
+const SERVICE_CREATOR = "service+runtime@no-reply.base44.com";
 
 function makeSvc(rows = {}) {
   const store = {};
@@ -25,7 +26,12 @@ function makeSvc(rows = {}) {
             Object.entries(query).every(([key, value]) => String(row[key]) === String(value)));
           return (typeof limit === "number" ? found.slice(0, limit) : found).map((row) => ({ ...row }));
         },
-        async create(value) { const row = { id: `r${this.rows.length + 1}`, ...value }; this.rows.push(row); return { ...row }; },
+        async create(value) {
+          // Mirrors Base44 service-role behavior: created_by is reserved and
+          // the platform overwrites any caller-supplied value.
+          const row = { id: `r${this.rows.length + 1}`, ...value, created_by: SERVICE_CREATOR };
+          this.rows.push(row); return { ...row };
+        },
         async update(id, patch) {
           const row = this.rows.find((candidate) => candidate.id === id);
           Object.assign(row, patch); return { ...row };
@@ -42,10 +48,12 @@ const real = async (body, svc) =>
   (await handleCommandConversationAction(FOUNDER, body, svc, { now: () => "2026-08-17T12:00:00.000Z" })).json();
 
 const CONVERSATIONS = [
-  { id: "id-c1", conversation_id: "c1", title: "ES pipeline", created_by: FOUNDER.email,
+  { id: "id-c1", conversation_id: "c1", title: "ES pipeline", owner_actor: FOUNDER.email,
+    attributed_actor: FOUNDER.email, created_by: SERVICE_CREATOR,
     attribution_state: "OBSERVED", status: "ACTIVE", message_count: 2,
     created_at: "2026-08-01T00:00:00.000Z", last_message_at: "2026-08-02T00:00:00.000Z" },
-  { id: "id-c1b", conversation_id: "c1b", title: "ES pipeline (branch)", created_by: FOUNDER.email,
+  { id: "id-c1b", conversation_id: "c1b", title: "ES pipeline (branch)", owner_actor: FOUNDER.email,
+    attributed_actor: FOUNDER.email, created_by: SERVICE_CREATOR,
     attribution_state: "OBSERVED", status: "PINNED", message_count: 1,
     branched_from_conversation_id: "c1", branched_from_message_id: "m1",
     created_at: "2026-08-03T00:00:00.000Z", last_message_at: "2026-08-03T00:00:00.000Z" },
@@ -99,6 +107,17 @@ describe("C2 — the sidebar lists real durable conversations", () => {
 });
 
 describe("C2 — conversation writes require the durable response contract", () => {
+  it("uses an explicit owner because Base44 reserves created_by", async () => {
+    const svc = makeSvc();
+    const created = await real({ action: "create", conversation_id: "c-new" }, svc);
+    expect(created.conversation.owner_actor).toBe(FOUNDER.email);
+    expect(created.conversation.attributed_actor).toBe(FOUNDER.email);
+    expect(created.conversation.created_by).toBe(SERVICE_CREATOR);
+
+    const listed = await real({ action: "list" }, svc);
+    expect(listed.conversations.map((row) => row.conversation_id)).toEqual(["c-new"]);
+  });
+
   it("accepts a conversation carrying its canonical identifier", () => {
     const { requireConversationResult } = PageModule;
     expect(requireConversationResult({ conversation: { conversation_id: "c1" } }, "create"))
@@ -136,7 +155,8 @@ describe("C2 — the context inspector tells the founder what they are not seein
   it("warns loudly when a parent could not be read", async () => {
     const { ContextInspector } = PageModule;
     const svc = makeSvc({
-      CommandConversation: [{ id: "id-x", conversation_id: "x", created_by: FOUNDER.email, status: "ACTIVE",
+      CommandConversation: [{ id: "id-x", conversation_id: "x", owner_actor: FOUNDER.email,
+        attributed_actor: FOUNDER.email, created_by: SERVICE_CREATOR, status: "ACTIVE",
         attribution_state: "OBSERVED", branched_from_conversation_id: "gone", branched_from_message_id: "m1" }],
       ChatMessage: [{ id: "m9", conversation_id: "x", role: "user", content: "orphan" }],
     });
@@ -152,7 +172,8 @@ describe("C2 — the context inspector tells the founder what they are not seein
   it("flags a migrated conversation and its missing authorship", async () => {
     const { ContextInspector } = PageModule;
     const svc = makeSvc({
-      CommandConversation: [{ id: "id-l", conversation_id: "legacy-1", created_by: FOUNDER.email,
+      CommandConversation: [{ id: "id-l", conversation_id: "legacy-1", owner_actor: FOUNDER.email,
+        attributed_actor: "", created_by: SERVICE_CREATOR,
         status: "ARCHIVED", attribution_state: "UNKNOWN", migrated_from: "legacy_admin_chat" }],
       ChatMessage: [],
     });
@@ -167,7 +188,8 @@ describe("C2 — the context inspector tells the founder what they are not seein
   it("does not claim missing authorship on a conversation that has it", async () => {
     const { ContextInspector } = PageModule;
     const svc = makeSvc({
-      CommandConversation: [{ id: "id-l", conversation_id: "legacy-2", created_by: FOUNDER.email,
+      CommandConversation: [{ id: "id-l", conversation_id: "legacy-2", owner_actor: FOUNDER.email,
+        attributed_actor: FOUNDER.email, created_by: SERVICE_CREATOR,
         status: "ARCHIVED", attribution_state: "OBSERVED", migrated_from: "legacy_admin_chat" }],
       ChatMessage: [],
     });

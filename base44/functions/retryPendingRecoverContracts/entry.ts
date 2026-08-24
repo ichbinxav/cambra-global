@@ -23,7 +23,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { leaseExpired } from '../../shared/recoverContractState.ts';
 import { invokeInternal } from '../../shared/invokeInternal.ts';
-import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 
 const BATCH = 10;
 

@@ -321,7 +321,7 @@ Deno.serve(async (req) => {
       automated_action_allowed: false,
     }, { status: 500 });
   } finally {
-    if (schedulerSvc && schedulerClaim) {
+    if (schedulerSvc && schedulerClaim?.allowed === true) {
       await finishSchedulerRunOrThrow(
         schedulerSvc,
         schedulerClaim,

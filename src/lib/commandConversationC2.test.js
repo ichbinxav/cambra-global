@@ -64,7 +64,8 @@ const call = (body, svc, user = FOUNDER) =>
 
 const conv = (overrides = {}) => ({
   id: `id-${overrides.conversation_id || "c1"}`,
-  conversation_id: "c1", title: "ES pipeline", created_by: FOUNDER.email,
+  conversation_id: "c1", title: "ES pipeline",
+  owner_actor: FOUNDER.email, attributed_actor: FOUNDER.email,
   attribution_state: "OBSERVED", status: "ACTIVE", message_count: 2,
   created_at: "2026-08-01T00:00:00.000Z", last_message_at: "2026-08-02T00:00:00.000Z",
   ...overrides,
@@ -86,7 +87,11 @@ describe("C2 — conversations are durable and listable", () => {
 
   it("does not list another founder's conversations", async () => {
     const svc = makeSvc({
-      CommandConversation: [conv(), conv({ conversation_id: "c9", created_by: "someone.else@cambra.global" })],
+      CommandConversation: [conv(), conv({
+        conversation_id: "c9",
+        owner_actor: "someone.else@cambra.global",
+        attributed_actor: "someone.else@cambra.global",
+      })],
     });
     const { body } = await call({ action: "list" }, svc);
     expect(body.conversations.map((row) => row.conversation_id)).toEqual(["c1"]);
@@ -105,7 +110,8 @@ describe("C2 — conversations are durable and listable", () => {
     const { status, body } = await call({ action: "create", title: "New plan" }, svc);
     expect(status).toBe(201);
     expect(body.conversation.conversation_id).toBeTruthy();
-    expect(body.conversation.created_by).toBe(FOUNDER.email);
+    expect(body.conversation.owner_actor).toBe(FOUNDER.email);
+    expect(body.conversation.attributed_actor).toBe(FOUNDER.email);
     expect(body.conversation.attribution_state).toBe("OBSERVED");
     expect(svc.entities.CommandConversation.store).toHaveLength(1);
   });
@@ -229,7 +235,12 @@ describe("C2 — a branch shows inherited history, marked as inherited", () => {
   });
 
   it("404s a conversation the founder does not own", async () => {
-    const svc = makeSvc({ CommandConversation: [conv({ created_by: "other@cambra.global" })] });
+    const svc = makeSvc({ CommandConversation: [conv({
+      owner_actor: "other@cambra.global",
+      attributed_actor: "other@cambra.global",
+      // Reserved Base44 metadata must never grant application-level access.
+      created_by: FOUNDER.email,
+    })] });
     const { status, body } = await call({ action: "get", conversation_id: "c1" }, svc);
     expect(status).toBe(404);
     expect(body.error).toBe("conversation_not_found");

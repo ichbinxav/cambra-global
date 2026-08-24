@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "430aefb07ab518f77e70e7fe55aee7d37af846744816bdd4c3e5d8d733987214",
+  "source_inventory_hash": "d84e282027838b9054a379f3f9bb3a72d1710d1ab4ad3b961dfd7db360eebe3c",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -262,7 +262,7 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "source_sha256": "26479d446dec6ee4530913ed2b08b6e4bfc33c2592efb28df926a6d21a0b0883",
+      "source_sha256": "b5a4f47c6c51ce23dadc7604ae7889281fae769d899cfdc88c8b067952addd77",
       "boundary_ids": [
         "MB-SCHEDULER-BASE"
       ],
@@ -330,7 +330,7 @@
     },
     {
       "path": "base44/functions/autonomousPartnerWorker/entry.ts",
-      "source_sha256": "966e5cde9076ee60e5580d12decfa42affe878bc3ad0fa5ddf02ef366049c17a",
+      "source_sha256": "5a10b13d547d8e17843793210c091a83cf7c0a1fb7e161dc97c53c6df3522932",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-PAID-API-ENRICHMENT",
@@ -387,7 +387,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "source_sha256": "4e70cd2eb513a67e53fb2f02aa9ed12c6bdc16e9d8afa8d7e7f897559ba8d2b0",
+      "source_sha256": "a785b0fdaf9d6ada1bf56d258ce73e62563b83a23506ab885a572f6c218d69e3",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -964,7 +964,7 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "source_sha256": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
+      "source_sha256": "114b64e2b5e0268d8c6ee72cb70daa4f2c2d41c305493f664012027d4f86e6a3",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1052,7 +1052,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "6cf1b7a94c315fb7c6f68d2e2238f95f08458ee98d98f1b4621f4c238286a7a7",
+      "source_sha256": "439eb0c98adb5dd83c7fa4de2f45101414002b8e7c615da546d630a4dc7d7038",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"
@@ -1230,7 +1230,7 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "source_sha256": "e5432dc7e5708e0b19874acd7777432e62fdbd582f424d600aac81d0297b8d45",
+      "source_sha256": "f36be1b95c4008394d06df63dd469b6817c65e5abdeaed6291f6426cf573f8e1",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-SCHEDULER-BASE"
@@ -1302,7 +1302,7 @@
     },
     {
       "path": "base44/functions/postMeetingWorker/entry.ts",
-      "source_sha256": "28d1c975f6f4d0c7a84879fa998412a86691f4737a7cfba6b22daa5855045752",
+      "source_sha256": "3d15eb7f12d90f0f4ce7759668c306aa7c7a5f538832678c7fb81e2b12e4d74f",
       "boundary_ids": [
         "MB-PAID-AI",
         "MB-SCHEDULER-BASE"
@@ -1641,7 +1641,7 @@
     },
     {
       "path": "base44/functions/recoverAutopilotWorker/entry.ts",
-      "source_sha256": "1dc70b062874c94214d08d98772312c5c2f1881b040b3ef9bdd42f51430114d2",
+      "source_sha256": "3ab3096898f842b2a2f440b2bfff0992a0fe3d58f07e1e6bfa1791245e9fd33d",
       "boundary_ids": [
         "MB-SCHEDULER-BASE"
       ],
@@ -1658,7 +1658,7 @@
     },
     {
       "path": "base44/functions/recoverBillingDigest/entry.ts",
-      "source_sha256": "9957a69d76420ce318e10e1bd149a1fa887fb9cd8aa4875fa891d29302024973",
+      "source_sha256": "bc035f24645db47d194ec8aabf83b9dc7ad690c9c51202b38ecbf363dac04e84",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT",
         "MB-SCHEDULER-BASE"
@@ -1714,7 +1714,7 @@
     },
     {
       "path": "base44/functions/retryPendingRecoverContracts/entry.ts",
-      "source_sha256": "a37ef0d827aa0f7589449b87b716b3f61234aeb614015dd55096f72944504cd1",
+      "source_sha256": "97b0b6b15c896abe68cfb7e390b7f7866edcd20b7921d2ec2af9ee2cf159606d",
       "boundary_ids": [
         "MB-CONTRACT-PDF-STORAGE",
         "MB-SCHEDULER-BASE"
@@ -2171,7 +2171,7 @@
     },
     {
       "path": "base44/functions/autonomousPartnerWorker/entry.ts",
-      "source_sha256": "966e5cde9076ee60e5580d12decfa42affe878bc3ad0fa5ddf02ef366049c17a",
+      "source_sha256": "5a10b13d547d8e17843793210c091a83cf7c0a1fb7e161dc97c53c6df3522932",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -2806,7 +2806,7 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "source_sha256": "deb9636fa7e27c5dc4b491054fc83ce831bdc2373489846d86d610d01a74acdc",
+      "source_sha256": "114b64e2b5e0268d8c6ee72cb70daa4f2c2d41c305493f664012027d4f86e6a3",
       "raw_create_sites": 2,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -2862,10 +2862,10 @@
     },
     {
       "path": "base44/functions/leadOrchestrator/entry.ts",
-      "source_sha256": "a8646da02666c58c592b4bec0713572aa7feefdf7a2f4d08ddd7eee0131c508f",
+      "source_sha256": "ee400cc3e0367d819f5eceadc7f92e1cc9fc2f1c06542f274a7166f568f1940d",
       "raw_create_sites": 0,
       "canonical_root_create_sites": 1,
-      "canonical_child_link_sites": 1,
+      "canonical_child_link_sites": 2,
       "canonical_terminal_sites": 0,
       "raw_event_create_sites": 1,
       "canonical_event_create_sites": 0,
@@ -3133,7 +3133,7 @@
     },
     {
       "path": "base44/functions/postMeetingWorker/entry.ts",
-      "source_sha256": "28d1c975f6f4d0c7a84879fa998412a86691f4737a7cfba6b22daa5855045752",
+      "source_sha256": "3d15eb7f12d90f0f4ce7759668c306aa7c7a5f538832678c7fb81e2b12e4d74f",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
@@ -3457,7 +3457,7 @@
     },
     {
       "path": "base44/functions/recoverAutopilotWorker/entry.ts",
-      "source_sha256": "1dc70b062874c94214d08d98772312c5c2f1881b040b3ef9bdd42f51430114d2",
+      "source_sha256": "3ab3096898f842b2a2f440b2bfff0992a0fe3d58f07e1e6bfa1791245e9fd33d",
       "raw_create_sites": 0,
       "canonical_root_create_sites": 1,
       "canonical_child_link_sites": 0,
@@ -3693,10 +3693,10 @@
     },
     {
       "path": "base44/shared/logical/autonomousCompanyOrchestrator.ts",
-      "source_sha256": "50cdb633dc801a2c56ca6f24029bd64debff27bd5a6ea041a235b3612f60ee35",
+      "source_sha256": "50b756391ad16cedcee5d991915a354e60e13dfd020aeff1ee47ba57260639df",
       "raw_create_sites": 0,
       "canonical_root_create_sites": 1,
-      "canonical_child_link_sites": 1,
+      "canonical_child_link_sites": 0,
       "canonical_terminal_sites": 0,
       "raw_event_create_sites": 1,
       "canonical_event_create_sites": 0,

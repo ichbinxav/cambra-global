@@ -38,7 +38,6 @@ import { requireAdminOrInternal } from "../../shared/internalGate.ts";
 import { parisMonthOf } from "../../shared/recoverBillingMath.ts";
 import { sendCostGovernedEmail } from "../../shared/costGovernance.ts";
 import { captureEmergencyEpoch } from "../../shared/operationalControl.ts";
-import { guardedScheduledServe } from "../../shared/schedulerRun.ts";
 
 const SEND_WINDOW_MS = 6 * 60 * 60 * 1000;
 

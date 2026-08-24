@@ -114,3 +114,21 @@ Two smaller Command items are genuinely open and stated rather than hidden:
   those needs the epoch-binding path ported first.
 - The MCP server was not extended to expose the C4 governed registry. That was the
   discarded branch of D2 and is a coherent chunk of its own.
+
+## Runtime addendum — 2026-08-24
+
+A production read-only chat probe exposed two authority defects that local loop
+tests had not covered. `system_health_check` still pointed at the quarantined
+`systemHealthAgent` compatibility endpoint, and Base44 returned that endpoint's
+JSON body through nested `data`/string wrappers. The executor inspected the
+wrapper, did not see `ok:false`, and recorded the step as executed. The model then
+described a missed schedule that no canonical scheduler read supported.
+
+The active health tool and Founder OS health command now read
+`getMaintenanceCenter`; no active Command path invokes the quarantined function.
+`commandFunctionResult.ts` unwraps and classifies Base44 responses before either
+interactive chat or scheduled Command runs can call a step successful.
+`commandReadState.ts` gives both paths the same allowlisted projection and adds
+safe scheduler, maintenance, incident and operating-health fields without lease
+tokens or raw incident payloads. A failed or empty tool response now stops the
+loop instead of becoming evidence.

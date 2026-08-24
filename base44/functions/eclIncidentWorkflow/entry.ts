@@ -23,6 +23,17 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
   'processWebhookDeadLetters',
 ]);
 
+const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
+  taskAgent?: string;
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES';
+}> = Object.freeze({
+  autonomousCompanyOrchestrator: {
+    taskAgent: 'autonomous_company_orchestrator',
+    proof: 'TASK_NO_EFFECT',
+  },
+  getEuropeMarketsCommandCenter: { proof: 'GROWTH_ZERO_WRITES' },
+});
+
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
   const rows = await entity.filter(query, '-created_date', 2);
   if (!Array.isArray(rows)) throw new Error(`${operation}_unavailable`);
@@ -111,6 +122,167 @@ async function reconcileSchedulerControlBeforeRecovery(svc: any, functionName: s
   return { ...decision, workerKey, controlId: control.id, attemptId: attempt.id, reconciledAt: now };
 }
 
+async function changedRows(
+  entity: any,
+  fields: string[],
+  from: string,
+  to: string,
+  baseQuery: Record<string, unknown> = {},
+) {
+  const observed = new Map<string, any>();
+  for (const field of fields) {
+    const rows = await entity.filter({
+      ...baseQuery,
+      [field]: { $gte: from, $lte: to },
+    }, `-${field}`, 100);
+    if (!Array.isArray(rows)) throw new Error(`scheduler_domain_proof_unavailable:${field}`);
+    for (const row of rows) observed.set(String(row.id), row);
+  }
+  return [...observed.values()];
+}
+
+async function growthAttemptZeroWriteProof(svc: any, attempt: any) {
+  const from = String(attempt?.started_at || '');
+  const to = String(attempt?.completed_at || attempt?.heartbeat_at || '');
+  if (!Number.isFinite(Date.parse(from)) || !Number.isFinite(Date.parse(to)) || Date.parse(to) < Date.parse(from)) {
+    return { ok: false, reason: 'growth_attempt_window_unproven', from, to };
+  }
+  const checks = [
+    ['GrowthTargetRegistry', ['created_at', 'updated_date'], {}],
+    ['GrowthAssumptionRegistry', ['created_at', 'updated_date'], {}],
+    ['MarketGrowthSnapshot', ['calculated_at', 'updated_date'], {}],
+    ['FounderGrowthBrief', ['generated_at', 'updated_date'], {}],
+    ['GrowthPathSnapshot', ['created_at', 'updated_date'], {}],
+    ['GrowthDecision', ['created_at', 'updated_at', 'updated_date'], {}],
+    ['GrowthScenario', ['created_at', 'updated_at', 'updated_date'], {}],
+    ['Event', ['created_date'], { source: 'growth_path_engine' }],
+  ] as const;
+  const evidence: any[] = [];
+  for (const [entityName, fields, query] of checks) {
+    const rows = await changedRows(svc.entities[entityName], [...fields], from, to, query);
+    evidence.push({ entity: entityName, changed_ids: rows.map((row: any) => row.id) });
+  }
+  const changed = evidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  return {
+    ok: changed.length === 0,
+    reason: changed.length === 0 ? 'growth_domain_zero_writes_in_attempt_window' : 'growth_domain_writes_observed',
+    from,
+    to,
+    evidence,
+    changed,
+  };
+}
+
+async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) {
+  const spec = ADMIN_SCHEDULER_RECONCILIATION[workerKey];
+  if (!spec) return { ok: false, reason: 'scheduler_worker_not_allowlisted' };
+  const [control] = await exactRows(
+    svc.entities.SchedulerRun,
+    { record_kind: 'CONTROL', control_key: `scheduler-control:${workerKey}` },
+    'admin_scheduler_control_read',
+  );
+  if (!control?.active_attempt_id) {
+    const decision = schedulerControlRecoveryDecision(control, null, []);
+    return { ...decision, workerKey, control };
+  }
+  const [attempt] = await exactRows(
+    svc.entities.SchedulerRun,
+    { id: control.active_attempt_id, record_kind: 'ATTEMPT' },
+    'admin_scheduler_attempt_read',
+  );
+  if (!attempt || String(attempt.worker_key || '') !== workerKey) {
+    return { ok: false, reason: 'scheduler_attempt_worker_mismatch', workerKey, control, attempt };
+  }
+  let tasks: any[] = [];
+  let domainProof: any = null;
+  if (spec.taskAgent) {
+    tasks = await svc.entities.AgentTask.filter({ agent_name: spec.taskAgent }, '-created_date', 200);
+    if (!Array.isArray(tasks)) throw new Error('admin_scheduler_task_read_unavailable');
+  }
+  if (spec.proof === 'GROWTH_ZERO_WRITES') {
+    domainProof = await growthAttemptZeroWriteProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
+  const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
+    allowNoTaskProof: spec.proof === 'GROWTH_ZERO_WRITES' && domainProof?.ok === true,
+  });
+  const task = decision.taskId ? tasks.find((row) => row.id === decision.taskId) : null;
+  if (spec.proof === 'TASK_NO_EFFECT' && task?.material_effect === true) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_task_is_material', workerKey, control, attempt, task, domainProof };
+  }
+  return { ...decision, workerKey, control, attempt, task, domainProof };
+}
+
+async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: string) {
+  const workerKey = String(body.workerKey || '');
+  const inspection: any = await inspectAdminSchedulerReconciliation(svc, workerKey);
+  if (!inspection.ok || inspection.action !== 'reset_control') return inspection;
+  const control = inspection.control;
+  const attempt = inspection.attempt;
+  const expectedConfirmation = `RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}:${Number(control.control_revision || 0)}`;
+  if (body.action === 'inspect_scheduler_control') {
+    return { ...inspection, expectedConfirmation };
+  }
+  if (
+    body.confirmation !== expectedConfirmation ||
+    String(body.attemptId || '') !== String(attempt.id) ||
+    Number(body.controlRevision) !== Number(control.control_revision)
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_reconciliation_confirmation_mismatch', expectedConfirmation };
+  }
+  const now = new Date().toISOString();
+  const update = await svc.entities.SchedulerRun.updateMany({
+    id: control.id,
+    record_kind: 'CONTROL',
+    control_key: control.control_key,
+    control_state: 'REVIEW_REQUIRED',
+    control_revision: Number(control.control_revision),
+    active_attempt_id: String(attempt.id),
+  }, { $set: {
+    control_state: 'IDLE',
+    control_revision: Number(control.control_revision) + 1,
+    control_token: '',
+    control_owner: '',
+    control_claimed_at: '',
+    control_expires_at: '',
+    control_effects_started: false,
+    active_attempt_id: '',
+    active_run_key: '',
+    active_operation_key: '',
+    active_effect_key: '',
+    details_json: {
+      ...(control.details_json || {}),
+      reason: 'admin_reconciled_without_replay',
+      reconciled_at: now,
+      reconciled_by: actor,
+      reconciliation_proof: inspection.domainProof?.reason || inspection.reason,
+      reconciled_attempt_id: attempt.id,
+      reconciled_task_id: inspection.taskId || null,
+      historical_attempt_replayed: false,
+    },
+  } });
+  if (!updatedExactlyOne(update)) throw new Error('admin_scheduler_control_changed_concurrently');
+  const observed = await svc.entities.SchedulerRun.get(control.id);
+  if (
+    observed?.control_state !== 'IDLE' ||
+    Number(observed?.control_revision) !== Number(control.control_revision) + 1 ||
+    String(observed?.active_attempt_id || '') !== ''
+  ) throw new Error('admin_scheduler_control_readback_mismatch');
+  return {
+    ok: true,
+    action: 'scheduler_control_reconciled',
+    workerKey,
+    controlId: control.id,
+    attemptId: attempt.id,
+    proof: inspection.domainProof?.reason || inspection.reason,
+    taskId: inspection.taskId || null,
+    historicalAttemptReplayed: false,
+    reconciledAt: now,
+  };
+}
+
 function project(row: any) {
   return {
     id: row.id, dedupeKey: row.dedupe_key, source: row.source, domain: row.domain, incidentType: row.incident_type,
@@ -133,6 +305,11 @@ export default async function (req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
     const svc = base44.asServiceRole;
     const now = new Date().toISOString();
+
+    if (['inspect_scheduler_control', 'reconcile_scheduler_control'].includes(String(body.action || ''))) {
+      const result = await reconcileAllowlistedSchedulerControl(svc, body, user.email || user.id || 'admin');
+      return Response.json(result, { status: result.ok ? 200 : 409 });
+    }
 
     if (body.action === 'list') {
       const limit = Number.isInteger(body.limit) && body.limit > 0 ? Math.min(body.limit, LIST_MAX) : 100;

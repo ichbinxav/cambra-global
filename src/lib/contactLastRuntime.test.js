@@ -13,6 +13,10 @@ import {
   sameEmployer,
   validateDurableOutreachWorthySnapshot,
 } from "../../base44/shared/contactLast.ts";
+import {
+  discoveryAttemptNumber,
+  discoveryOperationKey,
+} from "../../base44/shared/discoveryRadar.ts";
 
 const read = (file) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const NOW = Date.parse("2026-08-13T12:00:00.000Z");
@@ -404,6 +408,20 @@ describe("Company-before-person / Contact Last runtime", () => {
     expect(apollo).toContain("review_required: true");
   });
 
+  it("reuses one Apollo key for an ambiguous retry but advances after a completed call", () => {
+    const operation = (completedApiCalls) => discoveryOperationKey({
+      provider: "apollo",
+      operation: "organization-search",
+      checkpointKey: "apollo:FR:ecommerce:200,1000:any",
+      page: 2,
+      completedApiCalls,
+    });
+    expect(discoveryAttemptNumber(7)).toBe(8);
+    expect(operation(7)).toBe(operation(7));
+    expect(operation(8)).not.toBe(operation(7));
+    expect(operation(7)).toContain("page:2:attempt:8");
+  });
+
   it("orders scoring before explicit contact resolution and never double-runs both chains", () => {
     const orchestrator = read("base44/functions/leadOrchestrator/entry.ts");
     const target = orchestrator.slice(
@@ -415,6 +433,9 @@ describe("Company-before-person / Contact Last runtime", () => {
     );
     expect(orchestrator).toContain("LEAD_ORCHESTRATOR_LEGACY_CHAIN_ENABLED");
     expect(orchestrator).toContain("double_run_prevented: true");
+    expect(orchestrator).toContain("error?.response?.data");
+    expect(orchestrator).toContain("status: childStatus");
+    expect(orchestrator).toContain("leadOrchestrator.readRejectedChild");
   });
 
   it("blocks duplicate paid contact effects before either person endpoint", () => {

@@ -115,6 +115,21 @@ describe("scheduler lease and fencing authority", () => {
     }
   });
 
+  it("does not finalize or throw for a claim that was denied", async () => {
+    const state = schedulerStore();
+    await expect(finishSchedulerRunOrThrow(state.svc, {
+      allowed: false,
+      duplicate: true,
+      duplicate_proven: true,
+      reason: "same_logical_operation",
+    }, {}, true)).resolves.toEqual({
+      ok: true,
+      skipped: true,
+      reason: "scheduler_claim_not_owned",
+    });
+    expect(state.rows).toEqual([]);
+  });
+
   it("does not leave direct scheduler finalization ambiguity silently ignored", () => {
     const explicitFinalizers = new Set([
       "commercialFollowUpWorker",
@@ -130,6 +145,17 @@ describe("scheduler lease and fencing authority", () => {
     const ecl = schedulerCallerInventory()
       .find(({ name }) => name === "eclLifecycleScheduler");
     expect(ecl?.source).toContain("schedulerClaim?.allowed === true");
+  });
+
+  it("guards every finally-based scheduler finalizer with claim ownership", () => {
+    for (const { file, source } of schedulerCallerInventory()) {
+      const finalizers = [...source.matchAll(
+        /finally\s*\{[\s\S]{0,1600}?finishSchedulerRunOrThrow/g,
+      )];
+      for (const match of finalizers) {
+        expect(match[0], file).toMatch(/\?\.allowed\s*(?:===\s*true)?/);
+      }
+    }
   });
 
   it("routes every direct scheduler claimant through the centralized denied response", () => {

@@ -72,14 +72,17 @@ describe("C1 — authorship is never invented", () => {
   it("marks a conversation UNKNOWN when the legacy rows name no author", () => {
     const plan = planOf([msg({ created_by: undefined })]);
     expect(plan.entries[0].conversation.attribution_state).toBe("UNKNOWN");
-    expect(plan.entries[0].conversation.created_by).toBe("");
+    expect(plan.entries[0].conversation.owner_actor).toBe("");
+    expect(plan.entries[0].conversation.attributed_actor).toBe("");
+    expect(plan.entries[0].conversation.created_by).toBeUndefined();
     expect(plan.summary.unattributed).toBe(1);
   });
 
   it("carries a real author through when the rows do name one", () => {
     const plan = planOf([msg({ created_by: "founder@cambra.global" })]);
     expect(plan.entries[0].conversation.attribution_state).toBe("OBSERVED");
-    expect(plan.entries[0].conversation.created_by).toBe("founder@cambra.global");
+    expect(plan.entries[0].conversation.owner_actor).toBe("founder@cambra.global");
+    expect(plan.entries[0].conversation.attributed_actor).toBe("founder@cambra.global");
     expect(plan.summary.unattributed).toBe(0);
   });
 
@@ -89,7 +92,8 @@ describe("C1 — authorship is never invented", () => {
       msg({ id: "m2", created_by: "someone.else@cambra.global" }),
     ]);
     expect(plan.entries[0].conversation.attribution_state).toBe("CONFLICTED");
-    expect(plan.entries[0].conversation.created_by).toBe("");
+    expect(plan.entries[0].conversation.owner_actor).toBe("");
+    expect(plan.entries[0].conversation.attributed_actor).toBe("");
     expect(plan.summary.conflicted_attribution).toBe(1);
   });
 
