@@ -22,6 +22,7 @@ export const READ_ENTITIES = [
   "BenchmarkContribution", "BenchmarkCohort",
   "StatementImport", "Recommendation",
   "FounderDecision", "FounderSimulation", "StrategyDirective", "FounderCommandAudit",
+  "SchedulerRun", "MaintenanceRun", "AutonomyIncident", "OperatingHealthAssessment",
   "User",
 ];
 
@@ -52,8 +53,8 @@ export const CHAT_TOOLS = [
   },
   {
     name: "system_health_check",
-    description: "Runs the system health agent — read-only report of failing agents, stalled tasks, missed schedules, stuck events.",
-    function: "systemHealthAgent",
+    description: "READ-ONLY canonical Maintenance Center snapshot: active incidents, agent failures, scheduler evidence, integrations and documentation health. The quarantined legacy systemHealthAgent is never invoked.",
+    function: "getMaintenanceCenter",
     risk_level: 1,
     input_schema: { type: "object", properties: {} },
   },
