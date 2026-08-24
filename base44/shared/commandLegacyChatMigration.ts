@@ -122,8 +122,12 @@ export function planLegacyChatMigration(input: {
       conversation: {
         conversation_id: `conv:legacy:${key}`,
         title: deriveLegacyTitle(rows),
-        // Explicitly unknown rather than attributed to the migrating operator.
-        created_by: owner ?? '',
+        // These fields are deliberately separate from Base44's reserved
+        // created_by, which service-role writes replace with a service identity.
+        // Unknown source ownership remains blank rather than being attributed
+        // to the migration operator.
+        owner_actor: owner ?? '',
+        attributed_actor: owner ?? '',
         attribution_state: conflicted ? 'CONFLICTED' : (owner ? 'OBSERVED' : 'UNKNOWN'),
         status: 'ARCHIVED',
         legacy_session_key: key,
