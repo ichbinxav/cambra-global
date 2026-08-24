@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -454,7 +454,7 @@ export default function AdminLayout() {
             const group = navGroup(item.path);
             const startsGroup = index === 0 || navGroup(visible[index - 1].path) !== group;
             return (
-              <Fragment key={item.path}>
+              <div key={item.path} className="contents">
               {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{copy(`group.${group}`)}</p>}
               <Link
                 key={item.path}
@@ -490,7 +490,7 @@ export default function AdminLayout() {
                   </span>
                 )}
               </Link>
-              </Fragment>
+              </div>
             );
           })}
 

@@ -23,6 +23,10 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.{js,jsx,ts,tsx}'],
     globals: true,
+    // Several release tests intentionally spawn TypeScript/Vitest subprocesses
+    // or reproduce the full Base44 bundle. Running those files concurrently
+    // makes scheduler pressure look like a product defect and causes timeouts.
+    maxWorkers: 1,
   },
   resolve: {
     alias: {

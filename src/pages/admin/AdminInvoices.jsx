@@ -13,13 +13,21 @@ export default function AdminInvoices() {
   const [status, setStatus] = useState('all');
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const load = async () => {
     setLoading(true);
-    const list = status==='all' ? await base44.entities.Invoice.list('-issued_at', 500) : await base44.entities.Invoice.filter({ status }, '-issued_at', 500);
-    const data = (list || []).filter(i => !q || (i.invoice_number||'').toLowerCase().includes(q.toLowerCase()) || (i.brand_id||'').includes(q) || (i.provider_id||'').includes(q));
-    setItems(data);
-    setLoading(false);
+    setError('');
+    try {
+      const list = status==='all' ? await base44.entities.Invoice.list('-issued_at', 500) : await base44.entities.Invoice.filter({ status }, '-issued_at', 500);
+      const data = (list || []).filter(i => !q || (i.invoice_number||'').toLowerCase().includes(q.toLowerCase()) || (i.brand_id||'').includes(q) || (i.provider_id||'').includes(q));
+      setItems(data);
+    } catch (e) {
+      setItems([]);
+      setError(e?.message || 'Could not load invoices');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, [status, q]);
@@ -59,6 +67,11 @@ export default function AdminInvoices() {
 
   return (
     <div className="p-4 space-y-4">
+      <div>
+        <h1 className="text-2xl font-black">Invoices</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Deterministic billing records and explicit admin-only payment operations.</p>
+      </div>
+
       <div className="flex flex-wrap items-center gap-2">
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className="w-44"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -69,6 +82,8 @@ export default function AdminInvoices() {
         <Input placeholder="Search #, brand_id or provider_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
         <Button variant="outline" onClick={load}>Refresh</Button>
       </div>
+
+      {error && <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-sm text-red-600">{error}</div>}
 
       {loading ? (
         <div className="py-20 text-center text-sm text-muted-foreground">Loading…</div>

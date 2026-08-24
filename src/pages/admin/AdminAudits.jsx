@@ -41,6 +41,18 @@ const TRUTH_TONE = {
 
 const humanize = (value) => String(value || "").replaceAll("_", " ").toLowerCase();
 
+export function normalizePortfolioItems(items) {
+  if (!items || typeof items !== "object") {
+    return { rows: [], total: null, nextCursor: null };
+  }
+
+  return {
+    rows: Array.isArray(items.rows) ? items.rows : [],
+    total: typeof items.total === "number" ? items.total : null,
+    nextCursor: items.next_cursor || null,
+  };
+}
+
 export function AuditCard({ row }) {
   return (
     <div data-testid={`audit-${row.canonical_id}`} className="rounded-xl border border-border/60 bg-card p-3">
@@ -160,7 +172,7 @@ export default function AdminAudits() {
 
   useEffect(() => { load(tab); }, [load, tab]);
 
-  const rows = data?.items?.rows || [];
+  const { rows, total, nextCursor } = normalizePortfolioItems(data?.items);
 
   return (
     <div className="space-y-4">
@@ -220,14 +232,14 @@ export default function AdminAudits() {
           <div className="flex items-center justify-between text-[10px] text-muted-foreground/60">
             <span>
               {/* null total means uncomputable, which is different from none found. */}
-              {data.items?.total === null ? "count unavailable" : `${data.items.total} record(s)`}
+              {total === null ? "count unavailable" : `${total} record(s)`}
             </span>
-            {data.items?.next_cursor && <span>more available</span>}
+            {nextCursor && <span>more available</span>}
           </div>
 
           {rows.length === 0 ? (
             <p className="text-xs text-muted-foreground py-12 text-center">
-              {data.items?.total === null ? "Records unavailable." : `No ${tab} yet.`}
+              {total === null ? "Records unavailable." : `No ${tab} yet.`}
             </p>
           ) : (
             <div className="space-y-2">

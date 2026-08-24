@@ -10,9 +10,24 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { AuditCard, OpportunityCard } from "../pages/admin/AdminAudits.jsx";
+import { AuditCard, normalizePortfolioItems, OpportunityCard } from "../pages/admin/AdminAudits.jsx";
 
 globalThis.React = React;
+
+describe("C13 — missing portfolio metadata stays unknown", () => {
+  it.each([undefined, null, {}])("normalizes absent items without inventing a zero count", (items) => {
+    expect(normalizePortfolioItems(items)).toEqual({ rows: [], total: null, nextCursor: null });
+  });
+
+  it("preserves an observed zero and valid rows", () => {
+    const rows = [{ canonical_id: "a1" }];
+    expect(normalizePortfolioItems({ rows, total: 0, next_cursor: "next" })).toEqual({
+      rows,
+      total: 0,
+      nextCursor: "next",
+    });
+  });
+});
 
 const audit = (extra = {}) => ({
   canonical_id: "a1", brand_id: "Acme", audit_type: "CONNECTED_ANALYSIS", status: "COMPLETE",

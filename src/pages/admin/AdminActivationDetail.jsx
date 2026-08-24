@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams, useParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import RecoverContractAdminPanel from '@/components/admin/RecoverContractAdminPanel';
 import ConditionsActivationCard from '@/components/admin/recoverBilling/ConditionsActivationCard';
@@ -16,14 +15,16 @@ export default function AdminActivationDetail(){
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // Override modal state (must be before any early returns)
-  const [overrideOpen, setOverrideOpen] = useState(false);
-  const [overrideAction, setOverrideAction] = useState(null);
-  const [overridePayload, setOverridePayload] = useState({});
-  const [overrideReason, setOverrideReason] = useState('');
-  const [overrideReasonError, setOverrideReasonError] = useState(null);
 
   useEffect(()=>{ (async()=>{
+    if (!id) {
+      setData(null);
+      setError('');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
     try {
       const res = await base44.functions.invoke('getActivationAdminDetail', { id });
       if (res.data?.error) throw new Error(res.data.error);
@@ -33,6 +34,22 @@ export default function AdminActivationDetail(){
   })(); }, [id]);
 
   if (loading) return <div className="p-6">Loading…</div>;
+  if (!id) return (
+    <div className="p-6 space-y-4">
+      <div>
+        <h1 className="text-2xl font-black">Activation operations</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Select a Recover activation before opening its governed operational detail.</p>
+      </div>
+      <div className="rounded-xl border border-dashed p-6">
+        <p className="text-sm font-semibold">No activation selected</p>
+        <p className="mt-1 text-xs text-muted-foreground">This page never guesses an activation ID or loads another merchant's data.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link to="/admin/recover" className="rounded-lg bg-foreground px-3 py-2 text-xs font-bold text-background">Open Recover</Link>
+          <Link to="/admin/merchants" className="rounded-lg border px-3 py-2 text-xs font-bold">Open merchants</Link>
+        </div>
+      </div>
+    </div>
+  );
   if (error) return <div className="p-6 text-red-600">{error}</div>;
   const { activation, baselines, rules, mandates, tasks, reports, invoices, logs, progress } = data || {};
   const realizedToDate = (reports || []).filter(r => ['invoiced','paid'].includes(r.status)).reduce((s, r) => s + (r.savings || 0), 0);
@@ -45,16 +62,6 @@ export default function AdminActivationDetail(){
   const downloadInvoicePdf = async (invoiceId) => {
     const res = await base44.functions.invoke('generateInvoicePdf', { invoice_id: invoiceId });
     if (res.data?.url) window.open(res.data.url, '_blank');
-  };
-
-  const openOverride = (action, payload={}) => { setOverrideAction(action); setOverridePayload(payload); setOverrideOpen(true); };
-  const submitOverride = async () => {
-    if (!overrideReason.trim()) { setOverrideReasonError('Please provide a reason'); return; }
-    const res = await base44.functions.invoke('adminOverrides', { action: overrideAction, reason: overrideReason, payload: overridePayload });
-    if (res.data?.error) { toast.error(res.data.error); return; }
-    setOverrideOpen(false); setOverrideReason('');
-    setOverrideReasonError(null);
-    await reload();
   };
 
   return (
@@ -190,22 +197,6 @@ export default function AdminActivationDetail(){
           {logs.map(l=> <li key={l.id} className="border rounded-md px-2 py-1">{l.created_at} · {l.event_type} — {l.message}</li>)}
         </ul>
       </div>
-      {/* Override modal */}
-      {overrideOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-background/75 backdrop-blur" onClick={()=>setOverrideOpen(false)} />
-          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-5 space-y-3">
-            <p className="text-sm font-bold">Admin override</p>
-            <textarea value={overrideReason} onChange={e=>setOverrideReason(e.target.value)} rows={4}
-              className="w-full text-sm bg-background border border-border rounded-lg p-2" placeholder="Reason (required)" />
-            {overrideReasonError && <p className="text-xs text-red-500 mt-1">{overrideReasonError}</p>}
-            <div className="flex justify-end gap-2">
-              <button onClick={()=>setOverrideOpen(false)} className="h-8 px-3 rounded-md border border-border text-xs">Cancel</button>
-              <button onClick={submitOverride} className="h-8 px-3 rounded-md bg-foreground text-background text-xs font-bold">Confirm</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

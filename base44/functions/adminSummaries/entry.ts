@@ -25,8 +25,8 @@ import { handleIntelligenceAdminAction } from '../../shared/intelligenceAdminCor
 import { handleIntegrationAdminAction } from '../../shared/integrationAdminCore.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
-// deploy-marker: 2026-08-18 — force redeploy after GitHub sync left a stale build
-// (integration_* routing was missing from the running version).
+// deploy-marker: 2026-08-24 — refresh the preview/runtime build after verified
+// source sync left command_conversation_* routing stale in the executable.
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   if (routedBody?.action === 'global_search') return handleAdminGlobalSearch(req);

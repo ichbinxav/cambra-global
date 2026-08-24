@@ -98,6 +98,27 @@ describe("C2 — the sidebar lists real durable conversations", () => {
   });
 });
 
+describe("C2 — conversation writes require the durable response contract", () => {
+  it("accepts a conversation carrying its canonical identifier", () => {
+    const { requireConversationResult } = PageModule;
+    expect(requireConversationResult({ conversation: { conversation_id: "c1" } }, "create"))
+      .toEqual({ conversation_id: "c1" });
+  });
+
+  it.each([undefined, {}, { conversation: {} }])("rejects an incomplete successful response", (data) => {
+    const { requireConversationResult } = PageModule;
+    expect(() => requireConversationResult(data, "create"))
+      .toThrow("Command create returned no durable conversation.");
+  });
+
+  it("distinguishes an unreadable conversation list from a real empty list", () => {
+    const { requireConversationList } = PageModule;
+    expect(requireConversationList({ conversations: [] })).toEqual([]);
+    expect(() => requireConversationList({ ok: true }))
+      .toThrow("Command list returned no durable conversation collection.");
+  });
+});
+
 describe("C2 — the context inspector tells the founder what they are not seeing", () => {
   it("counts inherited turns separately from the branch's own", async () => {
     const { ContextInspector } = PageModule;

@@ -38,6 +38,21 @@ const call = async (action, payload = {}) => {
 
 const when = (value) => (value ? new Date(value).toLocaleString() : "—");
 
+export function requireConversationResult(data, operation) {
+  const conversation = data?.conversation;
+  if (!conversation?.conversation_id) {
+    throw Object.assign(new Error(`Command ${operation} returned no durable conversation.`), { data });
+  }
+  return conversation;
+}
+
+export function requireConversationList(data) {
+  if (!Array.isArray(data?.conversations)) {
+    throw Object.assign(new Error("Command list returned no durable conversation collection."), { data });
+  }
+  return data.conversations;
+}
+
 // COMMAND-C7: durable runs. A run survives this tab, advances on a 5-minute
 // sweep, and can be cancelled — see Decision_Log_COMMAND_C6 / _C7.
 const runCall = async (action, payload = {}) => {
@@ -249,9 +264,10 @@ export default function AdminCommandChat() {
   const loadList = useCallback(async () => {
     try {
       const data = await call("list");
-      setConversations(data.conversations || []);
+      const rows = requireConversationList(data);
+      setConversations(rows);
       setListUnavailable(false);
-      return data.conversations || [];
+      return rows;
     } catch (e) {
       // An unreadable list is not an empty history. Say which one it is.
       setListUnavailable(true);
@@ -273,7 +289,7 @@ export default function AdminCommandChat() {
 
   useEffect(() => { loadList().then((rows) => {
     if (!activeId && rows.length) setActiveId(rows[0].conversation_id);
-  }); }, [loadList]); // eslint-disable-line react-hooks/exhaustive-deps
+  }); }, [loadList]);
 
   useEffect(() => { loadDetail(activeId); }, [activeId, loadDetail]);
   useEffect(() => { const ask = searchParams.get("ask"); if (ask) setInput(ask); }, [searchParams]);
@@ -282,8 +298,9 @@ export default function AdminCommandChat() {
     setBusy(true);
     try {
       const data = await call("create");
+      const conversation = requireConversationResult(data, "create");
       await loadList();
-      setActiveId(data.conversation.conversation_id);
+      setActiveId(conversation.conversation_id);
     } catch (e) {
       setError(e?.message || "Could not create a conversation.");
     } finally { setBusy(false); }
@@ -302,8 +319,9 @@ export default function AdminCommandChat() {
     setBusy(true);
     try {
       const data = await call("branch", { conversation_id: activeId, branch_from_message_id: messageId });
+      const conversation = requireConversationResult(data, "branch");
       await loadList();
-      setActiveId(data.conversation.conversation_id);
+      setActiveId(conversation.conversation_id);
     } catch (e) {
       setError(e?.message || "Could not branch this conversation.");
     } finally { setBusy(false); }
