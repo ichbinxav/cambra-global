@@ -26,6 +26,8 @@ export type ConversationRow = {
   id?: string;
   conversation_id?: string;
   title?: string;
+  owner_actor?: string;
+  attributed_actor?: string;
   created_by?: string;
   attribution_state?: string;
   status?: string;
@@ -127,13 +129,15 @@ export async function handleCommandConversationAction(
   const now = deps.now ? deps.now() : new Date().toISOString();
   const newId = deps.newId || ((seed: string) => `conv_${seed}`);
   const action = text(body?.action);
-  const actor = text(user?.email) || text(user?.id);
+  const actor = text(user?.email).toLowerCase() || text(user?.id);
   if (!actor) return json({ error: 'unidentified_actor' }, 401);
 
   const readConversations = async () => {
     const read = await readRuntimeSource<ConversationRow[]>({
       source: 'command_conversations',
-      read: () => svc.entities.CommandConversation.filter({ created_by: actor }, '-last_message_at', 200),
+      // Base44 overwrites its reserved created_by field on service-role writes.
+      // Ownership therefore lives in an explicit application field.
+      read: () => svc.entities.CommandConversation.filter({ owner_actor: actor }, '-last_message_at', 200),
       fallback: [],
     });
     return read;
@@ -168,7 +172,7 @@ export async function handleCommandConversationAction(
     const conversationId = text(body?.conversation_id) || newId(`${now}`);
     // AUDIT SEC-08 (2026-08-17): the caller supplies conversation_id, so a caller could
     // claim an id already owned by another actor. Refuse if any row already carries it,
-    // regardless of created_by — same claim pattern the migration module uses.
+    // regardless of owner_actor — same claim pattern the migration module uses.
     const claimed = await svc.entities.CommandConversation.filter({ conversation_id: conversationId }, '-created_at', 1)
       .catch(() => { throw Object.assign(new Error('conversation_claim_check_unavailable'), { status: 503 }); });
     if (Array.isArray(claimed) && claimed.length > 0) {
@@ -177,7 +181,8 @@ export async function handleCommandConversationAction(
     const created = await svc.entities.CommandConversation.create({
       conversation_id: conversationId,
       title: text(body?.title) || 'New conversation',
-      created_by: actor,
+      owner_actor: actor,
+      attributed_actor: actor,
       attribution_state: 'OBSERVED',
       status: 'ACTIVE',
       message_count: 0,
@@ -280,7 +285,8 @@ export async function handleCommandConversationAction(
     const created = await svc.entities.CommandConversation.create({
       conversation_id: conversationId,
       title: `${text(parent.title) || 'Conversation'} (branch)`.slice(0, TITLE_MAX),
-      created_by: actor,
+      owner_actor: actor,
+      attributed_actor: actor,
       attribution_state: 'OBSERVED',
       status: 'ACTIVE',
       branched_from_conversation_id: parentId,
