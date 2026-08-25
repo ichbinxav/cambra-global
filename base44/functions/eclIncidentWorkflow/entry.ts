@@ -25,7 +25,7 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_IDLE_ZERO_WRITES';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
@@ -38,6 +38,7 @@ const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
     proof: 'LEGACY_RECOVER_PRE_EFFECT',
   },
   instantlyProviderEventRetryWorker: { proof: 'INSTANTLY_RETRY_ZERO_WRITES' },
+  alwaysOnLeadDiscoveryWorker: { proof: 'DISCOVERY_IDLE_ZERO_WRITES' },
 });
 
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
@@ -314,6 +315,67 @@ async function instantlyRetryAttemptZeroWriteProof(svc: any, attempt: any) {
   };
 }
 
+async function discoveryAttemptZeroWriteProof(svc: any, attempt: any) {
+  const from = String(attempt?.started_at || '');
+  const to = new Date().toISOString();
+  if (!Number.isFinite(Date.parse(from))) {
+    return { ok: false, reason: 'discovery_attempt_start_unproven', from, to };
+  }
+  // Provider discovery reserves CostUsageEvent before a provider request, and
+  // every local path records one of these ledgers before downstream use. A
+  // completely empty window plus no current material authority proves that the
+  // expired attempt neither bought data nor committed a discovery projection.
+  const checks = [
+    ['DiscoveryExecutionRun', ['created_date', 'updated_date', 'started_at', 'heartbeat_at', 'completed_at'], {}],
+    ['FounderSavedView', ['created_date', 'updated_date', 'updated_at'], { view_type: 'discovery_saved_search' }],
+    ['LeadReservoirSnapshot', ['created_date', 'captured_at'], {}],
+    ['CommercialIntelligenceSnapshot', ['created_date', 'generated_at'], {}],
+    ['LeadDiscoveryCheckpoint', ['created_date', 'updated_date', 'last_attempt_at', 'last_success_at'], {}],
+    ['OutboundLead', ['created_date', 'updated_date', 'discovered_at', 'last_enriched_at', 'reservoir_updated_at'], {}],
+    ['AgentTask', ['created_date', 'updated_date', 'started_at', 'completed_at'], { agent_name: { $in: ['lead_orchestrator', 'lead_discovery', 'lead_enrichment', 'lead_scoring'] } }],
+    ['Event', ['created_date', 'recorded_at', 'occurred_at'], { event_type: { $in: ['commercial.intelligence.snapshot.created', 'discovery.plan.accepted', 'discovery.stage.started', 'discovery.stage.completed', 'discovery.run.completed', 'discovery.run.failed', 'discovery.result.scored'] } }],
+    ['CostUsageEvent', ['created_date', 'updated_date', 'occurred_at'], {}],
+    ['OperationalLog', ['created_date', 'updated_date'], {}],
+  ] as const;
+  const evidence: any[] = [];
+  for (const [entityName, fields, query] of checks) {
+    const rows = await changedRows(svc.entities[entityName], [...fields], from, to, query);
+    evidence.push({ entity: entityName, changed_ids: rows.map((row: any) => row.id) });
+  }
+  const [policies, activeRuns, savedSearches] = await Promise.all([
+    svc.entities.CommercialPolicy.filter({ engine: 'merchant_acquisition', status: 'active' }, '-updated_date', 100),
+    svc.entities.DiscoveryExecutionRun.filter({ status: { $in: ['QUEUED', 'RUNNING'] } }, '-heartbeat_at', 20),
+    svc.entities.FounderSavedView.filter({ view_type: 'discovery_saved_search' }, '-updated_at', 500),
+  ]);
+  if (![policies, activeRuns, savedSearches].every(Array.isArray)) {
+    throw new Error('discovery_material_authority_proof_unavailable');
+  }
+  const activePolicies = policies.filter((row: any) =>
+    row?.icp_json?.discovery_enabled === true &&
+    Array.isArray(row?.countries) && row.countries.length > 0
+  );
+  const changed = evidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  const authority = {
+    active_policy_ids: activePolicies.map((row: any) => row.id),
+    active_run_ids: activeRuns.map((row: any) => row.id),
+    saved_search_ids: savedSearches.filter((row: any) => row?.is_current !== false).map((row: any) => row.id),
+  };
+  const authorityPresent = Object.values(authority).some((ids) => ids.length > 0);
+  return {
+    ok: changed.length === 0 && !authorityPresent,
+    reason: changed.length
+      ? 'discovery_domain_or_cost_writes_observed'
+      : authorityPresent
+      ? 'discovery_material_authority_present'
+      : 'discovery_attempt_zero_writes_and_no_material_authority',
+    from,
+    to,
+    evidence,
+    changed,
+    authority,
+  };
+}
+
 async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) {
   const spec = ADMIN_SCHEDULER_RECONCILIATION[workerKey];
   if (!spec) return { ok: false, reason: 'scheduler_worker_not_allowlisted' };
@@ -364,7 +426,13 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
-  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES'].includes(spec.proof) && domainProof?.ok === true;
+  if (spec.proof === 'DISCOVERY_IDLE_ZERO_WRITES') {
+    domainProof = await discoveryAttemptZeroWriteProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
+  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES', 'DISCOVERY_IDLE_ZERO_WRITES'].includes(spec.proof) && domainProof?.ok === true;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
     allowNoTaskProof: domainNoTaskProof,
   });

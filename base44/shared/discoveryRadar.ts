@@ -236,6 +236,7 @@ export function selectDiscoveryPolicies(rows: any[]) {
   return (Array.isArray(rows) ? rows : [])
     .filter((row) =>
       row?.engine === "merchant_acquisition" &&
+      row?.status === "active" &&
       row?.icp_json?.discovery_enabled === true &&
       Array.isArray(row?.countries) && row.countries.length > 0
     )

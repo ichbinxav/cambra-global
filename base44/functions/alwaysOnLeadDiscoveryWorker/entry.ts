@@ -30,16 +30,28 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     __schedulerSvc=service;
     __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'alwaysOnLeadDiscoveryWorker',cadence_seconds:3600});
     {const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
+    const emergency=await emergencyState(service);
+    const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
+    // Read material authority before opening the effect fence. With no active
+    // policy, saved search or committed run there is nothing to mutate or buy.
+    const [scheduledRuns,savedSearches,policies]=await Promise.all([
+      service.entities.DiscoveryExecutionRun.filter({status:{$in:['QUEUED','RUNNING']}},'-heartbeat_at',20),
+      service.entities.FounderSavedView.filter({view_type:'discovery_saved_search'},'-updated_at',500),
+      service.entities.CommercialPolicy.filter({engine:'merchant_acquisition'},'-updated_date',100),
+    ]);
+    if(!Array.isArray(scheduledRuns)||!Array.isArray(savedSearches)||!Array.isArray(policies))throw new Error('discovery_material_authority_unavailable');
+    const policy = selectDiscoveryPolicy(policies);
+    const scheduledDiscoveryWorkPresent=scheduledRuns.length>0||savedSearches.some((view:any)=>view?.is_current!==false);
+    const scheduledDiscoveryMayWrite=!emergency.safe_mode&&!emergency.paid_discovery_paused&&scheduledDiscoveryWorkPresent;
+    if(!policy&&!scheduledDiscoveryMayWrite)return Response.json({ok:true,status:'waiting_discovery_policy',engine_version:VERSION,scheduled_discovery:{ok:true,action:emergency.safe_mode||emergency.paid_discovery_paused?'GLOBAL_EMERGENCY_SAFE_MODE_BLOCKED':'NO_DUE_SAVED_SEARCH',reason:emergency.reason||null},note:'Autonomous harvest requires an explicitly active ICP configuration. Founder-scheduled Discovery V2 requires a committed run or saved search.'});
     __schedulerClaim=await markSchedulerEffectStarted(service,__schedulerClaim);
     {const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
-    const emergency=await emergencyState(service);
     const scheduledDiscovery=emergency.safe_mode||emergency.paid_discovery_paused
       ? {ok:true,action:'GLOBAL_EMERGENCY_SAFE_MODE_BLOCKED',reason:emergency.reason||'global_emergency_stop'}
-      : await processScheduledDiscoverySearches(service).catch((error:any)=>({ok:false,action:'SAFE_FAILURE',error:String(error?.message||error).slice(0,120)}));
-    const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
-    const policies = await service.entities.CommercialPolicy.filter({ engine:'merchant_acquisition' }, '-updated_date', 100).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'}));
-    const policy = selectDiscoveryPolicy(policies);
-    if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, scheduled_discovery:scheduledDiscovery, note:'Autonomous harvest requires an explicitly enabled ICP configuration. Founder-scheduled Discovery V2 uses its own accepted saved-search budget.' });
+      : scheduledDiscoveryWorkPresent
+      ? await processScheduledDiscoverySearches(service).catch((error:any)=>({ok:false,action:'SAFE_FAILURE',error:String(error?.message||error).slice(0,120)}))
+      : {ok:true,action:'NO_DUE_SAVED_SEARCH'};
+    if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, scheduled_discovery:scheduledDiscovery, note:'Autonomous harvest requires an explicitly active ICP configuration. Founder-scheduled Discovery V2 uses its own accepted saved-search budget.' });
 
     const [before, profiles, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
       service.entities.OutboundLead.list('-created_date',5000).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:[],severity:'secondary'})),

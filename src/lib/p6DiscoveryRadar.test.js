@@ -6,6 +6,7 @@ import {
   cheapDiscoveryPreScore,
   classifyProfessionalEmail,
   discoveryProviderStatus,
+  selectDiscoveryPolicies,
 } from "../../base44/shared/discoveryRadar.ts";
 import { buildResilientLeadScore } from "../../base44/shared/leadScoringResilience.ts";
 
@@ -95,6 +96,24 @@ describe("P6 autonomous discovery radar", () => {
     );
     expect(worker).toContain("base44.functions.invoke('leadOrchestrator'");
     expect(worker).not.toContain("service.functions.invoke('leadOrchestrator'");
+  });
+
+  it("requires an active policy before autonomous discovery can run", () => {
+    const base = {
+      engine: "merchant_acquisition",
+      countries: ["ES"],
+      icp_json: { discovery_enabled: true },
+    };
+    expect(selectDiscoveryPolicies([
+      { ...base, status: "draft" },
+      { ...base, status: "paused" },
+    ])).toEqual([]);
+    expect(selectDiscoveryPolicies([{ ...base, status: "active" }])).toHaveLength(1);
+    const worker = read("base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts");
+    expect(worker.indexOf("scheduledDiscoveryWorkPresent")).toBeLessThan(
+      worker.lastIndexOf("markSchedulerEffectStarted"),
+    );
+    expect(worker).toContain("!policy&&!scheduledDiscoveryMayWrite");
   });
 
   it("degrades model scoring safely without stranding the discovery chain", () => {
