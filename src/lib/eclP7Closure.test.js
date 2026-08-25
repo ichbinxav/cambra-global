@@ -182,6 +182,10 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     for (const field of ['dedupe_key', 'idempotency_key', 'recovery_action', 'recovery_attempts', 'resolution_note']) expect(INCIDENT_SCHEMA).toContain(`\"${field}\"`);
     expect(UI).toContain('eclIncidentWorkflow');
     expect(UI).toContain('eclProductionHealth');
+    expect(UI).toContain('inspect_scheduler_control');
+    expect(UI).toContain('reconcile_scheduler_control');
+    expect(UI).toContain('expectedConfirmation');
+    expect(UI).toContain('Reconcile without replay');
     expect(UI).not.toContain('entities.Invoice');
     expect(UI).not.toContain('entities.SavingsEvidence');
     expect(APP).toContain('/admin/ecl-operations');
