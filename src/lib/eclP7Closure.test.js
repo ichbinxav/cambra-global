@@ -182,6 +182,9 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain('discovery_attempt_zero_writes_and_no_material_authority');
     expect(WORKFLOW).toContain('discovery_terminal_effect_receipts_quiescent_without_replay');
     expect(WORKFLOW).toContain("CostUsageEvent.filter({ source: 'leadDiscoveryAgent'");
+    expect(WORKFLOW).toContain("AgentTask.filter({ agent_name: { $in: discoveryAgents }, started_at: { $gte: from, $lte: leaseEnd } }, '-started_at', 100)");
+    expect(WORKFLOW).toContain("AgentTask.filter({ agent_name: { $in: discoveryAgents }, started_at: { $gte: afterLease } }, '-started_at', 2)");
+    expect(WORKFLOW).not.toContain("AgentTask.filter({ agent_name: { $in: discoveryAgents }, created_date:");
     expect(WORKFLOW).toContain("['first_received_at', 'last_attempt_at', 'processed_at', 'updated_date']");
     expect(WORKFLOW).toContain("['Invoice', ['created_date', 'updated_date', 'issued_at']]");
     expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
