@@ -139,12 +139,14 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
-    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT'");
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES'");
     expect(WORKFLOW).toContain("RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}");
     expect(WORKFLOW).toContain('historical_attempt_replayed: false');
     expect(WORKFLOW).toContain("['GrowthTargetRegistry', ['created_at', 'updated_date']");
     expect(WORKFLOW).toContain('maintenance_failed_run_proves_no_downstream_effects');
     expect(WORKFLOW).toContain('legacy_time_bounded_task_proves_no_effect_started');
+    expect(WORKFLOW).toContain('instantly_retry_attempt_has_zero_event_ledger_writes');
+    expect(WORKFLOW).toContain("['first_received_at', 'last_attempt_at', 'processed_at', 'updated_date']");
     expect(WORKFLOW).toContain("['Invoice', ['created_date', 'updated_date', 'issued_at']]");
     expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
     expect(WORKFLOW).toContain("control_state: 'IDLE'");
@@ -158,6 +160,8 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     }
     expect(DLQ.indexOf('createCanonicalAgentTask')).toBeLessThan(DLQ.indexOf('let pending'));
     expect(RECONCILER.indexOf('createCanonicalAgentTask')).toBeLessThan(RECONCILER.indexOf('svc.entities.Invoice.filter'));
+    expect(INSTANTLY_EVENT_RETRY.indexOf('const due=')).toBeLessThan(INSTANTLY_EVENT_RETRY.lastIndexOf('markSchedulerEffectStarted'));
+    expect(INSTANTLY_EVENT_RETRY).toContain('if(due.length)');
   });
 
   it('versions the DLQ scheduler and makes exhausted replay explicit admin-only', () => {
@@ -186,6 +190,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(UI).toContain('reconcile_scheduler_control');
     expect(UI).toContain('expectedConfirmation');
     expect(UI).toContain('Reconcile without replay');
+    expect(UI).toContain('instantlyProviderEventRetryWorker');
     expect(UI).not.toContain('entities.Invoice');
     expect(UI).not.toContain('entities.SavingsEvidence');
     expect(APP).toContain('/admin/ecl-operations');

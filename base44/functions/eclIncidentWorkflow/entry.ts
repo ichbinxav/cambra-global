@@ -25,7 +25,7 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
@@ -37,6 +37,7 @@ const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
     taskAgent: 'recover_autopilot',
     proof: 'LEGACY_RECOVER_PRE_EFFECT',
   },
+  instantlyProviderEventRetryWorker: { proof: 'INSTANTLY_RETRY_ZERO_WRITES' },
 });
 
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
@@ -284,6 +285,35 @@ async function legacyRecoverAttemptPreEffectProof(svc: any, attempt: any) {
   };
 }
 
+async function instantlyRetryAttemptZeroWriteProof(svc: any, attempt: any) {
+  const from = String(attempt?.started_at || '');
+  const to = new Date().toISOString();
+  if (!Number.isFinite(Date.parse(from))) {
+    return { ok: false, reason: 'instantly_retry_attempt_start_unproven', from, to };
+  }
+  // Provider-event processing claims the ledger row before any downstream
+  // mutation. Zero ledger writes after this attempt began therefore proves
+  // that the historical attempt did not process or replay an event.
+  const rows = await changedRows(
+    svc.entities.OutboundProviderEvent,
+    ['first_received_at', 'last_attempt_at', 'processed_at', 'updated_date'],
+    from,
+    to,
+    { provider: 'instantly' },
+  );
+  const changed = rows.map((row: any) => ({ id: row.id, status: row.status || null }));
+  return {
+    ok: changed.length === 0,
+    reason: changed.length === 0
+      ? 'instantly_retry_attempt_has_zero_event_ledger_writes'
+      : 'instantly_retry_event_ledger_writes_observed',
+    from,
+    to,
+    evidence: [{ entity: 'OutboundProviderEvent', changed_ids: changed.map((row) => row.id) }],
+    changed,
+  };
+}
+
 async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) {
   const spec = ADMIN_SCHEDULER_RECONCILIATION[workerKey];
   if (!spec) return { ok: false, reason: 'scheduler_worker_not_allowlisted' };
@@ -328,7 +358,13 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
-  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT'].includes(spec.proof) && domainProof?.ok === true;
+  if (spec.proof === 'INSTANTLY_RETRY_ZERO_WRITES') {
+    domainProof = await instantlyRetryAttemptZeroWriteProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
+  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES'].includes(spec.proof) && domainProof?.ok === true;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
     allowNoTaskProof: domainNoTaskProof,
   });

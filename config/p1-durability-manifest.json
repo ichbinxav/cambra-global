@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-25T10:42:19.005Z",
+  "generatedAt": "2026-08-25T11:06:25.537Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "721ec56a66dd2b9b445d5493008430da26f7fb5193a9ae8ab3ae95d174b4ec95",
-      "bytes": 25193
+      "sha256": "319c731221c292c55ebc8734eb85578de1609d931ca0d442ed1ae13e3c1c856c",
+      "bytes": 26760
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "83d4cf97be17d52a6c140b6df71fb42a3739b036e816d83fad4361865114f974",
+      "sha256": "c76e888d9a59d142458137e537ca8eb63dc33e50313255e943d19b6d7769e7f9",
       "bytes": 43456
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "1f6731192e7fb7e68afb0482260408c8eb363bcbc7776c24befec5d3b05f4d1c",
+      "sha256": "49c9da70efc4146acc89dc6404d3eb7ed830916f4cd835e76c47f0d26af1d8d7",
       "bytes": 13672
     },
     {
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "3930134cff7a423fe41b9a9b16291e280f7a4178feaca4e63f2a55d7f9d862ab",
-      "bytes": 11296
+      "sha256": "9bb88d6e5cec71ba932f7d9b64233984c5bd39c668359dc3ff8121ab46e32cb3",
+      "bytes": 11785
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
@@ -3959,8 +3959,8 @@
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
-      "sha256": "48b5b185e94131e571228a19885933bdcc7bacae71ac8ed90c458587ab104e36",
-      "bytes": 16530
+      "sha256": "bd1a7544fe9eb399a885883c0e882f49f87b74a2bc5b9d037c245e46f7e388ca",
+      "bytes": 16596
     },
     {
       "path": "src/pages/admin/ReviewQueue.jsx",

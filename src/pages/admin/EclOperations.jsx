@@ -6,6 +6,7 @@ const ACTIVE = ["open", "acknowledged", "recovering"];
 const SCHEDULER_RECOVERY_WORKERS = [
   ["maintenanceEngine", "Maintenance Engine"],
   ["recoverAutopilotWorker", "Recover Autopilot"],
+  ["instantlyProviderEventRetryWorker", "Instantly Event Retry"],
   ["getEuropeMarketsCommandCenter", "Europe Markets"],
   ["autonomousCompanyOrchestrator", "Company Orchestrator"],
 ];
