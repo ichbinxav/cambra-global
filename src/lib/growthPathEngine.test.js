@@ -68,7 +68,7 @@ describe('CAMBRA Growth Path Engine V1', () => {
   });
 
   it('persists the four governed data contracts and exposes the founder cockpit', () => {
-    for(const file of ['growth-target-registry','growth-assumption-registry','growth-path-snapshot','growth-scenario']) expect(fs.existsSync(`base44/entities/${file}.jsonc`)).toBe(true);
+    for(const file of ['GrowthTargetRegistry','GrowthAssumptionRegistry','GrowthPathSnapshot','GrowthScenario']) expect(fs.existsSync(`base44/entities/${file}.jsonc`)).toBe(true);
     const admin=read('src/pages/admin/AdminGrowth.jsx'); expect(admin).toContain('Growth Path · Actual vs Plan'); expect(admin).toContain('Binding constraint'); expect(admin).toContain('Scenario lab'); expect(admin).toContain('Recompute & snapshot'); expect(GROWTH_PATH_ENGINE_VERSION).toBe('growth-path-v1.0.0');
   });
 });

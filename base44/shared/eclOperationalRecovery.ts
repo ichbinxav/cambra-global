@@ -161,3 +161,110 @@ export function schedulerControlRecoveryDecision(
   }
   return { ok: true, action: 'reset_control', reason: 'task_proves_no_effect_started', taskId: task.id };
 }
+
+export function webhookOrphanedProvisionalRecoveryDecision(
+  control: any,
+  historicalAttempt: any,
+  evidence: {
+    historicalTasks?: any[];
+    provisionalAttempts?: any[];
+    provisionalTasks?: any[];
+    pendingDeadLetters?: any[];
+  },
+  nowMs: number,
+) {
+  if (!control || control.control_state !== 'REVIEW_REQUIRED') {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_control_not_quarantined' };
+  }
+  if (
+    String(control.worker_key || '') !== 'processWebhookDeadLetters' ||
+    String(control.details_json?.reason || '') !== 'scheduler_superseded_attempt_not_persisted'
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_control_reason_unproven' };
+  }
+  if (
+    !historicalAttempt ||
+    String(historicalAttempt.id || '') !== String(control.active_attempt_id || '') ||
+    String(historicalAttempt.worker_key || '') !== 'processWebhookDeadLetters'
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_historical_attempt_unproven' };
+  }
+  if (
+    control.control_effects_started !== false ||
+    historicalAttempt.effects_started !== false ||
+    historicalAttempt.claim_acquired !== true ||
+    String(historicalAttempt.status || '') !== 'REVIEW_REQUIRED' ||
+    String(historicalAttempt.material_effect_state || '') !== 'REVIEW_REQUIRED' ||
+    String(historicalAttempt.details_json?.reason || '') !== 'scheduler_attempt_link_fence_lost'
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_pre_effect_state_unproven' };
+  }
+
+  const activeRunKey = String(control.active_run_key || '');
+  const activeOperationKey = String(control.active_operation_key || '');
+  const activeEffectKey = String(control.active_effect_key || '');
+  const operationPrefix = 'processWebhookDeadLetters:';
+  const operationSuffix = activeOperationKey.startsWith(operationPrefix)
+    ? activeOperationKey.slice(operationPrefix.length)
+    : '';
+  if (
+    !activeRunKey || !activeOperationKey || !operationSuffix ||
+    activeRunKey !== `${activeOperationKey}:pending` ||
+    activeEffectKey !== `processWebhookDeadLetters:effect:${operationSuffix}` ||
+    !historicalAttempt.run_key || String(historicalAttempt.run_key) === activeRunKey
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_provisional_identity_unproven' };
+  }
+
+  const controlRevision = Number(control.control_revision);
+  const attemptFenceRevision = Number(historicalAttempt.attempt_fence_revision);
+  if (
+    !Number.isInteger(controlRevision) || !Number.isInteger(attemptFenceRevision) ||
+    controlRevision !== attemptFenceRevision + 2
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_fence_sequence_unproven' };
+  }
+
+  const claimedAt = Date.parse(String(control.control_claimed_at || ''));
+  const expiresAt = Date.parse(String(control.control_expires_at || ''));
+  const reviewRequiredAt = Date.parse(String(control.details_json?.review_required_at || ''));
+  const historicalCompletedAt = Date.parse(String(historicalAttempt.completed_at || ''));
+  const historicalLeaseExpiresAt = Date.parse(String(historicalAttempt.lease_expires_at || ''));
+  if (
+    !Number.isFinite(nowMs) || !Number.isFinite(claimedAt) || !Number.isFinite(expiresAt) ||
+    !Number.isFinite(reviewRequiredAt) || !Number.isFinite(historicalCompletedAt) ||
+    !Number.isFinite(historicalLeaseExpiresAt) || expiresAt > nowMs || claimedAt > expiresAt ||
+    reviewRequiredAt !== claimedAt || historicalCompletedAt > claimedAt || historicalLeaseExpiresAt > claimedAt
+  ) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_quiescence_window_unproven' };
+  }
+
+  const evidenceSets = [
+    evidence?.historicalTasks,
+    evidence?.provisionalAttempts,
+    evidence?.provisionalTasks,
+    evidence?.pendingDeadLetters,
+  ];
+  if (evidenceSets.some((rows) => !Array.isArray(rows))) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_evidence_unavailable' };
+  }
+  if (evidence.historicalTasks!.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_historical_task_observed' };
+  }
+  if (evidence.provisionalAttempts!.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_provisional_attempt_observed' };
+  }
+  if (evidence.provisionalTasks!.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_provisional_task_observed' };
+  }
+  if (evidence.pendingDeadLetters!.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'webhook_orphaned_pending_delivery_observed' };
+  }
+  return {
+    ok: true,
+    action: 'reset_control',
+    reason: 'webhook_orphaned_provisional_pre_effect_zero_writes',
+    activeRunKey,
+    historicalAttemptId: historicalAttempt.id,
+  };
+}

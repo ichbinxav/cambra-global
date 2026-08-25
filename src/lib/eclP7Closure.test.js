@@ -5,7 +5,7 @@ import {
 } from '../../scripts/lib/preEclFreeze.mjs';
 import {
   P7_WORKERS, buildIncidentRecord, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation,
-  schedulerControlRecoveryDecision, workerFreshness,
+  schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision, workerFreshness,
 } from '../../base44/shared/eclOperationalRecovery.ts';
 
 const read = (path) => fs.readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
@@ -144,6 +144,66 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     })).toMatchObject({ ok: false, reason: 'scheduler_post_effect_state_unproven' });
   });
 
+  it('releases only the exact expired webhook provisional orphan with zero persisted work', () => {
+    const now = Date.parse('2026-08-25T15:30:00.000Z');
+    const control = {
+      worker_key: 'processWebhookDeadLetters',
+      control_state: 'REVIEW_REQUIRED',
+      control_revision: 2885,
+      control_effects_started: false,
+      control_claimed_at: '2026-08-25T14:56:54.432Z',
+      control_expires_at: '2026-08-25T15:11:54.432Z',
+      active_attempt_id: 'attempt_old',
+      active_operation_key: 'processWebhookDeadLetters:2026-08-25T14:55:00.000Z',
+      active_effect_key: 'processWebhookDeadLetters:effect:2026-08-25T14:55:00.000Z',
+      active_run_key: 'processWebhookDeadLetters:2026-08-25T14:55:00.000Z:pending',
+      details_json: {
+        reason: 'scheduler_superseded_attempt_not_persisted',
+        review_required_at: '2026-08-25T14:56:54.432Z',
+      },
+    };
+    const attempt = {
+      id: 'attempt_old',
+      worker_key: 'processWebhookDeadLetters',
+      run_key: 'processWebhookDeadLetters:2026-08-25T14:35:00.000Z',
+      claim_acquired: true,
+      attempt_fence_revision: 2883,
+      effects_started: false,
+      status: 'REVIEW_REQUIRED',
+      material_effect_state: 'REVIEW_REQUIRED',
+      lease_expires_at: '2026-08-25T14:51:54.726Z',
+      completed_at: '2026-08-25T14:37:38.721Z',
+      details_json: { reason: 'scheduler_attempt_link_fence_lost' },
+    };
+    const emptyEvidence = {
+      historicalTasks: [],
+      provisionalAttempts: [],
+      provisionalTasks: [],
+      pendingDeadLetters: [],
+    };
+    expect(webhookOrphanedProvisionalRecoveryDecision(control, attempt, emptyEvidence, now)).toMatchObject({
+      ok: true,
+      action: 'reset_control',
+      reason: 'webhook_orphaned_provisional_pre_effect_zero_writes',
+    });
+    expect(webhookOrphanedProvisionalRecoveryDecision(control, attempt, {
+      ...emptyEvidence,
+      provisionalAttempts: [{ id: 'unexpected_attempt' }],
+    }, now)).toMatchObject({ ok: false, reason: 'webhook_orphaned_provisional_attempt_observed' });
+    expect(webhookOrphanedProvisionalRecoveryDecision(control, attempt, {
+      ...emptyEvidence,
+      pendingDeadLetters: [{ id: 'pending_delivery' }],
+    }, now)).toMatchObject({ ok: false, reason: 'webhook_orphaned_pending_delivery_observed' });
+    expect(webhookOrphanedProvisionalRecoveryDecision(control, attempt, emptyEvidence, Date.parse('2026-08-25T15:00:00.000Z'))).toMatchObject({
+      ok: false,
+      reason: 'webhook_orphaned_quiescence_window_unproven',
+    });
+    expect(webhookOrphanedProvisionalRecoveryDecision({ ...control, control_effects_started: true }, attempt, emptyEvidence, now)).toMatchObject({
+      ok: false,
+      reason: 'webhook_orphaned_pre_effect_state_unproven',
+    });
+  });
+
   it('health uses authoritative reads, never invokes recovery, and reopens a manually-cleared live signal', () => {
     expect(HEALTH).toContain("Promise.all([");
     expect(HEALTH).not.toMatch(/entities\.(StatementImport|SavingsEvidence|Invoice|WebhookDeadLetter|ReviewCase)\.(filter|list)\([^\n]+\)\.catch\(\(\) => \[\]\)/);
@@ -168,6 +228,9 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).not.toMatch(/body\.(functionName|function_name)/);
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
+    expect(WORKFLOW).toContain('webhookOrphanedProvisionalRecoveryDecision');
+    expect(WORKFLOW).toContain("status: { $in: ['dispatch_pending', 'pending_retry'] }");
+    expect(WORKFLOW).toContain('admin_reconciled_orphaned_provisional_pre_effect');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
     expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION'");
     expect(WORKFLOW).toContain("'RECONCILE_NO_REPLAY'");
