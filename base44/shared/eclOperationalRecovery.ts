@@ -112,7 +112,7 @@ export function schedulerControlRecoveryDecision(
   control: any,
   attempt: any,
   tasks: any[],
-  options: { allowNoTaskProof?: boolean } = {},
+  options: { allowNoTaskProof?: boolean; allowQuiescentPostEffectProof?: boolean } = {},
 ) {
   if (!control) return { ok: true, action: 'not_required', reason: 'scheduler_control_absent' };
   const state = String(control.control_state || 'IDLE');
@@ -126,6 +126,23 @@ export function schedulerControlRecoveryDecision(
     return { ok: false, action: 'blocked', reason: 'scheduler_attempt_run_key_unproven' };
   }
   if (!Array.isArray(tasks)) return { ok: false, action: 'blocked', reason: 'scheduler_task_evidence_unavailable' };
+  if (options.allowQuiescentPostEffectProof === true) {
+    const materialState = String(attempt.material_effect_state || '');
+    const attemptStatus = String(attempt.status || '');
+    if (
+      control.control_effects_started !== true || attempt.effects_started !== true ||
+      !['EFFECT_STARTED', 'REVIEW_REQUIRED', 'FAILED_POST_EFFECT'].includes(materialState) ||
+      !['RUNNING', 'REVIEW_REQUIRED', 'FAILED'].includes(attemptStatus)
+    ) {
+      return { ok: false, action: 'blocked', reason: 'scheduler_post_effect_state_unproven' };
+    }
+    return {
+      ok: true,
+      action: 'reconcile_post_effect',
+      reason: 'terminal_effect_receipts_quiescent_without_replay',
+      taskId: null,
+    };
+  }
   const matchingTasks = tasks.filter((task) => referencesSchedulerAttempt(task, attempt, runKey));
   if (matchingTasks.length > 1) return { ok: false, action: 'blocked', reason: 'scheduler_attempt_task_ambiguous' };
   if (matchingTasks.length === 0) {

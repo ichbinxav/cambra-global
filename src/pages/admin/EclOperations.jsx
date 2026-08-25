@@ -78,8 +78,13 @@ export default function EclOperations() {
   }
 
   async function reconcileScheduler(row) {
-    if (!row?.ok || row.action !== "reset_control" || !row.expectedConfirmation || !row.attempt?.id || row.control?.control_revision == null) return;
-    if (!window.confirm(`Reconcile ${row.label} without replaying attempt ${row.attempt.id}?`)) return;
+    const postEffect = row?.action === "reconcile_post_effect";
+    const supported = row?.action === "reset_control" || postEffect;
+    if (!row?.ok || !supported || !row.expectedConfirmation || !row.attempt?.id || row.control?.control_revision == null) return;
+    const confirmation = postEffect
+      ? `Acknowledge the observed effects for ${row.label}, retain every result and receipt, mark attempt ${row.attempt.id} as failed post-effect, and release the control without replay or rollback?`
+      : `Reconcile ${row.label} without replaying attempt ${row.attempt.id}?`;
+    if (!window.confirm(confirmation)) return;
     setSchedulerBusy(row.workerKey);
     setError("");
     try {
@@ -152,14 +157,15 @@ export default function EclOperations() {
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Scheduler recovery</p>
             <h2 className="text-sm font-black mt-1">Proof-gated control reconciliation</h2>
-            <p className="text-[11px] text-muted-foreground mt-1 max-w-3xl">Inspection is read-only. A reset is offered only when the server proves the exact historical attempt stopped before downstream effects; reconciliation never replays that attempt.</p>
+            <p className="text-[11px] text-muted-foreground mt-1 max-w-3xl">Inspection is read-only. Reconciliation is offered only after the server proves either zero downstream effects or a terminal, quiescent receipt chain. Historical attempts are never replayed and observed effects are never rolled back.</p>
           </div>
           <button type="button" onClick={inspectSchedulers} disabled={Boolean(schedulerBusy)} className="h-8 px-3 rounded-lg border border-border/60 text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"><RefreshCw size={12} className={schedulerBusy === "inspect" ? "animate-spin" : ""} /> Inspect controls</button>
         </div>
         {schedulerRows.length === 0 ? <div className="rounded-xl border border-dashed border-border/60 p-4 text-xs text-muted-foreground">No scheduler control has been inspected in this session.</div> : <div className="grid md:grid-cols-2 gap-2">{schedulerRows.map((row) => {
-          const ready = row.ok === true && row.action === "reset_control" && Boolean(row.expectedConfirmation);
+          const postEffectReady = row.ok === true && row.action === "reconcile_post_effect" && Boolean(row.expectedConfirmation);
+          const ready = row.ok === true && ["reset_control", "reconcile_post_effect"].includes(row.action) && Boolean(row.expectedConfirmation);
           const settled = row.ok === true && !ready;
-          return <div key={row.workerKey} className="rounded-xl border border-border/50 bg-secondary/20 p-3 space-y-2"><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-black">{row.label}</p><p className="text-[10px] font-mono text-muted-foreground mt-1">{row.workerKey}</p></div><span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${ready ? "border-amber-500/30 text-amber-800" : settled ? "border-emerald-500/30 text-emerald-700" : "border-rose-500/30 text-rose-700"}`}>{ready ? "proof ready" : settled ? "no reset required" : "blocked"}</span></div><p className="text-[11px] text-muted-foreground">{human(row.domainProof?.reason || row.reason || row.action)}</p>{row.attempt?.id && <p className="text-[10px] font-mono text-muted-foreground break-all">Attempt {row.attempt.id} · revision {row.control?.control_revision ?? "—"}</p>}{ready && <button type="button" onClick={() => reconcileScheduler(row)} disabled={Boolean(schedulerBusy)} className="h-8 px-3 rounded-lg bg-foreground text-background text-[11px] font-bold inline-flex items-center gap-1.5 disabled:opacity-50"><RotateCcw size={11} /> {schedulerBusy === row.workerKey ? "Reconciling…" : "Reconcile without replay"}</button>}</div>;
+          return <div key={row.workerKey} className="rounded-xl border border-border/50 bg-secondary/20 p-3 space-y-2"><div className="flex items-start justify-between gap-2"><div><p className="text-xs font-black">{row.label}</p><p className="text-[10px] font-mono text-muted-foreground mt-1">{row.workerKey}</p></div><span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${ready ? "border-amber-500/30 text-amber-800" : settled ? "border-emerald-500/30 text-emerald-700" : "border-rose-500/30 text-rose-700"}`}>{postEffectReady ? "post-effect proof ready" : ready ? "proof ready" : settled ? "no reset required" : "blocked"}</span></div><p className="text-[11px] text-muted-foreground">{human(row.domainProof?.reason || row.reason || row.action)}</p>{row.attempt?.id && <p className="text-[10px] font-mono text-muted-foreground break-all">Attempt {row.attempt.id} · revision {row.control?.control_revision ?? "—"}</p>}{ready && <button type="button" onClick={() => reconcileScheduler(row)} disabled={Boolean(schedulerBusy)} className="h-8 px-3 rounded-lg bg-foreground text-background text-[11px] font-bold inline-flex items-center gap-1.5 disabled:opacity-50"><RotateCcw size={11} /> {schedulerBusy === row.workerKey ? "Reconciling…" : postEffectReady ? "Acknowledge effects and reconcile" : "Reconcile without replay"}</button>}</div>;
         })}</div>}
       </section>
 

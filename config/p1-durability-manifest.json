@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-25T14:13:20.464Z",
+  "generatedAt": "2026-08-25T15:14:24.681Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "96033e085376d43a3fe2bc5088a9d8d9136e286af855b9e355e745c9774ee841",
-      "bytes": 30823
+      "sha256": "3d95a685289fc1d79d4e62ccb452e633ec0b43201d9b37220fd7339c4eeae4dc",
+      "bytes": 36846
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -1614,8 +1614,8 @@
     },
     {
       "path": "base44/shared/eclOperationalRecovery.ts",
-      "sha256": "6148cce746abeb051349e1a014f08c010e7bf65fe46a278c824670483c2ec936",
-      "bytes": 7249
+      "sha256": "1ff4c1821fa3b06825a7090e9c0e39ef2ee32960bc425cccd5157f37c66a7da8",
+      "bytes": 8009
     },
     {
       "path": "base44/shared/eclPersistence.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "e047f74a357689532cd9e4a6c77e333c64c0572da3c6e9ed1b0f76857218f141",
+      "sha256": "1b3e4e9ad1940ea7f04b4ffc21e62aad429f12f62aefd8e5b962118890696cdf",
       "bytes": 43456
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "e9bdde5fa48eb394c355b51cea19ef328d10a294169cd996290bce5a75814295",
+      "sha256": "1f3d1916f71be431cd6a05883d121e365be0a5bb17d2c5b56e8806c8dc96bd77",
       "bytes": 13672
     },
     {
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "2b56cd628165606dc83919f247470e6ceb7760f1079eb7904472a439f5a9e7e7",
-      "bytes": 12378
+      "sha256": "4b55b1c8ebc6e545e20d8f32d2d3c11c062ed2077f6125c606bdd87407e90ad0",
+      "bytes": 14021
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
@@ -3959,8 +3959,8 @@
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
-      "sha256": "22fe436122879d2ff07aec362615395542df42a28d4e8ee37f2c1187e5fe8a5b",
-      "bytes": 16654
+      "sha256": "35d5bd1f8f352d2371c450cd53d55dba169d8a053355882d3cbc84848e0ca736",
+      "bytes": 17345
     },
     {
       "path": "src/pages/admin/ReviewQueue.jsx",

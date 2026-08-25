@@ -115,6 +115,35 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     }])).toMatchObject({ ok: false, reason: 'scheduler_effect_nonoccurrence_unproven' });
   });
 
+  it('reconciles a quiescent post-effect attempt only when both scheduler fences prove effects started', () => {
+    const control = {
+      control_state: 'REVIEW_REQUIRED',
+      active_attempt_id: 'attempt_post_effect',
+      active_run_key: 'run_post_effect',
+      control_effects_started: true,
+    };
+    const attempt = {
+      id: 'attempt_post_effect',
+      run_key: 'run_post_effect',
+      status: 'RUNNING',
+      effects_started: true,
+      material_effect_state: 'EFFECT_STARTED',
+    };
+    expect(schedulerControlRecoveryDecision(control, attempt, [], {
+      allowQuiescentPostEffectProof: true,
+    })).toMatchObject({
+      ok: true,
+      action: 'reconcile_post_effect',
+      reason: 'terminal_effect_receipts_quiescent_without_replay',
+    });
+    expect(schedulerControlRecoveryDecision({ ...control, control_effects_started: false }, attempt, [], {
+      allowQuiescentPostEffectProof: true,
+    })).toMatchObject({ ok: false, reason: 'scheduler_post_effect_state_unproven' });
+    expect(schedulerControlRecoveryDecision(control, { ...attempt, effects_started: false }, [], {
+      allowQuiescentPostEffectProof: true,
+    })).toMatchObject({ ok: false, reason: 'scheduler_post_effect_state_unproven' });
+  });
+
   it('health uses authoritative reads, never invokes recovery, and reopens a manually-cleared live signal', () => {
     expect(HEALTH).toContain("Promise.all([");
     expect(HEALTH).not.toMatch(/entities\.(StatementImport|SavingsEvidence|Invoice|WebhookDeadLetter|ReviewCase)\.(filter|list)\([^\n]+\)\.catch\(\(\) => \[\]\)/);
@@ -140,15 +169,19 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
-    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_IDLE_ZERO_WRITES'");
-    expect(WORKFLOW).toContain("RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}");
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION'");
+    expect(WORKFLOW).toContain("'RECONCILE_NO_REPLAY'");
+    expect(WORKFLOW).toContain('ACKNOWLEDGE_POST_EFFECT_NO_REPLAY');
     expect(WORKFLOW).toContain('historical_attempt_replayed: false');
+    expect(WORKFLOW).toContain('effects_rolled_back: false');
+    expect(WORKFLOW).toContain("material_effect_state: 'FAILED_POST_EFFECT'");
     expect(WORKFLOW).toContain("['GrowthTargetRegistry', ['created_at', 'updated_date']");
     expect(WORKFLOW).toContain('maintenance_failed_run_proves_no_downstream_effects');
     expect(WORKFLOW).toContain('legacy_time_bounded_task_proves_no_effect_started');
     expect(WORKFLOW).toContain('instantly_retry_attempt_has_zero_event_ledger_writes');
     expect(WORKFLOW).toContain('discovery_attempt_zero_writes_and_no_material_authority');
-    expect(WORKFLOW).toContain("['CostUsageEvent', ['created_date', 'updated_date', 'occurred_at']");
+    expect(WORKFLOW).toContain('discovery_terminal_effect_receipts_quiescent_without_replay');
+    expect(WORKFLOW).toContain("CostUsageEvent.filter({ source: 'leadDiscoveryAgent'");
     expect(WORKFLOW).toContain("['first_received_at', 'last_attempt_at', 'processed_at', 'updated_date']");
     expect(WORKFLOW).toContain("['Invoice', ['created_date', 'updated_date', 'issued_at']]");
     expect(WORKFLOW).toContain("control_state: 'REVIEW_REQUIRED'");
@@ -195,6 +228,8 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(UI).toContain('reconcile_scheduler_control');
     expect(UI).toContain('expectedConfirmation');
     expect(UI).toContain('Reconcile without replay');
+    expect(UI).toContain('Acknowledge effects and reconcile');
+    expect(UI).toContain('row.action === "reconcile_post_effect"');
     expect(UI).toContain('instantlyProviderEventRetryWorker');
     expect(UI).toContain('alwaysOnLeadDiscoveryWorker');
     expect(UI).not.toContain('entities.Invoice');

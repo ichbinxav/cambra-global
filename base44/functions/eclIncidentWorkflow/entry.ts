@@ -25,7 +25,7 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_IDLE_ZERO_WRITES';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
@@ -38,7 +38,7 @@ const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
     proof: 'LEGACY_RECOVER_PRE_EFFECT',
   },
   instantlyProviderEventRetryWorker: { proof: 'INSTANTLY_RETRY_ZERO_WRITES' },
-  alwaysOnLeadDiscoveryWorker: { proof: 'DISCOVERY_IDLE_ZERO_WRITES' },
+  alwaysOnLeadDiscoveryWorker: { proof: 'DISCOVERY_EFFECT_RECONCILIATION' },
 });
 
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
@@ -315,64 +315,119 @@ async function instantlyRetryAttemptZeroWriteProof(svc: any, attempt: any) {
   };
 }
 
-async function discoveryAttemptZeroWriteProof(svc: any, attempt: any) {
+async function discoveryAttemptReconciliationProof(svc: any, attempt: any) {
   const from = String(attempt?.started_at || '');
-  const to = new Date().toISOString();
-  if (!Number.isFinite(Date.parse(from))) {
-    return { ok: false, reason: 'discovery_attempt_start_unproven', from, to };
+  const leaseEnd = String(attempt?.lease_expires_at || '');
+  const now = new Date().toISOString();
+  const fromMs = Date.parse(from);
+  const leaseEndMs = Date.parse(leaseEnd);
+  if (!Number.isFinite(fromMs) || !Number.isFinite(leaseEndMs) || leaseEndMs < fromMs) {
+    return { ok: false, reason: 'discovery_attempt_lease_window_unproven', from, leaseEnd, now };
   }
-  // Provider discovery reserves CostUsageEvent before a provider request, and
-  // every local path records one of these ledgers before downstream use. A
-  // completely empty window plus no current material authority proves that the
-  // expired attempt neither bought data nor committed a discovery projection.
-  const checks = [
-    ['DiscoveryExecutionRun', ['created_date', 'updated_date', 'started_at', 'heartbeat_at', 'completed_at'], {}],
-    ['FounderSavedView', ['created_date', 'updated_date', 'updated_at'], { view_type: 'discovery_saved_search' }],
-    ['LeadReservoirSnapshot', ['created_date', 'captured_at'], {}],
-    ['CommercialIntelligenceSnapshot', ['created_date', 'generated_at'], {}],
-    ['LeadDiscoveryCheckpoint', ['created_date', 'updated_date', 'last_attempt_at', 'last_success_at'], {}],
-    ['OutboundLead', ['created_date', 'updated_date', 'discovered_at', 'last_enriched_at', 'reservoir_updated_at'], {}],
-    ['AgentTask', ['created_date', 'updated_date', 'started_at', 'completed_at'], { agent_name: { $in: ['lead_orchestrator', 'lead_discovery', 'lead_enrichment', 'lead_scoring'] } }],
-    ['Event', ['created_date', 'recorded_at', 'occurred_at'], { event_type: { $in: ['commercial.intelligence.snapshot.created', 'discovery.plan.accepted', 'discovery.stage.started', 'discovery.stage.completed', 'discovery.run.completed', 'discovery.run.failed', 'discovery.result.scored'] } }],
-    ['CostUsageEvent', ['created_date', 'updated_date', 'occurred_at'], {}],
-    ['OperationalLog', ['created_date', 'updated_date'], {}],
-  ] as const;
-  const evidence: any[] = [];
-  for (const [entityName, fields, query] of checks) {
-    const rows = await changedRows(svc.entities[entityName], [...fields], from, to, query);
-    evidence.push({ entity: entityName, changed_ids: rows.map((row: any) => row.id) });
+  if (Date.now() - leaseEndMs < 60 * 60 * 1000) {
+    return { ok: false, reason: 'discovery_attempt_not_quiescent_long_enough', from, leaseEnd, now };
   }
-  const [policies, activeRuns, savedSearches] = await Promise.all([
+  const afterLease = new Date(leaseEndMs + 1).toISOString();
+  const discoveryAgents = ['lead_orchestrator', 'lead_discovery', 'lead_enrichment', 'lead_scoring'];
+  const [costEvents, checkpoints, reservoirRows, tasks, postLeaseCosts, postLeaseCheckpoints, postLeaseReservoir, postLeaseTasks, policies, activeRuns, savedSearches] = await Promise.all([
+    svc.entities.CostUsageEvent.filter({ source: 'leadDiscoveryAgent', occurred_at: { $gte: from, $lte: leaseEnd } }, '-occurred_at', 100),
+    svc.entities.LeadDiscoveryCheckpoint.filter({ last_attempt_at: { $gte: from, $lte: leaseEnd } }, '-last_attempt_at', 100),
+    svc.entities.OutboundLead.filter({ reservoir_updated_at: { $gte: from, $lte: leaseEnd } }, '-reservoir_updated_at', 100),
+    svc.entities.AgentTask.filter({ agent_name: { $in: discoveryAgents }, created_date: { $gte: from, $lte: leaseEnd } }, '-created_date', 100),
+    svc.entities.CostUsageEvent.filter({ source: 'leadDiscoveryAgent', occurred_at: { $gte: afterLease } }, '-occurred_at', 2),
+    svc.entities.LeadDiscoveryCheckpoint.filter({ last_attempt_at: { $gte: afterLease } }, '-last_attempt_at', 2),
+    svc.entities.OutboundLead.filter({ reservoir_updated_at: { $gte: afterLease } }, '-reservoir_updated_at', 2),
+    svc.entities.AgentTask.filter({ agent_name: { $in: discoveryAgents }, created_date: { $gte: afterLease } }, '-created_date', 2),
     svc.entities.CommercialPolicy.filter({ engine: 'merchant_acquisition', status: 'active' }, '-updated_date', 100),
     svc.entities.DiscoveryExecutionRun.filter({ status: { $in: ['QUEUED', 'RUNNING'] } }, '-heartbeat_at', 20),
     svc.entities.FounderSavedView.filter({ view_type: 'discovery_saved_search' }, '-updated_at', 500),
   ]);
-  if (![policies, activeRuns, savedSearches].every(Array.isArray)) {
-    throw new Error('discovery_material_authority_proof_unavailable');
+  const reads = [costEvents, checkpoints, reservoirRows, tasks, postLeaseCosts, postLeaseCheckpoints, postLeaseReservoir, postLeaseTasks, policies, activeRuns, savedSearches];
+  if (!reads.every(Array.isArray)) {
+    throw new Error('discovery_reconciliation_proof_unavailable');
   }
   const activePolicies = policies.filter((row: any) =>
     row?.icp_json?.discovery_enabled === true &&
     Array.isArray(row?.countries) && row.countries.length > 0
   );
-  const changed = evidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
   const authority = {
     active_policy_ids: activePolicies.map((row: any) => row.id),
     active_run_ids: activeRuns.map((row: any) => row.id),
     saved_search_ids: savedSearches.filter((row: any) => row?.is_current !== false).map((row: any) => row.id),
   };
   const authorityPresent = Object.values(authority).some((ids) => ids.length > 0);
+  if (authorityPresent) {
+    return { ok: false, reason: 'discovery_material_authority_present', mode: 'BLOCKED', from, leaseEnd, now, authority };
+  }
+  const postLeaseActivity = {
+    cost_event_ids: postLeaseCosts.map((row: any) => row.id),
+    checkpoint_ids: postLeaseCheckpoints.map((row: any) => row.id),
+    reservoir_lead_ids: postLeaseReservoir.map((row: any) => row.id),
+    task_ids: postLeaseTasks.map((row: any) => row.id),
+  };
+  if (Object.values(postLeaseActivity).some((ids) => ids.length > 0)) {
+    return { ok: false, reason: 'discovery_activity_observed_after_attempt_lease', mode: 'BLOCKED', from, leaseEnd, now, authority, postLeaseActivity };
+  }
+  const evidence = {
+    cost_event_ids: costEvents.map((row: any) => row.id),
+    checkpoint_ids: checkpoints.map((row: any) => row.id),
+    reservoir_lead_sample_ids: reservoirRows.slice(0, 20).map((row: any) => row.id),
+    reservoir_rows_observed_capped: reservoirRows.length,
+    task_ids: tasks.map((row: any) => row.id),
+  };
+  const effectObserved = costEvents.length > 0 || checkpoints.length > 0 || reservoirRows.length > 0 || tasks.length > 0;
+  if (!effectObserved) {
+    return {
+      ok: true,
+      reason: 'discovery_attempt_zero_writes_and_no_material_authority',
+      mode: 'PRE_EFFECT_ZERO_WRITES',
+      from,
+      leaseEnd,
+      now,
+      authority,
+      evidence,
+      postLeaseActivity,
+    };
+  }
+  const terminalCostStates = new Set(['OBSERVED', 'RECONCILED', 'VOID', 'FAILED']);
+  const costReceiptsTerminal = costEvents.length > 0 && costEvents.every((row: any) =>
+    terminalCostStates.has(String(row?.status || '')) &&
+    Number.isFinite(Date.parse(String(row?.completed_at || ''))) &&
+    Date.parse(String(row.completed_at)) <= leaseEndMs
+  );
+  const checkpointIds = new Set(checkpoints.map((row: any) => String(row.id)));
+  const costReceiptsAttributed = costEvents.every((row: any) => checkpointIds.has(String(row?.related_entity_id || '')));
+  const tasksTerminal = tasks.length > 0 && tasks.every((row: any) =>
+    !['queued', 'running'].includes(String(row?.status || '').toLowerCase()) &&
+    Number.isFinite(Date.parse(String(row?.completed_at || ''))) &&
+    Date.parse(String(row.completed_at)) <= leaseEndMs
+  );
+  const completeReceiptChain = costReceiptsTerminal && costReceiptsAttributed && checkpoints.length > 0 && reservoirRows.length > 0 && tasksTerminal;
+  if (!completeReceiptChain) {
+    return {
+      ok: false,
+      reason: 'discovery_post_effect_receipt_chain_incomplete',
+      mode: 'BLOCKED',
+      from,
+      leaseEnd,
+      now,
+      authority,
+      evidence,
+      postLeaseActivity,
+      receipt_state: { costReceiptsTerminal, costReceiptsAttributed, tasksTerminal },
+    };
+  }
   return {
-    ok: changed.length === 0 && !authorityPresent,
-    reason: changed.length
-      ? 'discovery_domain_or_cost_writes_observed'
-      : authorityPresent
-      ? 'discovery_material_authority_present'
-      : 'discovery_attempt_zero_writes_and_no_material_authority',
+    ok: true,
+    reason: 'discovery_terminal_effect_receipts_quiescent_without_replay',
+    mode: 'POST_EFFECT_QUIESCENT',
     from,
-    to,
+    leaseEnd,
+    now,
     evidence,
-    changed,
     authority,
+    postLeaseActivity,
+    receipt_state: { costReceiptsTerminal, costReceiptsAttributed, tasksTerminal },
   };
 }
 
@@ -426,15 +481,21 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
-  if (spec.proof === 'DISCOVERY_IDLE_ZERO_WRITES') {
-    domainProof = await discoveryAttemptZeroWriteProof(svc, attempt);
+  if (spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION') {
+    domainProof = await discoveryAttemptReconciliationProof(svc, attempt);
     if (!domainProof.ok) {
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
-  const domainNoTaskProof = ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES', 'DISCOVERY_IDLE_ZERO_WRITES'].includes(spec.proof) && domainProof?.ok === true;
+  const discoveryPreEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'PRE_EFFECT_ZERO_WRITES';
+  const discoveryPostEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
+  const domainNoTaskProof = (
+    ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES'].includes(spec.proof) &&
+    domainProof?.ok === true
+  ) || discoveryPreEffectProof;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
     allowNoTaskProof: domainNoTaskProof,
+    allowQuiescentPostEffectProof: discoveryPostEffectProof,
   });
   const taskId = decision.taskId || domainProof?.task_id || null;
   const task = taskId ? tasks.find((row) => row.id === taskId) : null;
@@ -447,10 +508,12 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
 async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: string) {
   const workerKey = String(body.workerKey || '');
   const inspection: any = await inspectAdminSchedulerReconciliation(svc, workerKey);
-  if (!inspection.ok || inspection.action !== 'reset_control') return inspection;
+  if (!inspection.ok || !['reset_control', 'reconcile_post_effect'].includes(String(inspection.action || ''))) return inspection;
   const control = inspection.control;
   const attempt = inspection.attempt;
-  const expectedConfirmation = `RECONCILE_NO_REPLAY:${workerKey}:${attempt.id}:${Number(control.control_revision || 0)}`;
+  const postEffect = inspection.action === 'reconcile_post_effect';
+  const confirmationKind = postEffect ? 'ACKNOWLEDGE_POST_EFFECT_NO_REPLAY' : 'RECONCILE_NO_REPLAY';
+  const expectedConfirmation = `${confirmationKind}:${workerKey}:${attempt.id}:${Number(control.control_revision || 0)}`;
   if (body.action === 'inspect_scheduler_control') {
     return { ...inspection, expectedConfirmation };
   }
@@ -462,14 +525,46 @@ async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: 
     return { ok: false, action: 'blocked', reason: 'scheduler_reconciliation_confirmation_mismatch', expectedConfirmation };
   }
   const now = new Date().toISOString();
-  const update = await svc.entities.SchedulerRun.updateMany({
-    id: control.id,
-    record_kind: 'CONTROL',
-    control_key: control.control_key,
-    control_state: 'REVIEW_REQUIRED',
-    control_revision: Number(control.control_revision),
-    active_attempt_id: String(attempt.id),
-  }, { $set: {
+  if (postEffect) {
+    const alreadyReconciled =
+      attempt.status === 'FAILED' && attempt.material_effect_state === 'FAILED_POST_EFFECT' &&
+      attempt.details_json?.post_effect_reconciliation_attempt_id === attempt.id;
+    if (!alreadyReconciled) {
+      const attemptUpdate = await svc.entities.SchedulerRun.updateMany({
+        id: attempt.id,
+        record_kind: 'ATTEMPT',
+        status: attempt.status,
+        material_effect_state: attempt.material_effect_state,
+        attempt_token: String(attempt.attempt_token || ''),
+        attempt_fence_revision: Number(attempt.attempt_fence_revision || 0),
+      }, { $set: {
+        status: 'FAILED',
+        material_effect_state: 'FAILED_POST_EFFECT',
+        heartbeat_at: now,
+        completed_at: now,
+        details_json: {
+          ...(attempt.details_json || {}),
+          reason: 'admin_reconciled_quiescent_post_effect',
+          reconciled_at: now,
+          reconciled_by: actor,
+          reconciliation_proof: inspection.domainProof?.reason,
+          reconciliation_evidence: inspection.domainProof?.evidence || {},
+          reconciliation_receipt_state: inspection.domainProof?.receipt_state || {},
+          post_effect_reconciliation_attempt_id: attempt.id,
+          historical_attempt_replayed: false,
+          effects_rolled_back: false,
+        },
+      } });
+      if (!updatedExactlyOne(attemptUpdate)) throw new Error('admin_scheduler_attempt_changed_concurrently');
+    }
+    const observedAttempt = await svc.entities.SchedulerRun.get(attempt.id);
+    if (
+      observedAttempt?.status !== 'FAILED' ||
+      observedAttempt?.material_effect_state !== 'FAILED_POST_EFFECT' ||
+      observedAttempt?.details_json?.post_effect_reconciliation_attempt_id !== attempt.id
+    ) throw new Error('admin_scheduler_attempt_readback_mismatch');
+  }
+  const controlPatch: any = {
     control_state: 'IDLE',
     control_revision: Number(control.control_revision) + 1,
     control_token: '',
@@ -481,17 +576,38 @@ async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: 
     active_run_key: '',
     active_operation_key: '',
     active_effect_key: '',
+    heartbeat_at: now,
     details_json: {
       ...(control.details_json || {}),
-      reason: 'admin_reconciled_without_replay',
+      reason: postEffect ? 'admin_reconciled_quiescent_post_effect' : 'admin_reconciled_without_replay',
       reconciled_at: now,
       reconciled_by: actor,
       reconciliation_proof: inspection.domainProof?.reason || inspection.reason,
       reconciled_attempt_id: attempt.id,
       reconciled_task_id: inspection.taskId || null,
       historical_attempt_replayed: false,
+      effects_rolled_back: postEffect ? false : null,
+      ...(postEffect ? { last_run_key: attempt.run_key, last_terminal_at: now } : {}),
     },
-  } });
+  };
+  if (postEffect) {
+    controlPatch.last_terminal_status = 'FAILED';
+    controlPatch.last_terminal_logical_trigger_key = String(attempt.logical_trigger_key || attempt.run_key || '');
+    controlPatch.last_terminal_operation_key = String(attempt.operation_key || attempt.logical_trigger_key || attempt.run_key || '');
+    controlPatch.last_terminal_effect_key = String(attempt.effect_key || '');
+    if (
+      attempt.invocation_kind === 'SCHEDULED' &&
+      !String(attempt.operation_key || '').includes(':operation:')
+    ) controlPatch.last_terminal_scheduled_key = String(attempt.run_key || '');
+  }
+  const update = await svc.entities.SchedulerRun.updateMany({
+    id: control.id,
+    record_kind: 'CONTROL',
+    control_key: control.control_key,
+    control_state: 'REVIEW_REQUIRED',
+    control_revision: Number(control.control_revision),
+    active_attempt_id: String(attempt.id),
+  }, { $set: controlPatch });
   if (!updatedExactlyOne(update)) throw new Error('admin_scheduler_control_changed_concurrently');
   const observed = await svc.entities.SchedulerRun.get(control.id);
   if (
@@ -501,13 +617,15 @@ async function reconcileAllowlistedSchedulerControl(svc: any, body: any, actor: 
   ) throw new Error('admin_scheduler_control_readback_mismatch');
   return {
     ok: true,
-    action: 'scheduler_control_reconciled',
+    action: postEffect ? 'scheduler_post_effect_reconciled' : 'scheduler_control_reconciled',
     workerKey,
     controlId: control.id,
     attemptId: attempt.id,
     proof: inspection.domainProof?.reason || inspection.reason,
     taskId: inspection.taskId || null,
     historicalAttemptReplayed: false,
+    effectsRolledBack: postEffect ? false : null,
+    reconciliationKind: postEffect ? 'POST_EFFECT_QUIESCENT' : 'PRE_EFFECT_NO_REPLAY',
     reconciledAt: now,
   };
 }

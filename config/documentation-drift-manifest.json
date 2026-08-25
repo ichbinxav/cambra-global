@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-25T14:13:10.359Z",
+  "generatedAt": "2026-08-25T15:14:21.561Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -231,7 +231,7 @@
     "config/p12-kpi-definitions.json": "22bb896c5e2ba5167a81de6a4974a06f3b57b82ee520cdcaa81f2f8926beabbd",
     "config/product-policy.json": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
     "config/release-touch-list.json": "b0cc9ebf756fb77c48b174dcbb27fe6d265329b8de378881d75324b10dfba64e",
-    "config/remediation/authority-trace-operational-inventory.v1.json": "e9bdde5fa48eb394c355b51cea19ef328d10a294169cd996290bce5a75814295",
+    "config/remediation/authority-trace-operational-inventory.v1.json": "1f3d1916f71be431cd6a05883d121e365be0a5bb17d2c5b56e8806c8dc96bd77",
     "config/remediation/effect-authority-registry.v1.json": "de66d604987f56e4bd3e8f213207d43b89acdc5f2af551563575de8a1395e05b",
     "config/remediation/material-boundary-registry.v1.json": "5039ee9c013c16e1310c873c0cea3e88915305f9be386d3f5884f15f92a75ce2",
     "config/remediation/material-tenant-authorization-inventory.v1.json": "55556aa2803a715b36228e14174d49653ac4b41a6e51441da70c4751d3542f27",
