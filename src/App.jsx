@@ -28,6 +28,7 @@ const PaymentsAnalyzer = lazy(() => import('@/pages/PaymentsAnalyzer'));
 const PaymentsResults = lazy(() => import('@/pages/PaymentsResults'));
 const LoginGate = lazy(() => import('@/pages/LoginGate'));
 const HealthCheck = lazy(() => import('@/pages/HealthCheck.jsx'));
+const OAuthConsent = lazy(() => import('@/pages/OAuthConsent.jsx'));
 import CookieConsent from '@/components/shared/CookieConsent';
 // FIX 13 — Lazy load heavy pages (Dashboard + ConnectTools + heavy admin pages).
 // FIX 13b — /Results now also lazy (PaymentsResults). Its 20+ sub-components
@@ -352,6 +353,8 @@ const AuthenticatedApp = () => {
         <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />
         <Route path="/HealthCheck" element={<HealthCheck />} />
         <Route path="/healthcheck" element={<Navigate to="/HealthCheck" replace />} />
+        <Route path="/OAuthConsent" element={withBoundary(<OAuthConsent />)} />
+        <Route path="/oauthconsent" element={<Navigate to="/OAuthConsent" replace />} />
         <Route path="/dev/export" element={<AdminRoute><DevExport /></AdminRoute>} />
 
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

@@ -1,5 +1,15 @@
 import React from "react";
 
+/**
+ * @typedef {Object} AuthLayoutProps
+ * @property {React.ElementType} icon
+ * @property {React.ReactNode} title
+ * @property {React.ReactNode} [subtitle]
+ * @property {React.ReactNode} [footer]
+ * @property {React.ReactNode} [children]
+ */
+
+/** @param {AuthLayoutProps} props */
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
