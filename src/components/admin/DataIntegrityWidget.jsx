@@ -7,16 +7,23 @@ export default function DataIntegrityWidget() {
   const [running, setRunning] = useState(false);
   const [summary, setSummary] = useState({ anomalies: [], counts: { total: 0 } });
   const [error, setError] = useState("");
+  const [slow, setSlow] = useState(false);
 
   const load = async () => {
+    let slowTimer;
     try {
       setLoading(true);
+      setSlow(false);
+      setError("");
+      slowTimer = setTimeout(() => setSlow(true), 5000);
       const res = await base44.functions.invoke("integritySummary", {});
-      if (res.data?.error) throw new Error(res.data.error);
-      setSummary(res.data);
+      const next = res?.data || res;
+      if (next?.error || next?.ok === false) throw new Error(next.error || "integrity_summary_unavailable");
+      setSummary(next);
     } catch (e) {
       setError(e.message);
     } finally {
+      clearTimeout(slowTimer);
       setLoading(false);
     }
   };
@@ -24,6 +31,7 @@ export default function DataIntegrityWidget() {
   useEffect(() => { load(); }, []);
 
   const runCleanup = async () => {
+    if (!window.confirm("Run the governed legacy-field cleanup now? The operation is audited and does not delete canonical business records.")) return;
     try {
       setRunning(true);
       const res = await base44.functions.invoke("phase2CleanupLegacyFields", {});
@@ -45,12 +53,12 @@ export default function DataIntegrityWidget() {
         <h3 className="text-sm font-semibold">Data Integrity</h3>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={load} disabled={loading || running}>Refresh</Button>
-          <Button size="sm" onClick={runCleanup} disabled={loading || running}>{running ? "Cleaning…" : "Run Cleanup"}</Button>
+          <Button size="sm" onClick={runCleanup} disabled={loading || running}>{running ? "Cleaning…" : "Run governed cleanup"}</Button>
         </div>
       </div>
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <div className="text-sm text-muted-foreground">Checking activations, baselines, billing rules, mandates, reports and invoices…{slow && <p className="mt-1 text-xs text-amber-700">The read is taking longer than usual; no incomplete zero is being shown.</p>}</div>
       ) : (
         <div className="text-sm">
           <div className="flex items-center gap-2 mb-2">

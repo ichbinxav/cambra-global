@@ -40,6 +40,10 @@ const NAME = {
 };
 
 const EMPTY_DATA = { latest: {}, recent: [] };
+const DISCOVERY_MARKETS = [
+  ["ES", "Spain"], ["IT", "Italy"], ["PT", "Portugal"], ["GB", "United Kingdom"], ["GR", "Greece"],
+  ["HR", "Croatia"], ["DE", "Germany"], ["PL", "Poland"], ["CZ", "Czech Republic"], ["CY", "Cyprus"],
+];
 
 const statusClass = (status) => {
   if (status === 'completed') return 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20';
@@ -60,12 +64,24 @@ function summarizeResult(result, label) {
   return result?.output_summary || result?.summary || result?.message || `${label} completed successfully.`;
 }
 
+function friendlyRunError(error) {
+  const code = String(error?.message || error || "agent_run_failed");
+  if (code.includes("apollo_not_configured")) return "Apollo is not configured in the production environment.";
+  if (code.includes("provider_expired")) return "The Apollo provider authorization has expired and must be renewed.";
+  if (code.includes("budget") || code.includes("paid_operation")) return `Apollo was blocked by the paid-operation budget guard (${code}). No credits were used unless a reservation receipt says otherwise.`;
+  if (code.includes("policy")) return `The agent is waiting for one unambiguous active policy (${code}). No outreach was sent.`;
+  return code;
+}
+
 export default function AdminAgents() {
   const [data, setData] = useState(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState(null);
+  const [discoveryMarket, setDiscoveryMarket] = useState('ES');
+  const [discoveryVertical, setDiscoveryVertical] = useState('ecommerce');
+  const [discoveryLimit, setDiscoveryLimit] = useState(25);
   const agents = useMemo(() => CLUSTERS.flatMap((cluster) => cluster.agents.map((agent) => ({ ...agent, cluster: cluster.label }))), []);
 
   const load = async () => {
@@ -90,7 +106,7 @@ export default function AdminAgents() {
     load();
   }, []);
 
-  const run = async (functionName) => {
+  const run = async (functionName, args = {}) => {
     setRunning(functionName);
     setError('');
     setNotice(null);
@@ -98,7 +114,7 @@ export default function AdminAgents() {
       const response = await base44.functions.invoke('adminAgentOperations', {
         action: 'run',
         function_name: functionName,
-        args: {},
+        args,
       });
       const envelope = unwrapResponse(response);
       const result = unwrapResponse(envelope.result);
@@ -115,7 +131,7 @@ export default function AdminAgents() {
         summary: task?.output_summary || summarizeResult(result, definition?.name || functionName),
       });
     } catch (runError) {
-      setError(runError?.message || `Could not run ${functionName}`);
+      setError(friendlyRunError(runError?.message || `Could not run ${functionName}`));
     } finally {
       setRunning('');
     }
@@ -158,7 +174,8 @@ export default function AdminAgents() {
           <p className="text-xs text-muted-foreground min-h-8">{agent.desc}</p>
           <div className="text-[10px] text-muted-foreground">Risk L{agent.level}{task?.completed_at ? ` · last ${new Date(task.completed_at).toLocaleString()}` : ''}</div>
           {task?.output_summary && <p className="rounded-lg bg-secondary/50 p-2 text-[10px] leading-4 text-muted-foreground">{task.output_summary}</p>}
-          <button onClick={() => run(agent.fn)} disabled={!!running || quarantined} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-foreground text-background text-[11px] font-bold disabled:opacity-50"><Play size={11}/>{quarantined ? 'Quarantined' : running === agent.fn ? 'Running…' : 'Run now'}</button>
+          {agent.fn === 'leadDiscoveryAgent' && <div className="grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-secondary/20 p-2"><select value={discoveryMarket} onChange={(event) => setDiscoveryMarket(event.target.value)} className="h-8 rounded-lg border bg-background px-2 text-[10px]">{DISCOVERY_MARKETS.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select><select value={discoveryLimit} onChange={(event) => setDiscoveryLimit(Number(event.target.value))} className="h-8 rounded-lg border bg-background px-2 text-[10px]"><option value={10}>10 companies max</option><option value={25}>25 companies max</option><option value={50}>50 companies max</option></select><input value={discoveryVertical} onChange={(event) => setDiscoveryVertical(event.target.value)} placeholder="Vertical" className="col-span-2 h-8 rounded-lg border bg-background px-2 text-[10px]"/><p className="col-span-2 text-[9px] leading-4 text-muted-foreground">Apollo company search is paid and budget-gated. It discovers companies only; outreach stays disabled and separately governed.</p></div>}
+          <button onClick={() => { const market = DISCOVERY_MARKETS.find(([code]) => code === discoveryMarket); run(agent.fn, agent.fn === 'leadDiscoveryAgent' ? { country_code:discoveryMarket, country:market?.[1] || discoveryMarket, industry:discoveryVertical.trim() || 'ecommerce', per_page:discoveryLimit } : {}); }} disabled={!!running || quarantined} className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-foreground text-background text-[11px] font-bold disabled:opacity-50"><Play size={11}/>{quarantined ? 'Quarantined' : running === agent.fn ? 'Running…' : agent.fn === 'leadDiscoveryAgent' ? 'Run Apollo discovery' : 'Run now'}</button>
         </div>;
       })}</div>
     </section>)}

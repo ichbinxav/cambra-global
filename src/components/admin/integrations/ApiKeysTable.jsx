@@ -32,8 +32,8 @@ export default function ApiKeysTable({ keys, loading, onChanged }) {
   }
 
   return (
-    <div className="rounded-xl border border-border/60 overflow-hidden">
-      <table className="w-full text-sm">
+    <div className="rounded-xl border border-border/60 overflow-x-auto">
+      <table className="min-w-[900px] w-full text-sm">
         <thead className="bg-secondary/50 text-[11px] uppercase tracking-wider text-muted-foreground">
           <tr>
             <th className="text-left px-4 py-2.5">Name</th>

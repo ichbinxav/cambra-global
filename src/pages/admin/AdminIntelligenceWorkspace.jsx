@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AlertTriangle, Brain, Loader2, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useTranslation } from "@/lib/i18n.jsx";
 
 // The six pages C0 found already correct. Mounted, not rewritten.
 import AdminIntelligence from "./AdminIntelligence";
@@ -40,7 +41,43 @@ const TAB_BODIES = {
   providers: AdminProviders,
 };
 
+const COPY = {
+  en: {
+    title: "Intelligence",
+    subtitle: "Pricing truth, markets, routing and benchmarks. Provider compensation never reaches a merchant recommendation.",
+    reload: "Reload",
+    loading: "Loading Intelligence…",
+    error: "Intelligence navigation could not be loaded. No partial workspace is being presented.",
+    missing: "This server tab is not available in the current interface.",
+  },
+  fr: {
+    title: "Intelligence",
+    subtitle: "Vérité des prix, marchés, routage et benchmarks. La rémunération des prestataires n’entre jamais dans une recommandation marchand.",
+    reload: "Actualiser",
+    loading: "Chargement d’Intelligence…",
+    error: "La navigation Intelligence n’a pas pu être chargée. Aucun espace partiel n’est présenté.",
+    missing: "Cet onglet serveur n’est pas disponible dans l’interface actuelle.",
+  },
+  es: {
+    title: "Inteligencia",
+    subtitle: "Precios, mercados, enrutamiento y benchmarks con límites de evidencia explícitos. La compensación de proveedores nunca influye en una recomendación al comercio.",
+    reload: "Actualizar",
+    loading: "Cargando Inteligencia…",
+    error: "No se pudo cargar la navegación de Inteligencia. No se muestra un espacio parcial como si estuviera completo.",
+    missing: "Esta pestaña declarada por el servidor no está disponible en la interfaz actual.",
+  },
+};
+
+const TAB_LABELS = {
+  en: { overview: "Overview", "pricing-queue": "Pricing changes", markets: "Markets", routing: "Routing", benchmarks: "Benchmarks", recommendations: "Recommendations", providers: "Providers" },
+  fr: { overview: "Vue d’ensemble", "pricing-queue": "Changements de prix", markets: "Marchés", routing: "Routage", benchmarks: "Benchmarks", recommendations: "Recommandations", providers: "Prestataires" },
+  es: { overview: "Resumen", "pricing-queue": "Cambios de precios", markets: "Mercados", routing: "Enrutamiento", benchmarks: "Benchmarks", recommendations: "Recomendaciones", providers: "Proveedores" },
+};
+
 export default function AdminIntelligenceWorkspace() {
+  const { lang: rawLang } = useTranslation();
+  const lang = ["en", "fr", "es"].includes(rawLang) ? rawLang : "en";
+  const copy = COPY[lang];
   const [params, setParams] = useSearchParams();
   const [tabs, setTabs] = useState(null);
   const [error, setError] = useState(null);
@@ -67,27 +104,27 @@ export default function AdminIntelligenceWorkspace() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em] flex items-center gap-2">
-            <Brain size={20} /> Intelligence
+            <Brain size={20} /> {copy.title}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Pricing truth, markets, routing and benchmarks. Provider compensation never reaches a merchant recommendation.
+            {copy.subtitle}
           </p>
         </div>
         <button type="button" onClick={load} className="h-8 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5">
-          <RefreshCw size={12} /> Reload
+          <RefreshCw size={12} /> {copy.reload}
         </button>
       </div>
 
       {error && (
         <div data-testid="intelligence-tabs-error" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 flex items-start gap-2">
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-          <span>Intelligence tabs could not be loaded ({error}). Nothing below is shown.</span>
+          <span>{copy.error} ({error})</span>
         </div>
       )}
 
       {!tabs && !error && (
         <div className="flex items-center gap-2 py-16 justify-center text-xs text-muted-foreground">
-          <Loader2 size={14} className="animate-spin" /> Loading Intelligence…
+          <Loader2 size={14} className="animate-spin" /> {copy.loading}
         </div>
       )}
 
@@ -109,14 +146,14 @@ export default function AdminIntelligenceWorkspace() {
                   tab.key === active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
                 }`}
               >
-                {tab.label}
+                {TAB_LABELS[lang][tab.key] || tab.label}
               </button>
             ))}
           </div>
 
-          {Body ? <Body /> : (
+          {Body ? <Body embedded={active === "overview"} /> : (
             <p data-testid="intelligence-tab-unbuilt" className="text-xs text-muted-foreground py-12 text-center">
-              This tab is declared by the server but has no body in the page yet.
+              {copy.missing}
             </p>
           )}
         </>

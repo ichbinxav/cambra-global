@@ -70,11 +70,11 @@ describe("ECL P4 Production Proof closure", () => {
 
   it("keeps ReviewCase and scheduler-runtime reads behind the admin-only workflow", () => {
     expect(QUEUE_SRC).toMatch(/functions\.invoke\("eclReviewWorkflow"/);
-    expect(QUEUE_SRC).toMatch(/action: "runtime"/);
-    expect(QUEUE_SRC).toMatch(/action: "list"/);
+    expect(QUEUE_SRC).toMatch(/action: "snapshot"/);
     expect(QUEUE_SRC).toMatch(/action: "get"/);
     expect(QUEUE_SRC).toMatch(/action: "resolve"/);
     expect(QUEUE_SRC).not.toMatch(/base44\.entities\.(ReviewCase|AgentTask)/);
+    expect(REVIEW_SRC).toMatch(/payload\.action === 'snapshot'/);
     expect(REVIEW_SRC).toMatch(/payload\.action === 'runtime'/);
     expect(REVIEW_SRC).toMatch(/AgentTask\.filter\(\{ agent_name: SCHEDULER_AGENT_NAME \}/);
   });

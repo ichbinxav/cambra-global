@@ -83,7 +83,7 @@ export default function ConnectTools() {
     <div className="relative min-h-screen bg-background font-inter flex flex-col overflow-x-hidden">
       <Navbar />
 
-      <div className="relative flex-1 max-w-2xl mx-auto w-full px-5 pt-20 pb-12 mt-14 space-y-6">
+      <main className="relative flex-1 max-w-2xl mx-auto w-full px-5 pt-20 pb-12 mt-14 space-y-6">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-black tracking-[-0.03em]">{t("ct_page_title")}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t("ct_page_sub")}</p>
@@ -111,7 +111,7 @@ export default function ConnectTools() {
             </Button>
           </Link>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -21,16 +21,14 @@ export default function AdminDeals() {
           {DEALS.length} deals configured · read only
         </p>
         <p data-testid="deals-readonly-note" className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-2 mt-2 leading-snug">
-          DASHBOARD-C16 correction: this page said &quot;Edit deal metadata and status&quot;. It never
-          could. <code>DEALS</code> is a hard-coded array in <code>src/lib/deals.js</code> — a
-          compile-time constant with no persistence behind it, so nothing typed here could ever be
-          saved. It is a reference view of the catalogue; changing a deal means changing that file.
+          Published offer catalogue. It is intentionally read only so commercial terms cannot be
+          changed from an ungoverned browser form; catalogue updates require a reviewed, versioned release.
         </p>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Deal list */}
-        <div className={`${selected ? "w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden transition-all`}>
+        <div className={`${selected ? "w-full xl:w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-x-auto transition-all`}>
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] px-5 py-3 bg-secondary/40 border-b border-border/40 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 gap-3">
             <span>Deal</span>
             <span>Category</span>
@@ -64,7 +62,7 @@ export default function AdminDeals() {
 
         {/* Deal detail */}
         {selected && (
-          <div className="w-1/2 rounded-xl border border-border/50 bg-card overflow-hidden sticky top-20">
+          <div className="w-full rounded-xl border border-border/50 bg-card overflow-hidden xl:sticky xl:top-20 xl:w-1/2">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <p className="text-sm font-bold">{selected.title}</p>
               <button onClick={() => setSelected(null)} className="text-muted-foreground/40 hover:text-foreground">

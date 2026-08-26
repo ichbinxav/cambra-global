@@ -570,38 +570,25 @@ Deno.serve(async (req) => {
 
   try {
     if (action === "status") {
-      const connected =
-        !!(await svc.connectors.getConnection("github").catch((error: any) =>
+      const [githubConnection, workspaces, runs] = await Promise.all([
+        svc.connectors.getConnection("github").catch((error: any) =>
           safeBestEffort(error, {
             operation: "developerMigrationEngine",
             fallback: null,
             severity: "critical",
           })
-        ))?.accessToken;
-      const workspaces = await svc.entities.DeveloperWorkspace.list(
-        "-updated_date",
-        200,
-      ).catch((error: any) =>
-        safeBestEffort(error, {
-          operation: "developerMigrationEngine",
-          fallback: [],
-          severity: "critical",
-        })
-      );
-      const runs = await svc.entities.DeveloperMigrationRun.list(
-        "-created_date",
-        200,
-      ).catch((error: any) =>
-        safeBestEffort(error, {
-          operation: "developerMigrationEngine",
-          fallback: [],
-          severity: "critical",
-        })
-      );
+        ),
+        svc.entities.DeveloperWorkspace.list("-updated_date", 200).catch((error: any) =>
+          safeBestEffort(error, { operation:"developerMigrationEngine", fallback:[], severity:"critical" })
+        ),
+        svc.entities.DeveloperMigrationRun.list("-created_date", 200).catch((error: any) =>
+          safeBestEffort(error, { operation:"developerMigrationEngine", fallback:[], severity:"critical" })
+        ),
+      ]);
       return json({
         ok: true,
         engine_version: ENGINE_VERSION,
-        github_connected: connected,
+        github_connected: !!githubConnection?.accessToken,
         workspaces,
         runs,
       });

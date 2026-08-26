@@ -14,33 +14,46 @@ import UsageAndDLQPanel from "@/components/admin/integrations/UsageAndDLQPanel";
 import ApiSelfTestPanel from "@/components/admin/integrations/ApiSelfTestPanel";
 import FlowSelfTestPanel from "@/components/admin/integrations/FlowSelfTestPanel";
 
+const isSelfTest = (key) => String(key.name || "").startsWith("_selftest_") || String(key.tool_name || "").startsWith("_selftest_");
+
 export default function AdminApiIntegrations() {
   const [keys, setKeys] = useState([]);
   const [webhooks, setWebhooks] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [error, setError] = useState("");
 
   const load = async () => {
     setLoading(true);
+    setError("");
     // AUDIT SEC-02 (2026-08-17): WebhookEndpoint.secret is the plaintext HMAC signing key.
     // Row-level RLS returns it to the browser on a raw entity read. Route through the governed
     // registry which projects url/events/status without the secret.
-    const [k, reg, l] = await Promise.all([
-      base44.entities.ApiKey.list("-created_date", 100),
-      base44.functions.invoke("adminSummaries", { action: "integration_registry" }),
-      base44.entities.ApiActivityLog.list("-created_date", 100),
-    ]);
-    const w = Array.isArray(reg?.data?.webhooks) ? reg.data.webhooks : [];
-    setKeys(k); setWebhooks(w); setLogs(l);
-    setLoading(false);
+    try {
+      const [k, reg, l] = await Promise.all([
+        base44.entities.ApiKey.list("-created_date", 100),
+        base44.functions.invoke("adminSummaries", { action: "integration_registry" }),
+        base44.entities.ApiActivityLog.list("-created_date", 100),
+      ]);
+      const w = Array.isArray(reg?.data?.webhooks) ? reg.data.webhooks : [];
+      setKeys(Array.isArray(k) ? k : []); setWebhooks(w); setLogs(Array.isArray(l) ? l : []);
+    } catch (caught) {
+      setError(caught?.message || "API and integration data could not be loaded.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, []);
 
-  const activeKeys = keys.filter(k => k.status === "active").length;
+  const activeKeys = keys.filter(k => k.status === "active" && !isSelfTest(k)).length;
   const totalCalls = keys.reduce((s, k) => s + (k.usage_count || 0), 0);
-  const connectedTools = new Set(keys.filter(k => k.status === "active").map(k => k.tool_name)).size;
+  const connectedTools = new Set(keys.filter(k => k.status === "active" && !isSelfTest(k)).map(k => k.tool_name)).size;
+  const operationalKeys = keys.filter((key) => key.status === "active" && !isSelfTest(key));
+  const hiddenKeyCount = keys.length - operationalKeys.length;
+  const visibleKeys = showHistory ? keys : operationalKeys;
 
   return (
     <div className="min-w-0 max-w-7xl mx-auto">
@@ -60,6 +73,8 @@ export default function AdminApiIntegrations() {
           <Plus className="h-4 w-4" /> New API key
         </Button>
       </div>
+
+      {error && <div role="alert" className="mb-6 rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>}
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-8">
@@ -86,7 +101,8 @@ export default function AdminApiIntegrations() {
         </div>
 
         <TabsContent value="keys" className="mt-6">
-          <ApiKeysTable keys={keys} loading={loading} onChanged={load} />
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Active operational keys are shown by default.</p>{hiddenKeyCount > 0 && <label className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-bold"><input type="checkbox" checked={showHistory} onChange={(event) => setShowHistory(event.target.checked)}/>Show revoked and self-test history ({hiddenKeyCount})</label>}</div>
+          <ApiKeysTable keys={visibleKeys} loading={loading} onChanged={load} />
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">

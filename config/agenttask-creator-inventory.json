@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "49e414ab19306f8ae39518fb9c60baf601ca2dae17e9851096e2534930ebb856",
+  "source_inventory_hash": "9c1da43acfdd289d101fe5b7771f0adf81105b4b7dfa18aafa4bb57c7506be5d",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -689,7 +689,7 @@
     },
     {
       "path": "base44/functions/developerMigrationEngine/entry.ts",
-      "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+      "source_sha256": "b518a6c9adce237fec5795c50e06484653ec10941dcfac78e3472da267eebcac",
       "boundary_ids": [
         "MB-MIGRATE-DEVELOPER-GITHUB",
         "MB-PAID-AI"
@@ -2516,7 +2516,7 @@
     },
     {
       "path": "base44/functions/developerMigrationEngine/entry.ts",
-      "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
+      "source_sha256": "b518a6c9adce237fec5795c50e06484653ec10941dcfac78e3472da267eebcac",
       "raw_create_sites": 3,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,

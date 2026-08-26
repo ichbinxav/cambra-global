@@ -239,7 +239,7 @@ function EmptyState({ children }) {
   return <p className="mt-3 rounded-xl border border-dashed p-3 text-xs text-muted-foreground">{children}</p>;
 }
 
-export default function AdminIntelligence() {
+export default function AdminIntelligence({ embedded = false }) {
   const { lang: rawLang, locale: rawLocale } = useTranslation();
   const lang = ["en", "fr", "es"].includes(rawLang) ? rawLang : "en";
   const locale = rawLocale || ({ en: "en-GB", fr: "fr-FR", es: "es-ES" }[lang]);
@@ -283,15 +283,26 @@ export default function AdminIntelligence() {
 
   return <div className="space-y-6">
     <div className="flex items-start justify-between gap-4">
-      <div>
+      <div className="min-w-0">
+        {!embedded && <>
         <div className="flex items-center gap-2"><BrainCircuit size={19}/><h1 className="text-2xl font-black tracking-tight">{c.title}</h1></div>
-        <p className="mt-1 max-w-3xl text-xs text-muted-foreground">{c.subtitle}</p>
+        </>}
+        <p className={`${embedded ? "max-w-4xl" : "mt-1 max-w-3xl"} text-xs text-muted-foreground`}>{c.subtitle}</p>
       </div>
       <button onClick={load} disabled={loading} className="inline-flex h-8 items-center gap-2 rounded-lg border px-3 text-xs font-bold"><RefreshCw size={12} className={loading ? "animate-spin" : ""}/>{c.refresh}</button>
     </div>
 
     {error && <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700">{error}</div>}
 
+    {!data ? (
+      <div data-testid="intelligence-snapshot-loading" className="rounded-2xl border border-border/60 bg-card px-5 py-16 text-center">
+        {loading ? (
+          <div className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground"><RefreshCw size={14} className="animate-spin" />{c.refresh}…</div>
+        ) : (
+          <p className="text-xs text-muted-foreground">{c.loadError}</p>
+        )}
+      </div>
+    ) : <>
     <section className="rounded-2xl border border-amber-500/30 bg-amber-500/[.04] p-4" aria-label={c.boundaryTitle}>
       <div className="flex items-center gap-2"><ShieldCheck size={15}/><h2 className="text-sm font-black">{c.boundaryTitle}</h2></div>
       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{c.boundaryBody}</p>
@@ -337,5 +348,6 @@ export default function AdminIntelligence() {
       <h2 className="text-sm font-black">{c.outcomeTitle}</h2><p className="mt-1 text-[11px] text-muted-foreground">{c.outcomeHelp}</p>
       {(data?.recent_outcomes || []).length ? <div className="mt-3 overflow-auto"><table className="w-full text-xs"><thead><tr className="border-b text-left text-muted-foreground"><th className="py-2">{c.operation}</th><th>{c.expected}</th><th>{c.realized}</th><th>{c.variance}</th><th>{c.result}</th></tr></thead><tbody>{data.recent_outcomes.slice(0, 20).map((outcome, index) => <tr key={outcome.id || `${outcome.operation_type || "outcome"}-${index}`} className="border-b last:border-0"><td className="py-2 font-bold">{stored(outcome.operation_type, c.unknown)}</td><td>{amount(outcome.expected_savings, outcome.currency, locale, c.unknown)}</td><td>{amount(outcome.realized_savings, outcome.currency, locale, c.unknown)}</td><td>{amount(outcome.variance, outcome.currency, locale, c.unknown)}</td><td>{outcome.negative_knowledge === true ? c.negative : outcome.success === true ? c.success : outcome.success === false ? c.nonSuccess : c.unknown}</td></tr>)}</tbody></table></div> : <EmptyState>{c.noOutcomes}</EmptyState>}
     </section>
+    </>}
   </div>;
 }

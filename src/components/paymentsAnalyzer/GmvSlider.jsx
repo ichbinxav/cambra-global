@@ -57,12 +57,10 @@ function formatAmount(n, formatCurrency) {
 // abbreviations glued to a euro sign.
 const TICK_VALUES = [500, 10_000, 100_000, 1_000_000, 10_000_000];
 
-// Default seed value shown while the user hasn't touched the slider yet.
-// Chosen to be a plausible mid-size merchant — big enough to feel real,
-// small enough not to intimidate a small-shop user. This is DISPLAY ONLY:
-// the parent's `value` stays empty until the user interacts, so validation
-// still rejects submits without user intent.
-const DEFAULT_DISPLAY_EUR = 25_000;
+// The untouched slider needs a physical thumb position, but the amount stays
+// visibly empty until the merchant provides it. This avoids presenting a
+// plausible-looking number that is not part of the submitted state.
+const DEFAULT_SLIDER_EUR = 25_000;
 
 export default function GmvSlider({ value, onChange, currency = "EUR" }) {
   const { t, locale, formatCurrency } = useTranslation();
@@ -94,9 +92,8 @@ export default function GmvSlider({ value, onChange, currency = "EUR" }) {
   }, [value]);
   const isSet = numericValue > 0;
 
-  // Display number = user's real value once they touch it, else the default.
-  const displayValue = isSet ? numericValue : DEFAULT_DISPLAY_EUR;
-  const sliderPosition = eurToPosition(displayValue);
+  const displayValue = isSet ? numericValue : 0;
+  const sliderPosition = eurToPosition(isSet ? numericValue : DEFAULT_SLIDER_EUR);
 
   const handleSliderChange = (e) => {
     const eur = positionToEur(Number(e.target.value));

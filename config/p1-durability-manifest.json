@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-26T14:54:34.571Z",
+  "generatedAt": "2026-08-26T16:25:37.322Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -444,8 +444,8 @@
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
-      "sha256": "f28c92ef483d31870d9823e7fc36e80aa7d3543e48ae4a3edc28e063bad28aa7",
-      "bytes": 3832
+      "sha256": "eaff808c9eefeb7af2cad63a41de5038c08a0a6114110e04e079a7d8650ebee7",
+      "bytes": 4046
     },
     {
       "path": "base44/functions/adminGlobalSearch/entry.ts",
@@ -664,8 +664,8 @@
     },
     {
       "path": "base44/functions/developerMigrationEngine/entry.ts",
-      "sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380",
-      "bytes": 71410
+      "sha256": "b518a6c9adce237fec5795c50e06484653ec10941dcfac78e3472da267eebcac",
+      "bytes": 71300
     },
     {
       "path": "base44/functions/discoverCompanyInfrastructure/entry.ts",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "a18be33e125e8ec143f2d3d9f4a49373067733effd2cf707c383d591cc1660db",
-      "bytes": 46980
+      "sha256": "59c75bf8461736fc9ee79b49c616f42eea1de42819004524ce10b0397f83aa50",
+      "bytes": 47881
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -714,8 +714,8 @@
     },
     {
       "path": "base44/functions/eclReviewWorkflow/entry.ts",
-      "sha256": "1d9492817d9442f612110ff8cff21cab1154c19e0fdd4feb2598cebb77d337ab",
-      "bytes": 15480
+      "sha256": "8fec16530f305b5cdc3be2d3441c12d0acb215a195f3d2fba00e3a6b24696dc9",
+      "bytes": 16665
     },
     {
       "path": "base44/functions/emergencyControlAdmin/entry.ts",
@@ -779,8 +779,8 @@
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
-      "sha256": "8aced6ef6371a308cfd6819a8720e2b4d88693747b4e17549379eb539b3a6f3a",
-      "bytes": 12445
+      "sha256": "d00f2842bdb437d346536421da44404382f4124fd8b6ea61f6a5074e0c1d8ae5",
+      "bytes": 14004
     },
     {
       "path": "base44/functions/getBenchmarkForReport/entry.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "232c43adb64a98915abc41d2ed03419cba005278331317805e15bc0ce6648ed8",
+      "sha256": "31950d0a56c2afaa13d267a230402bafa2453322f0ac6e304d3a98f7d8ff03db",
       "bytes": 141405
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "114951030398a643994ae6f2ae88b5e0e88654937d040755a219d2611f25f1c6",
+      "sha256": "5a4d86520d6419cf2238466f9408c381cbb0016fab34ceba8d5a0cb4421dae5b",
       "bytes": 43449
     },
     {
@@ -2174,7 +2174,7 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "a678a30599363f44ebbe5c634b6d1a3d12b46d75ac720a7914b7fc697617c9be",
+      "sha256": "c6c6248cae6e98016ebbe0ae78dbaa69f18b208803e415aecd176a0c3bc79a24",
       "bytes": 8260
     },
     {
@@ -2189,27 +2189,27 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "7a84dccbb028090f827e654887d4459e038544d01a6542d985f08a4f5ced24df",
+      "sha256": "8956947b272ccf875369312a569298af6e136c477a461485a215ed1dce4b259c",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "8de938576c859ef0565c487011c168fc6914c49e2a022e140000e9c5e8ca3e3c",
+      "sha256": "511015f9464ffabdd9d30c1e8d06d1ba9ccf48b83db2e1764a5953c1df9d1f4d",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "03d8f6da1f58f6973f74d1252145d4ca160334a0f3182612fb62a5a8315cf300",
+      "sha256": "f37d6ba1b732d2ce50e1fd2611d6ec3813f9899ccd479c53410f1cfa9b6eef18",
       "bytes": 144989
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "15bf1154aae4dbd0e877aea06c335d950555b8fc379d39bea43f04f6f7ef73c5",
+      "sha256": "2d162967a1d331b18f64c9cac762b98204fa38ef97aef011e45d78862ef1c3d7",
       "bytes": 97956
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
-      "sha256": "00dd2f0771ec6fff425accbc229ad3b106817982c236d5151314bd138aa8323d",
+      "sha256": "e7548ede0182c015d4238ae7cc34bf1df340f2cbfd8f95ca9a7bf0869fd7a1d2",
       "bytes": 25748
     },
     {
@@ -3164,8 +3164,8 @@
     },
     {
       "path": "src/lib/eclP4ProductionProof.test.js",
-      "sha256": "d912766ac34a5ea9ca38492107bf187341de53d72df2b7fe935d82ebc8f82e20",
-      "bytes": 6600
+      "sha256": "f344d1d919dcbf3609a9e0c4d4a663f9e0283d08a4d456260ac4d5c5411be9a3",
+      "bytes": 6618
     },
     {
       "path": "src/lib/eclP5Closure.test.js",
@@ -3854,8 +3854,8 @@
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
-      "sha256": "ab020e938a76b2337bf701510bed270c70901f5d4753e99160dfe540a0fc087f",
-      "bytes": 8229
+      "sha256": "c2eee2f8c0ec7c735f1c7d057fd687d1274296b61d49bbf14d22916f7b1bcb43",
+      "bytes": 10815
     },
     {
       "path": "src/pages/admin/AdminApprovals.jsx",
@@ -3864,8 +3864,8 @@
     },
     {
       "path": "src/pages/admin/AdminAutomations.jsx",
-      "sha256": "34c7e5baf9bd2670632a407bad26682cd2a71b2a210f6d096c185dd56c18f816",
-      "bytes": 2071
+      "sha256": "6aa6c81348ee5c52641f8e5e8d656587bce2124e8cfd20d01c7c1a0e49c16f4f",
+      "bytes": 4388
     },
     {
       "path": "src/pages/admin/AdminChat.jsx",
@@ -3919,8 +3919,8 @@
     },
     {
       "path": "src/pages/admin/AdminIntelligence.jsx",
-      "sha256": "e21aa2bddc2ab42b9d7d7fd8c8a9bb1f9eecfc693ce80d9b9b54087d101f6a72",
-      "bytes": 25554
+      "sha256": "1a269d1349a7840abb89c8548ca4fe05afaa1923118bb64701985b33f5c2b2ff",
+      "bytes": 26133
     },
     {
       "path": "src/pages/admin/AdminIntelligence.test.jsx",
@@ -3959,13 +3959,13 @@
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
-      "sha256": "e91f5963038cf556b8f9ba24f3b86a816be47b25bafb353f4cced018d8235048",
-      "bytes": 17544
+      "sha256": "06efb561c58fc252c614dcb72185a42080465c1a3f23b11c91f7646526817fdc",
+      "bytes": 17377
     },
     {
       "path": "src/pages/admin/ReviewQueue.jsx",
-      "sha256": "aeb1c2899fd4ff8dd1dabc6014f89717809357b840534887fade60558513d2c5",
-      "bytes": 19919
+      "sha256": "462e09634eb0bb78d744926f60192348916c16056cac8d3ff9bc1a5f893be2c1",
+      "bytes": 19713
     },
     {
       "path": "tsconfig.critical.json",

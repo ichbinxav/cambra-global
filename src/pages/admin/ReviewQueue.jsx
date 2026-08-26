@@ -63,20 +63,15 @@ export default function ReviewQueue() {
   async function load(keepSelection = true) {
     setRefreshing(true);
     try {
-      const [activeBuckets, historyBuckets, runtimeResult] = await Promise.all([
-        Promise.all(ACTIVE_STATUSES.map((status) => invokeReview({ action: "list", status, limit: 100 }))),
-        Promise.all(HISTORY_STATUSES.map((status) => invokeReview({ action: "list", status, limit: 25 }))),
-        invokeReview({ action: "runtime" }),
-      ]);
-
-      const active = activeBuckets.flatMap((bucket) => bucket.cases || []);
-      const resolved = historyBuckets.flatMap((bucket) => bucket.cases || []);
+      const snapshot = await invokeReview({ action: "snapshot" });
+      const active = (snapshot.cases || []).filter((row) => ACTIVE_STATUSES.includes(row.status));
+      const resolved = (snapshot.history || []).filter((row) => HISTORY_STATUSES.includes(row.status));
       const newest = (a, b) => String(b.createdAt || b.resolvedAt || "").localeCompare(String(a.createdAt || a.resolvedAt || ""));
       active.sort(newest);
       resolved.sort(newest);
       setCases(active);
       setHistory(resolved.slice(0, 50));
-      setRuntime(runtimeResult.scheduler || null);
+      setRuntime(snapshot.scheduler || null);
       setError(null);
 
       if (keepSelection && selectedId) {
@@ -186,7 +181,7 @@ export default function ReviewQueue() {
               <Activity size={15} />
               <h2 className="text-sm font-black">Lifecycle scheduler</h2>
               <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass(runtimeStatus)}`}>
-                {runtime ? humanize(runtimeStatus) : "no runtime proof"}
+                {runtime ? humanize(runtimeStatus) : loading ? "checking runtime proof" : "no runtime proof"}
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">

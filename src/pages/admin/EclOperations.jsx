@@ -56,15 +56,11 @@ export default function EclOperations() {
   async function load() {
     setBusy("refresh");
     try {
-      const [activeBuckets, resolved, runtimeResult] = await Promise.all([
-        Promise.all(ACTIVE.map((status) => invoke({ action: "list", status, limit: 100 }))),
-        invoke({ action: "list", status: "resolved", limit: 50 }),
-        invoke({ action: "runtime" }),
-      ]);
-      const activeRows = activeBuckets.flatMap((x) => x.incidents || []).sort((a, b) => String(b.lastSeenAt || "").localeCompare(String(a.lastSeenAt || "")));
+      const snapshot = await invoke({ action: "snapshot" });
+      const activeRows = (snapshot.incidents || []).filter((row) => ACTIVE.includes(row.status)).sort((a, b) => String(b.lastSeenAt || "").localeCompare(String(a.lastSeenAt || "")));
       setIncidents(activeRows);
-      setHistory(resolved.incidents || []);
-      setRuntime(runtimeResult.health || null);
+      setHistory(snapshot.history || []);
+      setRuntime(snapshot.health || null);
       if (selected?.id) setSelected(activeRows.find((x) => x.id === selected.id) || null);
       setError("");
     } catch (e) { setError(e?.message || "Could not load P7 operations."); }
@@ -146,7 +142,7 @@ export default function EclOperations() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Production health</p>
-            <div className="flex items-center gap-2 mt-1"><h2 className="text-lg font-black">{health ? human(health.status) : human(runtime?.status || "no runtime proof")}</h2>{health?.status === "healthy" && <CheckCircle2 size={16} className="text-emerald-600" />}</div>
+            <div className="flex items-center gap-2 mt-1"><h2 className="text-lg font-black">{health ? human(health.status) : human(runtime?.status || (loading ? "checking runtime proof" : "no runtime proof"))}</h2>{health?.status === "healthy" && <CheckCircle2 size={16} className="text-emerald-600" />}</div>
             <p className="text-[11px] text-muted-foreground mt-1">Last sweep: {fmt(runtime?.completedAt || runtime?.startedAt)}</p>
           </div>
           <div className="grid grid-cols-3 gap-2 min-w-[300px]">

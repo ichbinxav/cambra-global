@@ -275,7 +275,7 @@ export default function AdminConversations() {
 
       <p className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
         <Clock size={11} />
-        Reply drafting, follow-up queue and SLA land in C6; domains, suppressions and provider events in C7.
+        This workspace is draft-only: it shows ownership, status and history but does not send replies.
       </p>
     </div>
   );

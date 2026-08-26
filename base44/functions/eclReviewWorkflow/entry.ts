@@ -148,6 +148,29 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
     const nowMs = Date.parse(now);
 
+    if (payload.action === 'snapshot') {
+      const [activeRows, historyRows, taskRows] = await Promise.all([
+        svc.entities.ReviewCase.filter({ status: { $in: ['open', 'awaiting_merchant', 'resolving'] } }, '-created_date', 200),
+        svc.entities.ReviewCase.filter({ status: { $in: ['resolved', 'dismissed'] } }, '-created_date', 50),
+        svc.entities.AgentTask.filter({ agent_name: SCHEDULER_AGENT_NAME }, '-created_date', 1),
+      ]);
+      const task = taskRows?.[0] || null;
+      return Response.json({
+        ok:true,
+        action:'snapshot',
+        cases:(activeRows || []).map((row) => projectReviewCase(row, { detail:false })),
+        history:(historyRows || []).map((row) => projectReviewCase(row, { detail:false })),
+        scheduler:task ? {
+          id:task.id,
+          status:task.status || null,
+          startedAt:task.started_at || task.created_date || null,
+          completedAt:task.completed_at || null,
+          summary:task.output_payload_json && typeof task.output_payload_json === 'object' ? task.output_payload_json : null,
+          error:task.status === 'failed' ? (task.error || null) : null,
+        } : null,
+      });
+    }
+
     if (payload.action === 'runtime') {
       const rows = await svc.entities.AgentTask.filter({ agent_name: SCHEDULER_AGENT_NAME }, '-created_date', 1);
       const task = (rows || [])[0] || null;

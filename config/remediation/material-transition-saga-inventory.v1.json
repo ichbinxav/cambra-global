@@ -51,7 +51,7 @@
           "developer_rollback",
           "migration_go_live"
         ],
-        "source_sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380"
+        "source_sha256": "b518a6c9adce237fec5795c50e06484653ec10941dcfac78e3472da267eebcac"
       },
       {
         "function_name": "followUpAgent",
@@ -517,7 +517,7 @@
     },
     {
       "path": "base44/functions/developerMigrationEngine/entry.ts",
-      "sha256": "4a94d31122ded0e13c3198dedf0450064e45a93793fcfc843266506317969380"
+      "sha256": "b518a6c9adce237fec5795c50e06484653ec10941dcfac78e3472da267eebcac"
     },
     {
       "path": "base44/functions/founderOSCommand/entry.ts",

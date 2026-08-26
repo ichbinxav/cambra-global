@@ -116,12 +116,26 @@ Deno.serve(async (req) => {
       return [];
     }
   };
+  const safeLatestTaskRead = async (name:string, agent:string) => {
+    try {
+      const rows = await svc.entities.AgentTask.filter({ agent_name:agent }, '-created_date', 2);
+      if (!Array.isArray(rows)) throw new Error('agent_task_latest_invalid_shape');
+      observations.set(name, { coverage_status:'COMPLETE', reason_code:null });
+      return rows;
+    } catch (error:any) {
+      observations.set(name, { coverage_status:'UNKNOWN', reason_code:'READ_FAILED' });
+      pushUnique(degradedSources, name);
+      console.error(`getAdminOperationsCockpit coverage UNKNOWN: ${name}:${String(error?.code || 'READ_FAILED')}`);
+      return [];
+    }
+  };
 
   const [
     failedTasksByCompletion,
     failedTasksByCreation,
     activeTasks,
     workerRunBuckets,
+    workerTaskBuckets,
     autonomyIncidents,
     operationalIncidents,
     approvals,
@@ -149,6 +163,10 @@ Deno.serve(async (req) => {
     Promise.all(WORKERS.map((worker) => safeLatestWorkerRead(
       `SchedulerRun:${worker.worker_key}`,
       worker.worker_key,
+    ))),
+    Promise.all(WORKERS.map((worker) => safeLatestTaskRead(
+      `AgentTask:${worker.agent}`,
+      worker.agent,
     ))),
     safeRead(
       'AutonomyIncident',
@@ -229,6 +247,11 @@ Deno.serve(async (req) => {
     const age = ageMinutes(at);
     const healthy = !!latest && latest.status === 'COMPLETED' && age !== null &&
       age <= w.maxAgeMinutes;
+    const latestTask = workerTaskBuckets[index]?.[0] || null;
+    const activityAt = latestTask?.completed_at || latestTask?.started_at || latestTask?.created_date || null;
+    const activityAge = ageMinutes(activityAt);
+    const taskStatus = String(latestTask?.status || '').toLowerCase();
+    const activityHealthy = !!latestTask && taskStatus === 'completed' && activityAge !== null && activityAge <= w.maxAgeMinutes;
     return {
       ...w,
       status: healthy ? 'healthy' : latest?.status === 'FAILED' ? 'failed' : latest ? 'stale' : 'unknown',
@@ -236,6 +259,11 @@ Deno.serve(async (req) => {
       age_minutes: age,
       scheduler_run_id: latest?.id || null,
       error: latest?.details_json?.reason || null,
+      activity_status:activityHealthy ? 'healthy' : taskStatus === 'failed' ? 'failed' : latestTask ? 'stale' : 'unknown',
+      activity_last_run_at:activityAt,
+      activity_age_minutes:activityAge,
+      activity_task_id:latestTask?.id || null,
+      activity_error:taskStatus === 'failed' ? (latestTask?.error || null) : null,
     };
   });
   const agentTasks = tasks.filter((t: any) => t.brand_id === PLATFORM || t.agent_name);

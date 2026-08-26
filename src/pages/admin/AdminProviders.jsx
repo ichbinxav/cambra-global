@@ -12,9 +12,9 @@
 //
 // The field is now read-only here, shown beside the governed rate, and the write goes
 // through a previewed handler that refuses it by name.
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, X, Save, Building2, ShieldAlert } from "lucide-react";
+import { Plus, X, Save, Building2, Search, ShieldAlert } from "lucide-react";
 import { callIntelligence } from "./AdminIntelligenceWorkspace";
 
 const CATEGORIES = ["payments", "shipping", "saas", "insurance", "banking", "logistics"];
@@ -37,6 +37,7 @@ const API_COLORS = {
   not_connected: "text-muted-foreground bg-secondary border-border/40",
   error: "text-red-600 bg-red-500/10 border-red-500/20",
 };
+const isExplicitDemo = (provider) => /^\s*\[demo\]/i.test(String(provider?.name || ""));
 
 export default function AdminProviders() {
   const [providers, setProviders] = useState([]);
@@ -48,16 +49,29 @@ export default function AdminProviders() {
   const [preview, setPreview] = useState(null);
   const [message, setMessage] = useState(null);
   const [compensation, setCompensation] = useState(null);
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [showDemo, setShowDemo] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
-  const load = () => Promise.all([
-    base44.entities.Provider.list(),
-    base44.entities.UserDeal.list(),
-  ]).then(([p, ud]) => {
-    setProviders(p);
-    setUserDeals(ud);
-    setLoading(false);
-    if (selected?.id) setSelected(p.find(row => row.id === selected.id) || null);
-  });
+  const load = async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const [providerRows, dealRows] = await Promise.all([
+        base44.entities.Provider.list(),
+        base44.entities.UserDeal.list(),
+      ]);
+      const nextProviders = Array.isArray(providerRows) ? providerRows : [];
+      setProviders(nextProviders);
+      setUserDeals(Array.isArray(dealRows) ? dealRows : []);
+      if (selected?.id) setSelected(nextProviders.find(row => row.id === selected.id) || null);
+    } catch (caught) {
+      setLoadError(caught?.message || "The provider directory could not be loaded.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => { load(); }, []);
 
@@ -78,6 +92,17 @@ export default function AdminProviders() {
     const savings = active.reduce((s, d) => s + (d.estimated_savings || 0), 0);
     return { leads: deals.length, active: active.length, savings, conversion: deals.length > 0 ? Math.round((active.length / deals.length) * 100) : 0 };
   };
+
+  const demoCount = providers.filter(isExplicitDemo).length;
+  const visibleProviders = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return providers.filter((provider) => {
+      if (!showDemo && isExplicitDemo(provider)) return false;
+      if (category !== "all" && provider.category !== category) return false;
+      if (!needle) return true;
+      return `${provider.name} ${provider.category} ${provider.contact_email} ${provider.account_manager}`.toLowerCase().includes(needle);
+    });
+  }, [category, providers, query, showDemo]);
 
   const requestPreview = async () => {
     if (!form.name) return;
@@ -111,10 +136,10 @@ export default function AdminProviders() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black tracking-[-0.03em]">Providers</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{providers.length} providers in directory</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{providers.length - demoCount} operational providers · {demoCount} explicitly marked demo</p>
         </div>
         <button onClick={() => { setShowNew(true); setSelected(null); }}
           className="h-9 px-4 rounded-xl bg-foreground text-background text-xs font-bold flex items-center gap-1.5">
@@ -122,15 +147,23 @@ export default function AdminProviders() {
         </button>
       </div>
 
-      <div className="flex gap-4">
+      {loadError && <div role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700">{loadError}</div>}
+
+      <div className="flex flex-wrap gap-2">
+        <label className="relative min-w-0 flex-1 sm:min-w-64"><Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search provider, contact or manager" className="h-9 w-full rounded-lg border bg-background pl-9 pr-3 text-xs"/></label>
+        <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-9 rounded-lg border bg-background px-3 text-xs"><option value="all">All categories</option>{CATEGORIES.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+        {demoCount > 0 && <label className="inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs"><input type="checkbox" checked={showDemo} onChange={(event) => setShowDemo(event.target.checked)}/>Show {demoCount} demo</label>}
+      </div>
+
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Provider list */}
-        <div className={`${selected || showNew ? "w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden`}>
-          {providers.length === 0 ? (
+        <div className={`${selected || showNew ? "w-full xl:w-1/2" : "w-full"} rounded-xl border border-border/50 overflow-hidden`}>
+          {visibleProviders.length === 0 ? (
             <div className="py-16 text-center">
               <Building2 size={24} className="text-muted-foreground/20 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No providers yet. Add your first provider.</p>
+              <p className="text-sm text-muted-foreground">No provider matches this filter.</p>
             </div>
-          ) : providers.map(p => {
+          ) : visibleProviders.map(p => {
             const m = getMetrics(p.name);
             return (
               <div key={p.id} onClick={() => { setSelected(p); setForm(editableOnly(p)); setShowNew(false); setPreview(null); setMessage(null); }}
@@ -164,7 +197,7 @@ export default function AdminProviders() {
 
         {/* Form panel */}
         {(selected || showNew) && (
-          <div className="w-1/2 rounded-xl border border-border/50 bg-card overflow-hidden sticky top-20">
+          <div className="w-full rounded-xl border border-border/50 bg-card overflow-hidden xl:sticky xl:top-20 xl:w-1/2">
             <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between">
               <p className="text-sm font-bold">{showNew ? "New Provider" : selected?.name}</p>
               <button onClick={() => { setSelected(null); setShowNew(false); }} className="text-muted-foreground/40 hover:text-foreground"><X size={14} /></button>

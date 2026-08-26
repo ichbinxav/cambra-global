@@ -867,6 +867,22 @@ export default async function (req: Request): Promise<Response> {
       return Response.json(result, { status: result.ok ? 200 : 409 });
     }
 
+    if (body.action === 'snapshot') {
+      const [activeRows, historyRows, taskRows] = await Promise.all([
+        svc.entities.OperationalIncident.filter({ status: { $in: [...P7_ACTIVE_INCIDENT_STATUSES] } }, '-last_seen_at', LIST_MAX),
+        svc.entities.OperationalIncident.filter({ status:'resolved' }, '-resolved_at', 50),
+        svc.entities.AgentTask.filter({ agent_name:'ecl_production_health' }, '-created_date', 1),
+      ]);
+      const task = taskRows?.[0] || null;
+      return Response.json({
+        ok:true,
+        action:'snapshot',
+        incidents:(activeRows || []).map(project),
+        history:(historyRows || []).map(project),
+        health:task ? { id:task.id, status:task.status, startedAt:task.started_at || task.created_date || null, completedAt:task.completed_at || null, summary:task.output_payload_json || null, error:task.error || null } : null,
+      });
+    }
+
     if (body.action === 'list') {
       const limit = Number.isInteger(body.limit) && body.limit > 0 ? Math.min(body.limit, LIST_MAX) : 100;
       const query: Record<string, unknown> = {};
