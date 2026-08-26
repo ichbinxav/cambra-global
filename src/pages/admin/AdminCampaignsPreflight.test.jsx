@@ -241,9 +241,8 @@ describe("Honest copy", () => {
   it("no longer claims audience/content/sequence/preflight are unbuilt", async () => {
     await openDetail();
     expect(document.body.textContent).not.toMatch(/Not built yet — chunk C3/);
-    expect(document.body.textContent).toMatch(/engines are built and tested in the backend/i);
-    // ...while still being explicit about what this screen lacks.
-    expect(document.body.textContent).toMatch(/lacks are\s*the forms/i);
+    expect(document.body.textContent).toMatch(/Create Campaign.*builds a real versioned audience/i);
+    expect(document.body.textContent).toMatch(/never schedules or sends anything/i);
   });
 
   it("states that approving is not sending", async () => {

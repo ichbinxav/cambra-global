@@ -1,20 +1,20 @@
-// CAMP-C2 (2026-08-16) — Campaigns workspace (PROMPT_FIX_DISCOVERY_V2 Parte 4).
-// C2 scope: Overview, All Campaigns and Detail, plus draft creation from an
-// explicit lead selection. Audience/Content/Sequence/Preflight land in C3 and
-// execution in C4 — the tabs for those are present but explicitly declare what
-// is not built yet rather than showing an empty shell.
+// Campaign workspace: observed operations plus a versioned draft studio.
+// The studio prepares audience/content/sequence evidence but never schedules,
+// approves or sends a message.
 //
 // Fail-visible (spec §23.2): an unavailable source renders "Data unavailable"
 // with its blocker, never a silently empty table.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Ban, CheckCircle2, ChevronRight, KeyRound, Layers, Loader2, RefreshCw, ShieldAlert, Stethoscope } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, ChevronRight, KeyRound, Layers, Loader2, Plus, RefreshCw, ShieldAlert, Stethoscope } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import CampaignBuilder from "@/components/admin/campaigns/CampaignBuilder";
 import { base44 } from "@/api/base44Client";
 
 const TABS = [
   ["overview", "Overview"],
+  ["create", "Create Campaign"],
   ["all", "All Campaigns"],
   ["detail", "Detail"],
 ];
@@ -112,7 +112,7 @@ function KpiCard({ kpi }) {
   );
 }
 
-function Overview({ data, loading, reload }) {
+function Overview({ data, loading, reload, onCreate }) {
   if (loading && !data) return <div className="flex items-center gap-2 p-8 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading campaigns…</div>;
   if (data?.data_status === "UNAVAILABLE") return <DataUnavailable blockers={["commercial_campaign_source_unavailable"]} onRetry={reload} />;
   const posture = data?.outbound_posture || {};
@@ -125,9 +125,14 @@ function Overview({ data, loading, reload }) {
             Who we contact, what we send, why, when, from which infrastructure — and with what observed result.
           </p>
         </div>
-        <button onClick={reload} className="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-bold">
-          <RefreshCw size={13} />Refresh
-        </button>
+        <div className="flex gap-2">
+          <button onClick={reload} className="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-bold">
+            <RefreshCw size={13} />Refresh
+          </button>
+          <button onClick={onCreate} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-3 text-xs font-black text-background">
+            <Plus size={13} />Create campaign
+          </button>
+        </div>
       </div>
 
       <section data-testid="campaigns-posture" className="flex flex-wrap items-center gap-3 rounded-2xl border bg-card p-4">
@@ -486,13 +491,12 @@ function Detail({ detail, loading, onBack, onCheckStatus }) {
         <div className="flex items-start gap-3">
           <Layers size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
           <div>
-            <p className="text-xs font-black">What this screen can and cannot do yet</p>
+            <p className="text-xs font-black">Versioned campaign boundary</p>
             <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
-              The audience, content, sequence and preflight engines are built and tested in the backend, and so is the
-              execution engine — which runs in dry-run only, against no real provider. What this screen still lacks are
-              the forms to build and edit an audience, a message and a sequence; those are a separate piece of work.
-              What you can do here today is <b>Check status</b>, which runs the full preflight read-only, and
-              <b> Request approval</b>, which records a reviewed configuration. Neither sends anything.
+              The <b>Create Campaign</b> studio builds a real versioned audience, message and sequence draft from
+              canonical leads and configured sender identities. This detail remains an immutable evidence view:
+              <b> Check status</b> runs the full preflight read-only and <b>Request approval</b> records a reviewed
+              configuration. Creating, checking and approving never schedules or sends anything.
             </p>
           </div>
         </div>
@@ -508,6 +512,7 @@ export default function AdminCampaigns() {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [filters, setFilters] = useState({ status: "ALL", lane: "ALL", search: "", needs_attention: false });
   const [preflightState, setPreflightState] = useState(null);
 
@@ -535,6 +540,13 @@ export default function AdminCampaigns() {
     catch (caught) { setError(caught.message); setDetail(null); }
     finally { setLoading(false); }
   }, []);
+
+  const campaignCreated = useCallback(async (campaignId, result = {}) => {
+    setNotice(result.partial
+      ? "The draft exists, but preparation needs attention. Nothing was sent."
+      : "Campaign draft, audience, message and sequence were saved. Nothing was sent.");
+    await openDetail(campaignId);
+  }, [openDetail]);
 
   // `preflight` is the read-only action: it never mutates a campaign.
   const checkStatus = useCallback(async () => {
@@ -580,10 +592,11 @@ export default function AdminCampaigns() {
   useEffect(() => { if (tab === "all") loadList(); }, [tab, loadList]);
 
   const body = useMemo(() => {
-    if (tab === "overview") return <Overview data={overview} loading={loading} reload={loadOverview} />;
+    if (tab === "overview") return <Overview data={overview} loading={loading} reload={loadOverview} onCreate={() => { setNotice(""); setTab("create"); }} />;
+    if (tab === "create") return <CampaignBuilder call={call} onCancel={() => setTab("overview")} onCreated={campaignCreated} />;
     if (tab === "all") return <AllCampaigns data={list} loading={loading} filters={filters} setFilters={setFilters} reload={loadList} onOpen={openDetail} />;
     return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} onCheckStatus={checkStatus} />;
-  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus]);
+  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus, campaignCreated]);
 
   return (
     <div className="space-y-5 p-4 md:p-6">
@@ -591,7 +604,7 @@ export default function AdminCampaigns() {
         {TABS.map(([key, label]) => (
           <button
             key={key}
-            onClick={() => setTab(key)}
+            onClick={() => { if (key === "create") setNotice(""); setTab(key); }}
             aria-current={tab === key ? "page" : undefined}
             className={`rounded-lg px-3 py-2 text-[11px] font-bold ${tab === key ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"}`}
           >
@@ -606,6 +619,9 @@ export default function AdminCampaigns() {
       </div>
       {error && (
         <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">{error}</div>
+      )}
+      {notice && (
+        <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-[11px] font-bold text-emerald-800">{notice}</div>
       )}
       {body}
       <PreflightDialog

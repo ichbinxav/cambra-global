@@ -78,12 +78,53 @@ const DETAIL = {
   },
 };
 
+const BUILDER_OPTIONS = {
+  ok: true,
+  leads: [
+    {
+      id: "lead-1", company_name: "Acme Payments", company_domain: "acme.example",
+      contact_full_name: "Ada Founder", contact_title: "Founder", contact_email: "ada@acme.example",
+      country: "ES", industry: "SaaS", score: 91, readiness: "READY", blockers: [],
+    },
+    {
+      id: "lead-2", company_name: "Review Retail", company_domain: "review.example",
+      contact_full_name: "", contact_title: "CFO", contact_email: "", country: "IT",
+      industry: "Retail", score: 70, readiness: "REVIEW_REQUIRED", blockers: ["VERIFIED_EMAIL_REQUIRED"],
+    },
+  ],
+  lead_counts: { total: 2, returned: 2, ready: 1, review_required: 1, blocked: 0 },
+  target_profiles: [{
+    id: "policy-1", policy_key: "merchant-acq", version: "v1", name: "Founder pilot",
+    status: "paused", countries: ["ES"], daily_send_limit: 0,
+    provider_mode: "INSTANTLY", sending_profile_keys: ["instantly-xavi"],
+  }],
+  senders: [{
+    id: "sender-1", profile_key: "instantly-xavi", provider: "instantly", domain: "trycambraglobal.com",
+    from_address: "xavi@trycambraglobal.com", status: "paused", current_daily_cap: 0,
+    target_daily_cap: 10, webhook_status: "ACTIVE", readiness: { ready: false, cap: 0 },
+  }],
+  outbound_posture: { status: "PAUSED_ZERO", capacity: 0 },
+  source_coverage: {},
+  external_send_performed: false,
+};
+
 function respondWith(map = {}) {
   invoke.mockImplementation(async (_fn, body) => {
     const action = String(body?.action || "");
     if (action === "campaign_overview") return { data: map.overview ?? OVERVIEW };
     if (action === "campaign_list") return { data: map.list ?? LIST };
-    if (action === "campaign_detail") return { data: map.detail ?? DETAIL };
+    if (action === "campaign_builder_options") return { data: map.builderOptions ?? BUILDER_OPTIONS };
+    if (action === "campaign_create_draft") return { data: { ok: true, campaign: { id: "c-new" }, external_send_performed: false } };
+    if (action === "campaign_build_audience") return { data: { ok: true, audience_version: { id: "av1", status: "READY" }, external_send_performed: false } };
+    if (action === "campaign_freeze_audience") return { data: { ok: true, audience_version: { id: "av1", status: "FROZEN" }, external_send_performed: false } };
+    if (action === "campaign_validate_content") return { data: { ok: true, validation: { status: "VALIDATED" }, content_version: { id: "cv1" }, external_send_performed: false } };
+    if (action === "campaign_validate_sequence") return { data: { ok: true, validation: { status: "VALIDATED" }, sequence_version: { id: "sv1" }, external_send_performed: false } };
+    if (action === "campaign_update_draft") return { data: { ok: true, external_send_performed: false } };
+    if (action === "campaign_preflight") return { data: { ok: true, preflight: { verdict: "BLOCKED" }, external_send_performed: false } };
+    if (action === "campaign_detail") {
+      const detail = map.detail ?? DETAIL;
+      return { data: body.campaign_id === "c-new" ? { ...detail, item: { ...detail.item, id: "c-new", name: "New campaign" } } : detail };
+    }
     return { data: { ok: false, error: "unsupported_action" } };
   });
 }
@@ -168,6 +209,31 @@ describe("AdminCampaigns — all campaigns", () => {
   });
 });
 
+describe("AdminCampaigns — campaign studio", () => {
+  it("builds a complete draft without scheduling, approving or sending", async () => {
+    render(<AdminCampaigns />);
+    await screen.findByTestId("campaign-kpi-active_campaigns");
+    fireEvent.click(screen.getByRole("button", { name: "Create Campaign" }));
+
+    expect(await screen.findByTestId("campaign-builder")).toBeTruthy();
+    expect(screen.getByText("PAUSED_ZERO")).toBeTruthy();
+    expect(screen.getByLabelText("Campaign subject")).toBeTruthy();
+    expect(screen.getByLabelText("Campaign message")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Add Acme Payments"));
+    fireEvent.click(screen.getByLabelText("Use xavi@trycambraglobal.com"));
+    fireEvent.click(screen.getByTestId("save-campaign-draft"));
+
+    await screen.findByText(/Campaign draft, audience, message and sequence were saved/i);
+    const actions = invoke.mock.calls.map(([, body]) => body.action);
+    expect(actions).toEqual(expect.arrayContaining([
+      "campaign_create_draft", "campaign_build_audience", "campaign_freeze_audience",
+      "campaign_validate_content", "campaign_validate_sequence", "campaign_update_draft",
+      "campaign_preflight", "campaign_detail",
+    ]));
+    expect(actions.some((action) => /send|schedule|launch|execute|approve/.test(action))).toBe(false);
+  });
+});
+
 describe("AdminCampaigns — detail", () => {
   async function openDetail() {
     await openTab("All Campaigns");
@@ -183,14 +249,11 @@ describe("AdminCampaigns — detail", () => {
     expect(model.textContent).toContain("sequence not prepared");
   });
 
-  // CAMP-FOLLOWUP (2026-08-16): this used to pin the copy "Not built yet —
-  // chunk C3", which stopped being true once C3/C4 shipped. The invariant that
-  // still matters is that the screen states what it CANNOT do — the editing
-  // forms — instead of implying the whole flow is available.
-  it("states honestly what this screen still lacks", async () => {
+  it("links the immutable detail boundary to the campaign studio", async () => {
     await openDetail();
-    await waitFor(() => expect(screen.getByText(/lacks are\s*the forms/i)).toBeTruthy());
+    await waitFor(() => expect(document.body.textContent).toMatch(/Create Campaign.*builds a real versioned audience/i));
     expect(document.body.textContent).not.toMatch(/Not built yet — chunk C3/);
+    expect(document.body.textContent).toMatch(/never schedules or sends anything/i);
   });
 
   it("requests the detail through the canonical campaign_detail action", async () => {

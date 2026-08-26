@@ -201,6 +201,59 @@ describe("C2 — overview KPIs are honest", () => {
   });
 });
 
+describe("C2 — campaign builder options", () => {
+  it("returns real leads, target profiles and sender identities without performing an external effect", async () => {
+    const svc = makeSvc({
+      OutboundLead: [
+        {
+          id: "ready", company_name: "Acme", company_domain: "acme.test", contact_full_name: "Ada Lovelace",
+          contact_email: "ada@acme.test", country: "ES", contactability: "PROFESSIONAL_VERIFIED",
+          outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED", icp_score: 91,
+        },
+        { id: "needs-email", company_name: "Globex", country: "FR", outreach_eligibility: "NOT_ASSESSED", compliance_status: "REVIEW_REQUIRED" },
+        { id: "blocked", company_name: "Suppressed", contact_email: "stop@example.test", reservoir_state: "suppressed" },
+      ],
+      CommercialPolicy: [{
+        id: "policy-1", engine: "merchant_acquisition", policy_key: "merchant:1", version: "v1", status: "draft",
+        countries: ["ES"], daily_send_limit: 10, icp_json: { profile_name: "Spanish merchants", provider_mode: "AUTO" },
+      }],
+      OutboundSendingProfile: [{
+        id: "sender-1", profile_key: "instantly:acme", provider: "instantly", domain: "mail.acme.test",
+        from_address: "xavi@mail.acme.test", status: "active", current_daily_cap: 5, target_daily_cap: 10,
+        webhook_status: "ACTIVE", provider_config_json: { sender_ready: true, native_ai_conflict: false },
+      }],
+      OutboundControl: [{ id: "control-1", control_key: "global", acquisition_enabled: false }],
+    });
+
+    const { status, body } = await jsonOf(
+      await handleCampaignAdminAction(ADMIN, { action: "builder_options", limit: 50 }, svc),
+    );
+
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.external_send_performed).toBe(false);
+    expect(body.outbound_posture).toEqual({ status: "PAUSED_ZERO", capacity: 0 });
+    expect(body.lead_counts).toEqual({ total: 3, returned: 3, ready: 1, review_required: 1, blocked: 1 });
+    expect(body.leads.map((lead) => lead.id)).toEqual(["ready", "needs-email", "blocked"]);
+    expect(body.target_profiles[0].name).toBe("Spanish merchants");
+    expect(body.senders[0]).toMatchObject({ profile_key: "instantly:acme", from_address: "xavi@mail.acme.test", readiness: { ready: true, cap: 5 } });
+  });
+
+  it("fails visibly when a required builder source is unreadable", async () => {
+    const svc = makeSvc(
+      { OutboundLead: [], CommercialPolicy: [], OutboundSendingProfile: [], OutboundControl: [GLOBAL_CONTROL] },
+      { OutboundSendingProfile: { listThrows: "sender_store_down" } },
+    );
+    const { status, body } = await jsonOf(
+      await handleCampaignAdminAction(ADMIN, { action: "builder_options" }, svc),
+    );
+    expect(status).toBe(503);
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("campaign_builder_sources_unavailable");
+    expect(body.source_coverage.status).toBe("UNAVAILABLE");
+  });
+});
+
 describe("C2 — create draft", () => {
   const LEADS = [
     { id: "l1", canonical_company_key: "acme", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },

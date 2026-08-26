@@ -132,6 +132,71 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     },{status:available?200:503});
   }
 
+  if(action==='builder_options'){
+    const [leadRead,policyRead,profileRead,controlRead]=await Promise.all([
+      readRuntimeRows({source:'campaign_builder_leads',limit:5000,read:()=>svc.entities.OutboundLead.list('-created_date',5000)}),
+      readRuntimeRows({source:'campaign_builder_policies',limit:100,read:()=>svc.entities.CommercialPolicy.filter({engine:'merchant_acquisition'},'-updated_date',100)}),
+      readRuntimeRows({source:'campaign_builder_profiles',limit:500,read:()=>svc.entities.OutboundSendingProfile.list('-created_date',500)}),
+      readRuntimeRows({source:'campaign_builder_outbound_control',limit:2,read:()=>svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',2)}),
+    ]);
+    const unavailable=[leadRead,policyRead,profileRead,controlRead].filter((read)=>read.status==='UNAVAILABLE');
+    const search=clean(body?.search,160).toLowerCase();
+    const country=clean(body?.country,20).toUpperCase();
+    const requestedLimit=Math.max(1,Math.min(500,Number(body?.limit)||500));
+    const projectedLeads=(leadRead.value||[]).map((lead:any)=>{
+      const email=clean(lead.contact_email,320).toLowerCase();
+      const hasEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      const blocked=lead.reservoir_state==='suppressed'||lead.outreach_eligibility==='BLOCKED'||lead.compliance_status==='BLOCKED';
+      const blockers=[
+        ...(blocked?['POLICY_BLOCKED']:[]),
+        ...(!hasEmail?['VERIFIED_EMAIL_REQUIRED']:[]),
+        ...(lead.contactability!=='PROFESSIONAL_VERIFIED'?['PROFESSIONAL_CONTACT_NOT_VERIFIED']:[]),
+        ...(lead.outreach_eligibility!=='ELIGIBLE'?['OUTREACH_ELIGIBILITY_NOT_CLEARED']:[]),
+        ...(lead.compliance_status!=='CLEARED'?['COMPLIANCE_NOT_CLEARED']:[]),
+      ];
+      const readiness=blocked?'BLOCKED':blockers.length?'REVIEW_REQUIRED':'READY';
+      return{
+        id:lead.id,company_name:lead.company_name||'',company_domain:lead.company_domain||'',canonical_company_key:lead.canonical_company_key||'',
+        contact_full_name:lead.contact_full_name||'',contact_title:lead.contact_title||'',contact_email:email,
+        country:lead.country||'',industry:lead.industry||'',score:Number(lead.icp_score??lead.score??lead.pre_score??0),
+        contactability:lead.contactability||'UNKNOWN',outreach_eligibility:lead.outreach_eligibility||'NOT_ASSESSED',
+        compliance_status:lead.compliance_status||'NOT_ASSESSED',reservoir_state:lead.reservoir_state||'UNKNOWN',
+        readiness,blockers,
+      };
+    }).filter((lead:any)=>{
+      if(country&&String(lead.country||'').toUpperCase()!==country)return false;
+      if(!search)return true;
+      return[lead.company_name,lead.company_domain,lead.contact_full_name,lead.contact_title,lead.contact_email]
+        .some((value)=>String(value||'').toLowerCase().includes(search));
+    }).sort((left:any,right:any)=>{
+      const rank:any={READY:0,REVIEW_REQUIRED:1,BLOCKED:2};
+      return(rank[left.readiness]??9)-(rank[right.readiness]??9)||Number(right.score||0)-Number(left.score||0)||String(left.company_name||'').localeCompare(String(right.company_name||''),'en');
+    });
+    const controls=controlRead.value||[];
+    const outboundStatus=controlRead.status==='UNAVAILABLE'||controls.length!==1?'UNKNOWN':controls[0]?.acquisition_enabled===true?'ENABLED':'PAUSED_ZERO';
+    const sourceCoverage=runtimeSourceCoverage({leads:leadRead,policies:policyRead,sending_profiles:profileRead,outbound_control:controlRead});
+    const response={
+      ok:unavailable.length===0,
+      ...(unavailable.length?{error:'campaign_builder_sources_unavailable'}:{}),
+      leads:projectedLeads.slice(0,requestedLimit),
+      lead_counts:{total:projectedLeads.length,returned:Math.min(projectedLeads.length,requestedLimit),ready:projectedLeads.filter((lead:any)=>lead.readiness==='READY').length,review_required:projectedLeads.filter((lead:any)=>lead.readiness==='REVIEW_REQUIRED').length,blocked:projectedLeads.filter((lead:any)=>lead.readiness==='BLOCKED').length},
+      target_profiles:(policyRead.value||[]).map((policy:any)=>({
+        id:policy.id,policy_key:policy.policy_key||'',version:policy.version||'',name:policy.icp_json?.profile_name||policy.version||policy.policy_key||policy.id,
+        status:policy.status||'unknown',countries:Array.isArray(policy.countries)?policy.countries:[],daily_send_limit:Number(policy.daily_send_limit||0),
+        provider_mode:String(policy.icp_json?.provider_mode||'AUTO').toUpperCase(),sending_profile_keys:Array.isArray(policy.sending_profile_keys)?policy.sending_profile_keys:[],
+      })),
+      senders:(profileRead.value||[]).map((profile:any)=>({
+        id:profile.id,profile_key:profile.profile_key||'',provider:profile.provider||'',domain:profile.domain||'',from_address:profile.from_address||'',
+        status:profile.status||'unknown',current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),
+        webhook_status:profile.webhook_status||'NOT_CONFIGURED',readiness:readiness(profile),
+      })),
+      outbound_posture:{status:outboundStatus,capacity:outboundStatus==='ENABLED'?(profileRead.value||[]).reduce((sum:number,profile:any)=>sum+readiness(profile).cap,0):0},
+      source_coverage:sourceCoverage,
+      external_send_performed:false,
+    };
+    return Response.json(response,{status:unavailable.length?503:200});
+  }
+
   if(action==='create_draft'){
     const leadIds=unique(body.lead_ids,1000);if(!leadIds.length)return Response.json({ok:false,error:'campaign_leads_required'},{status:400});
     const lane=clean(body.lane,60).toUpperCase();
