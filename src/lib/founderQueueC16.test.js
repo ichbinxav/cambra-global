@@ -89,6 +89,26 @@ describe("C16 — the ordering is declared, and the queue follows it", () => {
     expect(out.items.find((row) => row.kind === "APPROVAL").blocks_running_work).toBe(true);
     expect(out.items.find((row) => row.kind === "QUESTION").blocks_running_work).toBe(false);
   });
+
+  it("projects the governed action and only the fields each queue item needs", async () => {
+    const out = await buildFounderQueue({
+      svc: makeSvc({
+        Approval: [approval({ action_type: "send_outreach_email", risk_level: 3, draft_content: "Hello" })],
+        AgentQuestion: [question({ question_type: "choice", options: ["ES", "IT"] })],
+        AgentTask: [task({ agent_name: "recover_autopilot", output_summary: "Billing needs review", output_payload_json: { review_blocks: ["invoice_issuance"] } })],
+      }),
+      now: NOW,
+    });
+    const approvalItem = out.items.find((row) => row.kind === "APPROVAL");
+    const questionItem = out.items.find((row) => row.kind === "QUESTION");
+    const reviewItem = out.items.find((row) => row.kind === "TASK_REVIEW");
+    expect(approvalItem.action).toMatchObject({ type: "APPROVAL_DECISION", enabled: true });
+    expect(approvalItem.record).toMatchObject({ action_type: "send_outreach_email", risk_level: 3, draft_content: "Hello" });
+    expect(questionItem.action).toMatchObject({ type: "ANSWER_QUESTION", enabled: true });
+    expect(questionItem.record).toMatchObject({ question_type: "choice", options: ["ES", "IT"] });
+    expect(reviewItem.action).toMatchObject({ type: "OPEN_WORKSPACE", href: "/admin/finance?tab=merchant-billing" });
+    expect(reviewItem.record).toMatchObject({ output_summary: "Billing needs review", review_blocks: ["invoice_issuance"] });
+  });
 });
 
 describe("C16 — only what actually needs a person", () => {
@@ -118,6 +138,19 @@ describe("C16 — only what actually needs a person", () => {
   it("ignores a failed task, which retries on its own", async () => {
     const out = await buildFounderQueue({
       svc: makeSvc({ AgentTask: [task({ terminal_state: "FAILED", status: "failed" })] }),
+      now: NOW,
+    });
+    expect(out.items).toEqual([]);
+  });
+
+  it("drops an old review when a newer run of the same workflow completed", async () => {
+    const out = await buildFounderQueue({
+      svc: makeSvc({
+        AgentTask: [
+          task({ id: "old-review", agent_name: "recover_autopilot", task_type: "billing", created_date: "2026-08-15T00:00:00.000Z" }),
+          task({ id: "new-success", agent_name: "recover_autopilot", task_type: "billing", terminal_state: "COMPLETED", status: "completed", created_date: "2026-08-16T00:00:00.000Z" }),
+        ],
+      }),
       now: NOW,
     });
     expect(out.items).toEqual([]);

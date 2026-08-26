@@ -1,4 +1,6 @@
 import React from "react";
+import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function ActionQueue({ items }) {
   return (
@@ -19,7 +21,12 @@ export default function ActionQueue({ items }) {
                 <p className="text-sm font-semibold truncate text-white">{it.title}</p>
                 {it.sub && <p className="text-[11px] text-white/50 truncate">{it.sub}</p>}
               </div>
-              {it.link && <a href={it.link} className="text-[11px] text-white/65 hover:text-white underline">Open</a>}
+              {it.link && (
+                <Link to={it.link} aria-label={`${it.actionLabel || "Open"}: ${it.title}`}
+                  className="shrink-0 inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1.5 text-[10px] font-bold text-white/75 hover:bg-white/10 hover:text-white">
+                  {it.actionLabel || "Open"} <ArrowRight size={10} />
+                </Link>
+              )}
             </div>
           ))}
         </div>

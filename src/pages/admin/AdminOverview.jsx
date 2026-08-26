@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { ListChecks, MessageSquareText, RefreshCw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { DEAL_STATUSES } from "@/lib/adminStatusConstants";
 
@@ -20,6 +22,44 @@ import DataIntegrityWidget from "@/components/admin/DataIntegrityWidget";
 function safeCurrency(n) {
   const v = Math.round(Number(n || 0));
   return `€${v.toLocaleString()}`;
+}
+
+async function withTimeout(promise, timeoutMs) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("founder_os_source_timeout")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function FounderOverviewHeader({ loading, onRefresh }) {
+  return (
+    <section data-testid="founder-overview-header" className="rounded-2xl border border-border/60 bg-card p-4 flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-muted-foreground">Founder OS</p>
+        <h1 className="mt-1 text-xl font-black tracking-tight">Your operating command center</h1>
+        <p className="mt-1 text-xs text-muted-foreground">Live company state, decisions and the next governed action in one place.</p>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Link to="/admin?tab=queue" className="h-9 px-3 rounded-lg bg-foreground text-background text-xs font-black inline-flex items-center gap-1.5">
+          <ListChecks size={13} /> Open action queue
+        </Link>
+        <Link to="/admin/chat" className="h-9 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5">
+          <MessageSquareText size={13} /> Ask CAMBRA
+        </Link>
+        <button type="button" onClick={onRefresh} disabled={loading}
+          className="h-9 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-50">
+          <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
+        </button>
+      </div>
+    </section>
+  );
 }
 
 export default function AdminOverview() {
@@ -46,7 +86,7 @@ export default function AdminOverview() {
     inFlightRef.current = true;
     try {
       setLoadError("");
-      const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await Promise.all([
+      const [users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices] = await withTimeout(Promise.all([
         base44.entities.User.list(),
         base44.entities.Brand.list(),
         base44.entities.UserDeal.list(),
@@ -58,7 +98,7 @@ export default function AdminOverview() {
         base44.entities.MigrationTask.list("-updated_date", 500),
         base44.entities.Mandate.list(),
         base44.entities.Invoice.list("-issued_at", 500),
-      ]);
+      ]), 20000);
       setData({ users, brands, userDeals, results, apps, reports, providers, activations, tasks, mandates, invoices });
       return true;
     } catch (err) {
@@ -119,20 +159,28 @@ export default function AdminOverview() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-40">
-        <div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" />
+      <div className="space-y-4">
+        <FounderOverviewHeader loading onRefresh={retryLoad} />
+        <div data-testid="founder-overview-loading" className="rounded-2xl border border-border/60 bg-card p-10 text-center">
+          <div className="w-6 h-6 mx-auto rounded-full border-2 border-border border-t-foreground animate-spin" />
+          <p className="mt-3 text-sm font-bold">Loading Founder OS sources…</p>
+          <p className="mt-1 text-xs text-muted-foreground">The command center stays visible while CAMBRA verifies the live snapshot.</p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div data-testid="founder-os-data-unavailable" className="rounded-2xl border border-amber-300/40 bg-amber-500/10 p-6 text-sm">
-        <p className="font-black">Founder OS data unavailable</p>
-        <p className="mt-2 text-muted-foreground">{loadError || "CAMBRA could not verify the dashboard data sources."}</p>
-        <button onClick={retryLoad} className="mt-4 h-9 rounded-lg border border-border px-4 text-xs font-bold">
-          Retry
-        </button>
+      <div className="space-y-4">
+        <FounderOverviewHeader loading={false} onRefresh={retryLoad} />
+        <div data-testid="founder-os-data-unavailable" className="rounded-2xl border border-amber-300/40 bg-amber-500/10 p-6 text-sm">
+          <p className="font-black">Founder OS data unavailable</p>
+          <p className="mt-2 text-muted-foreground">{loadError || "CAMBRA could not verify the dashboard data sources."}</p>
+          <button onClick={retryLoad} className="mt-4 h-9 rounded-lg border border-border px-4 text-xs font-bold">
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -214,11 +262,11 @@ export default function AdminOverview() {
 
   // SECTION 2 — ACTION QUEUE (top 10)
   const actionQueue = [
-    ...blockedTasks.map(t => ({ type: "Blocked", title: t.step_name?.replaceAll("_"," ") || "Migration task", sub: t.blocked_reason || "—", link: `/admin/activation/${t.deal_activation_id || ""}`, badge: "bg-red-500/[0.06] text-red-600 border-red-500/20" })),
-    ...offerReady.map(a => ({ type: "Offer ready", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", badge: "bg-purple-500/[0.06] text-purple-600 border-purple-500/20" })),
-    ...toInvoice.map(r => ({ type: "Ready to invoice", title: r.month, sub: `${safeCurrency(r.node_fee)} · ${r.vertical || ""}`, link: "/admin/revenue", badge: "bg-orange-500/[0.06] text-orange-600 border-orange-500/20" })),
-    ...awaitingAuth.map(a => ({ type: "Awaiting signature", title: a.deal_name || a.id, sub: a.brand_id || "—", link: "/admin/activation", badge: "bg-blue-500/[0.06] text-blue-600 border-blue-500/20" })),
-    ...inReviewAged.map(a => ({ type: "Incomplete review", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", badge: "bg-amber-500/[0.06] text-amber-600 border-amber-500/20" })),
+    ...blockedTasks.map(t => ({ type: "Blocked", title: t.step_name?.replaceAll("_"," ") || "Migration task", sub: t.blocked_reason || "—", link: t.deal_activation_id ? `/admin/activation/${t.deal_activation_id}` : "/admin/ecl-operations", actionLabel: "Resolve task", badge: "bg-red-500/[0.06] text-red-600 border-red-500/20" })),
+    ...offerReady.map(a => ({ type: "Offer ready", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", actionLabel: "Review offer", badge: "bg-purple-500/[0.06] text-purple-600 border-purple-500/20" })),
+    ...toInvoice.map(r => ({ type: "Ready to invoice", title: r.month, sub: `${safeCurrency(r.node_fee)} · ${r.vertical || ""}`, link: "/admin/finance?tab=merchant-billing", actionLabel: "Review & invoice", badge: "bg-orange-500/[0.06] text-orange-600 border-orange-500/20" })),
+    ...awaitingAuth.map(a => ({ type: "Awaiting signature", title: a.deal_name || a.id, sub: a.brand_id || "—", link: "/admin/activation", actionLabel: "Review signature", badge: "bg-blue-500/[0.06] text-blue-600 border-blue-500/20" })),
+    ...inReviewAged.map(a => ({ type: "Incomplete review", title: a.deal_name, sub: brandByEmail(a.user_email)?.name || a.user_email, link: "/admin/deals", actionLabel: "Review deal", badge: "bg-amber-500/[0.06] text-amber-600 border-amber-500/20" })),
   ];
 
   // SECTION 3 — CONVERSION + BOTTLENECKS
@@ -318,6 +366,7 @@ export default function AdminOverview() {
 
   return (
     <div className="space-y-5">
+      <FounderOverviewHeader loading={false} onRefresh={retryLoad} />
       {loadError && (
         <div role="alert" className="rounded-xl border border-amber-300/40 bg-amber-500/10 px-4 py-3 text-xs">
           {loadError} Displayed values are the last complete snapshot.
