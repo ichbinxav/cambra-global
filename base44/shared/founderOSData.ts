@@ -58,12 +58,18 @@ export async function buildFounderSnapshot(s:any){
   if(missing.length)return{...extra,value:null,unit,as_of:now.toISOString(),confidence:'unknown',unavailable_sources:missing};
   return{...extra,value,unit,as_of:now.toISOString(),confidence};
  };
+ const latestHealth=health[0]||null;
+ const companyHealth=failures.has('OperatingHealthAssessment')
+  ? metric(null,'score_0_100',['OperatingHealthAssessment'],'observed')
+  : (!latestHealth||latestHealth.data_complete===false||latestHealth.readiness_status==='UNKNOWN')
+   ? {value:null,unit:'score_0_100',as_of:latestHealth?.calculated_at||null,confidence:'unknown',incomplete_sources:['OperatingHealthAssessment'],reason_code:latestHealth?'ASSESSMENT_INCOMPLETE':'ASSESSMENT_ABSENT',blockers:Array.isArray(latestHealth?.blockers)?latestHealth.blockers:[]}
+   : {...metric(latestHealth.score??null,'score_0_100',['OperatingHealthAssessment'],'observed'),as_of:latestHealth.calculated_at||null};
  const metrics:any={
   collected_revenue:metric(totalCollected,'EUR',['Invoice','ProviderRevenueLedger'],'verified',{merchant:merchantCollected,provider:providerPaid}),
   provider_accrued:metric(providerAccrued,'EUR',['ProviderRevenueLedger'],'contractual'),verified_savings:metric(sum(verified,'savings'),'EUR',['MonthlySavingsReport'],'verified'),
   merchants:metric(productionBrands.length,'count',['Brand'],'observed'),active_merchants:metric(activeBrandIds.size,'count',['Brand','RevenueLifecycle','Integration'],'observed'),new_merchants_24h:metric(newBrands.length,'count',['Brand'],'observed'),
   leads_24h:metric(recentLeads.length,'count',['OutboundLead'],'observed'),weighted_pipeline:metric(weightedPipeline,'EUR',['OutboundLead'],weightedPipelineKnown?'estimated':'unknown',{known_value_count:weightedPipelineKnown,unknown_value_count:leads.length-weightedPipelineKnown}),aggregate_addressable:metric(addressable,'EUR_annual_volume',['AggregatePool'],'estimated'),aggregate_committed:metric(committed,'EUR_annual_volume',['AggregatePool'],'contractual'),
-  company_health:{...metric(health[0]?.score??null,'score_0_100',['OperatingHealthAssessment'],'observed'),as_of:health[0]?.calculated_at||null},founder_attention:metric(attention.length,'count',['Approval','AutonomyIncident','CommunicationThread'],'observed'),provider_outstanding:metric(providerOutstanding,'EUR',['ProviderRevenueLedger'],'contractual')
+  company_health:companyHealth,founder_attention:metric(attention.length,'count',['Approval','AutonomyIncident','CommunicationThread'],'observed'),provider_outstanding:metric(providerOutstanding,'EUR',['ProviderRevenueLedger'],'contractual')
  };
  const opportunities:any[]=[];
  for(const p of pools.filter((x:any)=>safeNumber(x.aggregation_power_score)>=65).slice(0,20))opportunities.push({type:'aggregate',title:`${p.pool_key} is negotiation-ready`,expected_value:null,probability:null,time_to_value:'near_term',effort:'low',risk:'low',evidence:[{entity:'AggregatePool',id:p.id}],recommended_action:'Review/open competitive procurement if not already active'});

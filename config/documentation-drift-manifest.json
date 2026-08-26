@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-08-26T04:49:35.129Z",
+  "generatedAt": "2026-08-26T05:07:50.188Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -164,7 +164,7 @@
     "base44/shared/externalApprovalExecution.ts": "5ed853d231f5f74abd2cf3d6f94e0b015b332bad02299153a7427cb12e7f5591",
     "base44/shared/founderControlV2.ts": "cb883d0dfd86fa1f0618cd89317faea6c9e3b4e0c0cf36a1d2bf78bf7304b3a3",
     "base44/shared/founderMeeting.ts": "8768a31905ecddc42a86b3b4137bd63a8dccc6d3883cf8a6da7185a53ce24a8f",
-    "base44/shared/founderOSData.ts": "d4a5b523d6a240aedfc82708687860cbe6e338b8e0ae64a537965f82d068edd5",
+    "base44/shared/founderOSData.ts": "fa708cc9e4d9db998037c1883722422f8377482278d40fbd68890337e8778217",
     "base44/shared/generated/disasterRecoveryEntityCatalog.ts": "060385496a571967249fe5df0e8efa9e6a69ee3e6ec179e45a37b1667ef342a3",
     "base44/shared/generated/europeMarkets.ts": "45175a35ab875f4e4b1a25d7787e2c0ae214a77802fb4a5a8eddcd2d4a69c4e9",
     "base44/shared/generated/researchKnowledgeDocuments.ts": "79f43ea8a01904aacdf087cbcf07de6b35942b70542d72c719e8f32b9c7b7ca9",

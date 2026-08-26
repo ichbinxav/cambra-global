@@ -77,6 +77,41 @@ describe("C3 — a failed read is never a proven zero", () => {
     expect(snapshot.metrics.collected_revenue.confidence).toBe("verified");
   });
 
+  it("does not present an incomplete health assessment's fail-closed zero as observed", async () => {
+    const snapshot = await buildFounderSnapshot(makeSvc({
+      rows: {
+        OperatingHealthAssessment: [{
+          score: 0,
+          data_complete: false,
+          readiness_status: "UNKNOWN",
+          blockers: ["AgentTask.recent"],
+          calculated_at: "2026-08-25T22:43:30.847Z",
+        }],
+      },
+    }));
+    expect(snapshot.metrics.company_health).toMatchObject({
+      value: null,
+      confidence: "unknown",
+      incomplete_sources: ["OperatingHealthAssessment"],
+      reason_code: "ASSESSMENT_INCOMPLETE",
+      blockers: ["AgentTask.recent"],
+    });
+  });
+
+  it("keeps a complete observed health score, including a genuine zero", async () => {
+    const snapshot = await buildFounderSnapshot(makeSvc({
+      rows: {
+        OperatingHealthAssessment: [{
+          score: 0,
+          data_complete: true,
+          readiness_status: "COMPLETE",
+          calculated_at: "2026-08-25T22:43:30.847Z",
+        }],
+      },
+    }));
+    expect(snapshot.metrics.company_health).toMatchObject({ value: 0, confidence: "observed" });
+  });
+
   it("degrades only the metrics that depend on the broken source", async () => {
     const snapshot = await buildFounderSnapshot(makeSvc({
       throwing: ["Invoice"], rows: { Brand: [{ id: "b1", name: "Acme" }] },
