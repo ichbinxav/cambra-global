@@ -171,7 +171,7 @@ export default function Pricing() {
             <ArrowRight size={14} />
           </Link>
           <Link
-            to="/HowItWorks"
+            to="/how-it-works"
             className="inline-flex items-center rounded-full px-7 py-3.5 text-[13px] font-medium transition-colors text-white/80 hover:text-white"
             style={{ border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)" }}
           >

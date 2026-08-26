@@ -10,7 +10,7 @@ const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock('@/api/base44Client', () => ({ base44: { functions: { invoke } } }));
 vi.mock('@/lib/i18n.jsx', () => ({ useTranslation: () => ({ lang: 'en' }) }));
 
-import AdminMerchants from './AdminMerchants.jsx';
+import AdminMerchants from '../../pages/admin/AdminMerchants.jsx';
 
 const kpiKeys = [
   'total_merchants','active_merchants','total_payment_volume','average_payment_cost',

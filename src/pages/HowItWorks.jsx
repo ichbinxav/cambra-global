@@ -19,7 +19,7 @@ export default function HowItWorks() {
   const STEPS = [
     { n: "01", eyebrow: t("hiw_s1_eyebrow"), icon: Activity,  title: t("hiw_s1_title"), detail: t("hiw_s1_detail"), cta: { label: t("hiw_s1_cta"), href: "/Analyzer" } },
     { n: "02", eyebrow: t("hiw_s2_eyebrow"), icon: BarChart3, title: t("hiw_s2_title"), detail: t("hiw_s2_detail"), cta: { label: t("hiw_s2_cta"), href: "/Analyzer" } },
-    { n: "03", eyebrow: t("hiw_s3_eyebrow"), icon: Sparkles,  title: t("hiw_s3_title"), detail: t("hiw_s3_detail"), cta: { label: t("hiw_s3_cta"), href: "/Pricing" } },
+    { n: "03", eyebrow: t("hiw_s3_eyebrow"), icon: Sparkles,  title: t("hiw_s3_title"), detail: t("hiw_s3_detail"), cta: { label: t("hiw_s3_cta"), href: "/pricing" } },
   ];
   return (
     <PublicPageShell>

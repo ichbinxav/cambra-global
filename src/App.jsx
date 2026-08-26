@@ -332,10 +332,11 @@ const AuthenticatedApp = () => {
         <Route path="/developers" element={<Navigate to="/" replace />} />
         <Route path="/Developers/MCP" element={<Navigate to="/" replace />} />
         <Route path="/developers/mcp" element={<Navigate to="/" replace />} />
-        <Route path="/Pricing" element={withBoundary(<Pricing />)} />
-        <Route path="/pricing" element={<Navigate to="/Pricing" replace />} />
-        <Route path="/HowItWorks" element={withBoundary(<HowItWorks />)} />
-        <Route path="/howitworks" element={<Navigate to="/HowItWorks" replace />} />
+        <Route path="/pricing" element={withBoundary(<Pricing />)} />
+        <Route path="/Pricing" element={<Navigate to="/pricing" replace />} />
+        <Route path="/how-it-works" element={withBoundary(<HowItWorks />)} />
+        <Route path="/HowItWorks" element={<Navigate to="/how-it-works" replace />} />
+        <Route path="/howitworks" element={<Navigate to="/how-it-works" replace />} />
         <Route path="/Security" element={withBoundary(<Security />)} />
         <Route path="/security" element={<Navigate to="/Security" replace />} />
         <Route path="/Testimonials" element={<Navigate to="/" replace />} />

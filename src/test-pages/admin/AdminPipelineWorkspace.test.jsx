@@ -38,7 +38,7 @@ let Page;
 beforeEach(async () => {
   vi.resetModules();
   vi.doMock("@/api/base44Client", () => ({ base44: { functions: { invoke: vi.fn() } } }));
-  Page = await import("./AdminPipelineWorkspace.jsx");
+  Page = await import("../../pages/admin/AdminPipelineWorkspace.jsx");
 });
 afterEach(() => { vi.resetModules(); vi.restoreAllMocks(); });
 

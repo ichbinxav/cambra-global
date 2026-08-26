@@ -1,6 +1,27 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dev/
+Disallow: /internal/
+Disallow: /debug/
+Disallow: /test/
+Disallow: /staging/
+Disallow: /api/
 Disallow: /functions/
 Disallow: /auth/
+Disallow: /Dashboard
+Disallow: /Reports
+Disallow: /Account
+Disallow: /Invoices
+Disallow: /Vault
+Disallow: /Referrals
+Disallow: /ConnectTools
+Disallow: /IntegrationsCallback
+Disallow: /Onboarding
+Disallow: /BrandProfile
+Disallow: /Results
+Disallow: /LoginGate
+Disallow: /OAuthConsent
+Disallow: /HealthCheck
 
 Sitemap: https://cambra.global/sitemap.xml

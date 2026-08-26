@@ -33,8 +33,8 @@ const SITE_URL = resolveSiteUrl();
 const PUBLIC_ROUTES: Array<[string, string, string]> = [
   ["/",              "weekly",  "1.0"],
   ["/Analyzer",      "weekly",  "0.9"],
-  ["/HowItWorks",    "monthly", "0.8"],
-  ["/Pricing",       "monthly", "0.8"],
+  ["/how-it-works",  "monthly", "0.8"],
+  ["/pricing",       "monthly", "0.8"],
   ["/Partners",      "monthly", "0.7"],
   ["/ForProviders",  "monthly", "0.7"],
   ["/Contact",       "monthly", "0.6"],
@@ -61,20 +61,36 @@ ${urls}
 }
 
 function buildRobots(): string {
-  // CHUNK SEO-1 — single coherent policy:
-  //  · React HTML pages (everything the SPA renders) are de-indexed ONLY via
-  //    the client-side noindex meta injected by RobotsMeta. They must NOT be
-  //    Disallow'd here — a blocked path is never rendered, so Googlebot never
-  //    sees the noindex and may index the bare URL from an external link.
-  //  · Non-HTML endpoints (backend functions, OAuth callbacks/redirects that
-  //    return JSON/redirects and never render the SPA) have no meta a bot can
-  //    read, so Disallow is the correct mechanism and stays here.
+  // Defense in depth: access control and route-level noindex remain the real
+  // protection; these directives prevent routine crawling of known private
+  // surfaces and match the static public/robots.txt policy.
   return `User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dev/
+Disallow: /internal/
+Disallow: /debug/
+Disallow: /test/
+Disallow: /staging/
+Disallow: /api/
 Disallow: /functions/
 Disallow: /auth/
+Disallow: /Dashboard
+Disallow: /Reports
+Disallow: /Account
+Disallow: /Invoices
+Disallow: /Vault
+Disallow: /Referrals
+Disallow: /ConnectTools
+Disallow: /IntegrationsCallback
+Disallow: /Onboarding
+Disallow: /BrandProfile
+Disallow: /Results
+Disallow: /LoginGate
+Disallow: /OAuthConsent
+Disallow: /HealthCheck
 
-Sitemap: ${SITE_URL}/functions/sitemap
+Sitemap: ${SITE_URL}/sitemap.xml
 `;
 }
 

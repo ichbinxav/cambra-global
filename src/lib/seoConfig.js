@@ -37,7 +37,7 @@ export const DEFAULT_OG_IMAGE =
   "https://media.base44.com/images/public/69b8bcd2986e2cf428289270/411e1f39a_cambra_c_logo_white_background.png";
 
 export const DEFAULT_ROBOTS = "index, follow";
-export const NOINDEX_ROBOTS = "noindex, nofollow";
+export const NOINDEX_ROBOTS = "noindex, nofollow, noarchive, nosnippet";
 
 // og:locale per language — kept here so SeoMeta is the only writer of OG.
 export const OG_LOCALE = { en: "en_GB", fr: "fr_FR", es: "es_ES" };
@@ -102,12 +102,12 @@ export const SEO_STATIC = {
       es: "Comprueba tus comisiones de pago con tarjeta y tu tasa efectiva por mercado. Cada resultado explica su evidencia y sus límites.",
     },
   },
-  "/HowItWorks": {
-    canonicalPath: "/HowItWorks",
+  "/how-it-works": {
+    canonicalPath: "/how-it-works",
     ogType: "article",
     robots: DEFAULT_ROBOTS,
     title: {
-      en: "How CAMBRA audits and recovers card payment margin",
+      en: "How It Works | CAMBRA",
       fr: "Comment CAMBRA audite et récupère la marge de paiement par carte",
       es: "Cómo CAMBRA audita y recupera el margen de pago con tarjeta",
     },
@@ -117,12 +117,12 @@ export const SEO_STATIC = {
       es: "Cómo CAMBRA evalúa tus costes de pago con tarjeta, construye un plan de recuperación y verifica el ahorro — honorario de éxito solo sobre el margen verificado y activado.",
     },
   },
-  "/Pricing": {
-    canonicalPath: "/Pricing",
+  "/pricing": {
+    canonicalPath: "/pricing",
     ogType: "website",
     robots: DEFAULT_ROBOTS,
     title: {
-      en: "Pricing — free analysis, success fee on verified savings | CAMBRA",
+      en: "Pricing | CAMBRA",
       fr: "Tarifs — analyse gratuite, honoraire au succès sur économies vérifiées | CAMBRA",
       es: "Precios — análisis gratuito, honorario de éxito sobre ahorro verificado | CAMBRA",
     },

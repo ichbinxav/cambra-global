@@ -13,7 +13,7 @@ globalThis.React = React;
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: { functions: { invoke } } }));
 
-import AdminConversations from "./AdminConversations.jsx";
+import AdminConversations from "../../pages/admin/AdminConversations.jsx";
 
 const LIST = {
   ok: true,

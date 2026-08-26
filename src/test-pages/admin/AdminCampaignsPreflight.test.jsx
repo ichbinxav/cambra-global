@@ -15,7 +15,7 @@ globalThis.React = React;
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@/api/base44Client", () => ({ base44: { functions: { invoke } } }));
 
-import AdminCampaigns from "./AdminCampaigns.jsx";
+import AdminCampaigns from "../../pages/admin/AdminCampaigns.jsx";
 
 /** Everything healthy except the FounderPermit authority, which is absent on this tree. */
 const CLEAN_INPUT = {

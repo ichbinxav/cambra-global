@@ -145,7 +145,7 @@ export default function Partners() {
           <button onClick={scrollToApply} className="btn-base btn-primary-inverse btn-lg">
             {t("pt_hero_cta")} <ArrowRight className="h-4 w-4" />
           </button>
-          <Link to="/HowItWorks" className="btn-base btn-secondary-dark btn-lg">
+          <Link to="/how-it-works" className="btn-base btn-secondary-dark btn-lg">
             {t("pt_hero_cta2")}
           </Link>
         </div>

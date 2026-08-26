@@ -15,6 +15,14 @@ function readFile(rel) {
   return fs.readFileSync(path.join(REPO_ROOT, rel), "utf-8");
 }
 
+function listFilesRecursive(rel) {
+  const absolute = path.join(REPO_ROOT, rel);
+  return fs.readdirSync(absolute, { withFileTypes: true }).flatMap((entry) => {
+    const child = path.join(rel, entry.name);
+    return entry.isDirectory() ? listFilesRecursive(child) : [child];
+  });
+}
+
 const seoConfig = readFile("src/lib/seoConfig.js");
 const seoMeta = readFile("src/components/shared/SeoMeta.jsx");
 const indexHtml = readFile("index.html");
@@ -94,6 +102,56 @@ describe("Canonical aliases and retired admin routes", () => {
     expect(copilotBrief).toContain('to="/admin/command"');
     expect(devExport).not.toContain('"/admin/applications"');
   });
+
+  it("keeps test files outside src/pages so Base44 cannot publish them as pages", () => {
+    const pageTests = listFilesRecursive("src/pages")
+      .filter((file) => /\.test\.[jt]sx?$/.test(file));
+    expect(pageTests).toEqual([]);
+  });
+
+  it("does not link public surfaces to admin routes", () => {
+    const publicFiles = [
+      "src/pages/Landing.jsx", "src/pages/PaymentsAnalyzer.jsx", "src/pages/HowItWorks.jsx",
+      "src/pages/Pricing.jsx", "src/pages/Partners.jsx", "src/pages/ForProviders.jsx",
+      "src/pages/Contact.jsx", "src/pages/Security.jsx", "src/pages/Help.jsx",
+      "src/pages/Privacy.jsx", "src/pages/Terms.jsx", "src/pages/Dpa.jsx",
+      "src/pages/Subprocessors.jsx", "src/pages/Cookies.jsx",
+      ...listFilesRecursive("src/components/landing").filter((file) =>
+        /\.[jt]sx?$/.test(file) && !/(?:Navbar|MobileNavMenu)\.jsx$/.test(file)),
+    ];
+    const source = publicFiles.map(readFile).join("\n");
+    expect(source).not.toMatch(/(?:href|to)\s*=\s*["']\/admin(?:\/|["'])/);
+    expect(source).not.toMatch(/href\s*:\s*["']\/admin(?:\/|["'])/);
+
+    const navbar = readFile("src/components/landing/Navbar.jsx");
+    const mobileNav = readFile("src/components/landing/MobileNavMenu.jsx");
+    expect(navbar).toContain("{isAdmin && (");
+    expect(navbar.indexOf('to="/admin"')).toBeGreaterThan(navbar.indexOf("{isAdmin && ("));
+    expect(mobileNav).toContain("{isAuthenticated && isAdmin && (");
+    expect(mobileNav.indexOf('href: "/admin"')).toBeGreaterThan(
+      mobileNav.indexOf("{isAuthenticated && isAdmin && ("),
+    );
+  });
+
+  it("guards every admin renderer behind authentication and the admin role", () => {
+    const guard = appJsx.slice(
+      appJsx.indexOf("const AdminRoute"),
+      appJsx.indexOf("const AuthenticatedApp"),
+    );
+    expect(guard).toContain("if (!isAuthenticated)");
+    expect(guard).toContain('user?.role !== "admin"');
+    expect(guard.indexOf("if (!isAuthenticated)")).toBeLessThan(guard.lastIndexOf("return children"));
+
+    const shellStart = appJsx.indexOf('<Route element={<AdminRoute><AdminLayout /></AdminRoute>}>');
+    const shellEnd = appJsx.indexOf("</Route>", shellStart);
+    const adminRenderers = [...appJsx.matchAll(/<Route path="(\/admin[^"]*)"/g)];
+    expect(shellStart).toBeGreaterThan(-1);
+    expect(adminRenderers.length).toBeGreaterThan(0);
+    adminRenderers.forEach((match) => {
+      expect(match.index).toBeGreaterThan(shellStart);
+      expect(match.index).toBeLessThan(shellEnd);
+    });
+  });
 });
 
 describe("PWA assets and client health truthfulness", () => {
@@ -119,18 +177,19 @@ describe("PWA assets and client health truthfulness", () => {
 });
 
 describe("SEO config — every public route is complete", () => {
-  let SEO_STATIC, CANONICAL_PUBLIC_PATHS, buildCanonicalUrl, getSeoForPathLang;
+  let SEO_STATIC, CANONICAL_PUBLIC_PATHS, NOINDEX_ROBOTS, buildCanonicalUrl, getSeoForPathLang;
   beforeAll(async () => {
     const mod = await importSeoConfig();
     SEO_STATIC = mod.SEO_STATIC;
     CANONICAL_PUBLIC_PATHS = mod.CANONICAL_PUBLIC_PATHS;
+    NOINDEX_ROBOTS = mod.NOINDEX_ROBOTS;
     buildCanonicalUrl = mod.buildCanonicalUrl;
     getSeoForPathLang = mod.getSeoForPathLang;
   });
 
   const LANGS = ["en", "fr", "es"];
   const EXPECTED_ROUTES = [
-    "/", "/Analyzer", "/HowItWorks", "/Pricing", "/Partners", "/ForProviders",
+    "/", "/Analyzer", "/how-it-works", "/pricing", "/Partners", "/ForProviders",
     "/Contact", "/Security", "/Help", "/Privacy", "/Terms", "/Dpa",
     "/Subprocessors", "/Cookies",
   ];
@@ -143,6 +202,8 @@ describe("SEO config — every public route is complete", () => {
     expect(SEO_STATIC["/Results"]).toBeUndefined();
     expect(SEO_STATIC["/Dashboard"]).toBeUndefined();
     expect(SEO_STATIC["/admin"]).toBeUndefined();
+    expect(SEO_STATIC["/HowItWorks"]).toBeUndefined();
+    expect(SEO_STATIC["/Pricing"]).toBeUndefined();
   });
 
   it.each(EXPECTED_ROUTES)("%s has a canonicalPath", (r) => {
@@ -187,6 +248,8 @@ describe("SEO config — every public route is complete", () => {
     expect(buildCanonicalUrl("/")).toBe("https://cambra.global/");
     expect(buildCanonicalUrl("/Partners")).toBe("https://cambra.global/Partners");
     expect(buildCanonicalUrl("/Analyzer")).toBe("https://cambra.global/Analyzer");
+    expect(buildCanonicalUrl("/pricing")).toBe("https://cambra.global/pricing");
+    expect(buildCanonicalUrl("/how-it-works")).toBe("https://cambra.global/how-it-works");
   });
 
   it("non-configured routes resolve to null (→ noindex default)", () => {
@@ -200,6 +263,15 @@ describe("SEO config — every public route is complete", () => {
     expect(getSeoForPathLang("/Vault", "en")).toBeNull();
     expect(getSeoForPathLang("/Invoices", "en")).toBeNull();
     expect(getSeoForPathLang("/Landing", "en")).toBeNull();
+    expect(getSeoForPathLang("/Pricing", "en")).toBeNull();
+    expect(getSeoForPathLang("/HowItWorks", "en")).toBeNull();
+    expect(getSeoForPathLang("/admin/commercial-autonomy", "en")).toBeNull();
+  });
+
+  it("uses the full private-route robots directive", () => {
+    expect(NOINDEX_ROBOTS).toBe("noindex, nofollow, noarchive, nosnippet");
+    expect(seoMeta).toContain("NOINDEX_ROBOTS");
+    expect(seoMeta).toContain("removeElements");
   });
 
   it("dynamic /Help/:slug resolves and is indexable", () => {
@@ -236,6 +308,15 @@ describe("SEO copy — payments-first scope (no out-of-scope service claims)", (
         });
       });
     });
+  });
+
+  it("contains no provisional Copy metadata on any public route", () => {
+    Object.values(SEO_STATIC).forEach((cfg) => {
+      Object.values(cfg.title).forEach((value) => expect(value).not.toContain("(Copy)"));
+      Object.values(cfg.description).forEach((value) => expect(value).not.toContain("(Copy)"));
+    });
+    expect(SEO_STATIC["/pricing"].title.en).toBe("Pricing | CAMBRA");
+    expect(SEO_STATIC["/how-it-works"].title.en).toBe("How It Works | CAMBRA");
   });
 });
 
@@ -278,12 +359,27 @@ describe("Sitemap + robots sync with seoConfig", () => {
     expect(sitemap).not.toContain("/HealthCheck");
     expect(sitemap).not.toContain("/Landing");
     expect(sitemap).not.toContain("/landing");
+    expect(sitemap).not.toContain("/Pricing");
+    expect(sitemap).not.toContain("/HowItWorks");
   });
 
-  it("robots.txt protects /functions/ and /auth/", () => {
-    expect(robots).toContain("Disallow: /functions/");
-    expect(robots).toContain("Disallow: /auth/");
+  it("robots.txt protects every known private route family", () => {
+    [
+      "/admin", "/dev/", "/internal/", "/debug/", "/test/", "/staging/", "/api/",
+      "/functions/", "/auth/", "/Dashboard", "/Reports", "/Account", "/Invoices",
+      "/Vault", "/Referrals", "/ConnectTools", "/IntegrationsCallback", "/Onboarding",
+      "/BrandProfile", "/Results", "/LoginGate", "/OAuthConsent", "/HealthCheck",
+    ].forEach((route) => expect(robots).toContain(`Disallow: ${route}`));
     expect(robots).toContain("Sitemap: https://cambra.global/sitemap.xml");
+  });
+
+  it("never places a noindex route in either sitemap", async () => {
+    const { getSeoForPathLang } = await importSeoConfig();
+    const routes = [...sitemap.matchAll(/<loc>https:\/\/cambra\.global(\/[^<]*)?<\/loc>/g)]
+      .map((match) => match[1] || "/");
+    routes.forEach((route) => {
+      expect(getSeoForPathLang(route, "en")?.robots).toBe("index, follow");
+    });
   });
 
   it("publishes a canonical RFC 9116 security contact", () => {

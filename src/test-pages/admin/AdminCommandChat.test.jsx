@@ -74,7 +74,7 @@ beforeEach(async () => {
   vi.doMock("@/components/admin/chat/ChatMessageBubble", () => ({
     default: ({ message }) => React.createElement("div", { "data-testid": "bubble" }, message.content),
   }));
-  PageModule = await import("./AdminCommandChat.jsx");
+  PageModule = await import("../../pages/admin/AdminCommandChat.jsx");
 });
 
 afterEach(() => { vi.resetModules(); vi.restoreAllMocks(); });
@@ -207,7 +207,7 @@ describe("C2 — an unreadable list is not an empty history", () => {
     }));
     vi.doMock("react-router-dom", () => ({ useSearchParams: () => [new URLSearchParams()] }));
     vi.doMock("@/components/admin/chat/ChatMessageBubble", () => ({ default: () => null }));
-    const { default: AdminCommandChat } = await import("./AdminCommandChat.jsx");
+    const { default: AdminCommandChat } = await import("../../pages/admin/AdminCommandChat.jsx");
 
     render(React.createElement(AdminCommandChat));
     await waitFor(() => expect(screen.getByTestId("list-unavailable")).toBeTruthy());

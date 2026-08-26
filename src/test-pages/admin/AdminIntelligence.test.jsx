@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/api/base44Client", () => ({ base44: { functions: { invoke: mocks.invoke } } }));
 vi.mock("@/lib/i18n.jsx", () => ({ useTranslation: () => mocks.language }));
 
-import AdminIntelligence, { INTELLIGENCE_COPY } from "./AdminIntelligence.jsx";
+import AdminIntelligence, { INTELLIGENCE_COPY } from "../../pages/admin/AdminIntelligence.jsx";
 
 const emptySnapshot = {
   ok: true,

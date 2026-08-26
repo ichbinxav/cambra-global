@@ -30,8 +30,8 @@ vi.mock('@/api/base44Client', () => ({
 import { LanguageProvider } from '@/lib/i18n.jsx';
 import { AuthProvider } from '@/lib/AuthContext.jsx';
 import { MarketProvider } from '@/lib/publicExperience.jsx';
-import Dpa from './Dpa.jsx';
-import Subprocessors from './Subprocessors.jsx';
+import Dpa from '../pages/Dpa.jsx';
+import Subprocessors from '../pages/Subprocessors.jsx';
 import PublicFooter from '@/components/shared/PublicFooter.jsx';
 import LegalAcceptanceGate from '@/components/shared/LegalAcceptanceGate.jsx';
 import { CURRENT_DPA_VERSION, CURRENT_TERMS_VERSION } from '@/lib/legalVersions.js';

@@ -21,8 +21,8 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
 // /LoginGate on click).
 const NAV_PUBLIC = [
   { label: "Analyzer",     href: "/Analyzer",     icon: Activity },
-  { label: "How it works", href: "/HowItWorks",   icon: Sparkles },
-  { label: "Pricing",      href: "/Pricing",      icon: Tag },
+  { label: "How it works", href: "/how-it-works", icon: Sparkles },
+  { label: "Pricing",      href: "/pricing",      icon: Tag },
   { label: "Referrals",    href: "/Referrals",    icon: UserPlus },
   { label: "Partners",     href: "/Partners",     icon: Handshake },
   { label: "Help",         href: "/Help",         icon: HelpCircle },

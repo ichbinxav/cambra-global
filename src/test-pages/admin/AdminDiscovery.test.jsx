@@ -10,7 +10,7 @@ globalThis.React = React;
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock('@/api/base44Client', () => ({ base44: { functions: { invoke } } }));
 
-import AdminDiscovery from './AdminDiscovery.jsx';
+import AdminDiscovery from '../../pages/admin/AdminDiscovery.jsx';
 
 const plan = {
   plan_fingerprint: 'plan-fp-1',

@@ -73,8 +73,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
       label: t("nav_group_analyzer"),
       items: [
         { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: experience.analyzer.href, Icon: ScanSearch },
-        { label: t("nav_item_how"), sub: t("nav_item_how_sub"), href: "/HowItWorks", Icon: Workflow },
-        { label: t("nav_item_pricing"), sub: t("nav_item_pricing_sub"), href: "/Pricing", Icon: Receipt },
+        { label: t("nav_item_how"), sub: t("nav_item_how_sub"), href: "/how-it-works", Icon: Workflow },
+        { label: t("nav_item_pricing"), sub: t("nav_item_pricing_sub"), href: "/pricing", Icon: Receipt },
       ],
     },
     {

@@ -35,11 +35,14 @@ import {
 // prerender or SSR, documented as a manual step.
 
 const JSONLD_ID = "cambra-route-jsonld";
+const HOMEPAGE_JSONLD_ID = "cambra-home-jsonld";
 
 // Upsert a meta element selected by an attribute query. Never creates duplicates:
 // it reuses the existing element when present.
 function upsertMeta(selector, createAttrs) {
-  let el = document.querySelector(selector);
+  const matches = [...document.querySelectorAll(selector)];
+  let el = matches.shift();
+  matches.forEach((duplicate) => duplicate.remove());
   if (!el) {
     el = document.createElement("meta");
     for (const [k, v] of Object.entries(createAttrs)) el.setAttribute(k, v);
@@ -49,13 +52,26 @@ function upsertMeta(selector, createAttrs) {
 }
 
 function upsertLink(rel) {
-  let el = document.querySelector(`link[rel="${rel}"]`);
+  const matches = [...document.querySelectorAll(`link[rel="${rel}"]`)];
+  let el = matches.shift();
+  matches.forEach((duplicate) => duplicate.remove());
   if (!el) {
     el = document.createElement("link");
     el.setAttribute("rel", rel);
     document.head.appendChild(el);
   }
   return el;
+}
+
+function removeElements(selectors) {
+  selectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((el) => el.remove());
+  });
+}
+
+function setHomepageJsonLdActive(active) {
+  const script = document.getElementById(HOMEPAGE_JSONLD_ID);
+  if (script) script.type = active ? "application/ld+json" : "application/json";
 }
 
 function setJsonLd(schema) {
@@ -93,14 +109,32 @@ export default function SeoMeta() {
     const entry = getSeoForPathLang(pathname, lang);
     const isPublic = Boolean(entry);
     const robots = isPublic ? entry.robots || DEFAULT_ROBOTS : NOINDEX_ROBOTS;
-    const canonicalPath = isPublic ? entry.canonicalPath : pathname;
+
+    // Base44 can inject its own route schema. CAMBRA owns this metadata in one
+    // place, so remove stale platform blocks before writing the current route.
+    removeElements(['script[data-seo-source="builder"]']);
+
+    if (!isPublic) {
+      document.title = "CAMBRA";
+      upsertMeta('meta[name="description"]', { name: "description" })
+        .setAttribute("content", "CAMBRA — card payment cost audit for independent brands.");
+      upsertMeta('meta[name="robots"]', { name: "robots" }).setAttribute("content", robots);
+      removeElements([
+        'link[rel="canonical"]',
+        'meta[property^="og:"]',
+        'meta[name^="twitter:"]',
+      ]);
+      setHomepageJsonLdActive(false);
+      setJsonLd(null);
+      return;
+    }
+
+    const canonicalPath = entry.canonicalPath;
     const canonical = buildCanonicalUrl(canonicalPath);
 
-    const title = isPublic ? entry.title[lang] || entry.title.en : "CAMBRA";
-    const description = isPublic
-      ? entry.description[lang] || entry.description.en
-      : "CAMBRA — card payment cost audit for independent brands.";
-    const ogType = isPublic ? entry.ogType || "website" : "website";
+    const title = entry.title[lang] || entry.title.en;
+    const description = entry.description[lang] || entry.description.en;
+    const ogType = entry.ogType || "website";
     const ogImage = DEFAULT_OG_IMAGE;
     const ogLocale = OG_LOCALE[lang] || OG_LOCALE.en;
 
@@ -124,6 +158,7 @@ export default function SeoMeta() {
     upsertMeta('meta[name="twitter:title"]', { name: "twitter:title" }).setAttribute("content", title);
     upsertMeta('meta[name="twitter:description"]', { name: "twitter:description" }).setAttribute("content", description);
     upsertMeta('meta[name="twitter:image"]', { name: "twitter:image" }).setAttribute("content", ogImage);
+    upsertMeta('meta[name="twitter:url"]', { name: "twitter:url" }).setAttribute("content", canonical);
 
     // Canonical
     upsertLink("canonical").setAttribute("href", canonical);
@@ -133,8 +168,9 @@ export default function SeoMeta() {
 
     // JSON-LD — homepage keeps the static index.html Service schema; every
     // other public route gets a WebPage block. Non-public routes get none.
+    setHomepageJsonLdActive(canonicalPath === "/");
     let schema = null;
-    if (isPublic && canonicalPath !== "/") {
+    if (canonicalPath !== "/") {
       schema = webPageSchema({ title, description, canonical, lang });
     }
     setJsonLd(schema);

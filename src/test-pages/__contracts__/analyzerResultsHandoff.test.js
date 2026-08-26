@@ -1,3 +1,4 @@
+// Keep tests outside src/pages: Base44 registers every file there as a page.
 // analyzerResultsHandoff.test.js — CONTRACT TEST for the session handoff.
 //
 // This test exists BECAUSE of a real bug that shipped in the Chunk 6 cutover:
