@@ -15,9 +15,18 @@ import { buildApprovalBinding, buildCampaignPreflight } from './campaignPrefligh
 import { sha256 } from './intelligenceCore.ts';
 // COMMAND-C1: the FounderPermit authority now exists and is consulted here.
 import { evaluatePermit } from './founderPermitAuthority.ts';
+import { LEAD_LAUNCH_MARKETS, leadMarketScope, projectLeadPerson } from './leadPeopleProjection.ts';
 
 const clean=(value:any,max=240)=>String(value??'').replace(/[\r\n\t]+/g,' ').trim().slice(0,max);
 const unique=(value:any,max=1000)=>[...new Set((Array.isArray(value)?value:[]).map((item:any)=>clean(item,200)).filter(Boolean))].slice(0,max);
+
+function normalizeLaunchMarkets(value:any){
+  const requested=unique(value,60).map((market)=>leadMarketScope(market));
+  return{
+    markets:[...new Set(requested.filter((market)=>market.launch_market_eligible).map((market)=>market.country))],
+    rejected:[...new Set(requested.filter((market)=>!market.launch_market_eligible).map((market)=>market.observed_country||market.country))],
+  };
+}
 
 /**
  * COMMAND-C1: does a live FounderPermit actually cover approving THIS campaign?
@@ -133,37 +142,40 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
   }
 
   if(action==='builder_options'){
-    const [leadRead,policyRead,profileRead,controlRead]=await Promise.all([
+    const [leadRead,policyRead,profileRead,controlRead,audienceRead]=await Promise.all([
       readRuntimeRows({source:'campaign_builder_leads',limit:5000,read:()=>svc.entities.OutboundLead.list('-created_date',5000)}),
       readRuntimeRows({source:'campaign_builder_policies',limit:100,read:()=>svc.entities.CommercialPolicy.filter({engine:'merchant_acquisition'},'-updated_date',100)}),
       readRuntimeRows({source:'campaign_builder_profiles',limit:500,read:()=>svc.entities.OutboundSendingProfile.list('-created_date',500)}),
       readRuntimeRows({source:'campaign_builder_outbound_control',limit:2,read:()=>svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',2)}),
+      readRuntimeRows({source:'campaign_builder_saved_audiences',limit:500,read:()=>svc.entities.FounderSavedView.filter({view_type:'lead_audience'},'-updated_at',500)}),
     ]);
     const unavailable=[leadRead,policyRead,profileRead,controlRead].filter((read)=>read.status==='UNAVAILABLE');
     const search=clean(body?.search,160).toLowerCase();
     const country=clean(body?.country,20).toUpperCase();
-    const requestedLimit=Math.max(1,Math.min(500,Number(body?.limit)||500));
-    const projectedLeads=(leadRead.value||[]).map((lead:any)=>{
-      const email=clean(lead.contact_email,320).toLowerCase();
-      const hasEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      const blocked=lead.reservoir_state==='suppressed'||lead.outreach_eligibility==='BLOCKED'||lead.compliance_status==='BLOCKED';
-      const blockers=[
-        ...(blocked?['POLICY_BLOCKED']:[]),
-        ...(!hasEmail?['VERIFIED_EMAIL_REQUIRED']:[]),
-        ...(lead.contactability!=='PROFESSIONAL_VERIFIED'?['PROFESSIONAL_CONTACT_NOT_VERIFIED']:[]),
-        ...(lead.outreach_eligibility!=='ELIGIBLE'?['OUTREACH_ELIGIBILITY_NOT_CLEARED']:[]),
-        ...(lead.compliance_status!=='CLEARED'?['COMPLIANCE_NOT_CLEARED']:[]),
-      ];
-      const readiness=blocked?'BLOCKED':blockers.length?'REVIEW_REQUIRED':'READY';
+    const currentAudiences=(audienceRead.value||[]).filter((view:any)=>view.is_current!==false);
+    const requestedAudienceId=clean(body?.audience_id);
+    const selectedAudience=requestedAudienceId?currentAudiences.find((view:any)=>String(view.id)===requestedAudienceId):null;
+    if(requestedAudienceId&&!selectedAudience)return Response.json({ok:false,error:'lead_audience_not_found',external_send_performed:false},{status:404});
+    const audienceLeadIds=selectedAudience?new Set(unique(selectedAudience.config_json?.lead_ids,1000)):null;
+    const requestedLimit=Math.max(1,Math.min(1000,Number(body?.limit)||250));
+    const allProjectedLeads=(leadRead.value||[]).map((lead:any)=>{
+      const person=projectLeadPerson(lead);
       return{
         id:lead.id,company_name:lead.company_name||'',company_domain:lead.company_domain||'',canonical_company_key:lead.canonical_company_key||'',
-        contact_full_name:lead.contact_full_name||'',contact_title:lead.contact_title||'',contact_email:email,
-        country:lead.country||'',industry:lead.industry||'',score:Number(lead.icp_score??lead.score??lead.pre_score??0),
+        contact_full_name:person.person_name,contact_title:person.person_title,contact_email:person.person_email,
+        country:person.country,industry:person.industry,score:person.score,
+        personas:person.personas,primary_persona:person.primary_persona,
+        employee_range:person.employee_range,revenue_range:person.revenue_range,
+        estimated_gmv_min_eur:person.estimated_gmv_min_eur,estimated_gmv_max_eur:person.estimated_gmv_max_eur,gmv_truth_class:person.gmv_truth_class,
+        score_breakdown:person.score_breakdown,reasons:person.reasons,pipeline_state:person.pipeline_state,
         contactability:lead.contactability||'UNKNOWN',outreach_eligibility:lead.outreach_eligibility||'NOT_ASSESSED',
         compliance_status:lead.compliance_status||'NOT_ASSESSED',reservoir_state:lead.reservoir_state||'UNKNOWN',
-        readiness,blockers,
+        readiness:person.readiness,blockers:person.blockers,
+        launch_market_eligible:person.launch_market_eligible,market_scope_status:person.market_scope_status,
       };
-    }).filter((lead:any)=>{
+    });
+    const projectedLeads=allProjectedLeads.filter((lead:any)=>lead.launch_market_eligible===true).filter((lead:any)=>{
+      if(audienceLeadIds&&!audienceLeadIds.has(String(lead.id)))return false;
       if(country&&String(lead.country||'').toUpperCase()!==country)return false;
       if(!search)return true;
       return[lead.company_name,lead.company_domain,lead.contact_full_name,lead.contact_title,lead.contact_email]
@@ -174,17 +186,28 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     });
     const controls=controlRead.value||[];
     const outboundStatus=controlRead.status==='UNAVAILABLE'||controls.length!==1?'UNKNOWN':controls[0]?.acquisition_enabled===true?'ENABLED':'PAUSED_ZERO';
-    const sourceCoverage=runtimeSourceCoverage({leads:leadRead,policies:policyRead,sending_profiles:profileRead,outbound_control:controlRead});
+    const sourceCoverage=runtimeSourceCoverage({leads:leadRead,policies:policyRead,sending_profiles:profileRead,outbound_control:controlRead,audiences:audienceRead});
     const response={
       ok:unavailable.length===0,
       ...(unavailable.length?{error:'campaign_builder_sources_unavailable'}:{}),
       leads:projectedLeads.slice(0,requestedLimit),
-      lead_counts:{total:projectedLeads.length,returned:Math.min(projectedLeads.length,requestedLimit),ready:projectedLeads.filter((lead:any)=>lead.readiness==='READY').length,review_required:projectedLeads.filter((lead:any)=>lead.readiness==='REVIEW_REQUIRED').length,blocked:projectedLeads.filter((lead:any)=>lead.readiness==='BLOCKED').length},
+      lead_counts:{total:projectedLeads.length,returned:Math.min(projectedLeads.length,requestedLimit),ready:projectedLeads.filter((lead:any)=>lead.readiness==='READY').length,review_required:projectedLeads.filter((lead:any)=>lead.readiness==='REVIEW_REQUIRED').length,blocked:projectedLeads.filter((lead:any)=>lead.readiness==='BLOCKED').length,excluded_non_launch:allProjectedLeads.filter((lead:any)=>lead.launch_market_eligible!==true).length},
+      launch_markets:LEAD_LAUNCH_MARKETS,
       target_profiles:(policyRead.value||[]).map((policy:any)=>({
         id:policy.id,policy_key:policy.policy_key||'',version:policy.version||'',name:policy.icp_json?.profile_name||policy.version||policy.policy_key||policy.id,
-        status:policy.status||'unknown',countries:Array.isArray(policy.countries)?policy.countries:[],daily_send_limit:Number(policy.daily_send_limit||0),
+        status:policy.status||'unknown',countries:normalizeLaunchMarkets(policy.countries).markets,daily_send_limit:Number(policy.daily_send_limit||0),
         provider_mode:String(policy.icp_json?.provider_mode||'AUTO').toUpperCase(),sending_profile_keys:Array.isArray(policy.sending_profile_keys)?policy.sending_profile_keys:[],
       })),
+      audiences:currentAudiences.map((view:any)=>({
+        id:view.id,view_key:view.view_key||'',name:view.name||view.id,revision:Number(view.revision||1),
+        member_count:Number(view.config_json?.member_count||view.config_json?.lead_ids?.length||0),
+        readiness_counts:view.config_json?.readiness_counts||{},summary:view.config_json?.summary||'',
+      })),
+      selected_audience:selectedAudience?{
+        id:selectedAudience.id,name:selectedAudience.name||selectedAudience.id,
+        member_count:Number(selectedAudience.config_json?.member_count||selectedAudience.config_json?.lead_ids?.length||0),
+      }:null,
+      audiences_status:audienceRead.status,
       senders:(profileRead.value||[]).map((profile:any)=>({
         id:profile.id,profile_key:profile.profile_key||'',provider:profile.provider||'',domain:profile.domain||'',from_address:profile.from_address||'',
         status:profile.status||'unknown',current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),
@@ -203,11 +226,17 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     if(lane&&!(CAMPAIGN_LANES as readonly string[]).includes(lane))return Response.json({ok:false,error:'unsupported_campaign_lane',supported_lanes:CAMPAIGN_LANES},{status:400});
     const leadRead=await readRuntimeRows({source:'commercial_campaign_leads',limit:5000,read:()=>svc.entities.OutboundLead.list('-created_date',5000)});const all=requireRuntimeSource(leadRead);const byId=new Map(all.map((lead:any)=>[String(lead.id),lead]));const selected=leadIds.map((id)=>byId.get(id)).filter(Boolean);
     if(selected.length!==leadIds.length)return Response.json({ok:false,error:'unknown_or_unavailable_lead_ids',requested:leadIds.length,resolved:selected.length},{status:409});
+    const selectedPeople=selected.map(projectLeadPerson);const nonLaunch=selectedPeople.filter((lead:any)=>lead.launch_market_eligible!==true);
+    if(nonLaunch.length)return Response.json({ok:false,error:'campaign_contains_non_launch_leads',blocked_lead_ids:nonLaunch.map((lead:any)=>lead.id),active_launch_markets:LEAD_LAUNCH_MARKETS},{status:409});
     const blocked=selected.filter((lead:any)=>lead.reservoir_state==='suppressed'||lead.outreach_eligibility==='BLOCKED'||lead.compliance_status==='BLOCKED');
     if(blocked.length)return Response.json({ok:false,error:'campaign_contains_blocked_leads',blocked_lead_ids:blocked.map((lead:any)=>lead.id)},{status:409});
+    const requestedMarkets=Array.isArray(body.market_scope)?body.market_scope:selectedPeople.map((lead:any)=>lead.country);
+    const normalizedMarkets=normalizeLaunchMarkets(requestedMarkets);
+    if(normalizedMarkets.rejected.length)return Response.json({ok:false,error:'campaign_market_outside_active_launch',rejected_markets:normalizedMarkets.rejected,active_launch_markets:LEAD_LAUNCH_MARKETS},{status:409});
+    if(!normalizedMarkets.markets.length)return Response.json({ok:false,error:'campaign_market_scope_required',active_launch_markets:LEAD_LAUNCH_MARKETS},{status:400});
     const targetProfileId=clean(body.target_profile_id);const policyRead=targetProfileId?await readRuntimeSource<any>({source:'commercial_campaign_target_policy',read:()=>svc.entities.CommercialPolicy.get(targetProfileId),fallback:null}):null;const policy=policyRead?requireRuntimeSource(policyRead):null;
     const now=new Date().toISOString();const key=`campaign:${Date.now()}:${crypto.randomUUID().slice(0,8)}`;
-    const campaign=await svc.entities.CommercialCampaign.create({campaign_key:key,name:clean(body.name,120)||`CAMBRA campaign ${now.slice(0,10)}`,status:'DRAFT',...(lane?{lane}:{}),...(clean(body.objective_type,80)?{objective_type:clean(body.objective_type,80)}:{}),...(clean(body.description,500)?{description:clean(body.description,500)}:{}),...(Array.isArray(body.market_scope)?{market_scope:unique(body.market_scope,60)}:{}),...(Array.isArray(body.language_scope)?{language_scope:unique(body.language_scope,40)}:{}),target_profile_id:policy?.id||'',policy_key:policy?.policy_key||'',policy_version:String(policy?.version||''),provider_mode:['AUTO','APOLLO','INSTANTLY','MANUAL'].includes(String(body.provider_mode).toUpperCase())?String(body.provider_mode).toUpperCase():'AUTO',lead_ids:leadIds,audience_snapshot_json:{lead_count:selected.length,filters:body.filters&&typeof body.filters==='object'?body.filters:{},canonical_company_keys:selected.map((lead:any)=>lead.canonical_company_key).filter(Boolean),captured_at:now},strategy_ids:[],message_json:{status:'NOT_PREPARED'},sequence_json:{status:'NOT_PREPARED'},sending_profile_keys:unique(body.sending_profile_keys,100),capacity_preview_json:{capacity:0,blockers:['campaign_not_prepared','founder_pilot_authorization_required']},external_refs_json:{},blockers:['campaign_not_prepared','founder_pilot_authorization_required'],created_by:user.email||user.id,created_at:now,updated_at:now,metrics_json:{selected_leads:selected.length,sent:0,replied:0,meetings:0}});
+    const campaign=await svc.entities.CommercialCampaign.create({campaign_key:key,name:clean(body.name,120)||`CAMBRA campaign ${now.slice(0,10)}`,status:'DRAFT',...(lane?{lane}:{}),...(clean(body.objective_type,80)?{objective_type:clean(body.objective_type,80)}:{}),...(clean(body.description,500)?{description:clean(body.description,500)}:{}),market_scope:normalizedMarkets.markets,...(Array.isArray(body.language_scope)?{language_scope:unique(body.language_scope,40)}:{}),target_profile_id:policy?.id||'',policy_key:policy?.policy_key||'',policy_version:String(policy?.version||''),provider_mode:['AUTO','APOLLO','INSTANTLY','MANUAL'].includes(String(body.provider_mode).toUpperCase())?String(body.provider_mode).toUpperCase():'AUTO',lead_ids:leadIds,audience_snapshot_json:{lead_count:selected.length,filters:body.filters&&typeof body.filters==='object'?body.filters:{},canonical_company_keys:selected.map((lead:any)=>lead.canonical_company_key).filter(Boolean),market_scope_decision:'FOUNDER_ACTIVE_LAUNCH_10',captured_at:now},strategy_ids:[],message_json:{status:'NOT_PREPARED'},sequence_json:{status:'NOT_PREPARED'},sending_profile_keys:unique(body.sending_profile_keys,100),capacity_preview_json:{capacity:0,blockers:['campaign_not_prepared','founder_pilot_authorization_required']},external_refs_json:{},blockers:['campaign_not_prepared','founder_pilot_authorization_required'],created_by:user.email||user.id,created_at:now,updated_at:now,metrics_json:{selected_leads:selected.length,sent:0,replied:0,meetings:0}});
     try{await svc.entities.OperationalLog.create({event_type:'commercial_campaign_draft_created',message:campaign.name,data_json:{campaign_id:campaign.id,lead_count:selected.length,provider_mode:campaign.provider_mode,lane:lane||null,external_send_performed:false},actor_email:user.email,created_at:now});}
     catch(error:any){
       const blocker='campaign_audit_persistence_failed';
@@ -268,7 +297,12 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     if(body.lane!==undefined){const lane=clean(body.lane,60).toUpperCase();if(!(CAMPAIGN_LANES as readonly string[]).includes(lane))return Response.json({ok:false,error:'unsupported_campaign_lane',supported_lanes:CAMPAIGN_LANES},{status:400});patch.lane=lane;}
     if(body.objective_type!==undefined)patch.objective_type=clean(body.objective_type,80);
     if(body.description!==undefined)patch.description=clean(body.description,500);
-    if(Array.isArray(body.market_scope))patch.market_scope=unique(body.market_scope,60);
+    if(Array.isArray(body.market_scope)){
+      const normalized=normalizeLaunchMarkets(body.market_scope);
+      if(normalized.rejected.length)return Response.json({ok:false,error:'campaign_market_outside_active_launch',rejected_markets:normalized.rejected,active_launch_markets:LEAD_LAUNCH_MARKETS},{status:409});
+      if(!normalized.markets.length)return Response.json({ok:false,error:'campaign_market_scope_required',active_launch_markets:LEAD_LAUNCH_MARKETS},{status:400});
+      patch.market_scope=normalized.markets;
+    }
     if(Array.isArray(body.language_scope))patch.language_scope=unique(body.language_scope,40);
     const updated=await svc.entities.CommercialCampaign.update(campaign.id,patch);return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),external_send_performed:false});
   }
@@ -277,7 +311,28 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     if(body.confirmation!=='PREPARE_CAMPAIGN_FOR_PILOT')return Response.json({ok:false,error:'confirmation_required',expected_confirmation:'PREPARE_CAMPAIGN_FOR_PILOT'},{status:409});
     const [policyRead,profileRead,controlRead,leadRead]=await Promise.all([campaign.target_profile_id?readRuntimeSource<any>({source:'commercial_campaign_prepare_policy',read:()=>svc.entities.CommercialPolicy.get(campaign.target_profile_id),fallback:null}):null,readRuntimeRows({source:'commercial_campaign_prepare_profiles',limit:500,read:()=>svc.entities.OutboundSendingProfile.list('-created_date',500)}),readRuntimeRows({source:'commercial_campaign_prepare_control',read:()=>svc.entities.OutboundControl.filter({control_key:'global'},'-created_date',2)}),readRuntimeRows({source:'commercial_campaign_prepare_leads',limit:5000,read:()=>svc.entities.OutboundLead.list('-created_date',5000)})]);
     const policy=policyRead?requireRuntimeSource(policyRead):null,profiles=requireRuntimeSource(profileRead),controls=requireRuntimeSource(controlRead),leads=requireRuntimeSource(leadRead);if(controls.length!==1)return Response.json({ok:false,error:controls.length?'outbound_control_authority_ambiguous':'outbound_control_required'},{status:409});
-    const selected=new Set(campaign.lead_ids||[]);const eligible=leads.filter((lead:any)=>selected.has(lead.id)&&lead.outreach_eligibility==='ELIGIBLE'&&lead.compliance_status==='CLEARED'&&lead.contactability==='PROFESSIONAL_VERIFIED');const allowed=new Set(campaign.sending_profile_keys?.length?campaign.sending_profile_keys:policy?.sending_profile_keys||[]);const readyProfiles=profiles.filter((profile:any)=>(!allowed.size||allowed.has(profile.profile_key))&&readiness(profile).ready);const senderCap=readyProfiles.reduce((sum:number,profile:any)=>sum+readiness(profile).cap,0);const policyCap=Math.max(0,Number(policy?.daily_send_limit||0));const blockers:string[]=[];if(!policy)blockers.push('target_profile_required');if(!campaign.message_json||campaign.message_json.status==='NOT_PREPARED')blockers.push('campaign_message_required');if(!campaign.sequence_json||campaign.sequence_json.status==='NOT_PREPARED')blockers.push('campaign_sequence_required');if(!eligible.length)blockers.push('eligible_leads_required');if(!readyProfiles.length)blockers.push('ready_sending_profile_required');if(!policyCap)blockers.push('commercial_policy_daily_limit_missing');if(controls[0]?.acquisition_enabled!==true)blockers.push('founder_pilot_authorization_required');const capacity=Math.min(eligible.length,senderCap,policyCap);const hardBlockers=blockers.filter((value)=>value!=='founder_pilot_authorization_required');const status=hardBlockers.length?'DRAFT':'READY_FOR_PILOT';const updated=await svc.entities.CommercialCampaign.update(campaign.id,{status,capacity_preview_json:{capacity,eligible_leads:eligible.length,sender_cap:senderCap,policy_cap:policyCap,outbound_master_enabled:controls[0]?.acquisition_enabled===true,previewed_at:new Date().toISOString()},blockers,updated_at:new Date().toISOString()});return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),ready_for_pilot:status==='READY_FOR_PILOT',external_send_performed:false});
+    const selected=new Set(campaign.lead_ids||[]);
+    const selectedLeads=leads.filter((lead:any)=>selected.has(lead.id));
+    const outsideLaunch=selectedLeads.filter((lead:any)=>projectLeadPerson(lead).launch_market_eligible!==true);
+    const eligible=selectedLeads.filter((lead:any)=>projectLeadPerson(lead).launch_market_eligible===true&&lead.outreach_eligibility==='ELIGIBLE'&&lead.compliance_status==='CLEARED'&&lead.contactability==='PROFESSIONAL_VERIFIED');
+    const allowed=new Set(campaign.sending_profile_keys?.length?campaign.sending_profile_keys:policy?.sending_profile_keys||[]);
+    const readyProfiles=profiles.filter((profile:any)=>(!allowed.size||allowed.has(profile.profile_key))&&readiness(profile).ready);
+    const senderCap=readyProfiles.reduce((sum:number,profile:any)=>sum+readiness(profile).cap,0);
+    const policyCap=Math.max(0,Number(policy?.daily_send_limit||0));
+    const blockers:string[]=[];
+    if(!policy)blockers.push('target_profile_required');
+    if(!campaign.message_json||campaign.message_json.status==='NOT_PREPARED')blockers.push('campaign_message_required');
+    if(!campaign.sequence_json||campaign.sequence_json.status==='NOT_PREPARED')blockers.push('campaign_sequence_required');
+    if(outsideLaunch.length)blockers.push('campaign_contains_non_launch_leads');
+    if(!eligible.length)blockers.push('eligible_leads_required');
+    if(!readyProfiles.length)blockers.push('ready_sending_profile_required');
+    if(!policyCap)blockers.push('commercial_policy_daily_limit_missing');
+    if(controls[0]?.acquisition_enabled!==true)blockers.push('founder_pilot_authorization_required');
+    const capacity=Math.min(eligible.length,senderCap,policyCap);
+    const hardBlockers=blockers.filter((value)=>value!=='founder_pilot_authorization_required');
+    const status=hardBlockers.length?'DRAFT':'READY_FOR_PILOT';
+    const updated=await svc.entities.CommercialCampaign.update(campaign.id,{status,capacity_preview_json:{capacity,eligible_leads:eligible.length,excluded_non_launch:outsideLaunch.length,sender_cap:senderCap,policy_cap:policyCap,outbound_master_enabled:controls[0]?.acquisition_enabled===true,previewed_at:new Date().toISOString()},blockers,updated_at:new Date().toISOString()});
+    return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),ready_for_pilot:status==='READY_FOR_PILOT',external_send_performed:false});
   }
 
   if(action==='pause'){const updated=await svc.entities.CommercialCampaign.update(campaign.id,{status:'PAUSED',paused_at:new Date().toISOString(),updated_at:new Date().toISOString(),blockers:[...new Set([...(campaign.blockers||[]),'paused_by_founder'])]});return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),note:'Canonical campaign paused. Use global Founder Control for an immediate transport-wide stop.',external_send_performed:false});}
@@ -307,7 +362,7 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     const built=buildAudienceReconciliation(leads.map((lead:any)=>({
       subject_type:'OutboundLead',subject_id:lead.id,lead_id:lead.id,contact_id:lead.contact_id||lead.id,
       email:lead.contact_email,company_key:lead.canonical_company_key||lead.company_domain,
-      company_name:lead.company_name,company_domain:lead.company_domain,country:lead.country,
+      company_name:lead.company_name,company_domain:lead.company_domain,country:projectLeadPerson(lead).country,
       city:lead.city,language:lead.language,last_contacted_at:lead.last_contacted_at||lead.last_outbound_at,
       is_merchant:lead.is_merchant===true||Boolean(lead.brand_id),
       policy_blocked:lead.outreach_eligibility==='BLOCKED'||lead.compliance_status==='BLOCKED',

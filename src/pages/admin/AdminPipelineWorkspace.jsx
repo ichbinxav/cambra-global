@@ -34,6 +34,9 @@ const count = (value) => (known(value) ? new Intl.NumberFormat("en-US").format(N
 const eur = (minor) => (known(minor)
   ? new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(minor) / 100)
   : "—");
+const compactEur = (value) => (known(value)
+  ? new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 1 }).format(Number(value))
+  : "—");
 const humanize = (value) => String(value || "").replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const when = (value) => (value ? new Date(value).toLocaleString() : "—");
 
@@ -117,18 +120,22 @@ export function PipelineRowCard({ row, onPreview, busy }) {
         <div className="min-w-0">
           <button type="button" onClick={() => setOpen((value) => !value)}
             className="text-sm font-bold truncate hover:underline text-left">
-            {row.display_name}
+            {row.person_name || row.display_name}
           </button>
+          {row.person_name && <p className="mt-0.5 max-w-xl truncate text-[10px] text-muted-foreground">{[row.person_title, row.display_name].filter(Boolean).join(" · ")}</p>}
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             <Chip tone={row.stage_conflicted ? "CONFLICTED" : row.stage_confidence}>
               {row.stage ? humanize(row.stage) : "stage unreadable"}
             </Chip>
             <span className="text-[10px] text-muted-foreground">{humanize(row.lane)}</span>
             {row.country && <span className="text-[10px] text-muted-foreground">· {row.country}</span>}
+            {(row.personas || []).slice(0, 2).map((persona) => <Chip key={persona} tone="DERIVED">{humanize(persona)}</Chip>)}
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-sm font-black tabular-nums">{eur(row.expected_value_minor)}</p>
+          {row.entity_type === "OutboundLead"
+            ? <><p className="text-sm font-black tabular-nums">Score {row.score == null ? "—" : row.score}</p><p className="text-[10px] text-muted-foreground">GMV/TPV {row.gmv_truth_class === "ESTIMATED" ? `${compactEur(row.estimated_gmv_min_eur)}–${compactEur(row.estimated_gmv_max_eur)}` : "unknown"}</p></>
+            : <p className="text-sm font-black tabular-nums">{eur(row.expected_value_minor)}</p>}
           <p className="text-[10px] text-muted-foreground">{row.owner || "unassigned"}</p>
         </div>
       </div>
@@ -151,6 +158,9 @@ export function PipelineRowCard({ row, onPreview, busy }) {
         <div className="mt-3 border-t border-border/60 pt-3 space-y-2">
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 text-[11px]">
             <dt className="text-muted-foreground">Entity</dt><dd className="font-bold">{row.entity_type}</dd>
+            <dt className="text-muted-foreground">Person</dt><dd className="font-bold">{row.person_name || "—"}</dd>
+            <dt className="text-muted-foreground">Role</dt><dd className="font-bold">{row.person_title || "—"}</dd>
+            <dt className="text-muted-foreground">Contact</dt><dd className="font-bold">{row.person_email || "Verified email required"}</dd>
             <dt className="text-muted-foreground">Next action</dt><dd className="font-bold">{row.next_action || "—"}</dd>
             <dt className="text-muted-foreground">Due</dt><dd className="font-bold">{when(row.next_action_at)}</dd>
             <dt className="text-muted-foreground">Last activity</dt><dd className="font-bold">{when(row.last_activity_at)}</dd>
@@ -230,6 +240,10 @@ export default function AdminPipelineWorkspace() {
   const [quickView, setQuickView] = useState("all");
   const [query, setQuery] = useState("");
   const [lane, setLane] = useState("");
+  const [persona, setPersona] = useState("");
+  const [readiness, setReadiness] = useState("");
+  const [gmvBand, setGmvBand] = useState("");
+  const [minimumScore, setMinimumScore] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -239,7 +253,11 @@ export default function AdminPipelineWorkspace() {
     ...QUICK_VIEW_FILTERS[quickView],
     ...(query.trim() ? { q: query.trim() } : {}),
     ...(lane ? { lane } : {}),
-  }), [quickView, query, lane]);
+    ...(persona ? { persona } : {}),
+    ...(readiness ? { readiness } : {}),
+    ...(gmvBand ? { gmv_band: gmvBand } : {}),
+    ...(minimumScore ? { min_score: Number(minimumScore) } : {}),
+  }), [gmvBand, lane, minimumScore, persona, query, quickView, readiness]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -323,7 +341,7 @@ export default function AdminPipelineWorkspace() {
 
       <div className="flex items-center gap-2 flex-wrap">
         <input type="text" value={query} onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search company…"
+          placeholder="Search person, role or company…"
           className="h-8 px-3 rounded-lg border border-border/60 bg-background text-xs min-w-[200px]" />
         <select value={lane} onChange={(event) => setLane(event.target.value)}
           className="h-8 px-2 rounded-lg border border-border/60 bg-background text-xs">
@@ -331,6 +349,25 @@ export default function AdminPipelineWorkspace() {
           {(data?.filter_options?.lane || []).map((value) => (
             <option key={value} value={value}>{humanize(value)}</option>
           ))}
+        </select>
+        <select value={persona} onChange={(event) => setPersona(event.target.value)} aria-label="Pipeline role filter"
+          className="h-8 px-2 rounded-lg border border-border/60 bg-background text-xs">
+          <option value="">All people roles</option>
+          {(data?.filter_options?.persona || []).map((value) => <option key={value} value={value}>{humanize(value)}</option>)}
+        </select>
+        <select value={gmvBand} onChange={(event) => setGmvBand(event.target.value)} aria-label="Pipeline GMV filter"
+          className="h-8 px-2 rounded-lg border border-border/60 bg-background text-xs">
+          <option value="">Any estimated GMV / TPV</option>
+          <option value="UNDER_1M">Under €1M</option><option value="FROM_1M_TO_5M">€1M–€5M</option><option value="FROM_5M_TO_20M">€5M–€20M</option><option value="FROM_20M_TO_100M">€20M–€100M</option><option value="OVER_100M">€100M+</option><option value="UNKNOWN">Unknown</option>
+        </select>
+        <select value={minimumScore} onChange={(event) => setMinimumScore(event.target.value)} aria-label="Pipeline minimum score"
+          className="h-8 px-2 rounded-lg border border-border/60 bg-background text-xs">
+          <option value="">Any score</option>{[50, 60, 70, 80, 90].map((value) => <option key={value} value={value}>{value}+</option>)}
+        </select>
+        <select value={readiness} onChange={(event) => setReadiness(event.target.value)} aria-label="Pipeline readiness filter"
+          className="h-8 px-2 rounded-lg border border-border/60 bg-background text-xs">
+          <option value="">Any outreach readiness</option>
+          {(data?.filter_options?.readiness || []).map((value) => <option key={value} value={value}>{humanize(value)}</option>)}
         </select>
         <span className="text-[11px] text-muted-foreground">
           {data?.items?.total === null

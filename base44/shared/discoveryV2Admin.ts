@@ -36,6 +36,12 @@ import {
   selectLeadIntelligenceProvider,
 } from "./leadIntelligenceProvider.ts";
 import { safeBestEffort } from "./bestEffort.ts";
+import {
+  filterLeadPeople,
+  LEAD_LAUNCH_MARKETS,
+  LEAD_PERSONA_GROUPS,
+  projectLeadPerson,
+} from "./leadPeopleProjection.ts";
 
 const now = () => new Date().toISOString();
 const text = (value: any) => String(value ?? "").trim();
@@ -3307,6 +3313,198 @@ export async function processScheduledDiscoverySearches(service: any) {
   };
 }
 
+function compactLeadAudience(view: any) {
+  const config = view?.config_json || {};
+  return {
+    id: text(view?.id),
+    view_key: text(view?.view_key),
+    revision: number(view?.revision) || 1,
+    name: text(view?.name) || "Untitled audience",
+    member_count: number(config.member_count ?? config.lead_ids?.length),
+    lead_ids: list(config.lead_ids, 1000),
+    filters: config.filters && typeof config.filters === "object"
+      ? config.filters
+      : {},
+    readiness_counts: config.readiness_counts || {},
+    summary: text(config.summary),
+    source: text(config.source) || "DISCOVERY_PEOPLE",
+    created_at: view?.created_at || null,
+    updated_at: view?.updated_at || view?.created_at || null,
+  };
+}
+
+async function peoplePortfolio(service: any, input: any) {
+  const leadRead = await readRuntimeRows({
+    source: "discovery_people_leads",
+    limit: 5000,
+    read: () => service.entities.OutboundLead.list("-created_date", 5000),
+  });
+  if (leadRead.status === "UNAVAILABLE") {
+    return {
+      ok: false,
+      error: "discovery_people_source_unavailable",
+      data_status: leadRead.status,
+      source_coverage: runtimeSourceCoverage({ leads: leadRead }),
+    };
+  }
+  const projected = (leadRead.value || []).map(projectLeadPerson);
+  const all = projected.filter((row: any) => row.launch_market_eligible === true);
+  const excludedNonLaunch = projected.filter((row: any) => row.launch_market_eligible !== true);
+  const filtered = filterLeadPeople(all, input).sort((left: any, right: any) =>
+    Number(right.score ?? -1) - Number(left.score ?? -1)
+    || Number(Boolean(right.person_name)) - Number(Boolean(left.person_name))
+    || String(left.company_name || "").localeCompare(String(right.company_name || ""), "en")
+    || String(left.person_name || "").localeCompare(String(right.person_name || ""), "en")
+  );
+  const requestedLimit = Math.max(1, Math.min(250, number(input.limit) || 120));
+  const personaCounts = Object.fromEntries(LEAD_PERSONA_GROUPS.map((persona) => [
+    persona,
+    all.filter((row: any) => row.personas.includes(persona)).length,
+  ]));
+  return {
+    ok: true,
+    data_status: leadRead.status,
+    source_coverage: runtimeSourceCoverage({ leads: leadRead }),
+    items: filtered.slice(0, requestedLimit),
+    matched_ids: filtered.slice(0, 1000).map((row: any) => row.id),
+    total: filtered.length,
+    returned: Math.min(filtered.length, requestedLimit),
+    selection_limit: 1000,
+    metrics: {
+      people_rows: all.filter((row: any) => row.person_name).length,
+      named_contacts: all.filter((row: any) => row.person_name && row.person_title).length,
+      high_fit: all.filter((row: any) => row.score !== null && row.score >= 70).length,
+      send_ready: all.filter((row: any) => row.readiness === "READY").length,
+      gmv_known: all.filter((row: any) => row.gmv_truth_class === "ESTIMATED").length,
+      excluded_non_launch: excludedNonLaunch.length,
+    },
+    filter_options: {
+      personas: LEAD_PERSONA_GROUPS,
+      countries: LEAD_LAUNCH_MARKETS,
+      gmv_bands: [
+        "UNDER_1M", "FROM_1M_TO_5M", "FROM_5M_TO_20M",
+        "FROM_20M_TO_100M", "OVER_100M", "UNKNOWN",
+      ],
+      readiness: ["READY", "REVIEW_REQUIRED", "BLOCKED"],
+      pipeline_state: ["DISCOVERED", "IN_PIPELINE", "WON", "EXCLUDED"],
+    },
+    facet_counts: { personas: personaCounts },
+    market_scope: {
+      decision: "FOUNDER_DECIDED",
+      active_launch_count: LEAD_LAUNCH_MARKETS.length,
+      active_launch_markets: LEAD_LAUNCH_MARKETS,
+      excluded_non_launch: excludedNonLaunch.length,
+    },
+    truth_boundary: "People and titles are observed OutboundLead fields. Persona labels and scores are derived. GMV/TPV is shown only when an explicit estimate exists; unknown remains unknown. Operational discovery is limited to the 10 founder-approved launch markets.",
+  };
+}
+
+async function listLeadAudiences(service: any) {
+  const viewRead = await readRuntimeRows({
+    source: "discovery_people_audiences",
+    limit: 500,
+    read: () => service.entities.FounderSavedView.filter(
+      { view_type: "lead_audience" }, "-updated_at", 500,
+    ),
+  });
+  return {
+    ok: viewRead.status !== "UNAVAILABLE",
+    ...(viewRead.status === "UNAVAILABLE"
+      ? { error: "lead_audience_source_unavailable" }
+      : {}),
+    data_status: viewRead.status,
+    source_coverage: runtimeSourceCoverage({ audiences: viewRead }),
+    audiences: (viewRead.value || []).filter((view: any) => view.is_current !== false)
+      .map(compactLeadAudience),
+  };
+}
+
+async function saveLeadAudience(service: any, user: any, input: any) {
+  const name = text(input.name).slice(0, 120);
+  const leadIds = list(input.lead_ids, 1000).sort();
+  if (!name || !leadIds.length) {
+    return response({ ok: false, error: "audience_name_and_leads_required" }, 400);
+  }
+  const leadRead = await readRuntimeRows({
+    source: "discovery_people_audience_members",
+    limit: 5000,
+    read: () => service.entities.OutboundLead.list("-created_date", 5000),
+  });
+  const allLeads = requireRuntimeSource(leadRead);
+  const byId = new Map(allLeads.map((lead: any) => [text(lead.id), lead]));
+  const selected = leadIds.map((id) => byId.get(id)).filter(Boolean);
+  if (selected.length !== leadIds.length) {
+    return response({
+      ok: false,
+      error: "audience_contains_unknown_leads",
+      requested: leadIds.length,
+      resolved: selected.length,
+    }, 409);
+  }
+  const projected = selected.map(projectLeadPerson);
+  const nonLaunch = projected.filter((row: any) => row.launch_market_eligible !== true);
+  if (nonLaunch.length) {
+    return response({
+      ok: false,
+      error: "audience_contains_non_launch_leads",
+      blocked_lead_ids: nonLaunch.map((row: any) => row.id),
+      active_launch_markets: LEAD_LAUNCH_MARKETS,
+    }, 409);
+  }
+  const filters = input.filters && typeof input.filters === "object"
+    ? input.filters
+    : {};
+  const configJson = {
+    source: "DISCOVERY_PEOPLE",
+    audience_kind: "PEOPLE_SNAPSHOT",
+    lead_ids: leadIds,
+    member_count: leadIds.length,
+    filters,
+    readiness_counts: {
+      READY: projected.filter((row: any) => row.readiness === "READY").length,
+      REVIEW_REQUIRED: projected.filter((row: any) => row.readiness === "REVIEW_REQUIRED").length,
+      BLOCKED: projected.filter((row: any) => row.readiness === "BLOCKED").length,
+    },
+    market_scope: {
+      decision: "FOUNDER_DECIDED",
+      active_launch_markets: LEAD_LAUNCH_MARKETS,
+    },
+    summary: [
+      text(filters.persona), text(filters.country), text(filters.gmv_band),
+      filters.min_score ? `score >= ${number(filters.min_score)}` : "",
+    ].filter(Boolean).join(" · ") || `${leadIds.length} selected people`,
+  };
+  const viewKey = text(input.view_key) || `lead-audience:${crypto.randomUUID()}`;
+  const existing = (await service.entities.FounderSavedView.filter(
+    { view_key: viewKey }, "-updated_at", 100,
+  )).find((row: any) => row.is_current !== false) || null;
+  if (existing && JSON.stringify(existing.config_json || {}) === JSON.stringify(configJson)) {
+    return response({ ok: true, audience: compactLeadAudience(existing), idempotent: true });
+  }
+  const revision = existing ? number(existing.revision) + 1 : 1;
+  const at = now();
+  const saved = await service.entities.FounderSavedView.create({
+    view_key: viewKey,
+    name,
+    view_type: "lead_audience",
+    config_json: configJson,
+    revision,
+    is_current: true,
+    previous_revision_id: existing?.id || null,
+    immutable_config_hash: await sha256({ view_key: viewKey, revision, config_json: configJson }),
+    created_by: user?.email || user?.id || "admin",
+    created_at: at,
+    updated_at: at,
+  });
+  if (existing) {
+    await service.entities.FounderSavedView.update(existing.id, {
+      is_current: false,
+      updated_at: at,
+    });
+  }
+  return response({ ok: true, audience: compactLeadAudience(saved), external_send_performed: false });
+}
+
 export async function handleDiscoveryV2Admin(
   service: any,
   user: any,
@@ -3327,6 +3525,9 @@ export async function handleDiscoveryV2Admin(
       provider_usage: context.provider_usage,
     });
   }
+  if (action === "people") return response(await peoplePortfolio(service, body));
+  if (action === "audiences") return response(await listLeadAudiences(service));
+  if (action === "save_audience") return saveLeadAudience(service, user, body);
   if (action === "plan") return response(await plan(service, body));
   if (action === "start") return startRun(service, user, body);
   if (action === "advance") {

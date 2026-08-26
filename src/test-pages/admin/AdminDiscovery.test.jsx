@@ -54,6 +54,8 @@ describe('AdminDiscovery operational truth', () => {
     expect(ui).toContain("call('run',{run_id:runId})");
     expect(ui).toContain("call('results',{run_id:runId");
     expect(ui).toContain('CAMBRA backend owns execution; this page only observes the Run. You can safely close the browser.');
+    expect(ui).toContain("MERCHANT:{filters:{country:['ES']");
+    expect(ui).toContain("PARTNER:{filters:{country:['ES']");
   });
 
   it('uses truthful Partner and Provider search labels and never loads the global warehouse as Run results', async () => {

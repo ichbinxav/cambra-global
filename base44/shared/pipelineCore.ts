@@ -29,6 +29,7 @@ import {
   materialKindsFor, LANES, laneAuthority,
   PIPELINE_STAGE_REGISTRY_VERSION, resolveStage, stagesFor, transitionDirection, type Lane,
 } from './pipelineStageRegistry.ts';
+import { matchesLeadGmvBand, projectLeadPerson } from './leadPeopleProjection.ts';
 
 export const PIPELINE_CORE_VERSION = 'pipeline-core-1.0.0';
 
@@ -56,6 +57,16 @@ export type PipelineRow = {
   entity_type: string;
   lane: Lane;
   display_name: string;
+  person_name: string | null;
+  person_title: string | null;
+  person_email: string | null;
+  personas: string[];
+  score: number | null;
+  estimated_gmv_min_eur: number | null;
+  estimated_gmv_max_eur: number | null;
+  gmv_truth_class: string;
+  readiness: string | null;
+  readiness_blockers: string[];
   canonical_company_key: string | null;
   country: string | null;
   stage: string | null;
@@ -112,11 +123,22 @@ function attentionReasons(row: any, reading: ReturnType<typeof resolveStage>, no
 function projectRow(lane: Lane, row: any, now: string): PipelineRow {
   const spec = LANE_READS[lane];
   const reading = resolveStage(lane, row);
+  const person = lane === 'MERCHANT_ACQUISITION' ? projectLeadPerson(row) : null;
   return {
     canonical_id: text(row?.id),
     entity_type: spec.entity,
     lane,
     display_name: spec.name(row),
+    person_name: person?.person_name || null,
+    person_title: person?.person_title || null,
+    person_email: person?.person_email || null,
+    personas: person?.personas || [],
+    score: person?.score ?? null,
+    estimated_gmv_min_eur: person?.estimated_gmv_min_eur ?? null,
+    estimated_gmv_max_eur: person?.estimated_gmv_max_eur ?? null,
+    gmv_truth_class: person?.gmv_truth_class || 'UNKNOWN',
+    readiness: person?.readiness || null,
+    readiness_blockers: person?.blockers || [],
     canonical_company_key: spec.company(row),
     country: text(row?.country) || null,
     stage: reading.stage,
@@ -152,6 +174,13 @@ export function applyFilters(rows: PipelineRow[], filters: Record<string, unknow
   if (countries) out = out.filter((row) => row.country !== null && countries.includes(row.country));
   const owners = wanted('owner');
   if (owners) out = out.filter((row) => row.owner !== null && owners.includes(row.owner));
+  const personas = wanted('persona');
+  if (personas) out = out.filter((row) => row.personas.some((persona) => personas.includes(persona)));
+  const readiness = wanted('readiness');
+  if (readiness) out = out.filter((row) => row.readiness !== null && readiness.includes(row.readiness));
+  if (text(filters?.gmv_band)) out = out.filter((row) => matchesLeadGmvBand(row, filters.gmv_band));
+  const minScore = num(filters?.min_score);
+  if (minScore !== null) out = out.filter((row) => row.score !== null && row.score >= minScore);
 
   if (filters?.needs_attention === true) out = out.filter((row) => row.attention_reasons.length > 0);
   if (filters?.unassigned === true) out = out.filter((row) => row.owner === null);
@@ -168,7 +197,10 @@ export function applyFilters(rows: PipelineRow[], filters: Record<string, unknow
   if (query) {
     out = out.filter((row) =>
       row.display_name.toLowerCase().includes(query)
-      || text(row.canonical_company_key).toLowerCase().includes(query));
+      || text(row.canonical_company_key).toLowerCase().includes(query)
+      || text(row.person_name).toLowerCase().includes(query)
+      || text(row.person_title).toLowerCase().includes(query)
+      || text(row.person_email).toLowerCase().includes(query));
   }
   return out;
 }
@@ -244,6 +276,9 @@ export async function buildPipelinePortfolio(input: {
       stage: lanes.flatMap((lane) => stagesFor(lane).map((stage) => stage.key)),
       country: [...new Set(rows.map((row) => row.country).filter(Boolean))].sort(),
       owner: [...new Set(rows.map((row) => row.owner).filter(Boolean))].sort(),
+      persona: [...new Set(rows.flatMap((row) => row.personas))].sort(),
+      readiness: [...new Set(rows.map((row) => row.readiness).filter(Boolean))].sort(),
+      gmv_band: ['UNDER_1M', 'FROM_1M_TO_5M', 'FROM_5M_TO_20M', 'FROM_20M_TO_100M', 'OVER_100M', 'UNKNOWN'],
       sort: Object.keys(SORTS),
     },
     rows: page,

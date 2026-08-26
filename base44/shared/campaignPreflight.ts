@@ -7,6 +7,8 @@
 // could not read, an authority that does not exist yet) is NEVER treated as a
 // pass — the campaign cannot be approved until it is resolved.
 
+import { commercialMarketDecision } from './marketLaunchScope.ts';
+
 export const CAMPAIGN_PREFLIGHT_VERSION = 'campaign-preflight-1.0.0';
 
 export type PreflightStatus = 'PASS' | 'BLOCKED' | 'REVIEW_REQUIRED' | 'UNKNOWN';
@@ -122,12 +124,26 @@ export function buildCampaignPreflight(input: PreflightInput) {
   }
 
   // --- Market authority ------------------------------------------------
-  // Market scope was already enforced per recipient by the audience builder;
-  // here we check the campaign-level declared scope is not empty.
+  // Recipient gating is not enough: the campaign declaration itself must be
+  // canonical and confined to the founder-approved active launch perimeter.
   const markets = Array.isArray(campaign.market_scope) ? campaign.market_scope.filter(Boolean) : [];
-  dimensions.push(markets.length
-    ? dimension('market_authority', 'PASS', 'Campaign declares an explicit market scope.', { markets })
-    : dimension('market_authority', 'REVIEW_REQUIRED', 'Campaign declares no market scope; per-recipient market gating still applies.'));
+  const marketDecisions = markets.map((market: unknown) => commercialMarketDecision(market));
+  const blockedMarkets = marketDecisions.filter((decision) => !decision.ok);
+  if (!markets.length) {
+    dimensions.push(dimension('market_authority', 'REVIEW_REQUIRED', 'Campaign declares no market scope; per-recipient market gating still applies.'));
+  } else if (blockedMarkets.length) {
+    dimensions.push(dimension('market_authority', 'BLOCKED', 'Campaign includes a market outside the 10 founder-approved launch markets.', {
+      markets,
+      blocked_markets: blockedMarkets.map((decision) => ({
+        market: decision.iso2,
+        reason: decision.blocked_reason || decision.error,
+      })),
+    }));
+  } else {
+    dimensions.push(dimension('market_authority', 'PASS', 'Every declared market is inside the 10 founder-approved launch markets.', {
+      markets: marketDecisions.map((decision) => decision.iso2),
+    }));
+  }
 
   // --- Commercial policy -----------------------------------------------
   if (input.policyAvailable === false) {

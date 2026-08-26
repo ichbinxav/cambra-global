@@ -114,7 +114,25 @@ function buildSequence(form) {
   };
 }
 
-export default function CampaignBuilder({ call, onCreated, onCancel }) {
+const GMV_FILTERS = {
+  UNDER_1M: [0, 1_000_000],
+  FROM_1M_TO_5M: [1_000_000, 5_000_000],
+  FROM_5M_TO_20M: [5_000_000, 20_000_000],
+  FROM_20M_TO_100M: [20_000_000, 100_000_000],
+  OVER_100M: [100_000_000, Number.POSITIVE_INFINITY],
+};
+
+function matchesGmv(lead, filter) {
+  if (filter === "ALL") return true;
+  const min = lead.estimated_gmv_min_eur !== null && lead.estimated_gmv_min_eur !== "" && Number.isFinite(Number(lead.estimated_gmv_min_eur)) ? Number(lead.estimated_gmv_min_eur) : null;
+  const max = lead.estimated_gmv_max_eur !== null && lead.estimated_gmv_max_eur !== "" && Number.isFinite(Number(lead.estimated_gmv_max_eur)) ? Number(lead.estimated_gmv_max_eur) : null;
+  if (filter === "UNKNOWN") return min === null && max === null;
+  if (min === null && max === null) return false;
+  const [bandMin, bandMax] = GMV_FILTERS[filter] || [0, Number.POSITIVE_INFINITY];
+  return (max ?? min ?? 0) >= bandMin && (min ?? max ?? 0) < bandMax;
+}
+
+export default function CampaignBuilder({ call, onCreated, onCancel, initialAudienceId = "" }) {
   const [options, setOptions] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -125,13 +143,24 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
   const [selectedSenders, setSelectedSenders] = useState(() => new Set());
   const [leadSearch, setLeadSearch] = useState("");
   const [leadFilter, setLeadFilter] = useState("ALL");
+  const [selectedAudienceId, setSelectedAudienceId] = useState(initialAudienceId);
+  const [personaFilter, setPersonaFilter] = useState("ALL");
+  const [countryFilter, setCountryFilter] = useState("ALL");
+  const [gmvFilter, setGmvFilter] = useState("ALL");
+  const [minimumScore, setMinimumScore] = useState("ALL");
 
-  const loadOptions = async () => {
+  const loadOptions = async (audienceId = selectedAudienceId) => {
     setLoading(true);
     setError("");
     try {
-      const next = await call("builder_options", { limit: 500 });
+      const next = await call("builder_options", { limit: audienceId ? 1000 : 250, ...(audienceId ? { audience_id: audienceId } : {}) });
       setOptions(next);
+      setSelectedAudienceId(audienceId || "");
+      if (audienceId) {
+        setSelectedLeads(new Set((next.leads || []).filter((lead) => lead.readiness !== "BLOCKED").map((lead) => lead.id)));
+      } else {
+        setSelectedLeads(new Set());
+      }
       const firstProfile = next.target_profiles?.[0];
       if (firstProfile) {
         setForm((current) => ({
@@ -148,22 +177,27 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
     }
   };
 
-  useEffect(() => { loadOptions(); }, []);
+  useEffect(() => { loadOptions(initialAudienceId); }, []);
 
   const visibleLeads = useMemo(() => {
     const search = leadSearch.trim().toLowerCase();
     return (options?.leads || []).filter((lead) => {
       if (leadFilter !== "ALL" && lead.readiness !== leadFilter) return false;
+      if (personaFilter !== "ALL" && !(lead.personas || []).includes(personaFilter)) return false;
+      if (countryFilter !== "ALL" && String(lead.country || "").toUpperCase() !== countryFilter) return false;
+      if (minimumScore !== "ALL" && (lead.score === null || lead.score === undefined || Number(lead.score) < Number(minimumScore))) return false;
+      if (!matchesGmv(lead, gmvFilter)) return false;
       if (!search) return true;
       return [lead.company_name, lead.company_domain, lead.contact_full_name, lead.contact_title, lead.contact_email]
         .some((value) => String(value || "").toLowerCase().includes(search));
     });
-  }, [leadFilter, leadSearch, options]);
+  }, [countryFilter, gmvFilter, leadFilter, leadSearch, minimumScore, options, personaFilter]);
 
   const selectedLeadRows = useMemo(() => (options?.leads || []).filter((lead) => selectedLeads.has(lead.id)), [options, selectedLeads]);
   const readySelected = selectedLeadRows.filter((lead) => lead.readiness === "READY").length;
+  const selectedMarkets = form.market_scope.split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
   const hasUnsubscribe = /unsubscribe|desabonn|baja|darse de baja/i.test(form.text_body);
-  const requiredMissing = !form.name.trim() || !form.target_profile_id || !selectedLeads.size || !selectedSenders.size || !form.subject.trim() || !form.text_body.trim() || !hasUnsubscribe;
+  const requiredMissing = !form.name.trim() || !form.target_profile_id || !selectedMarkets.length || !selectedLeads.size || !selectedSenders.size || !form.subject.trim() || !form.text_body.trim() || !hasUnsubscribe;
 
   const selectProfile = (profileId) => {
     const profile = options?.target_profiles?.find((row) => row.id === profileId);
@@ -184,6 +218,12 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
       next.has(lead.id) ? next.delete(lead.id) : next.add(lead.id);
       return next;
     });
+  };
+
+  const toggleMarket = (market) => {
+    const next = new Set(selectedMarkets);
+    next.has(market) ? next.delete(market) : next.add(market);
+    setForm((current) => ({ ...current, market_scope: [...next].join(",") }));
   };
 
   const toggleSender = (key) => {
@@ -221,7 +261,15 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
         language_scope: [form.language],
         lead_ids: [...selectedLeads],
         sending_profile_keys: [...selectedSenders],
-        filters: { source: "admin_campaign_builder", lead_filter: leadFilter },
+        filters: {
+          source: "admin_campaign_builder",
+          audience_id: selectedAudienceId || null,
+          lead_filter: leadFilter,
+          persona: personaFilter,
+          country: countryFilter,
+          gmv_band: gmvFilter,
+          minimum_score: minimumScore,
+        },
       });
       campaignId = created.campaign.id;
       setPartialCampaignId(campaignId);
@@ -297,7 +345,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
         <p className="text-xs font-black">Campaign builder unavailable</p>
         <p className="mt-1 text-[11px]">{error || "The canonical campaign sources could not be read."}</p>
-        <button onClick={loadOptions} className="mt-3 inline-flex h-9 items-center gap-2 rounded-xl border border-amber-300 px-3 text-xs font-bold"><RefreshCw size={12} />Retry</button>
+        <button onClick={() => loadOptions(selectedAudienceId)} className="mt-3 inline-flex h-9 items-center gap-2 rounded-xl border border-amber-300 px-3 text-xs font-bold"><RefreshCw size={12} />Retry</button>
       </div>
     );
   }
@@ -330,7 +378,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
           <label><Label>Lane</Label><select aria-label="Campaign lane" value={form.lane} onChange={(event) => setForm({ ...form, lane: event.target.value })} className={inputClass}><option value="MERCHANT_ACQUISITION">Merchant acquisition</option><option value="PARTNER_ACQUISITION">Partner acquisition</option><option value="PROVIDER_RELATIONS">Provider relations</option><option value="MERCHANT_LIFECYCLE">Merchant lifecycle</option></select></label>
           <label><Label>Objective</Label><input aria-label="Campaign objective" value={form.objective_type} onChange={(event) => setForm({ ...form, objective_type: event.target.value })} className={inputClass} /></label>
           <label className="md:col-span-2"><Label>Target profile</Label><select aria-label="Target profile" value={form.target_profile_id} onChange={(event) => selectProfile(event.target.value)} className={inputClass}><option value="">Choose a target profile</option>{options.target_profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} / {profile.status} / {(profile.countries || []).join(", ") || "no market"}</option>)}</select></label>
-          <label><Label>Markets</Label><input aria-label="Campaign markets" value={form.market_scope} onChange={(event) => setForm({ ...form, market_scope: event.target.value })} placeholder="ES,FR" className={inputClass} /></label>
+          <fieldset aria-label="Campaign markets" className="md:col-span-2 xl:col-span-2"><Label hint="exactly 10 launch markets">Markets</Label><div className="flex min-h-10 flex-wrap gap-1.5 rounded-xl border bg-background p-2">{(options.launch_markets || []).map((market) => <button key={market} type="button" aria-pressed={selectedMarkets.includes(market)} onClick={() => toggleMarket(market)} className={`rounded-lg border px-2.5 py-1 text-[10px] font-black ${selectedMarkets.includes(market) ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-border bg-card text-muted-foreground"}`}>{market}</button>)}</div></fieldset>
           <label><Label>Language</Label><select aria-label="Campaign language" value={form.language} onChange={(event) => setForm({ ...form, language: event.target.value })} className={inputClass}><option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="it">Italian</option><option value="pt">Portuguese</option></select></label>
           <label className="md:col-span-2 xl:col-span-4"><Label>Description <span className="font-normal normal-case">optional</span></Label><input aria-label="Campaign description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Internal context for this campaign" className={inputClass} /></label>
         </div>
@@ -339,16 +387,22 @@ export default function CampaignBuilder({ call, onCreated, onCancel }) {
       <section className="rounded-2xl border bg-card p-4 md:p-5">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-xs font-black text-background">2</span><div><h3 className="text-sm font-black">Add leads</h3><p className="text-[10px] text-muted-foreground">{selectedLeads.size} selected / {readySelected} currently send-ready.</p></div></div>
-          <div className="flex flex-wrap gap-2">
-            <div className="flex h-9 items-center rounded-xl border bg-background px-2"><Search size={12} /><input aria-label="Search campaign leads" value={leadSearch} onChange={(event) => setLeadSearch(event.target.value)} placeholder="Company, person or email" className="h-full w-48 bg-transparent px-2 text-xs outline-none" /></div>
-            <select aria-label="Lead readiness filter" value={leadFilter} onChange={(event) => setLeadFilter(event.target.value)} className="h-9 rounded-xl border bg-background px-2 text-xs"><option value="ALL">All leads</option><option value="READY">Ready</option><option value="REVIEW_REQUIRED">Needs review</option><option value="BLOCKED">Blocked</option></select>
-            <button onClick={selectVisible} className="h-9 rounded-xl border px-3 text-xs font-bold">Select visible</button>
-          </div>
+          <button onClick={selectVisible} className="h-9 rounded-xl border px-3 text-xs font-bold">Select visible</button>
         </div>
+        <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-7">
+          <label className="space-y-1 md:col-span-2"><Label>Saved audience</Label><select aria-label="Saved campaign audience" value={selectedAudienceId} onChange={(event) => loadOptions(event.target.value)} className={inputClass}><option value="">All available people</option>{(options.audiences || []).map((audience) => <option key={audience.id} value={audience.id}>{audience.name} · {audience.member_count} people</option>)}</select></label>
+          <label className="space-y-1"><Label>Role</Label><select aria-label="Campaign role filter" value={personaFilter} onChange={(event) => setPersonaFilter(event.target.value)} className={inputClass}><option value="ALL">All roles</option><option value="FOUNDER">Founders / owners</option><option value="EXECUTIVE">CEOs / executives</option><option value="FINANCE">CFO / finance</option><option value="PROCUREMENT">Procurement / buyer</option><option value="PAYMENTS">Payments</option><option value="ECOMMERCE">Ecommerce</option><option value="OPERATIONS">Operations</option><option value="PARTNERSHIPS">Partnerships / BD</option></select></label>
+          <label className="space-y-1"><Label>Country</Label><select aria-label="Campaign country filter" value={countryFilter} onChange={(event) => setCountryFilter(event.target.value)} className={inputClass}><option value="ALL">All launch markets</option>{(options.launch_markets || []).map((country) => <option key={country}>{country}</option>)}</select></label>
+          <label className="space-y-1"><Label>Est. GMV / TPV</Label><select aria-label="Campaign GMV filter" value={gmvFilter} onChange={(event) => setGmvFilter(event.target.value)} className={inputClass}><option value="ALL">Any size</option><option value="UNDER_1M">Under €1M</option><option value="FROM_1M_TO_5M">€1M–€5M</option><option value="FROM_5M_TO_20M">€5M–€20M</option><option value="FROM_20M_TO_100M">€20M–€100M</option><option value="OVER_100M">€100M+</option><option value="UNKNOWN">Unknown</option></select></label>
+          <label className="space-y-1"><Label>Minimum score</Label><select aria-label="Campaign minimum score" value={minimumScore} onChange={(event) => setMinimumScore(event.target.value)} className={inputClass}><option value="ALL">Any score</option>{[50, 60, 70, 80, 90].map((value) => <option key={value}>{value}</option>)}</select></label>
+          <label className="space-y-1"><Label>Readiness</Label><select aria-label="Lead readiness filter" value={leadFilter} onChange={(event) => setLeadFilter(event.target.value)} className={inputClass}><option value="ALL">All leads</option><option value="READY">Ready</option><option value="REVIEW_REQUIRED">Needs review</option><option value="BLOCKED">Blocked</option></select></label>
+          <label className="space-y-1 md:col-span-2 xl:col-span-7"><Label>Search person or company</Label><div className="flex h-9 items-center rounded-xl border bg-background px-2"><Search size={12} /><input aria-label="Search campaign leads" value={leadSearch} onChange={(event) => setLeadSearch(event.target.value)} placeholder="Person, title, company or email" className="h-full w-full bg-transparent px-2 text-xs outline-none" /></div></label>
+        </div>
+        {selectedAudienceId && <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-[10px] text-sky-800">Loaded saved audience <b>{options.selected_audience?.name}</b>. Only members in the 10 launch markets are operational here; blocked people remain unselected, and final audience reconciliation still runs before any approval.</p>}
         <div className="mt-4 max-h-[420px] overflow-auto rounded-xl border">
           <table className="min-w-[880px] w-full text-left text-[11px]">
-            <thead className="sticky top-0 bg-secondary text-[9px] uppercase tracking-wider text-muted-foreground"><tr><th className="p-3">Add</th><th className="p-3">Company</th><th className="p-3">Contact</th><th className="p-3">Market</th><th className="p-3">Score</th><th className="p-3">Readiness</th></tr></thead>
-            <tbody>{visibleLeads.map((lead) => <tr key={lead.id} className="border-t align-top hover:bg-secondary/30"><td className="p-3"><input aria-label={`Add ${lead.company_name || lead.id}`} type="checkbox" checked={selectedLeads.has(lead.id)} disabled={lead.readiness === "BLOCKED"} onChange={() => toggleLead(lead)} /></td><td className="p-3"><p className="font-black">{lead.company_name || "Unnamed company"}</p><p className="text-muted-foreground">{lead.company_domain || "Domain not observed"}</p></td><td className="p-3"><p className="font-bold">{lead.contact_full_name || "No named contact"}</p><p>{lead.contact_title || "Role not observed"}</p><p className="text-muted-foreground">{lead.contact_email || "Verified email required"}</p></td><td className="p-3">{lead.country || "Unknown"}</td><td className="p-3 font-black">{lead.score || 0}</td><td className="p-3"><Readiness value={lead.readiness} /><p className="mt-1 max-w-xs text-[9px] text-muted-foreground">{(lead.blockers || []).join(" / ") || "Final suppression and market checks still run when the audience is built."}</p></td></tr>)}</tbody>
+            <thead className="sticky top-0 bg-secondary text-[9px] uppercase tracking-wider text-muted-foreground"><tr><th className="p-3">Add</th><th className="p-3">Company</th><th className="p-3">Person</th><th className="p-3">Market</th><th className="p-3">Est. GMV / TPV</th><th className="p-3">Score</th><th className="p-3">Readiness</th></tr></thead>
+            <tbody>{visibleLeads.map((lead) => <tr key={lead.id} className="border-t align-top hover:bg-secondary/30"><td className="p-3"><input aria-label={`Add ${lead.company_name || lead.id}`} type="checkbox" checked={selectedLeads.has(lead.id)} disabled={lead.readiness === "BLOCKED"} onChange={() => toggleLead(lead)} /></td><td className="p-3"><p className="font-black">{lead.company_name || "Unnamed company"}</p><p className="text-muted-foreground">{lead.company_domain || "Domain not observed"}</p></td><td className="p-3"><p className="font-bold">{lead.contact_full_name || "No named contact"}</p><p>{lead.contact_title || "Role not observed"}</p><p className="text-muted-foreground">{lead.contact_email || "Verified email required"}</p><p className="mt-1 text-[9px] font-bold">{(lead.personas || []).join(" / ")}</p></td><td className="p-3">{lead.country || "Unknown"}</td><td className="p-3"><p className="font-black">{lead.gmv_truth_class === "ESTIMATED" ? `${lead.estimated_gmv_min_eur == null ? "?" : new Intl.NumberFormat(undefined, { notation: "compact", style: "currency", currency: "EUR" }).format(lead.estimated_gmv_min_eur)}–${lead.estimated_gmv_max_eur == null ? "?" : new Intl.NumberFormat(undefined, { notation: "compact", style: "currency", currency: "EUR" }).format(lead.estimated_gmv_max_eur)}` : "Unknown"}</p><p className="text-[9px] text-muted-foreground">{lead.gmv_truth_class}</p></td><td className="p-3 font-black">{lead.score == null ? "—" : lead.score}</td><td className="p-3"><Readiness value={lead.readiness} /><p className="mt-1 max-w-xs text-[9px] text-muted-foreground">{(lead.blockers || []).join(" / ") || "Final suppression and market checks still run when the audience is built."}</p></td></tr>)}</tbody>
           </table>
           {!visibleLeads.length && <p className="p-8 text-center text-xs text-muted-foreground">No real lead matches this filter.</p>}
         </div>

@@ -39,3 +39,12 @@ Implementation decision: one new entity is the minimum truthful delta. Everythin
 - Provider `NEW`, `REFRESH` and `NEW_AND_EXISTING` modes use `ProviderCandidate` and `Provider` respectively. Candidate rows are visibly unverified and never promoted to canonical truth by the Discovery workspace.
 - Scheduled searches reuse `alwaysOnLeadDiscoveryWorker`, rebuild the plan at execution time and re-check both the per-run hard cap and the global monthly budget.
 - No physical function name, outreach action or parallel provider abstraction was added. External partner organization-only discovery and open-ended provider discovery remain truthful provider limitations, not simulated coverage.
+
+## People-first operating layer (2026-08-26)
+
+- Discovery now exposes a dedicated `People` view over the existing `OutboundLead` authority. It does not create a parallel contact store.
+- Founder, executive, finance, procurement, payments, ecommerce, operations and partnerships labels are deterministic classifications of the observed `contact_title`. Missing titles remain `UNKNOWN`.
+- Company-size filtering includes explicit estimated GMV/TPV bands backed only by `estimated_tpv_min_eur` and `estimated_tpv_max_eur`. Missing estimates remain unknown and are never coerced to zero.
+- Every person row exposes the observed person/company fields, score, score breakdown, reasons, readiness blockers and Pipeline state. A Pipeline move uses the existing preview-hash-confirm transition boundary and cannot send outreach.
+- Reusable people audiences are immutable snapshots stored as versioned `FounderSavedView` revisions with `view_type=lead_audience`. Saving the same revision payload is idempotent.
+- Campaign Studio can load one saved audience, refine it by role, country, GMV/TPV, score and readiness, select explicit sender identities, and create versioned draft evidence. Loading, filtering, saving or approving a draft does not send; suppression, market, compliance and zero-capacity gates remain authoritative.

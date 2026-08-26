@@ -211,7 +211,7 @@ describe("C2 — campaign builder options", () => {
           outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED", icp_score: 91,
         },
         { id: "needs-email", company_name: "Globex", country: "FR", outreach_eligibility: "NOT_ASSESSED", compliance_status: "REVIEW_REQUIRED" },
-        { id: "blocked", company_name: "Suppressed", contact_email: "stop@example.test", reservoir_state: "suppressed" },
+        { id: "blocked", company_name: "Suppressed", country: "IT", contact_email: "stop@example.test", reservoir_state: "suppressed" },
       ],
       CommercialPolicy: [{
         id: "policy-1", engine: "merchant_acquisition", policy_key: "merchant:1", version: "v1", status: "draft",
@@ -233,10 +233,36 @@ describe("C2 — campaign builder options", () => {
     expect(body.ok).toBe(true);
     expect(body.external_send_performed).toBe(false);
     expect(body.outbound_posture).toEqual({ status: "PAUSED_ZERO", capacity: 0 });
-    expect(body.lead_counts).toEqual({ total: 3, returned: 3, ready: 1, review_required: 1, blocked: 1 });
-    expect(body.leads.map((lead) => lead.id)).toEqual(["ready", "needs-email", "blocked"]);
+    expect(body.lead_counts).toEqual({ total: 2, returned: 2, ready: 1, review_required: 0, blocked: 1, excluded_non_launch: 1 });
+    expect(body.leads.map((lead) => lead.id)).toEqual(["ready", "blocked"]);
+    expect(body.launch_markets).toEqual(["ES", "IT", "PT", "GB", "GR", "HR", "DE", "PL", "CZ", "CY"]);
     expect(body.target_profiles[0].name).toBe("Spanish merchants");
     expect(body.senders[0]).toMatchObject({ profile_key: "instantly:acme", from_address: "xavi@mail.acme.test", readiness: { ready: true, cap: 5 } });
+  });
+
+  it("loads one saved people audience without mixing in unrelated leads", async () => {
+    const svc = makeSvc({
+      OutboundLead: [
+        { id: "cfo", company_name: "Acme", contact_full_name: "Ada", contact_title: "CFO", country: "ES", score: 88 },
+        { id: "founder", company_name: "Globex", contact_full_name: "Grace", contact_title: "Founder", country: "FR", score: 91 },
+      ],
+      FounderSavedView: [{
+        id: "aud-1", view_key: "lead-audience:1", view_type: "lead_audience", is_current: true,
+        name: "ES CFOs", revision: 1, config_json: { lead_ids: ["cfo"], member_count: 1, readiness_counts: {} },
+      }],
+      CommercialPolicy: [], OutboundSendingProfile: [], OutboundControl: [GLOBAL_CONTROL],
+    });
+
+    const { status, body } = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "builder_options", audience_id: "aud-1", limit: 1000,
+    }, svc));
+
+    expect(status).toBe(200);
+    expect(body.leads.map((lead) => lead.id)).toEqual(["cfo"]);
+    expect(body.leads[0]).toMatchObject({ personas: ["FINANCE"], score: 88 });
+    expect(body.selected_audience).toEqual({ id: "aud-1", name: "ES CFOs", member_count: 1 });
+    expect(body.audiences).toHaveLength(1);
+    expect(body.external_send_performed).toBe(false);
   });
 
   it("fails visibly when a required builder source is unreadable", async () => {
@@ -256,9 +282,10 @@ describe("C2 — campaign builder options", () => {
 
 describe("C2 — create draft", () => {
   const LEADS = [
-    { id: "l1", canonical_company_key: "acme", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },
-    { id: "l2", canonical_company_key: "globex", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },
-    { id: "blocked", canonical_company_key: "bad", reservoir_state: "suppressed" },
+    { id: "l1", country: "ES", canonical_company_key: "acme", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },
+    { id: "l2", country: "IT", canonical_company_key: "globex", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },
+    { id: "blocked", country: "ES", canonical_company_key: "bad", reservoir_state: "suppressed" },
+    { id: "outside", country: "FR", canonical_company_key: "protected", outreach_eligibility: "ELIGIBLE", compliance_status: "CLEARED" },
   ];
 
   it("creates a DRAFT with the lane and never performs an external effect", async () => {
@@ -303,6 +330,16 @@ describe("C2 — create draft", () => {
     expect(status).toBe(409);
     expect(body.error).toBe("campaign_contains_blocked_leads");
     expect(body.blocked_lead_ids).toEqual(["blocked"]);
+    expect(svc.entities.CommercialCampaign.store).toHaveLength(0);
+  });
+
+  it("refuses a campaign outside the exact 10-market launch perimeter", async () => {
+    const svc = makeSvc({ OutboundLead: LEADS });
+    const { status, body } = await jsonOf(
+      await handleCampaignAdminAction(ADMIN, { action: "create_draft", market_scope: ["FR"], lead_ids: ["outside"] }, svc),
+    );
+    expect(status).toBe(409);
+    expect(body.error).toBe("campaign_contains_non_launch_leads");
     expect(svc.entities.CommercialCampaign.store).toHaveLength(0);
   });
 

@@ -10,7 +10,7 @@
 // exactly: selected → person dedupe → company dedupe → recently contacted →
 // suppressed → invalid email → protected market → already merchant →
 // policy blocked → final eligible.
-import { evaluateMarketLaunchScope } from './marketLaunchScope.ts';
+import { commercialMarketDecision } from './marketLaunchScope.ts';
 import { suppressionMatches } from './campaignsCore.ts';
 
 export const CAMPAIGN_AUDIENCE_BUILDER_VERSION = 'campaign-audience-builder-1.0.0';
@@ -185,9 +185,9 @@ export function buildAudienceReconciliation(
 
     // 6. Market authority. An unknown market is UNKNOWN_BLOCKED in the scope
     // primitive, so it lands here too — fail closed, never "probably fine".
-    const scope = evaluateMarketLaunchScope(candidate?.country);
-    if (!scope.commercial_scope_eligible) {
-      exclude('PROTECTED_MARKET', scope.scope_status);
+    const market = commercialMarketDecision(candidate?.country);
+    if (!market.ok) {
+      exclude('PROTECTED_MARKET', market.scope.scope_status);
       continue;
     }
 

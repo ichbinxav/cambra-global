@@ -506,7 +506,8 @@ function Detail({ detail, loading, onBack, onCheckStatus }) {
 }
 
 export default function AdminCampaigns() {
-  const [tab, setTab] = useState("overview");
+  const initialAudienceId = new URLSearchParams(window.location.search).get("audience") || "";
+  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get("mode") === "create" ? "create" : "overview");
   const [overview, setOverview] = useState(null);
   const [list, setList] = useState(null);
   const [detail, setDetail] = useState(null);
@@ -593,10 +594,10 @@ export default function AdminCampaigns() {
 
   const body = useMemo(() => {
     if (tab === "overview") return <Overview data={overview} loading={loading} reload={loadOverview} onCreate={() => { setNotice(""); setTab("create"); }} />;
-    if (tab === "create") return <CampaignBuilder call={call} onCancel={() => setTab("overview")} onCreated={campaignCreated} />;
+    if (tab === "create") return <CampaignBuilder call={call} initialAudienceId={initialAudienceId} onCancel={() => setTab("overview")} onCreated={campaignCreated} />;
     if (tab === "all") return <AllCampaigns data={list} loading={loading} filters={filters} setFilters={setFilters} reload={loadList} onOpen={openDetail} />;
     return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} onCheckStatus={checkStatus} />;
-  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus, campaignCreated]);
+  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus, campaignCreated, initialAudienceId]);
 
   return (
     <div className="space-y-5 p-4 md:p-6">
