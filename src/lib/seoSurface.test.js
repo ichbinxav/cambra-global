@@ -381,10 +381,15 @@ describe("Sitemap + robots sync with seoConfig", () => {
 
   it("robots.txt protects every known private route family", () => {
     [
-      "/admin", "/dev/", "/internal/", "/debug/", "/test/", "/staging/", "/api/",
-      "/functions/", "/auth/", "/Dashboard", "/Reports", "/Account", "/Invoices",
-      "/Vault", "/Referrals", "/ConnectTools", "/IntegrationsCallback", "/Onboarding",
-      "/BrandProfile", "/Results", "/LoginGate", "/OAuthConsent", "/HealthCheck",
+      "/admin", "/dev", "/internal", "/debug", "/test", "/staging", "/settings",
+      "/api", "/functions", "/auth", "/Dashboard", "/dashboard", "/Reports",
+      "/reports", "/Account", "/account", "/Invoices", "/invoices", "/Vault",
+      "/vault", "/Referrals", "/referrals", "/ConnectTools", "/connecttools",
+      "/ConnectIntegrations", "/connectintegrations", "/IntegrationsCallback",
+      "/integrationscallback", "/Onboarding", "/onboarding", "/BrandProfile",
+      "/brandprofile", "/Results", "/results", "/PaymentsResults",
+      "/paymentsresults", "/LoginGate", "/logingate", "/OAuthConsent",
+      "/oauthconsent", "/HealthCheck", "/healthcheck",
     ].forEach((route) => expect(robots).toContain(`Disallow: ${route}`));
     expect(robots).toContain("Sitemap: https://cambra.global/sitemap.xml");
   });
