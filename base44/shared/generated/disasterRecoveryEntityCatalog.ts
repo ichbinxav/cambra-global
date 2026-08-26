@@ -24,6 +24,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "AuthoritySnapshot",
   "AuthorizationLog",
   "AutonomyIncident",
+  "BankReference",
   "Baseline",
   "Benchmark",
   "BenchmarkCohort",
@@ -140,6 +141,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "MandateAuthorityGrant",
   "MandateAuthorityRestriction",
   "MarketActivationState",
+  "MarketBaseline",
   "MarketCapabilityControl",
   "MarketGrowthSnapshot",
   "MarketIntelligenceProfile",
@@ -181,6 +183,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "PaymentsAnalysisSession",
   "PaymentsAnalysisVerified",
   "PaymentsProfile",
+  "PaymentsRateImportQuarantine",
   "PaymentsRateTable",
   "PilotMerchantValidation",
   "PipelineStageEvent",
@@ -197,6 +200,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "ProviderChannelSupport",
   "ProviderCompensationTier",
   "ProviderContact",
+  "ProviderContractTerms",
   "ProviderEconomicAssessment",
   "ProviderLead",
   "ProviderLegalEntity",
@@ -217,6 +221,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "ProviderRevenueInvoice",
   "ProviderRevenueLedger",
   "ProviderRevenueStatement",
+  "ProviderSurcharges",
   "RateApplicabilityCondition",
   "RateChangeCandidate",
   "RateComponent",
@@ -265,4 +270,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:264';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:269';

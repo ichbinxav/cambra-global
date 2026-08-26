@@ -1,0 +1,42 @@
+{
+  "name": "ProviderSurcharges",
+  "type": "object",
+  "description": "Provider surcharge references from the CAMBRA rate pack. Text bands are preserved when a source does not publish one scalar value.",
+  "properties": {
+    "pack_id": { "type": "string" },
+    "pack_source_file": { "type": "string" },
+    "pack_source_file_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_number": { "type": "number" },
+    "source_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_key": { "type": "string" },
+    "materialization_version": { "type": "string" },
+    "materialized_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ingestion_batch_id": { "type": "string" },
+    "ingested_at": { "type": "string", "format": "date-time" },
+    "last_reconciled_at": { "type": "string", "format": "date-time" },
+    "provider_name": { "type": "string" },
+    "provider_slug": { "type": "string" },
+    "country": { "type": "string" },
+    "layer": { "type": "string" },
+    "intl_surcharge_bps_text": { "type": "string" },
+    "intl_surcharge_bps": { "type": "number" },
+    "fx_fee_bps_text": { "type": "string" },
+    "fx_fee_bps": { "type": "number" },
+    "who_pays": { "type": "string" },
+    "can_be_avoided": { "type": "string" },
+    "double_count_risk": { "type": "string" },
+    "confidence": { "type": "string" },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "source_notes": { "type": "string" },
+    "source_url": { "type": "string" },
+    "source_verification_status": { "type": "string" },
+    "commercial_eligibility": { "type": "string" },
+    "active_reference": { "type": "boolean" },
+    "is_synthetic": { "type": "boolean", "default": false }
+  },
+  "required": ["pack_id", "source_row_key", "source_row_sha256", "materialized_row_sha256", "provider_name", "country", "layer", "is_synthetic"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

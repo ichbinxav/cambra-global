@@ -1,0 +1,37 @@
+{
+  "name": "BankReference",
+  "type": "object",
+  "description": "Bank acquiring references preserved as published text; no ranges or contractual wording are coerced into invented scalar values.",
+  "properties": {
+    "pack_id": { "type": "string" },
+    "pack_source_file": { "type": "string" },
+    "pack_source_file_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_number": { "type": "number" },
+    "source_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_key": { "type": "string" },
+    "materialization_version": { "type": "string" },
+    "materialized_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ingestion_batch_id": { "type": "string" },
+    "ingested_at": { "type": "string", "format": "date-time" },
+    "last_reconciled_at": { "type": "string", "format": "date-time" },
+    "country": { "type": "string" },
+    "bank_name": { "type": "string" },
+    "document_name": { "type": "string" },
+    "rate_text": { "type": "string" },
+    "minimum_per_transaction_text": { "type": "string" },
+    "monthly_fee_text": { "type": "string" },
+    "according_to_agreement": { "type": "string" },
+    "source_url": { "type": "string" },
+    "source_quote": { "type": "string" },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "source_verification_status": { "type": "string" },
+    "commercial_eligibility": { "type": "string" },
+    "active_reference": { "type": "boolean" },
+    "is_synthetic": { "type": "boolean", "default": false }
+  },
+  "required": ["pack_id", "source_row_key", "source_row_sha256", "materialized_row_sha256", "country", "bank_name", "is_synthetic"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

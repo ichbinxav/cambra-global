@@ -14,7 +14,9 @@
       "type": "string",
       "enum": [
         "online",
-        "in_store"
+        "in_store",
+        "moto",
+        "any"
       ],
       "default": "online",
       "description": "Payment channel this row applies to. 'online' = card-not-present (default; every historical/online row leaves this absent and is treated as online). 'in_store' = card-present TPV rows (M4-TPV Fase 2A) \u2014 these carry terminal_rental_monthly_minor + achievable_terminal_rental_monthly_minor and set intl_uplift_bps to null (card-present cross-border volume is negligible for the ICP). The channel is ALSO encoded in cohort_key ('|in_store' suffix) for the engine's exact-match lookup; this declared field makes it queryable/auditable. Purely additive \u2014 no migration."
@@ -25,14 +27,6 @@
     },
     "tier": {
       "type": "string",
-      "enum": [
-        "ANY",
-        "PLUS",
-        "micro",
-        "small",
-        "mid",
-        "large"
-      ],
       "default": "ANY",
       "description": "Revenue tier. Chunk 1b: always 'ANY' \u2014 Stripe/PayPal/Shopify don't publish tiered pricing publicly. Future rows may segment when a provider does (e.g. Shopify tiering by plan). SEED-ES-2 (2026-07-24): 'PLUS' added for PLAN-tier anchor rows (SumUp Pagos Plus ES). A non-ANY tier deliberately keeps the row OUT of selectRow's current-rate resolution (both the M5 countryRow field-match, which requires tier ANY, and the key candidates, which only build '|ANY|' keys) while the multi-anchor pool \u2014 which has no tier filter \u2014 still picks it up as an achievable anchor. This is the sanctioned way to seed subscription-plan anchors without engine changes."
     },
@@ -125,6 +119,180 @@
       "format": "date-time",
       "description": "When the human validator confirmed source_quote against source_url. Set by seeder on creation. Rows older than 90 days should be re-validated (future job \u2014 not implemented in Chunk 1b)."
     },
+    "pack_id": {
+      "type": "string",
+      "description": "Immutable source-pack identifier. Absent on historical rows."
+    },
+    "pack_source_file": {
+      "type": "string"
+    },
+    "pack_source_file_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_row_number": {
+      "type": "number"
+    },
+    "source_row_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_row_key": {
+      "type": "string",
+      "description": "Stable idempotency key derived from the unmodified CSV row."
+    },
+    "materialization_version": {
+      "type": "string"
+    },
+    "materialized_row_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "ingestion_batch_id": {
+      "type": "string"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_reconciled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_name": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "string"
+    },
+    "monthly_fee_minor": {
+      "type": "number"
+    },
+    "small_ticket_threshold_minor": {
+      "type": "number"
+    },
+    "small_ticket_monthly_cap_minor": {
+      "type": "number"
+    },
+    "published_breakeven_minor": {
+      "type": "number"
+    },
+    "scheme": {
+      "type": "string"
+    },
+    "funding": {
+      "type": "string"
+    },
+    "issuer_region": {
+      "type": "string"
+    },
+    "translation_marker": {
+      "type": "string"
+    },
+    "rate_is_blended": {
+      "type": "boolean"
+    },
+    "online_surface": {
+      "type": "string"
+    },
+    "research_round": {
+      "type": "string"
+    },
+    "origin_file": {
+      "type": "string"
+    },
+    "monthly_minimum_fee_minor": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "volume_band_min": {
+      "type": "number"
+    },
+    "volume_band_max": {
+      "type": "number"
+    },
+    "pricing_band_basis": {
+      "type": "string"
+    },
+    "txn_count_band_min": {
+      "type": "number"
+    },
+    "txn_count_band_max": {
+      "type": "number"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "seed_status": {
+      "type": "string"
+    },
+    "eligible_mix_prior": {
+      "type": "number"
+    },
+    "source_round": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "string"
+    },
+    "product": {
+      "type": "string"
+    },
+    "standard_monthly_fee_minor": {
+      "type": "number"
+    },
+    "promo_free_months": {
+      "type": "number"
+    },
+    "installation_fee_minor": {
+      "type": "number"
+    },
+    "deinstallation_fee_minor": {
+      "type": "number"
+    },
+    "comparison_eligible": {
+      "type": "boolean"
+    },
+    "valid_until": {
+      "type": "string"
+    },
+    "source_verification_status": {
+      "type": "string",
+      "enum": [
+        "VERIFIED_PRIMARY_WITH_QUOTE",
+        "PRIMARY_REFERENCE_NO_QUOTE",
+        "SOURCE_REFERENCE_PRESENT",
+        "PENDING_URL_REVERIFICATION",
+        "SOURCE_NOT_FOUND",
+        "STALE_SOURCE_REFERENCE"
+      ]
+    },
+    "commercial_eligibility": {
+      "type": "string",
+      "enum": [
+        "ACTIVE_MARKET",
+        "LICENSING_PROTECTED",
+        "INACTIVE_MARKET"
+      ],
+      "description": "Commercial market gate; independent from whether the source row is retained."
+    },
+    "calculation_eligible_v4": {
+      "type": "boolean",
+      "description": "True only when source, freshness, market, dimensions and comparison gates pass."
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "LOADED_REFERENCE",
+        "ROLLED_BACK"
+      ]
+    },
+    "is_synthetic": {
+      "type": "boolean",
+      "default": false
+    },
     "active": {
       "type": "boolean",
       "default": true,
@@ -136,11 +304,7 @@
     "provider_slug",
     "tier",
     "region",
-    "percent_bps",
-    "fixed_fee_minor_units",
-    "fixed_fee_currency",
-    "verified",
-    "savings_band_pct"
+    "verified"
   ],
   "rls": {
     "read": {},

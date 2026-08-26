@@ -1,0 +1,41 @@
+{
+  "name": "ProviderContractTerms",
+  "type": "object",
+  "description": "Provider contract terms stored as evidenced text, including explicit NO_ENCONTRADO and SEGUN_ACUERDO states.",
+  "properties": {
+    "pack_id": { "type": "string" },
+    "pack_source_file": { "type": "string" },
+    "pack_source_file_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_number": { "type": "number" },
+    "source_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "source_row_key": { "type": "string" },
+    "materialization_version": { "type": "string" },
+    "materialized_row_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ingestion_batch_id": { "type": "string" },
+    "ingested_at": { "type": "string", "format": "date-time" },
+    "last_reconciled_at": { "type": "string", "format": "date-time" },
+    "country": { "type": "string" },
+    "provider_name": { "type": "string" },
+    "provider_slug": { "type": "string" },
+    "minimum_duration_months_text": { "type": "string" },
+    "auto_renewal_text": { "type": "string" },
+    "notice_days_text": { "type": "string" },
+    "penalty_text": { "type": "string" },
+    "terminal_regime_text": { "type": "string" },
+    "monthly_minimum_text": { "type": "string" },
+    "exclusivity_text": { "type": "string" },
+    "exclusivity_quote": { "type": "string" },
+    "source_url": { "type": "string" },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "declared_status": { "type": "string" },
+    "source_verification_status": { "type": "string" },
+    "commercial_eligibility": { "type": "string" },
+    "active_reference": { "type": "boolean" },
+    "is_synthetic": { "type": "boolean", "default": false }
+  },
+  "required": ["pack_id", "source_row_key", "source_row_sha256", "materialized_row_sha256", "country", "provider_name", "is_synthetic"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "write": { "user_condition": { "role": "admin" } }
+  }
+}

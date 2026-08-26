@@ -23,10 +23,11 @@ import { handleFinanceAdminAction } from '../../shared/financeAdminCore.ts';
 import { handleIntelligenceAdminAction } from '../../shared/intelligenceAdminCore.ts';
 // DASHBOARD-C12: Integrations (OAuth apps, webhook endpoints), also a logical route.
 import { handleIntegrationAdminAction } from '../../shared/integrationAdminCore.ts';
+import { handlePaymentsRatePackAdmin } from '../../shared/paymentsRatePackAdmin.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
-// deploy-marker: 2026-08-24-owner-scope-refresh — refresh the preview/runtime build after verified
-// source sync left command_conversation_* routing stale in the executable.
+// deploy-marker: 2026-08-27-rate-pack-v4 - refresh shared dependencies and host the
+// idempotent, founder-only rate-pack control route without adding a physical function.
 Deno.serve(async (req) => {
   const routedBody = await req.clone().json().catch(() => ({}));
   if (routedBody?.action === 'global_search') return handleAdminGlobalSearch(req);
@@ -47,6 +48,7 @@ Deno.serve(async (req) => {
     if (String(routedBody?.action||'').startsWith('finance_')) return handleFinanceAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^finance_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('intelligence_')) return handleIntelligenceAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^intelligence_/, '')},base44.asServiceRole);
     if (String(routedBody?.action||'').startsWith('integration_')) return handleIntegrationAdminAction(user,{...routedBody,action:String(routedBody.action).replace(/^integration_/, '')},base44.asServiceRole);
+    if (String(routedBody?.action||'').startsWith('rate_pack_')) return handlePaymentsRatePackAdmin(user,{...routedBody,action:String(routedBody.action).replace(/^rate_pack_/, '')},base44.asServiceRole);
     if (routedBody?.action === 'discovery_radar') return Response.json(await buildDiscoveryAdminRadar(base44.asServiceRole));
     if (routedBody?.action === 'commercial_os') return Response.json(await buildCommercialOperatingSystem(base44.asServiceRole));
 
