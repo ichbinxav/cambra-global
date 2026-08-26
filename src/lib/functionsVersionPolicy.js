@@ -5,12 +5,11 @@ const CANONICAL_PRODUCTION_HOSTS = new Set([
 
 const clean = (value) => String(value || '').trim() || null;
 
-export function resolveFunctionsVersionPolicy({
-	hostname,
-	queryValue,
-	buildValue,
-	storedValue,
-} = {}) {
+/**
+ * @param {{hostname?: unknown, queryValue?: unknown, buildValue?: unknown, storedValue?: unknown}} [values]
+ */
+export function resolveFunctionsVersionPolicy(values = {}) {
+	const { hostname, queryValue, buildValue, storedValue } = values;
 	const query = clean(queryValue);
 	const build = clean(buildValue);
 	const stored = clean(storedValue);
