@@ -1,3 +1,5 @@
+import { resolveFunctionsVersionPolicy } from './functionsVersionPolicy';
+
 const isNode = typeof window === 'undefined';
 const memoryStore = new Map();
 const storage = isNode
@@ -40,6 +42,26 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	return null;
 }
 
+const getFunctionsVersion = (defaultValue = undefined) => {
+	if (isNode) {
+		return defaultValue;
+	}
+	const storageKey = 'base44_functions_version';
+	const policy = resolveFunctionsVersionPolicy({
+		hostname: window.location.hostname,
+		queryValue: new URLSearchParams(window.location.search).get('functions_version'),
+		buildValue: defaultValue,
+		storedValue: storage.getItem(storageKey),
+	});
+	if (policy.clearStored) {
+		storage.removeItem(storageKey);
+	}
+	if (policy.persistValue) {
+		storage.setItem(storageKey, policy.persistValue);
+	}
+	return policy.value;
+}
+
 const getAppParams = () => {
 	if (getAppParamValue("clear_access_token") === 'true') {
 		storage.removeItem('base44_access_token');
@@ -49,7 +71,7 @@ const getAppParams = () => {
 		appId: getAppParamValue("app_id", { defaultValue: import.meta.env.VITE_BASE44_APP_ID }),
 		token: getAppParamValue("access_token", { removeFromUrl: true }),
 		fromUrl: getAppParamValue("from_url", { defaultValue: window.location.href }),
-		functionsVersion: getAppParamValue("functions_version", { defaultValue: import.meta.env.VITE_BASE44_FUNCTIONS_VERSION }),
+		functionsVersion: getFunctionsVersion(import.meta.env.VITE_BASE44_FUNCTIONS_VERSION),
 		appBaseUrl: getAppParamValue("app_base_url", { defaultValue: import.meta.env.VITE_BASE44_APP_BASE_URL }),
 	}
 }
