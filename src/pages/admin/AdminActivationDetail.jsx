@@ -65,16 +65,16 @@ export default function AdminActivationDetail(){
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black">Activation {activation.id}</h1>
+    <div className="min-w-0 max-w-full space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="min-w-0 break-all text-2xl font-black">Activation {activation.id}</h1>
         <Link to="/admin">Back</Link>
       </div>
 
       <div className="grid md:grid-cols-3 gap-3">
-        <div className="rounded-xl border p-4 bg-card">
+        <div className="min-w-0 rounded-xl border p-4 bg-card">
           <p className="text-xs text-muted-foreground">Core</p>
-          <div className="text-sm mt-2 space-y-1">
+          <div className="break-words text-sm mt-2 space-y-1">
             <div>Status: <b>{activation.status}</b></div>
             <div>Brand: <b>{activation.brand_id}</b></div>
             <div>Provider ID: <b>{activation.provider_id||'-'}</b></div>
@@ -86,13 +86,13 @@ export default function AdminActivationDetail(){
             <div>Progress: <b>{progress}%</b></div>
           </div>
         </div>
-        <div className="rounded-xl border p-4 bg-card">
+        <div className="min-w-0 rounded-xl border p-4 bg-card">
           <p className="text-xs text-muted-foreground">Baseline</p>
           <div className="text-sm mt-2">{baselines?.[0] ? (
             <div>Type: {baselines[0].baseline_type} · Value: {baselines[0].baseline_value}</div>
           ) : 'Missing'}</div>
         </div>
-        <div className="rounded-xl border p-4 bg-card">
+        <div className="min-w-0 rounded-xl border p-4 bg-card">
           <p className="text-xs text-muted-foreground">Billing Rule</p>
           <div className="text-sm mt-2">{rules?.[0] ? (
             <div>{rules[0].billing_model} · Share {rules[0].node_share_percent}%</div>
@@ -102,7 +102,7 @@ export default function AdminActivationDetail(){
 
       <RecoverEconomicsV2Card activation={activation} reports={reports || []} invoices={invoices || []} rules={rules || []} />
 
-      <div className="rounded-xl border p-4 bg-card">
+      <div className="min-w-0 rounded-xl border p-4 bg-card">
         <p className="text-sm font-semibold">Mandate</p>
         <div className="text-sm mt-2">{mandates?.[0] ? (
           <div>Status: {mandates[0].status} · Signed by {mandates[0].signed_by_name} · {mandates[0].signed_at}</div>
@@ -128,8 +128,8 @@ export default function AdminActivationDetail(){
           <div className="text-xs text-muted-foreground mb-2">Latest</div>
           <ul className="space-y-1 text-sm">
             {reports.map(r=> (
-              <li key={r.id} className="flex items-center justify-between border rounded-md px-2 py-1">
-                <span>{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
+              <li key={r.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border rounded-md px-2 py-1">
+                <span className="min-w-0 break-words">{r.month} · Savings €{(r.savings||0).toLocaleString()} · Fee €{(r.node_fee||0).toLocaleString()} · {r.measurement_mode}</span>
                 <div className="flex items-center gap-2">
                   <Link to="/admin/recover-billing" className="text-xs underline">Billing</Link>
                 </div>
@@ -139,7 +139,7 @@ export default function AdminActivationDetail(){
           <div className="h-2"/>
           <ul className="space-y-1 text-sm">
             {invoices.map(i=> (
-              <li key={i.id} className="flex items-center justify-between border rounded-md px-2 py-1">
+              <li key={i.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border rounded-md px-2 py-1">
                 <span>{i.month} · €{Number(i.total_amount||0).toLocaleString()} · {i.status}</span>
                 <div className="flex items-center gap-2">
                   <button onClick={()=>downloadInvoicePdf(i.id)} className="text-xs underline">PDF</button>
@@ -152,9 +152,9 @@ export default function AdminActivationDetail(){
 
       <div className="rounded-xl border p-4 bg-card">
         <Tabs defaultValue="savings">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <p className="text-sm font-semibold">Savings & Baseline</p>
-            <TabsList>
+            <TabsList className="max-w-full">
               <TabsTrigger value="savings">Summary</TabsTrigger>
               <TabsTrigger value="baseline">Baseline</TabsTrigger>
             </TabsList>
@@ -194,7 +194,7 @@ export default function AdminActivationDetail(){
       <div className="rounded-xl border p-4 bg-card">
         <p className="text-sm font-semibold mb-2">Operational logs</p>
         <ul className="space-y-1 text-xs">
-          {logs.map(l=> <li key={l.id} className="border rounded-md px-2 py-1">{l.created_at} · {l.event_type} — {l.message}</li>)}
+          {logs.map(l=> <li key={l.id} className="break-words border rounded-md px-2 py-1">{l.created_at} · {l.event_type} — {l.message}</li>)}
         </ul>
       </div>
     </div>

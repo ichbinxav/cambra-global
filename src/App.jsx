@@ -138,7 +138,6 @@ const AdminWaitlist = lazy(() => import('@/pages/admin/AdminWaitlist'));
 const Invoices = lazy(() => import('@/pages/Invoices'));
 const Vault = lazy(() => import('@/pages/Vault'));
 const Referrals = lazy(() => import('@/pages/Referrals'));
-const ConnectIntegrations = lazy(() => import('@/pages/ConnectIntegrations'));
 const IntegrationsCallback = lazy(() => import('@/pages/IntegrationsCallback'));
 const BrandProfile = lazy(() => import('@/pages/BrandProfile'));
 import BrandGlyph from '@/components/shared/BrandGlyph';
@@ -365,7 +364,7 @@ const AuthenticatedApp = () => {
           <Route path="/Vault" element={withBoundary(<Vault />)} />
           <Route path="/Referrals" element={withBoundary(<Referrals />)} />
           <Route path="/referrals" element={<Navigate to="/Referrals" replace />} />
-          <Route path="/ConnectIntegrations" element={withBoundary(<ConnectIntegrations />)} />
+          <Route path="/ConnectIntegrations" element={<Navigate to="/ConnectTools" replace />} />
           <Route path="/IntegrationsCallback" element={withBoundary(<IntegrationsCallback />)} />
         </Route>
 

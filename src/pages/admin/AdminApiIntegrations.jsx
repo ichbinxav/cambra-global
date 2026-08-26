@@ -43,10 +43,10 @@ export default function AdminApiIntegrations() {
   const connectedTools = new Set(keys.filter(k => k.status === "active").map(k => k.tool_name)).size;
 
   return (
-    <div className="px-6 py-8 max-w-7xl mx-auto">
+    <div className="min-w-0 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Plug className="h-4 w-4 text-muted-foreground" />
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">External integrations</span>
@@ -56,7 +56,7 @@ export default function AdminApiIntegrations() {
             Connect Claude, ChatGPT, Make, n8n, Zapier or custom agents to CAMBRA through scoped API keys and webhooks.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
+        <Button onClick={() => setDialogOpen(true)} className="shrink-0 gap-2">
           <Plus className="h-4 w-4" /> New API key
         </Button>
       </div>
@@ -70,8 +70,9 @@ export default function AdminApiIntegrations() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="keys">
-        <TabsList>
+      <Tabs defaultValue="keys" className="min-w-0 max-w-full">
+        <div className="max-w-full overflow-x-auto pb-1">
+        <TabsList className="w-max">
           <TabsTrigger value="keys" className="gap-2"><Key className="h-3.5 w-3.5" /> API keys</TabsTrigger>
           <TabsTrigger value="webhooks" className="gap-2"><Webhook className="h-3.5 w-3.5" /> Webhooks</TabsTrigger>
           <TabsTrigger value="oauth" className="gap-2"><Lock className="h-3.5 w-3.5" /> OAuth Apps</TabsTrigger>
@@ -82,6 +83,7 @@ export default function AdminApiIntegrations() {
           <TabsTrigger value="activity" className="gap-2"><Activity className="h-3.5 w-3.5" /> Activity</TabsTrigger>
           <TabsTrigger value="docs" className="gap-2"><BookOpen className="h-3.5 w-3.5" /> Docs</TabsTrigger>
         </TabsList>
+        </div>
 
         <TabsContent value="keys" className="mt-6">
           <ApiKeysTable keys={keys} loading={loading} onChanged={load} />

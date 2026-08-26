@@ -66,7 +66,7 @@ export default function AdminInvoices() {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="min-w-0 max-w-full space-y-4">
       <div>
         <h1 className="text-2xl font-black">Invoices</h1>
         <p className="mt-1 text-sm text-muted-foreground">Deterministic billing records and explicit admin-only payment operations.</p>
@@ -79,7 +79,7 @@ export default function AdminInvoices() {
             {STATUSES.map(s => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Input placeholder="Search #, brand_id or provider_id" value={q} onChange={e=>setQ(e.target.value)} className="w-64" />
+        <Input placeholder="Search #, brand_id or provider_id" value={q} onChange={e=>setQ(e.target.value)} className="min-w-0 flex-1 sm:flex-none sm:w-64" />
         <Button variant="outline" onClick={load}>Refresh</Button>
       </div>
 
@@ -88,7 +88,7 @@ export default function AdminInvoices() {
       {loading ? (
         <div className="py-20 text-center text-sm text-muted-foreground">Loading…</div>
       ) : (
-        <div className="overflow-auto rounded-lg border">
+        <div className="w-full max-w-full overflow-x-auto rounded-lg border">
           <table className="min-w-[900px] w-full text-sm">
             <thead className="bg-secondary/40">
               <tr>
@@ -112,12 +112,14 @@ export default function AdminInvoices() {
                   <td className="p-2">€{(inv.total_amount ?? 0).toLocaleString()}</td>
                   <td className="p-2">€{(inv.amount_paid ?? 0).toLocaleString()}</td>
                   <td className="p-2"><span className="px-2 py-0.5 rounded-full border text-xs">{inv.status}</span></td>
-                  <td className="p-2 flex gap-2">
+                  <td className="p-2 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline" onClick={()=>generatePdf(inv.id)}>PDF</Button>
                     <Button size="sm" variant="outline" onClick={()=>createLink(inv.id)}>Payment link</Button>
                     <Button size="sm" onClick={()=>markPaid(inv.id)}>Record payment</Button>
                     <Button size="sm" variant="ghost" onClick={()=>reconcile(inv.id)}>Reconcile</Button>
                     {inv.hosted_invoice_url && <a className="text-blue-600 text-xs underline" href={inv.hosted_invoice_url} target="_blank" rel="noopener noreferrer">Open link</a>}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "e0d9080464d1e972e31c8379ef7a38032eb8f2ec7f6ee4b09b95e181c105e8d2",
+  "source_inventory_hash": "49e414ab19306f8ae39518fb9c60baf601ca2dae17e9851096e2534930ebb856",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -387,7 +387,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "source_sha256": "a785b0fdaf9d6ada1bf56d258ce73e62563b83a23506ab885a572f6c218d69e3",
+      "source_sha256": "8217ee2d6064344b8e7ecb1c40c7563799b1b1e682c08a0eaa9e80bc5ca506d0",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -776,7 +776,7 @@
     },
     {
       "path": "base44/functions/founderChiefOfStaff/entry.ts",
-      "source_sha256": "d410b6048709ffc86f2613b152c43319c6b34796a55255a02074db58a69ac560",
+      "source_sha256": "358f16fddff2d7db32d7089bbf33e0eb4334bd4d583582c2fb310a3893aaa8f3",
       "boundary_ids": [
         "MB-PAID-AI"
       ],
@@ -1052,7 +1052,7 @@
     },
     {
       "path": "base44/functions/maintenanceEngine/entry.ts",
-      "source_sha256": "b513e175de207a725c0573da7e03fa0a6ee8ef82d38e63eedb94ff88f0665641",
+      "source_sha256": "953b3abe9ffccea67274f387346cec16618e3942cdc46c3bb5994fdbec1b1338",
       "boundary_ids": [
         "MB-PROVIDER-DR-SHAREPOINT",
         "MB-SCHEDULER-BASE"

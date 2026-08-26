@@ -12,10 +12,8 @@
 //
 // WHY created_by (not owner_email): claimAnonPaymentsResult writes the
 // materialized AnalyzerResult with the USER-SCOPED client, so created_by ===
-// user.email on every payments-v1 row (verified empirically 2026-07-13 — 3/3
-// claimed rows carried the human email; the 5 service-owned rows are LEGACY
-// scoreEngine rows with details_shape=null, correctly excluded by the shape
-// filter below). No owner_email denormalization needed — it would be dead work.
+// user.email. Legacy scoreEngine rows owned by the caller are returned as
+// summaries, but never promoted into a payments-v1 detail report.
 //
 // List mode returns a MINIMAL projection — date, PSP, country, currency and
 // savings. Detail mode accepts an owned result id and returns the engine payload
@@ -89,16 +87,11 @@ Deno.serve(async (req) => {
     const rows = await base44.asServiceRole.entities.AnalyzerResult
       .filter({ created_by: user.email }, '-created_date', 100);
 
-    // Defense-in-depth + shape gate, all in JS (no dependence on nested-path
-    // filtering):
-    //   1. created_by must be exactly the caller (tenant isolation).
-    //   2. the row must carry the payments engine_result — this excludes legacy
-    //      scoreEngine rows (details.engine_result absent) that would render
-    //      blank. Same guard PaymentsResults uses to decide unlock-vs-teaser.
+    // Defense-in-depth ownership gate, all in JS. Legacy owned rows remain
+    // visible as historical summaries; detail_available is true only when the
+    // canonical payments engine payload exists.
     const mine = (Array.isArray(rows) ? rows : []).filter(
-      (r) =>
-        normalizeEmail(r.created_by) === email &&
-        !!r?.details?.engine_result
+      (r) => normalizeEmail(r.created_by) === email
     );
 
     const items = mine.map((r) => ({
@@ -107,9 +100,11 @@ Deno.serve(async (req) => {
       created_date: r.created_date,
       total_savings: typeof r.total_savings === 'number' ? r.total_savings : null,
       savings_range: r.details?.savings_range || null,
-      provider_slug: r.details?.input_snapshot?.provider_slug || null,
-      country: r.details?.input_snapshot?.country || null,
+      provider_slug: r.details?.input_snapshot?.provider_slug || r.provider_slug || r.provider || null,
+      country: r.details?.input_snapshot?.country || r.country || null,
       currency: r.currency || r.details?.input_snapshot?.currency || 'EUR',
+      detail_available: Boolean(r?.details?.engine_result),
+      legacy_summary: !r?.details?.engine_result,
     }));
 
     return Response.json({ ok: true, items });

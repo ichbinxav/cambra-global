@@ -427,7 +427,7 @@ export default function AdminLayout() {
   const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex w-full max-w-full overflow-x-hidden">
       {/* Sidebar — glass, matches landing */}
       <aside className={`fixed inset-y-0 left-0 z-[70] w-56 glass-panel border-r border-white/[0.06] flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="px-5 py-5 border-b border-border/60">
@@ -545,9 +545,9 @@ export default function AdminLayout() {
       {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main — transparent, inherits body gradient */}
-      <div className="flex-1 lg:ml-56 min-h-screen flex flex-col">
+      <div className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden lg:ml-56 lg:w-auto min-h-screen flex flex-col">
         {/* Top bar — glass */}
-        <header className="sticky top-0 z-20 h-12 glass-panel border-b border-white/[0.06] flex items-center px-5 gap-3">
+        <header className="sticky top-0 z-20 h-12 min-w-0 glass-panel border-b border-white/[0.06] flex items-center px-3 sm:px-5 gap-3">
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setSidebarOpen(true); }}
@@ -557,7 +557,7 @@ export default function AdminLayout() {
           >
             <Menu size={20} />
           </button>
-          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <div className="min-w-0 overflow-hidden text-xs text-muted-foreground flex items-center gap-1.5">
             {location.pathname.split("/").filter(Boolean).map((seg, i, arr) => {
               const partialPath = `/${arr.slice(0, i + 1).join("/")}`;
               const item = NAV.find((entry) => entry.path === partialPath);
@@ -589,7 +589,7 @@ export default function AdminLayout() {
         </header>
 
         <main className="relative flex-1">
-          <div className="relative p-6 max-w-[1400px] mx-auto w-full text-foreground">
+          <div className="relative min-w-0 max-w-[1400px] w-full max-w-full mx-auto p-4 sm:p-6 text-foreground">
             <Outlet />
           </div>
         </main>

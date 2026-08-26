@@ -509,7 +509,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "sha256": "a785b0fdaf9d6ada1bf56d258ce73e62563b83a23506ab885a572f6c218d69e3"
+      "sha256": "8217ee2d6064344b8e7ecb1c40c7563799b1b1e682c08a0eaa9e80bc5ca506d0"
     },
     {
       "path": "base44/functions/createEligibleRecoverInvoices/entry.ts",

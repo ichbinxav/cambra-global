@@ -87,10 +87,10 @@ export const CHAT_TOOLS = [
   },
   {
     name: "founder_os_query",
-    description: "PRIMARY COMPANY INTELLIGENCE TOOL. Read-only governed query across CAMBRA. Use for company summary, recommended founder actions, WHY a canonical metric has its current state, universal search, Merchant 360, Provider 360, negotiation war room and approval decision evidence. Never invent joins in prose when this tool can retrieve them.",
+    description: "PRIMARY COMPANY INTELLIGENCE TOOL. Read-only governed query across CAMBRA. Use scheduler_health for scheduler activity, worker freshness or REVIEW_REQUIRED controls; use why_metric only for canonical founder metrics. Also supports company summary, recommended actions, universal search, Merchant 360, Provider 360, negotiation war room and approval evidence. Never invent joins in prose when this tool can retrieve them.",
     function: "founderOSQuery",
     risk_level: 1,
-    input_schema: {type:"object",properties:{mode:{type:"string",enum:["company_summary","recommended_actions","metric_catalog","search","merchant_360","provider_360","company_graph","negotiation_war_room","decision","why_metric"]},query:{type:"string"},metric:{type:"string"},brand_id:{type:"string"},provider_id:{type:"string"},case_id:{type:"string"},approval_id:{type:"string"},entity_type:{type:"string",enum:["merchant","provider"]},id:{type:"string"}},required:["mode"]},
+    input_schema: {type:"object",properties:{mode:{type:"string",enum:["company_summary","recommended_actions","metric_catalog","search","merchant_360","provider_360","company_graph","negotiation_war_room","decision","scheduler_health","why_metric"]},query:{type:"string"},metric:{type:"string"},brand_id:{type:"string"},provider_id:{type:"string"},case_id:{type:"string"},approval_id:{type:"string"},entity_type:{type:"string",enum:["merchant","provider"]},id:{type:"string"}},required:["mode"]},
   },
   {
     name: "documentation_query",

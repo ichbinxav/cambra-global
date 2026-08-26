@@ -1660,9 +1660,25 @@ export const GO_CRITICAL_SCHEDULERS = Object.freeze([
 export function evaluateSchedulerEvidence(
   runs: any[] = [],
   nowMs = Date.now(),
+  completionEvidence: Record<string, any> = {},
 ) {
+  const augmentedRuns = [...runs];
+  for (const [workerKey, evidence] of Object.entries(completionEvidence || {})) {
+    const completedAt = String(evidence?.completed_at || evidence?.created_at || '');
+    if (!Number.isFinite(Date.parse(completedAt))) continue;
+    augmentedRuns.push({
+      worker_key: workerKey,
+      invocation_kind: 'SCHEDULED',
+      status: 'COMPLETED',
+      started_at: completedAt,
+      completed_at: completedAt,
+      run_key: `completion-evidence:${workerKey}:${String(evidence?.id || completedAt)}`,
+      evidence_source: evidence?.source || 'authoritative_completion_evidence',
+      evidence_id: evidence?.id || null,
+    });
+  }
   const rows = GO_CRITICAL_SCHEDULERS.map((required) => {
-    const workerRuns = runs.filter((run: any) =>
+    const workerRuns = augmentedRuns.filter((run: any) =>
       run.worker_key === required.worker_key &&
       run.invocation_kind === 'SCHEDULED'
     );
@@ -1737,5 +1753,58 @@ export function evaluateSchedulerEvidence(
       0,
     ),
     version: SCHEDULER_GUARD_VERSION,
+  };
+}
+
+export function disasterRecoveryCompletionEvidence(events: any[] = []) {
+  const completed = events
+    .filter((row: any) => row?.event_type === 'disaster_recovery_backup_completed')
+    .sort((a: any, b: any) => Date.parse(b.created_at || '') - Date.parse(a.created_at || ''))[0] || null;
+  const failed = events
+    .filter((row: any) => row?.event_type === 'disaster_recovery_backup_failed')
+    .sort((a: any, b: any) => Date.parse(b.created_at || '') - Date.parse(a.created_at || ''))[0] || null;
+  if (!completed || (failed && Date.parse(failed.created_at || '') > Date.parse(completed.created_at || ''))) return {};
+  return {
+    disasterRecoveryBackup: {
+      id: completed.id,
+      completed_at: completed.created_at,
+      source: 'OperationalLog.disaster_recovery_backup_completed',
+    },
+  };
+}
+
+export async function readCriticalSchedulerEvidence(
+  svc: any,
+  nowMs = Date.now(),
+  completionEvidence: Record<string, any> = {},
+) {
+  const partitions = await Promise.all(GO_CRITICAL_SCHEDULERS.map(async (required) => {
+    try {
+      const rows = await svc.entities.SchedulerRun.filter({
+        worker_key: required.worker_key,
+        invocation_kind: 'SCHEDULED',
+      }, '-started_at', 100);
+      if (!Array.isArray(rows)) throw new Error('scheduler_partition_unavailable');
+      return { worker_key: required.worker_key, rows, available: true };
+    } catch {
+      return { worker_key: required.worker_key, rows: [], available: false };
+    }
+  }));
+  const unavailable = new Set(partitions.filter((row) => !row.available).map((row) => row.worker_key));
+  const evaluated = evaluateSchedulerEvidence(
+    partitions.flatMap((row) => row.rows),
+    nowMs,
+    completionEvidence,
+  );
+  const rows = evaluated.rows.map((row) => unavailable.has(row.worker_key)
+    ? { ...row, status: 'UNKNOWN', active: false, evidence_coverage: 'UNAVAILABLE' }
+    : { ...row, evidence_coverage: 'COMPLETE' });
+  return {
+    ...evaluated,
+    active: rows.every((row) => row.active),
+    rows,
+    missing_or_stale: rows.filter((row) => !row.active).map((row) => row.worker_key),
+    unavailable_workers: [...unavailable],
+    read_mode: 'PER_WORKER_PARTITION',
   };
 }

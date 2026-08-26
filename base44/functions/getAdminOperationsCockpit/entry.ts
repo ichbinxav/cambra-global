@@ -14,6 +14,7 @@ const WORKERS = [
   {
     id: 'webhook_dlq',
     agent: 'webhook_dead_letter_processor',
+    worker_key: 'processWebhookDeadLetters',
     label: 'Webhook DLQ',
     cadence: '5 min',
     maxAgeMinutes: 15,
@@ -21,6 +22,7 @@ const WORKERS = [
   {
     id: 'production_health',
     agent: 'ecl_production_health',
+    worker_key: 'eclProductionHealth',
     label: 'Production health',
     cadence: '10 min',
     maxAgeMinutes: 25,
@@ -28,6 +30,7 @@ const WORKERS = [
   {
     id: 'ecl_lifecycle',
     agent: 'ecl_lifecycle_scheduler',
+    worker_key: 'eclLifecycleScheduler',
     label: 'ECL lifecycle',
     cadence: '15 min',
     maxAgeMinutes: 40,
@@ -35,6 +38,7 @@ const WORKERS = [
   {
     id: 'billing_reconciliation',
     agent: 'recover_billing_reconciler',
+    worker_key: 'reconcileRecoverBilling',
     label: 'Billing reconciliation',
     cadence: '15 min',
     maxAgeMinutes: 40,
@@ -63,6 +67,7 @@ Deno.serve(async (req) => {
   }
 
   const svc = base44.asServiceRole;
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const degradedSources: string[] = [];
   const truncatedSources: string[] = [];
   const observations = new Map<string, {
@@ -96,7 +101,10 @@ Deno.serve(async (req) => {
   };
 
   const [
-    tasks,
+    failedTasksByCompletion,
+    failedTasksByCreation,
+    activeTasks,
+    workerRunBuckets,
     autonomyIncidents,
     operationalIncidents,
     approvals,
@@ -107,10 +115,25 @@ Deno.serve(async (req) => {
     deadLetters,
   ] = await Promise.all([
     safeRead(
-      'AgentTask',
+      'AgentTaskFailed24hByCompletion',
       500,
-      (limit) => svc.entities.AgentTask.list('-created_date', limit),
+      (limit) => svc.entities.AgentTask.filter({ status: 'failed', completed_at: { $gte: since24h } }, '-completed_at', limit),
     ),
+    safeRead(
+      'AgentTaskFailed24hByCreation',
+      500,
+      (limit) => svc.entities.AgentTask.filter({ status: 'failed', created_date: { $gte: since24h } }, '-created_date', limit),
+    ),
+    safeRead(
+      'AgentTaskActive',
+      500,
+      (limit) => svc.entities.AgentTask.filter({ status: { $nin: [...TERMINAL_TASKS] } }, '-created_date', limit),
+    ),
+    Promise.all(WORKERS.map((worker) => safeRead(
+      `SchedulerRun:${worker.worker_key}`,
+      100,
+      (limit) => svc.entities.SchedulerRun.filter({ worker_key: worker.worker_key, invocation_kind: 'SCHEDULED' }, '-started_at', limit),
+    ))),
     safeRead(
       'AutonomyIncident',
       500,
@@ -163,6 +186,10 @@ Deno.serve(async (req) => {
     ),
   ]);
 
+  const taskMap = new Map<string, any>();
+  for (const task of [...failedTasksByCompletion, ...failedTasksByCreation, ...activeTasks]) taskMap.set(String(task.id), task);
+  const tasks = [...taskMap.values()].sort((a: any, b: any) => String(b.created_date || '').localeCompare(String(a.created_date || '')));
+
   const canonicalIncidents = canonicalIncidentView(
     autonomyIncidents,
     operationalIncidents,
@@ -180,20 +207,19 @@ Deno.serve(async (req) => {
         observations.get('OperationalIncident')?.coverage_status === 'COMPLETE',
     },
   );
-  const workers = WORKERS.map((w) => {
-    const latest = tasks.find((t: any) => t.agent_name === w.agent) || null;
-    const at = latest?.completed_at || latest?.started_at ||
-      latest?.created_date || null;
+  const workers = WORKERS.map((w, index) => {
+    const latest = workerRunBuckets[index]?.[0] || null;
+    const at = latest?.completed_at || latest?.started_at || null;
     const age = ageMinutes(at);
-    const healthy = !!latest && latest.status === 'completed' && age !== null &&
+    const healthy = !!latest && latest.status === 'COMPLETED' && age !== null &&
       age <= w.maxAgeMinutes;
     return {
       ...w,
-      status: healthy ? 'healthy' : latest?.status === 'failed' ? 'failed' : 'stale',
+      status: healthy ? 'healthy' : latest?.status === 'FAILED' ? 'failed' : latest ? 'stale' : 'unknown',
       last_run_at: at,
       age_minutes: age,
-      task_id: latest?.id || null,
-      error: latest?.error || null,
+      scheduler_run_id: latest?.id || null,
+      error: latest?.details_json?.reason || null,
     };
   });
   const agentTasks = tasks.filter((t: any) => t.brand_id === PLATFORM || t.agent_name);

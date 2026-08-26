@@ -26,6 +26,8 @@ const HISTORY_COPY = {
     emptyTitle: "No analyses yet",
     emptyMessage: "Run your first payments audit. It takes about two minutes.",
     runAnalysis: "Run your analysis",
+    legacy: "Historical",
+    legacyUnavailable: "Historical summary · detailed payments report unavailable",
   },
   fr: {
     estimate: "Estimation",
@@ -40,6 +42,8 @@ const HISTORY_COPY = {
     emptyTitle: "Aucune analyse pour le moment",
     emptyMessage: "Lancez votre premier audit de paiement. Cela prend environ deux minutes.",
     runAnalysis: "Lancer votre analyse",
+    legacy: "Historique",
+    legacyUnavailable: "Résumé historique · rapport de paiement détaillé indisponible",
   },
   es: {
     estimate: "Estimación",
@@ -54,6 +58,8 @@ const HISTORY_COPY = {
     emptyTitle: "Aún no hay análisis",
     emptyMessage: "Ejecuta tu primera auditoría de pagos. Tarda unos dos minutos.",
     runAnalysis: "Ejecutar tu análisis",
+    legacy: "Histórico",
+    legacyUnavailable: "Resumen histórico · informe detallado de pagos no disponible",
   },
 };
 
@@ -89,10 +95,12 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
   const money = (value) => typeof value === "number" && isFinite(value)
     ? formatCurrency(Math.round(value), currency)
     : "—";
+  const hasDetail = item.detail_available === true;
+  const Card = hasDetail ? "button" : "div";
   return (
-    <button
-      onClick={() => onOpen(item)}
-      className="w-full text-left rounded-2xl p-5 transition-all hover:border-cyan-400/40 hover:bg-white/[0.05] group"
+    <Card
+      {...(hasDetail ? { type: "button", onClick: () => onOpen(item) } : {})}
+      className={`w-full text-left rounded-2xl p-5 transition-all ${hasDetail ? "hover:border-cyan-400/40 hover:bg-white/[0.05] group" : "cursor-default"}`}
       style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -103,7 +111,7 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full shrink-0"
               style={{ background: "rgba(34,211,238,0.12)", color: "rgba(34,211,238,0.95)", border: "1px solid rgba(34,211,238,0.25)" }}
             >
-              {copy.estimate}
+              {hasDetail ? copy.estimate : copy.legacy}
             </span>
           </div>
           <p className="text-[11px] text-white/40">
@@ -128,10 +136,10 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
           )}
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-1 text-[11px] text-cyan-300/70 group-hover:text-cyan-300 transition-colors">
-        {copy.openReport} <ArrowRight size={11} />
+      <div className={`mt-3 flex items-center gap-1 text-[11px] transition-colors ${hasDetail ? "text-cyan-300/70 group-hover:text-cyan-300" : "text-white/40"}`}>
+        {hasDetail ? <>{copy.openReport} <ArrowRight size={11} /></> : copy.legacyUnavailable}
       </div>
-    </button>
+    </Card>
   );
 }
 
@@ -160,7 +168,7 @@ export default function ResultsHistory() {
   }, []);
 
   const openReport = (item) => {
-    if (item.id) {
+    if (item.id && item.detail_available === true) {
       navigate(`/Results?result=${encodeURIComponent(item.id)}`);
     }
   };

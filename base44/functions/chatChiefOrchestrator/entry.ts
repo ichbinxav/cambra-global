@@ -59,6 +59,18 @@ const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 
 const BULK_THRESHOLD = 5;
 
+function commandLoopFallback(loop: any) {
+  const failed = [...(loop?.steps || [])].reverse().find((step: any) =>
+    ['ERRORED', 'REFUSED', 'AMBIGUOUS'].includes(String(step?.status || ''))
+  );
+  const reason = String(failed?.result_summary || failed?.reason || loop?.blockers?.[0] || loop?.outcome || 'unknown_failure')
+    .replaceAll('_', ' ')
+    .slice(0, 300);
+  if (failed) return `No pude completar la consulta con ${failed.tool}: ${reason}. No se ejecutó ninguna acción externa.`;
+  if (loop?.outcome === 'COMPLETED') return 'La consulta terminó sin una respuesta narrativa. No se ejecutó ninguna acción externa.';
+  return `No pude completar la consulta: ${reason}. No se ejecutó ninguna acción externa.`;
+}
+
 function effectiveToolInput(tool: any, toolInput: any) {
   const modelInput = toolInput && typeof toolInput === "object" ? toolInput : {};
   const effectiveInput = { ...modelInput, ...(tool.fixed_input || {}) };
@@ -291,17 +303,18 @@ Deno.serve(async (req) => {
     }
 
     const chained = loop.steps.filter((step: any) => step.status === 'EXECUTED');
+    const finalAssistantText = loopAssistantText || loop.assistant_text || commandLoopFallback(loop);
     await base44.asServiceRole.entities.ChatMessage.create({
       conversation_id, role: "assistant",
-      content: loopAssistantText || loop.assistant_text || "(no response)",
+      content: finalAssistantText,
       tool_calls_json: loop.steps.map((step: any) => ({
-        name: step.tool, status: step.status.toLowerCase(), input: step.input, reason: step.reason || null,
+        name: step.tool, status: step.status.toLowerCase(), input: step.input, reason: step.reason || null, result_summary: step.result_summary || null,
       })),
       blocked_by_gate: loop.outcome === 'BLOCKED' ? 'loop_refused' : undefined,
     });
     return Response.json({
       ok: loop.outcome === 'COMPLETED' || loop.outcome === 'PARTIAL',
-      assistant_text: loopAssistantText || loop.assistant_text,
+      assistant_text: finalAssistantText,
       outcome: loop.outcome,
       blockers: loop.blockers,
       steps_run: chained.length,

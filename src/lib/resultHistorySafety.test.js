@@ -29,6 +29,10 @@ describe("owned payments history detail contract", () => {
     expect(reportsHistory).toContain("const hasDetail = !!r?.details?.engine_result");
     expect(reportsHistory).toContain("? <Link key={r.id} to={`/Results?result=${encodeURIComponent(r.id)}`}");
     expect(reportsHistory).not.toContain("/Results?id=");
+    expect(reader).toContain("detail_available: Boolean(r?.details?.engine_result)");
+    expect(reader).toContain("legacy_summary: !r?.details?.engine_result");
+    expect(history).toContain("item.detail_available === true");
+    expect(history).toContain("legacyUnavailable");
   });
 
   it("returns each history amount with its own currency", () => {

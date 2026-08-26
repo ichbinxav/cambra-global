@@ -1,6 +1,6 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { evaluateSchedulerEvidence } from '../../shared/schedulerRun.ts';
+import { disasterRecoveryCompletionEvidence, readCriticalSchedulerEvidence } from '../../shared/schedulerRun.ts';
 import { projectDocumentationHealth } from '../../shared/documentationHealth.ts';
 import { integrationHealthScope, productionIntegrationHealthIssue } from '../../shared/integrationHealth.ts';
 
@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     if (u.role !== 'admin') return Response.json({ ok:false, error:'Forbidden' }, { status:403 });
     const s = b.asServiceRole;
     const t = Date.now();
-    const [runs, incidents, integrations, failedTasks, pricing, knowledge, security, documentation, production, alertDeliveries, schedulerRuns, disasterRecoveryExercises, disasterRecoveryEvents] = await Promise.all([
+    const [runs, incidents, integrations, failedTasks, pricing, knowledge, security, documentation, production, alertDeliveries, disasterRecoveryExercises, disasterRecoveryEvents] = await Promise.all([
       s.entities.MaintenanceRun.list('-started_at', 50),
       s.entities.AutonomyIncident.filter({ status:'open' }, '-last_seen_at', 500),
       s.entities.Integration.list('-last_sync_at', 2000),
@@ -23,7 +23,6 @@ Deno.serve(async (req) => {
       s.entities.DocumentationHealthAssessment.list('-calculated_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.ProductionReadinessSnapshot.list('-calculated_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.IncidentAlertDelivery.list('-updated_at', 200).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
-      s.entities.SchedulerRun.list('-started_at', 5000).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.DisasterRecoveryExercise.list('-completed_at', 20).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
       s.entities.OperationalLog.filter({ event_type:{ $in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested'] } }, '-created_at', 50).catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:[],severity:'secondary'})),
     ]);
@@ -38,7 +37,7 @@ Deno.serve(async (req) => {
     const autoEligible = incidents.filter((x:any) => x.automation_eligibility !== 'human_required');
     const human = incidents.filter((x:any) => x.automation_eligibility === 'human_required' || x.workflow_state === 'human_review');
     const recentSecurity = security.filter((x:any) => x.success === false && t - Date.parse(x.created_date || '') < 24 * 3600000);
-    const schedulerHealth=evaluateSchedulerEvidence(schedulerRuns,t);
+    const schedulerHealth=await readCriticalSchedulerEvidence(s,t,disasterRecoveryCompletionEvidence(disasterRecoveryEvents));
     return Response.json({
       ok:true,
       generated_at:new Date().toISOString(),

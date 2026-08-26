@@ -2,18 +2,18 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "21cbfe5eb7d4d3e18a9a6841afdc3c1118c6f14c015e84644f40e6669e55fec5",
+  "input_fingerprint_sha256": "6690b64219fa728c3c2c07f29d575362c4fbfbe7f7b5a27498e461e02da9d2bd",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "f6ea814570ae06878eab8bbe3c0334705fd2048c508d5a07cc004a616568fdb8",
+      "sha256": "8de938576c859ef0565c487011c168fc6914c49e2a022e140000e9c5e8ca3e3c",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "826be4e7ad1c025c28665a8621b7cabaa4a064fcb2d27cd0256a047adcdc031c",
+      "sha256": "232c43adb64a98915abc41d2ed03419cba005278331317805e15bc0ce6648ed8",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
@@ -25,7 +25,7 @@
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "3addc26e67494587e02bea9dda73d8112ca35094f561227856087d8525c1b804",
+      "sha256": "3fe728c5348e8bd2b520f4d47f265cd9ffcbe9bda73c84a520808e84cd21fafd",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -183,8 +183,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "24a091ff6fa651d5df894e58c93aa6f46c2583a62c70f30220dd0b72f70dc727",
-      "bytes": 41629
+      "sha256": "a18be33e125e8ec143f2d3d9f4a49373067733effd2cf707c383d591cc1660db",
+      "bytes": 46980
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
@@ -193,8 +193,8 @@
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
-      "sha256": "7d38069b1b58266ab099041a8e27417959afcef415f8f60e72b3c948c8dc6d07",
-      "bytes": 10477
+      "sha256": "65dfe1fc01aa887d1bc9edc25c35fc6cf56ff3e079ac26a5d14a2d118547971c",
+      "bytes": 11818
     },
     {
       "path": "base44/functions/intelligenceAdmin/entry.ts",

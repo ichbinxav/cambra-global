@@ -8,6 +8,7 @@ const SCHEDULER_RECOVERY_WORKERS = [
   ["recoverAutopilotWorker", "Recover Autopilot"],
   ["alwaysOnLeadDiscoveryWorker", "Always-On Discovery"],
   ["instantlyProviderEventRetryWorker", "Instantly Event Retry"],
+  ["instantlyReconciliationWorker", "Instantly Reconciliation"],
   ["getEuropeMarketsCommandCenter", "Europe Markets"],
   ["autonomousCompanyOrchestrator", "Company Orchestrator"],
   ["disasterRecoveryBackup", "Disaster Recovery Backup"],

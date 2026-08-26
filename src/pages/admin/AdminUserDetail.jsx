@@ -22,34 +22,54 @@ const STATUS_COLORS = {
 export default function AdminUserDetail() {
   const { id } = useParams();
   const urlParams = new URLSearchParams(window.location.search);
-  const email = urlParams.get("email");
+  const emailHint = urlParams.get("email");
 
   const [user, setUser] = useState(null);
+  const [ownerEmail, setOwnerEmail] = useState("");
   const [brand, setBrand] = useState(null);
   const [results, setResults] = useState([]);
   const [deals, setDeals] = useState([]);
   const [notes, setNotes] = useState([]);
   const [newNote, setNewNote] = useState("");
   const [noteError, setNoteError] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!email) return;
-    Promise.all([
-      base44.entities.User.filter({ id }),
-      base44.entities.Brand.filter({ created_by: email }),
-      base44.entities.AnalyzerResult.filter({ created_by: email }),
-      base44.entities.UserDeal.filter({ user_email: email }),
-      base44.entities.AdminNote.filter({ target_id: email }),
-      // base44.auth.me() is still read so the page can render who is signed in, but the note
-      // AUTHOR now comes from the server's authenticated actor — the browser's idea of who it
-      // is was what made `|| "admin"` possible.
-    ]).then(([users, brands, res, ud, nts]) => {
-      setUser(users[0]); setBrand(brands[0]); setResults(res);
-      setDeals(ud); setNotes(nts);
-      setLoading(false);
-    });
-  }, [id, email]);
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const users = await base44.entities.User.filter({ id }, "-created_date", 2);
+        const matched = (users || []).find((candidate) => candidate.id === id) || users?.[0] || null;
+        if (!matched) {
+          if (alive) setUser(null);
+          return;
+        }
+        const authoritativeEmail = matched.email || emailHint || "";
+        if (!authoritativeEmail) throw new Error("User email is unavailable");
+        const [brands, res, ud, nts] = await Promise.all([
+          base44.entities.Brand.filter({ created_by: authoritativeEmail }, "-created_date", 2),
+          base44.entities.AnalyzerResult.filter({ created_by: authoritativeEmail }, "-created_date", 100),
+          base44.entities.UserDeal.filter({ user_email: authoritativeEmail }, "-created_date", 100),
+          base44.entities.AdminNote.filter({ target_id: authoritativeEmail }, "-created_date", 100),
+        ]);
+        if (!alive) return;
+        setUser(matched);
+        setOwnerEmail(authoritativeEmail);
+        setBrand(brands[0] || null);
+        setResults(res || []);
+        setDeals(ud || []);
+        setNotes(nts || []);
+      } catch (error) {
+        if (alive) setLoadError(error?.message || "Could not load user");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [id, emailHint]);
 
   const addNote = async () => {
     if (!newNote.trim()) return;
@@ -58,15 +78,16 @@ export default function AdminUserDetail() {
     // it — indistinguishable from a real one afterwards. The author is now the authenticated
     // actor on the server, and the write refuses when there is no actor.
     const result = await callIntegration("record_note", {
-      target_type: "user", target_id: email, note: newNote,
+      target_type: "user", target_id: ownerEmail, note: newNote,
     }).catch((caught) => ({ ok: false, error: caught?.data?.reason || caught?.message }));
     if (!result?.ok) { setNoteError(result?.error || "Note refused."); return; }
     setNoteError(null);
-    setNotes(prev => [...prev, { id: result.note_id, target_type: "user", target_id: email, note: newNote, author: result.author }]);
+    setNotes(prev => [...prev, { id: result.note_id, target_type: "user", target_id: ownerEmail, note: newNote, author: result.author }]);
     setNewNote("");
   };
 
   if (loading) return <div className="flex items-center justify-center py-40"><div className="w-6 h-6 rounded-full border-2 border-border border-t-foreground animate-spin" /></div>;
+  if (loadError) return <div role="alert" className="py-20 text-center text-red-600">{loadError}</div>;
   if (!user) return <div className="py-20 text-center text-muted-foreground">User not found</div>;
 
   const latestResult = results[0];
@@ -74,21 +95,21 @@ export default function AdminUserDetail() {
   const totalActiveSavings = activeDeals.reduce((s, d) => s + (d.estimated_savings || 0), 0);
 
   return (
-    <div className="space-y-5 max-w-4xl">
-      <div className="flex items-center gap-3">
+    <div className="min-w-0 max-w-4xl space-y-5">
+      <div className="flex min-w-0 items-center gap-3">
         <Link to="/admin/users" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={12} /> Users
         </Link>
         <span className="text-border">/</span>
-        <span className="text-xs font-medium">{user.full_name}</span>
+        <span className="truncate text-xs font-medium">{user.full_name}</span>
       </div>
 
       {/* Header */}
-      <div className="p-6 rounded-xl border border-border/50 bg-card">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-black tracking-tight">{user.full_name}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{user.email}</p>
+      <div className="min-w-0 p-4 sm:p-6 rounded-xl border border-border/50 bg-card">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="break-words text-xl font-black tracking-tight">{user.full_name}</h1>
+            <p className="break-all text-sm text-muted-foreground mt-0.5">{user.email}</p>
             {brand && <p className="text-xs text-muted-foreground/50 mt-1">{brand.name} · {brand.country || "—"}</p>}
           </div>
           <div className="text-right">
@@ -98,7 +119,7 @@ export default function AdminUserDetail() {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-4 mt-5 pt-5 border-t border-border/30">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-border/30">
           {[
             { label: "Analyses run", val: results.length },
             { label: "Active deals", val: activeDeals.length },
@@ -170,7 +191,7 @@ export default function AdminUserDetail() {
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50">Deal History</p>
         </div>
         {deals.length > 0 ? deals.map(d => (
-          <div key={d.id} className="px-5 py-3.5 border-b border-border/20 last:border-0 flex items-center gap-3">
+          <div key={d.id} className="px-5 py-3.5 border-b border-border/20 last:border-0 flex flex-wrap items-center gap-3">
             <div className="flex-1">
               <p className="text-sm font-semibold">{d.deal_name}</p>
               <p className="text-[11px] text-muted-foreground/40">{d.provider} · {d.category}</p>
@@ -203,7 +224,7 @@ export default function AdminUserDetail() {
           {noteError && (
             <p data-testid="note-error" className="text-[11px] text-amber-800 pt-2">{noteError}</p>
           )}
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             <input
               value={newNote} onChange={e => setNewNote(e.target.value)}
               placeholder="Add internal note..."

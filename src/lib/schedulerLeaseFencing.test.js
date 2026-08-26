@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   claimSchedulerRun,
+  disasterRecoveryCompletionEvidence,
+  evaluateSchedulerEvidence,
   finishSchedulerRun,
   finishSchedulerRunOrThrow,
   heartbeatSchedulerRun,
@@ -82,6 +84,17 @@ function schedulerCallerInventory() {
 }
 
 describe("scheduler lease and fencing authority", () => {
+  it("uses newer authoritative backup completion evidence without hiding a later failure", () => {
+    const completed = { id: "ok", event_type: "disaster_recovery_backup_completed", created_at: "2026-08-26T01:30:00.000Z" };
+    const failedBefore = { id: "old-fail", event_type: "disaster_recovery_backup_failed", created_at: "2026-08-26T01:00:00.000Z" };
+    const evidence = disasterRecoveryCompletionEvidence([failedBefore, completed]);
+    const health = evaluateSchedulerEvidence([
+      { worker_key: "disasterRecoveryBackup", invocation_kind: "SCHEDULED", status: "FAILED", started_at: failedBefore.created_at, run_key: "failed" },
+    ], Date.parse("2026-08-26T02:00:00.000Z"), evidence);
+    expect(health.rows.find((row) => row.worker_key === "disasterRecoveryBackup")).toMatchObject({ status: "HEALTHY", active: true });
+    expect(disasterRecoveryCompletionEvidence([completed, { ...failedBefore, created_at: "2026-08-26T01:45:00.000Z" }])).toEqual({});
+  });
+
   it("marks only 2xx handler responses as successful scheduler executions", () => {
     expect(schedulerHttpResponseSucceeded(new Response(null, { status: 200 }))).toBe(true);
     expect(schedulerHttpResponseSucceeded(new Response(null, { status: 299 }))).toBe(true);

@@ -54,7 +54,7 @@ export default function RecoverMandatePanel() {
   const blocker = (ctx.blockers || []).map((b) => c.blockers[b]).find(Boolean);
 
   return (
-    <div className="cambra-card p-7 mb-6">
+    <div className="cambra-card min-w-0 overflow-hidden p-4 sm:p-7 mb-6">
       <div className="relative">
         <p className="cc-eyebrow mb-1">{c.eyebrow}</p>
         <p className="text-sm font-semibold text-white mb-4">{isAccepted ? c.authorized : c.authorize}</p>

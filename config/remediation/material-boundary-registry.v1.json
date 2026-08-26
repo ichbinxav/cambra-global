@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "f11a1db5875d70e981d19934326e99cc61227fed9a9350df51785ecce3dcaf33",
+  "input_fingerprint_sha256": "b37d01145d8bd4da4744992764e59a0ea9043b9435bc4af254c5488501105551",
   "input_file_count": 125,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -1633,8 +1633,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         },
         {
           "path": "base44/shared/webhookDeadLetterClaim.ts",
@@ -1765,8 +1765,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         }
       ]
     },
@@ -2600,8 +2600,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         }
       ]
     },
@@ -2855,8 +2855,8 @@
         },
         {
           "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-          "sha256": "a785b0fdaf9d6ada1bf56d258ce73e62563b83a23506ab885a572f6c218d69e3",
-          "bytes": 30472
+          "sha256": "8217ee2d6064344b8e7ecb1c40c7563799b1b1e682c08a0eaa9e80bc5ca506d0",
+          "bytes": 31284
         },
         {
           "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -3130,8 +3130,8 @@
         },
         {
           "path": "base44/functions/founderChiefOfStaff/entry.ts",
-          "sha256": "d410b6048709ffc86f2613b152c43319c6b34796a55255a02074db58a69ac560",
-          "bytes": 5645
+          "sha256": "358f16fddff2d7db32d7089bbf33e0eb4334bd4d583582c2fb310a3893aaa8f3",
+          "bytes": 8453
         },
         {
           "path": "base44/functions/founderCopilotAgent/entry.ts",
@@ -3310,8 +3310,8 @@
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
-          "sha256": "b513e175de207a725c0573da7e03fa0a6ee8ef82d38e63eedb94ff88f0665641",
-          "bytes": 31687
+          "sha256": "953b3abe9ffccea67274f387346cec16618e3942cdc46c3bb5994fdbec1b1338",
+          "bytes": 32165
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
@@ -3503,8 +3503,8 @@
       "source_evidence": [
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         },
         {
           "path": "config/scheduler-inventory.json",
@@ -3691,8 +3691,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         }
       ]
     },
@@ -3737,8 +3737,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         },
         {
           "path": "src/docs/PRODUCTION_FUNCTIONS.md",

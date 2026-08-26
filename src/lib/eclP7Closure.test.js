@@ -243,7 +243,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("status: { $in: ['dispatch_pending', 'pending_retry'] }");
     expect(WORKFLOW).toContain('admin_reconciled_orphaned_provisional_pre_effect');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
-    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP'");
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'INSTANTLY_RECONCILIATION_RECEIPTS' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP'");
     expect(WORKFLOW).toContain("'RECONCILE_NO_REPLAY'");
     expect(WORKFLOW).toContain('ACKNOWLEDGE_POST_EFFECT_NO_REPLAY');
     expect(WORKFLOW).toContain('historical_attempt_replayed: false');
@@ -252,6 +252,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("['GrowthTargetRegistry', ['created_at', 'updated_date']");
     expect(WORKFLOW).toContain('maintenance_failed_run_proves_no_downstream_effects');
     expect(WORKFLOW).toContain('legacy_time_bounded_task_proves_no_effect_started');
+    expect(WORKFLOW).toContain('instantly_reconciliation_terminal_cost_receipts_quiescent_without_domain_writes');
     expect(WORKFLOW).toContain('instantly_retry_attempt_has_zero_event_ledger_writes');
     expect(WORKFLOW).toContain('discovery_attempt_zero_writes_and_no_material_authority');
     expect(WORKFLOW).toContain('discovery_terminal_effect_receipts_quiescent_without_replay');
@@ -310,6 +311,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(UI).toContain('Acknowledge effects and reconcile');
     expect(UI).toContain('row.action === "reconcile_post_effect"');
     expect(UI).toContain('instantlyProviderEventRetryWorker');
+    expect(UI).toContain('instantlyReconciliationWorker');
     expect(UI).toContain('alwaysOnLeadDiscoveryWorker');
     expect(UI).toContain('disasterRecoveryBackupContinuation');
     expect(UI).not.toContain('entities.Invoice');

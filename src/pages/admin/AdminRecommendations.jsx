@@ -22,10 +22,10 @@ export default function AdminRecommendations(){
   useEffect(()=>{ load(); }, [q, type]);
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="min-w-0 max-w-full space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <input className="border rounded-md px-2 py-1 text-sm" placeholder="Buscar" value={q} onChange={e=>setQ(e.target.value)} />
-        <select className="border rounded-md px-2 py-1 text-sm" value={type} onChange={e=>setType(e.target.value)}>
+        <input className="min-w-0 max-w-full border rounded-md px-2 py-1 text-sm" placeholder="Buscar" value={q} onChange={e=>setQ(e.target.value)} />
+        <select className="min-w-0 max-w-full border rounded-md px-2 py-1 text-sm" value={type} onChange={e=>setType(e.target.value)}>
           {['all','vertical_priority','deal_suggestion','missing_data','next_action','opportunity_ranking'].map(t => <option key={t} value={t}>{t}</option>)}
         </select>
         <button className="border rounded-md px-2 py-1 text-sm" onClick={load}>Refrescar</button>
@@ -34,7 +34,7 @@ export default function AdminRecommendations(){
       {loading ? (
         <div className="py-20 text-center text-sm text-muted-foreground">Cargando…</div>
       ) : (
-        <div className="overflow-auto rounded-lg border">
+        <div className="w-full max-w-full overflow-x-auto rounded-lg border">
           <table className="min-w-[1100px] w-full text-sm">
             <thead className="bg-secondary/40">
               <tr>

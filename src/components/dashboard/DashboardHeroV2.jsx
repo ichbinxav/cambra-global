@@ -74,7 +74,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
 
   return (
     <div
-      className="relative rounded-3xl p-6 md:p-8 overflow-hidden"
+      className="relative rounded-3xl p-4 sm:p-6 md:p-8 overflow-hidden"
       style={{
         background: "#070c16",
         border: "1px solid rgba(255,255,255,0.09)",
@@ -99,7 +99,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
         aria-hidden
         className="pointer-events-none absolute"
         style={{
-          width: 460, height: 460, right: "-12%", top: "-32%",
+          width: "min(460px, 100%)", height: 460, right: 0, top: "-32%",
           background: "radial-gradient(circle, rgba(34,211,238,0.16) 0%, transparent 70%)",
           filter: "blur(70px)",
         }}

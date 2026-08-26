@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "b8ea82aea7791be21b6cf372499541cbd17c8159a97468073a9bd05713b5297a",
-  "material_registry_input_fingerprint_sha256": "f11a1db5875d70e981d19934326e99cc61227fed9a9350df51785ecce3dcaf33",
-  "input_fingerprint_sha256": "e7138a827861d8b4cccc70f29e7958f78578016db9c32e80c0128eef5508fe0b",
+  "material_registry_sha256": "03d8f6da1f58f6973f74d1252145d4ca160334a0f3182612fb62a5a8315cf300",
+  "material_registry_input_fingerprint_sha256": "b37d01145d8bd4da4744992764e59a0ea9043b9435bc4af254c5488501105551",
+  "input_fingerprint_sha256": "bd77c590b086f10750faf1ccba87a212113bd4820fa7a4cb412892280cf9e050",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -2030,8 +2030,8 @@
         },
         {
           "path": "base44/shared/schedulerRun.ts",
-          "sha256": "0e7b3c925ac193720a2f78c68a5be93c61c989b217a3c290cb5ea8e64a1d6242",
-          "bytes": 61395
+          "sha256": "c59d7e379a51fd34f15fdb8ad72b497f6d9c67ed252772529f04ec4de8a44527",
+          "bytes": 64305
         }
       ],
       "test_evidence": [
@@ -2042,8 +2042,8 @@
         },
         {
           "path": "src/lib/schedulerLeaseFencing.test.js",
-          "sha256": "d4b2d6b7ff7b05dd8f035fa66d0cfe122f6311a53e0091ff9a2870c2e994eef6",
-          "bytes": 37811
+          "sha256": "51cc9168934d0bd2194edd680ec54c588567e0ef8da2fd5d14fc9a836da5dd1b",
+          "bytes": 38852
         }
       ],
       "remaining_gaps": [

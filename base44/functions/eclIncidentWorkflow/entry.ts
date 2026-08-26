@@ -25,7 +25,7 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'INSTANTLY_RECONCILIATION_RECEIPTS' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
@@ -38,6 +38,7 @@ const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
     proof: 'LEGACY_RECOVER_PRE_EFFECT',
   },
   instantlyProviderEventRetryWorker: { proof: 'INSTANTLY_RETRY_ZERO_WRITES' },
+  instantlyReconciliationWorker: { proof: 'INSTANTLY_RECONCILIATION_RECEIPTS' },
   alwaysOnLeadDiscoveryWorker: { proof: 'DISCOVERY_EFFECT_RECONCILIATION' },
   disasterRecoveryBackup: { proof: 'DISASTER_RECOVERY_TERMINAL_BACKUP' },
   disasterRecoveryBackupContinuation: { proof: 'DISASTER_RECOVERY_TERMINAL_BACKUP' },
@@ -401,6 +402,113 @@ async function instantlyRetryAttemptZeroWriteProof(svc: any, attempt: any) {
   };
 }
 
+async function instantlyReconciliationReceiptProof(svc: any, attempt: any) {
+  const from = String(attempt?.started_at || '');
+  const leaseEnd = String(attempt?.lease_expires_at || '');
+  const now = new Date().toISOString();
+  const fromMs = Date.parse(from);
+  const leaseEndMs = Date.parse(leaseEnd);
+  if (!Number.isFinite(fromMs) || !Number.isFinite(leaseEndMs) || leaseEndMs < fromMs) {
+    return { ok: false, reason: 'instantly_reconciliation_lease_window_unproven', from, leaseEnd, now };
+  }
+  if (Date.now() - leaseEndMs < 60 * 60 * 1000) {
+    return { ok: false, reason: 'instantly_reconciliation_not_quiescent_long_enough', from, leaseEnd, now };
+  }
+  const afterLease = new Date(leaseEndMs + 1).toISOString();
+  const domainChecks = [
+    ['CommercialProviderState', ['updated_date', 'last_checked_at', 'last_success_at'], { provider: 'instantly' }],
+    ['OutboundSendingProfile', ['updated_date', 'last_provider_health_at'], { provider: 'instantly' }],
+    ['OutboundProviderEvent', ['updated_date', 'first_received_at', 'last_attempt_at', 'processed_at'], { provider: 'instantly' }],
+    ['CommunicationMessage', ['updated_date', 'sent_at', 'received_at'], { provider: 'instantly' }],
+    ['CommunicationThread', ['updated_date', 'last_message_at'], { external_provider: 'instantly' }],
+  ] as const;
+  const [costEvents, postLeaseCosts] = await Promise.all([
+    svc.entities.CostUsageEvent.filter({ source: 'instantlyReconciliationWorker', occurred_at: { $gte: from, $lte: leaseEnd } }, '-occurred_at', 100),
+    svc.entities.CostUsageEvent.filter({ source: 'instantlyReconciliationWorker', occurred_at: { $gte: afterLease } }, '-occurred_at', 2),
+  ]);
+  if (!Array.isArray(costEvents) || !Array.isArray(postLeaseCosts)) throw new Error('instantly_reconciliation_receipt_proof_unavailable');
+  const windowEvidence: any[] = [];
+  const postLeaseEvidence: any[] = [];
+  for (const [entityName, fields, query] of domainChecks) {
+    const [during, after] = await Promise.all([
+      changedRows(svc.entities[entityName], [...fields], from, leaseEnd, query),
+      changedRows(svc.entities[entityName], [...fields], afterLease, now, query),
+    ]);
+    windowEvidence.push({ entity: entityName, changed_ids: during.map((row: any) => row.id) });
+    postLeaseEvidence.push({ entity: entityName, changed_ids: after.map((row: any) => row.id) });
+  }
+  const changed = windowEvidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  const postLeaseChanged = postLeaseEvidence.flatMap((row) => row.changed_ids.map((id: string) => ({ entity: row.entity, id })));
+  if (postLeaseCosts.length || postLeaseChanged.length) {
+    return {
+      ok: false,
+      reason: 'instantly_reconciliation_activity_observed_after_attempt_lease',
+      mode: 'BLOCKED',
+      from,
+      leaseEnd,
+      now,
+      post_lease_cost_event_ids: postLeaseCosts.map((row: any) => row.id),
+      post_lease_changed: postLeaseChanged,
+    };
+  }
+  if (changed.length) {
+    return {
+      ok: false,
+      reason: 'instantly_reconciliation_domain_writes_require_manual_review',
+      mode: 'BLOCKED',
+      from,
+      leaseEnd,
+      now,
+      changed,
+      evidence: windowEvidence,
+    };
+  }
+  if (!costEvents.length) {
+    return {
+      ok: true,
+      reason: 'instantly_reconciliation_zero_writes_and_no_receipt',
+      mode: 'PRE_EFFECT_ZERO_WRITES',
+      from,
+      leaseEnd,
+      now,
+      evidence: windowEvidence,
+    };
+  }
+  const terminalStates = new Set(['OBSERVED', 'RECONCILED', 'VOID', 'FAILED']);
+  const receiptsTerminal = costEvents.every((row: any) =>
+    terminalStates.has(String(row?.status || '')) &&
+    Number.isFinite(Date.parse(String(row?.completed_at || ''))) &&
+    Date.parse(String(row.completed_at)) <= leaseEndMs &&
+    String(row?.event_key || '').includes(String(attempt?.run_key || ''))
+  );
+  if (!receiptsTerminal) {
+    return {
+      ok: false,
+      reason: 'instantly_reconciliation_cost_receipt_chain_incomplete',
+      mode: 'BLOCKED',
+      from,
+      leaseEnd,
+      now,
+      receipt_ids: costEvents.map((row: any) => row.id),
+      receipt_state: { receiptsTerminal },
+    };
+  }
+  return {
+    ok: true,
+    reason: 'instantly_reconciliation_terminal_cost_receipts_quiescent_without_domain_writes',
+    mode: 'POST_EFFECT_QUIESCENT',
+    from,
+    leaseEnd,
+    now,
+    evidence: {
+      cost_event_ids: costEvents.map((row: any) => row.id),
+      domain_writes: windowEvidence,
+      post_lease_domain_writes: postLeaseEvidence,
+    },
+    receipt_state: { receiptsTerminal, domainWrites: 0, postLeaseWrites: 0 },
+  };
+}
+
 async function discoveryAttemptReconciliationProof(svc: any, attempt: any) {
   const from = String(attempt?.started_at || '');
   const leaseEnd = String(attempt?.lease_expires_at || '');
@@ -567,6 +675,12 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
+  if (spec.proof === 'INSTANTLY_RECONCILIATION_RECEIPTS') {
+    domainProof = await instantlyReconciliationReceiptProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
   if (spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION') {
     domainProof = await discoveryAttemptReconciliationProof(svc, attempt);
     if (!domainProof.ok) {
@@ -581,14 +695,16 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
   }
   const discoveryPreEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'PRE_EFFECT_ZERO_WRITES';
   const discoveryPostEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
+  const instantlyPreEffectProof = spec.proof === 'INSTANTLY_RECONCILIATION_RECEIPTS' && domainProof?.mode === 'PRE_EFFECT_ZERO_WRITES';
+  const instantlyPostEffectProof = spec.proof === 'INSTANTLY_RECONCILIATION_RECEIPTS' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
   const disasterRecoveryPostEffectProof = spec.proof === 'DISASTER_RECOVERY_TERMINAL_BACKUP' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
   const domainNoTaskProof = (
     ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES'].includes(spec.proof) &&
     domainProof?.ok === true
-  ) || discoveryPreEffectProof;
+  ) || discoveryPreEffectProof || instantlyPreEffectProof;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
     allowNoTaskProof: domainNoTaskProof,
-    allowQuiescentPostEffectProof: discoveryPostEffectProof || disasterRecoveryPostEffectProof,
+    allowQuiescentPostEffectProof: discoveryPostEffectProof || instantlyPostEffectProof || disasterRecoveryPostEffectProof,
   });
   const taskId = decision.taskId || domainProof?.task_id || null;
   const task = taskId ? tasks.find((row) => row.id === taskId) : null;

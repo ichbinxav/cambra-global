@@ -51,7 +51,7 @@ export default function PaymentsMigrationCard(){
   const money = useMemo(()=>new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : lang === 'es' ? 'es-ES' : 'en-GB',{style:'currency',currency:'EUR',maximumFractionDigits:0}),[lang]);
   if (loading || !migration) return null;
 
-  return <section className="cambra-card p-7 mb-6 overflow-hidden relative">
+  return <section className="cambra-card min-w-0 p-4 sm:p-7 mb-6 overflow-hidden relative">
     <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(70% 120% at 100% 0%, rgba(57,198,240,.10), transparent 60%)'}} />
     <div className="relative">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-7">
@@ -69,9 +69,9 @@ export default function PaymentsMigrationCard(){
       <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 mb-6">
         {ORDER.map((s,i)=>{
           const done = i < current || migration.stage === 'completed'; const active = i === current && migration.stage !== 'completed';
-          return <div key={s} className={`rounded-xl border px-3 py-3 min-h-[82px] ${active?'border-cambra-cyan/40 bg-cambra-cyan/[.07]':'border-white/[.08] bg-white/[.025]'}`}>
+          return <div key={s} className={`min-w-0 rounded-xl border px-3 py-3 min-h-[82px] ${active?'border-cambra-cyan/40 bg-cambra-cyan/[.07]':'border-white/[.08] bg-white/[.025]'}`}>
             <div className="mb-2">{done?<Check size={14} className="text-emerald-400"/>:active?<Loader2 size={14} className="text-cambra-cyan animate-spin"/>:<Circle size={12} className="text-white/20"/>}</div>
-            <p className={`text-[10.5px] leading-tight font-bold ${active?'text-white':'text-white/55'}`}>{c.stages[s]}</p>
+            <p className={`break-words text-[10.5px] leading-tight font-bold ${active?'text-white':'text-white/55'}`}>{c.stages[s]}</p>
           </div>;
         })}
       </div>

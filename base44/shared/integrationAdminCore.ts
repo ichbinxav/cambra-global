@@ -32,6 +32,15 @@ async function sha256(value: unknown) {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+async function appConnectorStatus(svc: any, key: 'github' | 'outlook', label: string) {
+  try {
+    const connection = await svc.connectors.getConnection(key);
+    return { key, label, connected: Boolean(connection), status: connection ? 'connected' : 'not_connected' };
+  } catch {
+    return { key, label, connected: false, status: 'not_connected' };
+  }
+}
+
 export async function handleIntegrationAdminAction(user: any, body: any, svc: any, deps: { now?: () => string } = {}) {
   const action = text(body?.action);
   const actor = text(user?.email) || text(user?.id);
@@ -39,6 +48,14 @@ export async function handleIntegrationAdminAction(user: any, body: any, svc: an
   const now = (deps.now || (() => new Date().toISOString()))();
 
   if (action === 'registry') return json(await readIntegrationRegistry({ svc }));
+
+  if (action === 'connector_status') {
+    const connectors = await Promise.all([
+      appConnectorStatus(svc, 'github', 'GitHub'),
+      appConnectorStatus(svc, 'outlook', 'Microsoft Outlook'),
+    ]);
+    return json({ ok: true, scope: 'CAMBRA_APP_SERVICE', connectors });
+  }
 
   if (action === 'oauth_app_fields') {
     return json({

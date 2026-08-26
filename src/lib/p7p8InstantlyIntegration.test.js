@@ -365,6 +365,9 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(reconcile).toContain(
       "amount_minor:INSTANTLY_RECONCILIATION_COST_FLOOR_MINOR",
     );
+    expect(reconcile).toContain("INSTANTLY_PLAN_REQUIRED");
+    expect(reconcile).toContain("plan_upgrade_required:true");
+    expect(reconcile).toContain("reconciliation_available:false");
     expect(send).toContain("follow_up_cancelled_by_new_reply");
     expect(send).toContain("follow_up_cancelled_by_meeting_or_closed_state");
     expect(emergency).toContain("pauseAllInstantlyCampaigns");
