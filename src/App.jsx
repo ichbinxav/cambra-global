@@ -275,8 +275,8 @@ const AuthenticatedApp = () => {
         <Route path="/brandprofile" element={<Navigate to="/BrandProfile" replace />} />
         {/* CUTOVER — /Analyzer and /Results serve the Payments-only pages.
             Canonical URLs remain unchanged for SEO continuity. */}
-        <Route path="/Analyzer" element={withBoundary(<PaymentsAnalyzer />)} />
-        <Route path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route caseSensitive path="/Analyzer" element={withBoundary(<PaymentsAnalyzer />)} />
+        <Route caseSensitive path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         {/* /PaymentsAnalyzer kept as an alias — anything linking to it during
             the transition (marketing, docs, external) still resolves. */}
         <Route path="/PaymentsAnalyzer" element={<Navigate to="/Analyzer" replace />} />
@@ -291,19 +291,19 @@ const AuthenticatedApp = () => {
         <Route path="/analyzerteaser" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
         <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
-        <Route path="/Privacy" element={withBoundary(<Privacy />)} />
-        <Route path="/privacy" element={<Navigate to="/Privacy" replace />} />
-        <Route path="/Terms" element={withBoundary(<Terms />)} />
-        <Route path="/terms" element={<Navigate to="/Terms" replace />} />
-        <Route path="/Cookies" element={withBoundary(<Cookies />)} />
-        <Route path="/cookies" element={<Navigate to="/Cookies" replace />} />
+        <Route caseSensitive path="/Privacy" element={withBoundary(<Privacy />)} />
+        <Route caseSensitive path="/privacy" element={<Navigate to="/Privacy" replace />} />
+        <Route caseSensitive path="/Terms" element={withBoundary(<Terms />)} />
+        <Route caseSensitive path="/terms" element={<Navigate to="/Terms" replace />} />
+        <Route caseSensitive path="/Cookies" element={withBoundary(<Cookies />)} />
+        <Route caseSensitive path="/cookies" element={<Navigate to="/Cookies" replace />} />
         {/* DPA-1 (2026-08-16) — Data Processing Agreement + its Annex III
             (sub-processor list). Public, same shape as the other legal
             routes: canonical capitalised path + lowercase redirect. */}
-        <Route path="/Dpa" element={withBoundary(<Dpa />)} />
-        <Route path="/dpa" element={<Navigate to="/Dpa" replace />} />
-        <Route path="/Subprocessors" element={withBoundary(<Subprocessors />)} />
-        <Route path="/subprocessors" element={<Navigate to="/Subprocessors" replace />} />
+        <Route caseSensitive path="/Dpa" element={withBoundary(<Dpa />)} />
+        <Route caseSensitive path="/dpa" element={<Navigate to="/Dpa" replace />} />
+        <Route caseSensitive path="/Subprocessors" element={withBoundary(<Subprocessors />)} />
+        <Route caseSensitive path="/subprocessors" element={<Navigate to="/Subprocessors" replace />} />
         {/* FASE 1.2 — payments-only phase: deprecated routes redirect to home.
             Components kept dormant in src/pages/, restore by re-importing. */}
         <Route path="/Deals" element={<Navigate to="/" replace />} />
@@ -322,32 +322,32 @@ const AuthenticatedApp = () => {
         <Route path="/stripeanalyzer" element={<Navigate to="/" replace />} />
         <Route path="/Snapshot" element={<Navigate to="/" replace />} />
         <Route path="/snapshot" element={<Navigate to="/" replace />} />
-        <Route path="/ForProviders" element={withBoundary(<ForProviders />)} />
-        <Route path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
-        <Route path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
-        <Route path="/Partners" element={withBoundary(<Partners />)} />
-        <Route path="/partners" element={<Navigate to="/Partners" replace />} />
+        <Route caseSensitive path="/ForProviders" element={withBoundary(<ForProviders />)} />
+        <Route caseSensitive path="/forproviders" element={<Navigate to="/ForProviders" replace />} />
+        <Route caseSensitive path="/for-providers" element={<Navigate to="/ForProviders" replace />} />
+        <Route caseSensitive path="/Partners" element={withBoundary(<Partners />)} />
+        <Route caseSensitive path="/partners" element={<Navigate to="/Partners" replace />} />
         <Route path="/become-a-partner" element={<Navigate to="/Partners#apply" replace />} />
         <Route path="/Developers" element={<Navigate to="/" replace />} />
         <Route path="/developers" element={<Navigate to="/" replace />} />
         <Route path="/Developers/MCP" element={<Navigate to="/" replace />} />
         <Route path="/developers/mcp" element={<Navigate to="/" replace />} />
-        <Route path="/pricing" element={withBoundary(<Pricing />)} />
-        <Route path="/Pricing" element={<Navigate to="/pricing" replace />} />
-        <Route path="/how-it-works" element={withBoundary(<HowItWorks />)} />
-        <Route path="/HowItWorks" element={<Navigate to="/how-it-works" replace />} />
-        <Route path="/howitworks" element={<Navigate to="/how-it-works" replace />} />
-        <Route path="/Security" element={withBoundary(<Security />)} />
-        <Route path="/security" element={<Navigate to="/Security" replace />} />
+        <Route caseSensitive path="/pricing" element={withBoundary(<Pricing />)} />
+        <Route caseSensitive path="/Pricing" element={<Navigate to="/pricing" replace />} />
+        <Route caseSensitive path="/how-it-works" element={withBoundary(<HowItWorks />)} />
+        <Route caseSensitive path="/HowItWorks" element={<Navigate to="/how-it-works" replace />} />
+        <Route caseSensitive path="/howitworks" element={<Navigate to="/how-it-works" replace />} />
+        <Route caseSensitive path="/Security" element={withBoundary(<Security />)} />
+        <Route caseSensitive path="/security" element={<Navigate to="/Security" replace />} />
         <Route path="/Testimonials" element={<Navigate to="/" replace />} />
         <Route path="/testimonials" element={<Navigate to="/" replace />} />
-        <Route path="/Contact" element={withBoundary(<Contact />)} />
-        <Route path="/contact" element={<Navigate to="/Contact" replace />} />
-        <Route path="/Help" element={withBoundary(<Help />)} />
-        <Route path="/help" element={<Navigate to="/Help" replace />} />
-        <Route path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
+        <Route caseSensitive path="/Contact" element={withBoundary(<Contact />)} />
+        <Route caseSensitive path="/contact" element={<Navigate to="/Contact" replace />} />
+        <Route caseSensitive path="/Help" element={withBoundary(<Help />)} />
+        <Route caseSensitive path="/help" element={<Navigate to="/Help" replace />} />
+        <Route caseSensitive path="/Help/:slug" element={withBoundary(<HelpCategory />)} />
         {/* v62 H1 — lowercase alias redirects to the canonical /Help/:slug. */}
-        <Route path="/help/:slug" element={<HelpSlugRedirect />} />
+        <Route caseSensitive path="/help/:slug" element={<HelpSlugRedirect />} />
         <Route path="/auth/start" element={<AuthRedirect />} />
         <Route path="/LoginGate" element={<LoginGate />} />
         <Route path="/logingate" element={<Navigate to="/LoginGate" replace />} />

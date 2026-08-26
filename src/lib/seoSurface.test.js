@@ -152,6 +152,22 @@ describe("Canonical aliases and retired admin routes", () => {
       expect(match.index).toBeLessThan(shellEnd);
     });
   });
+
+  it("keeps public canonical and alias routes case-sensitive so aliases redirect", () => {
+    const caseSensitivePaths = [
+      "/Analyzer", "/analyzer", "/Privacy", "/privacy", "/Terms", "/terms",
+      "/Cookies", "/cookies", "/Dpa", "/dpa", "/Subprocessors", "/subprocessors",
+      "/ForProviders", "/forproviders", "/for-providers", "/Partners", "/partners",
+      "/pricing", "/Pricing", "/how-it-works", "/HowItWorks", "/howitworks",
+      "/Security", "/security", "/Contact", "/contact", "/Help", "/help",
+      "/Help/:slug", "/help/:slug",
+    ];
+    caseSensitivePaths.forEach((route) => {
+      expect(appJsx).toContain(`caseSensitive path="${route}"`);
+    });
+    expect(appJsx).toContain('path="/Pricing" element={<Navigate to="/pricing" replace />}');
+    expect(appJsx).toContain('path="/privacy" element={<Navigate to="/Privacy" replace />}');
+  });
 });
 
 describe("PWA assets and client health truthfulness", () => {
