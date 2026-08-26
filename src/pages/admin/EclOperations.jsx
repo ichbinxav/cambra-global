@@ -10,6 +10,8 @@ const SCHEDULER_RECOVERY_WORKERS = [
   ["instantlyProviderEventRetryWorker", "Instantly Event Retry"],
   ["getEuropeMarketsCommandCenter", "Europe Markets"],
   ["autonomousCompanyOrchestrator", "Company Orchestrator"],
+  ["disasterRecoveryBackup", "Disaster Recovery Backup"],
+  ["disasterRecoveryBackupContinuation", "Disaster Recovery Continuation"],
 ];
 const unwrap = (res) => res?.data || res || null;
 const human = (v) => String(v || "—").replaceAll("_", " ");

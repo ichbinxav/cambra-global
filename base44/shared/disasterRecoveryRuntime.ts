@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
+import { createHash } from 'node:crypto';
 import { requireAdminOrInternal } from './internalGate.ts';
+import { invokeInternal } from './invokeInternal.ts';
 import { realRestoreExerciseProjectionHash, recordRuntimeGateEvidence, runtimeDeploymentIdentity, verifyRuntimeGateEvidence } from './runtimeEvidence.ts';
 import { DISASTER_RECOVERY_ENTITY_CATALOG, DISASTER_RECOVERY_ENTITY_CATALOG_VERSION } from './generated/disasterRecoveryEntityCatalog.ts';
 import {
@@ -8,7 +10,7 @@ import {
   DR_RTO_TARGET_MINUTES, assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, collectExactReferences,
   collectOwnedFileReferences, decryptEnvelope, deepRemap, diffRecords, encryptEnvelope,
   evaluateDisasterRecoveryScheduler,
-  gzipBytes, gunzipBytes, indexRecords, parseAes256Key, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, retentionCutoff,
+  fetchTrustedBase44File, gzipBytes, gunzipBytes, indexRecords, jsonValueChunks, mapLimitDrained, parseAes256Key, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, retentionCutoff,
   restoreEnvironment, restoreEvidenceAad, safeFileName, secretLikePaths, sha256Hex, snapshotType,
   stableJson, strictMinuteDifference, stripSystemFields, persistRestoreAttestationAuthority, validateLatestCheckpointIdentity,
   validateRestoreEvidenceAttestation, validateRestoreManifestChain, validateSnapshotManifestIdentity,
@@ -16,14 +18,19 @@ import {
 import {
   createSharePointBackupStorage, DisasterRecoveryConfigurationError, MicrosoftGraphError,
   openSharePointBackupStorage, readDisasterRecoveryPreflightConfiguration,
-  verifySharePointBackupStorage,
 } from './sharePointBackupStorage.ts';
 import { readRuntimeRows, requireRuntimeSource, runtimeSourceCoverage } from './runtimeSourceRead.ts';
 
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const APP_ID='6a16288b833b3c26d7ac1fab';
 const MAX_ENTITY_ROWS=500_000;
-const ENTITY_CONCURRENCY=10;
+const BACKUP_ENTITY_BATCH_SIZE=24;
+const BACKUP_ENTITY_CONCURRENCY=6;
+const BACKUP_STAGE_READ_CONCURRENCY=1;
+const BACKUP_STAGE_VERSION='cambra-dr-backup-stage-v1';
+const BACKUP_OPERATION_VERSION='cambra-dr-backup-operation-v1';
+const BACKUP_OPERATION_PATH='Manifests/pending.backup.json.gz.aes256gcm';
+const BACKUP_STAGE_CHUNKS_PER_INVOCATION=3;
 const RESTORE_BATCH=200;
 
 function now(){return new Date().toISOString()}
@@ -48,6 +55,42 @@ async function mapLimit<T,R>(values:readonly T[],limit:number,handler:(value:T,i
  const output=new Array<R>(values.length);let cursor=0;
  const workers=Array.from({length:Math.min(limit,values.length)},async()=>{while(true){const index=cursor++;if(index>=values.length)return;output[index]=await handler(values[index],index)}});
  await Promise.all(workers);return output;
+}
+
+function backupEntityBatches(){
+ const batches:string[][]=[];
+ for(let offset=0;offset<DISASTER_RECOVERY_ENTITY_CATALOG.length;offset+=BACKUP_ENTITY_BATCH_SIZE)batches.push(DISASTER_RECOVERY_ENTITY_CATALOG.slice(offset,offset+BACKUP_ENTITY_BATCH_SIZE));
+ return batches;
+}
+
+function exactTextArray(value:any,expected:readonly string[]){
+ return Array.isArray(value)&&value.length===expected.length&&value.every((item,index)=>String(item)===expected[index]);
+}
+
+function canonicalBackupId(value:any){
+ const backupId=String(value||'');
+ if(!/^cambra-dr-\d{8}T\d{9}z-[a-f0-9]{8}$/.test(backupId))throw Object.assign(new Error('dr_backup_identity_invalid'),{code:'DR_BACKUP_IDENTITY_INVALID'});
+ return backupId;
+}
+
+function backupStageCoordinates(input:any){
+ const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),type=String(input.snapshot_type||''),checkpointFrom=input.checkpoint_from==null?null:String(input.checkpoint_from),checkpointTo=String(input.checkpoint_to||''),chunkIndex=Number(input.chunk_index),totalChunks=Number(input.total_chunks),batches=backupEntityBatches();
+ if(!['Daily','Weekly','Monthly'].includes(tier)||!['FULL','INCREMENTAL'].includes(type)||!Number.isInteger(chunkIndex)||chunkIndex<0||!Number.isInteger(totalChunks)||totalChunks!==batches.length||chunkIndex>=totalChunks||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(checkpointTo))throw Object.assign(new Error('dr_backup_stage_coordinates_invalid'),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID'});
+ if((type==='FULL'&&checkpointFrom!==null)||(type==='INCREMENTAL'&&!checkpointFrom))throw Object.assign(new Error('dr_backup_stage_checkpoint_invalid'),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID'});
+ const entityNames=batches[chunkIndex];
+ if(!exactTextArray(input.entity_names,entityNames))throw Object.assign(new Error('dr_backup_stage_catalog_slice_invalid'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
+ const ordinal=String(chunkIndex+1).padStart(3,'0'),total=String(totalChunks).padStart(3,'0'),stageFolder=`${tier}/${backupId}/staging`;
+ return{backupId,tier,type,checkpointFrom,checkpointTo,chunkIndex,totalChunks,entityNames,stageFolder,stagePath:`${stageFolder}/chunk-${ordinal}-of-${total}.json.gz.aes256gcm`,stageAad:`${backupId}|stage|${ordinal}|${total}`};
+}
+
+function unwrapFunctionData(value:any){
+ let current=value;
+ for(let layer=0;layer<6;layer++){
+  if(typeof current==='string'){try{current=JSON.parse(current);continue}catch{return current}}
+  if(current&&typeof current==='object'&&!Array.isArray(current)&&current.ok===undefined&&current.error===undefined&&'data'in current){current=current.data;continue}
+  break;
+ }
+ return current;
 }
 
 function configurationStatus(){
@@ -77,19 +120,21 @@ async function listAll(service:any,entityName:string){
 async function readLatestCheckpoint(storage:any,key:Uint8Array){
  const manifestBytes=await storage.downloadIfExists('Manifests/latest.manifest.json');
  const indexBytes=await storage.downloadIfExists('Manifests/latest.index.json.gz.aes256gcm');
- if(!manifestBytes||!indexBytes)return null;
+ if(!manifestBytes&&!indexBytes)return null;
+ if(!manifestBytes||!indexBytes)throw Object.assign(new Error('dr_latest_checkpoint_pair_incomplete'),{code:'DR_CHECKPOINT_INCOMPLETE'});
  const manifest=jsonFromBytes(manifestBytes);
  await verifyManifest(manifest);
  if(!manifest?.index?.aad||!manifest?.index?.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_manifest_invalid'),{code:'DR_CHECKPOINT_INVALID'});
  if(manifest.dr_version!==DISASTER_RECOVERY_VERSION||manifest.source_app_id!==APP_ID||manifest.source_environment!=='prod')throw Object.assign(new Error('dr_latest_checkpoint_source_identity_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
  const expectedCatalog=[...DISASTER_RECOVERY_ENTITY_CATALOG].sort(),observedCatalog=Object.keys(manifest.entity_counts||{}).sort();if(manifest.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest.entity_catalog_count!==expectedCatalog.length||observedCatalog.length!==expectedCatalog.length||observedCatalog.some((name,index)=>name!==expectedCatalog[index]))throw Object.assign(new Error('dr_latest_checkpoint_catalog_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
- if(await sha256Hex(indexBytes)!==manifest.index.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
+ if(indexBytes.byteLength!==Number(manifest.index.encrypted_bytes)||await sha256Hex(indexBytes)!==manifest.index.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const decrypted=await decryptEnvelope(indexBytes,key,manifest.index.aad);
+ if(decrypted.bytes.byteLength!==Number(manifest.index.compressed_bytes))throw Object.assign(new Error('dr_latest_checkpoint_compressed_length_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const decompressed=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
- if(await sha256Hex(decompressed)!==manifest.index.payload_sha256)throw Object.assign(new Error('dr_latest_checkpoint_payload_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
+ if(decompressed.byteLength!==Number(manifest.index.uncompressed_bytes)||await sha256Hex(decompressed)!==manifest.index.payload_sha256)throw Object.assign(new Error('dr_latest_checkpoint_payload_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const index=jsonFromBytes(decompressed);
  validateLatestCheckpointIdentity(manifest,index);
- return{manifest,index};
+ return{manifest,index,manifestBytes,indexBytes};
 }
 
 function backupIdentity(){
@@ -98,17 +143,33 @@ function backupIdentity(){
 }
 
 async function uploadEncryptedJson(storage:any,path:string,value:any,key:Uint8Array,aad:string){
- const raw=jsonBytes(value),max=assertDrPayloadWithinLimit(raw,'json'),compressed=await gzipBytes(raw,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'encrypted_envelope');
+ const max=drMaxFileBytes(),stream=new CompressionStream('gzip'),writer=stream.writable.getWriter(),output=readBoundedDrResponseBytes(new Response(stream.readable),max),settledOutput=output.then((bytes)=>({ok:true as const,bytes}),(error)=>({ok:false as const,error})),hash=createHash('sha256');let rawBytes=0,buffer='',writerError:any=null;
+ const writeText=async(text:string)=>{for(let start=0;start<text.length;){let end=Math.min(text.length,start+65536);if(end<text.length&&end>start&&text.charCodeAt(end-1)>=0xd800&&text.charCodeAt(end-1)<=0xdbff&&text.charCodeAt(end)>=0xdc00&&text.charCodeAt(end)<=0xdfff)end--;const bytes=encoder.encode(text.slice(start,end));rawBytes+=bytes.byteLength;if(rawBytes>max)throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit'),{code:'DR_OWNED_FILE_TOO_LARGE',representation:'json',bytes:rawBytes,max});hash.update(bytes);await writer.write(bytes);start=end}};
+ try{
+  for(const chunk of jsonValueChunks(value)){if(buffer.length&&buffer.length+chunk.length>=65536){await writeText(buffer);buffer=''}if(chunk.length>=65536)await writeText(chunk);else buffer+=chunk}
+  if(buffer)await writeText(buffer);await writer.close();
+ }catch(error){writerError=error;await writer.abort('dr_json_stream_write_failed').catch(()=>undefined)}
+ const result=await settledOutput;if('error'in result)throw result.error?.code?result.error:(writerError||result.error);if(writerError)throw writerError;
+ const compressed=result.bytes,envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'encrypted_envelope');
  await storage.upload(path,envelope,'application/octet-stream');
- return{path,aad,encrypted_bytes:envelope.byteLength,uncompressed_bytes:raw.byteLength,compressed_bytes:compressed.byteLength,encrypted_sha256:await sha256Hex(envelope),payload_sha256:await sha256Hex(raw),compression:'gzip',encryption:'AES-256-GCM',envelope_version:'CAMBRA-DR-AES256GCM-1'};
+ return{path,aad,encrypted_bytes:envelope.byteLength,uncompressed_bytes:rawBytes,compressed_bytes:compressed.byteLength,encrypted_sha256:await sha256Hex(envelope),payload_sha256:hash.digest('hex'),compression:'gzip',encryption:'AES-256-GCM',envelope_version:'CAMBRA-DR-AES256GCM-1'};
+}
+
+async function gunzipDigest(bytes:Uint8Array,max:number){
+ const stream=new DecompressionStream('gzip'),writer=stream.writable.getWriter(),reader=stream.readable.getReader(),hash=createHash('sha256');let outputBytes=0,writerError:any=null;
+ const output=(async()=>{while(true){const next=await reader.read();if(next.done)break;const chunk=next.value;outputBytes+=chunk.byteLength;if(outputBytes>max){await reader.cancel('dr_decompressed_payload_too_large').catch(()=>undefined);throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit'),{code:'DR_OWNED_FILE_TOO_LARGE',representation:'json',bytes:outputBytes,max})}hash.update(chunk)}return{bytes:outputBytes,sha256:hash.digest('hex')}})(),settledOutput=output.then((value)=>({ok:true as const,value}),(error)=>({ok:false as const,error}));
+ try{const owned=new Uint8Array(bytes.byteLength);owned.set(bytes);await writer.write(owned);await writer.close()}catch(error){writerError=error;await writer.abort('dr_gunzip_digest_write_failed').catch(()=>undefined)}
+ const result=await settledOutput;if('error'in result)throw result.error?.code?result.error:(writerError||result.error);if(writerError)throw writerError;return result.value;
+}
+
+async function verifyPublishedJsonArtifact(storage:any,artifact:any,key:Uint8Array,kind:string){
+ const encrypted=await storage.download(String(artifact.path));if(encrypted.byteLength!==Number(artifact.encrypted_bytes)||await sha256Hex(encrypted)!==artifact.encrypted_sha256)throw Object.assign(new Error(`dr_published_${kind}_ciphertext_mismatch`),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});
+ const opened=await decryptEnvelope(encrypted,key,String(artifact.aad));if(opened.bytes.byteLength!==Number(artifact.compressed_bytes))throw Object.assign(new Error(`dr_published_${kind}_compressed_length_mismatch`),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});
+ const plain=await gunzipDigest(opened.bytes,drMaxFileBytes());if(plain.bytes!==Number(artifact.uncompressed_bytes)||plain.sha256!==artifact.payload_sha256)throw Object.assign(new Error(`dr_published_${kind}_plaintext_mismatch`),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});return encrypted;
 }
 
 async function fetchOwnedFile(url:string){
-  const response=await fetch(url,{redirect:'error',headers:{Accept:'application/octet-stream'}});
-  if(!response.ok){await response.body?.cancel('dr_owned_file_download_failed').catch(()=>undefined);throw Object.assign(new Error('dr_owned_file_download_failed'),{code:'DR_OWNED_FILE_DOWNLOAD_FAILED',status:response.status})}
- const max=drMaxFileBytes();
- const bytes=await readBoundedDrResponseBytes(response,max);
- return{bytes,contentType:String(response.headers.get('content-type')||'application/octet-stream')};
+ return fetchTrustedBase44File(url,drMaxFileBytes());
 }
 
 async function applyRetention(storage:any){
@@ -162,53 +223,282 @@ async function readRestoreExerciseConsumerAuthority(service:any,exerciseKey:stri
  return{available:exerciseRead.status==='COMPLETE'&&markerRead.status==='COMPLETE',exact_query:true,rows:exerciseRead.value,compensation_markers:markerRead.value,blockers:[...exerciseRead.blockers,...markerRead.blockers]};
 }
 
-async function executeBackup(req:Request,service:any,input:any,actor:string){
- const sourceEnvironment=assertProductionControlPlane(req,'backup');
- const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
- const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true,initializeFolders:true}),identity=backupIdentity(),tier=String(input.retention_tier||backupTier(new Date(identity.at))) as any;
- if(!['Daily','Weekly','Monthly'].includes(tier))throw Object.assign(new Error('dr_retention_tier_invalid'),{code:'DR_RETENTION_TIER_INVALID'});
- const latest=await readLatestCheckpoint(storage,key),type=snapshotType(input.backup_mode,tier,!!latest),checkpointFrom=type==='FULL'?null:(latest?.index?.checkpoint_to||null),checkpointTo=identity.at;
- const previousEntityIndexes=latest?.index?.entities||{};
- const entityResults=await mapLimit(DISASTER_RECOVERY_ENTITY_CATALOG,ENTITY_CONCURRENCY,async(entityName)=>{
-  if(DR_EPHEMERAL_SECRET_ENTITIES.has(entityName))return{entity_name:entityName,excluded:true,exclusion_reason:'ephemeral_auth_material_not_recoverable_or_required',source_count:0,records:[],tombstones:[],index:{},redacted_fields:0};
+async function buildBackupEntityResults(service:any,entityNames:readonly string[],type:any,previousEntityIndexes:any){
+ return mapLimit(entityNames,BACKUP_ENTITY_CONCURRENCY,async(entityName)=>{
+  if(DR_EPHEMERAL_SECRET_ENTITIES.has(entityName))return{entity_name:entityName,excluded:true,exclusion_reason:'ephemeral_auth_material_not_recoverable_or_required',source_count:0,records:[],tombstones:[],index:{},redacted_fields:0,redacted_paths:[]};
   const raw=await listAll(service,entityName),redaction={fields:0,paths:[] as string[]},records=raw.map((row:any)=>redactSecrets(row,[entityName],redaction).value);
-  const remaining=secretLikePaths(records);if(remaining.length)throw Object.assign(new Error('dr_secret_redaction_incomplete'),{code:'DR_SECRET_REDACTION_INCOMPLETE',entity:entityName,paths:remaining.slice(0,20)});
+  if(records.some((row:any)=>!row?.id))throw Object.assign(new Error('dr_source_record_id_missing'),{code:'DR_SOURCE_RECORD_ID_MISSING',entity:entityName});
+  const remaining=secretLikePaths(records,[entityName]);if(remaining.length)throw Object.assign(new Error('dr_secret_redaction_incomplete'),{code:'DR_SECRET_REDACTION_INCOMPLETE',entity:entityName,paths:remaining.slice(0,20)});
   const index=await indexRecords(records),diff=diffRecords(records,index,previousEntityIndexes?.[entityName]?.records,type);
   return{entity_name:entityName,excluded:false,restorable:!DR_NON_RESTORABLE_ENTITIES.has(entityName),source_count:records.length,records:diff.records,tombstones:diff.tombstones,index,redacted_fields:redaction.fields,redacted_paths:redaction.paths};
  });
- const allFiles=new Set<string>();for(const result of entityResults)for(const url of collectOwnedFileReferences(result.records))allFiles.add(url);
- const backupRoot=`${tier}/${identity.backupId}`;await storage.ensureFolder(backupRoot);await storage.ensureFolder(`${backupRoot}/attachments`);
- const attachments:any[]=[];let attachmentIndex=0;
- for(const sourceUrl of [...allFiles].sort()){
-  const fetched=await fetchOwnedFile(sourceUrl),number=String(++attachmentIndex).padStart(5,'0'),name=safeFileName(new URL(sourceUrl).pathname.split('/').pop(),`attachment-${number}.bin`),path=`${backupRoot}/attachments/${number}-${name}.gz.aes256gcm`,aad=`${identity.backupId}|attachment|${number}`;
-  const max=assertDrPayloadWithinLimit(fetched.bytes,'attachment_plaintext'),compressed=await gzipBytes(fetched.bytes,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'attachment_envelope');await storage.upload(path,envelope,'application/octet-stream');
-  attachments.push({source_ref:sourceUrl,source_ref_sha256:await sha256Hex(sourceUrl),file_name:name,content_type:fetched.contentType,storage_path:path,aad,original_bytes:fetched.bytes.byteLength,compressed_bytes:compressed.byteLength,encrypted_bytes:envelope.byteLength,plaintext_sha256:await sha256Hex(fetched.bytes),encrypted_sha256:await sha256Hex(envelope)});
+}
+
+function validateBackupStagePayload(payload:any,coordinates:any){
+ if(!payload||payload.stage_version!==BACKUP_STAGE_VERSION||payload.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||payload.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||payload.backup_id!==coordinates.backupId||payload.snapshot_type!==coordinates.type||payload.retention_tier!==coordinates.tier||payload.checkpoint_from!==coordinates.checkpointFrom||payload.checkpoint_to!==coordinates.checkpointTo||payload.chunk_index!==coordinates.chunkIndex||payload.total_chunks!==coordinates.totalChunks||!exactTextArray(payload.entity_names,coordinates.entityNames)||!Array.isArray(payload.entity_results)||payload.entity_results.length!==coordinates.entityNames.length)throw Object.assign(new Error('dr_backup_stage_payload_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH'});
+ for(let index=0;index<coordinates.entityNames.length;index++){
+  const expected=coordinates.entityNames[index],row=payload.entity_results[index];
+  if(!row||row.entity_name!==expected||!Array.isArray(row.records)||!Array.isArray(row.tombstones)||!row.index||typeof row.index!=='object'||Array.isArray(row.index)||!Number.isSafeInteger(row.source_count)||row.source_count<0||!Number.isSafeInteger(row.redacted_fields)||row.redacted_fields<0)throw Object.assign(new Error('dr_backup_stage_entity_result_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});
+  if(row.excluded===true){if(!DR_EPHEMERAL_SECRET_ENTITIES.has(expected)||row.source_count!==0||row.records.length||row.tombstones.length||Object.keys(row.index).length)throw Object.assign(new Error('dr_backup_stage_exclusion_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});continue}
+  if(row.excluded!==false||Object.keys(row.index).length!==row.source_count||Object.values(row.index).some((hash:any)=>!/^[a-f0-9]{64}$/.test(String(hash))))throw Object.assign(new Error('dr_backup_stage_index_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});
+  if(coordinates.type==='FULL'&&(row.records.length!==row.source_count||row.tombstones.length))throw Object.assign(new Error('dr_backup_stage_full_semantics_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});
  }
- const entityPayload=Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.records,tombstones:row.tombstones}]));
- const counts=Object.fromEntries(entityResults.map((row:any)=>[row.entity_name,{source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:!row.excluded&&row.restorable!==false,redacted_fields:row.redacted_fields}]));
- const entityTotals={source:entityResults.reduce((sum:any,row:any)=>sum+Number(row.source_count||0),0),included:entityResults.reduce((sum:any,row:any)=>sum+Number(row.records?.length||0),0),tombstones:entityResults.reduce((sum:any,row:any)=>sum+Number(row.tombstones?.length||0),0),excluded_entities:entityResults.filter((row:any)=>row.excluded).map((row:any)=>row.entity_name),non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES],redacted_fields:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)};
- const attachmentsSummary={count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'};
- const deploymentIdentity=runtimeDeploymentIdentity(),releaseIdentity={release_version:deploymentIdentity.release_version,git_sha:deploymentIdentity.git_sha,source_tree_hash:deploymentIdentity.source_tree_hash,source_tree_hash_algorithm:'sha256-tree-v1'};
- const manifestPath=`Manifests/${identity.backupId}.manifest.json`,previousManifestPath=type==='FULL'?null:(latest?.manifest?.manifest_path||null),baseFullManifestPath=type==='FULL'?manifestPath:(latest?.manifest?.base_full_manifest_path||null);
- const payload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,...releaseIdentity,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,created_at:identity.at,entity_counts:counts,entity_totals:entityTotals,entities:entityPayload,attachments,attachments_summary:attachmentsSummary,security:{raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)}};
- const snapshotPath=`${backupRoot}/snapshot.json.gz.aes256gcm`,snapshotAad=`${identity.backupId}|snapshot`,snapshotArtifact=await uploadEncryptedJson(storage,snapshotPath,payload,key,snapshotAad);
- const checkpointIndex={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:identity.backupId,checkpoint_to:checkpointTo,entities:Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.index}]))};
- const indexPath=`Manifests/${identity.backupId}.index.json.gz.aes256gcm`,indexAad=`${identity.backupId}|index`,indexArtifact=await uploadEncryptedJson(storage,indexPath,checkpointIndex,key,indexAad);
- const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:identity.backupId,snapshot_type:type,retention_tier:tier,source_environment:sourceEnvironment,source_app_id:APP_ID,...releaseIdentity,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:identity.at,created_by:actor,storage_identity:storage.identity,backup_root_path:backupRoot,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:entityTotals,/* AUDIT P2-06 (2026-08-17): this used to be `all_verified_before_upload: true`, sealed into the
-   backup manifest with no verification behind it. Nothing in executeBackup compares an attachment
-   against an independent reference: fetchOwnedFile checks only response.ok and a size ceiling,
-   and the sha256 on each row is a digest of the fetched copy itself, not a check against a source-
-   side digest. So the field asserted a property the code did not deliver. Replaced by an
-   attachment_verification note that describes what actually happened. */
-attachments:attachmentsSummary,retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}};
- const manifest={...manifestCore,manifest_hash:await sha256Hex(stableJson(manifestCore))},manifestBytes=jsonBytes(manifest);
- await storage.upload(manifestPath,manifestBytes,'application/json');
- await storage.upload('Manifests/latest.index.json.gz.aes256gcm',await storage.download(indexPath),'application/octet-stream');
- await storage.upload('Manifests/latest.manifest.json',manifestBytes,'application/json');
- const retention=await applyRetention(storage);
- await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_completed',message:`${type} backup ${identity.backupId}`,data_json:{backup_id:identity.backupId,manifest_path:manifestPath,manifest_hash:manifest.manifest_hash,snapshot_hash:snapshotArtifact.encrypted_sha256,checkpoint_to:checkpointTo,source_count:manifest.entity_totals.source,included_count:manifest.entity_totals.included,attachments:attachments.length,retention_deleted:retention.deleted_count},actor_email:actor||'disaster_recovery',created_at:now()});
- await closeBackupFailure(service);
- return{ok:true,backup_id:identity.backupId,manifest_path:manifestPath,manifest_hash:manifest.manifest_hash,snapshot_type:type,retention_tier:tier,checkpoint_from:checkpointFrom,checkpoint_to:checkpointTo,entity_totals:manifest.entity_totals,attachments:manifest.attachments,storage_identity:storage.identity,retention};
+ return payload.entity_results;
+}
+
+async function executeBackupChunk(req:Request,service:any,input:any){
+ assertProductionControlPlane(req,'backup_chunk');
+ const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const coordinates=backupStageCoordinates(input),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true});
+ let previousEntityIndexes:any={};
+ if(coordinates.type==='INCREMENTAL'){
+  const latest=await readLatestCheckpoint(storage,key),expectedManifest=String(input.expected_latest_manifest_path||''),expectedHash=String(input.expected_latest_manifest_hash||'');
+  if(!latest||latest.manifest?.manifest_path!==expectedManifest||latest.manifest?.manifest_hash!==expectedHash||latest.index?.checkpoint_to!==coordinates.checkpointFrom)throw Object.assign(new Error('dr_backup_stage_checkpoint_changed'),{code:'DR_BACKUP_STAGE_CHECKPOINT_CHANGED'});
+  previousEntityIndexes=latest.index.entities||{};
+ }
+ const entityResults=await buildBackupEntityResults(service,coordinates.entityNames,coordinates.type,previousEntityIndexes),stagePayload={stage_version:BACKUP_STAGE_VERSION,schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:coordinates.backupId,snapshot_type:coordinates.type,retention_tier:coordinates.tier,checkpoint_from:coordinates.checkpointFrom,checkpoint_to:coordinates.checkpointTo,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames,entity_results:entityResults};
+ const artifact=await uploadEncryptedJson(storage,coordinates.stagePath,stagePayload,key,coordinates.stageAad),metadata=await storage.metadata(coordinates.stagePath);
+ if(String(metadata?.id||'').length<1||Number(metadata?.size)!==artifact.encrypted_bytes)throw Object.assign(new Error('dr_backup_stage_upload_readback_mismatch'),{code:'DR_BACKUP_STAGE_UPLOAD_UNVERIFIED'});
+ return{ok:true,stage:{...artifact,stage_version:BACKUP_STAGE_VERSION,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames}};
+}
+
+async function invokeBackupChunk(base44:any,payload:any){
+ const invoked=await invokeInternal(base44,'maintenanceEngine',{action:'dr_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
+ if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED';throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status})}
+ return data.stage;
+}
+
+function validateBackupStageArtifact(artifact:any,coordinates:any){
+ if(!artifact||artifact.path!==coordinates.stagePath||artifact.aad!==coordinates.stageAad||artifact.stage_version!==BACKUP_STAGE_VERSION||artifact.chunk_index!==coordinates.chunkIndex||artifact.total_chunks!==coordinates.totalChunks||!exactTextArray(artifact.entity_names,coordinates.entityNames)||!/^[a-f0-9]{64}$/.test(String(artifact.encrypted_sha256||''))||!/^[a-f0-9]{64}$/.test(String(artifact.payload_sha256||''))||!Number.isSafeInteger(artifact.encrypted_bytes)||artifact.encrypted_bytes<=0||!Number.isSafeInteger(artifact.compressed_bytes)||artifact.compressed_bytes<=0||!Number.isSafeInteger(artifact.uncompressed_bytes)||artifact.uncompressed_bytes<=0)throw Object.assign(new Error('dr_backup_stage_artifact_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH'});
+ return artifact;
+}
+
+async function loadBackupStage(storage:any,key:Uint8Array,artifact:any,coordinates:any){
+ validateBackupStageArtifact(artifact,coordinates);
+ const bytes=await storage.download(coordinates.stagePath);
+ if(bytes.byteLength!==Number(artifact.encrypted_bytes)||await sha256Hex(bytes)!==artifact.encrypted_sha256)throw Object.assign(new Error('dr_backup_stage_ciphertext_mismatch'),{code:'DR_BACKUP_STAGE_HASH_MISMATCH'});
+ const decrypted=await decryptEnvelope(bytes,key,coordinates.stageAad),plain=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
+ if(decrypted.bytes.byteLength!==Number(artifact.compressed_bytes)||plain.byteLength!==Number(artifact.uncompressed_bytes)||await sha256Hex(plain)!==artifact.payload_sha256)throw Object.assign(new Error('dr_backup_stage_plaintext_mismatch'),{code:'DR_BACKUP_STAGE_HASH_MISMATCH'});
+ return validateBackupStagePayload(jsonFromBytes(plain),coordinates);
+}
+
+async function latestCheckpointAnchor(latest:any){
+ if(!latest)return{manifest_path:null,manifest_hash:null,checkpoint_to:null,base_full_manifest_path:null,manifest_file_sha256:null,index_file_sha256:null};
+ return{manifest_path:String(latest.manifest?.manifest_path||''),manifest_hash:String(latest.manifest?.manifest_hash||''),checkpoint_to:String(latest.index?.checkpoint_to||''),base_full_manifest_path:latest.manifest?.base_full_manifest_path==null?null:String(latest.manifest.base_full_manifest_path),manifest_file_sha256:await sha256Hex(latest.manifestBytes),index_file_sha256:await sha256Hex(latest.indexBytes)};
+}
+
+function validateBackupOperationAnchor(anchor:any){
+ if(!anchor||typeof anchor!=='object'||Array.isArray(anchor))throw Object.assign(new Error('dr_backup_operation_anchor_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ if(anchor.manifest_path===null){if(anchor.manifest_hash!==null||anchor.checkpoint_to!==null||anchor.base_full_manifest_path!==null||anchor.manifest_file_sha256!==null||anchor.index_file_sha256!==null)throw Object.assign(new Error('dr_backup_operation_empty_anchor_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});return anchor}
+ if(!pathAllowed(anchor.manifest_path,'Manifests/','.manifest.json')||!/^[a-f0-9]{64}$/.test(String(anchor.manifest_hash||''))||!/^[a-f0-9]{64}$/.test(String(anchor.manifest_file_sha256||''))||!/^[a-f0-9]{64}$/.test(String(anchor.index_file_sha256||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(anchor.checkpoint_to||''))||(anchor.base_full_manifest_path!==null&&!pathAllowed(anchor.base_full_manifest_path,'Manifests/','.manifest.json')))throw Object.assign(new Error('dr_backup_operation_anchor_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ return anchor;
+}
+
+function validateBackupOperation(operation:any){
+ const batches=backupEntityBatches(),backupId=canonicalBackupId(operation?.backup_id),tier=String(operation?.retention_tier||''),type=String(operation?.snapshot_type||''),next=Number(operation?.next_chunk_index),total=Number(operation?.total_chunks),revision=Number(operation?.revision),anchor=validateBackupOperationAnchor(operation?.latest_anchor);
+ if(operation?.operation_version!==BACKUP_OPERATION_VERSION||operation?.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||operation?.dr_version!==DISASTER_RECOVERY_VERSION||operation?.source_app_id!==APP_ID||operation?.source_environment!=='prod'||operation?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||operation?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||!['Daily','Weekly','Monthly'].includes(tier)||!['FULL','INCREMENTAL'].includes(type)||!Number.isSafeInteger(next)||next<0||!Number.isSafeInteger(total)||total!==batches.length||next>total||!Number.isSafeInteger(revision)||revision!==next+1||!Array.isArray(operation?.artifacts)||operation.artifacts.length!==next||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.checkpoint_to||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.created_at||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.updated_at||''))||!String(operation?.actor||'').trim()||String(operation.actor).length>320)throw Object.assign(new Error('dr_backup_operation_identity_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ if((type==='FULL'&&operation.checkpoint_from!==null)||(type==='INCREMENTAL'&&(String(operation.checkpoint_from||'')!==anchor.checkpoint_to||anchor.manifest_path===null))||(next===total&&operation.status!=='PENDING_FINALIZE')||(next<total&&operation.status!=='STAGING'))throw Object.assign(new Error('dr_backup_operation_state_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ if(stableJson(operation.deployment_identity)!==stableJson(runtimeDeploymentIdentity()))throw Object.assign(new Error('dr_backup_operation_release_drift'),{code:'DR_BACKUP_OPERATION_RELEASE_DRIFT'});
+ for(let chunkIndex=0;chunkIndex<operation.artifacts.length;chunkIndex++){
+  const coordinates=backupStageCoordinates({backup_id:backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:total,entity_names:batches[chunkIndex]});
+  validateBackupStageArtifact(operation.artifacts[chunkIndex],coordinates);
+ }
+ return operation;
+}
+
+async function readBackupOperation(storage:any,key:Uint8Array){
+ const bytes=await storage.downloadIfExists(BACKUP_OPERATION_PATH);if(!bytes)return null;
+ const opened=await decryptEnvelope(bytes,key),plain=await gunzipBytes(opened.bytes,drMaxFileBytes()),operation=validateBackupOperation(jsonFromBytes(plain));
+ if(opened.aad!==`${operation.backup_id}|operation`)throw Object.assign(new Error('dr_backup_operation_aad_mismatch'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ return operation;
+}
+
+async function writeBackupOperation(storage:any,key:Uint8Array,operation:any,expected:any=null){
+ validateBackupOperation(operation);
+ if(expected){const current=await readBackupOperation(storage,key);if(!current||stableJson(current)!==stableJson(expected))throw Object.assign(new Error('dr_backup_operation_revision_conflict'),{code:'DR_BACKUP_OPERATION_CONFLICT'})}
+ const artifact=await uploadEncryptedJson(storage,BACKUP_OPERATION_PATH,operation,key,`${operation.backup_id}|operation`),metadata=await storage.metadata(BACKUP_OPERATION_PATH);
+ if(String(metadata?.id||'').length<1||Number(metadata?.size)!==artifact.encrypted_bytes)throw Object.assign(new Error('dr_backup_operation_upload_readback_mismatch'),{code:'DR_BACKUP_OPERATION_UNVERIFIED'});
+ const readback=await readBackupOperation(storage,key);if(!readback||stableJson(readback)!==stableJson(operation))throw Object.assign(new Error('dr_backup_operation_readback_mismatch'),{code:'DR_BACKUP_OPERATION_UNVERIFIED'});
+ return readback;
+}
+
+async function deleteBackupOperation(storage:any,key:Uint8Array,expected:any){
+ const current=await readBackupOperation(storage,key);if(!current)return false;
+ if(current.backup_id!==expected.backup_id||current.revision!==expected.revision||stableJson(current)!==stableJson(expected))throw Object.assign(new Error('dr_backup_operation_delete_conflict'),{code:'DR_BACKUP_OPERATION_CONFLICT'});
+ const matches=(await storage.list('Manifests')).filter((item:any)=>String(item?.name||'')===BACKUP_OPERATION_PATH.split('/').at(-1));
+ if(matches.length!==1||matches[0]?.folder||!await storage.deleteById(String(matches[0]?.id||'')))throw Object.assign(new Error('dr_backup_operation_delete_failed'),{code:'DR_BACKUP_OPERATION_CLEANUP_FAILED'});
+ if(await storage.downloadIfExists(BACKUP_OPERATION_PATH))throw Object.assign(new Error('dr_backup_operation_delete_readback_failed'),{code:'DR_BACKUP_OPERATION_CLEANUP_FAILED'});
+ return true;
+}
+
+async function cleanupBackupStage(storage:any,tier:any,backupId:any){
+ const canonicalId=canonicalBackupId(backupId),canonicalTier=String(tier||'');
+ if(!['Daily','Weekly','Monthly'].includes(canonicalTier))throw Object.assign(new Error('dr_backup_stage_cleanup_tier_invalid'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ const roots=(await storage.list(canonicalTier)).filter((item:any)=>String(item?.name||'')===canonicalId);
+ if(roots.length>1)throw Object.assign(new Error('dr_backup_stage_cleanup_root_ambiguous'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ if(!roots.length)return{deleted_files:0,folder_deleted:false,already_absent:true};
+ const stages=(await storage.list(`${canonicalTier}/${canonicalId}`)).filter((item:any)=>String(item?.name||'')==='staging');
+ if(stages.length>1)throw Object.assign(new Error('dr_backup_stage_cleanup_ambiguous'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ if(!stages.length)return{deleted_files:0,folder_deleted:false,already_absent:true};
+ const stageFolder=`${canonicalTier}/${canonicalId}/staging`,children=await storage.list(stageFolder);
+ for(const item of children)if(!await storage.deleteById(String(item.id||'')))throw Object.assign(new Error('dr_backup_stage_cleanup_failed'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ if((await storage.list(stageFolder)).length||!await storage.deleteById(String(stages[0]?.id||'')))throw Object.assign(new Error('dr_backup_stage_cleanup_incomplete'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ const remaining=(await storage.list(`${canonicalTier}/${canonicalId}`)).filter((item:any)=>String(item?.name||'')==='staging');if(remaining.length)throw Object.assign(new Error('dr_backup_stage_cleanup_readback_failed'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
+ return{deleted_files:children.length,folder_deleted:true,already_absent:false};
+}
+
+async function removeUnmanifestedBackup(storage:any,tier:any,backupId:any,key:Uint8Array){
+ const canonicalId=canonicalBackupId(backupId),canonicalTier=String(tier||'');
+ if(!['Daily','Weekly','Monthly'].includes(canonicalTier))throw Object.assign(new Error('dr_backup_cleanup_tier_invalid'),{code:'DR_BACKUP_CLEANUP_INVALID'});
+ if(await storage.downloadIfExists(`Manifests/${canonicalId}.manifest.json`))return{deleted:false,manifested:true,already_absent:false,index_deleted:false,operation_deleted:false};
+ const roots=(await storage.list(canonicalTier)).filter((item:any)=>String(item?.name||'')===canonicalId);
+ if(roots.length>1)throw Object.assign(new Error('dr_backup_cleanup_target_ambiguous'),{code:'DR_BACKUP_CLEANUP_AMBIGUOUS'});
+ let deleted=false;if(roots.length){if(!roots[0]?.folder||!await storage.deleteById(String(roots[0]?.id||'')))throw Object.assign(new Error('dr_backup_cleanup_delete_failed'),{code:'DR_BACKUP_CLEANUP_FAILED'});deleted=true}
+ if((await storage.list(canonicalTier)).some((item:any)=>String(item?.name||'')===canonicalId))throw Object.assign(new Error('dr_backup_cleanup_readback_failed'),{code:'DR_BACKUP_CLEANUP_FAILED'});
+ const indexName=`${canonicalId}.index.json.gz.aes256gcm`,indexMatches=(await storage.list('Manifests')).filter((item:any)=>String(item?.name||'')===indexName);
+ if(indexMatches.length>1)throw Object.assign(new Error('dr_backup_cleanup_index_ambiguous'),{code:'DR_BACKUP_CLEANUP_AMBIGUOUS'});
+ let indexDeleted=false;if(indexMatches.length){if(indexMatches[0]?.folder||!await storage.deleteById(String(indexMatches[0]?.id||'')))throw Object.assign(new Error('dr_backup_cleanup_index_failed'),{code:'DR_BACKUP_CLEANUP_FAILED'});indexDeleted=true}
+ let operationDeleted=false;const operation=await readBackupOperation(storage,key);if(operation?.backup_id===canonicalId)operationDeleted=await deleteBackupOperation(storage,key,operation);
+ return{deleted,manifested:false,already_absent:!deleted&&!indexDeleted&&!operationDeleted,index_deleted:indexDeleted,operation_deleted:operationDeleted};
+}
+
+async function executeOrphanCleanup(req:Request,input:any){
+ assertProductionControlPlane(req,'backup_cleanup');
+ if(input.confirmation!=='DELETE_UNMANIFESTED_BACKUP')throw Object.assign(new Error('dr_backup_cleanup_confirmation_required'),{code:'DR_BACKUP_CLEANUP_CONFIRMATION_REQUIRED'});
+ const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true}),result=await removeUnmanifestedBackup(storage,tier,backupId,key);
+ return{ok:true,backup_id:backupId,retention_tier:tier,...result,storage_identity:storage.identity};
+}
+
+async function beginBackupOperation(storage:any,key:Uint8Array,input:any,actor:string){
+ const identity=backupIdentity(),tier=String(input.retention_tier||backupTier(new Date(identity.at))) as any;
+ if(!['Daily','Weekly','Monthly'].includes(tier))throw Object.assign(new Error('dr_retention_tier_invalid'),{code:'DR_RETENTION_TIER_INVALID'});
+ const latest=await readLatestCheckpoint(storage,key),type=snapshotType(input.backup_mode,tier,!!latest),anchor=await latestCheckpointAnchor(latest),batches=backupEntityBatches();
+ const operation={operation_version:BACKUP_OPERATION_VERSION,schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,source_app_id:APP_ID,source_environment:'prod',entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,deployment_identity:runtimeDeploymentIdentity(),backup_id:identity.backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:type==='FULL'?null:anchor.checkpoint_to,checkpoint_to:identity.at,latest_anchor:anchor,next_chunk_index:0,total_chunks:batches.length,artifacts:[],status:'STAGING',revision:1,actor:String(actor||'disaster_recovery').slice(0,320),created_at:identity.at,updated_at:identity.at};
+ return writeBackupOperation(storage,key,operation);
+}
+
+async function ensureBackupOperationFolders(storage:any,operation:any){
+ const root=`${operation.retention_tier}/${operation.backup_id}`;await storage.ensureFolder(root);await storage.ensureFolder(`${root}/staging`);await storage.ensureFolder(`${root}/attachments`);
+}
+
+function coordinatesForOperation(operation:any,chunkIndex:number){
+ const entityNames=backupEntityBatches()[chunkIndex];
+ return backupStageCoordinates({backup_id:operation.backup_id,retention_tier:operation.retention_tier,snapshot_type:operation.snapshot_type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:operation.total_chunks,entity_names:entityNames});
+}
+
+async function advanceBackupOperation(base44:any,storage:any,key:Uint8Array,initial:any){
+ let operation=initial;const stop=Math.min(operation.total_chunks,operation.next_chunk_index+BACKUP_STAGE_CHUNKS_PER_INVOCATION);
+ while(operation.next_chunk_index<stop){
+  const chunkIndex=operation.next_chunk_index,coordinates=coordinatesForOperation(operation,chunkIndex),artifact=await invokeBackupChunk(base44,{backup_id:operation.backup_id,retention_tier:operation.retention_tier,snapshot_type:operation.snapshot_type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,expected_latest_manifest_path:operation.latest_anchor.manifest_path,expected_latest_manifest_hash:operation.latest_anchor.manifest_hash,chunk_index:chunkIndex,total_chunks:operation.total_chunks,entity_names:coordinates.entityNames});
+  validateBackupStageArtifact(artifact,coordinates);
+  const nextIndex=chunkIndex+1,next={...operation,next_chunk_index:nextIndex,artifacts:[...operation.artifacts,artifact],status:nextIndex===operation.total_chunks?'PENDING_FINALIZE':'STAGING',revision:operation.revision+1,updated_at:now()};
+  operation=await writeBackupOperation(storage,key,next,operation);
+ }
+ return operation;
+}
+
+async function assertBackupLatestAnchor(storage:any,key:Uint8Array,operation:any){
+ const latest=await readLatestCheckpoint(storage,key),observed=await latestCheckpointAnchor(latest);
+ if(stableJson(observed)!==stableJson(operation.latest_anchor))throw Object.assign(new Error('dr_backup_latest_anchor_changed'),{code:'DR_BACKUP_OPERATION_CONFLICT'});
+ return latest;
+}
+
+function publishedAttachmentItems(manifest:any){
+ if(!Array.isArray(manifest.attachment_items))return null;
+ const items=manifest.attachment_items,originalBytes=items.reduce((sum:any,row:any)=>sum+Number(row?.original_bytes||0),0),encryptedBytes=items.reduce((sum:any,row:any)=>sum+Number(row?.encrypted_bytes||0),0);
+ if(manifest.attachments?.count!==items.length||manifest.attachments?.original_bytes!==originalBytes||manifest.attachments?.encrypted_bytes!==encryptedBytes)throw Object.assign(new Error('dr_published_attachment_summary_mismatch'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});return items;
+}
+
+async function verifyPublishedAttachments(storage:any,key:Uint8Array,manifest:any,items:any[]){
+ await mapLimitDrained(items,BACKUP_STAGE_READ_CONCURRENCY,async(attachment:any)=>{const path=String(attachment?.storage_path||'');if(!pathAllowed(path,`${manifest.retention_tier}/${manifest.backup_id}/attachments/`,'.gz.aes256gcm'))throw Object.assign(new Error('dr_published_attachment_path_invalid'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});const encrypted=await storage.download(path);if(await sha256Hex(encrypted)!==attachment.encrypted_sha256)throw Object.assign(new Error('dr_published_attachment_ciphertext_mismatch'),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});const opened=await decryptEnvelope(encrypted,key,String(attachment.aad)),plain=await gunzipBytes(opened.bytes,drMaxFileBytes());assertAttachmentByteLengths(attachment,{encrypted:encrypted.byteLength,compressed:opened.bytes.byteLength,original:plain.byteLength});if(await sha256Hex(plain)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_published_attachment_plaintext_mismatch'),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'})});
+}
+
+async function loadBackupOperationStages(storage:any,key:Uint8Array,operation:any){
+ const pairs=operation.artifacts.map((artifact:any,chunkIndex:number)=>({artifact,coordinates:coordinatesForOperation(operation,chunkIndex)})),staged=await mapLimitDrained(pairs,BACKUP_STAGE_READ_CONCURRENCY,({artifact,coordinates})=>loadBackupStage(storage,key,artifact,coordinates)),rows:any[]=[];
+ for(const group of staged)rows.push(...group);
+ if(!exactTextArray(rows.map((row:any)=>row.entity_name),DISASTER_RECOVERY_ENTITY_CATALOG))throw Object.assign(new Error('dr_backup_stage_catalog_incomplete'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
+ return rows;
+}
+
+function assertManifestMatchesOperation(manifest:any,operation:any){
+ const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,previous=operation.snapshot_type==='FULL'?null:operation.latest_anchor.manifest_path,baseFull=operation.snapshot_type==='FULL'?manifestPath:operation.latest_anchor.base_full_manifest_path,identity=operation.deployment_identity;
+ if(manifest?.manifest_path!==manifestPath||manifest?.backup_id!==operation.backup_id||manifest?.snapshot_type!==operation.snapshot_type||manifest?.retention_tier!==operation.retention_tier||manifest?.source_environment!==operation.source_environment||manifest?.source_app_id!==APP_ID||manifest?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||manifest?.checkpoint_from!==operation.checkpoint_from||manifest?.checkpoint_to!==operation.checkpoint_to||manifest?.previous_manifest_path!==previous||manifest?.base_full_manifest_path!==baseFull||manifest?.created_at!==operation.created_at||manifest?.created_by!==operation.actor||manifest?.release_version!==identity.release_version||manifest?.git_sha!==identity.git_sha||manifest?.source_tree_hash!==identity.source_tree_hash||manifest?.snapshot?.path!==`${operation.retention_tier}/${operation.backup_id}/snapshot.json.gz.aes256gcm`||manifest?.index?.path!==`Manifests/${operation.backup_id}.index.json.gz.aes256gcm`)throw Object.assign(new Error('dr_published_backup_operation_mismatch'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+ return manifest;
+}
+
+async function loadPublishedBackup(storage:any,key:Uint8Array,operation:any){
+ const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,manifestBytes=await storage.downloadIfExists(manifestPath);if(!manifestBytes)return null;
+ const manifest=jsonFromBytes(manifestBytes);await verifyManifest(manifest);assertManifestMatchesOperation(manifest,operation);const attachmentItems=publishedAttachmentItems(manifest);if(!attachmentItems)return null;
+ await verifyPublishedJsonArtifact(storage,manifest.snapshot,key,'snapshot');
+ await verifyPublishedAttachments(storage,key,manifest,attachmentItems);
+ const indexBytes=await verifyPublishedJsonArtifact(storage,manifest.index,key,'index');return{manifest,manifestBytes,indexBytes};
+}
+
+async function publishLatestPointers(storage:any,key:Uint8Array,operation:any,published:any){
+ const [currentManifest,currentIndex]=await Promise.all([storage.downloadIfExists('Manifests/latest.manifest.json'),storage.downloadIfExists('Manifests/latest.index.json.gz.aes256gcm')]),currentManifestHash=currentManifest?await sha256Hex(currentManifest):null,currentIndexHash=currentIndex?await sha256Hex(currentIndex):null,newManifestHash=await sha256Hex(published.manifestBytes),newIndexHash=await sha256Hex(published.indexBytes),oldManifestHash=operation.latest_anchor.manifest_file_sha256,oldIndexHash=operation.latest_anchor.index_file_sha256;
+ if(![oldManifestHash,newManifestHash].includes(currentManifestHash)||![oldIndexHash,newIndexHash].includes(currentIndexHash))throw Object.assign(new Error('dr_latest_pointer_conflict'),{code:'DR_BACKUP_OPERATION_CONFLICT'});
+ await storage.upload('Manifests/latest.index.json.gz.aes256gcm',published.indexBytes,'application/octet-stream');await storage.upload('Manifests/latest.manifest.json',published.manifestBytes,'application/json');
+ const [manifestReadback,indexReadback]=await Promise.all([storage.download('Manifests/latest.manifest.json'),storage.download('Manifests/latest.index.json.gz.aes256gcm')]);
+ if(await sha256Hex(manifestReadback)!==newManifestHash||await sha256Hex(indexReadback)!==newIndexHash)throw Object.assign(new Error('dr_latest_pointer_readback_mismatch'),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});
+ const latest=await readLatestCheckpoint(storage,key);if(latest?.manifest?.manifest_path!==published.manifest.manifest_path||latest?.manifest?.manifest_hash!==published.manifest.manifest_hash)throw Object.assign(new Error('dr_latest_pointer_identity_mismatch'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+}
+
+async function recordBackupCompletion(service:any,operation:any,manifest:any,retention:any){
+ const message=`${operation.snapshot_type} backup ${operation.backup_id}`,source='dr_backup_completion_idempotency',read=()=>service.entities.OperationalLog.filter({event_type:'disaster_recovery_backup_completed',message},'-created_at',2);let rows=requireRuntimeSource(await readRuntimeRows({source,limit:2,read}));
+ if(rows.length>1)throw Object.assign(new Error('dr_backup_completion_log_ambiguous'),{code:'DR_BACKUP_COMPLETION_AMBIGUOUS'});
+ if(!rows.length){await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_completed',message,data_json:{backup_id:operation.backup_id,manifest_path:manifest.manifest_path,manifest_hash:manifest.manifest_hash,snapshot_hash:manifest.snapshot.encrypted_sha256,checkpoint_to:operation.checkpoint_to,source_count:manifest.entity_totals.source,included_count:manifest.entity_totals.included,attachments:manifest.attachments.count,retention_deleted:retention.deleted_count},actor_email:operation.actor||'disaster_recovery',created_at:now()});rows=requireRuntimeSource(await readRuntimeRows({source:`${source}_readback`,limit:2,read}))}
+ if(rows.length!==1||rows[0]?.data_json?.backup_id!==operation.backup_id||rows[0]?.data_json?.manifest_hash!==manifest.manifest_hash)throw Object.assign(new Error('dr_backup_completion_log_unverified'),{code:'DR_BACKUP_COMPLETION_AMBIGUOUS'});
+}
+
+async function finalizeBackupOperation(storage:any,key:Uint8Array,service:any,operation:any){
+ let published=await loadPublishedBackup(storage,key,operation);
+ if(!published){
+  await assertBackupLatestAnchor(storage,key,operation);
+  const entityResults=await loadBackupOperationStages(storage,key,operation),backupRoot=`${operation.retention_tier}/${operation.backup_id}`,allFiles=new Set<string>();for(const result of entityResults)for(const url of collectOwnedFileReferences(result.records))allFiles.add(url);
+  const attachments:any[]=[];let attachmentIndex=0;
+  for(const sourceUrl of [...allFiles].sort()){
+   const fetched=await fetchOwnedFile(sourceUrl),number=String(++attachmentIndex).padStart(5,'0'),name=safeFileName(new URL(sourceUrl).pathname.split('/').pop(),`attachment-${number}.bin`),path=`${backupRoot}/attachments/${number}-${name}.gz.aes256gcm`,aad=`${operation.backup_id}|attachment|${number}`;
+   const max=assertDrPayloadWithinLimit(fetched.bytes,'attachment_plaintext'),compressed=await gzipBytes(fetched.bytes,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'attachment_envelope');await storage.upload(path,envelope,'application/octet-stream');
+   attachments.push({source_ref:sourceUrl,source_ref_sha256:await sha256Hex(sourceUrl),file_name:name,content_type:fetched.contentType,storage_path:path,aad,original_bytes:fetched.bytes.byteLength,compressed_bytes:compressed.byteLength,encrypted_bytes:envelope.byteLength,plaintext_sha256:await sha256Hex(fetched.bytes),encrypted_sha256:await sha256Hex(envelope)});
+  }
+  const counts=Object.fromEntries(entityResults.map((row:any)=>[row.entity_name,{source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:!row.excluded&&row.restorable!==false,redacted_fields:row.redacted_fields}]));
+  const entityTotals={source:entityResults.reduce((sum:any,row:any)=>sum+Number(row.source_count||0),0),included:entityResults.reduce((sum:any,row:any)=>sum+Number(row.records?.length||0),0),tombstones:entityResults.reduce((sum:any,row:any)=>sum+Number(row.tombstones?.length||0),0),excluded_entities:entityResults.filter((row:any)=>row.excluded).map((row:any)=>row.entity_name),non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES],redacted_fields:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)},attachmentsSummary={count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'},identity=operation.deployment_identity,releaseIdentity={release_version:identity.release_version,git_sha:identity.git_sha,source_tree_hash:identity.source_tree_hash,source_tree_hash_algorithm:'sha256-tree-v1'};
+  const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,previousManifestPath=operation.snapshot_type==='FULL'?null:operation.latest_anchor.manifest_path,baseFullManifestPath=operation.snapshot_type==='FULL'?manifestPath:operation.latest_anchor.base_full_manifest_path,indexPath=`Manifests/${operation.backup_id}.index.json.gz.aes256gcm`;
+  const indexArtifact=await(async()=>{
+   const checkpointIndex={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:operation.backup_id,checkpoint_to:operation.checkpoint_to,entities:Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.index}]))};
+   return uploadEncryptedJson(storage,indexPath,checkpointIndex,key,`${operation.backup_id}|index`);
+  })();
+  for(const row of entityResults)row.index={};
+  const snapshotPath=`${backupRoot}/snapshot.json.gz.aes256gcm`;
+  const snapshotArtifact=await(async()=>{
+   const entityPayload=Object.fromEntries(entityResults.filter((row:any)=>!row.excluded).map((row:any)=>[row.entity_name,{records:row.records,tombstones:row.tombstones}]));
+   const payload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,created_at:operation.created_at,entity_counts:counts,entity_totals:entityTotals,entities:entityPayload,attachments,attachments_summary:attachmentsSummary,security:{raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityTotals.redacted_fields}};
+   return uploadEncryptedJson(storage,snapshotPath,payload,key,`${operation.backup_id}|snapshot`);
+  })();
+  for(const row of entityResults){row.records=[];row.tombstones=[]}
+  entityResults.length=0;allFiles.clear();
+  const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:operation.created_at,created_by:operation.actor,storage_identity:storage.identity,backup_root_path:backupRoot,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:entityTotals,attachments:attachmentsSummary,attachment_items:attachments,retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}},manifest={...manifestCore,manifest_hash:await sha256Hex(stableJson(manifestCore))};
+  await assertBackupLatestAnchor(storage,key,operation);await storage.upload(manifestPath,jsonBytes(manifest),'application/json');published=await loadPublishedBackup(storage,key,operation);if(!published)throw Object.assign(new Error('dr_backup_manifest_publish_unverified'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+ }
+ await publishLatestPointers(storage,key,operation,published);const retention=await applyRetention(storage);await recordBackupCompletion(service,operation,published.manifest,retention);await closeBackupFailure(service);await cleanupBackupStage(storage,operation.retention_tier,operation.backup_id);await deleteBackupOperation(storage,key,operation);
+ return{ok:true,completed:true,status:'COMPLETED',backup_id:operation.backup_id,manifest_path:published.manifest.manifest_path,manifest_hash:published.manifest.manifest_hash,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,entity_totals:published.manifest.entity_totals,attachments:published.manifest.attachments,storage_identity:storage.identity,retention};
+}
+
+function backupOperationProgress(operation:any,storage:any){
+ return{ok:true,completed:false,status:operation.status,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,next_chunk_index:operation.next_chunk_index,total_chunks:operation.total_chunks,remaining_chunks:operation.total_chunks-operation.next_chunk_index,storage_identity:storage.identity};
+}
+
+async function executeBackup(req:Request,base44:any,service:any,input:any,actor:string,allowStart=true){
+ assertProductionControlPlane(req,allowStart?'backup':'backup_continue');const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+ const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true,initializeFolders:true});let operation=await readBackupOperation(storage,key);
+ if(!operation&&!allowStart)return{ok:true,completed:false,status:'IDLE',backup_id:null,next_chunk_index:0,total_chunks:backupEntityBatches().length,remaining_chunks:0,storage_identity:storage.identity};
+ if(!operation)operation=await beginBackupOperation(storage,key,input,actor);
+ try{
+  await ensureBackupOperationFolders(storage,operation);
+  if(operation.status==='PENDING_FINALIZE')return finalizeBackupOperation(storage,key,service,operation);
+  operation=await advanceBackupOperation(base44,storage,key,operation);return backupOperationProgress(operation,storage);
+ }catch(error){if(drErrorCode(error)!=='DR_BACKUP_OPERATION_CONFLICT'){try{await removeUnmanifestedBackup(storage,operation.retention_tier,operation.backup_id,key)}catch(cleanupError){logDrFailure('disaster_recovery_orphan_cleanup_failed',cleanupError)}}throw error}
 }
 
 function verifyManifest(manifest:any){
@@ -272,7 +562,7 @@ async function restoreAttachments(service:any,storage:any,attachments:any[],key:
   const decrypted=await decryptEnvelope(encrypted,key,String(attachment.aad)),bytes=await gunzipBytes(decrypted.bytes,drMaxFileBytes());assertAttachmentByteLengths(attachment,{encrypted:encrypted.byteLength,compressed:decrypted.bytes.byteLength,original:bytes.byteLength});if(await sha256Hex(bytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_plaintext_hash_mismatch'),{code:'DR_ATTACHMENT_HASH_MISMATCH'});
   const fileBuffer=new ArrayBuffer(bytes.byteLength);new Uint8Array(fileBuffer).set(bytes);const file=new File([fileBuffer],String(attachment.file_name||'restored.bin'),{type:String(attachment.content_type||'application/octet-stream')});
   const uploaded=await service.integrations.Core.UploadFile({file});const targetUrl=String(uploaded?.file_url||'');if(!targetUrl)throw Object.assign(new Error('dr_attachment_target_upload_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
-  const check=await fetch(targetUrl,{redirect:'error'});if(!check.ok){await check.body?.cancel('dr_attachment_target_verification_failed').catch(()=>undefined);throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'})}const max=drMaxFileBytes(),targetBytes=await readBoundedDrResponseBytes(check,max);if(targetBytes.byteLength!==bytes.byteLength||await sha256Hex(targetBytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
+  const target=await fetchOwnedFile(targetUrl);if(target.bytes.byteLength!==bytes.byteLength||await sha256Hex(target.bytes)!==attachment.plaintext_sha256)throw Object.assign(new Error('dr_attachment_target_verification_failed'),{code:'DR_ATTACHMENT_RESTORE_FAILED'});
   mapping.set(String(attachment.source_ref),targetUrl);evidence.push({source_ref_sha256:attachment.source_ref_sha256,target_ref_sha256:await sha256Hex(targetUrl),plaintext_sha256:attachment.plaintext_sha256,bytes:bytes.byteLength,verified:true});
  }
  return{mapping,evidence};
@@ -387,17 +677,28 @@ function errorResponse(error:any){
 
 export async function handleDisasterRecovery(req:Request){
  let body:any;try{body=await req.clone().json();}catch{return Response.json({ok:false,error:'invalid_json_body'},{status:400});}const base44=createClientFromRequest(req),gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
- const service=base44.asServiceRole,actor=String(gate.user?.email||body.actor_email||'internal'),routed=body.host_action==='disaster_recovery_backup',action=routed?'backup':String(body.action||'status').replace(/^dr_/,'');
+ const service=base44.asServiceRole,actor=String(gate.user?.email||body.actor_email||'internal'),hostAction=String(body.host_action||''),action=hostAction==='disaster_recovery_backup'?'backup':hostAction==='disaster_recovery_backup_continue'?'backup_continue':String(body.action||'status').replace(/^dr_/,'');
  try{
   if(action==='status'){
    if(body.verify_remote===true)assertProductionControlPlane(req,'status_remote');
-   const[exerciseRead,logRead,schedulerRead]=await Promise.all([readRuntimeRows({source:'dr_status_exercises',limit:20,read:()=>service.entities.DisasterRecoveryExercise.list('-completed_at',20)}),readRuntimeRows({source:'dr_status_events',limit:50,read:()=>service.entities.OperationalLog.filter({event_type:{$in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested']}},'-created_at',50)}),readRuntimeRows({source:'dr_status_scheduler',limit:20,read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackup',invocation_kind:'SCHEDULED'},'-started_at',20)})]);const exercises=exerciseRead.value,logs=logRead.value,scheduler=evaluateDisasterRecoveryScheduler(schedulerRead.value),sourceCoverage=runtimeSourceCoverage({exercises:exerciseRead,events:logRead,scheduler:schedulerRead});
-   const config=configurationStatus();let remote:any=null;if(body.verify_remote===true){if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);const storage=await verifySharePointBackupStorage(Deno.env,{requireCanonicalTarget:true});remote={ok:true,read_only:true,identity:storage.identity,folders:Object.fromEntries(await Promise.all(['Daily','Weekly','Monthly','Manifests','Restore Evidence'].map(async(folder)=>[folder,(await storage.list(folder)).length])))};}
-   return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
+   const[exerciseRead,logRead,schedulerRead,continuationRead]=await Promise.all([readRuntimeRows({source:'dr_status_exercises',read:()=>service.entities.DisasterRecoveryExercise.list('-completed_at',20)}),readRuntimeRows({source:'dr_status_events',read:()=>service.entities.OperationalLog.filter({event_type:{$in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested']}},'-created_at',50)}),readRuntimeRows({source:'dr_status_scheduler',read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackup',invocation_kind:'SCHEDULED'},'-started_at',20)}),readRuntimeRows({source:'dr_status_scheduler_continuation',read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackupContinuation',invocation_kind:'SCHEDULED'},'-started_at',20)})]);const exercises=exerciseRead.value,logs=logRead.value,scheduler=evaluateDisasterRecoveryScheduler(schedulerRead.value),schedulerContinuation=evaluateDisasterRecoveryScheduler(continuationRead.value,Date.now(),{worker_key:'disasterRecoveryBackupContinuation',cadence_seconds:600,freshness_seconds:1800}),sourceCoverage=runtimeSourceCoverage({exercises:exerciseRead,events:logRead,scheduler:schedulerRead,scheduler_continuation:continuationRead});
+   const config=configurationStatus();let remote:any=null;if(body.verify_remote===true){
+    if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
+    const storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true}),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),folderNames=['Daily','Weekly','Monthly','Manifests','Restore Evidence'],inventory=await Promise.all(folderNames.map(async(folder)=>[folder,await storage.list(folder)] as const)),pending=await readBackupOperation(storage,key),latest=await readLatestCheckpoint(storage,key);let latestCheckpoint:any=null;
+    if(latest){const attachmentItems=publishedAttachmentItems(latest.manifest);if(!attachmentItems)throw Object.assign(new Error('dr_latest_checkpoint_attachment_inventory_missing'),{code:'DR_CHECKPOINT_INVALID'});await verifyPublishedJsonArtifact(storage,latest.manifest.snapshot,key,'latest_snapshot');await verifyPublishedAttachments(storage,key,latest.manifest,attachmentItems);latestCheckpoint={verified:true,backup_id:latest.manifest.backup_id,manifest_path:latest.manifest.manifest_path,manifest_hash:latest.manifest.manifest_hash,snapshot_type:latest.manifest.snapshot_type,retention_tier:latest.manifest.retention_tier,source_environment:latest.manifest.source_environment,source_app_id:latest.manifest.source_app_id,checkpoint_to:latest.manifest.checkpoint_to,snapshot_encrypted_sha256:latest.manifest.snapshot.encrypted_sha256,index_encrypted_sha256:latest.manifest.index.encrypted_sha256,attachments:latest.manifest.attachments}}
+    remote={ok:true,read_only:true,identity:storage.identity,folders:Object.fromEntries(inventory.map(([folder,items])=>[folder,items.length])),inventory:Object.fromEntries(inventory.map(([folder,items])=>[folder,items.slice(0,100).map((item:any)=>({name:String(item?.name||''),kind:item?.folder?'folder':item?.file?'file':'unknown',size:Number(item?.size||0),created_at:String(item?.createdDateTime||''),updated_at:String(item?.lastModifiedDateTime||'')}))])),pending_backup:pending?{backup_id:pending.backup_id,status:pending.status,snapshot_type:pending.snapshot_type,retention_tier:pending.retention_tier,next_chunk_index:pending.next_chunk_index,total_chunks:pending.total_chunks,remaining_chunks:pending.total_chunks-pending.next_chunk_index,updated_at:pending.updated_at}:null,latest_checkpoint:latestCheckpoint};
+   }
+   return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,scheduler_continuation:schedulerContinuation,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
   }
-  if(action==='backup')return Response.json(await executeBackup(req,service,body,actor));
+  if(action==='backup')return Response.json(await executeBackup(req,base44,service,body,actor));
+  if(action==='backup_continue')return Response.json(await executeBackup(req,base44,service,body,actor,false));
+  if(action==='backup_chunk'){
+   if(!gate.isInternal)throw Object.assign(new Error('dr_backup_chunk_internal_authority_required'),{code:'DR_BACKUP_CHUNK_INTERNAL_REQUIRED'});
+   return Response.json(await executeBackupChunk(req,service,body));
+  }
+  if(action==='cleanup_orphan_backup')return Response.json(await executeOrphanCleanup(req,body));
   if(action==='restore')return Response.json(await executeRestore(req,service,body,actor));
   if(action==='attest_restore')return Response.json(await attestRestore(req,service,body,actor));
   return Response.json({ok:false,error:'dr_action_unsupported'},{status:400});
- }catch(error){if(action==='backup'){try{await recordBackupFailure(service,error)}catch(recordError){logDrFailure('disaster_recovery_failure_evidence_persistence_failed',recordError)}}return errorResponse(error)}
+ }catch(error){if(action==='backup'||action==='backup_continue'){try{await recordBackupFailure(service,error)}catch(recordError){logDrFailure('disaster_recovery_failure_evidence_persistence_failed',recordError)}}return errorResponse(error)}
 }

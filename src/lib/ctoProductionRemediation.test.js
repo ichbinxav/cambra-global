@@ -7,11 +7,11 @@ const json=(path)=>JSON.parse(read(path));
 describe('v0.97 CTO production remediation controls',()=>{
   it('records all active Base44 schedules and proves a slot guard at every physical boundary',()=>{
     const inventory=json('config/scheduler-inventory.json');
-    // AGENTTASK-OUTBOX (2026-08-21): the terminal Event reconciler adds one
-    // active, guarded hosted route to the two explicit Instantly routes. Active
-    // and guarded move together so an unguarded schedule still fails strictly.
-    expect(inventory.scheduled_automation_count).toBe(73);
-    expect(inventory.active_count).toBe(71);
+    // DR-CONTINUATION (2026-08-26): the bounded backup continuation adds one
+    // active, guarded hosted route. Active and guarded move together so an
+    // unguarded schedule still fails strictly.
+    expect(inventory.scheduled_automation_count).toBe(74);
+    expect(inventory.active_count).toBe(72);
     expect(inventory.inactive_count).toBe(2);
     expect(inventory.unguarded_active).toEqual([]);
     const active=inventory.automations.filter((row)=>row.is_active);
@@ -19,7 +19,7 @@ describe('v0.97 CTO production remediation controls',()=>{
     expect(active.every((row)=>row.lease_seconds===900)).toBe(true);
     // COMMAND-C7: 57 -> 58. The Command run sweep runs every 5 minutes and is
     // slot-guarded, so it is heartbeat-proven like every other periodic worker.
-    expect(inventory.periodic_heartbeat_proven_count).toBe(58);
+    expect(inventory.periodic_heartbeat_proven_count).toBe(59);
     expect(inventory.periodic_heartbeat_not_proven).toEqual([
       'agentTaskTerminalEventReconciler',
       'alwaysOnLeadDiscoveryWorker',
@@ -37,7 +37,7 @@ describe('v0.97 CTO production remediation controls',()=>{
     ]);
     expect(active.every((row)=>row.effect_boundary==='HANDLER_ENTRY_CONSERVATIVE')).toBe(true);
     expect(active.every((row)=>row.deadline_seconds==='UNKNOWN'&&row.timeout_seconds==='UNKNOWN')).toBe(true);
-    expect(inventory.hard_deadline_unknown_count).toBe(71);
+    expect(inventory.hard_deadline_unknown_count).toBe(72);
     expect(inventory.otr_005_status).toBe('PARTIAL');
     expect(inventory.inactive_automations.map((row)=>[row.worker_key,row.classification])).toEqual([
       ['autonomousCommercialWorker','INTENTIONALLY_DISABLED_COMPATIBILITY'],

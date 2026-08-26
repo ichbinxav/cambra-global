@@ -4,7 +4,7 @@ import {
   P6_ALLOWLIST, P7_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage,
 } from '../../scripts/lib/preEclFreeze.mjs';
 import {
-  P7_WORKERS, buildIncidentRecord, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation,
+  P7_WORKERS, buildIncidentRecord, disasterRecoverySchedulerRecoveryProof, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation,
   schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision, workerFreshness,
 } from '../../base44/shared/eclOperationalRecovery.ts';
 
@@ -144,6 +144,17 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     })).toMatchObject({ ok: false, reason: 'scheduler_post_effect_state_unproven' });
   });
 
+  it('accepts DR post-effect reconciliation only from a verified latest checkpoint and exact completion receipt', () => {
+    const backupId='cambra-dr-20260826T011103526z-bb49bfc4',manifestHash='9'.repeat(64),manifestPath=`Manifests/${backupId}.manifest.json`;
+    const status={ok:true,data_status:'COMPLETE',configuration:{ok:true},remote:{ok:true,read_only:true,pending_backup:null,latest_checkpoint:{verified:true,backup_id:backupId,manifest_path:manifestPath,manifest_hash:manifestHash,snapshot_type:'FULL',source_environment:'prod',source_app_id:'6a16288b833b3c26d7ac1fab',checkpoint_to:'2026-08-26T01:11:03.526Z'}}};
+    const completion={id:'log_1',event_type:'disaster_recovery_backup_completed',message:`FULL backup ${backupId}`,created_at:'2026-08-26T01:33:24.494Z',data_json:{backup_id:backupId,manifest_path:manifestPath,manifest_hash:manifestHash}};
+    const attempt={started_at:'2026-08-26T01:19:12.100Z'};
+    expect(disasterRecoverySchedulerRecoveryProof(status,[completion],attempt)).toMatchObject({ok:true,mode:'POST_EFFECT_QUIESCENT',receipt_state:{latest_checkpoint_verified:true,completion_log_verified:true,pending_operation:false}});
+    expect(disasterRecoverySchedulerRecoveryProof({...status,remote:{...status.remote,pending_backup:{backup_id:'pending'}}},[completion],attempt)).toMatchObject({ok:false,reason:'disaster_recovery_operation_still_pending'});
+    expect(disasterRecoverySchedulerRecoveryProof(status,[completion,{...completion,id:'log_2'}],attempt)).toMatchObject({ok:false,reason:'disaster_recovery_completion_authority_ambiguous'});
+    expect(disasterRecoverySchedulerRecoveryProof(status,[{...completion,data_json:{...completion.data_json,manifest_hash:'8'.repeat(64)}}],attempt)).toMatchObject({ok:false,reason:'disaster_recovery_completion_receipt_unverified'});
+  });
+
   it('releases only the exact expired webhook provisional orphan with zero persisted work', () => {
     const now = Date.parse('2026-08-25T15:30:00.000Z');
     const control = {
@@ -232,7 +243,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain("status: { $in: ['dispatch_pending', 'pending_retry'] }");
     expect(WORKFLOW).toContain('admin_reconciled_orphaned_provisional_pre_effect');
     expect(WORKFLOW).toContain('NO_TASK_PRE_EFFECT_PROOF_WORKERS');
-    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION'");
+    expect(WORKFLOW).toContain("'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP'");
     expect(WORKFLOW).toContain("'RECONCILE_NO_REPLAY'");
     expect(WORKFLOW).toContain('ACKNOWLEDGE_POST_EFFECT_NO_REPLAY');
     expect(WORKFLOW).toContain('historical_attempt_replayed: false');
@@ -244,6 +255,8 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).toContain('instantly_retry_attempt_has_zero_event_ledger_writes');
     expect(WORKFLOW).toContain('discovery_attempt_zero_writes_and_no_material_authority');
     expect(WORKFLOW).toContain('discovery_terminal_effect_receipts_quiescent_without_replay');
+    expect(WORKFLOW).toContain('disasterRecoveryTerminalBackupProof');
+    expect(WORKFLOW).toContain('disasterRecoverySchedulerRecoveryProof');
     expect(WORKFLOW).toContain("CostUsageEvent.filter({ source: 'leadDiscoveryAgent'");
     expect(WORKFLOW).toContain("AgentTask.filter({ agent_name: { $in: discoveryAgents }, started_at: { $gte: from, $lte: leaseEnd } }, '-started_at', 100)");
     expect(WORKFLOW).toContain("AgentTask.filter({ agent_name: { $in: discoveryAgents }, started_at: { $gte: afterLease } }, '-started_at', 2)");
@@ -298,6 +311,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(UI).toContain('row.action === "reconcile_post_effect"');
     expect(UI).toContain('instantlyProviderEventRetryWorker');
     expect(UI).toContain('alwaysOnLeadDiscoveryWorker');
+    expect(UI).toContain('disasterRecoveryBackupContinuation');
     expect(UI).not.toContain('entities.Invoice');
     expect(UI).not.toContain('entities.SavingsEvidence');
     expect(APP).toContain('/admin/ecl-operations');

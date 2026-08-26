@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "57c485da810a559af9398183b4f4829aae93b307107cb81be2d470229b1832e8",
+  "input_fingerprint_sha256": "f11a1db5875d70e981d19934326e99cc61227fed9a9350df51785ecce3dcaf33",
   "input_file_count": 125,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -169,9 +169,9 @@
   },
   "scheduler_inventory": {
     "schema_version": "cambra-scheduler-inventory-v3",
-    "scheduled_automation_count": 73,
-    "active_count": 71,
-    "guarded_count": 71,
+    "scheduled_automation_count": 74,
+    "active_count": 72,
+    "guarded_count": 72,
     "unguarded_active": [],
     "active_worker_keys": [
       "acquisitionAttributionWorker",
@@ -202,6 +202,7 @@
       "costGovernanceWorker",
       "productionReadinessWorker",
       "disasterRecoveryBackup",
+      "disasterRecoveryBackupContinuation",
       "commandRunWorker",
       "regulatoryMonitoringWorker",
       "missingInformationWorker",
@@ -752,6 +753,16 @@
       },
       {
         "worker_key": "disasterRecoveryBackup",
+        "function_directory": "maintenanceEngine",
+        "config_path": "base44/functions/maintenanceEngine/function.jsonc",
+        "is_active": true,
+        "protection_classification": "SLOT_GUARDED",
+        "authority": "INTERNAL_SECRET",
+        "tenant_scope": "UNKNOWN",
+        "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE"
+      },
+      {
+        "worker_key": "disasterRecoveryBackupContinuation",
         "function_directory": "maintenanceEngine",
         "config_path": "base44/functions/maintenanceEngine/function.jsonc",
         "is_active": true,
@@ -3299,13 +3310,13 @@
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
-          "sha256": "51811f6b0ba391e518a01504461faf1bc52813abcbd7deaf8a6b1d769f77ae68",
-          "bytes": 31555
+          "sha256": "b513e175de207a725c0573da7e03fa0a6ee8ef82d38e63eedb94ff88f0665641",
+          "bytes": 31687
         },
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
-          "sha256": "5627bed37d861f5d1c1ddb770bdd5ce51bf5d968410dd18afc3e0c24a20acbe7",
-          "bytes": 56213
+          "sha256": "3e6a35bf092abd4ff2842f68be41cb331225a5d2d6780f1eaa5e3891ef684c47",
+          "bytes": 96285
         }
       ]
     },
@@ -3412,6 +3423,7 @@
         "dependencySecurityWorker",
         "developerSignalWorker",
         "disasterRecoveryBackup",
+        "disasterRecoveryBackupContinuation",
         "documentationMaintenanceWorker",
         "eclLifecycleScheduler",
         "eclProductionHealth",
@@ -3496,8 +3508,8 @@
         },
         {
           "path": "config/scheduler-inventory.json",
-          "sha256": "58d33a75bbe964f4643617a9ef3f94b1a56661a56fb15141ff587c6b7786b9b6",
-          "bytes": 189448
+          "sha256": "c15cd2584314104b20ff96cd0dc1240342129598543afc97c2225ba6091e80fa",
+          "bytes": 192099
         }
       ]
     },

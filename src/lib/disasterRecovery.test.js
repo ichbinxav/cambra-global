@@ -7,14 +7,14 @@ import {
   DR_CANONICAL_SHAREPOINT_DRIVE_ID, DR_CANONICAL_SHAREPOINT_SITE_ID, DR_FOLDERS,
   DR_GRAPH_CHUNK_BYTES,
   assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, decryptEnvelope, deepRemap,
-  diffRecords, encryptEnvelope, gzipBytes, gunzipBytes, indexRecords, parseAes256Key,
+  diffRecords, encryptEnvelope, fetchTrustedBase44File, gzipBytes, gunzipBytes, indexRecords, jsonValueChunks, mapLimitDrained, parseAes256Key,
   evaluateDisasterRecoveryScheduler, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, restoreEvidenceAad,
   persistRestoreAttestationAuthority, secretLikePaths, snapshotType, stableJson, strictMinuteDifference,
   validateLatestCheckpointIdentity, validateRestoreEvidenceAttestation,
-  validateRestoreManifestChain, validateSnapshotManifestIdentity,
+  trustedBase44FileRedirectUrl, trustedBase44FileUrl, validateRestoreManifestChain, validateSnapshotManifestIdentity,
 } from '../../base44/shared/disasterRecoveryCore.ts';
 import {
-  MicrosoftGraphError, graphAuthorizationHeaders, isMicrosoftUploadSessionUrl, listSharePointSiteDrives,
+  MicrosoftGraphError, graphAuthorizationHeaders, isMicrosoftStorageCapabilityUrl, isMicrosoftUploadSessionUrl, listSharePointSiteDrives,
   openSharePointBackupStorage, readDisasterRecoveryPreflightConfiguration,
   readSharePointBackupConfiguration, sanitizeMicrosoftGraphCode,
   verifySharePointBackupStorage,
@@ -52,7 +52,7 @@ const manifestFixture=(overrides={})=>{
     storage_identity:{site_id:DR_CANONICAL_SHAREPOINT_SITE_ID,drive_id:DR_CANONICAL_SHAREPOINT_DRIVE_ID,root_folder:'Production Backups'},
     entity_counts:{Brand:{source:1,included:1,tombstones:0,excluded:false,restorable:true,redacted_fields:0},OAuthState:{source:0,included:0,tombstones:0,excluded:true,restorable:false,redacted_fields:0}},
     entity_totals:{source:1,included:1,tombstones:0,redacted_fields:0,excluded_entities:['OAuthState']},
-    attachments:{count:0,original_bytes:0,encrypted_bytes:0,attachment_verification:'digested_after_fetch_only'},
+    attachments:{count:0,original_bytes:0,encrypted_bytes:0,attachment_verification:'digested_after_fetch_only'},attachment_items:[],
     ...overrides,
   };
 };
@@ -85,6 +85,30 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     await expect(gzipBytes(new Uint8Array(4096),16)).rejects.toMatchObject({
       code:'DR_OWNED_FILE_TOO_LARGE',max:16,
     });
+  });
+
+  it('drains bounded workers before surfacing a deterministic chunk failure',async()=>{
+    const completed=[],failure=Object.assign(new Error('chunk failed'),{code:'DR_TEST_CHUNK_FAILED'});
+    let active=0,maxActive=0;
+    await expect(mapLimitDrained([0,1,2,3],2,async(value)=>{
+      active++;maxActive=Math.max(maxActive,active);
+      try{
+        await new Promise((resolve)=>setTimeout(resolve,value===0?15:5));
+        if(value===1)throw failure;
+        completed.push(value);
+        return value;
+      }finally{active--}
+    })).rejects.toBe(failure);
+    expect(completed.sort((left,right)=>left-right)).toEqual([0,2,3]);
+    expect(maxActive).toBe(2);
+  });
+
+  it('streams the same JSON bytes as native serialization',()=>{
+    const value={unicode:'CAMBRA 🌍',escaped:'line\nquote"',date:new Date('2026-08-26T00:00:00.000Z'),numbers:[0,-0,1.5,NaN,Infinity],array:[1,undefined,,3],nested:{keep:true,drop:undefined}};
+    expect([...jsonValueChunks(value)].join('')).toBe(JSON.stringify(value));
+    expect(()=>[...jsonValueChunks({value:1n})]).toThrow(TypeError);
+    const circular={};circular.self=circular;
+    expect(()=>[...jsonValueChunks(circular)]).toThrow(TypeError);
   });
 
   it('round-trips gzip + AES-256-GCM and rejects tampering/AAD drift',async()=>{
@@ -192,9 +216,10 @@ describe('CAMBRA disaster recovery hard gate',()=>{
       entity_totals:{...full.entity_totals,source:2,included:2},
     });
     expect(()=>validateSnapshotManifestIdentity(duplicateFull,payloadFixture(duplicateFull,{entities:{Brand:{records:[{id:'duplicate'},{id:'duplicate'}],tombstones:[]}}}),{entity_catalog:testCatalog})).toThrowError(/record_identity/);
-    const attachmentManifest=manifestFixture({attachments:{count:2,original_bytes:2,encrypted_bytes:4,attachment_verification:'digested_after_fetch_only'}});
-    const attachment=(ordinal,source='https://media.base44.com/file.bin')=>({source_ref:source,source_ref_sha256:'3'.repeat(64),file_name:'file.bin',content_type:'application/octet-stream',storage_path:`Daily/${attachmentManifest.backup_id}/attachments/${ordinal}-file.bin.gz.aes256gcm`,aad:`${attachmentManifest.backup_id}|attachment|${ordinal}`,original_bytes:1,compressed_bytes:1,encrypted_bytes:2,plaintext_sha256:'4'.repeat(64),encrypted_sha256:'5'.repeat(64)});
-    expect(()=>validateSnapshotManifestIdentity(attachmentManifest,payloadFixture(attachmentManifest,{attachments:[attachment('00001'),attachment('00002')]}),{entity_catalog:testCatalog})).toThrowError(/attachment_identity/);
+    const attachmentManifestBase=manifestFixture({attachments:{count:2,original_bytes:2,encrypted_bytes:4,attachment_verification:'digested_after_fetch_only'}});
+    const attachment=(ordinal,source='https://media.base44.com/file.bin')=>({source_ref:source,source_ref_sha256:'3'.repeat(64),file_name:'file.bin',content_type:'application/octet-stream',storage_path:`Daily/${attachmentManifestBase.backup_id}/attachments/${ordinal}-file.bin.gz.aes256gcm`,aad:`${attachmentManifestBase.backup_id}|attachment|${ordinal}`,original_bytes:1,compressed_bytes:1,encrypted_bytes:2,plaintext_sha256:'4'.repeat(64),encrypted_sha256:'5'.repeat(64)});
+    const duplicateAttachments=[attachment('00001'),attachment('00002')],attachmentManifest={...attachmentManifestBase,attachment_items:duplicateAttachments};
+    expect(()=>validateSnapshotManifestIdentity(attachmentManifest,payloadFixture(attachmentManifest,{attachments:duplicateAttachments}),{entity_catalog:testCatalog})).toThrowError(/attachment_identity/);
     expect(()=>validateRestoreManifestChain([full,{...incremental,backup_id:full.backup_id,manifest_path:full.manifest_path}],options)).toThrowError(/duplicate/);
     const checkpoint={schema_version:full.schema_version,catalog_version:full.entity_catalog_version,backup_id:full.backup_id,checkpoint_to:full.checkpoint_to,entities:{Brand:{records:{'brand-1':'a'.repeat(64)}}}};
     expect(validateLatestCheckpointIdentity(full,checkpoint)).toMatchObject({backup_id:full.backup_id});
@@ -317,8 +342,49 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(snapshotType('AUTO','Weekly',true)).toBe('FULL');
     expect(snapshotType('AUTO','Daily',true)).toBe('INCREMENTAL');
     const runtime=read('base44/shared/disasterRecoveryRuntime.ts');
-    expect(runtime).toContain("checkpointFrom=type==='FULL'?null");
-    expect(runtime).toContain("previousManifestPath=type==='FULL'?null");
+    expect(runtime).toContain("checkpoint_from:type==='FULL'?null:anchor.checkpoint_to");
+    expect(runtime).toContain("previousManifestPath=operation.snapshot_type==='FULL'?null");
+  });
+
+  it('stages the complete catalog through durable bounded resumable invocations before sealing one snapshot',()=>{
+    const runtime=read('base44/shared/disasterRecoveryRuntime.ts');
+    expect(runtime).toContain('const BACKUP_ENTITY_BATCH_SIZE=24');
+    expect(runtime).toContain('const BACKUP_STAGE_READ_CONCURRENCY=1');
+    expect(runtime).toContain('const BACKUP_STAGE_CHUNKS_PER_INVOCATION=3');
+    expect(runtime).toContain("const BACKUP_OPERATION_PATH='Manifests/pending.backup.json.gz.aes256gcm'");
+    expect(runtime).toContain('async function readBackupOperation(storage:any,key:Uint8Array)');
+    expect(runtime).toContain('async function writeBackupOperation(storage:any,key:Uint8Array,operation:any,expected:any=null)');
+    expect(runtime).toContain("status:nextIndex===operation.total_chunks?'PENDING_FINALIZE':'STAGING'");
+    expect(runtime).toContain("if(!operation&&!allowStart)return{ok:true,completed:false,status:'IDLE'");
+    expect(runtime).not.toContain('BACKUP_STAGE_INVOKE_CONCURRENCY');
+    expect(runtime).toContain('mapLimitDrained(pairs,BACKUP_STAGE_READ_CONCURRENCY');
+    expect(runtime).toContain("hash=createHash('sha256')");
+    expect(runtime).toContain("stream=new CompressionStream('gzip')");
+    expect(runtime).toContain('for(const chunk of jsonValueChunks(value))');
+    expect(runtime).not.toContain('encoder.encode(JSON.stringify(value))');
+    expect(runtime.indexOf('const indexArtifact=await')).toBeLessThan(runtime.indexOf('const snapshotArtifact=await'));
+    expect(runtime).toContain('for(const row of entityResults)row.index={}');
+    expect(runtime).toContain('entityResults.length=0;allFiles.clear()');
+    expect(runtime).toContain('attachment_items:attachments');
+    expect(runtime).toContain("await verifyPublishedJsonArtifact(storage,manifest.snapshot,key,'snapshot')");
+    expect(runtime).toContain("await verifyPublishedJsonArtifact(storage,latest.manifest.snapshot,key,'latest_snapshot')");
+    expect(runtime).toContain('latest_checkpoint:latestCheckpoint');
+    expect(runtime).not.toContain("source:'dr_status_scheduler',limit:20");
+    expect(runtime).toContain("invokeInternal(base44,'maintenanceEngine',{action:'dr_backup_chunk'");
+    expect(runtime).toContain("if(!gate.isInternal)throw Object.assign(new Error('dr_backup_chunk_internal_authority_required')");
+    expect(runtime).toContain("stage_version:BACKUP_STAGE_VERSION");
+    expect(runtime).toContain('loadBackupStage(storage,key,artifact,coordinates)');
+    expect(runtime).toContain("exactTextArray(rows.map((row:any)=>row.entity_name),DISASTER_RECOVERY_ENTITY_CATALOG)");
+    expect(runtime).toContain('await cleanupBackupStage(storage,operation.retention_tier,operation.backup_id)');
+    expect(runtime).toContain("await sha256Hex(bytes)!==artifact.encrypted_sha256");
+    expect(runtime).toContain("await sha256Hex(plain)!==artifact.payload_sha256");
+    expect(runtime).toContain('fetchTrustedBase44File(url,drMaxFileBytes())');
+    expect(runtime).toContain("if(await storage.downloadIfExists(`Manifests/${canonicalId}.manifest.json`))return{deleted:false,manifested:true");
+    expect(runtime).toContain("input.confirmation!=='DELETE_UNMANIFESTED_BACKUP'");
+    expect(runtime).toContain('removeUnmanifestedBackup(storage,operation.retention_tier,operation.backup_id,key)');
+    expect(runtime).toContain('await publishLatestPointers(storage,key,operation,published)');
+    expect(runtime).toContain('await deleteBackupOperation(storage,key,operation)');
+    expect(runtime).toContain("remote={ok:true,read_only:true,identity:storage.identity");
   });
 
   it('hard-rejects restore outside an explicit isolated Base44 data environment',()=>{
@@ -352,6 +418,7 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(graphAuthorizationHeaders('token','https://graph.microsoft.com.evil.example/v1.0/sites/site-id')).toEqual({});
     expect(isMicrosoftUploadSessionUrl('https://tenant.sharepoint.com/upload-session?tempauth=opaque')).toBe(true);
     expect(isMicrosoftUploadSessionUrl('https://region.up.1drv.com/upload-session?tempauth=opaque')).toBe(true);
+    expect(isMicrosoftStorageCapabilityUrl('https://region.files.1drv.com/download?tempauth=opaque')).toBe(true);
     for(const rejected of [
       'https://evil.example/upload-session',
       'https://tenant.sharepoint.com.evil.example/upload-session',
@@ -361,9 +428,51 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     ])expect(isMicrosoftUploadSessionUrl(rejected)).toBe(false);
   });
 
+  it('follows exactly one trusted Graph content redirect without forwarding bearer auth',async()=>{
+    vi.stubGlobal('fetch',vi.fn(async(input)=>{
+      const url=String(input);
+      if(url.includes('login.microsoftonline.com'))return Response.json({access_token:'graph-token'});
+      if(url.includes('/drives/'))return Response.json({id:DR_CANONICAL_SHAREPOINT_DRIVE_ID,name:'CAMBRA INFRASTRUCTURE'});
+      if(url.includes('/sites/'))return Response.json({id:DR_CANONICAL_SHAREPOINT_SITE_ID,displayName:'Root'});
+      throw new Error('unexpected open request');
+    }));
+    const storage=await openSharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true});
+    let redirectCancelled=false;
+    const downloadUrl='https://region.files.1drv.com/download?tempauth=opaque',fetchMock=vi.fn(async(input,_init={})=>{
+      if(String(input).startsWith('https://graph.microsoft.com/'))return new Response(new ReadableStream({
+        start(controller){controller.enqueue(new TextEncoder().encode('redirect'));},
+        cancel(){redirectCancelled=true;},
+      }),{status:302,headers:{location:downloadUrl}});
+      if(String(input)===downloadUrl)return new Response(new Uint8Array([1,2,3]));
+      throw new Error('unexpected download request');
+    });
+    vi.stubGlobal('fetch',fetchMock);
+    await expect(storage.download('Daily/stage.bin')).resolves.toEqual(new Uint8Array([1,2,3]));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({redirect:'manual',headers:{Authorization:'Bearer graph-token'}});
+    expect(fetchMock.mock.calls[1][1]).toEqual({method:'GET',redirect:'manual',headers:{Accept:'application/octet-stream'}});
+    expect(redirectCancelled).toBe(true);
+  });
+
+  it('rejects untrusted and chained Graph content redirects',async()=>{
+    vi.stubGlobal('fetch',vi.fn(async(input)=>{
+      const url=String(input);
+      if(url.includes('login.microsoftonline.com'))return Response.json({access_token:'graph-token'});
+      if(url.includes('/drives/'))return Response.json({id:DR_CANONICAL_SHAREPOINT_DRIVE_ID,name:'CAMBRA INFRASTRUCTURE'});
+      if(url.includes('/sites/'))return Response.json({id:DR_CANONICAL_SHAREPOINT_SITE_ID,displayName:'Root'});
+      throw new Error('unexpected open request');
+    }));
+    const storage=await openSharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true});
+    vi.stubGlobal('fetch',vi.fn(async()=>new Response(null,{status:302,headers:{location:'https://evil.example/download'}})));
+    await expect(storage.download('Daily/untrusted.bin')).rejects.toMatchObject({graphCode:'download_redirect_url_invalid'});
+    const trusted='https://region.files.1drv.com/download?tempauth=opaque';
+    vi.stubGlobal('fetch',vi.fn(async(input)=>new Response(null,{status:302,headers:{location:String(input).startsWith('https://graph.microsoft.com/')?trusted:'https://other.files.1drv.com/second'}})));
+    await expect(storage.download('Daily/chained.bin')).rejects.toMatchObject({graphCode:'download_redirect_chain_rejected'});
+  });
+
   it('paginates the complete drive collection with Graph auth on every page',async()=>{
     const second='https://graph.microsoft.com/v1.0/sites/site-id/drives?$skiptoken=next';
-    const fetchMock=vi.fn(async(input,init={})=>{
+    const fetchMock=vi.fn(async(input,_init={})=>{
       const url=String(input);
       if(url===second)return Response.json({value:[{id:'drive-2',name:'Second'}]});
       return Response.json({value:[{id:'drive-1',name:'First'}],'@odata.nextLink':second});
@@ -411,7 +520,13 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     });
     expect(fetchMock.mock.calls.some(([input])=>String(input).includes('/children'))).toBe(false);
     expect(fetchMock.mock.calls.slice(1).every(([,init])=>!init?.method||init.method==='GET')).toBe(true);
-    expect(fetchMock.mock.calls.every(([,init])=>init?.redirect==='error')).toBe(true);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method:'POST',redirect:'manual',body:expect.any(String),
+    });
+    expect(fetchMock.mock.calls[0][1].body).toBe(
+      'client_id=client&client_secret=secret&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default&grant_type=client_credentials',
+    );
+    expect(fetchMock.mock.calls.slice(1).every(([,init])=>init?.redirect==='manual')).toBe(true);
     vi.stubGlobal('fetch',canonicalFetch());
     const verification=await verifySharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true});
     expect(verification).toHaveProperty('list');
@@ -424,6 +539,47 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     vi.stubGlobal('fetch',canonicalFetch(DR_CANONICAL_SHAREPOINT_DRIVE_ID,'wrong-resolved-site'));
     await expect(openSharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true}))
       .rejects.toMatchObject({invalid:['DR_SHAREPOINT_RESOLVED_SITE_ID_CANONICAL_MISMATCH']});
+  });
+
+  it('rejects token redirects without forwarding the client secret',async()=>{
+    let cancelled=false;
+    const body=new ReadableStream({
+      start(controller){controller.enqueue(new TextEncoder().encode('redirect'));},
+      cancel(){cancelled=true;},
+    });
+    const fetchMock=vi.fn(async()=>new Response(body,{
+      status:307,
+      headers:{location:'https://untrusted.example/token'},
+    }));
+    vi.stubGlobal('fetch',fetchMock);
+    await expect(openSharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true}))
+      .rejects.toMatchObject({status:502,graphCode:'token_redirect_rejected'});
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({redirect:'manual'});
+    expect(cancelled).toBe(true);
+  });
+
+  it('rejects Graph redirects without following them',async()=>{
+    let cancelled=false;
+    const redirectedBody=new ReadableStream({
+      start(controller){controller.enqueue(new TextEncoder().encode('redirect'));},
+      cancel(){cancelled=true;},
+    });
+    const fetchMock=vi.fn(async(input)=>{
+      if(String(input).includes('login.microsoftonline.com')){
+        return Response.json({access_token:'graph-token'});
+      }
+      return new Response(redirectedBody,{
+        status:307,
+        headers:{location:'https://untrusted.example/graph'},
+      });
+    });
+    vi.stubGlobal('fetch',fetchMock);
+    await expect(openSharePointBackupStorage(env(validRuntimeEnv()),{requireCanonicalTarget:true}))
+      .rejects.toMatchObject({status:502,graphCode:'graph_redirect_rejected'});
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.every(([,init])=>init?.redirect==='manual')).toBe(true);
+    expect(cancelled).toBe(true);
   });
 
   it('cancels allowed 404/409 bodies before folder recovery and forbids redirects',async()=>{
@@ -441,7 +597,7 @@ describe('CAMBRA disaster recovery hard gate',()=>{
       cancel(){onCancel();},
     }),{status});
     const fetchMock=vi.fn(async(input,init={})=>{
-      expect(init.redirect).toBe('error');
+      expect(init.redirect).toBe('manual');
       const url=String(input);
       if(url.includes('Production%20Backups/Manifests?')){
         manifestReads++;
@@ -678,9 +834,49 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(storageSource).not.toContain('.json()');
     expect(coreSource).not.toContain('arrayBuffer()');
     expect(runtimeSource).not.toContain('check.arrayBuffer()');
-    expect(runtimeSource).toContain('readBoundedDrResponseBytes(check,max)');
-    expect(runtimeSource).toContain("assertDrPayloadWithinLimit(raw,'json')");
+    expect(runtimeSource).toContain('fetchTrustedBase44File(url,drMaxFileBytes())');
+    expect(runtimeSource).toContain("if(rawBytes>max)throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit')");
+    expect(runtimeSource).toContain('readBoundedDrResponseBytes(new Response(stream.readable),max)');
     expect(runtimeSource).toContain("assertDrPayloadWithinLimit(envelope,'encrypted_envelope')");
+  });
+
+  it('accepts only CAMBRA public file routes and exact Base44 media redirects',()=>{
+    const stable='https://base44.app/api/apps/6a16288b833b3c26d7ac1fab/files/mp/public/6a16288b833b3c26d7ac1fab/file.txt';
+    const media='https://media.base44.com/files/public/file.txt';
+    expect(trustedBase44FileUrl(stable)).toBe(stable);
+    expect(trustedBase44FileUrl(media)).toBe(media);
+    expect(trustedBase44FileRedirectUrl(media)).toBe(media);
+    for(const rejected of [
+      'http://base44.app/api/apps/6a16288b833b3c26d7ac1fab/files/public/file.txt',
+      'https://base44.app/api/apps/different-app/files/public/file.txt',
+      'https://base44.app/api/apps/6a16288b833b3c26d7ac1fab/functions/file.txt',
+      'https://base44.app.evil.example/api/apps/6a16288b833b3c26d7ac1fab/files/public/file.txt',
+      'https://user:password@media.base44.com/files/public/file.txt',
+      'https://media.base44.com.evil.example/files/public/file.txt',
+      'https://media.base44.com/files/public/file.txt#fragment',
+    ])expect(trustedBase44FileUrl(rejected)).toBeNull();
+    expect(trustedBase44FileRedirectUrl(stable)).toBeNull();
+  });
+
+  it('follows one Base44 file redirect without auth and rejects untrusted or chained redirects',async()=>{
+    const stable='https://base44.app/api/apps/6a16288b833b3c26d7ac1fab/files/mp/public/6a16288b833b3c26d7ac1fab/file.txt';
+    const media='https://media.base44.com/files/public/file.txt';
+    let firstCancelled=false;
+    const fetchMock=vi.fn(async(input)=>String(input)===stable
+      ? new Response(new ReadableStream({cancel(){firstCancelled=true;}}),{status:302,headers:{location:media}})
+      : new Response(new Uint8Array([1,2,3]),{headers:{'content-type':'text/plain','content-length':'3'}}));
+    await expect(fetchTrustedBase44File(stable,3,fetchMock)).resolves.toEqual({bytes:new Uint8Array([1,2,3]),contentType:'text/plain'});
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.every(([,init])=>init.redirect==='manual'&&init.headers.Authorization===undefined)).toBe(true);
+    expect(firstCancelled).toBe(true);
+
+    const untrusted=vi.fn(async()=>new Response(null,{status:302,headers:{location:'https://evil.example/file'}}));
+    await expect(fetchTrustedBase44File(stable,3,untrusted)).rejects.toMatchObject({code:'DR_OWNED_FILE_REDIRECT_REJECTED'});
+    expect(untrusted).toHaveBeenCalledTimes(1);
+
+    const chained=vi.fn(async(input)=>new Response(null,{status:302,headers:{location:String(input)===stable?media:'https://media.base44.com/files/public/second'}}));
+    await expect(fetchTrustedBase44File(stable,3,chained)).rejects.toMatchObject({code:'DR_OWNED_FILE_REDIRECT_CHAIN_REJECTED'});
+    expect(chained).toHaveBeenCalledTimes(2);
   });
 
   it('reports an inactive/stale DR scheduler from durable scheduled-attempt evidence',()=>{
@@ -706,6 +902,11 @@ describe('CAMBRA disaster recovery hard gate',()=>{
       status:'FAILED',started_at:'2026-08-18T00:00:00.000Z',
     }],now);
     expect(failedAndStale).toMatchObject({status:'FAILED',observed_active:false,healthy:false,inactive_or_stale:true});
+    const continuation=evaluateDisasterRecoveryScheduler([{
+      record_kind:'ATTEMPT',worker_key:'disasterRecoveryBackupContinuation',invocation_kind:'SCHEDULED',
+      claim_acquired:true,cadence_seconds:600,status:'COMPLETED',started_at:'2026-08-21T11:50:00.000Z',completed_at:'2026-08-21T11:51:00.000Z',
+    }],now,{worker_key:'disasterRecoveryBackupContinuation',cadence_seconds:600,freshness_seconds:1800});
+    expect(continuation).toMatchObject({worker_key:'disasterRecoveryBackupContinuation',expected_cadence_seconds:600,status:'HEALTHY'});
   });
 
   it('enforces the 24h RPO boundary and rejects incomplete/future/hung scheduler evidence',()=>{
@@ -771,6 +972,12 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(rows[0]).toMatchObject({
       is_active:true,schedule_mode:'recurring',schedule_type:'simple',repeat_unit:'days',repeat_interval:1,
     });
+    const continuation=config.automations.filter((row)=>row.function_args?.host_action==='disaster_recovery_backup_continue');
+    expect(continuation).toHaveLength(1);
+    expect(continuation[0]).toMatchObject({
+      is_active:true,schedule_mode:'recurring',schedule_type:'simple',repeat_unit:'minutes',repeat_interval:10,
+      function_args:{hosted_worker:'disasterRecoveryBackupContinuation'},
+    });
   });
 
   it('keeps restore PASS fail-closed behind runtime identity, exact readback and compensation',()=>{
@@ -815,13 +1022,14 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect([...DISASTER_RECOVERY_ENTITY_CATALOG].sort()).toEqual(entityFiles);
     expect([...DR_FOLDERS]).toEqual(['Daily','Weekly','Monthly','Manifests','Restore Evidence']);
     const host=read('base44/functions/maintenanceEngine/entry.ts'),config=read('base44/functions/maintenanceEngine/function.jsonc'),runtime=read('base44/shared/disasterRecoveryRuntime.ts'),core=read('base44/shared/disasterRecoveryCore.ts'),storage=read('base44/shared/sharePointBackupStorage.ts');
-    expect(host).toContain("host_action==='disaster_recovery_backup'");
+    expect(host).toContain("String(routed.host_action||'').startsWith('disaster_recovery_backup')");
+    expect(host).toContain('"disaster_recovery_backup_continue":{"worker_key":"disasterRecoveryBackupContinuation","cadence_seconds":600}');
     expect(host).toContain("String(routed.action||'').startsWith('dr_')");
     expect(config).toContain('Encrypted SharePoint disaster-recovery backup');
     expect(core).toContain('DR_RESTORE_PRODUCTION_FORBIDDEN');
     expect(runtime).toContain('DR_PRODUCTION_CONTROL_PLANE_REQUIRED');
     expect(runtime).toContain('source_secrets_restored:false');
-    expect(runtime).toContain('const deploymentIdentity=runtimeDeploymentIdentity()');
+    expect(runtime).toContain('deployment_identity:runtimeDeploymentIdentity()');
     expect(runtime).toContain('...releaseIdentity,checkpoint_from');
     expect(runtime).not.toContain("release_version:'0.97.0'");
     expect(storage).toContain('client_credentials');

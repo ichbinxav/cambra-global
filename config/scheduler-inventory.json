@@ -2,10 +2,10 @@
   "schema_version": "cambra-scheduler-inventory-v3",
   "generated_from": "physical Base44 function configs, deployment topology and local TypeScript dependency closures",
   "truth_boundary": "Logical workers may be hosted by an existing physical function. UNKNOWN means the repository does not prove the property. Base44 triggers are treated as at-least-once; exactly-once provider execution is not claimed.",
-  "scheduled_automation_count": 73,
-  "active_count": 71,
+  "scheduled_automation_count": 74,
+  "active_count": 72,
   "inactive_count": 2,
-  "guarded_count": 71,
+  "guarded_count": 72,
   "unguarded_active": [],
   "inactive_automations": [
     {
@@ -19,8 +19,8 @@
       "source": "base44/functions/seedP3RateIntelligence/function.jsonc automations[0]: is_active=false and config description identifies a temporary idempotent runtime bootstrap to remove after materialization."
     }
   ],
-  "hard_deadline_unknown_count": 71,
-  "periodic_heartbeat_proven_count": 58,
+  "hard_deadline_unknown_count": 72,
+  "periodic_heartbeat_proven_count": 59,
   "periodic_heartbeat_not_proven": [
     "agentTaskTerminalEventReconciler",
     "alwaysOnLeadDiscoveryWorker",
@@ -1456,6 +1456,56 @@
       "config_path": "base44/functions/maintenanceEngine/function.jsonc"
     },
     {
+      "worker_key": "disasterRecoveryBackupContinuation",
+      "logical_worker": "disasterRecoveryBackupContinuation",
+      "physical_host": "maintenanceEngine",
+      "host_kind": "PHYSICAL_ENTRY",
+      "host_route": null,
+      "trust_boundary": "PHYSICAL_ENTRY_BOUNDARY",
+      "hosted_workers": [
+        "disasterRecoveryBackupContinuation"
+      ],
+      "function_directory": "maintenanceEngine",
+      "automation_index": 4,
+      "name": "Encrypted SharePoint disaster-recovery continuation — 10 min",
+      "responsibility": "Resumes an existing encrypted backup operation in bounded durable slices. It never starts a backup when no pending operation exists.",
+      "owner_system": "Base44",
+      "trigger": "scheduled",
+      "is_active": true,
+      "inactive_classification": null,
+      "inactive_classification_source": null,
+      "schedule": {
+        "mode": "recurring",
+        "type": "simple",
+        "repeat_unit": "minutes",
+        "repeat_interval": 10,
+        "cadence_seconds": 600,
+        "start_time": "2026-08-13T01:40:00.000Z"
+      },
+      "claim_primitive": "SchedulerRun CONTROL/ATTEMPT CAS",
+      "lease_seconds": 900,
+      "heartbeat_interval_seconds": 120,
+      "heartbeat_policy": "PERIODIC_WRAPPER: min(120 seconds, lease_seconds / 3), lower bounded at 30 seconds",
+      "deadline_seconds": "UNKNOWN",
+      "timeout_seconds": "UNKNOWN",
+      "execution_bound_status": "LEASE_AND_PERIODIC_HEARTBEAT_PROVEN; HARD_DEADLINE_AND_TIMEOUT_UNKNOWN",
+      "effect_boundary": "HANDLER_ENTRY_CONSERVATIVE",
+      "protection_classification": "SLOT_GUARDED",
+      "concurrency": "AT_LEAST_ONCE_SLOT_GUARDED",
+      "operation_identity": "worker_key + explicit operation key; otherwise worker cadence slot shared by scheduled/manual/internal",
+      "effect_identity": "worker_key + explicit effect/operation key; otherwise worker cadence slot",
+      "takeover_policy": "LEASE_EXPIRY_RECLAIMABLE_ONLY_BEFORE_EFFECT; POST_EFFECT_REVIEW_REQUIRED",
+      "idempotency": "SCHEDULER OPERATION/EFFECT KEY; DOWNSTREAM GUARANTEE REQUIRES ADAPTER EVIDENCE",
+      "downstream_idempotency": "IDEMPOTENCY_OR_RECONCILIATION_MARKERS_OBSERVED; SOURCE_REVIEW_REQUIRED",
+      "post_effect_ambiguity": "SCHEDULER CONTROL CONVERGES TO REVIEW_REQUIRED; PROVIDER RECONCILIATION REQUIRES ADAPTER EVIDENCE",
+      "retry_backoff": "UNKNOWN",
+      "dlq_escalation": "IMPLEMENTED_IN_HANDLER; VERIFY SOURCE",
+      "side_effects": "MUTATING_OR_EXTERNAL; VERIFY SOURCE",
+      "tenant_scope": "UNKNOWN",
+      "authority": "INTERNAL_SECRET",
+      "config_path": "base44/functions/maintenanceEngine/function.jsonc"
+    },
+    {
       "worker_key": "commandRunWorker",
       "logical_worker": "commandRunWorker",
       "physical_host": "maintenanceEngine",
@@ -1468,7 +1518,7 @@
         "commandRunWorker"
       ],
       "function_directory": "maintenanceEngine",
-      "automation_index": 4,
+      "automation_index": 5,
       "name": "CAMBRA Command runs — 5 min",
       "responsibility": "COMMAND-C7: advances durable CommandRun slices. Adds no authority of its own — CAS, cancellation, emergency epoch and budgets are all enforced inside advanceCommandRun. Terminal and human-held runs are never touched.",
       "owner_system": "Base44",

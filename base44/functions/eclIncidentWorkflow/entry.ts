@@ -3,7 +3,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only incident queue and bounded recovery. Recovery actions are mapped
 // by the pure P7 contract; arbitrary function names/payloads are never accepted.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES, schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision } from '../../shared/eclOperationalRecovery.ts';
+import { disasterRecoverySchedulerRecoveryProof, recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES, schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision } from '../../shared/eclOperationalRecovery.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const LIST_MAX = 200;
@@ -25,7 +25,7 @@ const NO_TASK_PRE_EFFECT_PROOF_WORKERS = new Set([
 
 const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   taskAgent?: string;
-  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION';
+  proof: 'TASK_NO_EFFECT' | 'GROWTH_ZERO_WRITES' | 'MAINTENANCE_PRE_EFFECT' | 'LEGACY_RECOVER_PRE_EFFECT' | 'INSTANTLY_RETRY_ZERO_WRITES' | 'DISCOVERY_EFFECT_RECONCILIATION' | 'DISASTER_RECOVERY_TERMINAL_BACKUP';
 }> = Object.freeze({
   autonomousCompanyOrchestrator: {
     taskAgent: 'autonomous_company_orchestrator',
@@ -39,6 +39,8 @@ const ADMIN_SCHEDULER_RECONCILIATION: Record<string, {
   },
   instantlyProviderEventRetryWorker: { proof: 'INSTANTLY_RETRY_ZERO_WRITES' },
   alwaysOnLeadDiscoveryWorker: { proof: 'DISCOVERY_EFFECT_RECONCILIATION' },
+  disasterRecoveryBackup: { proof: 'DISASTER_RECOVERY_TERMINAL_BACKUP' },
+  disasterRecoveryBackupContinuation: { proof: 'DISASTER_RECOVERY_TERMINAL_BACKUP' },
 });
 
 async function exactRows(entity: any, query: Record<string, unknown>, operation: string) {
@@ -224,6 +226,28 @@ function hasEvidence(value: any) {
   if (Array.isArray(value)) return value.length > 0;
   if (typeof value === 'object') return Object.keys(value).length > 0;
   return true;
+}
+
+function unwrapFunctionData(value: any) {
+  let current=value?.data??value;
+  for(let layer=0;layer<6;layer++){
+    if(typeof current==='string'){try{current=JSON.parse(current);continue}catch{return current}}
+    if(current&&typeof current==='object'&&!Array.isArray(current)&&current.ok===undefined&&current.error===undefined&&'data'in current){current=current.data;continue}
+    break;
+  }
+  return current;
+}
+
+async function disasterRecoveryTerminalBackupProof(svc: any, attempt: any) {
+  const internalSecret=String(Deno.env.get('INTERNAL_CALL_SECRET')||'');
+  if(!internalSecret)return{ok:false,reason:'disaster_recovery_internal_authority_unavailable'};
+  let status:any;
+  try{status=unwrapFunctionData(await svc.functions.invoke('maintenanceEngine',{action:'dr_status',verify_remote:true,internal_secret:internalSecret}))}
+  catch{return{ok:false,reason:'disaster_recovery_status_unavailable'}}
+  const latest=status?.remote?.latest_checkpoint,backupId=String(latest?.backup_id||''),snapshotType=String(latest?.snapshot_type||'');
+  if(!backupId||!snapshotType)return disasterRecoverySchedulerRecoveryProof(status,[],attempt);
+  const completionRows=await svc.entities.OperationalLog.filter({event_type:'disaster_recovery_backup_completed',message:`${snapshotType} backup ${backupId}`},'-created_at',2);
+  return disasterRecoverySchedulerRecoveryProof(status,completionRows,attempt);
 }
 
 async function growthAttemptZeroWriteProof(svc: any, attempt: any) {
@@ -549,15 +573,22 @@ async function inspectAdminSchedulerReconciliation(svc: any, workerKey: string) 
       return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
     }
   }
+  if (spec.proof === 'DISASTER_RECOVERY_TERMINAL_BACKUP') {
+    domainProof = await disasterRecoveryTerminalBackupProof(svc, attempt);
+    if (!domainProof.ok) {
+      return { ok: false, action: 'blocked', reason: domainProof.reason, workerKey, control, attempt, domainProof };
+    }
+  }
   const discoveryPreEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'PRE_EFFECT_ZERO_WRITES';
   const discoveryPostEffectProof = spec.proof === 'DISCOVERY_EFFECT_RECONCILIATION' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
+  const disasterRecoveryPostEffectProof = spec.proof === 'DISASTER_RECOVERY_TERMINAL_BACKUP' && domainProof?.mode === 'POST_EFFECT_QUIESCENT';
   const domainNoTaskProof = (
     ['GROWTH_ZERO_WRITES', 'MAINTENANCE_PRE_EFFECT', 'LEGACY_RECOVER_PRE_EFFECT', 'INSTANTLY_RETRY_ZERO_WRITES'].includes(spec.proof) &&
     domainProof?.ok === true
   ) || discoveryPreEffectProof;
   const decision = schedulerControlRecoveryDecision(control, attempt, tasks, {
     allowNoTaskProof: domainNoTaskProof,
-    allowQuiescentPostEffectProof: discoveryPostEffectProof,
+    allowQuiescentPostEffectProof: discoveryPostEffectProof || disasterRecoveryPostEffectProof,
   });
   const taskId = decision.taskId || domainProof?.task_id || null;
   const task = taskId ? tasks.find((row) => row.id === taskId) : null;

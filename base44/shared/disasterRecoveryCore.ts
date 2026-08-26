@@ -38,7 +38,9 @@ export const DR_EPHEMERAL_SECRET_ENTITIES = Object.freeze(new Set([
 const SYSTEM_FIELDS = new Set(['id', 'created_date', 'updated_date', 'created_by']);
 const SECRET_KEY = /(^|_)(access_token|refresh_token|client_secret|webhook_secret|signing_secret|secret_key|secret|password|passwd|private_key|signing_key|encryption_key|pseudonymization_key|api_key|api_token|x_api_key|oauth_token|oauth_access_token|oauth_refresh_token|credential|credentials|credential_key|credential_ref|authorization|authorization_code|bearer_token|session_token|claim_token|control_token|attempt_token|fence_token|commit_token|acceptance_token|service_token|setup_token|sas_token|account_key|connection_string|salt)(_|$)/i;
 const SAFE_SECRET_METADATA = /(hash|last4|prefix|present|expires_at|expired_at|type|name|id)$/i;
-const TRUSTED_BASE44_FILE_HOST = /(^|\.)media\.base44\.com$/i;
+const TRUSTED_BASE44_MEDIA_HOST = 'media.base44.com';
+const TRUSTED_BASE44_APP_HOST = 'base44.app';
+const TRUSTED_BASE44_APP_FILE_PREFIX = '/api/apps/6a16288b833b3c26d7ac1fab/files/';
 const DR_REDACTED_SECRET = '[redacted-secret]';
 const DR_CREDENTIAL_ASSIGNMENT = /(?:(['"])([A-Za-z_$][A-Za-z0-9_$.-]{0,159})\1|([A-Za-z_$][A-Za-z0-9_$.-]{0,159}))([ \t]*)([:=])([ \t]*)(?!['"]?\[redacted-secret\]['"]?)(?:(?:Bearer|Basic)[ \t]+[A-Za-z0-9._~+/=-]+|"[^"\r\n]+"|'[^'\r\n]+'|`[^`\r\n]+`|[^\s,;}\]\)]+)/gi;
 const DR_BRACKET_ENV_ASSIGNMENT = /\b((?:process\.env|Deno\.env)\s*\[\s*(['"])([A-Za-z_$][A-Za-z0-9_$.-]{0,159})\2\s*\]\s*=\s*)(?!['"]?\[redacted-secret\]['"]?)(?:"[^"\r\n]+"|'[^'\r\n]+'|`[^`\r\n]+`|[^\s,;}\]\)]+)/g;
@@ -96,9 +98,13 @@ function canonicalIsoTimestampMs(value:any) {
 export function evaluateDisasterRecoveryScheduler(
   runs:any[] = [],
   nowMs=Date.now(),
+  options:any = {},
 ) {
+  const workerKey=String(options.worker_key||DR_SCHEDULER_WORKER_KEY);
+  const cadenceSeconds=Number(options.cadence_seconds||DR_SCHEDULER_CADENCE_SECONDS);
+  const freshnessSeconds=Number(options.freshness_seconds||DR_SCHEDULER_FRESHNESS_SECONDS);
   const scheduled = runs.filter((run:any) =>
-    run?.worker_key === DR_SCHEDULER_WORKER_KEY &&
+    run?.worker_key === workerKey &&
     run?.invocation_kind === 'SCHEDULED'
   ).sort((a:any,b:any) =>
     (Number.isFinite(canonicalIsoTimestampMs(b?.started_at))
@@ -117,7 +123,7 @@ export function evaluateDisasterRecoveryScheduler(
   const authoritativeAttempt = latest?.record_kind === 'ATTEMPT' &&
     latest?.claim_acquired === true &&
     Number.isFinite(Number(latest?.cadence_seconds)) &&
-    Number(latest?.cadence_seconds) === DR_SCHEDULER_CADENCE_SECONDS;
+    Number(latest?.cadence_seconds) === cadenceSeconds;
   const startedAtValid = Number.isFinite(startedAtMs) && startedAtMs <= nowMs;
   const completedAtProvided = !!latest?.completed_at;
   const completedTimestampValid = !completedAtProvided || (
@@ -192,7 +198,7 @@ export function evaluateDisasterRecoveryScheduler(
     reason = !leaseActive
       ? 'scheduled_attempt_lease_expired'
       : 'scheduled_attempt_heartbeat_stale';
-  } else if (latestStatus === 'COMPLETED' && Number(ageSeconds) > DR_SCHEDULER_FRESHNESS_SECONDS) {
+  } else if (latestStatus === 'COMPLETED' && Number(ageSeconds) > freshnessSeconds) {
     status = 'INACTIVE_OR_STALE';
     reason = 'latest_completed_attempt_exceeds_rpo_window';
   } else if (latestStatus === 'COMPLETED') {
@@ -207,9 +213,9 @@ export function evaluateDisasterRecoveryScheduler(
   }
   const observedActive = status === 'HEALTHY' || status === 'RUNNING';
   return {
-    worker_key:DR_SCHEDULER_WORKER_KEY,
-    expected_cadence_seconds:DR_SCHEDULER_CADENCE_SECONDS,
-    freshness_limit_seconds:DR_SCHEDULER_FRESHNESS_SECONDS,
+    worker_key:workerKey,
+    expected_cadence_seconds:cadenceSeconds,
+    freshness_limit_seconds:freshnessSeconds,
     running_max_seconds:DR_SCHEDULER_RUNNING_MAX_SECONDS,
     status,
     reason,
@@ -306,6 +312,31 @@ export function parseDrMaxFileBytes(value:any, fallback=DR_DEFAULT_MAX_FILE_BYTE
     });
   }
   return candidate;
+}
+
+export async function mapLimitDrained<T,R>(
+  values:readonly T[],
+  limit:number,
+  handler:(value:T,index:number)=>Promise<R>,
+) {
+  if(!Number.isSafeInteger(limit)||limit<=0){
+    throw Object.assign(new Error('dr_concurrency_limit_invalid'),{code:'DR_CONCURRENCY_LIMIT_INVALID'});
+  }
+  const output=new Array<R>(values.length),failures:Array<{index:number;error:any}>=[];
+  let cursor=0;
+  const workers=Array.from({length:Math.min(limit,values.length)},async()=>{
+    while(true){
+      const index=cursor++;
+      if(index>=values.length)return;
+      try{output[index]=await handler(values[index],index)}catch(error){failures.push({index,error})}
+    }
+  });
+  await Promise.all(workers);
+  if(failures.length){
+    failures.sort((left,right)=>left.index-right.index);
+    throw failures[0].error??Object.assign(new Error('dr_concurrent_operation_failed'),{code:'DR_CONCURRENT_OPERATION_FAILED'});
+  }
+  return output;
 }
 
 function ownedChunk(value:Uint8Array) {
@@ -612,7 +643,8 @@ export function validateSnapshotManifestIdentity(manifest:any, payload:any, inpu
   }
   if (stableJson(payload.entity_counts) !== stableJson(manifest.entity_counts) ||
     stableJson(payload.entity_totals) !== stableJson(manifest.entity_totals) ||
-    stableJson(payload.attachments_summary) !== stableJson(manifest.attachments)) {
+    stableJson(payload.attachments_summary) !== stableJson(manifest.attachments) ||
+    stableJson(payload.attachments) !== stableJson(manifest.attachment_items)) {
     throw drValidationError('dr_snapshot_authenticated_summary_mismatch', 'DR_SNAPSHOT_COUNT_MISMATCH');
   }
   let sourceTotal=0,includedTotal=0,tombstoneTotal=0,redactedTotal=0;
@@ -983,6 +1015,37 @@ export function stableJson(value:any) {
   return JSON.stringify(stableValue(value));
 }
 
+export function* jsonValueChunks(value:any):Generator<string> {
+  const ancestors=new Set<any>();
+  const omitted=(candidate:any)=>['undefined','function','symbol'].includes(typeof candidate);
+  function prepared(candidate:any,key:string){return candidate&&typeof candidate==='object'&&typeof candidate.toJSON==='function'?candidate.toJSON(key):candidate}
+  function* visit(candidate:any,key:string,arrayValue:boolean):Generator<string>{
+    candidate=prepared(candidate,key);
+    if(omitted(candidate)){if(arrayValue)yield'null';else throw new TypeError('dr_json_value_not_serializable');return}
+    if(candidate===null){yield'null';return}
+    if(typeof candidate==='string'){yield JSON.stringify(candidate);return}
+    if(typeof candidate==='boolean'){yield candidate?'true':'false';return}
+    if(typeof candidate==='number'){yield Number.isFinite(candidate)?String(candidate):'null';return}
+    if(typeof candidate==='bigint')throw new TypeError('Do not know how to serialize a BigInt');
+    if(ancestors.has(candidate))throw new TypeError('Converting circular structure to JSON');
+    ancestors.add(candidate);
+    try{
+      if(Array.isArray(candidate)){
+        yield'[';
+        for(let index=0;index<candidate.length;index++){if(index)yield',';yield*visit(candidate[index],String(index),true)}
+        yield']';return;
+      }
+      yield'{';let first=true;
+      for(const property of Object.keys(candidate)){
+        const child=prepared(candidate[property],property);if(omitted(child))continue;
+        if(!first)yield',';first=false;yield JSON.stringify(property);yield':';yield*visit(child,property,false);
+      }
+      yield'}';
+    }finally{ancestors.delete(candidate)}
+  }
+  yield*visit(value,'',false);
+}
+
 function ownedBuffer(bytes:Uint8Array) {
   const copy=new Uint8Array(bytes.byteLength);copy.set(bytes);return copy.buffer;
 }
@@ -1164,8 +1227,61 @@ export function assertIsolatedRestoreTarget(req:Request, confirmation:any) {
 }
 
 export function trustedBase44FileUrl(value:any) {
-  try { const parsed = new URL(String(value || '')); return parsed.protocol === 'https:' && TRUSTED_BASE44_FILE_HOST.test(parsed.hostname) ? parsed.toString() : null; }
+  try {
+    const parsed = new URL(String(value || ''));
+    const hostname = parsed.hostname.toLowerCase();
+    const trustedStableRoute = hostname === TRUSTED_BASE44_APP_HOST &&
+      parsed.pathname.startsWith(TRUSTED_BASE44_APP_FILE_PREFIX) &&
+      parsed.pathname.length > TRUSTED_BASE44_APP_FILE_PREFIX.length;
+    const trustedMediaRoute = hostname === TRUSTED_BASE44_MEDIA_HOST && parsed.pathname !== '/';
+    return parsed.protocol === 'https:' && !parsed.username && !parsed.password && !parsed.hash &&
+      (trustedStableRoute || trustedMediaRoute) ? parsed.toString() : null;
+  }
   catch { return null; }
+}
+
+export function trustedBase44FileRedirectUrl(value:any) {
+  try {
+    const parsed = new URL(String(value || ''));
+    return parsed.protocol === 'https:' && parsed.hostname.toLowerCase() === TRUSTED_BASE44_MEDIA_HOST &&
+      !parsed.username && !parsed.password && !parsed.hash && parsed.pathname !== '/' ? parsed.toString() : null;
+  } catch { return null; }
+}
+
+export async function fetchTrustedBase44File(
+  value:any,
+  maxBytes:number,
+  fetcher:typeof fetch=fetch,
+) {
+  const sourceUrl=trustedBase44FileUrl(value);
+  if(!sourceUrl)throw Object.assign(new Error('dr_owned_file_url_rejected'),{code:'DR_OWNED_FILE_URL_REJECTED'});
+  const source=new URL(sourceUrl);
+  const request=async(url:string)=>{
+    try{return await fetcher(url,{redirect:'manual',headers:{Accept:'application/octet-stream'}})}
+    catch{throw Object.assign(new Error('dr_owned_file_download_failed'),{code:'DR_OWNED_FILE_DOWNLOAD_FAILED'})}
+  };
+  let response=await request(sourceUrl);
+  if(response.status>=300&&response.status<400){
+    const location=String(response.headers.get('location')||'');
+    await response.body?.cancel('dr_owned_file_redirect_consumed').catch(()=>undefined);
+    let resolvedLocation='';
+    try{resolvedLocation=new URL(location,sourceUrl).toString()}catch{resolvedLocation=''}
+    const redirectUrl=source.hostname.toLowerCase()===TRUSTED_BASE44_APP_HOST && response.status===302
+      ? trustedBase44FileRedirectUrl(resolvedLocation)
+      : null;
+    if(!redirectUrl)throw Object.assign(new Error('dr_owned_file_redirect_rejected'),{code:'DR_OWNED_FILE_REDIRECT_REJECTED',status:response.status});
+    response=await request(redirectUrl);
+    if(response.status>=300&&response.status<400){
+      await response.body?.cancel('dr_owned_file_redirect_chain_rejected').catch(()=>undefined);
+      throw Object.assign(new Error('dr_owned_file_redirect_chain_rejected'),{code:'DR_OWNED_FILE_REDIRECT_CHAIN_REJECTED',status:response.status});
+    }
+  }
+  if(!response.ok){
+    await response.body?.cancel('dr_owned_file_download_failed').catch(()=>undefined);
+    throw Object.assign(new Error('dr_owned_file_download_failed'),{code:'DR_OWNED_FILE_DOWNLOAD_FAILED',status:response.status});
+  }
+  const bytes=await readBoundedDrResponseBytes(response,maxBytes);
+  return{bytes,contentType:String(response.headers.get('content-type')||'application/octet-stream')};
 }
 
 export function collectOwnedFileReferences(value:any, output=new Set<string>()) {

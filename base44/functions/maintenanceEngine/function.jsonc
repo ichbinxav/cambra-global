@@ -75,6 +75,24 @@
     },
     {
       "type": "scheduled",
+      "name": "Encrypted SharePoint disaster-recovery continuation — 10 min",
+      "description": "Resumes an existing encrypted backup operation in bounded durable slices. It never starts a backup when no pending operation exists.",
+      "function_args": {
+        "host_action": "disaster_recovery_backup_continue",
+        "hosted_worker": "disasterRecoveryBackupContinuation",
+        "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+      },
+      "is_active": true,
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "minutes",
+      "repeat_interval": 10,
+      "ends_type": "never",
+      "function_name": "maintenanceEngine",
+      "starts_at": "2026-08-13T01:40:00.000Z"
+    },
+    {
+      "type": "scheduled",
       "name": "CAMBRA Command runs — 5 min",
       "description": "COMMAND-C7: advances durable CommandRun slices. Adds no authority of its own — CAS, cancellation, emergency epoch and budgets are all enforced inside advanceCommandRun. Terminal and human-held runs are never touched.",
       "function_args": {

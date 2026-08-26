@@ -162,6 +162,67 @@ export function schedulerControlRecoveryDecision(
   return { ok: true, action: 'reset_control', reason: 'task_proves_no_effect_started', taskId: task.id };
 }
 
+export function disasterRecoverySchedulerRecoveryProof(status: any, completionRows: any[], attempt: any) {
+  if (!status || status.ok !== true || status.data_status !== 'COMPLETE') {
+    return { ok: false, reason: 'disaster_recovery_status_unverified' };
+  }
+  if (status.configuration?.ok !== true || status.remote?.ok !== true || status.remote?.read_only !== true) {
+    return { ok: false, reason: 'disaster_recovery_remote_authority_unverified' };
+  }
+  if (status.remote.pending_backup !== null) {
+    return { ok: false, reason: 'disaster_recovery_operation_still_pending' };
+  }
+  const latest = status.remote.latest_checkpoint;
+  const backupId = String(latest?.backup_id || '');
+  const manifestPath = String(latest?.manifest_path || '');
+  const manifestHash = String(latest?.manifest_hash || '').toLowerCase();
+  if (
+    latest?.verified !== true ||
+    !/^cambra-dr-\d{8}T\d{9}z-[a-f0-9]{8}$/.test(backupId) ||
+    manifestPath !== `Manifests/${backupId}.manifest.json` ||
+    !/^[a-f0-9]{64}$/.test(manifestHash) ||
+    latest.source_environment !== 'prod' ||
+    latest.source_app_id !== '6a16288b833b3c26d7ac1fab' ||
+    !Number.isFinite(Date.parse(String(latest.checkpoint_to || '')))
+  ) return { ok: false, reason: 'disaster_recovery_latest_checkpoint_unverified' };
+  if (!Array.isArray(completionRows) || completionRows.length !== 1) {
+    return { ok: false, reason: 'disaster_recovery_completion_authority_ambiguous' };
+  }
+  const completion = completionRows[0];
+  const expectedMessage = `${latest.snapshot_type} backup ${backupId}`;
+  const completionAt = Date.parse(String(completion?.created_at || completion?.created_date || ''));
+  const attemptAt = Date.parse(String(attempt?.started_at || ''));
+  if (
+    completion?.event_type !== 'disaster_recovery_backup_completed' ||
+    completion?.message !== expectedMessage ||
+    completion?.data_json?.backup_id !== backupId ||
+    completion?.data_json?.manifest_path !== manifestPath ||
+    completion?.data_json?.manifest_hash !== manifestHash ||
+    !Number.isFinite(completionAt) || !Number.isFinite(attemptAt) || completionAt < attemptAt
+  ) return { ok: false, reason: 'disaster_recovery_completion_receipt_unverified' };
+  return {
+    ok: true,
+    reason: 'disaster_recovery_latest_backup_verified_and_no_operation_pending',
+    mode: 'POST_EFFECT_QUIESCENT',
+    evidence: {
+      backup_id: backupId,
+      manifest_path: manifestPath,
+      manifest_hash: manifestHash,
+      checkpoint_to: latest.checkpoint_to,
+      snapshot_type: latest.snapshot_type,
+      completion_log_id: completion.id,
+      completion_at: new Date(completionAt).toISOString(),
+      pending_operation: false,
+      latest_checkpoint_verified: true,
+    },
+    receipt_state: {
+      latest_checkpoint_verified: true,
+      completion_log_verified: true,
+      pending_operation: false,
+    },
+  };
+}
+
 export function webhookOrphanedProvisionalRecoveryDecision(
   control: any,
   historicalAttempt: any,

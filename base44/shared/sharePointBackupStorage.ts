@@ -234,7 +234,7 @@ export function graphAuthorizationHeaders(token: string, path: string) {
     : {};
 }
 
-export function isMicrosoftUploadSessionUrl(value: unknown) {
+export function isMicrosoftStorageCapabilityUrl(value: unknown) {
   try {
     const url = new URL(String(value || ""));
     const hostname = url.hostname.toLowerCase();
@@ -251,6 +251,10 @@ export function isMicrosoftUploadSessionUrl(value: unknown) {
   } catch {
     return false;
   }
+}
+
+export function isMicrosoftUploadSessionUrl(value: unknown) {
+  return isMicrosoftStorageCapabilityUrl(value);
 }
 
 async function readBoundedGraphJson(
@@ -282,6 +286,7 @@ async function graphRequest(
   path: string,
   init: RequestInit = {},
   allowed: number[] = [],
+  followDownloadRedirect = false,
 ) {
   let last: Response | null = null;
   for (let attempt = 0; attempt < 5; attempt++) {
@@ -291,7 +296,7 @@ async function graphRequest(
         path.startsWith("https://") ? path : `${GRAPH_ROOT}${path}`,
         {
           ...init,
-          redirect: "error",
+          redirect: "manual",
           headers: {
             ...graphAuthorizationHeaders(token, path),
             ...(init.headers || {}),
@@ -311,6 +316,41 @@ async function graphRequest(
       continue;
     }
     last = response;
+    if (response.status >= 300 && response.status < 400) {
+      if (followDownloadRedirect && response.status === 302) {
+        const location = response.headers.get("location");
+        await response.body?.cancel("graph_download_redirect_consumed").catch(() => undefined);
+        if (!isMicrosoftStorageCapabilityUrl(location)) {
+          throw new MicrosoftGraphError(502, "download_redirect_url_invalid");
+        }
+        let download: Response;
+        try {
+          download = await fetch(String(location), {
+            method: "GET",
+            redirect: "manual",
+            headers: { Accept: "application/octet-stream" },
+          });
+        } catch {
+          throw new MicrosoftGraphError(502, "download_transport_failed");
+        }
+        if (download.status >= 300 && download.status < 400) {
+          await download.body?.cancel("download_redirect_chain_rejected").catch(() => undefined);
+          throw new MicrosoftGraphError(502, "download_redirect_chain_rejected");
+        }
+        if (!download.ok) {
+          await download.body?.cancel("download_request_failed").catch(() => undefined);
+          throw new MicrosoftGraphError(download.status, "download_request_failed");
+        }
+        return download;
+      }
+      await response.body?.cancel("graph_redirect_rejected").catch(() => undefined);
+      throw new MicrosoftGraphError(
+        502,
+        isMicrosoftGraphApiPath(path)
+          ? "graph_redirect_rejected"
+          : "upload_redirect_rejected",
+      );
+    }
     if (response.ok || allowed.includes(response.status)) return response;
     if (![408, 429, 500, 502, 503, 504].includes(response.status)) {
       throw await responseError(response);
@@ -334,7 +374,7 @@ async function acquireToken(configuration: any) {
     client_secret: configuration.clientSecret,
     scope: TOKEN_SCOPE,
     grant_type: "client_credentials",
-  });
+  }).toString();
   let response: Response;
   try {
     response = await fetch(
@@ -343,13 +383,19 @@ async function acquireToken(configuration: any) {
       }/oauth2/v2.0/token`,
       {
         method: "POST",
-        redirect: "error",
+        // Base44's fetch transport can surface redirect:"error" as an opaque
+        // network failure. Manual mode preserves the no-follow security gate.
+        redirect: "manual",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body,
       },
     );
   } catch {
     throw new MicrosoftGraphError(502, "token_transport_failed");
+  }
+  if (response.status >= 300 && response.status < 400) {
+    await response.body?.cancel("token_redirect_rejected").catch(() => undefined);
+    throw new MicrosoftGraphError(502, "token_redirect_rejected");
   }
   if (!response.ok) {
     const payload = await readBoundedGraphJson(
@@ -743,6 +789,9 @@ export async function openSharePointBackupStorage(
         `/drives/${encodeURIComponent(String(drive.id))}/root:/${
           graphPath(`${root}/${relative}`)
         }:/content`,
+        {},
+        [],
+        true,
       );
       return readBoundedDrResponseBytes(response, maxFileBytes);
     },
@@ -754,6 +803,7 @@ export async function openSharePointBackupStorage(
         }:/content`,
         {},
         [404],
+        true,
       );
       if (response.status === 404) {
         await response.body?.cancel("dr_owned_file_not_found").catch(() => undefined);
