@@ -2,10 +2,24 @@ import { buildDiscoveryAdminRadar } from './discoveryAdmin.ts';
 import { leadProviderRegistry } from './leadIntelligenceProvider.ts';
 import { readRuntimeRows, runtimeSourceCoverage } from './runtimeSourceRead.ts';
 
-export const COMMERCIAL_OPERATING_SYSTEM_VERSION = 'commercial-os-runtime-1.0.0';
+export const COMMERCIAL_OPERATING_SYSTEM_VERSION = 'commercial-os-runtime-1.0.1';
 const text=(value:unknown)=>String(value??'').trim();
 const score=(lead:any)=>Number(lead?.score??lead?.pre_score??0);
 const confidence=(lead:any)=>Number(lead?.revenue_confidence??lead?.score_breakdown_json?.evidence_confidence??0);
+
+const PORTFOLIO_SOURCE_KEYS={
+  commercial:new Set(['policies','campaigns','profiles','outbound_control','threads','messages','strategies','approvals','questions','provider_states']),
+  discovery:new Set(['policies','leads','checkpoints','cost_events','outbound_providers','outbound_events','outbound_profiles','outbound_control','strategies']),
+};
+
+export function commercialCoverageAttention(commercial:any,discovery:any){
+  const coverages=[['commercial',commercial],['discovery',discovery]] as const;
+  const allBlockers=[...new Set(coverages.flatMap(([,coverage])=>Array.isArray(coverage?.blockers)?coverage.blockers:[]))];
+  if(!allBlockers.length)return null;
+  const portfolioBlockers=[...new Set(coverages.flatMap(([scope,coverage])=>Object.entries(coverage?.sources||{}).filter(([key,row]:any)=>PORTFOLIO_SOURCE_KEYS[scope].has(key)&&row?.status!=='COMPLETE').flatMap(([,row]:any)=>Array.isArray(row?.blockers)?row.blockers:[])))];
+  if(portfolioBlockers.length)return{severity:'critical',code:'commercial_runtime_sources_incomplete',label:'One or more canonical commercial sources are unavailable or truncated; displayed counts are not portfolio totals.',blockers:portfolioBlockers};
+  return{severity:'info',code:'commercial_operational_history_windowed',label:'Portfolio counts are complete. Agent, scheduler and snapshot history is intentionally limited to recent bounded windows.',blockers:allBlockers};
+}
 
 export function commercialSenderReadiness(profile:any){
   const configured=Boolean(text(profile?.profile_key)&&text(profile?.domain)&&text(profile?.from_address));
@@ -60,7 +74,8 @@ export async function buildCommercialOperatingSystem(service:any){
   const unresolvedLegacy=threads.filter((thread:any)=>!thread.sending_profile_key&&thread.sending_profile_resolution_status!=='NOT_APPLICABLE');
   const liveWorkers=['alwaysOnLeadDiscoveryWorker','outboundVolumeWorker','followUpWorker','instantlyReconciliationWorker'].map((worker_key)=>{const run=schedulerRuns.find((row:any)=>row.worker_key===worker_key);return{worker_key,status:run?.status||'NOT_EVIDENCED',last_started_at:run?.started_at||null};});
   const attention:any[]=[];
-  if(sourceCoverage.status!=='COMPLETE'||radar.source_coverage?.status!=='COMPLETE')attention.push({severity:'critical',code:'commercial_runtime_sources_incomplete',label:'One or more canonical commercial sources are unavailable or truncated; displayed counts are not portfolio totals.',blockers:[...sourceCoverage.blockers,...(radar.source_coverage?.blockers||[])]});
+  const coverageAttention=commercialCoverageAttention(sourceCoverage,radar.source_coverage);
+  if(coverageAttention)attention.push(coverageAttention);
   if(!providers.find((provider:any)=>provider.key==='instantly_supersearch')?.available)attention.push({severity:'info',code:'instantly_supersearch_not_verified',label:'Verify Instantly SuperSearch access after loading the API key.'});
   if(unresolvedLegacy.length)attention.push({severity:'critical',code:'legacy_sending_profiles_unresolved',count:unresolvedLegacy.length,label:'Legacy threads require an explicit sending profile review.'});
   if(!senders.some((sender:any)=>sender.readiness.ready))attention.push({severity:'critical',code:'no_ready_sender',label:'No mailbox is fully ready for a pilot.'});

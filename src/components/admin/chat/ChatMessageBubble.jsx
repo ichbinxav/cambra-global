@@ -28,10 +28,18 @@ function EvidenceResult({r}){
   if(r.status==='executed'&&r.preview){return <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3"><b className="text-xs text-emerald-300">Executed · audited</b><p className="text-[11px] mt-1">{r.preview.action}</p></div>}
   return null;
 }
+export function readableMessageContent(message) {
+  const content = typeof message?.content === "string" ? message.content.trim() : "";
+  if (message?.role !== "user" && (!content || content === "(no response)")) {
+    return "CAMBRA could not produce a response for this turn. Retry the request; if it fails again, review Activity.";
+  }
+  return message?.content;
+}
 export default function ChatMessageBubble({ message, onConfirm }) {
   const isUser=message.role==='user',calls=Array.isArray(message.tool_calls_json)?message.tool_calls_json:[],pending=calls.find(c=>c.status==='requires_confirmation'),preview=pending?.preview;
+  const content=readableMessageContent(message);
   return <div className={`flex ${isUser?'justify-end':'justify-start'}`}><div className={`max-w-[92%] md:max-w-[82%] rounded-2xl px-4 py-3 ${isUser?'bg-white text-neutral-900':'bg-neutral-900 border border-white/10 text-white'}`}>
-    {message.content&&<p className="text-sm whitespace-pre-wrap">{message.content}</p>}
+    {content&&<p className="text-sm whitespace-pre-wrap">{content}</p>}
     {gateBadge(message.blocked_by_gate)&&<div className="mt-2">{gateBadge(message.blocked_by_gate)}</div>}
     {!isUser&&<EvidenceResult r={message.tool_result_json}/>} 
     {!isUser&&calls.length>0&&<div className="mt-2 space-y-1">{calls.filter(c=>c.status!=='requires_confirmation').map((c,i)=><div key={i} className="text-[10px] flex items-center gap-1.5 flex-wrap text-neutral-400">{c.status==='drafted'&&<Lock size={9}/>} {c.status==='executed'&&<CheckCircle2 size={9}/>} {c.status==='refused'&&<ShieldAlert size={9}/>}<span className="font-bold text-neutral-200">{c.name}</span><span>· {c.status}</span>{c.task_id&&<Link to="/admin/activity" className="underline">task</Link>}{c.approval_id&&<Link to="/admin/approvals" className="font-bold underline">approval</Link>}</div>)}</div>}

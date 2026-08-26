@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-26T03:26:18.351Z",
+  "generatedAt": "2026-08-26T04:49:38.545Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -779,8 +779,8 @@
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
-      "sha256": "65dfe1fc01aa887d1bc9edc25c35fc6cf56ff3e079ac26a5d14a2d118547971c",
-      "bytes": 11818
+      "sha256": "8aced6ef6371a308cfd6819a8720e2b4d88693747b4e17549379eb539b3a6f3a",
+      "bytes": 12445
     },
     {
       "path": "base44/functions/getBenchmarkForReport/entry.ts",
@@ -1514,8 +1514,8 @@
     },
     {
       "path": "base44/shared/commercialOperatingSystem.ts",
-      "sha256": "6da1fa8115caa791a2590d8e699d50cd5bd5e24b01c2cc676ef68ef69c181002",
-      "bytes": 13715
+      "sha256": "90892a867fefe2637642a87e8c71824e09b1d0e033c0d8cbeed2fd561ca3e50e",
+      "bytes": 14919
     },
     {
       "path": "base44/shared/commercialPolicyAuthority.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "3a7f1ed715a369ae77e2db43c3aeda51146eec9ec3ea43350a73fd46b211fbff",
+      "sha256": "34610e3c1055745fcc9eb0ebc8dd134a98cea1ad0dd7f2a85d5e400e8f91cb47",
       "bytes": 43449
     },
     {
@@ -2174,7 +2174,7 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "3fe728c5348e8bd2b520f4d47f265cd9ffcbe9bda73c84a520808e84cd21fafd",
+      "sha256": "a678a30599363f44ebbe5c634b6d1a3d12b46d75ac720a7914b7fc697617c9be",
       "bytes": 8260
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "ee4ab0436bf4aca07c14877b57da05c8b7f2d7d7360a459096c4335a85d032ca",
+      "sha256": "4573d430c653d9f106cf73a195cc6e72d2c15282e2a982acf019bd18d32d0718",
       "bytes": 13672
     },
     {
@@ -2894,8 +2894,8 @@
     },
     {
       "path": "src/lib/adminCockpitFailVisible.test.js",
-      "sha256": "22fe3be29d216b0d3e0efdca46cc321f1559dcc2df52ede59d4e3643a139e7f5",
-      "bytes": 947
+      "sha256": "dca533dd23384030fbbf5a4efdd295a808c2077289b37c91117f515cda48b11d",
+      "bytes": 1059
     },
     {
       "path": "src/lib/adminLayoutI18n.test.js",

@@ -7,6 +7,8 @@ describe("Admin cockpit read-failure visibility", () => {
   it("records degraded sources instead of converting read outages to healthy zeroes", () => {
     const src = read("base44/functions/getAdminOperationsCockpit/entry.ts");
     expect(src).toContain("pushUnique(degradedSources, name)");
+    expect(src).toContain("safeLatestWorkerRead");
+    expect(src).toContain("scheduler_latest_invalid_shape");
     expect(src).toContain("degraded_sources: degradedSources");
     expect(src).toContain("data_complete: degradedSources.length === 0");
     expect(src).toMatch(

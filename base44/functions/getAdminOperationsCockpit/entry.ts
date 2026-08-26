@@ -99,6 +99,23 @@ Deno.serve(async (req) => {
     }
     return observation.rows;
   };
+  const safeLatestWorkerRead = async (name: string, workerKey: string) => {
+    try {
+      const rows = await svc.entities.SchedulerRun.filter(
+        { worker_key: workerKey, invocation_kind: 'SCHEDULED' },
+        '-started_at',
+        2,
+      );
+      if (!Array.isArray(rows)) throw new Error('scheduler_latest_invalid_shape');
+      observations.set(name, { coverage_status: 'COMPLETE', reason_code: null });
+      return rows;
+    } catch (error: any) {
+      observations.set(name, { coverage_status: 'UNKNOWN', reason_code: 'READ_FAILED' });
+      pushUnique(degradedSources, name);
+      console.error(`getAdminOperationsCockpit coverage UNKNOWN: ${name}:${String(error?.code || 'READ_FAILED')}`);
+      return [];
+    }
+  };
 
   const [
     failedTasksByCompletion,
@@ -129,10 +146,9 @@ Deno.serve(async (req) => {
       500,
       (limit) => svc.entities.AgentTask.filter({ status: { $nin: [...TERMINAL_TASKS] } }, '-created_date', limit),
     ),
-    Promise.all(WORKERS.map((worker) => safeRead(
+    Promise.all(WORKERS.map((worker) => safeLatestWorkerRead(
       `SchedulerRun:${worker.worker_key}`,
-      100,
-      (limit) => svc.entities.SchedulerRun.filter({ worker_key: worker.worker_key, invocation_kind: 'SCHEDULED' }, '-started_at', limit),
+      worker.worker_key,
     ))),
     safeRead(
       'AutonomyIncident',
