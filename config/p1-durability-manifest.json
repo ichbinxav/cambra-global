@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-26T05:07:53.159Z",
+  "generatedAt": "2026-08-26T11:52:46.067Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -444,8 +444,8 @@
     },
     {
       "path": "base44/functions/adminAgentOperations/entry.ts",
-      "sha256": "598336f65c15c151e1c0e0007a6ce3ad4ae64ecd155325588293588caab28188",
-      "bytes": 3562
+      "sha256": "f28c92ef483d31870d9823e7fc36e80aa7d3543e48ae4a3edc28e063bad28aa7",
+      "bytes": 3832
     },
     {
       "path": "base44/functions/adminGlobalSearch/entry.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "419ed150b4e680d1b2343a1ec071346a449cbe51cb895dcf28ae97279a18cdf1",
+      "sha256": "14c241ab0ecbf95399ab7c64cf50591215cd571b19a3c9d815d6c51fe56606d3",
       "bytes": 43449
     },
     {
@@ -2689,8 +2689,8 @@
     },
     {
       "path": "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md",
-      "sha256": "a1cde397205ba7c7767a8199f5563663ee99fc3ae5a593cf399c52f7a146a853",
-      "bytes": 8746
+      "sha256": "2cca268f67cfdfc494c57fb4fc30b0ac6411de8d40cf1e89c79f23e6c41363b8",
+      "bytes": 9356
     },
     {
       "path": "src/docs/CAMBRA_AZ_FINAL_AUDIT_2026-08-11.md",
@@ -3184,8 +3184,8 @@
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
-      "sha256": "673a4cfef5339e8e76a3fbcc41b2ea6a468d9ea16c6eb25e673da329ded6480e",
-      "bytes": 3492
+      "sha256": "5ce177e2aa2d4906c7c3253a7cd7894aaf8b2ee643bdf7a78186f88afc955505",
+      "bytes": 3986
     },
     {
       "path": "src/lib/eclParity.test.js",
@@ -3854,8 +3854,8 @@
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
-      "sha256": "7f58d6e74aa23d55fb05265a2d07e4c3e8da6b68cf416f55da0dc14ae3fb2f03",
-      "bytes": 5072
+      "sha256": "ab020e938a76b2337bf701510bed270c70901f5d4753e99160dfe540a0fc087f",
+      "bytes": 8229
     },
     {
       "path": "src/pages/admin/AdminApprovals.jsx",

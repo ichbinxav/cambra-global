@@ -2,6 +2,12 @@
 
 Derived from `src/lib/agentRegistry.js` and `base44/shared/agentAuthority.ts`. Backend deterministic/scheduled workers are catalogued separately in `src/docs/PRODUCTION_FUNCTIONS.md`. Missing authority mappings are never inferred.
 
+## Admin execution feedback
+
+- `/admin/agents` invokes only the fixed backend allowlist and preserves every existing Approval, ECL, billing and legal gate.
+- A completed manual run shows its persisted `AgentTask.output_summary`; Lead Discovery also links directly to the Discovery workspace. A provider or agent result with `ok=false` is shown as a failure rather than as a successful click.
+- The status projection reads the bounded latest 5,000 task rows with a reduced field set. When no matching row is observed inside that bound, the UI says `not observed`; it never claims that the agent has never run.
+
 ## Declared AI agents
 
 | Name | Function | Level | Mission | Input | Tool |
