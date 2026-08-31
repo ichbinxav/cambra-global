@@ -277,7 +277,7 @@ async function executeBackupChunk(req:Request,service:any,input:any){
 
 async function invokeBackupChunk(base44:any,payload:any){
  const invoked=await invokeInternal(base44,'maintenanceEngine',{action:'dr_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
- if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED';throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status})}
+ if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED',diagnostic=data?.diagnostic&&typeof data.diagnostic==='object'&&!Array.isArray(data.diagnostic)?data.diagnostic:null;throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status,...(diagnostic?{diagnostic}:{})})}
  return data.stage;
 }
 
@@ -685,7 +685,7 @@ async function attestRestore(req:Request,service:any,input:any,actor:string){
 function errorResponse(error:any){
  if(error instanceof DisasterRecoveryConfigurationError)return Response.json({ok:false,error:'dr_configuration_required',missing:error.missing,invalid:error.invalid,required_consent:'Microsoft Graph application permission Sites.Selected with admin consent, followed by a write grant on the exact root site (covering its libraries). Store credentials only in Base44 secrets; configure exact site/drive resource IDs as environment values.'},{status:409});
  if(error instanceof MicrosoftGraphError)return Response.json({ok:false,error:'microsoft_graph_authorization_or_storage_failed',graph_status:error.status,graph_code:error.graphCode,required_consent:'Sites.Selected (Application) + write role on the exact root site; CAMBRA INFRASTRUCTURE is a document library, not the grant target'},{status:409});
- const code=drErrorCode(error);logDrFailure('disaster_recovery_failed',error);return Response.json({ok:false,error:code.toLowerCase()},{status:code.includes('FORBIDDEN')?403:code.includes('CONFIRMATION')||code.includes('INVALID')?400:409});
+ const code=drErrorCode(error),diagnostic=error?.diagnostic&&typeof error.diagnostic==='object'&&!Array.isArray(error.diagnostic)?error.diagnostic:null;logDrFailure('disaster_recovery_failed',error);return Response.json({ok:false,error:code.toLowerCase(),...(diagnostic?{diagnostic}:{})},{status:code.includes('FORBIDDEN')?403:code.includes('CONFIRMATION')||code.includes('INVALID')?400:409});
 }
 
 export async function handleDisasterRecovery(req:Request){

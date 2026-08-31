@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-31T16:04:32.447Z",
+  "generatedAt": "2026-08-31T16:41:33.740Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1569,8 +1569,8 @@
     },
     {
       "path": "base44/shared/disasterRecoveryRuntime.ts",
-      "sha256": "59e8c4c2332ab5c210ddc8d43a4ab747cb19fb027fe9f388080512a030359e35",
-      "bytes": 97981
+      "sha256": "bf5d6ab0f079356ecde773d72b95809e365fb6847f97f3a1bc74432372aafdbc",
+      "bytes": 98283
     },
     {
       "path": "base44/shared/discoveryAdmin.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "a4ba9433cc86c43d6b4f6e77ed6f7949e758026dd72bed0d271518541810df7a",
+      "sha256": "419fafd65811931ceef9991b9c6c26b1e374fff7db1fefc39b5c206dc7403a56",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "8daaa840dd0ed522cde3a79dbc7213fb0472db6389a1d1c2f7b1545a7825e4db",
+      "sha256": "f62cb54f141b1ee3f615c6f51b0c33003321c20efc30d79ffb21e198ad69500b",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "e6036cbc6c727b8b5736bbc8d327d5f4941ca670882a2c202e673444865c4274",
+      "sha256": "74163057b508c741ddd06479b7829f66e0318cc0d02611c54312309157608b62",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "7d9ae878fdfa8bccf32183cfa914845ea94597fc2b05fb246b79adb0762c4e01",
+      "sha256": "b4d7a9b4ab5105a271fa6ea46af1942e84b05297d31f9385d130a917eae35a6b",
       "bytes": 144989
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "454fee2617e50c0124a3379c7606ccccfe2adb7204223302a28d7bc303f3908a",
+      "sha256": "c533c6869fbfd73259b8cbf6b58753c8a21ab901f48ea76009143c6f2d00d668",
       "bytes": 97956
     },
     {
