@@ -282,7 +282,7 @@ async function executeBackupChunk(req:Request,service:any,input:any){
 }
 
 async function invokeBackupChunk(base44:any,payload:any){
- const invoked=await invokeInternal(base44,'getMaintenanceCenter',{action:'dr_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
+ const invoked=await invokeInternal(base44,'getMaintenanceCenter',{action:'dr_backup_chunk',host_action:'disaster_recovery_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
  if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED',diagnostic=data?.diagnostic&&typeof data.diagnostic==='object'&&!Array.isArray(data.diagnostic)?data.diagnostic:null;throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status,...(diagnostic?{diagnostic}:{})})}
  if(!data.stage||typeof data.stage!=='object'||Array.isArray(data.stage))throw Object.assign(new Error('dr_backup_chunk_response_invalid'),{code:'DR_BACKUP_CHUNK_RESPONSE_INVALID',diagnostic:{reason:'stage_contract_missing',response_keys:data&&typeof data==='object'&&!Array.isArray(data)?Object.keys(data).sort().slice(0,30):[],response_type:Array.isArray(data)?'array':typeof data}});
  return data.stage;

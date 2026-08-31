@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-31T20:01:43.618Z",
+  "generatedAt": "2026-08-31T20:15:40.593Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -814,8 +814,8 @@
     },
     {
       "path": "base44/functions/getMaintenanceCenter/entry.ts",
-      "sha256": "2b5bff7e6d5e718354f535674209c09379830c9791c141290ce9bbbea743d440",
-      "bytes": 11227
+      "sha256": "3372a8a987819390b34c4208ea10d86d2aa507a21b32e9f3eb6a091bcc4669aa",
+      "bytes": 11555
     },
     {
       "path": "base44/functions/getPaymentsGapTeaser/entry.ts",
@@ -1569,8 +1569,8 @@
     },
     {
       "path": "base44/shared/disasterRecoveryRuntime.ts",
-      "sha256": "772a3219c49544c4e0c208142611dada7a8256c68c3a1cd5fde261c34d457cf8",
-      "bytes": 101014
+      "sha256": "e5cb35d93b80c0e42547ed5964a9fabd3f31f2bc7f9bbb23e8db486567b53f4b",
+      "bytes": 101059
     },
     {
       "path": "base44/shared/discoveryAdmin.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "080fe8a04472369052802d3884c20d96e173d3b0f9528f726a18c7209e24200c",
+      "sha256": "434d563e0368cd0c3fd7acd9acf660002c7ec28278171103ccb30ac34c8a9555",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "2fc036af120e4ce29ca079193d26ae43a0fc3f8d09add29a1fb1bfb1d3ae5aa5",
+      "sha256": "81005b7d01ece3c3f2485e8baffdeb531e6f722a195b5e4f7af3476745a82ad6",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "5bc1eb8f1561b0801b90f8dc3b6360203bf25f090ab771e202f89efc9e5a883b",
+      "sha256": "7d31b40c9e8248e73bfaa56b1cccf3629dc6a7436a91bece4b558a7d97a0091c",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "b41c12fe08cb94d0af75d043037f8fecc1118582aacaf7f64fd44a8a507f0d5b",
+      "sha256": "3f42cb4ffe72e1117af11ea592995fb1d9edaf3ef2103de4b39128cb892f5e42",
       "bytes": 144990
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "e3e80bb0a461724975487a6d529de7ceaa5f9f172357c7a45cfc2bc8b16ca4dd",
+      "sha256": "f744c64d2ed14e5c8f9b412aaecbba12512275e190831b77e3cff2cbf0d985ba",
       "bytes": 97957
     },
     {
@@ -3084,8 +3084,8 @@
     },
     {
       "path": "src/lib/disasterRecovery.test.js",
-      "sha256": "ff01527ffba9e177545dc4ce4d5d69c8d75de3087361d98d9b75a18e55e8015e",
-      "bytes": 78924
+      "sha256": "6fde8e1203522955c5e2b23e821dbdd2a5e3e855c3de6bb1e3d85290b2e3dcd1",
+      "bytes": 79155
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",

@@ -9,7 +9,10 @@ import { handleDisasterRecoveryBackupChunk } from '../../shared/disasterRecovery
 Deno.serve(async (req) => {
   try {
     const routed = await req.clone().json().catch(() => ({}));
-    if (routed.action === 'dr_backup_chunk') {
+    const chunkAction = routed.action === 'dr_backup_chunk';
+    const chunkHostAction = routed.host_action === 'disaster_recovery_backup_chunk';
+    if (routed.action || routed.host_action) console.info(JSON.stringify({ event:'get_maintenance_center_route_observed', chunk_action:chunkAction, chunk_host_action:chunkHostAction }));
+    if (chunkAction || chunkHostAction) {
       const chunkClient = createClientFromRequest(req);
       const chunkGate = await requireAdminOrInternal(req, chunkClient, routed);
       if (!chunkGate.ok) return chunkGate.response;
