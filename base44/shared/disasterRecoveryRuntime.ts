@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { createHash } from 'node:crypto';
 import { requireAdminOrInternal } from './internalGate.ts';
-import { invokeInternal } from './invokeInternal.ts';
 import { realRestoreExerciseProjectionHash, recordRuntimeGateEvidence, runtimeDeploymentIdentity, verifyRuntimeGateEvidence } from './runtimeEvidence.ts';
 import { DISASTER_RECOVERY_ENTITY_CATALOG, DISASTER_RECOVERY_ENTITY_CATALOG_VERSION } from './generated/disasterRecoveryEntityCatalog.ts';
 import {
@@ -30,7 +29,7 @@ const BACKUP_STAGE_READ_CONCURRENCY=1;
 const BACKUP_STAGE_VERSION='cambra-dr-backup-stage-v1';
 const BACKUP_OPERATION_VERSION='cambra-dr-backup-operation-v1';
 const BACKUP_OPERATION_PATH='Manifests/pending.backup.json.gz.aes256gcm';
-const BACKUP_STAGE_CHUNKS_PER_INVOCATION=3;
+const BACKUP_STAGE_CHUNKS_PER_INVOCATION=1;
 const RESTORE_BATCH=200;
 
 function now(){return new Date().toISOString()}
@@ -48,12 +47,6 @@ function logDrFailure(event:string,error:any){
 function jsonBytes(value:any){return encoder.encode(stableJson(value))}
 function jsonFromBytes(bytes:Uint8Array){return JSON.parse(decoder.decode(bytes))}
 function pathAllowed(path:any,prefix:string,suffix:string){const value=String(path||'');return value.startsWith(prefix)&&value.endsWith(suffix)&&!value.includes('..')&&/^[a-zA-Z0-9 ./_-]+$/.test(value)}
-
-function createLatestFunctionsClient(req:Request){
- // The SDK otherwise pins child calls to the caller's historical function cohort.
- const headers=new Headers(req.headers);headers.delete('Base44-Functions-Version');
- return createClientFromRequest(new Request(req.url,{headers}));
-}
 
 function assertProductionControlPlane(req:Request,operation:string){
  const environment=restoreEnvironment(req);
@@ -98,16 +91,6 @@ function backupStageCoordinates(input:any){
  if(!exactTextArray(input.entity_names,entityNames))throw Object.assign(new Error('dr_backup_stage_catalog_slice_invalid'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
  const ordinal=String(chunkIndex+1).padStart(3,'0'),total=String(totalChunks).padStart(3,'0'),stageFolder=`${tier}/${backupId}/staging`;
  return{backupId,tier,type,checkpointFrom,checkpointTo,chunkIndex,totalChunks,entityNames,stageFolder,stagePath:`${stageFolder}/chunk-${ordinal}-of-${total}.json.gz.aes256gcm`,stageAad:`${backupId}|stage|${ordinal}|${total}`};
-}
-
-function unwrapFunctionData(value:any){
- let current=value;
- for(let layer=0;layer<6;layer++){
-  if(typeof current==='string'){try{current=JSON.parse(current);continue}catch{return current}}
-  if(current&&typeof current==='object'&&!Array.isArray(current)&&current.ok===undefined&&current.error===undefined&&'data'in current){current=current.data;continue}
-  break;
- }
- return current;
 }
 
 function configurationStatus(){
@@ -281,13 +264,6 @@ async function executeBackupChunk(req:Request,service:any,input:any){
  return{ok:true,stage:{...artifact,stage_version:BACKUP_STAGE_VERSION,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames}};
 }
 
-async function invokeBackupChunk(base44:any,payload:any){
- const invoked=await invokeInternal(base44,'getMaintenanceCenter',{action:'dr_backup_chunk',host_action:'disaster_recovery_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
- if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED',diagnostic=data?.diagnostic&&typeof data.diagnostic==='object'&&!Array.isArray(data.diagnostic)?data.diagnostic:null;throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status,...(diagnostic?{diagnostic}:{})})}
- if(!data.stage||typeof data.stage!=='object'||Array.isArray(data.stage))throw Object.assign(new Error('dr_backup_chunk_response_invalid'),{code:'DR_BACKUP_CHUNK_RESPONSE_INVALID',diagnostic:{reason:'stage_contract_missing',response_keys:data&&typeof data==='object'&&!Array.isArray(data)?Object.keys(data).sort().slice(0,30):[],response_type:Array.isArray(data)?'array':typeof data}});
- return data.stage;
-}
-
 function validateBackupStageArtifact(artifact:any,coordinates:any){
  if(!artifact||artifact.path!==coordinates.stagePath||artifact.aad!==coordinates.stageAad||artifact.stage_version!==BACKUP_STAGE_VERSION||artifact.chunk_index!==coordinates.chunkIndex||artifact.total_chunks!==coordinates.totalChunks||!exactTextArray(artifact.entity_names,coordinates.entityNames)||!/^[a-f0-9]{64}$/.test(String(artifact.encrypted_sha256||''))||!/^[a-f0-9]{64}$/.test(String(artifact.payload_sha256||''))||!Number.isSafeInteger(artifact.encrypted_bytes)||artifact.encrypted_bytes<=0||!Number.isSafeInteger(artifact.compressed_bytes)||artifact.compressed_bytes<=0||!Number.isSafeInteger(artifact.uncompressed_bytes)||artifact.uncompressed_bytes<=0)throw Object.assign(new Error('dr_backup_stage_artifact_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH',diagnostic:{reason:'artifact_contract_mismatch',artifact_present:!!artifact,artifact_keys:artifact&&typeof artifact==='object'&&!Array.isArray(artifact)?Object.keys(artifact).sort().slice(0,30):[],path_matches:artifact?.path===coordinates.stagePath,aad_matches:artifact?.aad===coordinates.stageAad,stage_version_matches:artifact?.stage_version===BACKUP_STAGE_VERSION,chunk_index_matches:artifact?.chunk_index===coordinates.chunkIndex,total_chunks_matches:artifact?.total_chunks===coordinates.totalChunks,entity_names_match:exactTextArray(artifact?.entity_names,coordinates.entityNames),encrypted_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.encrypted_sha256||'')),payload_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.payload_sha256||'')),encrypted_bytes_valid:Number.isSafeInteger(artifact?.encrypted_bytes)&&artifact.encrypted_bytes>0,compressed_bytes_valid:Number.isSafeInteger(artifact?.compressed_bytes)&&artifact.compressed_bytes>0,uncompressed_bytes_valid:Number.isSafeInteger(artifact?.uncompressed_bytes)&&artifact.uncompressed_bytes>0}});
  return artifact;
@@ -407,10 +383,11 @@ function coordinatesForOperation(operation:any,chunkIndex:number){
  return backupStageCoordinates({backup_id:operation.backup_id,retention_tier:operation.retention_tier,snapshot_type:operation.snapshot_type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:operation.total_chunks,entity_names:entityNames});
 }
 
-async function advanceBackupOperation(base44:any,storage:any,key:Uint8Array,initial:any){
+async function advanceBackupOperation(req:Request,service:any,storage:any,key:Uint8Array,initial:any){
  let operation=initial;const stop=Math.min(operation.total_chunks,operation.next_chunk_index+BACKUP_STAGE_CHUNKS_PER_INVOCATION);
  while(operation.next_chunk_index<stop){
-  const chunkIndex=operation.next_chunk_index,coordinates=coordinatesForOperation(operation,chunkIndex),artifact=await invokeBackupChunk(base44,{backup_id:operation.backup_id,retention_tier:operation.retention_tier,snapshot_type:operation.snapshot_type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,expected_latest_manifest_path:operation.latest_anchor.manifest_path,expected_latest_manifest_hash:operation.latest_anchor.manifest_hash,chunk_index:chunkIndex,total_chunks:operation.total_chunks,entity_names:coordinates.entityNames});
+  const chunkIndex=operation.next_chunk_index,coordinates=coordinatesForOperation(operation,chunkIndex);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_started',chunk_index:chunkIndex}));
+  const chunk=await executeBackupChunk(req,service,{backup_id:operation.backup_id,retention_tier:operation.retention_tier,snapshot_type:operation.snapshot_type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,expected_latest_manifest_path:operation.latest_anchor.manifest_path,expected_latest_manifest_hash:operation.latest_anchor.manifest_hash,chunk_index:chunkIndex,total_chunks:operation.total_chunks,entity_names:coordinates.entityNames}),artifact=chunk.stage;console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_completed',chunk_index:chunkIndex}));
   validateBackupStageArtifact(artifact,coordinates);
   const nextIndex=chunkIndex+1,next={...operation,next_chunk_index:nextIndex,artifacts:[...operation.artifacts,artifact],status:nextIndex===operation.total_chunks?'PENDING_FINALIZE':'STAGING',revision:operation.revision+1,updated_at:now()};
   operation=await writeBackupOperation(storage,key,next,operation);
@@ -509,7 +486,7 @@ function backupOperationProgress(operation:any,storage:any){
  return{ok:true,completed:false,status:operation.status,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,next_chunk_index:operation.next_chunk_index,total_chunks:operation.total_chunks,remaining_chunks:operation.total_chunks-operation.next_chunk_index,storage_identity:storage.identity};
 }
 
-async function executeBackup(req:Request,base44:any,service:any,input:any,actor:string,allowStart=true){
+async function executeBackup(req:Request,service:any,input:any,actor:string,allowStart=true){
  assertProductionControlPlane(req,allowStart?'backup':'backup_continue');const config=configurationStatus();if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
  const key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),storage=await createSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true,initializeFolders:true});let operation=await readBackupOperation(storage,key);
  if(!operation&&!allowStart)return{ok:true,completed:false,status:'IDLE',backup_id:null,next_chunk_index:0,total_chunks:backupEntityBatches().length,remaining_chunks:0,storage_identity:storage.identity};
@@ -517,7 +494,7 @@ async function executeBackup(req:Request,base44:any,service:any,input:any,actor:
  try{
   await ensureBackupOperationFolders(storage,operation);
   if(operation.status==='PENDING_FINALIZE')return finalizeBackupOperation(storage,key,service,operation);
-  operation=await advanceBackupOperation(base44,storage,key,operation);return backupOperationProgress(operation,storage);
+  operation=await advanceBackupOperation(req,service,storage,key,operation);return backupOperationProgress(operation,storage);
  }catch(error){if(drErrorCode(error)!=='DR_BACKUP_OPERATION_CONFLICT'){try{await removeUnmanifestedBackup(storage,operation.retention_tier,operation.backup_id,key)}catch(cleanupError){logDrFailure('disaster_recovery_orphan_cleanup_failed',cleanupError)}}throw error}
 }
 
@@ -695,16 +672,6 @@ function errorResponse(error:any){
  const code=drErrorCode(error),diagnostic=error?.diagnostic&&typeof error.diagnostic==='object'&&!Array.isArray(error.diagnostic)?error.diagnostic:null;logDrFailure('disaster_recovery_failed',error);return Response.json({ok:false,error:code.toLowerCase(),...(diagnostic?{diagnostic}:{})},{status:code.includes('FORBIDDEN')?403:code.includes('CONFIRMATION')||code.includes('INVALID')?400:409});
 }
 
-export async function handleDisasterRecoveryBackupChunk(req:Request){
- let body:any;try{body=await req.clone().json()}catch{return Response.json({ok:false,error:'invalid_json_body'},{status:400})}
- const base44=createClientFromRequest(req),gate=await requireAdminOrInternal(req,base44,body);
- if(!gate.ok)return gate.response;
- if(!gate.isInternal)return Response.json({ok:false,error:'dr_backup_chunk_internal_authority_required'},{status:403});
- const chunkIndex=Number(body.chunk_index);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_started',chunk_index:Number.isInteger(chunkIndex)?chunkIndex:null}));
- try{const result=await executeBackupChunk(req,base44.asServiceRole,body);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_completed',chunk_index:Number.isInteger(chunkIndex)?chunkIndex:null}));return Response.json(result)}
- catch(error){return errorResponse(error)}
-}
-
 export async function handleDisasterRecovery(req:Request){
  let body:any;try{body=await req.clone().json();}catch{return Response.json({ok:false,error:'invalid_json_body'},{status:400});}const base44=createClientFromRequest(req),gate=await requireAdminOrInternal(req,base44,body);if(!gate.ok)return gate.response;
  const service=base44.asServiceRole,actor=String(gate.user?.email||body.actor_email||'internal'),hostAction=String(body.host_action||''),action=hostAction==='disaster_recovery_backup'?'backup':hostAction==='disaster_recovery_backup_continue'?'backup_continue':String(body.action||'status').replace(/^dr_/,'');
@@ -720,8 +687,8 @@ export async function handleDisasterRecovery(req:Request){
    }
    return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,scheduler_continuation:schedulerContinuation,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
   }
-  if(action==='backup')return Response.json(await executeBackup(req,createLatestFunctionsClient(req),service,body,actor));
-  if(action==='backup_continue')return Response.json(await executeBackup(req,createLatestFunctionsClient(req),service,body,actor,false));
+  if(action==='backup')return Response.json(await executeBackup(req,service,body,actor));
+  if(action==='backup_continue')return Response.json(await executeBackup(req,service,body,actor,false));
   if(action==='backup_chunk'){
    if(!gate.isInternal)throw Object.assign(new Error('dr_backup_chunk_internal_authority_required'),{code:'DR_BACKUP_CHUNK_INTERNAL_REQUIRED'});
    return Response.json(await executeBackupChunk(req,service,body));

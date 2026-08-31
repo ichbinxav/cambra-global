@@ -27,9 +27,7 @@ Each first, weekly and monthly run is a full snapshot. Other daily runs are incr
 
 When the canonical entity catalog legitimately changes, the previous latest checkpoint remains immutable and is fully authenticated against its own manifest/index catalog. It is accepted only as the compare-and-swap anchor for a new `FULL` backup; it is never used as an incremental base under the new catalog. The new full snapshot starts a current-catalog restore chain, and the prior backup remains retained under the normal policy. Remote status reports `LEGACY_COMPATIBLE` plus `requires_full_rebase: true` until that rebase completes.
 
-Backup chunk work is invoked through an internal-only route on the existing `getMaintenanceCenter` physical function. This avoids recursive `maintenanceEngine` version-cache drift while preserving the 276-function quota. The host and the shared chunk handler both require canonical internal authority; an admin browser request cannot execute a chunk directly.
-
-The Base44 SDK propagates the caller's `Base44-Functions-Version` header to child function calls. The backup orchestrator deliberately removes that header only from its authenticated chunk client so the independently deployed host resolves to its latest version. Stage version, catalog, coordinates, hashes and byte lengths are then validated by the parent before any artifact can enter the pending operation.
+Backup chunk work runs directly inside the authenticated `maintenanceEngine` boundary, one bounded chunk per invocation. The admin flow performs enough continuation calls to stage all catalog batches and finalize the manifest, while the scheduled continuation remains the durable fallback. This avoids recursive or cross-function version-cache drift without adding a 277th physical function. Stage version, catalog, coordinates, hashes and byte lengths are validated before any artifact can enter the pending operation.
 
 Before leaving CAMBRA:
 

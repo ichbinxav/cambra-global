@@ -3,22 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { disasterRecoveryCompletionEvidence, readCriticalSchedulerEvidence } from '../../shared/schedulerRun.ts';
 import { projectDocumentationHealth } from '../../shared/documentationHealth.ts';
 import { integrationHealthScope, productionIntegrationHealthIssue } from '../../shared/integrationHealth.ts';
-import { requireAdminOrInternal } from '../../shared/internalGate.ts';
-import { handleDisasterRecoveryBackupChunk } from '../../shared/disasterRecoveryRuntime.ts';
 
 Deno.serve(async (req) => {
   try {
-    const routed = await req.clone().json().catch(() => ({}));
-    const chunkAction = routed.action === 'dr_backup_chunk';
-    const chunkHostAction = routed.host_action === 'disaster_recovery_backup_chunk';
-    if (routed.action || routed.host_action) console.info(JSON.stringify({ event:'get_maintenance_center_route_observed', chunk_action:chunkAction, chunk_host_action:chunkHostAction }));
-    if (chunkAction || chunkHostAction) {
-      const chunkClient = createClientFromRequest(req);
-      const chunkGate = await requireAdminOrInternal(req, chunkClient, routed);
-      if (!chunkGate.ok) return chunkGate.response;
-      if (!chunkGate.isInternal) return Response.json({ ok:false, error:'dr_backup_chunk_internal_authority_required' }, { status:403 });
-      return handleDisasterRecoveryBackupChunk(req);
-    }
     const b = createClientFromRequest(req);
     const u = await b.auth.me().catch((error:any)=>safeBestEffort(error,{operation:'getMaintenanceCenter',fallback:null,severity:'secondary'}));
     if (!u) return Response.json({ ok:false, error:'Unauthorized' }, { status:401 });
