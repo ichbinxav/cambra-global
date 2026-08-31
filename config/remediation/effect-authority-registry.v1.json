@@ -4,8 +4,8 @@
   "registry_status": "PARTIAL_LOCAL_WIRING_RUNTIME_PENDING",
   "truth_boundary": "This generated projection reuses existing domain authorities and records local facade wiring. It creates no durable authority and proves neither universal route coverage nor deployed runtime authorization.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "734986f6132322a3eccba918ca191768ee56ce665c8f9faca745d8616afcbc76",
-  "material_registry_input_fingerprint_sha256": "ce904330fc7f15ad27ca85ca3f118c46f342303f9d96c461c8b313a52ce0b82e",
+  "material_registry_sha256": "b41c12fe08cb94d0af75d043037f8fecc1118582aacaf7f64fd44a8a507f0d5b",
+  "material_registry_input_fingerprint_sha256": "3b1b0628174524adf5f2dbcb5c0320c9c9452be4343a368b9870d7fdb8293603",
   "input_fingerprint_sha256": "9d83e5a7234dbc089daf97b975915646c8f936c2576ef19a7332b2b53e075560",
   "facade": {
     "source": "base44/shared/effectAuthority.ts",

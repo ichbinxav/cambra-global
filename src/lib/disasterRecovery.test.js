@@ -393,6 +393,8 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(runtime).toContain("code:'DR_BACKUP_CHUNK_RESPONSE_INVALID'");
     expect(runtime).toContain("reason:'artifact_contract_mismatch'");
     expect(runtime).toContain("event:'disaster_recovery_backup_chunk_completed'");
+    expect(runtime).toContain("headers.delete('Base44-Functions-Version')");
+    expect(runtime).toContain('executeBackup(req,createLatestFunctionsClient(req),service,body,actor)');
     expect(runtime).toContain('export async function handleDisasterRecoveryBackupChunk(req:Request)');
     const maintenanceRead=read('base44/functions/getMaintenanceCenter/entry.ts');
     expect(maintenanceRead).toContain("routed.action === 'dr_backup_chunk'");

@@ -49,6 +49,12 @@ function jsonBytes(value:any){return encoder.encode(stableJson(value))}
 function jsonFromBytes(bytes:Uint8Array){return JSON.parse(decoder.decode(bytes))}
 function pathAllowed(path:any,prefix:string,suffix:string){const value=String(path||'');return value.startsWith(prefix)&&value.endsWith(suffix)&&!value.includes('..')&&/^[a-zA-Z0-9 ./_-]+$/.test(value)}
 
+function createLatestFunctionsClient(req:Request){
+ // The SDK otherwise pins child calls to the caller's historical function cohort.
+ const headers=new Headers(req.headers);headers.delete('Base44-Functions-Version');
+ return createClientFromRequest(new Request(req.url,{headers}));
+}
+
 function assertProductionControlPlane(req:Request,operation:string){
  const environment=restoreEnvironment(req);
  if(environment&&environment!=='prod')throw Object.assign(new Error(`dr_${operation}_requires_production_control_plane`),{code:'DR_PRODUCTION_CONTROL_PLANE_REQUIRED',environment});
@@ -714,8 +720,8 @@ export async function handleDisasterRecovery(req:Request){
    }
    return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,scheduler_continuation:schedulerContinuation,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});
   }
-  if(action==='backup')return Response.json(await executeBackup(req,base44,service,body,actor));
-  if(action==='backup_continue')return Response.json(await executeBackup(req,base44,service,body,actor,false));
+  if(action==='backup')return Response.json(await executeBackup(req,createLatestFunctionsClient(req),service,body,actor));
+  if(action==='backup_continue')return Response.json(await executeBackup(req,createLatestFunctionsClient(req),service,body,actor,false));
   if(action==='backup_chunk'){
    if(!gate.isInternal)throw Object.assign(new Error('dr_backup_chunk_internal_authority_required'),{code:'DR_BACKUP_CHUNK_INTERNAL_REQUIRED'});
    return Response.json(await executeBackupChunk(req,service,body));

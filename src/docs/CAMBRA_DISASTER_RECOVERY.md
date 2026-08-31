@@ -29,6 +29,8 @@ When the canonical entity catalog legitimately changes, the previous latest chec
 
 Backup chunk work is invoked through an internal-only route on the existing `getMaintenanceCenter` physical function. This avoids recursive `maintenanceEngine` version-cache drift while preserving the 276-function quota. The host and the shared chunk handler both require canonical internal authority; an admin browser request cannot execute a chunk directly.
 
+The Base44 SDK propagates the caller's `Base44-Functions-Version` header to child function calls. The backup orchestrator deliberately removes that header only from its authenticated chunk client so the independently deployed host resolves to its latest version. Stage version, catalog, coordinates, hashes and byte lengths are then validated by the parent before any artifact can enter the pending operation.
+
 Before leaving CAMBRA:
 
 1. secret-like fields are removed recursively;
