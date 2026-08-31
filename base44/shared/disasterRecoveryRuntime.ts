@@ -278,11 +278,12 @@ async function executeBackupChunk(req:Request,service:any,input:any){
 async function invokeBackupChunk(base44:any,payload:any){
  const invoked=await invokeInternal(base44,'getMaintenanceCenter',{action:'dr_backup_chunk',...payload}),data=unwrapFunctionData(invoked.data);
  if(!invoked.ok||data?.ok!==true){const observed=String(data?.error||'').trim().toUpperCase(),code=/^[A-Z0-9_-]{1,120}$/.test(observed)?observed:'DR_BACKUP_CHUNK_FAILED',diagnostic=data?.diagnostic&&typeof data.diagnostic==='object'&&!Array.isArray(data.diagnostic)?data.diagnostic:null;throw Object.assign(new Error('dr_backup_chunk_failed'),{code,status:invoked.status,...(diagnostic?{diagnostic}:{})})}
+ if(!data.stage||typeof data.stage!=='object'||Array.isArray(data.stage))throw Object.assign(new Error('dr_backup_chunk_response_invalid'),{code:'DR_BACKUP_CHUNK_RESPONSE_INVALID',diagnostic:{reason:'stage_contract_missing',response_keys:data&&typeof data==='object'&&!Array.isArray(data)?Object.keys(data).sort().slice(0,30):[],response_type:Array.isArray(data)?'array':typeof data}});
  return data.stage;
 }
 
 function validateBackupStageArtifact(artifact:any,coordinates:any){
- if(!artifact||artifact.path!==coordinates.stagePath||artifact.aad!==coordinates.stageAad||artifact.stage_version!==BACKUP_STAGE_VERSION||artifact.chunk_index!==coordinates.chunkIndex||artifact.total_chunks!==coordinates.totalChunks||!exactTextArray(artifact.entity_names,coordinates.entityNames)||!/^[a-f0-9]{64}$/.test(String(artifact.encrypted_sha256||''))||!/^[a-f0-9]{64}$/.test(String(artifact.payload_sha256||''))||!Number.isSafeInteger(artifact.encrypted_bytes)||artifact.encrypted_bytes<=0||!Number.isSafeInteger(artifact.compressed_bytes)||artifact.compressed_bytes<=0||!Number.isSafeInteger(artifact.uncompressed_bytes)||artifact.uncompressed_bytes<=0)throw Object.assign(new Error('dr_backup_stage_artifact_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH'});
+ if(!artifact||artifact.path!==coordinates.stagePath||artifact.aad!==coordinates.stageAad||artifact.stage_version!==BACKUP_STAGE_VERSION||artifact.chunk_index!==coordinates.chunkIndex||artifact.total_chunks!==coordinates.totalChunks||!exactTextArray(artifact.entity_names,coordinates.entityNames)||!/^[a-f0-9]{64}$/.test(String(artifact.encrypted_sha256||''))||!/^[a-f0-9]{64}$/.test(String(artifact.payload_sha256||''))||!Number.isSafeInteger(artifact.encrypted_bytes)||artifact.encrypted_bytes<=0||!Number.isSafeInteger(artifact.compressed_bytes)||artifact.compressed_bytes<=0||!Number.isSafeInteger(artifact.uncompressed_bytes)||artifact.uncompressed_bytes<=0)throw Object.assign(new Error('dr_backup_stage_artifact_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH',diagnostic:{reason:'artifact_contract_mismatch',artifact_present:!!artifact,artifact_keys:artifact&&typeof artifact==='object'&&!Array.isArray(artifact)?Object.keys(artifact).sort().slice(0,30):[],path_matches:artifact?.path===coordinates.stagePath,aad_matches:artifact?.aad===coordinates.stageAad,stage_version_matches:artifact?.stage_version===BACKUP_STAGE_VERSION,chunk_index_matches:artifact?.chunk_index===coordinates.chunkIndex,total_chunks_matches:artifact?.total_chunks===coordinates.totalChunks,entity_names_match:exactTextArray(artifact?.entity_names,coordinates.entityNames),encrypted_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.encrypted_sha256||'')),payload_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.payload_sha256||'')),encrypted_bytes_valid:Number.isSafeInteger(artifact?.encrypted_bytes)&&artifact.encrypted_bytes>0,compressed_bytes_valid:Number.isSafeInteger(artifact?.compressed_bytes)&&artifact.compressed_bytes>0,uncompressed_bytes_valid:Number.isSafeInteger(artifact?.uncompressed_bytes)&&artifact.uncompressed_bytes>0}});
  return artifact;
 }
 
@@ -693,7 +694,8 @@ export async function handleDisasterRecoveryBackupChunk(req:Request){
  const base44=createClientFromRequest(req),gate=await requireAdminOrInternal(req,base44,body);
  if(!gate.ok)return gate.response;
  if(!gate.isInternal)return Response.json({ok:false,error:'dr_backup_chunk_internal_authority_required'},{status:403});
- try{return Response.json(await executeBackupChunk(req,base44.asServiceRole,body))}
+ const chunkIndex=Number(body.chunk_index);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_started',chunk_index:Number.isInteger(chunkIndex)?chunkIndex:null}));
+ try{const result=await executeBackupChunk(req,base44.asServiceRole,body);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_chunk_completed',chunk_index:Number.isInteger(chunkIndex)?chunkIndex:null}));return Response.json(result)}
  catch(error){return errorResponse(error)}
 }
 
