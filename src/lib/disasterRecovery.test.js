@@ -6,7 +6,7 @@ import { Buffer } from 'node:buffer';
 import {
   DR_CANONICAL_SHAREPOINT_DRIVE_ID, DR_CANONICAL_SHAREPOINT_SITE_ID, DR_FOLDERS,
   DR_GRAPH_CHUNK_BYTES,
-  assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, decryptEnvelope, deepRemap,
+  assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, classifyCheckpointCatalog, decryptEnvelope, deepRemap,
   diffRecords, encryptEnvelope, fetchTrustedBase44File, gzipBytes, gunzipBytes, indexRecords, jsonValueChunks, mapLimitDrained, parseAes256Key,
   evaluateDisasterRecoveryScheduler, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, restoreEvidenceAad,
   persistRestoreAttestationAuthority, secretLikePaths, snapshotType, stableJson, strictMinuteDifference,
@@ -229,6 +229,25 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     for(const lengths of [{encrypted:29,compressed:20,original:10},{encrypted:30,compressed:19,original:10},{encrypted:30,compressed:20,original:9}]){
       expect(()=>assertAttachmentByteLengths({encrypted_bytes:30,compressed_bytes:20,original_bytes:10},lengths)).toThrowError(/dr_attachment_size_mismatch/);
     }
+  });
+
+  it('accepts an internally valid older catalog only as a full-backup rebase anchor',()=>{
+    const current=manifestFixture();
+    expect(classifyCheckpointCatalog(current,'test-catalog-v1',testCatalog)).toMatchObject({
+      status:'CURRENT',current:true,requires_full_rebase:false,
+      checkpoint_catalog_count:2,current_catalog_count:2,
+    });
+    const legacy=manifestFixture({
+      entity_catalog_version:'test-catalog-v0',
+      entity_catalog_count:1,
+      entity_counts:{Brand:current.entity_counts.Brand},
+    });
+    expect(classifyCheckpointCatalog(legacy,'test-catalog-v1',testCatalog)).toMatchObject({
+      status:'LEGACY_COMPATIBLE',current:false,requires_full_rebase:true,
+      checkpoint_catalog_version:'test-catalog-v0',checkpoint_catalog_count:1,
+      current_catalog_version:'test-catalog-v1',current_catalog_count:2,
+    });
+    expect(()=>classifyCheckpointCatalog({...legacy,entity_catalog_count:2},'test-catalog-v1',testCatalog)).toThrowError(/catalog_identity_invalid/);
   });
 
   it('accepts only complete authenticated restore evidence with real targets and finite ordered metrics',()=>{
@@ -1030,6 +1049,8 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(runtime).toContain('DR_PRODUCTION_CONTROL_PLANE_REQUIRED');
     expect(runtime).toContain('source_secrets_restored:false');
     expect(runtime).toContain('deployment_identity:runtimeDeploymentIdentity()');
+    expect(runtime).toContain("latest&&!latest.catalog.current?'FULL'");
+    expect(runtime).toContain("readLatestCheckpoint(storage,key,{requireCurrentCatalog:false})");
     expect(runtime).toContain('...releaseIdentity,checkpoint_from');
     expect(runtime).not.toContain("release_version:'0.97.0'");
     expect(storage).toContain('client_credentials');

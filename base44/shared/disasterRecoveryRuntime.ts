@@ -8,7 +8,7 @@ import {
   DISASTER_RECOVERY_VERSION, DISASTER_RECOVERY_SCHEMA_VERSION, DR_EPHEMERAL_SECRET_ENTITIES,
   DR_NON_RESTORABLE_ENTITIES, DR_PAGE_SIZE, DR_RETENTION_DAYS, DR_RPO_TARGET_MINUTES,
   DR_RTO_TARGET_MINUTES, assertAttachmentByteLengths, assertIsolatedRestoreTarget, backupTier, collectExactReferences,
-  collectOwnedFileReferences, decryptEnvelope, deepRemap, diffRecords, encryptEnvelope,
+  classifyCheckpointCatalog, collectOwnedFileReferences, decryptEnvelope, deepRemap, diffRecords, encryptEnvelope,
   evaluateDisasterRecoveryScheduler,
   fetchTrustedBase44File, gzipBytes, gunzipBytes, indexRecords, jsonValueChunks, mapLimitDrained, parseAes256Key, parseDrMaxFileBytes, readBoundedDrResponseBytes, redactSecrets, retentionCutoff,
   restoreEnvironment, restoreEvidenceAad, safeFileName, secretLikePaths, sha256Hex, snapshotType,
@@ -117,7 +117,7 @@ async function listAll(service:any,entityName:string){
  throw Object.assign(new Error('dr_entity_row_limit_exceeded'),{code:'DR_ENTITY_ROW_LIMIT_EXCEEDED',entity:entityName});
 }
 
-async function readLatestCheckpoint(storage:any,key:Uint8Array){
+async function readLatestCheckpoint(storage:any,key:Uint8Array,options:{requireCurrentCatalog?:boolean}={}){
  const manifestBytes=await storage.downloadIfExists('Manifests/latest.manifest.json');
  const indexBytes=await storage.downloadIfExists('Manifests/latest.index.json.gz.aes256gcm');
  if(!manifestBytes&&!indexBytes)return null;
@@ -126,7 +126,6 @@ async function readLatestCheckpoint(storage:any,key:Uint8Array){
  await verifyManifest(manifest);
  if(!manifest?.index?.aad||!manifest?.index?.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_manifest_invalid'),{code:'DR_CHECKPOINT_INVALID'});
  if(manifest.dr_version!==DISASTER_RECOVERY_VERSION||manifest.source_app_id!==APP_ID||manifest.source_environment!=='prod')throw Object.assign(new Error('dr_latest_checkpoint_source_identity_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
- const expectedCatalog=[...DISASTER_RECOVERY_ENTITY_CATALOG].sort(),observedCatalog=Object.keys(manifest.entity_counts||{}).sort();if(manifest.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest.entity_catalog_count!==expectedCatalog.length||observedCatalog.length!==expectedCatalog.length||observedCatalog.some((name,index)=>name!==expectedCatalog[index]))throw Object.assign(new Error('dr_latest_checkpoint_catalog_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});
  if(indexBytes.byteLength!==Number(manifest.index.encrypted_bytes)||await sha256Hex(indexBytes)!==manifest.index.encrypted_sha256)throw Object.assign(new Error('dr_latest_checkpoint_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const decrypted=await decryptEnvelope(indexBytes,key,manifest.index.aad);
  if(decrypted.bytes.byteLength!==Number(manifest.index.compressed_bytes))throw Object.assign(new Error('dr_latest_checkpoint_compressed_length_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
@@ -134,7 +133,9 @@ async function readLatestCheckpoint(storage:any,key:Uint8Array){
  if(decompressed.byteLength!==Number(manifest.index.uncompressed_bytes)||await sha256Hex(decompressed)!==manifest.index.payload_sha256)throw Object.assign(new Error('dr_latest_checkpoint_payload_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const index=jsonFromBytes(decompressed);
  validateLatestCheckpointIdentity(manifest,index);
- return{manifest,index,manifestBytes,indexBytes};
+ const catalog=classifyCheckpointCatalog(manifest,DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,DISASTER_RECOVERY_ENTITY_CATALOG);
+ if(options.requireCurrentCatalog!==false&&!catalog.current)throw Object.assign(new Error('dr_latest_checkpoint_catalog_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH',...catalog});
+ return{manifest,index,manifestBytes,indexBytes,catalog};
 }
 
 function backupIdentity(){
@@ -190,9 +191,10 @@ async function recordBackupFailure(service:any,error:any){
  const rows=requireRuntimeSource(await readRuntimeRows({source:'dr_backup_failure_incident',read:()=>service.entities.AutonomyIncident.filter({dedupe_key:dedupe,status:'open'},'-last_seen_at',2)}));
  if(rows.length>1)throw Object.assign(new Error('dr_backup_failure_incident_ambiguous'),{code:'DR_INCIDENT_AUTHORITY_AMBIGUOUS'});
  const old=rows[0];
- const row={dedupe_key:dedupe,domain:'data',severity:'critical',status:'open',subject_type:'DisasterRecoveryExercise',subject_id:'_backup',summary:`Disaster recovery backup blocked: ${code}`,details_json:{code,provider_code:providerCode,configuration_required:error instanceof DisasterRecoveryConfigurationError,missing,invalid},workflow_state:'human_review',owner_type:'founder',automation_eligibility:'human_required',financial_impact_minor:0,customer_impact:'high',legal_risk:'medium',first_seen_at:old?.first_seen_at||at,last_seen_at:at};
+ const checkpointCatalog={checkpoint_catalog_version:String(error?.checkpoint_catalog_version||'')||null,checkpoint_catalog_count:Number.isSafeInteger(error?.checkpoint_catalog_count)?error.checkpoint_catalog_count:null,current_catalog_version:String(error?.current_catalog_version||'')||null,current_catalog_count:Number.isSafeInteger(error?.current_catalog_count)?error.current_catalog_count:null,requires_full_rebase:error?.requires_full_rebase===true};
+ const row={dedupe_key:dedupe,domain:'data',severity:'critical',status:'open',subject_type:'DisasterRecoveryExercise',subject_id:'_backup',summary:`Disaster recovery backup blocked: ${code}`,details_json:{code,provider_code:providerCode,configuration_required:error instanceof DisasterRecoveryConfigurationError,missing,invalid,...checkpointCatalog},workflow_state:'human_review',owner_type:'founder',automation_eligibility:'human_required',financial_impact_minor:0,customer_impact:'high',legal_risk:'medium',first_seen_at:old?.first_seen_at||at,last_seen_at:at};
  if(old)await service.entities.AutonomyIncident.update(old.id,row);else await service.entities.AutonomyIncident.create(row);
- await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_failed',message:code,data_json:{code,provider_code:providerCode,missing,invalid},actor_email:'disaster_recovery',created_at:at});
+ await service.entities.OperationalLog.create({event_type:'disaster_recovery_backup_failed',message:code,data_json:{code,provider_code:providerCode,missing,invalid,...checkpointCatalog},actor_email:'disaster_recovery',created_at:at});
 }
 
 async function closeBackupFailure(service:any){
@@ -373,7 +375,7 @@ async function executeOrphanCleanup(req:Request,input:any){
 async function beginBackupOperation(storage:any,key:Uint8Array,input:any,actor:string){
  const identity=backupIdentity(),tier=String(input.retention_tier||backupTier(new Date(identity.at))) as any;
  if(!['Daily','Weekly','Monthly'].includes(tier))throw Object.assign(new Error('dr_retention_tier_invalid'),{code:'DR_RETENTION_TIER_INVALID'});
- const latest=await readLatestCheckpoint(storage,key),type=snapshotType(input.backup_mode,tier,!!latest),anchor=await latestCheckpointAnchor(latest),batches=backupEntityBatches();
+ const latest=await readLatestCheckpoint(storage,key,{requireCurrentCatalog:false}),type=latest&&!latest.catalog.current?'FULL':snapshotType(input.backup_mode,tier,!!latest),anchor=await latestCheckpointAnchor(latest),batches=backupEntityBatches();
  const operation={operation_version:BACKUP_OPERATION_VERSION,schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,source_app_id:APP_ID,source_environment:'prod',entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,deployment_identity:runtimeDeploymentIdentity(),backup_id:identity.backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:type==='FULL'?null:anchor.checkpoint_to,checkpoint_to:identity.at,latest_anchor:anchor,next_chunk_index:0,total_chunks:batches.length,artifacts:[],status:'STAGING',revision:1,actor:String(actor||'disaster_recovery').slice(0,320),created_at:identity.at,updated_at:identity.at};
  return writeBackupOperation(storage,key,operation);
 }
@@ -399,7 +401,7 @@ async function advanceBackupOperation(base44:any,storage:any,key:Uint8Array,init
 }
 
 async function assertBackupLatestAnchor(storage:any,key:Uint8Array,operation:any){
- const latest=await readLatestCheckpoint(storage,key),observed=await latestCheckpointAnchor(latest);
+ const latest=await readLatestCheckpoint(storage,key,{requireCurrentCatalog:operation.snapshot_type!=='FULL'}),observed=await latestCheckpointAnchor(latest);
  if(stableJson(observed)!==stableJson(operation.latest_anchor))throw Object.assign(new Error('dr_backup_latest_anchor_changed'),{code:'DR_BACKUP_OPERATION_CONFLICT'});
  return latest;
 }
@@ -684,8 +686,8 @@ export async function handleDisasterRecovery(req:Request){
    const[exerciseRead,logRead,schedulerRead,continuationRead]=await Promise.all([readRuntimeRows({source:'dr_status_exercises',read:()=>service.entities.DisasterRecoveryExercise.list('-completed_at',20)}),readRuntimeRows({source:'dr_status_events',read:()=>service.entities.OperationalLog.filter({event_type:{$in:['disaster_recovery_backup_completed','disaster_recovery_backup_failed','disaster_recovery_restore_attested']}},'-created_at',50)}),readRuntimeRows({source:'dr_status_scheduler',read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackup',invocation_kind:'SCHEDULED'},'-started_at',20)}),readRuntimeRows({source:'dr_status_scheduler_continuation',read:()=>service.entities.SchedulerRun.filter({worker_key:'disasterRecoveryBackupContinuation',invocation_kind:'SCHEDULED'},'-started_at',20)})]);const exercises=exerciseRead.value,logs=logRead.value,scheduler=evaluateDisasterRecoveryScheduler(schedulerRead.value),schedulerContinuation=evaluateDisasterRecoveryScheduler(continuationRead.value,Date.now(),{worker_key:'disasterRecoveryBackupContinuation',cadence_seconds:600,freshness_seconds:1800}),sourceCoverage=runtimeSourceCoverage({exercises:exerciseRead,events:logRead,scheduler:schedulerRead,scheduler_continuation:continuationRead});
    const config=configurationStatus();let remote:any=null;if(body.verify_remote===true){
     if(!config.ok)throw new DisasterRecoveryConfigurationError(config.missing,config.invalid);
-    const storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true}),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),folderNames=['Daily','Weekly','Monthly','Manifests','Restore Evidence'],inventory=await Promise.all(folderNames.map(async(folder)=>[folder,await storage.list(folder)] as const)),pending=await readBackupOperation(storage,key),latest=await readLatestCheckpoint(storage,key);let latestCheckpoint:any=null;
-    if(latest){const attachmentItems=publishedAttachmentItems(latest.manifest);if(!attachmentItems)throw Object.assign(new Error('dr_latest_checkpoint_attachment_inventory_missing'),{code:'DR_CHECKPOINT_INVALID'});await verifyPublishedJsonArtifact(storage,latest.manifest.snapshot,key,'latest_snapshot');await verifyPublishedAttachments(storage,key,latest.manifest,attachmentItems);latestCheckpoint={verified:true,backup_id:latest.manifest.backup_id,manifest_path:latest.manifest.manifest_path,manifest_hash:latest.manifest.manifest_hash,snapshot_type:latest.manifest.snapshot_type,retention_tier:latest.manifest.retention_tier,source_environment:latest.manifest.source_environment,source_app_id:latest.manifest.source_app_id,checkpoint_to:latest.manifest.checkpoint_to,snapshot_encrypted_sha256:latest.manifest.snapshot.encrypted_sha256,index_encrypted_sha256:latest.manifest.index.encrypted_sha256,attachments:latest.manifest.attachments}}
+    const storage=await openSharePointBackupStorage(Deno.env,{requireCanonicalTarget:true}),key=parseAes256Key(getEnv('DR_BACKUP_AES256_KEY_B64')),folderNames=['Daily','Weekly','Monthly','Manifests','Restore Evidence'],inventory=await Promise.all(folderNames.map(async(folder)=>[folder,await storage.list(folder)] as const)),pending=await readBackupOperation(storage,key),latest=await readLatestCheckpoint(storage,key,{requireCurrentCatalog:false});let latestCheckpoint:any=null;
+    if(latest){const attachmentItems=publishedAttachmentItems(latest.manifest);if(!attachmentItems)throw Object.assign(new Error('dr_latest_checkpoint_attachment_inventory_missing'),{code:'DR_CHECKPOINT_INVALID'});await verifyPublishedJsonArtifact(storage,latest.manifest.snapshot,key,'latest_snapshot');await verifyPublishedAttachments(storage,key,latest.manifest,attachmentItems);latestCheckpoint={verified:true,backup_id:latest.manifest.backup_id,manifest_path:latest.manifest.manifest_path,manifest_hash:latest.manifest.manifest_hash,snapshot_type:latest.manifest.snapshot_type,retention_tier:latest.manifest.retention_tier,source_environment:latest.manifest.source_environment,source_app_id:latest.manifest.source_app_id,checkpoint_to:latest.manifest.checkpoint_to,snapshot_encrypted_sha256:latest.manifest.snapshot.encrypted_sha256,index_encrypted_sha256:latest.manifest.index.encrypted_sha256,attachments:latest.manifest.attachments,catalog_status:latest.catalog.status,checkpoint_catalog_version:latest.catalog.checkpoint_catalog_version,checkpoint_catalog_count:latest.catalog.checkpoint_catalog_count,current_catalog_version:latest.catalog.current_catalog_version,current_catalog_count:latest.catalog.current_catalog_count,requires_full_rebase:latest.catalog.requires_full_rebase}}
     remote={ok:true,read_only:true,identity:storage.identity,folders:Object.fromEntries(inventory.map(([folder,items])=>[folder,items.length])),inventory:Object.fromEntries(inventory.map(([folder,items])=>[folder,items.slice(0,100).map((item:any)=>({name:String(item?.name||''),kind:item?.folder?'folder':item?.file?'file':'unknown',size:Number(item?.size||0),created_at:String(item?.createdDateTime||''),updated_at:String(item?.lastModifiedDateTime||'')}))])),pending_backup:pending?{backup_id:pending.backup_id,status:pending.status,snapshot_type:pending.snapshot_type,retention_tier:pending.retention_tier,next_chunk_index:pending.next_chunk_index,total_chunks:pending.total_chunks,remaining_chunks:pending.total_chunks-pending.next_chunk_index,updated_at:pending.updated_at}:null,latest_checkpoint:latestCheckpoint};
    }
    return Response.json({ok:true,version:DISASTER_RECOVERY_VERSION,data_status:sourceCoverage.status,source_coverage:sourceCoverage,configuration:config,scheduler,scheduler_continuation:schedulerContinuation,remote,latest_exercises:exercises,latest_events:logs,rpo_target_minutes:DR_RPO_TARGET_MINUTES,rto_target_minutes:DR_RTO_TARGET_MINUTES,restore_boundary:'X-Data-Env must be dev/test/staging/sandbox; default/prod is rejected'});

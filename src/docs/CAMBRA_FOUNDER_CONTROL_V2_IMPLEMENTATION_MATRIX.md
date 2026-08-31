@@ -10,7 +10,7 @@ capability, not proof that every external production dependency is healthy.
 - Material mutations: existing `emergencyControlAdmin`,
   `outboundControlAdmin`, `goLiveControlAdmin` and `founderOSCommand` trust
   boundaries.
-- Deployment topology before/after this change: **276 physical functions and 27
+- Deployment topology before/after this change: **276 physical functions and 39
   logical routes**. No Founder Control physical function or parallel control
   entity was added.
 - Stripe, billing and public webhook functions retain their isolated trust
@@ -34,6 +34,8 @@ capability, not proof that every external production dependency is healthy.
 | Ask CAMBRA | Fresh bounded snapshot; prose may explain/propose but cannot mutate authority | Implemented |
 | Change history | FounderCommandAudit + material OperationalLog projection | Implemented |
 | Fail-closed authority read | Missing/unreadable EmergencyControl produces contained state and denies material effects | Implemented |
+| Bounded canonical reads | Each source read has an eight-second bound; a stalled source becomes explicitly unavailable rather than blocking the full control snapshot | Implemented |
+| Bounded UI snapshot | The initial read has a twelve-second UI bound and renders a translated fail-closed error with retry instead of an indefinite blank loader | Implemented |
 | Closed budget dialog | Preview fields use null-safe reads while no material preview exists; opening or confirming still requires the canonical preview flow | Implemented |
 
 ## Safe Resume gates
@@ -50,6 +52,12 @@ This surface is a control projection, not a new source of authority. A green
 card describes current canonical evidence; it does not manufacture provider,
 legal, financial or production proof. Missing authority is UNKNOWN/DEGRADED and
 material execution fails closed.
+
+A slow or stalled canonical source never becomes an empty or permissive source.
+It is marked `UNAVAILABLE`, appears in snapshot freshness and contributes its
+normal critical-source blocker. If the aggregate request itself does not return
+inside the UI bound, Founder Control renders an explicit unavailable state and
+keeps every material effect closed until a later canonical retry succeeds.
 
 The closed budget dialog must remain render-safe when its modal state is null.
 This is a presentation guard only: it does not synthesize a preview, relax a

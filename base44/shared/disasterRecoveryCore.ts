@@ -749,6 +749,35 @@ export function validateLatestCheckpointIdentity(manifest:any, index:any) {
   return index;
 }
 
+export function classifyCheckpointCatalog(
+  manifest:any,
+  currentCatalogVersion:string,
+  currentCatalog:readonly string[],
+) {
+  const observedCatalog = Object.keys(manifest?.entity_counts || {}).sort();
+  const declaredCount = Number(manifest?.entity_catalog_count);
+  const observedVersion = String(manifest?.entity_catalog_version || '');
+  if (
+    !observedVersion || !Number.isSafeInteger(declaredCount) || declaredCount < 1 ||
+    declaredCount !== observedCatalog.length
+  ) {
+    throw drValidationError('dr_latest_checkpoint_catalog_identity_invalid', 'DR_CHECKPOINT_IDENTITY_MISMATCH');
+  }
+  const expectedCatalog = [...currentCatalog].sort();
+  const current = observedVersion === currentCatalogVersion &&
+    declaredCount === expectedCatalog.length &&
+    observedCatalog.every((name, index) => name === expectedCatalog[index]);
+  return {
+    status: current ? 'CURRENT' : 'LEGACY_COMPATIBLE',
+    current,
+    requires_full_rebase: !current,
+    checkpoint_catalog_version: observedVersion,
+    checkpoint_catalog_count: declaredCount,
+    current_catalog_version: currentCatalogVersion,
+    current_catalog_count: expectedCatalog.length,
+  };
+}
+
 export function assertAttachmentByteLengths(
   attachment:any,
   lengths:{encrypted:number;compressed:number;original:number},

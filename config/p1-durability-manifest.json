@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-31T13:39:53.024Z",
+  "generatedAt": "2026-08-31T14:48:38.356Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1564,13 +1564,13 @@
     },
     {
       "path": "base44/shared/disasterRecoveryCore.ts",
-      "sha256": "3dfa14521cec935ce0a22a4c5e96287ef4f2c93b27a45e06099965ca4a05e41f",
-      "bytes": 73232
+      "sha256": "a606476c97cba397ebc53c2f59dc7892de3db2557a2375abffda639bbe2910a8",
+      "bytes": 74400
     },
     {
       "path": "base44/shared/disasterRecoveryRuntime.ts",
-      "sha256": "3e6a35bf092abd4ff2842f68be41cb331225a5d2d6780f1eaa5e3891ef684c47",
-      "bytes": 96285
+      "sha256": "1343a64cabf42b42aafb6e12fcd7ac888ef14f6277b42cf962874ed346368b6b",
+      "bytes": 97185
     },
     {
       "path": "base44/shared/discoveryAdmin.ts",
@@ -1644,8 +1644,8 @@
     },
     {
       "path": "base44/shared/founderControlV2.ts",
-      "sha256": "cb883d0dfd86fa1f0618cd89317faea6c9e3b4e0c0cf36a1d2bf78bf7304b3a3",
-      "bytes": 37938
+      "sha256": "0359b9428f1178a79be6210ba78434810b5db2405e62f2df93677c210ab14925",
+      "bytes": 38408
     },
     {
       "path": "base44/shared/founderMeeting.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "8785a89dc5cd1f9d5ee03e3d937728e218109c760f3339c9c71f29272ce73e4e",
+      "sha256": "481f1befd8bd3826b482e3b796cbdacbbad64b9487758d5b205d7541f465b853",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "f0ef3dd16019745f8e2f2d355e738e9ac5a8eb35515b3e75b7fe63bd0eba8e1a",
+      "sha256": "18067538a88cfc9ea9f98c7b7a6a7db66226e240feb17aa67fafebcd3006bbee",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "511015f9464ffabdd9d30c1e8d06d1ba9ccf48b83db2e1764a5953c1df9d1f4d",
+      "sha256": "825e75242cce382ac056a93af8f14d74b983ef79fab48183fcddd0a6fb78676b",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "f37d6ba1b732d2ce50e1fd2611d6ec3813f9899ccd479c53410f1cfa9b6eef18",
+      "sha256": "a926fb93963dd0554c56ef1406ddee0895396e02ae33e98d18820b859a542bcd",
       "bytes": 144989
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "84cdef41cfa0267600cb3baca5e29f5d19ddc8fe89c1f359f600ce0a84c0bac7",
+      "sha256": "bc6686f48eb786e1ac3f0793f9ae53de07e5263f82ebcbb409176971a93a7e0c",
       "bytes": 97956
     },
     {
@@ -2704,8 +2704,8 @@
     },
     {
       "path": "src/docs/CAMBRA_DISASTER_RECOVERY.md",
-      "sha256": "4d7324f5393dd7a3735ddc3b51fa7cccebcc25797a5fee528653a7adf4defa94",
-      "bytes": 13778
+      "sha256": "c2d52ec20c2d498a9778214984c7f3fe14af5f9adda6f27096c34dd7ca374bdc",
+      "bytes": 14507
     },
     {
       "path": "src/docs/CAMBRA_DISCOVERY_V2_EXISTING_CAPABILITY_MATRIX.md",
@@ -2724,8 +2724,8 @@
     },
     {
       "path": "src/docs/CAMBRA_FOUNDER_CONTROL_V2_IMPLEMENTATION_MATRIX.md",
-      "sha256": "6841b23a81a28e39305aab766ae65f4f4be1613c35288900d1852bfed21cd7c0",
-      "bytes": 3854
+      "sha256": "cdf13338919925600dd01b7bb703f3323d5b441df1e5d9415505f7ed386df8fd",
+      "bytes": 4608
     },
     {
       "path": "src/docs/CAMBRA_FOUNDER_HANDBOOK.md",
@@ -3084,8 +3084,8 @@
     },
     {
       "path": "src/lib/disasterRecovery.test.js",
-      "sha256": "24ec664fd4bb1bd07d1416599b1c7e9e00fa9c72d0d0c2f94de7b80ef2fecc4b",
-      "bytes": 76882
+      "sha256": "7391c08a9f154107109f1d3e5b5757bbbe1ceef0dd10ac6ccb2d4905d003871a",
+      "bytes": 78092
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",
@@ -3284,8 +3284,8 @@
     },
     {
       "path": "src/lib/founderControlV2.test.js",
-      "sha256": "507322dfaeaa78891aa0161e6299e39c7bbd77d0711afbd1fced3970729579ba",
-      "bytes": 12997
+      "sha256": "0b4e040bce026e642c9fc308ee13b1647e17e2fe4e86e015fa07b52e812e16cc",
+      "bytes": 13579
     },
     {
       "path": "src/lib/founderMerchantsV2.test.js",
@@ -3509,8 +3509,8 @@
     },
     {
       "path": "src/lib/p17Maintenance.test.js",
-      "sha256": "a4b749e56ba1548afb7c8bd35af5b53098a2a6562ecc432731ca73cdcc168a67",
-      "bytes": 7283
+      "sha256": "5c8dbe7d9e23569d63a0335fabcf581113d1331bec400726f74a0afdbc0f5bf9",
+      "bytes": 7655
     },
     {
       "path": "src/lib/p18Documentation.test.js",
@@ -3894,8 +3894,8 @@
     },
     {
       "path": "src/pages/admin/AdminFounderControl.jsx",
-      "sha256": "1f669687a1962d6ac0fc668fb0d04a8dd7456b75f18a3de97e66a4a51bc20d1f",
-      "bytes": 88953
+      "sha256": "da1ab2dff5b3c9d82475b40296134b4fd0529a90fe2033a1f41d0ba725e2a3a8",
+      "bytes": 90156
     },
     {
       "path": "src/pages/admin/AdminGrowth.jsx",
@@ -3919,8 +3919,8 @@
     },
     {
       "path": "src/pages/admin/AdminMaintenance.jsx",
-      "sha256": "8166a103be0b7eeb5cfe4f4307c1f2f2ea0b2e49e4a2fb24be297aeda050a281",
-      "bytes": 10652
+      "sha256": "665ec11eb810c28cf9cc86041bd47719ab58164de5a9164881ededdf1b3767bf",
+      "bytes": 12791
     },
     {
       "path": "src/pages/admin/AdminMerchants.jsx",

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { evaluateSafeResumeFromSnapshot } from "../../base44/shared/founderControlV2.ts";
+import { boundedFounderControlSource, evaluateSafeResumeFromSnapshot } from "../../base44/shared/founderControlV2.ts";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -39,6 +39,11 @@ function safeSnapshot(overrides = {}) {
 }
 
 describe("Founder Control V2 canonical authority projection", () => {
+  it("bounds every canonical source so one stalled read cannot blank the control plane", async () => {
+    expect(await boundedFounderControlSource(Promise.resolve([{ id:"ok" }]), 20)).toMatchObject({ ok:true, data:[{ id:"ok" }] });
+    expect(await boundedFounderControlSource(new Promise(() => {}), 5)).toMatchObject({ ok:false, data:[], error:"FOUNDER_CONTROL_SOURCE_TIMEOUT" });
+  });
+
   it("fails closed when EmergencyControl cannot be read", () => {
     const source = read("base44/shared/operationalControl.ts");
     expect(source).toContain("control_available:false");
@@ -183,6 +188,8 @@ describe("Founder Control V2 canonical authority projection", () => {
     expect(ui).not.toContain("founderControlContext");
     expect(ui).toContain("Confirm with fresh preview");
     expect(ui).toContain("const requireCanonical = useCallback");
+    expect(ui).toContain("boundedFounderControlSnapshot");
+    expect(ui).toContain("The canonical snapshot did not respond in time. No authority was inferred.");
     expect(ui).toContain('error:"canonical_preview_incomplete"');
     expect(ui).toContain('["preview.state_fingerprint", "command_key", "confirmation_required"]');
     expect(ui).toContain('["preflight.preflight_hash", "command_key", "confirmation_required"]');

@@ -25,6 +25,8 @@ The existing `maintenanceEngine` is the only Base44 physical function used. Its 
 
 Each first, weekly and monthly run is a full snapshot. Other daily runs are incremental and contain changed records plus tombstones. Every checked-in Base44 entity is generated into the canonical entity catalog. Ephemeral OAuth state/code records are excluded, and the platform-managed `User` entity is reconciled by email during restore instead of recreating authentication identities.
 
+When the canonical entity catalog legitimately changes, the previous latest checkpoint remains immutable and is fully authenticated against its own manifest/index catalog. It is accepted only as the compare-and-swap anchor for a new `FULL` backup; it is never used as an incremental base under the new catalog. The new full snapshot starts a current-catalog restore chain, and the prior backup remains retained under the normal policy. Remote status reports `LEGACY_COMPATIBLE` plus `requires_full_rebase: true` until that rebase completes.
+
 Before leaving CAMBRA:
 
 1. secret-like fields are removed recursively;
@@ -130,6 +132,7 @@ The function hard-rejects the default or production data environment. The select
 - Site-ID/path ambiguity, a non-canonical root, an unknown drive, duplicate exact-name drives, a drive outside the selected site, or a drive-name mismatch all fail closed before any folder or backup artifact is created.
 - Remote status is read-only: it never calls folder creation or repair. A missing folder remains a hard diagnostic failure for an operator to resolve through the controlled backup/bootstrap path.
 - Missing/stale scheduled-attempt evidence is visible in `dr_status.scheduler` and cannot be mistaken for a healthy daily automation.
+- A valid older entity catalog forces a new full backup. A malformed or internally inconsistent catalog still returns `DR_CHECKPOINT_IDENTITY_MISMATCH` and cannot become a rebase anchor.
 - Microsoft authorization/storage errors remain hard failures.
 - Microsoft Graph and upload-session errors retain only bounded status/code metadata; capability URLs, tokens and raw `Error` objects are not returned or logged.
 - Both simple and chunked Graph uploads require a drive-item receipt with an exact byte count; malformed successful responses cannot advance backup completion.

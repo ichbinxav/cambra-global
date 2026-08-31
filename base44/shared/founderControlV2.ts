@@ -13,9 +13,17 @@ const num=(value:any)=>Number.isFinite(Number(value))?Number(value):0;
 const when=(value:any)=>{const parsed=Date.parse(String(value||''));return Number.isFinite(parsed)?parsed:0};
 const compactError=(error:any)=>String(error?.code||error?.message||'unavailable').replace(/[\r\n]+/g,' ').slice(0,120);
 const finiteMin=(values:any[])=>{const numbers=values.map(num).filter((value)=>value>0&&Number.isFinite(value));return numbers.length?Math.min(...numbers):0};
+const FOUNDER_CONTROL_SOURCE_TIMEOUT_MS=8_000;
 
 type SourceResult={ok:boolean,data:any,error?:string};
-async function source(promise:Promise<any>):Promise<SourceResult>{try{return{ok:true,data:await promise}}catch(error){return{ok:false,data:[],error:compactError(error)}}}
+export async function boundedFounderControlSource(promise:Promise<any>,timeoutMs=FOUNDER_CONTROL_SOURCE_TIMEOUT_MS):Promise<SourceResult>{
+  let timer:any=null;
+  const timeout=new Promise<never>((_resolve,reject)=>{timer=setTimeout(()=>reject(Object.assign(new Error('founder_control_source_timeout'),{code:'FOUNDER_CONTROL_SOURCE_TIMEOUT'})),Math.max(1,timeoutMs))});
+  try{return{ok:true,data:await Promise.race([promise,timeout])}}
+  catch(error){return{ok:false,data:[],error:compactError(error)}}
+  finally{if(timer!==null)clearTimeout(timer)}
+}
+const source=boundedFounderControlSource;
 function latest(rows:any[],predicate:(row:any)=>boolean,dateKey='observed_at'){return rows.filter(predicate).sort((a,b)=>when(b?.[dateKey]||b?.updated_at||b?.created_at||b?.created_date)-when(a?.[dateKey]||a?.updated_at||a?.created_at||a?.created_date))[0]||null}
 function status(value:boolean,unknown=false){return unknown?'UNKNOWN':value?'HEALTHY':'BLOCKED'}
 function capability(input:any){return{key:input.key,label:input.label,current_mode:input.current_mode,explanation:input.explanation,effective_capacity:input.effective_capacity??null,authority:input.authority||[],dependencies:input.dependencies||[],limits:input.limits||[],blockers:input.blockers||[],valid_transitions:input.valid_transitions||[],last_change:input.last_change||null,manage_path:input.manage_path||null,ask_prompts:input.ask_prompts||[]}}
