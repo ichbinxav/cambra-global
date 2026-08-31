@@ -369,6 +369,7 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(UI).toContain('instantlyReconciliationWorker');
     expect(UI).toContain('alwaysOnLeadDiscoveryWorker');
     expect(UI).toContain('disasterRecoveryBackupContinuation');
+    expect((UI.match(/finally \{ setBusy\(""\);/g) || [])).toHaveLength(3);
     expect(UI).not.toContain('entities.Invoice');
     expect(UI).not.toContain('entities.SavingsEvidence');
     expect(APP).toContain('/admin/ecl-operations');

@@ -379,6 +379,7 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(runtime).toContain('async function writeBackupOperation(storage:any,key:Uint8Array,operation:any,expected:any=null)');
     expect(runtime).toContain('function migrateLegacyBackupOperation(operation:any)');
     expect(runtime).toContain("legacy.status!=='PENDING_FINALIZE'||legacy.next_chunk_index!==legacy.total_chunks");
+    expect(runtime).toContain('entity_names:batches[chunkIndex]},batches)');
     expect(runtime).toContain('migrated={...legacy,operation_version:BACKUP_OPERATION_VERSION,next_chunk_index:0');
     expect(runtime).toContain('from_artifact_set_sha256:artifactHash');
     expect(runtime).toContain("status:nextIndex===operation.total_chunks?'PENDING_FINALIZE':'STAGING'");

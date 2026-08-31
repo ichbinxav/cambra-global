@@ -326,7 +326,7 @@ function validateBackupOperationAgainst(operation:any,batches:string[][],operati
  if((type==='FULL'&&operation.checkpoint_from!==null)||(type==='INCREMENTAL'&&(String(operation.checkpoint_from||'')!==anchor.checkpoint_to||anchor.manifest_path===null))||(next===total&&operation.status!=='PENDING_FINALIZE')||(next<total&&operation.status!=='STAGING'))throw Object.assign(new Error('dr_backup_operation_state_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
  if(stableJson(operation.deployment_identity)!==stableJson(runtimeDeploymentIdentity()))throw Object.assign(new Error('dr_backup_operation_release_drift'),{code:'DR_BACKUP_OPERATION_RELEASE_DRIFT'});
  for(let chunkIndex=0;chunkIndex<operation.artifacts.length;chunkIndex++){
-  const coordinates=backupStageCoordinates({backup_id:backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:total,entity_names:batches[chunkIndex]});
+  const coordinates=backupStageCoordinates({backup_id:backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:total,entity_names:batches[chunkIndex]},batches);
   validateBackupStageArtifact(operation.artifacts[chunkIndex],coordinates,{requireSummary});
  }
  return operation;

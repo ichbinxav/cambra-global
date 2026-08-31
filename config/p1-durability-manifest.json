@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-31T22:51:16.262Z",
+  "generatedAt": "2026-08-31T23:27:59.392Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1569,8 +1569,8 @@
     },
     {
       "path": "base44/shared/disasterRecoveryRuntime.ts",
-      "sha256": "5eb460ddc8ec33f5a08745f79e02f5178ab9b0aaf2755c9d81c2b73d9503fba4",
-      "bytes": 113441
+      "sha256": "82dab23573ee0521974417cf89d2adf7d24693257b5710cddda18d09b6af8c00",
+      "bytes": 113449
     },
     {
       "path": "base44/shared/discoveryAdmin.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "d16e7930bea195c607bcbb12db8e8348d25762a319d3854abe2202a79ff8500c",
+      "sha256": "6ef197af956de4ab5d370819274ab76cb04d5ac0a322b7ad4dd111a9384c2995",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "369f2c79ace1bceb0c5676393d08edc432bea8c4c9d31d937728a8e32ad7ed93",
+      "sha256": "3ae538094cfebd38775761188cf75b4cce43ca8d410b0947eb6f77680e4614fb",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "9cc546228aafab1fcfe58a84dc486ee29223c406c2809e478e899c7345ac60b7",
+      "sha256": "f6c973792a4c385be47f8dc92a9bc7c0aacb19974686d3ed8a289069cef026ce",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "392065b1ef08dbbcfe97043611df12f6f3c3314d756d41b4e8476669dc90f833",
+      "sha256": "4b3fc32f8dd1be374fe96488698b504e282e1dd7545c3827b77f64f28d3ca444",
       "bytes": 144990
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "ea9bb0a95c3555bff070979601f842ab21e0d2ac0c9c1bfb40c99db307df1c96",
+      "sha256": "db7d90fdf496b66baf78e4cde493f3898b03f208e1c91a909a18a1d032dc9789",
       "bytes": 97957
     },
     {
@@ -3084,8 +3084,8 @@
     },
     {
       "path": "src/lib/disasterRecovery.test.js",
-      "sha256": "6c8c89c0408841b542012452ef56093c4dd08ddfccd947dc99b2864680500758",
-      "bytes": 80205
+      "sha256": "ac2adb88e19de3ae3d5013e1144bc47dc33f8d80f41f0bbfc8fd7c601c45436c",
+      "bytes": 80282
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "f9f381656520c774e42cd65cb5edde67c7ee9be7e6e3741193e0ac1ae5d4b4f2",
-      "bytes": 22618
+      "sha256": "27bb90c7a8636ab65f308e2c59a6bf71e466b94e7a3db0afb823ebe61cad8360",
+      "bytes": 22694
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
@@ -3939,8 +3939,8 @@
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
-      "sha256": "bbb3b7c0857ebec341f54156a79d29689aaab5762df21bfb2b3b6a101c3238b5",
-      "bytes": 17703
+      "sha256": "35bbcabd6b3da43c72885f895ec4c98153a879397a064cd13eeb304adfd8d621",
+      "bytes": 17753
     },
     {
       "path": "src/pages/admin/ReviewQueue.jsx",

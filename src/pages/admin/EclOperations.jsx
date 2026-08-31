@@ -110,11 +110,13 @@ export default function EclOperations() {
 
   async function runHealth() {
     setBusy("health");
+    setError("");
     try {
       const result = unwrap(await base44.functions.invoke("eclProductionHealth", {}));
       if (!result?.ok) throw new Error(result?.message || result?.error || "Health sweep failed");
       await load();
-    } catch (e) { setError(operationError(e, "Health sweep failed.")); setBusy(""); }
+    } catch (e) { setError(operationError(e, "Health sweep failed.")); }
+    finally { setBusy(""); }
   }
 
   async function action(kind) {
@@ -127,7 +129,8 @@ export default function EclOperations() {
       setNote("");
       setSelected(null);
       await load();
-    } catch (e) { setError(e?.message || `Could not ${kind} incident.`); setBusy(""); }
+    } catch (e) { setError(e?.message || `Could not ${kind} incident.`); }
+    finally { setBusy(""); }
   }
 
   const counts = useMemo(() => ({ critical: incidents.filter((x) => x.severity === "critical").length, warning: incidents.filter((x) => x.severity === "warning").length, recovering: incidents.filter((x) => x.status === "recovering").length }), [incidents]);
