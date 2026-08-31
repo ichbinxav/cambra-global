@@ -23,13 +23,16 @@ import { readRuntimeRows, requireRuntimeSource, runtimeSourceCoverage } from './
 const encoder=new TextEncoder(),decoder=new TextDecoder();
 const APP_ID='6a16288b833b3c26d7ac1fab';
 const MAX_ENTITY_ROWS=500_000;
-const BACKUP_ENTITY_BATCH_SIZE=24;
+const BACKUP_ENTITY_BATCH_SIZE=2;
+const LEGACY_BACKUP_ENTITY_BATCH_SIZE=24;
 const BACKUP_ENTITY_CONCURRENCY=6;
 const BACKUP_STAGE_READ_CONCURRENCY=1;
 const BACKUP_STAGE_VERSION='cambra-dr-backup-stage-v1';
-const BACKUP_OPERATION_VERSION='cambra-dr-backup-operation-v1';
+const BACKUP_OPERATION_VERSION='cambra-dr-backup-operation-v2';
+const LEGACY_BACKUP_OPERATION_VERSION='cambra-dr-backup-operation-v1';
+const BACKUP_DATA_LAYOUT='cambra-dr-sharded-stage-v1';
 const BACKUP_OPERATION_PATH='Manifests/pending.backup.json.gz.aes256gcm';
-const BACKUP_STAGE_CHUNKS_PER_INVOCATION=1;
+const BACKUP_STAGE_CHUNKS_PER_INVOCATION=3;
 const RESTORE_BATCH=200;
 
 function now(){return new Date().toISOString()}
@@ -60,11 +63,14 @@ async function mapLimit<T,R>(values:readonly T[],limit:number,handler:(value:T,i
  await Promise.all(workers);return output;
 }
 
-function backupEntityBatches(){
+function entityBatches(batchSize:number){
  const batches:string[][]=[];
- for(let offset=0;offset<DISASTER_RECOVERY_ENTITY_CATALOG.length;offset+=BACKUP_ENTITY_BATCH_SIZE)batches.push(DISASTER_RECOVERY_ENTITY_CATALOG.slice(offset,offset+BACKUP_ENTITY_BATCH_SIZE));
+ for(let offset=0;offset<DISASTER_RECOVERY_ENTITY_CATALOG.length;offset+=batchSize)batches.push(DISASTER_RECOVERY_ENTITY_CATALOG.slice(offset,offset+batchSize));
  return batches;
 }
+
+function backupEntityBatches(){return entityBatches(BACKUP_ENTITY_BATCH_SIZE)}
+function legacyBackupEntityBatches(){return entityBatches(LEGACY_BACKUP_ENTITY_BATCH_SIZE)}
 
 function exactTextArray(value:any,expected:readonly string[]){
  return Array.isArray(value)&&value.length===expected.length&&value.every((item,index)=>String(item)===expected[index]);
@@ -76,8 +82,8 @@ function canonicalBackupId(value:any){
  return backupId;
 }
 
-function backupStageCoordinates(input:any){
- const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),type=String(input.snapshot_type||''),checkpointFrom=input.checkpoint_from==null?null:String(input.checkpoint_from),checkpointTo=String(input.checkpoint_to||''),chunkIndex=Number(input.chunk_index),totalChunks=Number(input.total_chunks),batches=backupEntityBatches();
+function backupStageCoordinates(input:any,batches=backupEntityBatches()){
+ const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),type=String(input.snapshot_type||''),checkpointFrom=input.checkpoint_from==null?null:String(input.checkpoint_from),checkpointTo=String(input.checkpoint_to||''),chunkIndex=Number(input.chunk_index),totalChunks=Number(input.total_chunks);
  const fail=(reason:string,observed:any={})=>{throw Object.assign(new Error(`dr_backup_stage_${reason}`),{code:`DR_BACKUP_STAGE_${reason.toUpperCase()}`,diagnostic:{reason,...observed}})};
  if(!['Daily','Weekly','Monthly'].includes(tier))fail('retention_tier_invalid',{tier});
  if(!['FULL','INCREMENTAL'].includes(type))fail('snapshot_type_invalid',{type});
@@ -132,7 +138,7 @@ async function readLatestCheckpoint(storage:any,key:Uint8Array,options:{requireC
  const decompressed=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
  if(decompressed.byteLength!==Number(manifest.index.uncompressed_bytes)||await sha256Hex(decompressed)!==manifest.index.payload_sha256)throw Object.assign(new Error('dr_latest_checkpoint_payload_hash_mismatch'),{code:'DR_CHECKPOINT_HASH_MISMATCH'});
  const index=jsonFromBytes(decompressed);
- validateLatestCheckpointIdentity(manifest,index);
+ if(index?.data_layout===BACKUP_DATA_LAYOUT)validateShardedCheckpointIndex(manifest,index);else validateLatestCheckpointIdentity(manifest,index);
  const catalog=classifyCheckpointCatalog(manifest,DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,DISASTER_RECOVERY_ENTITY_CATALOG);
  if(options.requireCurrentCatalog!==false&&!catalog.current)throw Object.assign(new Error('dr_latest_checkpoint_catalog_mismatch'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH',...catalog});
  return{manifest,index,manifestBytes,indexBytes,catalog};
@@ -243,6 +249,20 @@ async function buildBackupEntityResults(service:any,entityNames:readonly string[
  });
 }
 
+function backupStageSummary(entityResults:any[]){
+ const entityCounts=Object.fromEntries(entityResults.map((row:any)=>[row.entity_name,{source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:!row.excluded&&row.restorable!==false,redacted_fields:row.redacted_fields}])),ownedFileRefsSet=new Set<string>();for(const row of entityResults)for(const url of collectOwnedFileReferences(row.records))ownedFileRefsSet.add(url);const ownedFileRefs=[...ownedFileRefsSet].sort();
+ return{entity_counts:entityCounts,entity_totals:{source:entityResults.reduce((sum:any,row:any)=>sum+Number(row.source_count||0),0),included:entityResults.reduce((sum:any,row:any)=>sum+Number(row.records?.length||0),0),tombstones:entityResults.reduce((sum:any,row:any)=>sum+Number(row.tombstones?.length||0),0),excluded_entities:entityResults.filter((row:any)=>row.excluded).map((row:any)=>row.entity_name),non_restorable_entities:entityResults.filter((row:any)=>!row.excluded&&row.restorable===false).map((row:any)=>row.entity_name),redacted_fields:entityResults.reduce((sum:any,row:any)=>sum+Number(row.redacted_fields||0),0)},owned_file_refs:ownedFileRefs};
+}
+
+function validateBackupStageSummary(summary:any,coordinates:any){
+ if(!summary||typeof summary!=='object'||Array.isArray(summary)||!summary.entity_counts||typeof summary.entity_counts!=='object'||Array.isArray(summary.entity_counts)||!summary.entity_totals||typeof summary.entity_totals!=='object'||Array.isArray(summary.entity_totals)||!Array.isArray(summary.owned_file_refs)||!exactTextArray(Object.keys(summary.entity_counts),coordinates.entityNames))throw Object.assign(new Error('dr_backup_stage_summary_invalid'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID'});
+ let source=0,included=0,tombstones=0,redacted=0;const excluded:string[]=[],nonRestorable:string[]=[];
+ for(const entityName of coordinates.entityNames){const row=summary.entity_counts[entityName];for(const field of ['source','included','tombstones','redacted_fields'])if(!Number.isSafeInteger(row?.[field])||row[field]<0)throw Object.assign(new Error('dr_backup_stage_summary_count_invalid'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID',entity:entityName});if(typeof row.excluded!=='boolean'||typeof row.restorable!=='boolean'||(row.excluded&&(row.included!==0||row.tombstones!==0||row.restorable!==false))||(coordinates.type==='FULL'&&(row.source!==row.included||row.tombstones!==0)))throw Object.assign(new Error('dr_backup_stage_summary_semantics_invalid'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID',entity:entityName});source+=row.source;included+=row.included;tombstones+=row.tombstones;redacted+=row.redacted_fields;if(row.excluded)excluded.push(entityName);if(!row.excluded&&!row.restorable)nonRestorable.push(entityName)}
+ const totals=summary.entity_totals;if(totals.source!==source||totals.included!==included||totals.tombstones!==tombstones||totals.redacted_fields!==redacted||!exactTextArray(totals.excluded_entities,excluded)||!exactTextArray(totals.non_restorable_entities,nonRestorable))throw Object.assign(new Error('dr_backup_stage_summary_totals_invalid'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID'});
+ if(summary.owned_file_refs.some((value:any,index:number)=>typeof value!=='string'||!value.startsWith('https://')||value.length>4096||(index>0&&value<=summary.owned_file_refs[index-1])))throw Object.assign(new Error('dr_backup_stage_summary_file_ref_invalid'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID'});
+ return summary;
+}
+
 function validateBackupStagePayload(payload:any,coordinates:any){
  if(!payload||payload.stage_version!==BACKUP_STAGE_VERSION||payload.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||payload.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||payload.backup_id!==coordinates.backupId||payload.snapshot_type!==coordinates.type||payload.retention_tier!==coordinates.tier||payload.checkpoint_from!==coordinates.checkpointFrom||payload.checkpoint_to!==coordinates.checkpointTo||payload.chunk_index!==coordinates.chunkIndex||payload.total_chunks!==coordinates.totalChunks||!exactTextArray(payload.entity_names,coordinates.entityNames)||!Array.isArray(payload.entity_results)||payload.entity_results.length!==coordinates.entityNames.length)throw Object.assign(new Error('dr_backup_stage_payload_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH'});
  for(let index=0;index<coordinates.entityNames.length;index++){
@@ -252,7 +272,8 @@ function validateBackupStagePayload(payload:any,coordinates:any){
   if(row.excluded!==false||Object.keys(row.index).length!==row.source_count||Object.values(row.index).some((hash:any)=>!/^[a-f0-9]{64}$/.test(String(hash))))throw Object.assign(new Error('dr_backup_stage_index_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});
   if(coordinates.type==='FULL'&&(row.records.length!==row.source_count||row.tombstones.length))throw Object.assign(new Error('dr_backup_stage_full_semantics_invalid'),{code:'DR_BACKUP_STAGE_PAYLOAD_INVALID',entity:expected});
  }
- return payload.entity_results;
+ const summary=validateBackupStageSummary(payload.summary,coordinates);if(stableJson(summary)!==stableJson(backupStageSummary(payload.entity_results)))throw Object.assign(new Error('dr_backup_stage_summary_payload_mismatch'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID'});
+ return{entity_results:payload.entity_results,summary};
 }
 
 async function executeBackupChunk(req:Request,service:any,input:any){
@@ -263,16 +284,18 @@ async function executeBackupChunk(req:Request,service:any,input:any){
  if(coordinates.type==='INCREMENTAL'){
   const latest=await readLatestCheckpoint(storage,key),expectedManifest=String(input.expected_latest_manifest_path||''),expectedHash=String(input.expected_latest_manifest_hash||'');
   if(!latest||latest.manifest?.manifest_path!==expectedManifest||latest.manifest?.manifest_hash!==expectedHash||latest.index?.checkpoint_to!==coordinates.checkpointFrom)throw Object.assign(new Error('dr_backup_stage_checkpoint_changed'),{code:'DR_BACKUP_STAGE_CHECKPOINT_CHANGED'});
-  previousEntityIndexes=latest.index.entities||{};
+  previousEntityIndexes=latest.index.data_layout===BACKUP_DATA_LAYOUT?await loadShardedCheckpointIndexes(storage,key,latest.manifest,latest.index,coordinates.entityNames):latest.index.entities||{};
  }
- const entityResults=await buildBackupEntityResults(service,coordinates.entityNames,coordinates.type,previousEntityIndexes),stagePayload={stage_version:BACKUP_STAGE_VERSION,schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:coordinates.backupId,snapshot_type:coordinates.type,retention_tier:coordinates.tier,checkpoint_from:coordinates.checkpointFrom,checkpoint_to:coordinates.checkpointTo,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames,entity_results:entityResults};
+ const entityResults=await buildBackupEntityResults(service,coordinates.entityNames,coordinates.type,previousEntityIndexes),summary=backupStageSummary(entityResults),stagePayload={stage_version:BACKUP_STAGE_VERSION,schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:coordinates.backupId,snapshot_type:coordinates.type,retention_tier:coordinates.tier,checkpoint_from:coordinates.checkpointFrom,checkpoint_to:coordinates.checkpointTo,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames,summary,entity_results:entityResults};
  const artifact=await uploadEncryptedJson(storage,coordinates.stagePath,stagePayload,key,coordinates.stageAad),metadata=await storage.metadata(coordinates.stagePath);
  if(String(metadata?.id||'').length<1||Number(metadata?.size)!==artifact.encrypted_bytes)throw Object.assign(new Error('dr_backup_stage_upload_readback_mismatch'),{code:'DR_BACKUP_STAGE_UPLOAD_UNVERIFIED'});
- return{ok:true,stage:{...artifact,stage_version:BACKUP_STAGE_VERSION,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames}};
+ const remote=await storage.download(coordinates.stagePath);if(remote.byteLength!==artifact.encrypted_bytes||await sha256Hex(remote)!==artifact.encrypted_sha256)throw Object.assign(new Error('dr_backup_stage_ciphertext_readback_mismatch'),{code:'DR_BACKUP_STAGE_UPLOAD_UNVERIFIED'});
+ return{ok:true,stage:{...artifact,stage_version:BACKUP_STAGE_VERSION,chunk_index:coordinates.chunkIndex,total_chunks:coordinates.totalChunks,entity_names:coordinates.entityNames,summary,remote_verified:true}};
 }
 
-function validateBackupStageArtifact(artifact:any,coordinates:any){
+function validateBackupStageArtifact(artifact:any,coordinates:any,options:{requireSummary?:boolean}={}){
  if(!artifact||artifact.path!==coordinates.stagePath||artifact.aad!==coordinates.stageAad||artifact.stage_version!==BACKUP_STAGE_VERSION||artifact.chunk_index!==coordinates.chunkIndex||artifact.total_chunks!==coordinates.totalChunks||!exactTextArray(artifact.entity_names,coordinates.entityNames)||!/^[a-f0-9]{64}$/.test(String(artifact.encrypted_sha256||''))||!/^[a-f0-9]{64}$/.test(String(artifact.payload_sha256||''))||!Number.isSafeInteger(artifact.encrypted_bytes)||artifact.encrypted_bytes<=0||!Number.isSafeInteger(artifact.compressed_bytes)||artifact.compressed_bytes<=0||!Number.isSafeInteger(artifact.uncompressed_bytes)||artifact.uncompressed_bytes<=0)throw Object.assign(new Error('dr_backup_stage_artifact_identity_mismatch'),{code:'DR_BACKUP_STAGE_IDENTITY_MISMATCH',diagnostic:{reason:'artifact_contract_mismatch',artifact_present:!!artifact,artifact_keys:artifact&&typeof artifact==='object'&&!Array.isArray(artifact)?Object.keys(artifact).sort().slice(0,30):[],path_matches:artifact?.path===coordinates.stagePath,aad_matches:artifact?.aad===coordinates.stageAad,stage_version_matches:artifact?.stage_version===BACKUP_STAGE_VERSION,chunk_index_matches:artifact?.chunk_index===coordinates.chunkIndex,total_chunks_matches:artifact?.total_chunks===coordinates.totalChunks,entity_names_match:exactTextArray(artifact?.entity_names,coordinates.entityNames),encrypted_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.encrypted_sha256||'')),payload_hash_valid:/^[a-f0-9]{64}$/.test(String(artifact?.payload_sha256||'')),encrypted_bytes_valid:Number.isSafeInteger(artifact?.encrypted_bytes)&&artifact.encrypted_bytes>0,compressed_bytes_valid:Number.isSafeInteger(artifact?.compressed_bytes)&&artifact.compressed_bytes>0,uncompressed_bytes_valid:Number.isSafeInteger(artifact?.uncompressed_bytes)&&artifact.uncompressed_bytes>0}});
+ if(options.requireSummary!==false){validateBackupStageSummary(artifact.summary,coordinates);if(artifact.remote_verified!==true)throw Object.assign(new Error('dr_backup_stage_remote_verification_missing'),{code:'DR_BACKUP_STAGE_UPLOAD_UNVERIFIED'})}
  return artifact;
 }
 
@@ -282,7 +305,7 @@ async function loadBackupStage(storage:any,key:Uint8Array,artifact:any,coordinat
  if(bytes.byteLength!==Number(artifact.encrypted_bytes)||await sha256Hex(bytes)!==artifact.encrypted_sha256)throw Object.assign(new Error('dr_backup_stage_ciphertext_mismatch'),{code:'DR_BACKUP_STAGE_HASH_MISMATCH'});
  const decrypted=await decryptEnvelope(bytes,key,coordinates.stageAad),plain=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
  if(decrypted.bytes.byteLength!==Number(artifact.compressed_bytes)||plain.byteLength!==Number(artifact.uncompressed_bytes)||await sha256Hex(plain)!==artifact.payload_sha256)throw Object.assign(new Error('dr_backup_stage_plaintext_mismatch'),{code:'DR_BACKUP_STAGE_HASH_MISMATCH'});
- return validateBackupStagePayload(jsonFromBytes(plain),coordinates);
+ const loaded=validateBackupStagePayload(jsonFromBytes(plain),coordinates);if(stableJson(loaded.summary)!==stableJson(artifact.summary))throw Object.assign(new Error('dr_backup_stage_artifact_summary_mismatch'),{code:'DR_BACKUP_STAGE_SUMMARY_INVALID'});return loaded;
 }
 
 async function latestCheckpointAnchor(latest:any){
@@ -297,21 +320,33 @@ function validateBackupOperationAnchor(anchor:any){
  return anchor;
 }
 
-function validateBackupOperation(operation:any){
- const batches=backupEntityBatches(),backupId=canonicalBackupId(operation?.backup_id),tier=String(operation?.retention_tier||''),type=String(operation?.snapshot_type||''),next=Number(operation?.next_chunk_index),total=Number(operation?.total_chunks),revision=Number(operation?.revision),anchor=validateBackupOperationAnchor(operation?.latest_anchor);
- if(operation?.operation_version!==BACKUP_OPERATION_VERSION||operation?.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||operation?.dr_version!==DISASTER_RECOVERY_VERSION||operation?.source_app_id!==APP_ID||operation?.source_environment!=='prod'||operation?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||operation?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||!['Daily','Weekly','Monthly'].includes(tier)||!['FULL','INCREMENTAL'].includes(type)||!Number.isSafeInteger(next)||next<0||!Number.isSafeInteger(total)||total!==batches.length||next>total||!Number.isSafeInteger(revision)||revision!==next+1||!Array.isArray(operation?.artifacts)||operation.artifacts.length!==next||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.checkpoint_to||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.created_at||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.updated_at||''))||!String(operation?.actor||'').trim()||String(operation.actor).length>320)throw Object.assign(new Error('dr_backup_operation_identity_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+function validateBackupOperationAgainst(operation:any,batches:string[][],operationVersion:string,requireSummary:boolean){
+ const backupId=canonicalBackupId(operation?.backup_id),tier=String(operation?.retention_tier||''),type=String(operation?.snapshot_type||''),next=Number(operation?.next_chunk_index),total=Number(operation?.total_chunks),revision=Number(operation?.revision),anchor=validateBackupOperationAnchor(operation?.latest_anchor);
+ if(operation?.operation_version!==operationVersion||operation?.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||operation?.dr_version!==DISASTER_RECOVERY_VERSION||operation?.source_app_id!==APP_ID||operation?.source_environment!=='prod'||operation?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||operation?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||!['Daily','Weekly','Monthly'].includes(tier)||!['FULL','INCREMENTAL'].includes(type)||!Number.isSafeInteger(next)||next<0||!Number.isSafeInteger(total)||total!==batches.length||next>total||!Number.isSafeInteger(revision)||revision!==next+1||!Array.isArray(operation?.artifacts)||operation.artifacts.length!==next||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.checkpoint_to||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.created_at||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(operation?.updated_at||''))||!String(operation?.actor||'').trim()||String(operation.actor).length>320)throw Object.assign(new Error('dr_backup_operation_identity_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
  if((type==='FULL'&&operation.checkpoint_from!==null)||(type==='INCREMENTAL'&&(String(operation.checkpoint_from||'')!==anchor.checkpoint_to||anchor.manifest_path===null))||(next===total&&operation.status!=='PENDING_FINALIZE')||(next<total&&operation.status!=='STAGING'))throw Object.assign(new Error('dr_backup_operation_state_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
  if(stableJson(operation.deployment_identity)!==stableJson(runtimeDeploymentIdentity()))throw Object.assign(new Error('dr_backup_operation_release_drift'),{code:'DR_BACKUP_OPERATION_RELEASE_DRIFT'});
  for(let chunkIndex=0;chunkIndex<operation.artifacts.length;chunkIndex++){
   const coordinates=backupStageCoordinates({backup_id:backupId,retention_tier:tier,snapshot_type:type,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,chunk_index:chunkIndex,total_chunks:total,entity_names:batches[chunkIndex]});
-  validateBackupStageArtifact(operation.artifacts[chunkIndex],coordinates);
+  validateBackupStageArtifact(operation.artifacts[chunkIndex],coordinates,{requireSummary});
  }
  return operation;
 }
 
+function validateBackupOperation(operation:any){
+ const validated=validateBackupOperationAgainst(operation,backupEntityBatches(),BACKUP_OPERATION_VERSION,true),migration=validated.migration;
+ if(migration!==undefined&&(migration?.from_operation_version!==LEGACY_BACKUP_OPERATION_VERSION||migration?.from_batch_size!==LEGACY_BACKUP_ENTITY_BATCH_SIZE||migration?.from_total_chunks!==legacyBackupEntityBatches().length||!/^[a-f0-9]{64}$/.test(String(migration?.from_artifact_set_sha256||''))||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(String(migration?.from_updated_at||''))))throw Object.assign(new Error('dr_backup_operation_migration_invalid'),{code:'DR_BACKUP_OPERATION_INVALID'});
+ return validated;
+}
+
+function migrateLegacyBackupOperation(operation:any){
+ const legacy=validateBackupOperationAgainst(operation,legacyBackupEntityBatches(),LEGACY_BACKUP_OPERATION_VERSION,false);if(legacy.status!=='PENDING_FINALIZE'||legacy.next_chunk_index!==legacy.total_chunks)throw Object.assign(new Error('dr_backup_operation_migration_requires_complete_legacy_stage'),{code:'DR_BACKUP_OPERATION_MIGRATION_UNSAFE'});
+ const artifactHash=createHash('sha256').update(stableJson(legacy.artifacts)).digest('hex'),migrated={...legacy,operation_version:BACKUP_OPERATION_VERSION,next_chunk_index:0,total_chunks:backupEntityBatches().length,artifacts:[],status:'STAGING',revision:1,migration:{from_operation_version:LEGACY_BACKUP_OPERATION_VERSION,from_batch_size:LEGACY_BACKUP_ENTITY_BATCH_SIZE,from_total_chunks:legacy.total_chunks,from_artifact_set_sha256:artifactHash,from_updated_at:legacy.updated_at}};
+ return validateBackupOperation(migrated);
+}
+
 async function readBackupOperation(storage:any,key:Uint8Array){
  const bytes=await storage.downloadIfExists(BACKUP_OPERATION_PATH);if(!bytes)return null;
- const opened=await decryptEnvelope(bytes,key),plain=await gunzipBytes(opened.bytes,drMaxFileBytes()),operation=validateBackupOperation(jsonFromBytes(plain));
+ const opened=await decryptEnvelope(bytes,key),plain=await gunzipBytes(opened.bytes,drMaxFileBytes()),raw=jsonFromBytes(plain),operation=raw?.operation_version===LEGACY_BACKUP_OPERATION_VERSION?migrateLegacyBackupOperation(raw):validateBackupOperation(raw);
  if(opened.aad!==`${operation.backup_id}|operation`)throw Object.assign(new Error('dr_backup_operation_aad_mismatch'),{code:'DR_BACKUP_OPERATION_INVALID'});
  return operation;
 }
@@ -334,20 +369,8 @@ async function deleteBackupOperation(storage:any,key:Uint8Array,expected:any){
  return true;
 }
 
-async function cleanupBackupStage(storage:any,tier:any,backupId:any){
- const canonicalId=canonicalBackupId(backupId),canonicalTier=String(tier||'');
- if(!['Daily','Weekly','Monthly'].includes(canonicalTier))throw Object.assign(new Error('dr_backup_stage_cleanup_tier_invalid'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- const roots=(await storage.list(canonicalTier)).filter((item:any)=>String(item?.name||'')===canonicalId);
- if(roots.length>1)throw Object.assign(new Error('dr_backup_stage_cleanup_root_ambiguous'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- if(!roots.length)return{deleted_files:0,folder_deleted:false,already_absent:true};
- const stages=(await storage.list(`${canonicalTier}/${canonicalId}`)).filter((item:any)=>String(item?.name||'')==='staging');
- if(stages.length>1)throw Object.assign(new Error('dr_backup_stage_cleanup_ambiguous'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- if(!stages.length)return{deleted_files:0,folder_deleted:false,already_absent:true};
- const stageFolder=`${canonicalTier}/${canonicalId}/staging`,children=await storage.list(stageFolder);
- for(const item of children)if(!await storage.deleteById(String(item.id||'')))throw Object.assign(new Error('dr_backup_stage_cleanup_failed'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- if((await storage.list(stageFolder)).length||!await storage.deleteById(String(stages[0]?.id||'')))throw Object.assign(new Error('dr_backup_stage_cleanup_incomplete'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- const remaining=(await storage.list(`${canonicalTier}/${canonicalId}`)).filter((item:any)=>String(item?.name||'')==='staging');if(remaining.length)throw Object.assign(new Error('dr_backup_stage_cleanup_readback_failed'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});
- return{deleted_files:children.length,folder_deleted:true,already_absent:false};
+async function cleanupSupersededBackupStageArtifacts(storage:any,operation:any){
+ const legacyTotal=Number(operation?.migration?.from_total_chunks);if(!Number.isSafeInteger(legacyTotal)||legacyTotal<1)return{deleted_files:0,not_required:true};const folder=`${operation.retention_tier}/${operation.backup_id}/staging`,suffix=`-of-${String(legacyTotal).padStart(3,'0')}.json.gz.aes256gcm`,items=await storage.list(folder),targets=items.filter((item:any)=>!item?.folder&&String(item?.name||'').startsWith('chunk-')&&String(item.name).endsWith(suffix));for(const item of targets)if(!await storage.deleteById(String(item.id||'')))throw Object.assign(new Error('dr_backup_superseded_stage_cleanup_failed'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});if((await storage.list(folder)).some((item:any)=>!item?.folder&&String(item?.name||'').startsWith('chunk-')&&String(item.name).endsWith(suffix)))throw Object.assign(new Error('dr_backup_superseded_stage_cleanup_incomplete'),{code:'DR_BACKUP_STAGE_CLEANUP_FAILED'});return{deleted_files:targets.length,not_required:false};
 }
 
 async function removeUnmanifestedBackup(storage:any,tier:any,backupId:any,key:Uint8Array){
@@ -420,57 +443,66 @@ async function verifyPublishedAttachments(storage:any,key:Uint8Array,manifest:an
 
 async function assembleBackupOperationArtifacts(storage:any,key:Uint8Array,operation:any){
  const backupRoot=`${operation.retention_tier}/${operation.backup_id}`,indexPath=`Manifests/${operation.backup_id}.index.json.gz.aes256gcm`,snapshotPath=`${backupRoot}/snapshot.json.gz.aes256gcm`,identity=operation.deployment_identity,releaseIdentity={release_version:identity.release_version,git_sha:identity.git_sha,source_tree_hash:identity.source_tree_hash,source_tree_hash_algorithm:'sha256-tree-v1'};
- const indexSink=createCompressedJsonSink(),snapshotSink=createCompressedJsonSink(),counts:any={},allFiles=new Set<string>(),observedEntityNames:string[]=[];
- const entityTotals:any={source:0,included:0,tombstones:0,excluded_entities:[],non_restorable_entities:[...DR_NON_RESTORABLE_ENTITIES],redacted_fields:0};
- const indexHeader={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:operation.backup_id,checkpoint_to:operation.checkpoint_to};
- const snapshotHeader={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,created_at:operation.created_at};
+ const counts:any={},allFiles=new Set<string>(),observedEntityNames:string[]=[];const entityTotals:any={source:0,included:0,tombstones:0,excluded_entities:[],non_restorable_entities:[],redacted_fields:0};
  const stagedEncryptedBytes=operation.artifacts.reduce((sum:any,row:any)=>sum+Number(row?.encrypted_bytes||0),0),stagedUncompressedBytes=operation.artifacts.reduce((sum:any,row:any)=>sum+Number(row?.uncompressed_bytes||0),0);
  console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_finalization_started',total_chunks:operation.total_chunks,staged_encrypted_bytes:stagedEncryptedBytes,staged_uncompressed_bytes:stagedUncompressedBytes}));
- let firstIndex=true,firstSnapshot=true;
- try{
-  await indexSink.write(`${stableJson(indexHeader).slice(0,-1)},\"entities\":{`);await snapshotSink.write(`${stableJson(snapshotHeader).slice(0,-1)},\"entities\":{`);
-  for(let chunkIndex=0;chunkIndex<operation.artifacts.length;chunkIndex++){
-   const coordinates=coordinatesForOperation(operation,chunkIndex),rows=await loadBackupStage(storage,key,operation.artifacts[chunkIndex],coordinates);
-   console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_finalization_stage_loaded',chunk_index:chunkIndex}));
-   for(const row of rows){
-    observedEntityNames.push(row.entity_name);
-    const count={source:row.source_count,included:row.records.length,tombstones:row.tombstones.length,excluded:row.excluded,restorable:!row.excluded&&row.restorable!==false,redacted_fields:row.redacted_fields};counts[row.entity_name]=count;
-    entityTotals.source+=count.source;entityTotals.included+=count.included;entityTotals.tombstones+=count.tombstones;entityTotals.redacted_fields+=count.redacted_fields;if(row.excluded)entityTotals.excluded_entities.push(row.entity_name);
-    for(const url of collectOwnedFileReferences(row.records))allFiles.add(url);
-    if(!row.excluded){
-     if(!firstIndex)await indexSink.write(',');firstIndex=false;await indexSink.write(`${JSON.stringify(row.entity_name)}:{\"records\":`);await indexSink.writeValue(row.index);await indexSink.write('}');
-     if(!firstSnapshot)await snapshotSink.write(',');firstSnapshot=false;await snapshotSink.write(`${JSON.stringify(row.entity_name)}:{\"records\":`);await snapshotSink.writeValue(row.records);await snapshotSink.write(',\"tombstones\":');await snapshotSink.writeValue(row.tombstones);await snapshotSink.write('}');
-    }
-    row.records=[];row.tombstones=[];row.index={};
-   }
-   rows.length=0;
-  }
-  if(!exactTextArray(observedEntityNames,DISASTER_RECOVERY_ENTITY_CATALOG))throw Object.assign(new Error('dr_backup_stage_catalog_incomplete'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
-  await indexSink.write('}}');const indexArtifact=await sealCompressedJsonSink(storage,indexPath,indexSink,key,`${operation.backup_id}|index`);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_index_uploaded',encrypted_bytes:indexArtifact.encrypted_bytes}));
-  await snapshotSink.write('}');
-  const attachments:any[]=[];let attachmentIndex=0;
-  for(const sourceUrl of [...allFiles].sort()){
-   const fetched=await fetchOwnedFile(sourceUrl),number=String(++attachmentIndex).padStart(5,'0'),name=safeFileName(new URL(sourceUrl).pathname.split('/').pop(),`attachment-${number}.bin`),path=`${backupRoot}/attachments/${number}-${name}.gz.aes256gcm`,aad=`${operation.backup_id}|attachment|${number}`;
-   const max=assertDrPayloadWithinLimit(fetched.bytes,'attachment_plaintext'),compressed=await gzipBytes(fetched.bytes,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'attachment_envelope');await storage.upload(path,envelope,'application/octet-stream');
-   attachments.push({source_ref:sourceUrl,source_ref_sha256:await sha256Hex(sourceUrl),file_name:name,content_type:fetched.contentType,storage_path:path,aad,original_bytes:fetched.bytes.byteLength,compressed_bytes:compressed.byteLength,encrypted_bytes:envelope.byteLength,plaintext_sha256:await sha256Hex(fetched.bytes),encrypted_sha256:await sha256Hex(envelope)});
-  }
-  allFiles.clear();
-  const attachmentsSummary={count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'},security={raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityTotals.redacted_fields};
-  for(const [field,value] of Object.entries({entity_counts:counts,entity_totals:entityTotals,attachments,attachments_summary:attachmentsSummary,security})){await snapshotSink.write(`,${JSON.stringify(field)}:`);await snapshotSink.writeValue(value)}
-  await snapshotSink.write('}');const snapshotArtifact=await sealCompressedJsonSink(storage,snapshotPath,snapshotSink,key,`${operation.backup_id}|snapshot`);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_snapshot_uploaded',encrypted_bytes:snapshotArtifact.encrypted_bytes}));
-  return{counts,entityTotals,attachments,attachmentsSummary,indexArtifact,snapshotArtifact,releaseIdentity,backupRoot,indexPath,snapshotPath};
- }catch(error){await Promise.allSettled([indexSink.abort(),snapshotSink.abort()]);throw error}
+ for(let chunkIndex=0;chunkIndex<operation.artifacts.length;chunkIndex++){
+  const coordinates=coordinatesForOperation(operation,chunkIndex),artifact=validateBackupStageArtifact(operation.artifacts[chunkIndex],coordinates),summary=artifact.summary;observedEntityNames.push(...artifact.entity_names);
+  for(const entityName of artifact.entity_names){const count=summary.entity_counts[entityName];counts[entityName]=count;entityTotals.source+=count.source;entityTotals.included+=count.included;entityTotals.tombstones+=count.tombstones;entityTotals.redacted_fields+=count.redacted_fields;if(count.excluded)entityTotals.excluded_entities.push(entityName);if(!count.excluded&&!count.restorable)entityTotals.non_restorable_entities.push(entityName)}
+  for(const sourceUrl of summary.owned_file_refs)allFiles.add(sourceUrl);
+ }
+ if(!exactTextArray(observedEntityNames,DISASTER_RECOVERY_ENTITY_CATALOG)||!exactTextArray(entityTotals.non_restorable_entities,[...DR_NON_RESTORABLE_ENTITIES]))throw Object.assign(new Error('dr_backup_stage_catalog_incomplete'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
+ const attachments:any[]=[];let attachmentIndex=0;
+ for(const sourceUrl of [...allFiles].sort()){
+  const fetched=await fetchOwnedFile(sourceUrl),number=String(++attachmentIndex).padStart(5,'0'),name=safeFileName(new URL(sourceUrl).pathname.split('/').pop(),`attachment-${number}.bin`),path=`${backupRoot}/attachments/${number}-${name}.gz.aes256gcm`,aad=`${operation.backup_id}|attachment|${number}`;
+  const max=assertDrPayloadWithinLimit(fetched.bytes,'attachment_plaintext'),compressed=await gzipBytes(fetched.bytes,max),envelope=await encryptEnvelope(compressed,key,aad);assertDrPayloadWithinLimit(envelope,'attachment_envelope');await storage.upload(path,envelope,'application/octet-stream');
+  attachments.push({source_ref:sourceUrl,source_ref_sha256:await sha256Hex(sourceUrl),file_name:name,content_type:fetched.contentType,storage_path:path,aad,original_bytes:fetched.bytes.byteLength,compressed_bytes:compressed.byteLength,encrypted_bytes:envelope.byteLength,plaintext_sha256:await sha256Hex(fetched.bytes),encrypted_sha256:await sha256Hex(envelope)});
+ }
+ allFiles.clear();
+ const parts=operation.artifacts,partsHash=createHash('sha256').update(stableJson(parts)).digest('hex'),partsSummary={layout:BACKUP_DATA_LAYOUT,count:parts.length,encrypted_bytes:stagedEncryptedBytes,uncompressed_bytes:stagedUncompressedBytes,parts_sha256:partsHash},attachmentsSummary={count:attachments.length,original_bytes:attachments.reduce((sum,row)=>sum+row.original_bytes,0),encrypted_bytes:attachments.reduce((sum,row)=>sum+row.encrypted_bytes,0),attachment_verification:'digested_after_fetch_only'},security={raw_secrets_included:false,redaction_policy:'secret-like keys removed recursively; ephemeral OAuth state/code entities excluded',redacted_field_count:entityTotals.redacted_fields};
+ const indexPayload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,backup_id:operation.backup_id,checkpoint_to:operation.checkpoint_to,data_layout:BACKUP_DATA_LAYOUT,parts_summary:partsSummary,parts};
+ const snapshotPayload={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,created_at:operation.created_at,data_layout:BACKUP_DATA_LAYOUT,parts_summary:partsSummary,parts,entity_counts:counts,entity_totals:entityTotals,attachments,attachments_summary:attachmentsSummary,security};
+ const indexArtifact=await uploadEncryptedJson(storage,indexPath,indexPayload,key,`${operation.backup_id}|index`),snapshotArtifact=await uploadEncryptedJson(storage,snapshotPath,snapshotPayload,key,`${operation.backup_id}|snapshot`);console.info(JSON.stringify({level:'info',event:'disaster_recovery_backup_descriptors_uploaded',part_count:parts.length}));
+ return{counts,entityTotals,attachments,attachmentsSummary,indexArtifact,snapshotArtifact,releaseIdentity,backupRoot,indexPath,snapshotPath,partsSummary};
 }
 
 function assertManifestMatchesOperation(manifest:any,operation:any){
- const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,previous=operation.snapshot_type==='FULL'?null:operation.latest_anchor.manifest_path,baseFull=operation.snapshot_type==='FULL'?manifestPath:operation.latest_anchor.base_full_manifest_path,identity=operation.deployment_identity;
- if(manifest?.manifest_path!==manifestPath||manifest?.backup_id!==operation.backup_id||manifest?.snapshot_type!==operation.snapshot_type||manifest?.retention_tier!==operation.retention_tier||manifest?.source_environment!==operation.source_environment||manifest?.source_app_id!==APP_ID||manifest?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||manifest?.checkpoint_from!==operation.checkpoint_from||manifest?.checkpoint_to!==operation.checkpoint_to||manifest?.previous_manifest_path!==previous||manifest?.base_full_manifest_path!==baseFull||manifest?.created_at!==operation.created_at||manifest?.created_by!==operation.actor||manifest?.release_version!==identity.release_version||manifest?.git_sha!==identity.git_sha||manifest?.source_tree_hash!==identity.source_tree_hash||manifest?.snapshot?.path!==`${operation.retention_tier}/${operation.backup_id}/snapshot.json.gz.aes256gcm`||manifest?.index?.path!==`Manifests/${operation.backup_id}.index.json.gz.aes256gcm`)throw Object.assign(new Error('dr_published_backup_operation_mismatch'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+ const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,previous=operation.snapshot_type==='FULL'?null:operation.latest_anchor.manifest_path,baseFull=operation.snapshot_type==='FULL'?manifestPath:operation.latest_anchor.base_full_manifest_path,identity=operation.deployment_identity,partsHash=createHash('sha256').update(stableJson(operation.artifacts)).digest('hex');
+ if(manifest?.manifest_path!==manifestPath||manifest?.backup_id!==operation.backup_id||manifest?.snapshot_type!==operation.snapshot_type||manifest?.retention_tier!==operation.retention_tier||manifest?.source_environment!==operation.source_environment||manifest?.source_app_id!==APP_ID||manifest?.entity_catalog_version!==DISASTER_RECOVERY_ENTITY_CATALOG_VERSION||manifest?.entity_catalog_count!==DISASTER_RECOVERY_ENTITY_CATALOG.length||manifest?.checkpoint_from!==operation.checkpoint_from||manifest?.checkpoint_to!==operation.checkpoint_to||manifest?.previous_manifest_path!==previous||manifest?.base_full_manifest_path!==baseFull||manifest?.created_at!==operation.created_at||manifest?.created_by!==operation.actor||manifest?.release_version!==identity.release_version||manifest?.git_sha!==identity.git_sha||manifest?.source_tree_hash!==identity.source_tree_hash||manifest?.data_layout!==BACKUP_DATA_LAYOUT||manifest?.parts_summary?.count!==operation.artifacts.length||manifest?.parts_summary?.parts_sha256!==partsHash||manifest?.snapshot?.path!==`${operation.retention_tier}/${operation.backup_id}/snapshot.json.gz.aes256gcm`||manifest?.index?.path!==`Manifests/${operation.backup_id}.index.json.gz.aes256gcm`)throw Object.assign(new Error('dr_published_backup_operation_mismatch'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
  return manifest;
+}
+
+function validateShardedParts(manifest:any,descriptor:any){
+ if(manifest?.data_layout!==BACKUP_DATA_LAYOUT||descriptor?.data_layout!==BACKUP_DATA_LAYOUT||!Array.isArray(descriptor?.parts)||!descriptor.parts.length||stableJson(descriptor.parts_summary)!==stableJson(manifest.parts_summary))throw Object.assign(new Error('dr_sharded_descriptor_identity_invalid'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+ const parts=descriptor.parts,partBatches=parts.map((part:any)=>Array.isArray(part?.entity_names)?part.entity_names.map(String):[]),flattened=partBatches.flat(),partsHash=createHash('sha256').update(stableJson(parts)).digest('hex'),encryptedBytes=parts.reduce((sum:any,row:any)=>sum+Number(row?.encrypted_bytes||0),0),uncompressedBytes=parts.reduce((sum:any,row:any)=>sum+Number(row?.uncompressed_bytes||0),0);
+ if(!exactTextArray(flattened,DISASTER_RECOVERY_ENTITY_CATALOG)||manifest.parts_summary?.layout!==BACKUP_DATA_LAYOUT||manifest.parts_summary?.count!==parts.length||manifest.parts_summary?.parts_sha256!==partsHash||manifest.parts_summary?.encrypted_bytes!==encryptedBytes||manifest.parts_summary?.uncompressed_bytes!==uncompressedBytes)throw Object.assign(new Error('dr_sharded_descriptor_parts_invalid'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
+ for(let chunkIndex=0;chunkIndex<parts.length;chunkIndex++){const coordinates=backupStageCoordinates({backup_id:manifest.backup_id,retention_tier:manifest.retention_tier,snapshot_type:manifest.snapshot_type,checkpoint_from:manifest.checkpoint_from,checkpoint_to:manifest.checkpoint_to,chunk_index:chunkIndex,total_chunks:parts.length,entity_names:partBatches[chunkIndex]},partBatches);validateBackupStageArtifact(parts[chunkIndex],coordinates)}
+ return{parts,partBatches};
+}
+
+function validateShardedCheckpointIndex(manifest:any,index:any){
+ if(!index||index.schema_version!==DISASTER_RECOVERY_SCHEMA_VERSION||index.catalog_version!==manifest?.entity_catalog_version||index.backup_id!==manifest?.backup_id||index.checkpoint_to!==manifest?.checkpoint_to)throw Object.assign(new Error('dr_sharded_checkpoint_identity_invalid'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});validateShardedParts(manifest,index);return index;
+}
+
+function validateShardedSnapshotDescriptor(manifest:any,payload:any){
+ for(const field of ['schema_version','dr_version','backup_id','snapshot_type','retention_tier','source_environment','source_app_id','release_version','git_sha','source_tree_hash','source_tree_hash_algorithm','checkpoint_from','checkpoint_to','created_at'])if((payload?.[field]??null)!==(manifest?.[field]??null))throw Object.assign(new Error('dr_sharded_snapshot_identity_invalid'),{code:'DR_SNAPSHOT_IDENTITY_MISMATCH'});
+ validateShardedParts(manifest,payload);if(stableJson(payload.entity_counts)!==stableJson(manifest.entity_counts)||stableJson(payload.entity_totals)!==stableJson(manifest.entity_totals)||stableJson(payload.attachments_summary)!==stableJson(manifest.attachments)||stableJson(payload.attachments)!==stableJson(manifest.attachment_items)||payload.security?.raw_secrets_included!==false)throw Object.assign(new Error('dr_sharded_snapshot_summary_invalid'),{code:'DR_SNAPSHOT_IDENTITY_MISMATCH'});return payload;
+}
+
+async function loadVerifiedJsonArtifact(storage:any,artifact:any,key:Uint8Array,kind:string){
+ const encrypted=await storage.download(String(artifact.path));if(encrypted.byteLength!==Number(artifact.encrypted_bytes)||await sha256Hex(encrypted)!==artifact.encrypted_sha256)throw Object.assign(new Error(`dr_published_${kind}_ciphertext_mismatch`),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});const opened=await decryptEnvelope(encrypted,key,String(artifact.aad)),plain=await gunzipBytes(opened.bytes,drMaxFileBytes());if(opened.bytes.byteLength!==Number(artifact.compressed_bytes)||plain.byteLength!==Number(artifact.uncompressed_bytes)||await sha256Hex(plain)!==artifact.payload_sha256)throw Object.assign(new Error(`dr_published_${kind}_plaintext_mismatch`),{code:'DR_BACKUP_PUBLISHED_HASH_MISMATCH'});return{encrypted,payload:jsonFromBytes(plain)};
+}
+
+async function loadShardedCheckpointIndexes(storage:any,key:Uint8Array,manifest:any,index:any,entityNames:readonly string[]){
+ const validated=validateShardedParts(manifest,index),wanted=new Set(entityNames),output:any={};
+ for(let chunkIndex=0;chunkIndex<validated.parts.length;chunkIndex++){if(!validated.partBatches[chunkIndex].some((name:string)=>wanted.has(name)))continue;const coordinates=backupStageCoordinates({backup_id:manifest.backup_id,retention_tier:manifest.retention_tier,snapshot_type:manifest.snapshot_type,checkpoint_from:manifest.checkpoint_from,checkpoint_to:manifest.checkpoint_to,chunk_index:chunkIndex,total_chunks:validated.parts.length,entity_names:validated.partBatches[chunkIndex]},validated.partBatches),loaded=await loadBackupStage(storage,key,validated.parts[chunkIndex],coordinates);for(const row of loaded.entity_results)if(wanted.has(row.entity_name))output[row.entity_name]={records:row.index}}
+ if(entityNames.some((name)=>!output[name]&&!DR_EPHEMERAL_SECRET_ENTITIES.has(name)))throw Object.assign(new Error('dr_sharded_checkpoint_entity_missing'),{code:'DR_CHECKPOINT_IDENTITY_MISMATCH'});return output;
 }
 
 async function loadPublishedBackup(storage:any,key:Uint8Array,operation:any){
  const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,manifestBytes=await storage.downloadIfExists(manifestPath);if(!manifestBytes)return null;
  const manifest=jsonFromBytes(manifestBytes);await verifyManifest(manifest);assertManifestMatchesOperation(manifest,operation);const attachmentItems=publishedAttachmentItems(manifest);if(!attachmentItems)return null;
+ if(manifest.data_layout===BACKUP_DATA_LAYOUT){const snapshot=await loadVerifiedJsonArtifact(storage,manifest.snapshot,key,'snapshot'),index=await loadVerifiedJsonArtifact(storage,manifest.index,key,'index');validateShardedSnapshotDescriptor(manifest,snapshot.payload);validateShardedCheckpointIndex(manifest,index.payload);await verifyPublishedAttachments(storage,key,manifest,attachmentItems);return{manifest,manifestBytes,indexBytes:index.encrypted}}
  await verifyPublishedJsonArtifact(storage,manifest.snapshot,key,'snapshot');
  await verifyPublishedAttachments(storage,key,manifest,attachmentItems);
  const indexBytes=await verifyPublishedJsonArtifact(storage,manifest.index,key,'index');return{manifest,manifestBytes,indexBytes};
@@ -496,12 +528,12 @@ async function finalizeBackupOperation(storage:any,key:Uint8Array,service:any,op
  let published=await loadPublishedBackup(storage,key,operation);
  if(!published){
   await assertBackupLatestAnchor(storage,key,operation);
-  const assembled=await assembleBackupOperationArtifacts(storage,key,operation),{counts,entityTotals,attachments,attachmentsSummary,indexArtifact,snapshotArtifact,releaseIdentity,backupRoot}=assembled;
+  const assembled=await assembleBackupOperationArtifacts(storage,key,operation),{counts,entityTotals,attachments,attachmentsSummary,indexArtifact,snapshotArtifact,releaseIdentity,backupRoot,partsSummary}=assembled;
   const manifestPath=`Manifests/${operation.backup_id}.manifest.json`,previousManifestPath=operation.snapshot_type==='FULL'?null:operation.latest_anchor.manifest_path,baseFullManifestPath=operation.snapshot_type==='FULL'?manifestPath:operation.latest_anchor.base_full_manifest_path;
-  const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:operation.created_at,created_by:operation.actor,storage_identity:storage.identity,backup_root_path:backupRoot,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:entityTotals,attachments:attachmentsSummary,attachment_items:attachments,retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}},manifest={...manifestCore,manifest_hash:await sha256Hex(stableJson(manifestCore))};
+  const manifestCore={schema_version:DISASTER_RECOVERY_SCHEMA_VERSION,dr_version:DISASTER_RECOVERY_VERSION,manifest_path:manifestPath,backup_id:operation.backup_id,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,source_environment:operation.source_environment,source_app_id:APP_ID,...releaseIdentity,entity_catalog_version:DISASTER_RECOVERY_ENTITY_CATALOG_VERSION,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,previous_manifest_path:previousManifestPath,base_full_manifest_path:baseFullManifestPath,created_at:operation.created_at,created_by:operation.actor,storage_identity:storage.identity,backup_root_path:backupRoot,data_layout:BACKUP_DATA_LAYOUT,parts_summary:partsSummary,snapshot:snapshotArtifact,index:indexArtifact,entity_counts:counts,entity_totals:entityTotals,attachments:attachmentsSummary,attachment_items:attachments,retention_policy_days:DR_RETENTION_DAYS,security:{compression:'gzip',encryption:'AES-256-GCM',authentication_tag_bits:128,hash:'SHA-256',key_material_persisted:false,raw_secrets_included:false,github_production_data:false}},manifest={...manifestCore,manifest_hash:await sha256Hex(stableJson(manifestCore))};
   await assertBackupLatestAnchor(storage,key,operation);await storage.upload(manifestPath,jsonBytes(manifest),'application/json');published=await loadPublishedBackup(storage,key,operation);if(!published)throw Object.assign(new Error('dr_backup_manifest_publish_unverified'),{code:'DR_BACKUP_PUBLISHED_IDENTITY_MISMATCH'});
  }
- await publishLatestPointers(storage,key,operation,published);const retention=await applyRetention(storage);await recordBackupCompletion(service,operation,published.manifest,retention);await closeBackupFailure(service);await cleanupBackupStage(storage,operation.retention_tier,operation.backup_id);await deleteBackupOperation(storage,key,operation);
+ await publishLatestPointers(storage,key,operation,published);const retention=await applyRetention(storage);await recordBackupCompletion(service,operation,published.manifest,retention);await closeBackupFailure(service);await cleanupSupersededBackupStageArtifacts(storage,operation);await deleteBackupOperation(storage,key,operation);
  return{ok:true,completed:true,status:'COMPLETED',backup_id:operation.backup_id,manifest_path:published.manifest.manifest_path,manifest_hash:published.manifest.manifest_hash,snapshot_type:operation.snapshot_type,retention_tier:operation.retention_tier,checkpoint_from:operation.checkpoint_from,checkpoint_to:operation.checkpoint_to,entity_totals:published.manifest.entity_totals,attachments:published.manifest.attachments,storage_identity:storage.identity,retention};
 }
 
@@ -545,6 +577,7 @@ async function loadRestoreChain(storage:any,selectedPath:string){
 }
 
 async function loadSnapshot(storage:any,manifest:any,key:Uint8Array){
+ if(manifest.data_layout===BACKUP_DATA_LAYOUT){const loaded=await loadVerifiedJsonArtifact(storage,manifest.snapshot,key,'snapshot');return validateShardedSnapshotDescriptor(manifest,loaded.payload)}
  const bytes=await storage.download(String(manifest.snapshot.path));
  if(await sha256Hex(bytes)!==manifest.snapshot.encrypted_sha256)throw Object.assign(new Error('dr_snapshot_ciphertext_hash_mismatch'),{code:'DR_SNAPSHOT_HASH_MISMATCH',backup_id:manifest.backup_id});
  const decrypted=await decryptEnvelope(bytes,key,String(manifest.snapshot.aad)),plain=await gunzipBytes(decrypted.bytes,drMaxFileBytes());
@@ -558,12 +591,8 @@ async function desiredStateFromChain(storage:any,chain:any[],key:Uint8Array){
  const entities=new Map<string,Map<string,any>>(),attachments=new Map<string,any>();
  for(const manifest of chain){
   const payload=await loadSnapshot(storage,manifest,key);
-  for(const[entityName,change]of Object.entries(payload.entities||{}) as any){
-   const state=entities.get(entityName)||new Map<string,any>();
-   for(const id of change.tombstones||[])state.delete(String(id));
-   for(const record of change.records||[]){if(!record?.id)throw Object.assign(new Error('dr_snapshot_record_id_missing'),{code:'DR_SNAPSHOT_RECORD_INVALID',entity:entityName});state.set(String(record.id),record)}
-   entities.set(entityName,state);
-  }
+  if(payload.data_layout===BACKUP_DATA_LAYOUT){const validated=validateShardedParts(manifest,payload);for(let chunkIndex=0;chunkIndex<validated.parts.length;chunkIndex++){const coordinates=backupStageCoordinates({backup_id:manifest.backup_id,retention_tier:manifest.retention_tier,snapshot_type:manifest.snapshot_type,checkpoint_from:manifest.checkpoint_from,checkpoint_to:manifest.checkpoint_to,chunk_index:chunkIndex,total_chunks:validated.parts.length,entity_names:validated.partBatches[chunkIndex]},validated.partBatches),loaded=await loadBackupStage(storage,key,validated.parts[chunkIndex],coordinates);for(const row of loaded.entity_results){if(row.excluded)continue;const state=entities.get(row.entity_name)||new Map<string,any>();for(const id of row.tombstones)state.delete(String(id));for(const record of row.records){if(!record?.id)throw Object.assign(new Error('dr_snapshot_record_id_missing'),{code:'DR_SNAPSHOT_RECORD_INVALID',entity:row.entity_name});state.set(String(record.id),record)}entities.set(row.entity_name,state)}loaded.entity_results.length=0}}
+  else for(const[entityName,change]of Object.entries(payload.entities||{}) as any){const state=entities.get(entityName)||new Map<string,any>();for(const id of change.tombstones||[])state.delete(String(id));for(const record of change.records||[]){if(!record?.id)throw Object.assign(new Error('dr_snapshot_record_id_missing'),{code:'DR_SNAPSHOT_RECORD_INVALID',entity:entityName});state.set(String(record.id),record)}entities.set(entityName,state)}
   for(const attachment of payload.attachments||[])attachments.set(String(attachment.source_ref),attachment);
  }
  return{entities,attachments:[...attachments.values()]};
