@@ -29,6 +29,8 @@ When the canonical entity catalog legitimately changes, the previous latest chec
 
 Backup chunk work runs directly inside the authenticated `maintenanceEngine` boundary, one bounded chunk per invocation. The admin flow performs enough continuation calls to stage all catalog batches and finalize the manifest, while the scheduled continuation remains the durable fallback. This avoids recursive or cross-function version-cache drift without adding a 277th physical function. Stage version, catalog, coordinates, hashes and byte lengths are validated before any artifact can enter the pending operation.
 
+Finalization reads one authenticated stage at a time and streams the index and snapshot through independent gzip writers. Records and indexes from each stage are released before the next stage is opened, so the function never materializes the complete catalog in memory. A failed finalization preserves the encrypted pending operation and any verified stages for idempotent continuation; deletion of an unmanifested backup remains a separate confirmation-gated action.
+
 Before leaving CAMBRA:
 
 1. secret-like fields are removed recursively;

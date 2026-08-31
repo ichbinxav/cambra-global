@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-31T20:28:19.201Z",
+  "generatedAt": "2026-08-31T21:17:24.490Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1569,8 +1569,8 @@
     },
     {
       "path": "base44/shared/disasterRecoveryRuntime.ts",
-      "sha256": "54331955a27a327c0a1aff7530248067eb73747948abe484c3251d98de84261b",
-      "bytes": 98532
+      "sha256": "32f96f87e66d8e97378907a64ed764a6a461100bf8a0bed2e197a860d8a337e4",
+      "bytes": 101144
     },
     {
       "path": "base44/shared/discoveryAdmin.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "f00921c2b96cabc1511df5495ca0484081e4fd3769b37acc6026bfc1f9d46182",
+      "sha256": "a3f6bf314525059b207450099886b2187b0de3e355c73b23dee84b275de32296",
       "bytes": 43449
     },
     {
@@ -2189,23 +2189,23 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "d682debe4299aec6b2d1a01979830a070be64dcfc1e1b72368f79278b5886359",
+      "sha256": "8a9f09cb4ac7347b69cbf2853f951bee9c343a748bb8001ee6520a96a73635de",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "af40afc1ac4f0664e96a315bbed4e179066a22769b75925e4cf0c140f0ddb167",
+      "sha256": "9276733541dbb567b615faa5a851f63e5a75b69e83a13117bf593cfea0d2a69a",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "6c348cd8413e0ebc63720aebe621ed28c5681353e0dc2c4a73ce4312485cf927",
-      "bytes": 144989
+      "sha256": "6c888ab23315927b48520d40abda0d9efef21bdfc58babd755fcf13fd1aee437",
+      "bytes": 144990
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "794535f8b5d86be714d7c44d803aa9171d23b6d8e2020cbab5e26c841ea8c507",
-      "bytes": 97956
+      "sha256": "85c6fefed9045d02bd2fb396221fcbbad4727c35122c8e06c3360c718b27d425",
+      "bytes": 97957
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
@@ -2704,8 +2704,8 @@
     },
     {
       "path": "src/docs/CAMBRA_DISASTER_RECOVERY.md",
-      "sha256": "3a3d29e7de4826048f7bd7d7a62d28f5f54156408d946b22e15a02253d45ae8a",
-      "bytes": 15028
+      "sha256": "7a062833610a5912cc0c9114b0dc3bc4f970299d5f6e4a90edddd1c35cc95901",
+      "bytes": 15498
     },
     {
       "path": "src/docs/CAMBRA_DISCOVERY_V2_EXISTING_CAPABILITY_MATRIX.md",
@@ -3084,8 +3084,8 @@
     },
     {
       "path": "src/lib/disasterRecovery.test.js",
-      "sha256": "aaf1964783c3fb93df2f45496a95c3f6ab4d26340066091dee86a6b2772c226f",
-      "bytes": 78718
+      "sha256": "b1d965ebf72b0ca1b2a246b688ecdfba82fe9a00cdb41012bee32172d578b0d1",
+      "bytes": 79075
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",
