@@ -27,6 +27,8 @@ Each first, weekly and monthly run is a full snapshot. Other daily runs are incr
 
 When the canonical entity catalog legitimately changes, the previous latest checkpoint remains immutable and is fully authenticated against its own manifest/index catalog. It is accepted only as the compare-and-swap anchor for a new `FULL` backup; it is never used as an incremental base under the new catalog. The new full snapshot starts a current-catalog restore chain, and the prior backup remains retained under the normal policy. Remote status reports `LEGACY_COMPATIBLE` plus `requires_full_rebase: true` until that rebase completes.
 
+Backup chunk work is invoked through an internal-only route on the existing `getMaintenanceCenter` physical function. This avoids recursive `maintenanceEngine` version-cache drift while preserving the 276-function quota. The host and the shared chunk handler both require canonical internal authority; an admin browser request cannot execute a chunk directly.
+
 Before leaving CAMBRA:
 
 1. secret-like fields are removed recursively;

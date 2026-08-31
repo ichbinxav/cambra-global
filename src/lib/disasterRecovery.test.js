@@ -389,7 +389,12 @@ describe('CAMBRA disaster recovery hard gate',()=>{
     expect(runtime).toContain("await verifyPublishedJsonArtifact(storage,latest.manifest.snapshot,key,'latest_snapshot')");
     expect(runtime).toContain('latest_checkpoint:latestCheckpoint');
     expect(runtime).not.toContain("source:'dr_status_scheduler',limit:20");
-    expect(runtime).toContain("invokeInternal(base44,'maintenanceEngine',{action:'dr_backup_chunk'");
+    expect(runtime).toContain("invokeInternal(base44,'getMaintenanceCenter',{action:'dr_backup_chunk'");
+    expect(runtime).toContain('export async function handleDisasterRecoveryBackupChunk(req:Request)');
+    const maintenanceRead=read('base44/functions/getMaintenanceCenter/entry.ts');
+    expect(maintenanceRead).toContain("routed.action === 'dr_backup_chunk'");
+    expect(maintenanceRead).toContain('if (!chunkGate.isInternal)');
+    expect(maintenanceRead).toContain('return handleDisasterRecoveryBackupChunk(req)');
     expect(runtime).toContain("if(!gate.isInternal)throw Object.assign(new Error('dr_backup_chunk_internal_authority_required')");
     expect(runtime).toContain("stage_version:BACKUP_STAGE_VERSION");
     expect(runtime).toContain('loadBackupStage(storage,key,artifact,coordinates)');
