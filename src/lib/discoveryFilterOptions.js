@@ -1,4 +1,4 @@
-import { EUROPE_MARKETS } from './generated/europeMarkets.js';
+import { ACTIVE_LAUNCH_MARKETS, EUROPE_MARKETS } from './generated/europeMarkets.js';
 
 const split=(value)=>String(value||'').split('|').map(item=>item.trim()).filter(Boolean);
 const options=(value)=>split(value).map(label=>({value:label.toLowerCase().replaceAll(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''),label}));
@@ -44,6 +44,7 @@ export const DISCOVERY_GEOGRAPHY=Object.freeze({
 });
 
 export const DISCOVERY_COUNTRY_OPTIONS=Object.freeze([...EUROPE_MARKETS].sort((a,b)=>a.canonical_name.localeCompare(b.canonical_name)).map(market=>({value:market.iso2,label:`${market.canonical_name} (${market.iso2})`,description:`${market.subregion} · ${market.primary_currency}`,group:market.subregion})));
+export const DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS=Object.freeze(DISCOVERY_COUNTRY_OPTIONS.filter((option)=>ACTIVE_LAUNCH_MARKETS.includes(option.value)));
 
 const TAXONOMY=Object.freeze({
   MERCHANT:{
@@ -81,9 +82,14 @@ const TAXONOMY=Object.freeze({
 });
 
 export function getDiscoveryFilterDefinition(type,key,selectedCountries=[]){
-  if(key==='country'||key==='markets_served')return{options:DISCOVERY_COUNTRY_OPTIONS,allowCustom:false,placeholder:'Choose one or more of 33 markets',allLabel:'Select all 33 markets'};
+  if(key==='country'){
+    const countryOptions=type==='MERCHANT'?DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS:DISCOVERY_COUNTRY_OPTIONS;
+    return{options:countryOptions,allowCustom:false,placeholder:type==='MERCHANT'?'Choose one or more of 10 active launch markets':'Choose one or more of 33 research markets',allLabel:type==='MERCHANT'?'Select all 10 active launch markets':'Select all 33 research markets'};
+  }
+  if(key==='markets_served')return{options:DISCOVERY_COUNTRY_OPTIONS,allowCustom:false,placeholder:'Choose one or more of 33 research markets',allLabel:'Select all 33 research markets'};
   if(key==='region'){
-    const codes=(selectedCountries.length?selectedCountries:DISCOVERY_COUNTRY_OPTIONS.map(option=>option.value)).filter(code=>DISCOVERY_GEOGRAPHY[code]);
+    const defaultCountries=type==='MERCHANT'?DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS:DISCOVERY_COUNTRY_OPTIONS;
+    const codes=(selectedCountries.length?selectedCountries:defaultCountries.map(option=>option.value)).filter(code=>DISCOVERY_GEOGRAPHY[code]);
     const marketByCode=new Map(EUROPE_MARKETS.map(market=>[market.iso2,market]));
     const locationOptions=codes.flatMap(code=>{
       const market=marketByCode.get(code);const geography=DISCOVERY_GEOGRAPHY[code];

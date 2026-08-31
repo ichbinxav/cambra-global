@@ -2,11 +2,32 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { COMMUNICATION_STYLE_POLICY_VERSION } from '../../shared/commercialAutonomy.ts';
 import { acquisitionEngine, validateCanaryPolicy } from '../../shared/commercialActivation.ts';
+import { ACTIVE_LAUNCH_MARKETS } from '../../shared/generated/europeMarkets.ts';
 
 const DEFAULT_PROHIBITED = [
   'accept_final_offer','sign_contract','accept_lock_in','accept_minimum_commitment','accept_termination_fee',
   'migration_go_live','financial_override','change_recover_economics','send_sensitive_document'
 ];
+const ACTIVE_LAUNCH_MARKET_SET = new Set(ACTIVE_LAUNCH_MARKETS);
+
+const normalizeCountries = (value:any, max = 20) => Array.isArray(value)
+  ? [...new Set(value.map((item:any)=>String(item||'').trim().toUpperCase()).filter(Boolean))].slice(0,max)
+  : [];
+
+function merchantMarketScopeBlockers(engine:string, countries:string[]) {
+  return engine === 'merchant_acquisition'
+    ? countries.filter((country)=>!ACTIVE_LAUNCH_MARKET_SET.has(country))
+    : [];
+}
+
+function marketScopeBlockedResponse(blockedMarkets:string[]) {
+  return Response.json({
+    ok:false,
+    error:'discovery_market_outside_active_launch',
+    blocked_markets:blockedMarkets,
+    active_launch_markets:ACTIVE_LAUNCH_MARKETS,
+  }, { status:409 });
+}
 
 Deno.serve(async (req) => {
   try {
@@ -25,7 +46,9 @@ Deno.serve(async (req) => {
     if (action === 'create_draft') {
       const engine = body?.engine === 'provider_negotiation' ? 'provider_negotiation' : body?.engine === 'partner_acquisition' ? 'partner_acquisition' : 'merchant_acquisition';
       const version = String(body?.version || `2026.08.09-${engine}-v1`);
-      const countries = Array.isArray(body?.countries) ? [...new Set(body.countries.map((x:any)=>String(x||'').trim().toUpperCase()).filter(Boolean))].slice(0, 20) : [];
+      const countries = normalizeCountries(body?.countries);
+      const blockedMarkets = merchantMarketScopeBlockers(engine, countries);
+      if (blockedMarkets.length) return marketScopeBlockedResponse(blockedMarkets);
       const profileKeys = Array.isArray(body?.sending_profile_keys) ? [...new Set(body.sending_profile_keys.map((x:any)=>String(x||'').trim()).filter(Boolean))].slice(0, 20) : [];
       const requestedDaily = body?.daily_send_limit === undefined ? 10 : Number(body.daily_send_limit);
       const requestedScore = body?.min_lead_score === undefined ? 70 : Number(body.min_lead_score);
@@ -82,9 +105,11 @@ Deno.serve(async (req) => {
       const expectedConfirmation = enabled ? 'START_AUTONOMOUS_DISCOVERY' : 'PAUSE_AUTONOMOUS_DISCOVERY';
       if (body?.confirmation !== expectedConfirmation) return Response.json({ ok:false, error:'confirmation_required', expected_confirmation:expectedConfirmation }, { status:409 });
       const countries = Array.isArray(body?.countries)
-        ? [...new Set(body.countries.map((value:any) => String(value || '').trim().toUpperCase()).filter(Boolean))].slice(0,33)
+        ? normalizeCountries(body?.countries, 33)
         : Array.isArray(policy.countries) ? policy.countries : [];
       if (enabled && !countries.length) return Response.json({ ok:false, error:'discovery_markets_required' }, { status:409 });
+      const blockedMarkets = merchantMarketScopeBlockers(policy.engine, countries);
+      if (enabled && blockedMarkets.length) return marketScopeBlockedResponse(blockedMarkets);
       const current = policy.icp_json && typeof policy.icp_json === 'object' ? policy.icp_json : {};
       const boundedArray = (value:any, fallback:any[], max:number) => Array.isArray(value) ? value.map((item:any)=>String(item||'').trim()).filter(Boolean).slice(0,max) : fallback;
       const icp = {
@@ -124,7 +149,7 @@ Deno.serve(async (req) => {
       const requestedDaily = Number(body?.daily_send_limit);
       const requestedScore = Number(body?.min_lead_score);
       const patch = {
-        countries:Array.isArray(body?.countries) ? [...new Set(body.countries.map((value:any) => String(value || '').trim().toUpperCase()).filter(Boolean))].slice(0,20) : policy.countries || [],
+        countries:Array.isArray(body?.countries) ? normalizeCountries(body?.countries) : policy.countries || [],
         sending_profile_keys:Array.isArray(body?.sending_profile_keys) ? [...new Set(body.sending_profile_keys.map((value:any) => String(value || '').trim()).filter(Boolean))].slice(0,20) : policy.sending_profile_keys || [],
         daily_send_limit:Number.isFinite(requestedDaily) ? Math.max(0, Math.min(Math.floor(requestedDaily), 500)) : Number(policy.daily_send_limit || 0),
         min_lead_score:Number.isFinite(requestedScore) ? Math.max(0, Math.min(requestedScore, 100)) : Number(policy.min_lead_score || 0),
@@ -133,6 +158,8 @@ Deno.serve(async (req) => {
         autonomous_replies_enabled:body?.autonomous_replies_enabled===undefined?policy.autonomous_replies_enabled!==false:body.autonomous_replies_enabled===true,
         meeting_proposals_enabled:body?.meeting_proposals_enabled===undefined?policy.meeting_proposals_enabled===true:body.meeting_proposals_enabled===true,
       };
+      const blockedMarkets = merchantMarketScopeBlockers(policy.engine, patch.countries);
+      if (blockedMarkets.length) return marketScopeBlockedResponse(blockedMarkets);
       if (acquisitionEngine(policy.engine)) {
         const validation = validateCanaryPolicy({ ...policy, ...patch, status:'active' });
         if (!validation.ok) return Response.json({ ok:false, error:'canary_policy_not_ready', blockers:validation.blockers }, { status:400 });
@@ -144,6 +171,8 @@ Deno.serve(async (req) => {
 
     if (action === 'activate') {
       if (body?.confirmation !== 'APPROVE_AUTONOMY_POLICY') return Response.json({ ok:false, error:'confirmation_required' }, { status:409 });
+      const blockedMarkets = merchantMarketScopeBlockers(policy.engine, Array.isArray(policy.countries) ? policy.countries : []);
+      if (blockedMarkets.length) return marketScopeBlockedResponse(blockedMarkets);
       if (acquisitionEngine(policy.engine)) {
         const validation=validateCanaryPolicy({...policy,status:'active'});
         if(!validation.ok)return Response.json({ok:false,error:'canary_policy_not_ready',blockers:validation.blockers},{status:409});

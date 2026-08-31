@@ -18,6 +18,11 @@ import {
   rateFreshnessDecision,
   validatePaymentsLaunchMarketInput,
 } from "../../base44/shared/marketLaunchScope.ts";
+import { planDiscoveryQuery } from "../../base44/shared/discoveryV2Planner.ts";
+import {
+  DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS,
+  getDiscoveryFilterDefinition,
+} from "./discoveryFilterOptions.js";
 
 const EXPECTED_CANONICAL = [
   "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE",
@@ -226,5 +231,40 @@ describe("founder market launch authority", () => {
     for (const source of [submit, seed, analyzer]) {
       expect(source).not.toMatch(/\[\s*["']FR["']\s*,\s*["']ES["']\s*\]/);
     }
+  });
+
+  it("limits operational merchant discovery and profile activation to the exact active 10", () => {
+    expect(DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS.map((option) => option.value).sort())
+      .toEqual([...EXPECTED_ACTIVE].sort());
+    expect(getDiscoveryFilterDefinition("MERCHANT", "country").options.map((option) => option.value).sort())
+      .toEqual([...EXPECTED_ACTIVE].sort());
+
+    const activePlan = planDiscoveryQuery({
+      discovery_type: "MERCHANT",
+      source_mode: "CAMBRA",
+      filters: { country: ["ES", "DE"] },
+    });
+    expect(activePlan.execution_blockers).toEqual([]);
+    expect(activePlan.market_scope).toMatchObject({
+      active_launch_markets: EXPECTED_ACTIVE,
+      requested_markets: ["ES", "DE"],
+      blocked_markets: [],
+    });
+
+    const protectedPlan = planDiscoveryQuery({
+      discovery_type: "MERCHANT",
+      source_mode: "CAMBRA",
+      filters: { country: ["FR"] },
+    });
+    expect(protectedPlan.execution_blockers).toContain("MERCHANT_MARKET_OUTSIDE_ACTIVE_LAUNCH:FR");
+    expect(planDiscoveryQuery({ discovery_type: "MERCHANT", source_mode: "CAMBRA", filters: {} }).execution_blockers)
+      .toContain("MERCHANT_ACTIVE_LAUNCH_MARKET_REQUIRED");
+
+    const policyAdmin = fs.readFileSync("base44/functions/commercialPolicyAdmin/entry.ts", "utf8");
+    const worker = fs.readFileSync("base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts", "utf8");
+    const discoveryAdmin = fs.readFileSync("base44/shared/discoveryV2Admin.ts", "utf8");
+    expect(policyAdmin).toContain("discovery_market_outside_active_launch");
+    expect(worker).toContain("ACTIVE_LAUNCH_MARKET_SET.has(value)");
+    expect(discoveryAdmin).not.toContain('native.country || "FR"');
   });
 });

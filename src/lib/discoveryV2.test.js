@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { CAPABILITY_CLASS, DISCOVERY_FILTER_CATALOG, DISCOVERY_SOURCE_REGISTRY, interpretDiscoveryIntent, planDiscoveryQuery } from '../../base44/shared/discoveryV2Planner.ts';
-import { DISCOVERY_COUNTRY_OPTIONS, DISCOVERY_FILTER_TAXONOMY, DISCOVERY_GEOGRAPHY, getDiscoveryFilterDefinition } from './discoveryFilterOptions.js';
+import { DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS, DISCOVERY_COUNTRY_OPTIONS, DISCOVERY_FILTER_TAXONOMY, DISCOVERY_GEOGRAPHY, getDiscoveryFilterDefinition } from './discoveryFilterOptions.js';
 
 const root=process.cwd();
 const read=(file)=>fs.readFileSync(path.join(root,file),'utf8');
@@ -130,8 +130,10 @@ describe('Discovery V2 quota, safety and Founder UX integration',()=>{
     expect(copilot).not.toContain('temperature:');
   });
 
-  it('offers all 33 canonical markets plus regions, cities and typed fallbacks',()=>{
+  it('offers all 33 research markets while merchant execution exposes only the active 10',()=>{
     expect(DISCOVERY_COUNTRY_OPTIONS).toHaveLength(33);
+    expect(DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS).toHaveLength(10);
+    expect(getDiscoveryFilterDefinition('MERCHANT','country').options).toEqual(DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS);
     expect(new Set(DISCOVERY_COUNTRY_OPTIONS.map(option=>option.value))).toEqual(new Set(['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','NO','IS','LI','CH','GB','AD']));
     for(const option of DISCOVERY_COUNTRY_OPTIONS){expect(DISCOVERY_GEOGRAPHY[option.value]?.regions.length,`${option.value} regions`).toBeGreaterThan(0);expect(DISCOVERY_GEOGRAPHY[option.value]?.cities.length,`${option.value} cities`).toBeGreaterThan(0)}
     const france=getDiscoveryFilterDefinition('MERCHANT','region',['FR']);
@@ -142,6 +144,7 @@ describe('Discovery V2 quota, safety and Founder UX integration',()=>{
     const ui=read('src/pages/admin/AdminDiscovery.jsx'),filterOptions=read('src/lib/discoveryFilterOptions.js');
     for(const label of ['Options express your intent','Estimated run cost','Provider credits & efficiency','Partner Intelligence Search','Provider Intelligence Search'])expect(ui).toContain(label);
     expect(ui).not.toContain('Every field is searchable and multi-select');
-    expect(filterOptions).toContain('Select all 33 markets');
+    expect(filterOptions).toContain('Select all 33 research markets');
+    expect(filterOptions).toContain('Select all 10 active launch markets');
   });
 });

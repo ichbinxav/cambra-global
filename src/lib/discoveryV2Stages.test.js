@@ -130,7 +130,7 @@ function runRow(overrides = {}) {
     target_count: 10,
     hard_cap_minor: 500,
     configuration_json: { high_fit_threshold: 70, enrichment_policy: "SELECTIVE" },
-    execution_plan_json: { source_partitions: [{ key: "p1", filters: { country: "FR" } }] },
+    execution_plan_json: { source_partitions: [{ key: "p1", filters: { country: "ES" } }] },
     checkpoint_json: {},
     funnel_json: {},
     actual_stages_json: [],

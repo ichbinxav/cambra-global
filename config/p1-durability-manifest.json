@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-08-26T22:38:21.934Z",
+  "generatedAt": "2026-08-31T13:39:53.024Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -474,8 +474,8 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "sha256": "f13877621fe6d5bd37d547c9ab2c7114ddab022c8441a6cd690ea887952a697a",
-      "bytes": 24104
+      "sha256": "f6a9c27c967f9685bf1c4ad876aea805d761de5677153e08b378bd1a932542fd",
+      "bytes": 24896
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
@@ -594,8 +594,8 @@
     },
     {
       "path": "base44/functions/commercialPolicyAdmin/entry.ts",
-      "sha256": "d95ed1b2cbd567e32173de66bc51e095d34d066cfe7603d1c640bc241f066191",
-      "bytes": 17812
+      "sha256": "262c9a0cb31142786bf5cf14dc6ce449ed6419f3d4392769cf9d0dd018307c69",
+      "bytes": 19075
     },
     {
       "path": "base44/functions/commercialReplyAgent/entry.ts",
@@ -684,8 +684,8 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "59c75bf8461736fc9ee79b49c616f42eea1de42819004524ce10b0397f83aa50",
-      "bytes": 47881
+      "sha256": "3433a116a41fc781870fdc35119649e0b3c73cd928204e5f55ec7d12df9bd6f1",
+      "bytes": 51921
     },
     {
       "path": "base44/functions/eclLifecycleScheduler/entry.ts",
@@ -704,12 +704,12 @@
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
-      "sha256": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
-      "bytes": 15745
+      "sha256": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
+      "bytes": 16537
     },
     {
       "path": "base44/functions/eclProductionHealth/function.jsonc",
-      "sha256": "5f747a9fd90c8fd74b9089d7a2336fd78b5e18f9b39ab542153b1e3ca1a625c8",
+      "sha256": "105f8277968379459fdee13f90c57c0d64edcc4a9d22f660f24824d10e1ec8bf",
       "bytes": 723
     },
     {
@@ -1584,8 +1584,8 @@
     },
     {
       "path": "base44/shared/discoveryV2Admin.ts",
-      "sha256": "b25534425a96a0547470d9f78c8acd5e7c8b80742f268ee87f9865aec16cd8ed",
-      "bytes": 127307
+      "sha256": "15352bbe0e6f7b5fb1af9e7c1c071e585b8224cd12718457a7e70da5cf245bc8",
+      "bytes": 127630
     },
     {
       "path": "base44/shared/discoveryV2Execution.ts",
@@ -1594,8 +1594,8 @@
     },
     {
       "path": "base44/shared/discoveryV2Planner.ts",
-      "sha256": "adac98cd021234284f46fa9b0c47d380d474c59063a7068d677e01a1e4feb186",
-      "bytes": 29356
+      "sha256": "5a2a3899265099775f9cb68d79cca8ea303f260d23d590b4d1fa9e1f6fe2a2b2",
+      "bytes": 30767
     },
     {
       "path": "base44/shared/documentExtraction.ts",
@@ -1614,8 +1614,8 @@
     },
     {
       "path": "base44/shared/eclOperationalRecovery.ts",
-      "sha256": "6beb9f08cb3749f582e7dad4940b93825a9eba6d014feaec816bac3db8e30702",
-      "bytes": 15661
+      "sha256": "e258eddc0939dcf7b85af832bcda8bd597cc6e5ba6592e7d7f6c47010cc3c2c4",
+      "bytes": 19684
     },
     {
       "path": "base44/shared/eclPersistence.ts",
@@ -2014,12 +2014,12 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "5ea6e157b5defb0b5df896f6cf935fa1b63d9c624f356c2a9b384dbc0e06e83c",
+      "sha256": "921a8cefb044cafaabb3a084d4152800101af9d44617470b326994a1b73a1f9d",
       "bytes": 30619
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "31950d0a56c2afaa13d267a230402bafa2453322f0ac6e304d3a98f7d8ff03db",
+      "sha256": "cb170fea613fe35aab56a58c55a709cf587cdb2eb07d5ae81abf91e3178d6e73",
       "bytes": 141405
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "3e81eb7d83f7455945b481c100df8004ba21d0bef2c46a5f3cedad22f04aacc6",
+      "sha256": "8785a89dc5cd1f9d5ee03e3d937728e218109c760f3339c9c71f29272ce73e4e",
       "bytes": 43449
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "2e2fed78df9d3e3c2d85f016fc0b6d6714a20435c8b8ffb8756b36f398f37abf",
-      "bytes": 45965
+      "sha256": "f9ccb85538338b1ad5ca9c810806fcbd9f4dc6186d6489caf6928899c39345bb",
+      "bytes": 46490
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2174,12 +2174,12 @@
     },
     {
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "c6c6248cae6e98016ebbe0ae78dbaa69f18b208803e415aecd176a0c3bc79a24",
+      "sha256": "1faf429c8a8aede0de498d77a8123680b0f1da53f036efaf4a683f28300f62a0",
       "bytes": 8260
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "b6c6bb0ec10926f03e725d5f88c94b82abe8d8e6232180d63f58b8b0bff09945",
+      "sha256": "f7afff370c3c9652801160997126f4fa47518703936830072e8fcc69ffa2f2b2",
       "bytes": 8207
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "511a37e976551a19bac2da67425890dbd9226d273144e447db1b768451238595",
+      "sha256": "f0ef3dd16019745f8e2f2d355e738e9ac5a8eb35515b3e75b7fe63bd0eba8e1a",
       "bytes": 13672
     },
     {
@@ -2204,7 +2204,7 @@
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "2d162967a1d331b18f64c9cac762b98204fa38ef97aef011e45d78862ef1c3d7",
+      "sha256": "84cdef41cfa0267600cb3baca5e29f5d19ddc8fe89c1f359f600ce0a84c0bac7",
       "bytes": 97956
     },
     {
@@ -2264,12 +2264,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "8967742b61020a559a36e5dd3cc360a3fbec29ade50c357d761d464b6ad05739",
+      "sha256": "2eee1f354a26f61c5d0e0f069cf95d132d5c9093be8af35ec4e3fc9e74722003",
       "bytes": 421508
     },
     {
       "path": "package.json",
-      "sha256": "923216f53e3bb508c158ca037f2938f063e0942420665f530f06bb45c9b60948",
+      "sha256": "dcebee0989c3ae08aa1fb0149c745f03cf2e0d648418acbaa69d78aa12beba6c",
       "bytes": 13410
     },
     {
@@ -3089,13 +3089,13 @@
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",
-      "sha256": "0f82d1bf343917fd8ca07e4434cfe6508a71989397914f3bcc3f4ef3f77c0746",
-      "bytes": 20156
+      "sha256": "ac01149fd0f217d4992e8afac8c63bf459f39be3871c227280a5b70720a37b44",
+      "bytes": 20853
     },
     {
       "path": "src/lib/discoveryV2.test.js",
-      "sha256": "eea8195d30e28d2d97eaadd3cf4017dad473479dfc0534e3c00032c3749cc592",
-      "bytes": 10959
+      "sha256": "fec45c3399a8ad40867f2612c957971af54065bf1e4f5baa028b2609052c8b53",
+      "bytes": 11287
     },
     {
       "path": "src/lib/discoveryV2OperationalTruth.test.js",
@@ -3179,8 +3179,8 @@
     },
     {
       "path": "src/lib/eclP7Closure.test.js",
-      "sha256": "130ed731bf8e447baf63765185de4baca7162885d79f82f7abd194f4cb5decf5",
-      "bytes": 19813
+      "sha256": "f9f381656520c774e42cd65cb5edde67c7ee9be7e6e3741193e0ac1ae5d4b4f2",
+      "bytes": 22618
     },
     {
       "path": "src/lib/eclP8Closure.test.js",
@@ -3404,8 +3404,8 @@
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",
-      "sha256": "9ce0a992331084faa234a87b913c151a2bed98b5821e6b366345596055a2de7e",
-      "bytes": 9778
+      "sha256": "fcd7c3f536f27c5d371a552e18c8e4ee8e0c254f6b822dbc93b13c2c58d82f83",
+      "bytes": 11698
     },
     {
       "path": "src/lib/materialEffectContract.test.js",
@@ -3724,8 +3724,8 @@
     },
     {
       "path": "src/lib/schedulerLeaseFencing.test.js",
-      "sha256": "51cc9168934d0bd2194edd680ec54c588567e0ef8da2fd5d14fc9a836da5dd1b",
-      "bytes": 38852
+      "sha256": "64e925a959a76e1f9ee34b838b60d7e4a004bcaefd8f36d542796d1cf6075199",
+      "bytes": 38881
     },
     {
       "path": "src/lib/seoConfig.js",
@@ -3799,8 +3799,8 @@
     },
     {
       "path": "src/lib/v096CommercialOS.test.js",
-      "sha256": "806c911747d0f119e4d31a8772080ad5cd8dc68ac7b5f42d56431f5cab8663d4",
-      "bytes": 4429
+      "sha256": "f484501c48a57e9b638e74e649ef4e32157311d87674344dff0bde3f11a7ddaf",
+      "bytes": 4797
     },
     {
       "path": "src/lib/webhookDeadLetterClaim.test.js",
@@ -3879,13 +3879,13 @@
     },
     {
       "path": "src/pages/admin/AdminCommercialOS.jsx",
-      "sha256": "d54557f764990469f3d084458cf618f895ecc4409e72989c957ec33a05d8b81a",
-      "bytes": 30362
+      "sha256": "e9aee8be684b25fa127342b7f6ede644e207942f94e74424ad1739f305540f68",
+      "bytes": 31613
     },
     {
       "path": "src/pages/admin/AdminDiscovery.jsx",
-      "sha256": "bfd5842da4564e6adaa7b8f4a235157ee9b6a4f697c6eaa7186ba367b745f479",
-      "bytes": 63029
+      "sha256": "3cdc3546863a55efcc3d30dd5de7bbe3761c9cfa6ab8df70fa94952dcce601df",
+      "bytes": 63531
     },
     {
       "path": "src/pages/admin/AdminDocumentation.jsx",
@@ -3939,8 +3939,8 @@
     },
     {
       "path": "src/pages/admin/EclOperations.jsx",
-      "sha256": "06efb561c58fc252c614dcb72185a42080465c1a3f23b11c91f7646526817fdc",
-      "bytes": 17377
+      "sha256": "bbb3b7c0857ebec341f54156a79d29689aaab5762df21bfb2b3b6a101c3238b5",
+      "bytes": 17703
     },
     {
       "path": "src/pages/admin/ReviewQueue.jsx",

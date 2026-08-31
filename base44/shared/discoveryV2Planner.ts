@@ -1,3 +1,5 @@
+import { ACTIVE_LAUNCH_MARKETS } from "./generated/europeMarkets.ts";
+
 export const DISCOVERY_V2_ENGINE_VERSION = "discovery-v2-zero-waste-1.0.0";
 export const DISCOVERY_CAPABILITY_VERSION =
   "discovery-source-capabilities-2026-08-12.1";
@@ -340,6 +342,7 @@ const list = (value: any, max = 100) =>
       (Array.isArray(value) ? value : [value]).map(clean).filter(Boolean),
     ),
   ].slice(0, max);
+const ACTIVE_LAUNCH_MARKET_SET = new Set(ACTIVE_LAUNCH_MARKETS);
 
 export function interpretDiscoveryIntent(
   textValue: any,
@@ -704,6 +707,19 @@ export function planDiscoveryQuery(input: any = {}, context: any = {}) {
   const paidSource = Boolean(
     selectedSource && ["APOLLO", "INSTANTLY"].includes(selectedSource),
   );
+  const requestedMerchantMarkets = config.discovery_type === "MERCHANT"
+    ? list(config.filters?.country).map((country) => country.toUpperCase())
+    : [];
+  const outsideActiveLaunch = requestedMerchantMarkets.filter((country) =>
+    !ACTIVE_LAUNCH_MARKET_SET.has(country)
+  );
+  const marketExecutionBlockers = config.discovery_type !== "MERCHANT"
+    ? []
+    : requestedMerchantMarkets.length === 0
+    ? ["MERCHANT_ACTIVE_LAUNCH_MARKET_REQUIRED"]
+    : outsideActiveLaunch.map((country) =>
+      `MERCHANT_MARKET_OUTSIDE_ACTIVE_LAUNCH:${country}`
+    );
   const partitionPlan = buildDiscoveryPartitions(config, selectedSource);
   const searchCreditUnitsEstimated = paidSource
     ? partitionPlan.requested_count
@@ -801,6 +817,13 @@ export function planDiscoveryQuery(input: any = {}, context: any = {}) {
       `The requested native-filter cartesian product requires ${partitionPlan.requested_count} provider calls, above the safe limit of ${partitionPlan.limit}. Narrow the filters; CAMBRA will not truncate selected values.`,
     );
   }
+  if (marketExecutionBlockers.length) {
+    limitations.push(
+      outsideActiveLaunch.length
+        ? `Merchant discovery is limited to the 10 founder-approved launch markets. Remove: ${outsideActiveLaunch.join(", ")}.`
+        : "Merchant discovery requires at least one of the 10 founder-approved launch markets.",
+    );
+  }
   const unapplied = classifications.filter((row) =>
     !String(row.execution_status).startsWith("APPLIED_")
   );
@@ -849,9 +872,16 @@ export function planDiscoveryQuery(input: any = {}, context: any = {}) {
       rows: classifications,
     },
     source_partitions: partitionPlan.partitions,
-    execution_blockers: partitionPlan.overflow
-      ? ["SOURCE_PARTITION_LIMIT_EXCEEDED"]
-      : [],
+    execution_blockers: [
+      ...(partitionPlan.overflow ? ["SOURCE_PARTITION_LIMIT_EXCEEDED"] : []),
+      ...marketExecutionBlockers,
+    ],
+    market_scope: config.discovery_type === "MERCHANT" ? {
+      decision: "FOUNDER_DECIDED",
+      active_launch_markets: ACTIVE_LAUNCH_MARKETS,
+      requested_markets: requestedMerchantMarkets,
+      blocked_markets: outsideActiveLaunch,
+    } : null,
     coverage: {
       requested: classifications.length,
       native: counts[F.NATIVE_SEARCH_FILTER],
@@ -904,6 +934,8 @@ export function planDiscoveryQuery(input: any = {}, context: any = {}) {
     selected_source: plan.selected_source,
     cost: plan.cost,
     stages: plan.stages,
+    execution_blockers: plan.execution_blockers,
+    market_scope: plan.market_scope,
   });
   return plan;
 }

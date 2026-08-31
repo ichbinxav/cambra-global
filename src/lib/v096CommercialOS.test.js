@@ -41,6 +41,13 @@ describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
     expect(worker).toContain('instantly_supersearch');
   });
 
+  it('routes founder discovery through the governed planner instead of an opaque worker click',()=>{
+    const ui=read('src/pages/admin/AdminCommercialOS.jsx');
+    expect(ui).toContain("/admin/discovery?tab=merchants");
+    expect(ui).toContain('estimated cost, hard cap and deduplication');
+    expect(ui).not.toContain("call('alwaysOnLeadDiscoveryWorker'");
+  });
+
   it('verifies Instantly SuperSearch using the official preview path without enriching leads',()=>{
     const admin=read('base44/shared/logical/instantlyProviderAdmin.ts');
     expect(admin).toContain('/supersearch-enrichment/preview-leads-from-supersearch');

@@ -8,7 +8,7 @@
       "base44/entities/IncidentAlertDelivery.jsonc": "02570d802e3865646a36c46af486b5451bda8f4cedd381f7b0d67dc778f80770",
       "base44/entities/OperationalIncident.jsonc": "fd7b63450eefa7b4a1b7ac796ee9c394596b706a3970e85b25e20031c743d782",
       "base44/functions/autonomousOperationsSupervisor/entry.ts": "95bbd45445316c48c84659b66d1d1aa570bef31f89ceeacf086a42ef37aaf271",
-      "base44/functions/eclProductionHealth/entry.ts": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
+      "base44/functions/eclProductionHealth/entry.ts": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
       "base44/functions/getAdminOperationsCockpit/entry.ts": "d00f2842bdb437d346536421da44404382f4124fd8b6ea61f6a5074e0c1d8ae5",
       "base44/functions/operatingHealthWorker/entry.ts": "525417a35c82728a12cd5fb9d3b81b1b2c60f34b450920cd667d30562fe903c5",
       "base44/functions/systemHealthAgent/entry.ts": "8c095236da75b1162fb6fdd51ca2430463578540d79cfcad7ca44f168d0eba0d",

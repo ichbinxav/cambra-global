@@ -107,6 +107,17 @@ describe("C2 — the sidebar lists real durable conversations", () => {
 });
 
 describe("C2 — conversation writes require the durable response contract", () => {
+  it("opens the first writable conversation instead of an archived first row", () => {
+    const { preferredWritableConversation } = PageModule;
+    expect(preferredWritableConversation([
+      { conversation_id: "archived", status: "ARCHIVED" },
+      { conversation_id: "active", status: "ACTIVE" },
+    ])).toMatchObject({ conversation_id: "active" });
+    expect(preferredWritableConversation([
+      { conversation_id: "history", status: "ARCHIVED" },
+    ])).toMatchObject({ conversation_id: "history" });
+  });
+
   it("uses an explicit owner because Base44 reserves created_by", async () => {
     const svc = makeSvc();
     const created = await real({ action: "create", conversation_id: "c-new" }, svc);

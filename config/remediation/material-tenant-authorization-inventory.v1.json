@@ -6,7 +6,7 @@
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
   "material_registry_sha256": "f37d6ba1b732d2ce50e1fd2611d6ec3813f9899ccd479c53410f1cfa9b6eef18",
   "material_registry_input_fingerprint_sha256": "20ee631c2cf0008459ed3983c7e242826b350180aac3b8e9fb38332d10bb0c6c",
-  "input_fingerprint_sha256": "2c631e8a59c440929dafa614fe0fc16305751454968e935631c8c918e974cd1f",
+  "input_fingerprint_sha256": "e6c0c39b37aac6f2f924f2af0ed14656208580fbc25ee9867c5ca7ca197847a5",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -2042,8 +2042,8 @@
         },
         {
           "path": "src/lib/schedulerLeaseFencing.test.js",
-          "sha256": "51cc9168934d0bd2194edd680ec54c588567e0ef8da2fd5d14fc9a836da5dd1b",
-          "bytes": 38852
+          "sha256": "64e925a959a76e1f9ee34b838b60d7e4a004bcaefd8f36d542796d1cf6075199",
+          "bytes": 38881
         }
       ],
       "remaining_gaps": [

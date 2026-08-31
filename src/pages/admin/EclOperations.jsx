@@ -17,6 +17,10 @@ const SCHEDULER_RECOVERY_WORKERS = [
 const unwrap = (res) => res?.data || res || null;
 const human = (v) => String(v || "—").replaceAll("_", " ");
 const fmt = (v) => { if (!v) return "—"; const d = new Date(v); return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString(); };
+const operationError = (error, fallback) => {
+  const result = unwrap(error?.response);
+  return result?.message || result?.error || error?.message || fallback;
+};
 
 async function inspectScheduler(workerKey, label) {
   try {
@@ -48,9 +52,13 @@ export default function EclOperations() {
   const [error, setError] = useState("");
 
   async function invoke(payload) {
-    const result = unwrap(await base44.functions.invoke("eclIncidentWorkflow", payload));
-    if (!result?.ok) throw new Error(result?.message || result?.error || "P7 incident workflow failed");
-    return result;
+    try {
+      const result = unwrap(await base44.functions.invoke("eclIncidentWorkflow", payload));
+      if (!result?.ok) throw Object.assign(new Error(result?.message || result?.error || "P7 incident workflow failed"), { response:result });
+      return result;
+    } catch (error) {
+      throw new Error(operationError(error, "P7 incident workflow failed"));
+    }
   }
 
   async function load() {
@@ -106,7 +114,7 @@ export default function EclOperations() {
       const result = unwrap(await base44.functions.invoke("eclProductionHealth", {}));
       if (!result?.ok) throw new Error(result?.message || result?.error || "Health sweep failed");
       await load();
-    } catch (e) { setError(e?.message || "Health sweep failed."); setBusy(""); }
+    } catch (e) { setError(operationError(e, "Health sweep failed.")); setBusy(""); }
   }
 
   async function action(kind) {

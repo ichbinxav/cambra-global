@@ -53,6 +53,11 @@ export function requireConversationList(data) {
   return data.conversations;
 }
 
+export function preferredWritableConversation(conversations) {
+  if (!Array.isArray(conversations)) return null;
+  return conversations.find((conversation) => conversation?.status !== "ARCHIVED") || conversations[0] || null;
+}
+
 // COMMAND-C7: durable runs. A run survives this tab, advances on a 5-minute
 // sweep, and can be cancelled — see Decision_Log_COMMAND_C6 / _C7.
 const runCall = async (action, payload = {}) => {
@@ -288,7 +293,8 @@ export default function AdminCommandChat() {
   }, []);
 
   useEffect(() => { loadList().then((rows) => {
-    if (!activeId && rows.length) setActiveId(rows[0].conversation_id);
+    const preferred = preferredWritableConversation(rows);
+    if (!activeId && preferred) setActiveId(preferred.conversation_id);
   }); }, [loadList]);
 
   useEffect(() => { loadDetail(activeId); }, [activeId, loadDetail]);

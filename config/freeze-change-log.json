@@ -875,6 +875,15 @@
       "oldHash": "c723fdf3b92aa1066cccfd86d81c4c347a9e3a082876f3202b3e2becb9f3e721",
       "newHash": "84c30549b39134225db0e99d75543ae25eb80b4122a97d9bbf53a893373c9124",
       "reason": "2026-08-21 audit remediation: route AnalyzerInput lookup and write through the service-role authority after the authenticated upload boundary, preserving exact brand_id scoping and the existing EUR-normalized projection; no ECL import, field, transition, economic semantic, or upload contract is introduced."
+    },
+    {
+      "date": "2026-08-31T10:52:29.977Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/eclProductionHealth/entry.ts",
+      "oldHash": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
+      "newHash": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
+      "reason": "2026-08-31_production_health_scheduler_proof_direct_claim_and_fail_closed_finalization_no_economic_or_recovery_authority"
     }
   ]
 }

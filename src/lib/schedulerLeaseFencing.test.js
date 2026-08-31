@@ -181,6 +181,7 @@ describe("scheduler lease and fencing authority", () => {
       "commercialFollowUpWorker",
       "costGovernanceWorker",
       "eclLifecycleScheduler",
+      "eclProductionHealth",
       "getEuropeanGrowthCommandCenter",
       "instantlyProviderEventRetryWorker",
       "instantlyReconciliationWorker",

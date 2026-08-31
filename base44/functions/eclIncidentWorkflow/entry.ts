@@ -3,7 +3,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 // Admin-only incident queue and bounded recovery. Recovery actions are mapped
 // by the pure P7 contract; arbitrary function names/payloads are never accepted.
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { disasterRecoverySchedulerRecoveryProof, recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES, schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision } from '../../shared/eclOperationalRecovery.ts';
+import { disasterRecoverySchedulerRecoveryProof, orphanedSchedulerLinkRecoveryDecision, recoveryInvocation, P7_ACTIVE_INCIDENT_STATUSES, schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision } from '../../shared/eclOperationalRecovery.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 const LIST_MAX = 200;
@@ -60,6 +60,113 @@ async function reconcileSchedulerControlBeforeRecovery(svc: any, functionName: s
     { record_kind: 'CONTROL', control_key: controlKey },
     'scheduler_recovery_control_read',
   );
+  if (
+    control?.control_state === 'REVIEW_REQUIRED' &&
+    !String(control?.active_attempt_id || '')
+  ) {
+    const operationKey = String(control.active_operation_key || '');
+    const attempts = operationKey
+      ? await svc.entities.SchedulerRun.filter({
+        record_kind: 'ATTEMPT',
+        worker_key: workerKey,
+        operation_key: operationKey,
+        claim_acquired: true,
+      }, '-created_date', 2)
+      : [];
+    if (!Array.isArray(attempts)) throw new Error('scheduler_orphaned_attempt_read_unavailable');
+    const orphanedAttempt = attempts.length === 1 ? attempts[0] : null;
+    const [orphanedTasks, laterClaimedAttempts] = orphanedAttempt
+      ? await Promise.all([
+        svc.entities.AgentTask.filter({ parent_run: orphanedAttempt.run_key }, '-created_date', 2),
+        svc.entities.SchedulerRun.filter({
+          record_kind: 'ATTEMPT',
+          worker_key: workerKey,
+          claim_acquired: true,
+          started_at: { $gt: orphanedAttempt.started_at },
+        }, '-started_at', 2),
+      ])
+      : [[], []];
+    const orphanedDecision = orphanedSchedulerLinkRecoveryDecision(
+      control,
+      attempts,
+      orphanedTasks,
+      laterClaimedAttempts,
+      Date.now(),
+    );
+    if (!orphanedDecision.ok) {
+      throw new Error(`scheduler_recovery_blocked:${orphanedDecision.reason}`);
+    }
+
+    const now = new Date().toISOString();
+    if (orphanedAttempt.status !== 'EXPIRED_PRE_EFFECT') {
+      const attemptUpdate = await svc.entities.SchedulerRun.updateMany({
+        id: orphanedAttempt.id,
+        record_kind: 'ATTEMPT',
+        status: 'REVIEW_REQUIRED',
+        material_effect_state: 'REVIEW_REQUIRED',
+        claim_acquired: true,
+        effects_started: false,
+        attempt_fence_revision: Number(orphanedAttempt.attempt_fence_revision),
+      }, { $set: {
+        status: 'EXPIRED_PRE_EFFECT',
+        material_effect_state: 'EXPIRED_PRE_EFFECT',
+        completed_at: orphanedAttempt.completed_at || now,
+        details_json: {
+          ...(orphanedAttempt.details_json || {}),
+          original_reason: 'scheduler_attempt_link_fence_lost',
+          reason: 'scheduler_orphaned_link_reconciled_pre_effect',
+          reconciled_at: now,
+          reconciled_by: actor,
+          historical_attempt_replayed: false,
+          effects_rolled_back: false,
+        },
+      } });
+      if (!updatedExactlyOne(attemptUpdate)) throw new Error('scheduler_orphaned_attempt_changed_concurrently');
+    }
+
+    const controlUpdate = await svc.entities.SchedulerRun.updateMany({
+      id: control.id,
+      record_kind: 'CONTROL',
+      control_key: controlKey,
+      control_state: 'REVIEW_REQUIRED',
+      control_revision: Number(control.control_revision),
+      control_token: String(control.control_token || ''),
+      control_owner: String(control.control_owner || ''),
+      control_effects_started: false,
+      active_attempt_id: '',
+      active_run_key: String(control.active_run_key || ''),
+    }, { $set: {
+      control_state: 'IDLE',
+      control_revision: Number(control.control_revision) + 1,
+      control_token: '',
+      control_owner: '',
+      control_claimed_at: '',
+      control_expires_at: '',
+      control_effects_started: false,
+      active_attempt_id: '',
+      active_run_key: '',
+      active_operation_key: '',
+      active_effect_key: '',
+      details_json: {
+        ...(control.details_json || {}),
+        reason: 'admin_reconciled_orphaned_link_pre_effect',
+        reconciled_at: now,
+        reconciled_by: actor,
+        reconciliation_proof: orphanedDecision.reason,
+        reconciled_attempt_id: orphanedAttempt.id,
+        historical_attempt_replayed: false,
+        effects_rolled_back: false,
+      },
+    } });
+    if (!updatedExactlyOne(controlUpdate)) throw new Error('scheduler_orphaned_control_changed_concurrently');
+    return {
+      ...orphanedDecision,
+      workerKey,
+      controlId: control.id,
+      attemptId: orphanedAttempt.id,
+      reconciledAt: now,
+    };
+  }
   let attempt: any = null;
   let tasks: any[] = [];
   if (control?.active_attempt_id) {

@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "9c1da43acfdd289d101fe5b7771f0adf81105b4b7dfa18aafa4bb57c7506be5d",
+  "source_inventory_hash": "54664db2a2d2797bd3eff536f681f0761452643d1548f9128202d0020d91d8e1",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -262,7 +262,7 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "source_sha256": "f13877621fe6d5bd37d547c9ab2c7114ddab022c8441a6cd690ea887952a697a",
+      "source_sha256": "f6a9c27c967f9685bf1c4ad876aea805d761de5677153e08b378bd1a932542fd",
       "boundary_ids": [
         "MB-SCHEDULER-BASE"
       ],
@@ -2620,7 +2620,7 @@
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
-      "source_sha256": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
+      "source_sha256": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,

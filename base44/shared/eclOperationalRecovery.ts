@@ -162,6 +162,92 @@ export function schedulerControlRecoveryDecision(
   return { ok: true, action: 'reset_control', reason: 'task_proves_no_effect_started', taskId: task.id };
 }
 
+export function orphanedSchedulerLinkRecoveryDecision(
+  control: any,
+  attempts: any[],
+  tasks: any[],
+  laterClaimedAttempts: any[],
+  nowMs: number,
+) {
+  if (!control || control.control_state !== 'REVIEW_REQUIRED') {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_control_not_quarantined' };
+  }
+  if (
+    String(control.active_attempt_id || '') ||
+    control.control_effects_started !== false ||
+    String(control.details_json?.reason || '') !== 'expired_after_effect_start_requires_reconciliation'
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_control_state_unproven' };
+  }
+  if (![attempts, tasks, laterClaimedAttempts].every(Array.isArray)) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_evidence_unavailable' };
+  }
+  if (attempts.length !== 1) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_attempt_ambiguous' };
+  }
+  if (tasks.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_task_observed' };
+  }
+  if (laterClaimedAttempts.length > 0) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_later_claim_observed' };
+  }
+
+  const attempt = attempts[0];
+  const activeOperationKey = String(control.active_operation_key || '');
+  const activeEffectKey = String(control.active_effect_key || '');
+  const activeRunKey = String(control.active_run_key || '');
+  const workerKey = String(control.worker_key || '');
+  const attemptReason = String(attempt?.details_json?.original_reason || attempt?.details_json?.reason || '');
+  if (
+    !workerKey || !activeOperationKey || !activeEffectKey ||
+    activeRunKey !== `${activeOperationKey}:pending` ||
+    String(attempt?.worker_key || '') !== workerKey ||
+    String(attempt?.operation_key || '') !== activeOperationKey ||
+    String(attempt?.effect_key || '') !== activeEffectKey ||
+    String(attempt?.run_key || '') === activeRunKey ||
+    attempt?.claim_acquired !== true || attempt?.effects_started !== false ||
+    !['REVIEW_REQUIRED', 'EXPIRED_PRE_EFFECT'].includes(String(attempt?.status || '')) ||
+    !['REVIEW_REQUIRED', 'EXPIRED_PRE_EFFECT'].includes(String(attempt?.material_effect_state || '')) ||
+    attemptReason !== 'scheduler_attempt_link_fence_lost'
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_attempt_identity_unproven' };
+  }
+
+  const controlRevision = Number(control.control_revision);
+  const attemptRevision = Number(attempt.attempt_fence_revision);
+  if (
+    !Number.isInteger(controlRevision) || !Number.isInteger(attemptRevision) ||
+    controlRevision !== attemptRevision + 1
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_fence_sequence_unproven' };
+  }
+
+  const claimedAt = Date.parse(String(control.control_claimed_at || ''));
+  const expiresAt = Date.parse(String(control.control_expires_at || ''));
+  const reviewRequiredAt = Date.parse(String(control.details_json?.review_required_at || ''));
+  const attemptStartedAt = Date.parse(String(attempt.started_at || ''));
+  const attemptCompletedAt = Date.parse(String(attempt.completed_at || ''));
+  const attemptLeaseExpiresAt = Date.parse(String(attempt.lease_expires_at || ''));
+  if (
+    !Number.isFinite(nowMs) || !Number.isFinite(claimedAt) || !Number.isFinite(expiresAt) ||
+    !Number.isFinite(reviewRequiredAt) || !Number.isFinite(attemptStartedAt) ||
+    !Number.isFinite(attemptCompletedAt) || !Number.isFinite(attemptLeaseExpiresAt) ||
+    claimedAt !== attemptStartedAt || expiresAt !== attemptLeaseExpiresAt ||
+    attemptCompletedAt < attemptStartedAt || attemptCompletedAt > expiresAt ||
+    reviewRequiredAt < expiresAt || nowMs < reviewRequiredAt
+  ) {
+    return { ok: false, action: 'blocked', reason: 'scheduler_orphaned_quiescence_window_unproven' };
+  }
+
+  return {
+    ok: true,
+    action: 'reset_control',
+    reason: 'scheduler_orphaned_link_pre_effect_zero_tasks',
+    attemptId: attempt.id,
+    runKey: attempt.run_key,
+  };
+}
+
 export function disasterRecoverySchedulerRecoveryProof(status: any, completionRows: any[], attempt: any) {
   if (!status || status.ok !== true || status.data_status !== 'COMPLETE') {
     return { ok: false, reason: 'disaster_recovery_status_unverified' };

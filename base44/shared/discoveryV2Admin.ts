@@ -1532,7 +1532,15 @@ export async function stageDiscovery(service: any, run: any, claim: any) {
     );
     for (const partition of partitions) {
       const native = partition.filters || {};
-      const country = native.country || "FR";
+      const country = text(native.country).toUpperCase();
+      if (!LEAD_LAUNCH_MARKETS.includes(country)) {
+        throw Object.assign(
+          new Error(country
+            ? `merchant_market_outside_active_launch:${country}`
+            : "merchant_active_launch_market_required"),
+          { code: "MERCHANT_MARKET_OUTSIDE_ACTIVE_LAUNCH" },
+        );
+      }
       const freshRun = await assertDiscoveryClaimActive(service, claim);
       const priorReceipt = freshRun.checkpoint_json?.partition_receipts?.[
         partition.key

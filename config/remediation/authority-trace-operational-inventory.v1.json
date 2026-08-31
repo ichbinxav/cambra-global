@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "6e882092410bb2181073572f1c58c252ad7cc672701c0e229463315b1a79e1ae",
+  "input_fingerprint_sha256": "6bf63e471566b1d783fbb27f19ce481331aaec87a31c04d8c7f4a00d78b3b61b",
   "components": [
     {
       "key": "effect_authority",
@@ -13,19 +13,19 @@
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "31950d0a56c2afaa13d267a230402bafa2453322f0ac6e304d3a98f7d8ff03db",
+      "sha256": "cb170fea613fe35aab56a58c55a709cf587cdb2eb07d5ae81abf91e3178d6e73",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
       "key": "workforce",
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "5ea6e157b5defb0b5df896f6cf935fa1b63d9c624f356c2a9b384dbc0e06e83c",
+      "sha256": "921a8cefb044cafaabb3a084d4152800101af9d44617470b326994a1b73a1f9d",
       "schema_version": "agent-workforce-catalog-v1.0.0"
     },
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "c6c6248cae6e98016ebbe0ae78dbaa69f18b208803e415aecd176a0c3bc79a24",
+      "sha256": "1faf429c8a8aede0de498d77a8123680b0f1da53f036efaf4a683f28300f62a0",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -183,13 +183,13 @@
     },
     {
       "path": "base44/functions/eclIncidentWorkflow/entry.ts",
-      "sha256": "59c75bf8461736fc9ee79b49c616f42eea1de42819004524ce10b0397f83aa50",
-      "bytes": 47881
+      "sha256": "3433a116a41fc781870fdc35119649e0b3c73cd928204e5f55ec7d12df9bd6f1",
+      "bytes": 51921
     },
     {
       "path": "base44/functions/eclProductionHealth/entry.ts",
-      "sha256": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
-      "bytes": 15745
+      "sha256": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
+      "bytes": 16537
     },
     {
       "path": "base44/functions/getAdminOperationsCockpit/entry.ts",
@@ -263,12 +263,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "2e2fed78df9d3e3c2d85f016fc0b6d6714a20435c8b8ffb8756b36f398f37abf",
-      "bytes": 45965
+      "sha256": "f9ccb85538338b1ad5ca9c810806fcbd9f4dc6186d6489caf6928899c39345bb",
+      "bytes": 46490
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "b6c6bb0ec10926f03e725d5f88c94b82abe8d8e6232180d63f58b8b0bff09945",
+      "sha256": "f7afff370c3c9652801160997126f4fa47518703936830072e8fcc69ffa2f2b2",
       "bytes": 8207
     },
     {

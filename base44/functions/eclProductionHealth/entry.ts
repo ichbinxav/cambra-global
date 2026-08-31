@@ -7,7 +7,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { createOnce } from '../../shared/eclPersistence.ts';
 import { P7_ACTIVE_INCIDENT_STATUSES, P7_WORKERS, buildIncidentRecord, incidentDedupeKey, workerFreshness, type P7IncidentSignal } from '../../shared/eclOperationalRecovery.ts';
-import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
+import { claimSchedulerRun, finishSchedulerRunOrThrow, markSchedulerEffectStarted, schedulerClaimDeniedResponse } from '../../shared/schedulerRun.ts';
 import { observeBoundedOperationalCollection, requireCompleteOperationalCollection } from '../../shared/canonicalIncident.ts';
 
 const PLATFORM_TENANT = '_platform';
@@ -109,12 +109,27 @@ async function activeHealthIncidents(svc: any) {
 export default async function (req: Request): Promise<Response> {
   let svc: any = null;
   let task: any = null;
+  let schedulerClaim: any = null;
+  let schedulerOk = true;
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json().catch(() => ({}));
+    const body = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     svc = base44.asServiceRole;
+    schedulerClaim = await claimSchedulerRun(svc, req, {
+      worker_key: 'eclProductionHealth',
+      cadence_seconds: 600,
+    });
+    {
+      const denied = schedulerClaimDeniedResponse(schedulerClaim);
+      if (denied) return denied;
+    }
+    schedulerClaim = await markSchedulerEffectStarted(svc, schedulerClaim);
+    {
+      const denied = schedulerClaimDeniedResponse(schedulerClaim);
+      if (denied) return denied;
+    }
     const nowMs = Date.now();
     const nowIso = new Date(nowMs).toISOString();
     task = await svc.entities.AgentTask.create({ brand_id: PLATFORM_TENANT, agent_name: HEALTH_AGENT, task_type: 'ecl_p7_health_sweep', status: 'running', requires_approval: false, risk_level: 1, input_summary: 'P7 authoritative critical production health', started_at: nowIso }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
@@ -167,8 +182,13 @@ export default async function (req: Request): Promise<Response> {
     if (task?.id) await svc.entities.AgentTask.update(task.id, { status: 'completed', output_summary: `P7 health ${summary.status}: ${critical} critical · ${warning} warning · ${autoResolved} cleared`, output_payload_json: summary, completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
     return Response.json({ ok: true, ...summary, materialized });
   } catch (error) {
+    schedulerOk = false;
     const message = String((error as Error)?.message || error || 'unknown_error');
     if (svc && task?.id) await svc.entities.AgentTask.update(task.id, { status: 'failed', error: message.slice(0, 500), completed_at: new Date().toISOString() }).catch((error:any)=>safeBestEffort(error,{operation:'eclProductionHealth',fallback:null,severity:'secondary'}));
     return Response.json({ ok: false, error: 'p7_health_sweep_failed', message }, { status: 500 });
+  } finally {
+    if (svc && schedulerClaim?.allowed === true) {
+      await finishSchedulerRunOrThrow(svc, schedulerClaim, { worker_key: 'eclProductionHealth' }, schedulerOk);
+    }
   }
 }

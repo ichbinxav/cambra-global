@@ -4,7 +4,7 @@ import {
   P6_ALLOWLIST, P7_ALLOWLIST, STAGE_ECL_P6, STAGE_ECL_P7, STAGE_ECL_P8, STAGE_TRANSITIONS, allowlistForStage,
 } from '../../scripts/lib/preEclFreeze.mjs';
 import {
-  P7_WORKERS, buildIncidentRecord, disasterRecoverySchedulerRecoveryProof, incidentDedupeKey, incidentIdempotencyKey, recoveryInvocation,
+  P7_WORKERS, buildIncidentRecord, disasterRecoverySchedulerRecoveryProof, incidentDedupeKey, incidentIdempotencyKey, orphanedSchedulerLinkRecoveryDecision, recoveryInvocation,
   schedulerControlRecoveryDecision, webhookOrphanedProvisionalRecoveryDecision, workerFreshness,
 } from '../../base44/shared/eclOperationalRecovery.ts';
 
@@ -113,6 +113,54 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
       effect_refs_json: { unexpected: 'shape' },
       receipt_refs_json: [],
     }])).toMatchObject({ ok: false, reason: 'scheduler_effect_nonoccurrence_unproven' });
+  });
+
+  it('releases an orphaned link only after exact pre-effect and quiescence proof', () => {
+    const now = Date.parse('2026-08-30T20:00:00.000Z');
+    const control = {
+      worker_key: 'reconcileRecoverBilling',
+      control_state: 'REVIEW_REQUIRED',
+      control_revision: 3287,
+      control_effects_started: false,
+      active_attempt_id: '',
+      active_run_key: 'reconcileRecoverBilling:2026-08-30T19:15:00.000Z:pending',
+      active_operation_key: 'reconcileRecoverBilling:2026-08-30T19:15:00.000Z',
+      active_effect_key: 'reconcileRecoverBilling:effect:2026-08-30T19:15:00.000Z',
+      control_claimed_at: '2026-08-30T19:24:26.627Z',
+      control_expires_at: '2026-08-30T19:39:26.627Z',
+      details_json: {
+        reason: 'expired_after_effect_start_requires_reconciliation',
+        review_required_at: '2026-08-30T19:39:26.884Z',
+      },
+    };
+    const attempt = {
+      id: 'attempt-orphaned',
+      worker_key: 'reconcileRecoverBilling',
+      operation_key: control.active_operation_key,
+      effect_key: control.active_effect_key,
+      run_key: control.active_operation_key,
+      claim_acquired: true,
+      effects_started: false,
+      status: 'REVIEW_REQUIRED',
+      material_effect_state: 'REVIEW_REQUIRED',
+      attempt_fence_revision: 3286,
+      started_at: '2026-08-30T19:24:26.627Z',
+      completed_at: '2026-08-30T19:25:06.953Z',
+      lease_expires_at: '2026-08-30T19:39:26.627Z',
+      details_json: { reason: 'scheduler_attempt_link_fence_lost' },
+    };
+    expect(orphanedSchedulerLinkRecoveryDecision(control, [attempt], [], [], now)).toMatchObject({
+      ok: true,
+      action: 'reset_control',
+      reason: 'scheduler_orphaned_link_pre_effect_zero_tasks',
+      attemptId: attempt.id,
+    });
+    expect(orphanedSchedulerLinkRecoveryDecision(control, [attempt], [{ id: 'task' }], [], now))
+      .toMatchObject({ ok: false, reason: 'scheduler_orphaned_task_observed' });
+    expect(orphanedSchedulerLinkRecoveryDecision(control, [attempt], [], [{ id: 'later' }], now))
+      .toMatchObject({ ok: false, reason: 'scheduler_orphaned_later_claim_observed' });
+    expect(orphanedSchedulerLinkRecoveryDecision({ ...control, control_effects_started: true }, [attempt], [], [], now))
+      .toMatchObject({ ok: false, reason: 'scheduler_orphaned_control_state_unproven' });
   });
 
   it('reconciles a quiescent post-effect attempt only when both scheduler fences prove effects started', () => {
@@ -225,9 +273,14 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
   });
 
   it('schedules health inside every worker SLO', () => {
+    expect(HEALTH_CFG.entry).toBe('entry.ts');
     expect(HEALTH_CFG.automations[0].is_active).toBe(true);
     expect(HEALTH_CFG.automations[0].repeat_unit).toBe('minutes');
     expect(HEALTH_CFG.automations[0].repeat_interval).toBe(10);
+    expect(HEALTH).toContain("worker_key: 'eclProductionHealth'");
+    expect(HEALTH).toContain('claimSchedulerRun');
+    expect(HEALTH).toContain('markSchedulerEffectStarted');
+    expect(HEALTH).toContain('finishSchedulerRunOrThrow');
     expect(Math.max(...Object.values(P7_WORKERS).map((x) => x.maxAgeMinutes))).toBeLessThanOrEqual(40);
   });
 
@@ -239,6 +292,8 @@ describe('ECL P7 — Production Operations & Incident Recovery', () => {
     expect(WORKFLOW).not.toMatch(/body\.(functionName|function_name)/);
     expect(WORKFLOW).toContain("manual_inspection_required");
     expect(WORKFLOW).toContain('schedulerControlRecoveryDecision');
+    expect(WORKFLOW).toContain('orphanedSchedulerLinkRecoveryDecision');
+    expect(WORKFLOW).toContain('admin_reconciled_orphaned_link_pre_effect');
     expect(WORKFLOW).toContain('webhookOrphanedProvisionalRecoveryDecision');
     expect(WORKFLOW).toContain("status: { $in: ['dispatch_pending', 'pending_retry'] }");
     expect(WORKFLOW).toContain('admin_reconciled_orphaned_provisional_pre_effect');
