@@ -40,7 +40,11 @@ function drMaxFileBytes(){return parseDrMaxFileBytes(getEnv('DR_MAX_FILE_BYTES')
 function assertDrPayloadWithinLimit(bytes:Uint8Array,representation:string){const max=drMaxFileBytes();if(bytes.byteLength>max)throw Object.assign(new Error('dr_owned_file_exceeds_configured_limit'),{code:'DR_OWNED_FILE_TOO_LARGE',representation,bytes:bytes.byteLength,max});return max}
 function drErrorCode(error:any,fallback='DISASTER_RECOVERY_FAILED'){const value=String(error?.code||'').trim();return/^[a-zA-Z0-9_-]{1,120}$/.test(value)?value:fallback}
 function drConfigurationNames(values:any){return Array.isArray(values)?[...new Set(values.map((value)=>String(value||'').replace(/[^a-zA-Z0-9_ -]/g,'_').slice(0,160)).filter(Boolean))].slice(0,50):[]}
-function logDrFailure(event:string,error:any){console.error(JSON.stringify({level:'error',event,error_code:drErrorCode(error)}))}
+function logDrFailure(event:string,error:any){
+ console.error(JSON.stringify({level:'error',event,error_code:drErrorCode(error)}));
+ const diagnostic=error?.diagnostic&&typeof error.diagnostic==='object'&&!Array.isArray(error.diagnostic)?error.diagnostic:null;
+ if(diagnostic)console.error(JSON.stringify({level:'error',event:`${event}_diagnostic`,diagnostic}));
+}
 function jsonBytes(value:any){return encoder.encode(stableJson(value))}
 function jsonFromBytes(bytes:Uint8Array){return JSON.parse(decoder.decode(bytes))}
 function pathAllowed(path:any,prefix:string,suffix:string){const value=String(path||'');return value.startsWith(prefix)&&value.endsWith(suffix)&&!value.includes('..')&&/^[a-zA-Z0-9 ./_-]+$/.test(value)}
@@ -75,8 +79,15 @@ function canonicalBackupId(value:any){
 
 function backupStageCoordinates(input:any){
  const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),type=String(input.snapshot_type||''),checkpointFrom=input.checkpoint_from==null?null:String(input.checkpoint_from),checkpointTo=String(input.checkpoint_to||''),chunkIndex=Number(input.chunk_index),totalChunks=Number(input.total_chunks),batches=backupEntityBatches();
- if(!['Daily','Weekly','Monthly'].includes(tier)||!['FULL','INCREMENTAL'].includes(type)||!Number.isInteger(chunkIndex)||chunkIndex<0||!Number.isInteger(totalChunks)||totalChunks!==batches.length||chunkIndex>=totalChunks||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(checkpointTo))throw Object.assign(new Error('dr_backup_stage_coordinates_invalid'),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID'});
- if((type==='FULL'&&checkpointFrom!==null)||(type==='INCREMENTAL'&&!checkpointFrom))throw Object.assign(new Error('dr_backup_stage_checkpoint_invalid'),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID'});
+ const fail=(reason:string,observed:any={})=>{throw Object.assign(new Error(`dr_backup_stage_${reason}`),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID',diagnostic:{reason,...observed}})};
+ if(!['Daily','Weekly','Monthly'].includes(tier))fail('retention_tier_invalid',{tier});
+ if(!['FULL','INCREMENTAL'].includes(type))fail('snapshot_type_invalid',{type});
+ if(!Number.isInteger(chunkIndex)||chunkIndex<0)fail('chunk_index_invalid',{chunk_index:chunkIndex});
+ if(!Number.isInteger(totalChunks)||totalChunks!==batches.length)fail('total_chunks_invalid',{total_chunks:totalChunks,expected_total_chunks:batches.length,entity_catalog_count:DISASTER_RECOVERY_ENTITY_CATALOG.length});
+ if(chunkIndex>=totalChunks)fail('chunk_index_out_of_range',{chunk_index:chunkIndex,total_chunks:totalChunks});
+ if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(checkpointTo))fail('checkpoint_to_invalid',{checkpoint_to_length:checkpointTo.length});
+ if(type==='FULL'&&checkpointFrom!==null)fail('full_checkpoint_from_present',{checkpoint_from_present:true});
+ if(type==='INCREMENTAL'&&!checkpointFrom)fail('incremental_checkpoint_from_missing',{checkpoint_from_present:false});
  const entityNames=batches[chunkIndex];
  if(!exactTextArray(input.entity_names,entityNames))throw Object.assign(new Error('dr_backup_stage_catalog_slice_invalid'),{code:'DR_BACKUP_STAGE_CATALOG_INVALID'});
  const ordinal=String(chunkIndex+1).padStart(3,'0'),total=String(totalChunks).padStart(3,'0'),stageFolder=`${tier}/${backupId}/staging`;
