@@ -79,7 +79,7 @@ function canonicalBackupId(value:any){
 
 function backupStageCoordinates(input:any){
  const backupId=canonicalBackupId(input.backup_id),tier=String(input.retention_tier||''),type=String(input.snapshot_type||''),checkpointFrom=input.checkpoint_from==null?null:String(input.checkpoint_from),checkpointTo=String(input.checkpoint_to||''),chunkIndex=Number(input.chunk_index),totalChunks=Number(input.total_chunks),batches=backupEntityBatches();
- const fail=(reason:string,observed:any={})=>{throw Object.assign(new Error(`dr_backup_stage_${reason}`),{code:'DR_BACKUP_STAGE_IDENTITY_INVALID',diagnostic:{reason,...observed}})};
+ const fail=(reason:string,observed:any={})=>{throw Object.assign(new Error(`dr_backup_stage_${reason}`),{code:`DR_BACKUP_STAGE_${reason.toUpperCase()}`,diagnostic:{reason,...observed}})};
  if(!['Daily','Weekly','Monthly'].includes(tier))fail('retention_tier_invalid',{tier});
  if(!['FULL','INCREMENTAL'].includes(type))fail('snapshot_type_invalid',{type});
  if(!Number.isInteger(chunkIndex)||chunkIndex<0)fail('chunk_index_invalid',{chunk_index:chunkIndex});

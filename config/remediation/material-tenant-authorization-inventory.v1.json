@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "b4d7a9b4ab5105a271fa6ea46af1942e84b05297d31f9385d130a917eae35a6b",
-  "material_registry_input_fingerprint_sha256": "65bbd08912aa59733f5eba3bee35c3dfec0f95786d2133989d14e51af5769136",
-  "input_fingerprint_sha256": "9de9276fe5f22649700abac11eeadb25c92a08264e393024a8e4c6492a32ba3e",
+  "material_registry_sha256": "d6c6b14ed59f13eba980e02399fa87191999a9f5ed4e62953b7f53a49cb7d2e3",
+  "material_registry_input_fingerprint_sha256": "08f4b2592b9aa4d34b9f09a8b6aadbf728859e5f0da3bb2fcb60fd2ef1bc94b0",
+  "input_fingerprint_sha256": "f2121962184d995ce8040932e0bbf5d1b567a70bf1f60fdb1b1bf3007de1f216",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1914,8 +1914,8 @@
       "gate_evidence": [
         {
           "path": "base44/shared/disasterRecoveryRuntime.ts",
-          "sha256": "bf5d6ab0f079356ecde773d72b95809e365fb6847f97f3a1bc74432372aafdbc",
-          "bytes": 98283
+          "sha256": "4e704fc56dc10a83c0264caf277f3866be94d09cd5bd293c05f4c77d4a64d03b",
+          "bytes": 98290
         },
         {
           "path": "base44/shared/internalGate.ts",
