@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import {afterEach,beforeEach,describe,expect,it} from 'vitest';
-import {cleanup,render,screen} from '@testing-library/react';
+import {cleanup,render,screen,waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LanguageSwitcher from './LanguageSwitcher.jsx';
 import {LanguageProvider} from '@/lib/i18n.jsx';
@@ -32,8 +32,10 @@ describe('LanguageSwitcher',()=>{
     expect(localStorage.getItem('cambra_lang')).toBe('en');
     expect(document.documentElement.lang).toBe('en');
     await user.selectOptions(select,'auto');
-    expect(select.value).toBe('auto');
-    expect(localStorage.getItem('cambra_lang')).toBeNull();
-    expect(document.documentElement.lang).toBe('fr');
+    await waitFor(()=>{
+      expect(select.value).toBe('auto');
+      expect(localStorage.getItem('cambra_lang')).toBeNull();
+      expect(document.documentElement.lang).toBe('fr');
+    });
   });
 });
