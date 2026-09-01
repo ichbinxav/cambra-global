@@ -7,9 +7,11 @@ capability, not proof that every external production dependency is healthy.
 
 - Read model: existing physical function `getFounderControlCenter`, backed by
   `base44/shared/founderControlV2.ts`.
-- Material mutations: existing `emergencyControlAdmin`,
-  `outboundControlAdmin`, `goLiveControlAdmin` and `founderOSCommand` trust
-  boundaries.
+- Material mutations: existing `emergencyControlAdmin`, `outboundControlAdmin`
+  and `founderOSCommand` trust boundaries. The logical
+  `goLiveControlAdmin` handler is invoked through its deployed
+  `outboundControlAdmin` host; the browser does not depend on the retired
+  standalone endpoint.
 - Deployment topology before/after this change: **276 physical functions and 39
   logical routes**. No Founder Control physical function or parallel control
   entity was added.
@@ -30,6 +32,7 @@ capability, not proof that every external production dependency is healthy.
 | Material approvals | L3/L4 only in compact view; canonical resolver, fresh state fingerprint, expiry check, atomic approve/reject claim and replay protection | Implemented |
 | EN/FR/ES UI | One locale per render across states, explanations, dependencies, modals, dates, money and Ask CAMBRA scope | Implemented |
 | Budget changes | Old/new/impact preview, confirmation, hard-cap validation, idempotency and audit | Implemented |
+| Budget route availability | Preview and confirmation invoke the deployed `outboundControlAdmin` host for the logical go-live handler, avoiding the retired standalone endpoint | Implemented |
 | Canary and shadow | Real commercial CANARY plus existing routing/growth shadow only; no fictitious global shadow | Implemented |
 | Ask CAMBRA | Fresh bounded snapshot; prose may explain/propose but cannot mutate authority | Implemented |
 | Change history | FounderCommandAudit + material OperationalLog projection | Implemented |

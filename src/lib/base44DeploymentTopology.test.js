@@ -104,6 +104,12 @@ describe('Base44 quota-safe backend deployment topology', () => {
     expect(clientSource).toContain('client.functions.invoke = async');
   });
 
+  it('keeps Founder Control independent from the retired logical go-live endpoint', () => {
+    const founderControl = fs.readFileSync(path.join(root, 'src/pages/admin/AdminFounderControl.jsx'), 'utf8');
+    expect(founderControl).not.toContain('invoke("goLiveControlAdmin"');
+    expect(founderControl).toContain('invoke("outboundControlAdmin", { action:"configure_cost_budget"');
+  });
+
   it('keeps consolidated Admin status payloads below the Base44 response ceiling', () => {
     expect(source('getEuropeMarketsCommandCenter')).toContain('compactGrowthPayload');
     const runtimeSource = fs.readFileSync(path.join(root, 'base44/shared/goLiveRuntime.ts'), 'utf8');

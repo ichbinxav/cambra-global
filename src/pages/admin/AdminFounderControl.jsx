@@ -383,12 +383,12 @@ export default function AdminFounderControl() {
   const budgetInput = useMemo(() => ({ ...budgetDraft, version:budgetDraft.version || commandKey("founder-budget") }), [budgetDraft]);
   const openBudget = () => { setBudgetDraft(value => ({ ...value, version:commandKey("founder-budget") })); setReason(""); setModal({ kind:"budget", stage:"edit" }); };
   const prepareBudget = () => run("budget-preview", async () => {
-    const prepared = requireCanonical(await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...budgetInput }), ["preview.preview_hash", "command_key", "confirmation_required"]);
+    const prepared = requireCanonical(await invoke("outboundControlAdmin", { action:"configure_cost_budget", ...budgetInput }), ["preview.preview_hash", "command_key", "confirmation_required"]);
     setModal({ kind:"budget", stage:"review", ...prepared, budgetInput }); return prepared;
   }, tr("Budget impact preview ready"));
   const confirmBudget = () => run("budget-confirm", async () => {
     const current = requireCanonical(modal, ["budgetInput", "preview.preview_hash", "command_key", "confirmation_required"]);
-    const result = await invoke("goLiveControlAdmin", { action:"configure_cost_budget", ...current.budgetInput, confirmed:true, confirmation:current.confirmation_required, command_key:current.command_key, preview_hash:current.preview.preview_hash });
+    const result = await invoke("outboundControlAdmin", { action:"configure_cost_budget", ...current.budgetInput, confirmed:true, confirmation:current.confirmation_required, command_key:current.command_key, preview_hash:current.preview.preview_hash });
     setModal(null); return result;
   }, tr("Hard budget updated and audited"));
 
