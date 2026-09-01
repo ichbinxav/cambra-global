@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-01T14:07:22.700Z",
+  "generatedAt": "2026-09-01T16:58:54.546Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "d75d4efe768d9b7f55b3a943cdc6481dcb0592ceca9e96b9ca6b3ab055b362c4",
+      "sha256": "7d31145f6629b6e2e8c55920fbae70929537ac1d316a6d422c284d004c0a1da5",
       "bytes": 43449
     },
     {
@@ -2609,13 +2609,13 @@
     },
     {
       "path": "src/components/landing/PricingDual.jsx",
-      "sha256": "d4b3e37338135f38dba6a5fb5a2bb45972d14b7af14cd778290d154c6a1acc68",
-      "bytes": 12716
+      "sha256": "9fa60e7ed546c8efdb677e8cd7e4f28eade408eb1430404962672b48f9ce6d26",
+      "bytes": 12812
     },
     {
       "path": "src/components/landing/RealImpactSection.jsx",
-      "sha256": "3d29b9891dc9ebd2aed2b25c31d8288811649fed982f809f8797f75d865b195f",
-      "bytes": 5725
+      "sha256": "bdb5ccca195daec3f4ceb56fbb1e84bfd5291432441daad1b1f7362109f14a0e",
+      "bytes": 5723
     },
     {
       "path": "src/components/landing/TestimonialsCarousel.jsx",
@@ -2899,8 +2899,8 @@
     },
     {
       "path": "src/lib/adminLayoutI18n.test.js",
-      "sha256": "5a43d9c7313f86695f4a78aa61ba8154c3b773d899935b048b730221f135bc56",
-      "bytes": 2343
+      "sha256": "3fd2e4f5d630aea4b97a93fe4ce0d72fff8dd2942582c40be7a404d367d96736",
+      "bytes": 2768
     },
     {
       "path": "src/lib/adminSettingsV2.test.js",
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "efbad382fd025303bee25bac680307f252ea708685f177e01a41e76d3bf52440",
-      "bytes": 19652
+      "sha256": "8b88afe18ba2fb88faa40ccac930947f4d33f66e73a5d242edc74e0e057a6b0c",
+      "bytes": 17990
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",
@@ -3914,8 +3914,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "e0965b2e7a6aa20472d7d4f031fbed34aa86b6a48cec962e95ecf5573082d366",
-      "bytes": 32363
+      "sha256": "bcea420d9b157e19a1fb59783f2c2a56f433dd578d9fbe5895b32f4585e6c4f2",
+      "bytes": 32402
     },
     {
       "path": "src/pages/admin/AdminMaintenance.jsx",
