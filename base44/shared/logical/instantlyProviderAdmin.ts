@@ -9,6 +9,8 @@ import {
   instantlyProfileReady,
   instantlyProviderStatus,
   instantlyRequest,
+  instantlySenderAccountHealthy,
+  instantlySenderAccountReady,
   instantlyTransportProfile,
 } from "../outboundProvider.ts";
 import { instantlySuperSearchPayload } from "../leadIntelligenceProvider.ts";
@@ -25,6 +27,7 @@ import {
 const CONFIRM_CREATE = "CREATE_CAMBRA_INSTANTLY_CAMPAIGN";
 const CONFIRM_WEBHOOK = "REGISTER_CAMBRA_INSTANTLY_WEBHOOK";
 const CONFIRM_WEBHOOK_TEST = "TEST_CAMBRA_INSTANTLY_WEBHOOK";
+const CONFIRM_RESUME_SENDER = "RESUME_CAMBRA_INSTANTLY_SENDER";
 const CONFIRM_PAUSE = "PAUSE_CAMBRA_INSTANTLY";
 const safeAccount = (account: any) => ({
   email: String(account?.email || account?.address || account?.eaccount || ""),
@@ -200,12 +203,8 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           const senderReady =
             configuredAccounts.length > 0 &&
             matched.length === configuredAccounts.length &&
-            matched.every(
-              (account: any) =>
-                account.status === 1 &&
-                account.warmup_status === 1 &&
-                account.setup_pending === false &&
-                Number(account.warmup_score) >= minimumScore,
+            matched.every((account: any) =>
+              instantlySenderAccountReady(account, minimumScore)
             );
           await svc.entities.OutboundSendingProfile.update(profile.id, {
             provider_config_json: {
@@ -244,12 +243,8 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           return (
             configured.length === 0 ||
             matched.length !== configured.length ||
-            !matched.every(
-              (account: any) =>
-                account.status === 1 &&
-                account.warmup_status === 1 &&
-                account.setup_pending === false &&
-                Number(account.warmup_score) >= minimumScore,
+            !matched.every((account: any) =>
+              instantlySenderAccountReady(account, minimumScore)
             )
           );
         });
@@ -336,7 +331,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
     const profileKey = String(body.profile_key || "");
     const profile =
       profiles.find((row: any) => row.profile_key === profileKey) || null;
-    if (["create_campaign", "register_webhook", "test_webhook"].includes(action) && !profile)
+    if (["create_campaign", "register_webhook", "test_webhook", "resume_sender"].includes(action) && !profile)
       return Response.json(
         { ok: false, error: "instantly_profile_required" },
         { status: 409 },
@@ -653,6 +648,384 @@ export async function handleInstantlyProviderAdmin(req: Request) {
         throw error;
       }
     }
+    if (action === "resume_sender") {
+      if (body.confirmation !== CONFIRM_RESUME_SENDER)
+        return Response.json(
+          {
+            ok: false,
+            error: "confirmation_required",
+            required: CONFIRM_RESUME_SENDER,
+          },
+          { status: 409 },
+        );
+      if (
+        !control || control.acquisition_enabled === true ||
+        control.instantly_enabled === true
+      )
+        return Response.json(
+          { ok: false, error: "outbound_must_be_paused_before_sender_resume" },
+          { status: 409 },
+        );
+      if (profile.status !== "paused")
+        return Response.json(
+          { ok: false, error: "profile_must_be_paused" },
+          { status: 409 },
+        );
+      const campaignId = String(profile.external_campaign_id || "");
+      const accountEmails: string[] = [
+        ...new Set<string>(
+          (Array.isArray(profile.provider_config_json?.account_emails)
+            ? profile.provider_config_json.account_emails
+            : [])
+            .map((value: any) => String(value || "").trim().toLowerCase())
+            .filter(Boolean),
+        ),
+      ];
+      if (!campaignId || !accountEmails.length)
+        return Response.json(
+          { ok: false, error: "configured_campaign_and_sender_required" },
+          { status: 409 },
+        );
+      const minimumScore = Math.max(
+        1,
+        Math.min(
+          100,
+          Number(profile.provider_config_json?.minimum_warmup_score || 80),
+        ),
+      );
+      const requestKey = String(body.request_key || "default")
+        .replace(/[^a-zA-Z0-9._-]/g, "")
+        .slice(0, 80);
+      const metered = async (
+        operation: string,
+        effect: () => Promise<any>,
+      ) => {
+        const reservation = await reservePaidOperation(svc, {
+          event_key:
+            `api:instantly:resume-sender:${profile.profile_key}:${requestKey}:${operation}`,
+          category: "api",
+          provider: "instantly",
+          source: "instantlyProviderAdmin",
+          related_entity_type: "OutboundSendingProfile",
+          related_entity_id: profile.id,
+        });
+        try {
+          const result = await guardReservedPaidProviderEffect(
+            svc,
+            reservation,
+            {
+              category: "api",
+              provider: "instantly",
+              source: "instantlyProviderAdmin",
+              event_key: reservation.event?.event_key,
+              effect_key: `instantly_resume_sender:${profile.profile_key}:${operation}`,
+            },
+            effect,
+          );
+          await settlePaidOperation(svc, reservation, {
+            ok: true,
+            usage_json: { operation },
+          });
+          return result;
+        } catch (error: any) {
+          await settlePaidOperation(svc, reservation, {
+            ok: false,
+            usage_json: {
+              operation,
+              error_code: String(error?.code || "FAILED"),
+            },
+          }).catch((settleError: any) =>
+            safeBestEffort(settleError, {
+              operation: "instantlyProviderAdmin.resume_sender.settle",
+              fallback: null,
+              severity: "secondary",
+            })
+          );
+          throw error;
+        }
+      };
+      const pauseAccounts = async (emails: string[]) => {
+        const results = [];
+        for (const email of [...new Set(emails)]) {
+          try {
+            const account = await provider.pauseAccount(email);
+            results.push({ status: Number(account?.status), paused: Number(account?.status) === 2 });
+          } catch (error: any) {
+            results.push({
+              status: null,
+              paused: false,
+              error_code: String(error?.code || "INSTANTLY_ACCOUNT_PAUSE_FAILED"),
+            });
+          }
+        }
+        return { ok: results.every((row) => row.paused), accounts: results };
+      };
+      const preflight = await metered("preflight", () => provider.diagnose());
+      const preflightCampaign = preflight.campaigns.find(
+        (campaign: any) => String(campaign.id) === campaignId,
+      );
+      const preflightWebhook = preflight.webhooks.find(
+        (webhook: any) =>
+          String(webhook.campaign || "") === campaignId &&
+          webhook.event_type === "all_events" && Number(webhook.status) === 1 &&
+          !webhook.timestamp_error,
+      );
+      const preflightAccounts = preflight.accounts.filter((account: any) =>
+        accountEmails.includes(String(account.email || "").toLowerCase())
+      );
+      const unsafeCampaigns = preflight.campaigns.filter((campaign: any) => {
+        const campaignAccounts = Array.isArray(campaign.email_list)
+          ? campaign.email_list.map((value: any) =>
+            String(value || "").toLowerCase()
+          )
+          : [];
+        return [1, 4].includes(Number(campaign.status)) &&
+          campaignAccounts.some((email: string) => accountEmails.includes(email));
+      });
+      const preflightHealthy =
+        preflightAccounts.length === accountEmails.length &&
+        preflightAccounts.every((account: any) =>
+          [1, 2].includes(Number(account.status)) &&
+          instantlySenderAccountHealthy(account, minimumScore)
+        );
+      if (
+        Number(preflightCampaign?.status) !== 2 || !preflightWebhook ||
+        Boolean(preflightCampaign?.ai_sdr_id) || unsafeCampaigns.length ||
+        !preflightHealthy
+      )
+        return Response.json(
+          {
+            ok: false,
+            error: "safe_sender_resume_preflight_failed",
+            campaign_paused: Number(preflightCampaign?.status) === 2,
+            webhook_active: Boolean(preflightWebhook),
+            native_ai_conflict: Boolean(preflightCampaign?.ai_sdr_id),
+            active_campaign_conflicts: unsafeCampaigns.length,
+            sender_health_ready: preflightHealthy,
+            outbound_unchanged: true,
+          },
+          { status: 409 },
+        );
+      const resumedEmails: string[] = [];
+      const resumeResults = [];
+      for (const email of accountEmails) {
+        const existing = preflightAccounts.find((account: any) =>
+          String(account.email || "").toLowerCase() === email
+        );
+        if (Number(existing?.status) === 1) {
+          resumeResults.push({ status: 1, duplicate: true });
+          continue;
+        }
+        try {
+          const resumed = await metered(
+            `resume-${resumeResults.length}`,
+            () => provider.resumeAccount(email),
+          );
+          if (!instantlySenderAccountReady(resumed, minimumScore)) {
+            const error: any = new Error("instantly_sender_resume_not_confirmed");
+            error.code = "INSTANTLY_SENDER_RESUME_NOT_CONFIRMED";
+            throw error;
+          }
+          resumedEmails.push(email);
+          resumeResults.push({
+            status: Number(resumed.status),
+            warmup_status: Number(resumed.warmup_status),
+            warmup_score: Number(resumed.stat_warmup_score || 0),
+            duplicate: false,
+          });
+        } catch (error: any) {
+          const rollback = await pauseAccounts([...resumedEmails, email]);
+          await svc.entities.OutboundSendingProfile.update(profile.id, {
+            status: "paused",
+            provider_config_json: {
+              ...(profile.provider_config_json || {}),
+              sender_ready: false,
+            },
+            last_provider_health_at: new Date().toISOString(),
+            notes: "Instantly sender resume failed; compensating account pause was attempted.",
+          });
+          return Response.json(
+            {
+              ok: false,
+              error: String(error?.code || "instantly_sender_resume_failed"),
+              rollback,
+              outbound_unchanged: true,
+              no_campaign_message_sent: true,
+            },
+            { status: Number(error?.status || 502) },
+          );
+        }
+      }
+      const containResumedSender = async (
+        reason: string,
+        observedCampaignStatus?: number,
+      ) => {
+        const rollback = await pauseAccounts(resumedEmails);
+        const campaignRollback = observedCampaignStatus === 2
+          ? { paused: true, duplicate: true }
+          : await provider.pauseCampaign(campaignId).then(
+            () => ({ paused: true, duplicate: false }),
+            (error: any) => ({
+              paused: false,
+              error_code: String(error?.code || "INSTANTLY_CAMPAIGN_PAUSE_FAILED"),
+            }),
+          );
+        const localContainment = await svc.entities.OutboundSendingProfile.update(
+          profile.id,
+          {
+            status: "paused",
+            provider_config_json: {
+              ...(profile.provider_config_json || {}),
+              sender_ready: false,
+            },
+            last_provider_health_at: new Date().toISOString(),
+            notes: `${reason}; provider containment was attempted.`,
+          },
+        ).then(
+          () => true,
+          (error: any) => {
+            safeBestEffort(error, {
+              operation: "instantlyProviderAdmin.resume_sender.contain_local",
+              fallback: null,
+              severity: "critical",
+            });
+            return false;
+          },
+        );
+        return { rollback, campaign_rollback: campaignRollback, local_containment: localContainment };
+      };
+      let postflight: any;
+      let controlAfter: any;
+      try {
+        postflight = await metered("postflight", () => provider.diagnose());
+        controlAfter = await svc.entities.OutboundControl.get(control.id);
+      } catch (error: any) {
+        const containment = await containResumedSender(
+          "Instantly sender postflight could not be proven",
+        );
+        return Response.json(
+          {
+            ok: false,
+            error: String(error?.code || "instantly_sender_postflight_unavailable"),
+            ...containment,
+            outbound_unchanged: true,
+            no_campaign_message_sent: true,
+          },
+          { status: Number(error?.status || 502) },
+        );
+      }
+      const postflightCampaign = postflight.campaigns.find(
+        (campaign: any) => String(campaign.id) === campaignId,
+      );
+      const postflightWebhook = postflight.webhooks.find(
+        (webhook: any) =>
+          String(webhook.campaign || "") === campaignId &&
+          webhook.event_type === "all_events" && Number(webhook.status) === 1 &&
+          !webhook.timestamp_error,
+      );
+      const postflightAccounts = postflight.accounts.filter((account: any) =>
+        accountEmails.includes(String(account.email || "").toLowerCase())
+      );
+      const outboundStillOff = controlAfter?.acquisition_enabled !== true &&
+        controlAfter?.instantly_enabled !== true;
+      const senderReady = postflightAccounts.length === accountEmails.length &&
+        postflightAccounts.every((account: any) =>
+          instantlySenderAccountReady(account, minimumScore)
+        );
+      const transitionSafe = senderReady && outboundStillOff &&
+        Number(postflightCampaign?.status) === 2 &&
+        !postflightCampaign?.ai_sdr_id && Boolean(postflightWebhook);
+      if (!transitionSafe) {
+        const containment = await containResumedSender(
+          "Instantly sender postflight failed",
+          Number(postflightCampaign?.status),
+        );
+        return Response.json(
+          {
+            ok: false,
+            error: "instantly_sender_resume_postflight_failed",
+            ...containment,
+            outbound_unchanged: outboundStillOff,
+            no_campaign_message_sent: true,
+          },
+          { status: 502 },
+        );
+      }
+      try {
+        await svc.entities.OutboundSendingProfile.update(profile.id, {
+          status: "paused",
+          provider_config_json: {
+            ...(profile.provider_config_json || {}),
+            minimum_warmup_score: minimumScore,
+            sender_ready: true,
+            sender_health_evidence: postflightAccounts.map(safeAccount),
+            native_ai_conflict: false,
+            native_ai_reply_enabled: false,
+            remote_campaign_status: Number(postflightCampaign.status),
+          },
+          last_provider_health_at: new Date().toISOString(),
+          notes:
+            "Instantly sender active and healthy; CAMBRA profile, campaign and global outbound remain paused pending founder canary start.",
+        });
+        await upsertInstantlyProviderState(svc, {
+          status: "AUTHENTICATED",
+          auth_test_pass: true,
+          last_checked_at: new Date().toISOString(),
+          last_success_at: new Date().toISOString(),
+          configuration_json: {
+            transport_role_only: true,
+            mailbox_protocol_access: false,
+            supersearch_enabled: false,
+            sender_readiness_blocked: false,
+            transport_profile_keys: [profile.profile_key],
+          },
+          last_error_code: "",
+        });
+        await svc.entities.OperationalLog.create({
+          event_type: "instantly_sender_safely_resumed",
+          message:
+            "Instantly sender resumed while campaign and CAMBRA outbound remained paused",
+          data_json: {
+            profile_key: profile.profile_key,
+            account_count: accountEmails.length,
+            campaign_id: campaignId,
+            campaign_status: Number(postflightCampaign.status),
+            outbound_acquisition_enabled: false,
+            outbound_instantly_enabled: false,
+            no_campaign_message_sent: true,
+          },
+          actor_email: gate.user?.email || "founder_admin",
+          created_at: new Date().toISOString(),
+        });
+      } catch (error: any) {
+        const containment = await containResumedSender(
+          "Instantly sender persistence failed",
+          Number(postflightCampaign?.status),
+        );
+        return Response.json(
+          {
+            ok: false,
+            error: "instantly_sender_resume_persistence_failed",
+            ...containment,
+            outbound_unchanged: true,
+            no_campaign_message_sent: true,
+          },
+          { status: 500 },
+        );
+      }
+      return Response.json({
+        ok: true,
+        status: "AUTHENTICATED",
+        sender_ready: true,
+        resumed_accounts: resumeResults,
+        campaign_status: Number(postflightCampaign.status),
+        campaign_paused: true,
+        profile_status: "paused",
+        effective_capacity: 0,
+        outbound_unchanged: true,
+        no_campaign_message_sent: true,
+      });
+    }
     if (action === "pause") {
       if (body.confirmation !== CONFIRM_PAUSE)
         return Response.json(
@@ -688,6 +1061,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           "create_campaign",
           "register_webhook",
           "test_webhook",
+          "resume_sender",
           "pause",
         ],
       },

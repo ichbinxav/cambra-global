@@ -174,6 +174,20 @@ export function instantlyProfileReady(profile: any) {
   );
 }
 
+export function instantlySenderAccountHealthy(account: any, minimumScore = 80) {
+  const score = Math.max(1, Math.min(100, Number(minimumScore) || 80));
+  return Boolean(
+    account?.warmup_status === 1 &&
+      account?.setup_pending === false &&
+      Number(account?.warmup_score ?? account?.stat_warmup_score) >= score,
+  );
+}
+
+export function instantlySenderAccountReady(account: any, minimumScore = 80) {
+  return account?.status === 1 &&
+    instantlySenderAccountHealthy(account, minimumScore);
+}
+
 export function instantlyTransportProfile(profile: any) {
   const status = String(profile?.status || "").trim().toLowerCase();
   return ["active", "warming"].includes(status) ||
@@ -333,6 +347,22 @@ export class InstantlyOutboundProvider implements OutboundProvider {
       campaigns: Array.isArray(campaigns?.items) ? campaigns.items : [],
       webhooks: Array.isArray(webhooks?.items) ? webhooks.items : [],
     };
+  }
+  resumeAccount(email: string) {
+    return instantlyRequest(
+      this.apiKey,
+      `/accounts/${encodeURIComponent(email)}/resume`,
+      { method: "POST" },
+      this.fetcher,
+    );
+  }
+  pauseAccount(email: string) {
+    return instantlyRequest(
+      this.apiKey,
+      `/accounts/${encodeURIComponent(email)}/pause`,
+      { method: "POST" },
+      this.fetcher,
+    );
   }
   createCampaign(input: any) {
     return instantlyRequest(

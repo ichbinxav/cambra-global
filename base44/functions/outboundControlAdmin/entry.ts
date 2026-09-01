@@ -85,6 +85,7 @@ const INSTANTLY_ADMIN_ACTIONS = new Set([
   "instantly_create_campaign",
   "instantly_register_webhook",
   "instantly_test_webhook",
+  "instantly_resume_sender",
   "instantly_pause",
 ]);
 

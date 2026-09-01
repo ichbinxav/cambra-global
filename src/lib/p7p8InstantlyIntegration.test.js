@@ -11,6 +11,8 @@ import {
   instantlyProviderStatus,
   instantlyReplyDefinition,
   instantlyRequest,
+  instantlySenderAccountHealthy,
+  instantlySenderAccountReady,
   instantlyTransportProfile,
   normalizeInstantlyEvent,
 } from "../../base44/shared/outboundProvider.ts";
@@ -120,6 +122,16 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
       status: "paused",
       external_campaign_id: null,
     })).toBe(false);
+    const pausedHealthy = {
+      status: 2,
+      warmup_status: 1,
+      setup_pending: false,
+      warmup_score: 100,
+    };
+    expect(instantlySenderAccountHealthy(pausedHealthy, 80)).toBe(true);
+    expect(instantlySenderAccountReady(pausedHealthy, 80)).toBe(false);
+    expect(instantlySenderAccountReady({ ...pausedHealthy, status: 1 }, 80))
+      .toBe(true);
   });
 
   it("builds a paused low-volume campaign whose content comes only from CAMBRA variables", () => {
@@ -232,11 +244,15 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
       webhook_secret: "signing-secret",
     });
     await provider.testWebhook("webhook-1");
+    await provider.resumeAccount("sender@outbound.example");
+    await provider.pauseAccount("sender@outbound.example");
     expect(calls.map((call) => call.url)).toEqual([
       "https://api.instantly.ai/api/v2/leads",
       "https://api.instantly.ai/api/v2/emails/reply",
       "https://api.instantly.ai/api/v2/webhooks/webhook-1",
       "https://api.instantly.ai/api/v2/webhooks/webhook-1/test",
+      "https://api.instantly.ai/api/v2/accounts/sender%40outbound.example/resume",
+      "https://api.instantly.ai/api/v2/accounts/sender%40outbound.example/pause",
     ]);
     expect(JSON.parse(calls[2].init.body)).toMatchObject({
       event_type: "all_events",
@@ -389,6 +405,9 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(admin).toContain(
       "const transportProfiles = profiles.filter(instantlyTransportProfile)",
     );
+    expect(admin).toContain("RESUME_CAMBRA_INSTANTLY_SENDER");
+    expect(admin).toContain("outbound_must_be_paused_before_sender_resume");
+    expect(admin).toContain("provider.pauseAccount");
     expect(send).toContain("follow_up_cancelled_by_new_reply");
     expect(send).toContain("follow_up_cancelled_by_meeting_or_closed_state");
     expect(emergency).toContain("pauseAllInstantlyCampaigns");

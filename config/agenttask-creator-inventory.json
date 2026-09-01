@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "54664db2a2d2797bd3eff536f681f0761452643d1548f9128202d0020d91d8e1",
+  "source_inventory_hash": "2ec5d5824114a92fcbe9f5d120d7161d264e9f594c93150d0061ac681633ac75",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -1213,7 +1213,7 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "source_sha256": "e347940d44111847ca0d5bf264c93fbb62199201500bffbdf3fe66dc0be56177",
+      "source_sha256": "ffca5727015f771af4b9dd627c72c10ab190d96e8eb0050994dafa839882a49f",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],

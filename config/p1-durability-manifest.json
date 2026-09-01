@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-01T13:23:54.089Z",
+  "generatedAt": "2026-09-01T14:07:22.700Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1029,8 +1029,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "e347940d44111847ca0d5bf264c93fbb62199201500bffbdf3fe66dc0be56177",
-      "bytes": 34388
+      "sha256": "ffca5727015f771af4b9dd627c72c10ab190d96e8eb0050994dafa839882a49f",
+      "bytes": 34417
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
@@ -1819,8 +1819,8 @@
     },
     {
       "path": "base44/shared/outboundProvider.ts",
-      "sha256": "29163ff02d3a9a4a0aa9599486cd12ba9c15e761c62e864e2f59f58ab6bf7943",
-      "bytes": 17026
+      "sha256": "3ca963fab26aed56b9b1906162894f97dfabc253ec0f8bac1c174245d847b218",
+      "bytes": 17917
     },
     {
       "path": "base44/shared/outboundProviderEventProcessing.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "cb170fea613fe35aab56a58c55a709cf587cdb2eb07d5ae81abf91e3178d6e73",
+      "sha256": "7a3395a75ccc86b0a01932d83d30e34fd509349c86abbe5c7f7da9dbabc8c491",
       "bytes": 141405
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "687d6b5a63d2125edab60b46ab5b2c78084c202396080505ad7e23f9b776a6ed",
+      "sha256": "d75d4efe768d9b7f55b3a943cdc6481dcb0592ceca9e96b9ca6b3ab055b362c4",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "bcfa494e1cc363b9c5552122eb118d4b716e9a6e27ad8a7bbf2db723fe0bc650",
+      "sha256": "780bb96b58934dd1b4246c1f018f5883f91aab43899a271d2baab363e4398a06",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "f6c973792a4c385be47f8dc92a9bc7c0aacb19974686d3ed8a289069cef026ce",
+      "sha256": "5cc7e99911272aac11e6ca80e7679d34792826615996169725c36f82009025db",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "4b3fc32f8dd1be374fe96488698b504e282e1dd7545c3827b77f64f28d3ca444",
+      "sha256": "20828e531040c10e69ce3a6e74da58203339ecb288e0ae23764d831e078a4521",
       "bytes": 144990
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "db7d90fdf496b66baf78e4cde493f3898b03f208e1c91a909a18a1d032dc9789",
+      "sha256": "11cdf489d7ed4b359d9515ce20e9319ef5ba31a54bd69f953f656aa77f76352a",
       "bytes": 97957
     },
     {
@@ -3544,8 +3544,8 @@
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",
-      "sha256": "8f6df8fea33aecbce13e953e345c7b4020b3a0337322da02a5b5c26bb1e3d9ea",
-      "bytes": 17087
+      "sha256": "9d48f0abb4fb9ce47845947f6fdf27b90df3d68ed2ad993a09ff8e752c55095f",
+      "bytes": 18001
     },
     {
       "path": "src/lib/partnerAcquisitionAutonomy.test.js",
