@@ -2,7 +2,7 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "d011760ba5c842dd110c7a6141b4be73b36b9c99bb6d398d32862d58abc3813a",
+  "input_fingerprint_sha256": "6c2c5e9c764a53c9a2423dae55715b75eb6ce8c4974a27da8087f0817db0a3af",
   "components": [
     {
       "key": "effect_authority",
@@ -25,7 +25,7 @@
     {
       "key": "operational_planes",
       "path": "config/operational-plane-inventory.v1.json",
-      "sha256": "1faf429c8a8aede0de498d77a8123680b0f1da53f036efaf4a683f28300f62a0",
+      "sha256": "875d1b4dce0aea88ca859de9fe4a57f68d865669ef7eae19e7ee4cb7c64b4434",
       "schema_version": "operational-plane-inventory-v1.0.0"
     }
   ],
@@ -203,8 +203,8 @@
     },
     {
       "path": "base44/functions/operatingHealthWorker/entry.ts",
-      "sha256": "525417a35c82728a12cd5fb9d3b81b1b2c60f34b450920cd667d30562fe903c5",
-      "bytes": 11144
+      "sha256": "11cef8878010945c1361a03db0aae5fda7f59c7ae534c805041f93100a30e0cd",
+      "bytes": 11406
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",

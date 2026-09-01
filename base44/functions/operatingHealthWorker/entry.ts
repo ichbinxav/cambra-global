@@ -85,7 +85,7 @@ function buildObservedAssessment(
   const approvals = exactRows(dependencies, "Approval.pending");
   const conflicts = exactRows(dependencies, "KnowledgeConflict.open");
   const recent = tasks.filter((row: any) =>
-    Date.now() - Date.parse(row.created_date || row.started_at || "") <
+    Date.parse(nowIso) - Date.parse(row.created_date || row.started_at || "") <
       7 * 86400000
   );
   const failed = recent.filter((row: any) => row.status === "failed").length;
@@ -220,10 +220,20 @@ Deno.serve(async (req) => {
       if (denied) return denied;
     }
 
+    const evaluationNow = new Date();
+    const nowIso = evaluationNow.toISOString();
+    const recentTaskCutoff = new Date(
+      evaluationNow.getTime() - 7 * 86400000,
+    ).toISOString();
     const dependencies: SupervisorDependency<any>[] = await Promise.all([
       observeSupervisorCollection(
         "AgentTask.recent",
-        () => svc.entities.AgentTask.list("-created_date", 1000),
+        () =>
+          svc.entities.AgentTask.filter(
+            { created_date: { $gte: recentTaskCutoff } },
+            "-created_date",
+            1000,
+          ),
         { limit: 1000 },
       ),
       observeSupervisorCollection(
@@ -273,7 +283,6 @@ Deno.serve(async (req) => {
       ),
     ]);
     const dependencySummary = summarizeSupervisorDependencies(dependencies);
-    const nowIso = new Date().toISOString();
     const assessment = dependencySummary.automated_action_allowed
       ? buildObservedAssessment(dependencies, nowIso)
       : buildDegradedAssessment(

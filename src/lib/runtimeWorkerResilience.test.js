@@ -14,6 +14,14 @@ describe("runtime worker resilience", () => {
     );
   });
 
+  it("bounds operating-health task coverage to the seven-day metric window", () => {
+    const source = read("base44/functions/operatingHealthWorker/entry.ts");
+    expect(source).toContain("const recentTaskCutoff");
+    expect(source).toContain("{ created_date: { $gte: recentTaskCutoff } }");
+    expect(source).not.toContain('AgentTask.list("-created_date", 1000)');
+    expect(source).toContain("Date.parse(nowIso) - Date.parse");
+  });
+
   it("processes the sales pipeline in an oldest-first bounded batch", () => {
     const source = read("base44/functions/salesPipelineWorker/entry.ts");
     expect(source).toContain("SALES_PIPELINE_BATCH_SIZE = 50");
