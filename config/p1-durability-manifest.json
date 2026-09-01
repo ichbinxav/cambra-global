@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-01T11:49:49.284Z",
+  "generatedAt": "2026-09-01T13:23:54.089Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1819,8 +1819,8 @@
     },
     {
       "path": "base44/shared/outboundProvider.ts",
-      "sha256": "e74ba1c486072cfef1454d64b450128b6186244600fe52b6ce08d586cc71e6f6",
-      "bytes": 16780
+      "sha256": "29163ff02d3a9a4a0aa9599486cd12ba9c15e761c62e864e2f59f58ab6bf7943",
+      "bytes": 17026
     },
     {
       "path": "base44/shared/outboundProviderEventProcessing.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "7302ca623a168cd03dd703c06647fa341dac37699b0a1142fd33ce7a5c0f5e1e",
+      "sha256": "687d6b5a63d2125edab60b46ab5b2c78084c202396080505ad7e23f9b776a6ed",
       "bytes": 43449
     },
     {
@@ -3544,8 +3544,8 @@
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",
-      "sha256": "8d42fcfa7922c965bd7f9402688367f186fb858480a820f49c948dc4c2f12ea9",
-      "bytes": 16400
+      "sha256": "8f6df8fea33aecbce13e953e345c7b4020b3a0337322da02a5b5c26bb1e3d9ea",
+      "bytes": 17087
     },
     {
       "path": "src/lib/partnerAcquisitionAutonomy.test.js",

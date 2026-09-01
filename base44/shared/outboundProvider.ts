@@ -174,6 +174,12 @@ export function instantlyProfileReady(profile: any) {
   );
 }
 
+export function instantlyTransportProfile(profile: any) {
+  const status = String(profile?.status || "").trim().toLowerCase();
+  return ["active", "warming"].includes(status) ||
+    Boolean(String(profile?.external_campaign_id || "").trim());
+}
+
 export function instantlyCampaignDefinition(input: any) {
   const daily = Math.max(
     1,

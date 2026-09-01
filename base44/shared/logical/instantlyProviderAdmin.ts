@@ -9,6 +9,7 @@ import {
   instantlyProfileReady,
   instantlyProviderStatus,
   instantlyRequest,
+  instantlyTransportProfile,
 } from "../outboundProvider.ts";
 import { instantlySuperSearchPayload } from "../leadIntelligenceProvider.ts";
 import {
@@ -77,6 +78,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
       "-created_date",
       100,
     ).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:[],severity:'secondary'}));
+    const transportProfiles = profiles.filter(instantlyTransportProfile);
     const states = await svc.entities.CommercialProviderState.filter(
       { provider_key: "instantly", role: "outbound" },
       "-last_checked_at",
@@ -168,7 +170,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           campaigns = result.campaigns.map(safeCampaign),
           webhooks = result.webhooks.map(safeWebhook);
         const configuredCampaignIds = new Set(
-          profiles
+          transportProfiles
             .map((profile: any) => String(profile.external_campaign_id || ""))
             .filter(Boolean),
         );
@@ -177,7 +179,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             configuredCampaignIds.has(campaign.id) &&
             campaign.native_ai_agent_present,
         );
-        for (const profile of profiles) {
+        for (const profile of transportProfiles) {
           const conflict = nativeAiConflicts.some(
             (campaign: any) =>
               campaign.id === String(profile.external_campaign_id || ""),
@@ -225,7 +227,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
               : {}),
           }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
         }
-        const blocked = profiles.some((profile: any) => {
+        const blocked = transportProfiles.some((profile: any) => {
           const configured = (
             profile.provider_config_json?.account_emails || []
           ).map((value: any) => String(value).toLowerCase());
@@ -267,6 +269,9 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             supersearch_enabled: false,
             native_ai_conflicts: nativeAiConflicts,
             sender_readiness_blocked: blocked,
+            transport_profile_keys: transportProfiles.map((profile: any) =>
+              profile.profile_key
+            ),
           },
           last_error_code: nativeAiConflicts.length
             ? "NATIVE_AI_REPLY_CONFLICT"
@@ -296,6 +301,9 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             webhooks,
             native_ai_conflicts: nativeAiConflicts,
             sender_readiness_blocked: blocked,
+            transport_profile_keys: transportProfiles.map((profile: any) =>
+              profile.profile_key
+            ),
             secret_value_exposed: false,
           },
           { status: nativeAiConflicts.length ? 409 : 200 },

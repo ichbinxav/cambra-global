@@ -11,6 +11,7 @@ import {
   instantlyProviderStatus,
   instantlyReplyDefinition,
   instantlyRequest,
+  instantlyTransportProfile,
   normalizeInstantlyEvent,
 } from "../../base44/shared/outboundProvider.ts";
 import { providerSecretMatches } from "../../base44/shared/inboundConversationProvider.ts";
@@ -108,6 +109,17 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
         },
       }),
     ).toBe(false);
+    expect(instantlyTransportProfile(profile)).toBe(true);
+    expect(instantlyTransportProfile({
+      ...profile,
+      status: "paused",
+      external_campaign_id: "campaign-1",
+    })).toBe(true);
+    expect(instantlyTransportProfile({
+      ...profile,
+      status: "paused",
+      external_campaign_id: null,
+    })).toBe(false);
   });
 
   it("builds a paused low-volume campaign whose content comes only from CAMBRA variables", () => {
@@ -368,6 +380,15 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     expect(reconcile).toContain("INSTANTLY_PLAN_REQUIRED");
     expect(reconcile).toContain("plan_upgrade_required:true");
     expect(reconcile).toContain("reconciliation_available:false");
+    expect(reconcile).toContain(
+      "const transportProfiles=profiles.filter(instantlyTransportProfile)",
+    );
+    const admin = source(
+      "base44/shared/logical/instantlyProviderAdmin.ts",
+    );
+    expect(admin).toContain(
+      "const transportProfiles = profiles.filter(instantlyTransportProfile)",
+    );
     expect(send).toContain("follow_up_cancelled_by_new_reply");
     expect(send).toContain("follow_up_cancelled_by_meeting_or_closed_state");
     expect(emergency).toContain("pauseAllInstantlyCampaigns");
