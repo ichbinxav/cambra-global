@@ -26,9 +26,9 @@ export default function FounderLetter() {
         }}
       />
 
-      <div className="relative max-w-4xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
         {/* Header — unified */}
-        <SectionHeading eyebrow={t("fl_eyebrow")} className="mb-12 sm:mb-16">
+        <SectionHeading eyebrow={t("fl_eyebrow")} align="left" className="mb-10 sm:mb-12">
           {t("fl_h2_pre")}
           <br />
           <span className="kw">{t("fl_h2_kw")}</span>
@@ -40,7 +40,7 @@ export default function FounderLetter() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="grid grid-cols-2 gap-3 sm:gap-4"
+          className="grid grid-cols-1 sm:grid-cols-[.72fr_1.28fr] gap-3 sm:gap-5"
         >
           {/* LEFT — portrait card */}
           <div

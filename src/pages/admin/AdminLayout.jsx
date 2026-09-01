@@ -427,7 +427,7 @@ export default function AdminLayout() {
   const isActive = (path, exact) => exact ? location.pathname === path : location.pathname.startsWith(path);
 
   return (
-    <div className="min-h-screen flex w-full max-w-full overflow-x-hidden">
+    <div className="admin-shell min-h-screen flex w-full max-w-full overflow-x-hidden text-foreground">
       {/* Sidebar — glass, matches landing */}
       <aside className={`fixed inset-y-0 left-0 z-[70] w-56 glass-panel border-r border-white/[0.06] flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="px-5 py-5 border-b border-border/60">
@@ -544,7 +544,7 @@ export default function AdminLayout() {
       {/* Overlay */}
       {sidebarOpen && <div className="fixed inset-0 z-[60] bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main — transparent, inherits body gradient */}
+      {/* Main shell owns its theme so public-page body styles cannot leak in. */}
       <div className="flex-1 min-w-0 w-full max-w-full overflow-x-hidden lg:ml-56 lg:w-auto min-h-screen flex flex-col">
         {/* Top bar — glass */}
         <header className="sticky top-0 z-20 h-12 min-w-0 glass-panel border-b border-white/[0.06] flex items-center px-3 sm:px-5 gap-3">
@@ -573,7 +573,7 @@ export default function AdminLayout() {
               <Search size={12} className="text-muted-foreground shrink-0"/>
               <input value={quickCommand} onChange={e=>setQuickCommand(e.target.value)} placeholder={copy("search_or_ask")} aria-label={copy("search_or_ask")} className="min-w-0 flex-1 bg-transparent px-2 text-xs outline-none"/>
               <span className="text-[9px] text-muted-foreground">↵</span>
-              {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-muted-foreground">{copy("searching")}</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-muted-foreground truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-muted-foreground">{copy("no_matches")}</p>}</div>}
+              {quickCommand.trim().length >= 2 && <div className="absolute z-50 top-10 left-0 right-0 max-h-80 overflow-auto rounded-xl border border-white/10 bg-slate-950/95 text-white shadow-2xl p-2 backdrop-blur-xl">{searching ? <p className="p-3 text-xs text-white/60">{copy("searching")}</p> : searchResults.length ? searchResults.map(result => <button type="button" key={`${result.entity}:${result.id}`} onClick={() => { navigate(result.route); setQuickCommand(""); setSearchResults([]); }} className="w-full text-left rounded-lg px-3 py-2 hover:bg-white/5"><span className="block text-xs font-bold truncate">{result.title}</span><span className="block text-[10px] text-white/60 truncate">{result.type} · {result.subtitle || result.status || result.id}</span></button>) : <p className="p-3 text-xs text-white/60">{copy("no_matches")}</p>}</div>}
             </form>
             <button onClick={()=>navigate('/admin/chat')} className="md:hidden h-8 w-8 rounded-lg border border-border/60 inline-flex items-center justify-center" aria-label={copy("ask_cambra")}><MessageSquare size={13}/></button>
             <LanguageSwitcher variant="light" className="hidden sm:inline-flex" />

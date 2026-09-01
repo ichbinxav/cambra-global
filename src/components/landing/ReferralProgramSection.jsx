@@ -66,7 +66,7 @@ export default function ReferralProgramSection() {
             style={{
               color: "var(--ink)",
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(40px, 6vw, 68px)",
+              fontSize: "clamp(38px, 5vw, 60px)",
               fontWeight: 900,
               letterSpacing: "-0.045em",
               lineHeight: 1.0,

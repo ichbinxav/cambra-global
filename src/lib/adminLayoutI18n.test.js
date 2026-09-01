@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const source = fs.readFileSync(path.join(process.cwd(), 'src/pages/admin/AdminLayout.jsx'), 'utf8');
+const globalStyles = fs.readFileSync(path.join(process.cwd(), 'src/index.css'), 'utf8');
 const dictionaryMatch = source.match(/export const ADMIN_LAYOUT_COPY = (\{[\s\S]*?\n\});\n\nexport function adminLayoutText/);
 const ADMIN_LAYOUT_COPY = Function(`"use strict"; return (${dictionaryMatch?.[1] || '{}'});`)();
 
@@ -37,5 +38,12 @@ describe('Admin shell internationalization', () => {
     expect(source).toContain('syncedPreferenceFor.current === identity');
     expect(source).toContain('["en", "fr", "es"].includes(preferred)');
     expect(source).toContain('.catch(() => {})');
+  });
+
+  it('owns a readable light workspace theme instead of inheriting the public dark canvas', () => {
+    expect(source).toContain('admin-shell');
+    expect(globalStyles).toContain('.admin-shell {');
+    expect(globalStyles).toContain('--foreground: 222 47% 11%');
+    expect(globalStyles).toContain('.admin-shell .glass-panel');
   });
 });

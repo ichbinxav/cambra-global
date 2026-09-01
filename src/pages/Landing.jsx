@@ -29,7 +29,7 @@ function Hero() {
   const { t } = useTranslation();
   const { experience } = useMarket();
   return (
-    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "100vh", color: "var(--ink)", paddingTop: 48 }}>
+    <section className="relative flex items-center overflow-hidden" style={{ minHeight: "clamp(700px, 92vh, 900px)", color: "var(--ink)", paddingTop: 48 }}>
       {/* DA v1.1 Chunk 1d — Aurora navy removida sobre hero claro. Spotlight
           reducido a un wash voltio suave (~25% opacidad) para no ensuciar. */}
       <motion.div
@@ -44,11 +44,11 @@ function Hero() {
         transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
       />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* LEFT — aggressive copy */}
-        <div className="lg:col-span-7">
+      <div className="relative z-10 w-full max-w-[1480px] mx-auto px-6 sm:px-10 lg:px-14 py-16 lg:py-20 grid grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(380px,.85fr)] gap-10 lg:gap-8 xl:gap-12 items-center">
+        {/* LEFT — wide desktop copy column */}
+        <div className="min-w-0 lg:pr-4">
           <motion.div
-            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-8 text-[10px] uppercase font-semibold"
+            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-6 text-[10px] uppercase font-semibold"
             style={{
               border: "1px solid var(--linea)",
               color: "var(--gris-1)",
@@ -72,10 +72,11 @@ function Hero() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
               color: "var(--ink)",
-              fontSize: "clamp(46px, 7.8vw, 100px)",
+              fontSize: "clamp(44px, 5.4vw, 76px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
-              lineHeight: 0.94,
+              lineHeight: 0.96,
+              maxWidth: 820,
             }}
           >
             {t("hero_h1_line1")}
@@ -87,7 +88,7 @@ function Hero() {
 
           <motion.p
             className="mt-8"
-            style={{ maxWidth: 560, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
+            style={{ maxWidth: 650, fontSize: 18, lineHeight: 1.6, color: "var(--gris-1)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -151,9 +152,9 @@ function Hero() {
           </motion.div>
         </div>
 
-        {/* RIGHT — hero visual */}
+        {/* RIGHT — original CAMBRA hero render */}
         <motion.div
-          className="relative flex lg:col-span-5 justify-center items-center overflow-visible"
+          className="relative flex min-w-0 justify-center items-center overflow-visible"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
@@ -167,23 +168,15 @@ function Hero() {
                 "radial-gradient(ellipse 62% 62% at 50% 48%, var(--paper) 0%, var(--paper) 55%, transparent 78%)",
             }}
           />
-          <div className="relative w-full max-w-[500px] overflow-hidden rounded-[30px] p-5 sm:p-6" role="img" aria-label={t("hero_image_alt")} style={{ background: "linear-gradient(165deg,#171330 0%,#0A0818 78%)", border: "1px solid rgba(139,123,255,.35)", boxShadow: "0 35px 90px -40px rgba(91,76,245,.65)" }}>
-            <div aria-hidden className="absolute inset-0 opacity-50" style={{ backgroundImage: "radial-gradient(rgba(139,123,255,.35) 1px,transparent 1px)", backgroundSize: "24px 24px", maskImage: "linear-gradient(to bottom,#000,transparent 85%)" }} />
-            <div className="relative flex items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div><p className="text-[9px] uppercase tracking-[.22em] font-bold text-white/40">CAMBRA</p><p className="mt-1 text-[14px] font-bold text-white">{t("hero_visual_title")}</p></div>
-              <span className="rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[.14em] font-bold" style={{ color: "#2FE0A8", background: "rgba(47,224,168,.1)", border: "1px solid rgba(47,224,168,.25)" }}>{t("hero_visual_status")}</span>
-            </div>
-            <div className="relative mt-5 space-y-3">
-              {["market", "provider", "rate", "opportunity"].map((layer, index) => (
-                <motion.div key={layer} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .35 + index * .1 }} className="flex items-center gap-3 rounded-2xl p-3.5" style={{ background: "rgba(255,255,255,.045)", border: "1px solid rgba(255,255,255,.08)" }}>
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[10px] font-black" style={{ color: "#B9AEFF", background: "rgba(139,123,255,.14)" }}>0{index + 1}</span>
-                  <div className="min-w-0 flex-1"><p className="text-[12.5px] font-semibold text-white">{t(`hero_visual_${layer}`)}</p><p className="mt-0.5 truncate text-[10.5px] text-white/42">{t(`hero_visual_${layer}_sub`)}</p></div>
-                  <span className="h-2 w-2 rounded-full" style={{ background: index < 3 ? "#8B7BFF" : "#39C6F0", boxShadow: "0 0 12px currentColor" }} />
-                </motion.div>
-              ))}
-            </div>
-            <p className="relative mt-5 text-[10.5px] leading-relaxed text-white/45">{t("hero_visual_footer")}</p>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/6cf6e66f1_IMG_3459.webp"
+            alt={t("hero_image_alt")}
+            width={620}
+            height={620}
+            className="relative w-full max-w-[620px] h-auto select-none lg:w-[118%] xl:w-[124%] lg:-translate-x-[2%]"
+            style={{ filter: "contrast(0.98) saturate(1.04) drop-shadow(0 30px 55px rgba(91,76,245,.14))" }}
+            draggable={false}
+          />
         </motion.div>
       </div>
     </section>
@@ -213,19 +206,19 @@ function HowItWorksSection() {
           filter: "blur(90px)",
         }}
       />
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
         <AnimatedSection>
-          <SectionHeading eyebrow={t("how_label")} className="mb-10">
+          <SectionHeading eyebrow={t("how_label")} align="left" className="mb-10">
             {t("how_h2_pre")}{" "}
             <span className="kw">{t("how_h2_hl")}.</span>
           </SectionHeading>
         </AnimatedSection>
 
-        <div className="relative space-y-3">
+        <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Animated connector line behind the steps */}
           <motion.div
             aria-hidden
-            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block"
+            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block lg:hidden"
             style={{
               background:
                 "linear-gradient(180deg, transparent, rgba(139,123,255,0.45), rgba(91,76,245,0.3), transparent)",
@@ -241,7 +234,7 @@ function HowItWorksSection() {
             <AnimatedSection key={s.n} delay={i * 0.15}>
               <motion.div
                 transition={{ duration: 0.3 }}
-                className="relative overflow-hidden p-8 sm:p-10 group"
+                className="relative h-full overflow-hidden p-7 sm:p-9 lg:p-7 group"
                 style={{ background: "#ffffff", border: "1px solid var(--linea)", borderRadius: 26, boxShadow: "0 4px 20px rgba(12,12,22,0.04)" }}
               >
                 {/* hover glow halo */}
@@ -258,7 +251,7 @@ function HowItWorksSection() {
                   aria-hidden
                   className="absolute -top-6 right-6 text-mono select-none"
                   style={{
-                    fontSize: "clamp(96px, 14vw, 180px)",
+                    fontSize: "clamp(88px, 10vw, 140px)",
                     fontWeight: 900,
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
@@ -272,7 +265,7 @@ function HowItWorksSection() {
                   {s.n}
                 </span>
 
-                <div className="relative z-10 max-w-xl">
+                <div className="relative z-10 max-w-xl lg:max-w-none">
                   <div className="flex items-center gap-3 mb-3">
                     <span
                       className="relative inline-flex w-2 h-2 rounded-full"

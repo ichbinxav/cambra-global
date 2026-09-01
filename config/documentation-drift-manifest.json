@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-09-01T14:07:22.353Z",
+  "generatedAt": "2026-09-01T15:51:18.005Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -321,7 +321,7 @@
     "src/pages/admin/AdminGrowth.jsx": "f1f9769ce9aba17effb029d20ecae0d0031f3f43cff856f2b3a794da01028620",
     "src/pages/admin/AdminInbox.jsx": "ed44b0706e1a1945aed757d84cd6bccc645c78caa516312e1f752b2d6c0aba36",
     "src/pages/admin/AdminIntelligence.jsx": "1a269d1349a7840abb89c8548ca4fe05afaa1923118bb64701985b33f5c2b2ff",
-    "src/pages/admin/AdminLayout.jsx": "e0965b2e7a6aa20472d7d4f031fbed34aa86b6a48cec962e95ecf5573082d366",
+    "src/pages/admin/AdminLayout.jsx": "bcea420d9b157e19a1fb59783f2c2a56f433dd578d9fbe5895b32f4585e6c4f2",
     "src/pages/admin/AdminMaintenance.jsx": "1e91ef75a936d88d0581604b63b575c361f24e7baa793177b44971a2795ccd29",
     "src/pages/admin/AdminMarkets.jsx": "bfabf0d79879fc1543172fe7f9a588df2299f4b2b2afc3899cca1cb1eebec1bd",
     "src/pages/admin/AdminSettings.jsx": "074be2c6e02a84f2965d26b55f54ba20d047d8d1393f9edeb482a7d252842baa"

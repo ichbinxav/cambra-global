@@ -192,21 +192,21 @@ export default function PricingDual() {
         }}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
         {/* Header */}
-        <SectionHeading eyebrow={t("pd_eyebrow")} className="mb-6">
-          {t("pd_h2_pre")}
-          <br />
-          <span className="kw">{t("pd_h2_kw")}</span>
-        </SectionHeading>
-        <div className="text-center mb-12 sm:mb-14">
-          <p className="text-[13px] sm:text-[14px] max-w-lg mx-auto" style={{ color: "var(--gris-1)" }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-5 lg:gap-12 items-end mb-12 sm:mb-14">
+          <SectionHeading eyebrow={t("pd_eyebrow")} align="left">
+            {t("pd_h2_pre")}
+            <br />
+            <span className="kw">{t("pd_h2_kw")}</span>
+          </SectionHeading>
+          <p className="text-center lg:text-left text-[13px] sm:text-[14px] max-w-xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
             {t(recoveryV2Available ? "pd_sub_v2" : "pd_sub")}
           </p>
         </div>
 
         {/* Two columns — Analyze · Recover */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto pt-4">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-5xl mx-auto pt-4">
           {/* Flow connector between the two steps */}
           <motion.div
             aria-hidden

@@ -19,12 +19,12 @@ export default function TheStackSection() {
   ];
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-5">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
+        <div className="mb-10 lg:mb-12 lg:max-w-5xl">
+          <div className="flex justify-center lg:justify-start mb-5">
             <SectionLabel>{t("stack_eyebrow")}</SectionLabel>
           </div>
-          <SectionHeading>
+          <SectionHeading align="left">
             {t("stack_h2_pre")}
             <br />
             <span className="kw">{t("stack_h2_kw")}</span>
@@ -35,7 +35,7 @@ export default function TheStackSection() {
             in a colored dot per layer. We overlay each callout next to its dot.
             The wrapper is centered; a right padding reserves room for the
             callout column so nothing overflows. On mobile the callouts stack. */}
-        <div className="relative mx-auto lg:pr-[280px]" style={{ maxWidth: 940 }}>
+        <div className="relative mx-auto lg:pr-[300px]" style={{ maxWidth: 1100 }}>
           {/* On mobile the baked-in dashed lines + dots on the right of the
               image point at nothing (the callouts move to a list below), so
               they read as broken/dangling. We clip the right portion of the

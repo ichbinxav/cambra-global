@@ -16,13 +16,17 @@ export default function ProblemSectionWow() {
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden">
       <div aria-hidden className="absolute pointer-events-none" style={{ width: 700, height: 700, left: "50%", top: "5%", transform: "translateX(-50%)", background: "radial-gradient(circle, rgba(91,76,245,.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10">
-        <AnimatedSection>
-          <SectionHeading eyebrow={t("prob_eyebrow")} className="mb-4">
-            {t("prob_h2_pre")} <span className="kw">{t("prob_h2_kw")}</span>
-            <br />{t("prob_h2_post")}
-          </SectionHeading>
-          <p className="mx-auto mt-5 max-w-2xl text-center text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t("prob_intro")}</p>
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
+        <AnimatedSection className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
+          <div className="lg:col-span-7">
+            <SectionHeading eyebrow={t("prob_eyebrow")} align="left">
+              {t("prob_h2_pre")} <span className="kw">{t("prob_h2_kw")}</span>
+            </SectionHeading>
+          </div>
+          <p className="lg:col-span-5 text-center lg:text-left text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+            <strong className="block mb-2" style={{ color: "var(--ink)" }}>{t("prob_h2_post")}</strong>
+            {t("prob_intro")}
+          </p>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12">

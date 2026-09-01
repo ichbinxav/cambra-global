@@ -8,18 +8,25 @@ import React from "react";
  * Keeping ALL section titles identical (same font, size, weight, spacing,
  * color) is the whole point — sections differ by content, not by title style.
  */
-export default function SectionHeading({ eyebrow = null, children, className = "" }) {
+export default function SectionHeading({ eyebrow = null, children, className = "", align = "center" }) {
+  const alignment = align === "left"
+    ? "text-center lg:text-left"
+    : "text-center";
+  const width = align === "left"
+    ? "max-w-5xl mx-auto lg:mx-0"
+    : "max-w-4xl mx-auto";
+
   return (
-    <div className={`text-center ${className}`}>
+    <div className={`${alignment} ${className}`}>
       {eyebrow && (
         <p className="eyebrow mb-5">{eyebrow}</p>
       )}
       <h2
-        className="max-w-3xl mx-auto text-center"
+        className={`${width} ${alignment}`}
         style={{
           color: "var(--ink)",
           fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-          fontSize: "clamp(30px, 8.5vw, 80px)",
+          fontSize: "clamp(32px, 5vw, 64px)",
           fontWeight: 900,
           letterSpacing: "-0.045em",
           lineHeight: 1.05,

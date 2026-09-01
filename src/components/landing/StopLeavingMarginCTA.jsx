@@ -124,7 +124,7 @@ export default function StopLeavingMarginCTA() {
             className="text-white"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(48px, 8vw, 104px)",
+              fontSize: "clamp(44px, 6vw, 76px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.9,

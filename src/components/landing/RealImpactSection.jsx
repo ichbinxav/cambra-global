@@ -17,10 +17,10 @@ export default function RealImpactSection() {
 
   return (
     <section className="relative py-12 sm:py-16 overflow-hidden" aria-labelledby="report-preview-title">
-      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[.82fr_1.18fr] gap-10 lg:gap-16 items-center">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[.9fr_1.1fr] gap-10 lg:gap-16 items-center">
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-60px" }} transition={{ duration: .7 }}>
           <div className="mb-5"><SectionLabel>{t("ri_eyebrow")}</SectionLabel></div>
-          <h2 id="report-preview-title" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: "clamp(40px,6vw,72px)", fontWeight: 900, letterSpacing: "-.045em", lineHeight: 1 }}>
+          <h2 id="report-preview-title" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: "clamp(38px,5vw,64px)", fontWeight: 900, letterSpacing: "-.045em", lineHeight: 1 }}>
             {t("ri_h2_pre")}<br /><span className="kw">{t("ri_h2_kw")}</span>
           </h2>
           <p className="mt-6 text-[15px] leading-relaxed max-w-xl" style={{ color: "var(--gris-1)" }}>{t("ri_sub_pre")}</p>
