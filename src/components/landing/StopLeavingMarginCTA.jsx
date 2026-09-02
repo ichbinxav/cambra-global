@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
+import SectionLabel from "@/components/shared/SectionLabel";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useMarket } from "@/lib/publicExperience.jsx";
@@ -17,7 +18,7 @@ export default function StopLeavingMarginCTA() {
   const { t } = useTranslation();
   const { experience } = useMarket();
   return (
-    <section className="relative py-16 sm:py-20 px-4 sm:px-6">
+    <section id="start" className="relative scroll-mt-20 py-16 sm:py-20 px-4 sm:px-6">
      {/* Dark closer pill — this section is a full-bleed cinematic dark block,
          so it renders as its own navy card on the paper canvas. */}
      <div
@@ -25,7 +26,6 @@ export default function StopLeavingMarginCTA() {
        style={{
          background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
          border: "1px solid rgba(255,255,255,0.08)",
-         boxShadow: "0 40px 100px -40px rgba(0,0,0,0.6), 0 16px 50px -22px rgba(91,76,245,0.3)",
        }}
      >
       {/* Pulsing multi-layer ambient halo — the heartbeat of the closing */}
@@ -80,15 +80,15 @@ export default function StopLeavingMarginCTA() {
           alt=""
           aria-hidden
           initial={{ opacity: 0, scale: 0.96 }}
-          whileInView={{ opacity: 0.11, scale: 1 }}
+          whileInView={{ opacity: 0.08, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none absolute inset-0 m-auto w-[105%] max-w-[900px] h-auto object-contain select-none"
+          className="pointer-events-none absolute inset-0 z-0 m-auto h-auto w-[105%] max-w-[900px] select-none object-contain"
           draggable={false}
         />
 
         {/* Copy + CTAs, centered */}
-        <div className="w-full">
+        <div className="relative z-10 w-full">
           {/* Eyebrow */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -97,22 +97,7 @@ export default function StopLeavingMarginCTA() {
             transition={{ duration: 0.6 }}
             className="mb-10 flex justify-center"
           >
-            <span
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md"
-              style={{
-                border: "1px solid rgba(139,123,255,0.32)",
-                background: "rgba(139,123,255,0.08)",
-                boxShadow: "0 0 32px rgba(91,76,245,0.22)",
-              }}
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--voltio-2)" }} />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "var(--voltio-2)" }} />
-              </span>
-              <span className="text-[11px] uppercase tracking-[0.28em] font-bold text-white/85">
-                {t("cta_final_eyebrow")}
-              </span>
-            </span>
+            <SectionLabel tone="dark">{t("cta_final_eyebrow")}</SectionLabel>
           </motion.div>
 
           {/* MASSIVE headline — the closing statement */}
@@ -143,7 +128,7 @@ export default function StopLeavingMarginCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="mt-10 text-[17px] sm:text-[20px] text-white/65 mx-auto"
+            className="mt-10 text-[17px] sm:text-[20px] text-white mx-auto"
             style={{ lineHeight: 1.55, maxWidth: 620 }}
           >
             {t("cta_final_sub1")}
@@ -157,17 +142,16 @@ export default function StopLeavingMarginCTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-12 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto items-stretch justify-center"
+            className="mt-12 flex flex-col sm:flex-row gap-3 max-w-[580px] mx-auto items-stretch justify-center"
           >
-            <div className="flex-1">
+            <div className="flex flex-1">
               <Link
                 to={experience.analyzer.href}
-                className="group w-full inline-flex items-center justify-center gap-3 rounded-full font-medium text-[15px] transition-transform hover:-translate-y-0.5"
+                className="group h-[60px] w-full inline-flex items-center justify-center gap-3 rounded-full px-7 font-medium text-[15px] transition-transform hover:-translate-y-0.5"
                 style={{
                   background: "var(--g-voltio)",
                   color: "#ffffff",
                   boxShadow: "0 14px 36px -14px rgba(91,76,245,0.5)",
-                  padding: "20px 32px",
                 }}
               >
                 <Sparkles size={16} style={{ color: "#ffffff" }} />
@@ -176,7 +160,7 @@ export default function StopLeavingMarginCTA() {
               </Link>
             </div>
 
-            <div className="flex-1">
+            <div className="flex flex-1">
               <JoinWaitlistButton variant="ghost" label={t("cta_final_secondary")} fullWidth />
             </div>
           </motion.div>
@@ -188,18 +172,18 @@ export default function StopLeavingMarginCTA() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.5 }}
             className="mt-10 flex flex-wrap justify-center items-center gap-x-5 gap-y-2.5 text-[11px] uppercase tracking-[0.24em] font-bold"
-            style={{ color: "rgba(255,255,255,0.50)" }}
+            style={{ color: "#FFFFFF" }}
           >
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck size={12} style={{ color: "rgba(139,123,255,0.9)" }} />
+              <ShieldCheck size={12} style={{ color: "#B8AEFF" }} />
               {t("cta_final_t1")}
             </span>
-            <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
+            <span style={{ color: "#8B7BFF" }}>•</span>
             <span>{t("cta_final_t2")}</span>
-            <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
+            <span style={{ color: "#8B7BFF" }}>•</span>
             <span>{t("cta_final_t3")}</span>
-            <span style={{ color: "rgba(139,123,255,0.6)" }}>•</span>
-            <span className="text-white/80">{t("cta_final_t4")}</span>
+            <span style={{ color: "#8B7BFF" }}>•</span>
+            <span className="text-white">{t("cta_final_t4")}</span>
           </motion.div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Lock, Eye, ShieldCheck, Boxes } from "lucide-react";
 import { motion } from "framer-motion";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+import SectionLabel from "@/components/shared/SectionLabel";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 /**
@@ -23,13 +24,13 @@ const BULLETS = [
 export default function TrustSecuritySection() {
   const { t } = useTranslation();
   return (
-    <section className="relative py-12 sm:py-16 px-5">
+    <section id="trust" className="relative scroll-mt-20 py-12 sm:py-16 px-5">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative max-w-6xl mx-auto px-6 sm:px-12 py-14 sm:py-20 overflow-hidden"
+        className="relative max-w-[1400px] mx-auto px-6 sm:px-12 lg:px-14 py-14 sm:py-20 overflow-hidden"
         style={{
           background: "#0A0818",
           borderRadius: 24,
@@ -39,7 +40,7 @@ export default function TrustSecuritySection() {
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Copy + bullets */}
           <div className="lg:col-span-7">
-            <p className="eyebrow mb-5" style={{ color: "#ffffff" }}>{t("trust_sec_eyebrow")}</p>
+            <SectionLabel as="p" tone="dark" className="mb-5">{t("trust_sec_eyebrow")}</SectionLabel>
             <h2
               style={{
                 color: "#ffffff",
@@ -54,7 +55,11 @@ export default function TrustSecuritySection() {
               <span className="kw">{t("trust_sec_h2_kw")}</span>
             </h2>
 
-            <div className="mt-9 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
+            <p className="mt-6 max-w-2xl text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,.62)" }}>
+              {t("sec_sub")}
+            </p>
+
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
               {BULLETS.map((b) => {
                 const Icon = b.icon;
                 return (
@@ -108,7 +113,7 @@ export default function TrustSecuritySection() {
               alt={t("trust_sec_vault_alt")}
               width={480}
               height={480}
-              className="relative w-full max-w-[380px] h-auto select-none"
+              className="relative h-auto w-[112%] max-w-[552px] select-none lg:w-[120%]"
               draggable={false}
               style={{
                 maskImage:

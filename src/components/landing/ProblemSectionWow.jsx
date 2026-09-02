@@ -23,7 +23,7 @@ export default function ProblemSectionWow() {
               {t("prob_h2_pre")} <span className="kw">{t("prob_h2_kw")}</span>
             </SectionHeading>
           </div>
-          <p className="lg:col-span-5 text-center lg:text-left text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+          <p className="lg:col-span-5 text-center lg:text-justify text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
             <strong className="block mb-2" style={{ color: "var(--ink)" }}>{t("prob_h2_post")}</strong>
             {t("prob_intro")}
           </p>
@@ -40,7 +40,7 @@ export default function ProblemSectionWow() {
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: .65, delay: index * .1, ease: [0.22, 1, 0.36, 1] }}
                 className="relative rounded-2xl p-6 sm:p-7 overflow-hidden"
-                style={{ background: "linear-gradient(180deg,#14112e 0%,#0a0818 100%)", border: "1px solid rgba(255,255,255,.10)", boxShadow: "0 20px 50px -25px rgba(0,0,0,.5)" }}
+                style={{ background: "linear-gradient(180deg,#14112e 0%,#0a0818 100%)", border: "1px solid rgba(255,255,255,.10)" }}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: `${card.color}18`, border: `1px solid ${card.color}55`, color: card.color }}><Icon size={18} /></span>

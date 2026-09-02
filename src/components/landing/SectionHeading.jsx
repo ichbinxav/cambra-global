@@ -1,4 +1,5 @@
 import React from "react";
+import SectionLabel from "@/components/shared/SectionLabel";
 
 /**
  * SectionHeading — the single, unified title style for every landing section.
@@ -8,7 +9,7 @@ import React from "react";
  * Keeping ALL section titles identical (same font, size, weight, spacing,
  * color) is the whole point — sections differ by content, not by title style.
  */
-export default function SectionHeading({ eyebrow = null, children, className = "", align = "center" }) {
+export default function SectionHeading({ eyebrow = null, children, className = "", align = "center", eyebrowTone = "light" }) {
   const alignment = align === "left"
     ? "text-center lg:text-left"
     : "text-center";
@@ -19,7 +20,7 @@ export default function SectionHeading({ eyebrow = null, children, className = "
   return (
     <div className={`${alignment} ${className}`}>
       {eyebrow && (
-        <p className="eyebrow mb-5">{eyebrow}</p>
+        <SectionLabel as="p" tone={eyebrowTone === "dark" ? "dark" : "light"} className="mb-5">{eyebrow}</SectionLabel>
       )}
       <h2
         className={`${width} ${alignment}`}

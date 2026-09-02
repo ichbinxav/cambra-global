@@ -264,16 +264,16 @@ export default {
     sidebar_signout:      "Skrá út",
 
     /* landing — hero */
-    hero_badge:           "Finndu falinn greiðslukostnað",
-    hero_h1_line1:        "Hættu að tapa framlegð",
-    hero_h1_line2:        "í hvert sinn sem þú færð greitt.",
-    hero_sub:             "Greiðslugjöld taka bita af hverri sölu. CAMBRA finnur hvar þú kannt að greiða of mikið og hjálpar þér að fá þá peninga til baka. Þú greiðir aðeins þegar þú sparar.",
-    hero_cta_primary:     "Finndu týndu framlegðina mína",
+    hero_badge:           "GREIÐSLUGREIND",
+    hero_h1_line1:        "Lækkaðu kortagjöldin.",
+    hero_h1_line2:        "Haltu eftir meiri framlegð.",
+    hero_sub:             "CAMBRA greinir kostnaðinn þinn, finnur kortagjöld sem hægt er að forðast og hjálpar þér að semja um betri kjör. Byrjaðu ókeypis. Við fáum aðeins greitt þegar þú sparar.",
+    hero_cta_primary:     "Sjáðu hvað þú gætir sparað",
     hero_cta_secondary:   "Svona virkar það",
-    hero_trust_1:         "Ókeypis fyrsta greining",
-    hero_trust_2:         "Greiðir aðeins af staðfestum sparnaði",
-    hero_trust_3:         "Gert fyrir evrópsk fyrirtæki",
-    hero_image_alt:       "Skýringarmynd af CAMBRA framlegðarskýrslu sem sýnir staðreyndir sem eru skoðaðar á undan ráðleggingu",
+    hero_trust_1:         "Ókeypis kostnaðargreining",
+    hero_trust_2:         "Enginn staðfestur sparnaður, ekkert gjald",
+    hero_trust_3:         "Fyrir evrópska söluaðila",
+    hero_image_alt:       "Skýringardæmi um 24 mánaða CAMBRA-úttekt: 5 millj. € ársvelta, núverandi hlutfall 2,70%, markmið 1,70% og 100.000 € möguleg ofgreiðsla",
     hero_visual_title:    "Framlegðarskýrslan þín",
     hero_visual_status:   "Til skýringar",
     hero_visual_market:   "Hvað þú selur",
@@ -318,7 +318,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Haltu meiru eftir af hverri sölu.",
+    footer_tagline:       "Innviðagreind fyrir sjálfstæð viðskipti.",
     footer_privacy:       "Persónuverndarstefna",
     footer_terms:         "Notkunarskilmálar",
     footer_dpa: "Vinnslusamningur",
@@ -842,7 +842,7 @@ export default {
     ac_secondary_coll:       "eða gakktu í samtökin",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "GREIÐSLUFLEYGURINN",
+    stack_eyebrow: "GREINDIN OKKAR",
     stack_h2_pre:  "Fjögur lög af greiðsluupplýsingum.",
     stack_h2_kw:   "Eitt sönnunarlíkan.",
     stack_c1_t: "Hagkvæmni söluaðilans",
@@ -1106,6 +1106,10 @@ export default {
     fl_p1:                 "Eftir ár hjá alþjóðlegum fyrirtækjum áttaði ég mig á að sjálfstæð vörumerki störfuðu án þeirra innviða sem þau áttu skilið.",
     fl_p2:                 "Þess vegna stofnaði ég CAMBRA.",
     fl_role:               "Stofnandi",
+    fl_intro:              "CAMBRA varð til út frá einfaldri sannfæringu: sjálfstæð fyrirtæki eiga skilið sanngjarnara verð og fullt gagnsæi.",
+    fl_metric_years:       "ár hjá alþjóðlegum fyrirtækjum",
+    fl_metric_mission:     "markmið: sanngjarnara verð",
+    fl_metric_focus:       "áhersla á raunverulegan sparnað",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Sönnunarkröfur",
@@ -1169,8 +1173,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Verð",
-    pd_h2_pre:       "Byrjaðu á greiningunni.",
-    pd_h2_kw:        "Aðhafstu með sönnunum.",
+    pd_h2_pre:       "Engin fyrirframgjöld.",
+    pd_h2_kw:        "Við vinnum þegar þú vinnur.",
     pd_sub:          "Greindu ókeypis. Virkjirðu Recover fær CAMBRA 25% af jákvæðum staðfestum sparnaði á 24 mánaða Endurheimtutímabilinu. Þú heldur 75%. Enginn staðfestur sparnaður, engin þóknun.",
     pd_sub_v2:       "Greindu ókeypis. Þar sem samþykktu þrepaskilmálarnir eru í boði kostar Recover 25% af jákvæðum staðfestum sparnaði í mánuðum 1–12, 15% í mánuðum 13–24 og 0% eftir það.",
     pd_step1:        "Skref 1",

@@ -265,16 +265,16 @@ export default {
     sidebar_signout:      "Logg ut",
 
     /* landing — hero */
-    hero_badge:           "Finn skjulte betalingskostnader",
-    hero_h1_line1:        "Slutt å tape margin",
-    hero_h1_line2:        "hver gang du får betalt.",
-    hero_sub:             "Betalingsgebyrer tar en bit av hvert salg. CAMBRA finner hvor du kanskje betaler for mye, og hjelper deg å få pengene tilbake. Du betaler kun når du sparer.",
-    hero_cta_primary:     "Finn den tapte marginen min",
+    hero_badge:           "BETALINGSINTELLIGENS",
+    hero_h1_line1:        "Senk kortgebyrene dine.",
+    hero_h1_line2:        "Behold mer margin.",
+    hero_sub:             "CAMBRA analyserer kostnadene dine, finner kortgebyrer som kan unngås, og hjelper deg å forhandle bedre vilkår. Start gratis. Vi tjener bare når du sparer.",
+    hero_cta_primary:     "Se hva du kan spare",
     hero_cta_secondary:   "Slik fungerer det",
-    hero_trust_1:         "Gratis første analyse",
-    hero_trust_2:         "Betal kun på verifiserte besparelser",
-    hero_trust_3:         "Laget for europeiske bedrifter",
-    hero_image_alt:       "Illustrerende CAMBRA-marginrapport som viser fakta kontrollert før en anbefaling",
+    hero_trust_1:         "Gratis kostnadsanalyse",
+    hero_trust_2:         "Ingen verifisert besparelse, ingen avgift",
+    hero_trust_3:         "For europeiske forhandlere",
+    hero_image_alt:       "Illustrativ CAMBRA-revisjon over 24 måneder: 5 mill. € i årsvolum, nåværende sats 2,70%, mål 1,70% og 100 000 € mulig overbetaling",
     hero_visual_title:    "Marginrapporten din",
     hero_visual_status:   "Illustrerende",
     hero_visual_market:   "Hva du selger",
@@ -319,7 +319,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Behold mer av hvert salg.",
+    footer_tagline:       "Infrastrukturinnsikt for uavhengig handel.",
     footer_privacy:       "Personvernerklæring",
     footer_terms:         "Vilkår for bruk",
     footer_dpa: "Databehandleravtale",
@@ -843,7 +843,7 @@ export default {
     ac_secondary_coll:       "eller bli med i kollektivet",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "BETALINGSKILEN",
+    stack_eyebrow: "VÅR INTELLIGENS",
     stack_h2_pre:  "Fire lag med betalingsinnsikt.",
     stack_h2_kw:   "Én bevismodell.",
     stack_c1_t: "Handelsstedets økonomi",
@@ -1107,6 +1107,10 @@ export default {
     fl_p1:                 "Etter år i globale selskaper innså jeg at uavhengige merkevarer opererte uten infrastrukturen de fortjente.",
     fl_p2:                 "Derfor startet jeg CAMBRA.",
     fl_role:               "Grunnlegger",
+    fl_intro:              "CAMBRA ble skapt ut fra en enkel overbevisning: Uavhengige virksomheter fortjener mer rettferdige priser og full åpenhet.",
+    fl_metric_years:       "år i globale selskaper",
+    fl_metric_mission:     "oppdrag: mer rettferdige priser",
+    fl_metric_focus:       "fokus på reelle besparelser",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Bevisstandarder",
@@ -1170,8 +1174,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Priser",
-    pd_h2_pre:       "Start med analysen.",
-    pd_h2_kw:        "Handle med bevis.",
+    pd_h2_pre:       "Ingen forhåndskostnader.",
+    pd_h2_kw:        "Vi vinner når du vinner.",
     pd_sub:          "Analyser gratis. Aktiverer du Recover, tjener CAMBRA 25% av positive verifiserte besparelser i den 24 måneders Gjenvinningsperioden. Du beholder 75%. Ingen verifiserte besparelser, ingen honorar.",
     pd_sub_v2:       "Analyser gratis. Der de godkjente trinnvilkårene er tilgjengelige, koster Recover 25% av positive verifiserte besparelser i måned 1–12, 15% i måned 13–24 og 0% deretter.",
     pd_step1:        "Steg 1",

@@ -9,9 +9,9 @@
 import { Check, Lock, ShieldCheck } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-export default function LoginGateBenefits() {
+export default function LoginGateBenefits({ title, items: providedItems }) {
   const { t } = useTranslation();
-  const items = [t("login_gate_b1"), t("login_gate_b2"), t("login_gate_b3")];
+  const items = providedItems || [t("login_gate_b1"), t("login_gate_b2"), t("login_gate_b3")];
   const chips = [
     { icon: ShieldCheck, label: t("login_gate_trust_1") },
     { icon: Lock, label: t("login_gate_trust_2") },
@@ -29,7 +29,7 @@ export default function LoginGateBenefits() {
         }}
       >
         <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-3">
-          {t("login_gate_benefits_title")}
+          {title || t("login_gate_benefits_title")}
         </p>
         <ul className="space-y-2.5">
           {items.map((label) => (

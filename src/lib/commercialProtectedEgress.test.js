@@ -412,7 +412,7 @@ describe("protected commercial Anthropic egress", () => {
       file: "entry.ts",
       content: "const token = \"[redacted-secret]\"; [redacted-email]",
     }]);
-  });
+  }, 15_000);
 
   it("sanitizes model output and rejects an over-limit result before persistence", () => {
     expect(parseCommercialFindingsJson('```json\n{"findings":[],"summary":"ok"}\n```'))

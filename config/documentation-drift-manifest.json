@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-09-02T11:06:29.860Z",
+  "generatedAt": "2026-09-02T21:40:27.663Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -213,7 +213,7 @@
     "base44/shared/stripeConnectedAccountLifecycle.ts": "0654a2208828146c2ef9f2fa2c6f0f384d0b70a446efa564ecd0a3dbe14842e9",
     "base44/shared/supervisorObservation.ts": "6d21c9e17f36a95e57a07164e75eac0d99ab566a9b6b57196726b5e1c6857006",
     "base44/shared/webhookDeadLetterClaim.ts": "7e1dee08442e9e69a5b318606180b83919ac108a5ff19537634d502a91e623bf",
-    "config/agent-workforce-catalog.v1.json": "66486f214f277c5f092fb727d34352b1226913cded078a69aca8c986e92ce997",
+    "config/agent-workforce-catalog.v1.json": "b8f27f5ad2841e399a9003383049ce18f3d4aba1bc61218f4a92211a768652fc",
     "config/agenttask-creator-inventory.json": "7a3395a75ccc86b0a01932d83d30e34fd509349c86abbe5c7f7da9dbabc8c491",
     "config/europe-locales.json": "e6267619483517627cc8e965f2cedf103b660ee42d1d0b2f557a17d67df92d14",
     "config/europe-markets.json": "0f443208bdee17e4202208d426833a31a61b6f39055848f48c985e96dda2161b",
@@ -231,7 +231,7 @@
     "config/p12-kpi-definitions.json": "22bb896c5e2ba5167a81de6a4974a06f3b57b82ee520cdcaa81f2f8926beabbd",
     "config/product-policy.json": "d02d9f86d24cd9adc621e874cea823c7097c533ebcd55ace0c6d020249631945",
     "config/release-touch-list.json": "b0cc9ebf756fb77c48b174dcbb27fe6d265329b8de378881d75324b10dfba64e",
-    "config/remediation/authority-trace-operational-inventory.v1.json": "8bb7af41e63e135bd6676564c2388f1d437e8937ceda45f168e1bf029130e5e2",
+    "config/remediation/authority-trace-operational-inventory.v1.json": "8a4361e33032a36a76adb688a8f60f375dcc8ef8452ca23a9167e282b01a1267",
     "config/remediation/effect-authority-registry.v1.json": "5cc7e99911272aac11e6ca80e7679d34792826615996169725c36f82009025db",
     "config/remediation/material-boundary-registry.v1.json": "20828e531040c10e69ce3a6e74da58203339ecb288e0ae23764d831e078a4521",
     "config/remediation/material-tenant-authorization-inventory.v1.json": "11cdf489d7ed4b359d9515ce20e9319ef5ba31a54bd69f953f656aa77f76352a",
@@ -253,7 +253,7 @@
     "scripts/generate-remediation-r5.mjs": "a06b855b21cf5d3a00ce52271090c8d29a8df7ae83695883985b7ac6fb7e1f22",
     "scripts/lib/base44Bundle.mjs": "4b1526e3bd4116ca14c10b706cadcb89d12df69565a7e1c209c03407445a31dc",
     "scripts/package-release.mjs": "0e6771bcae846e737ad7f8577c659d931d3f38a5a975ca3d2ee0382642738bf9",
-    "src/App.jsx": "e1e03c624183c8ac3e96508d90cb14685f2023945dece9cdcc1d1fa80669ffab",
+    "src/App.jsx": "f8a48808e058c3183dadb22a8beba748fac5810f9d433b1f3fc0b6ddf5f8fab5",
     "src/components/paymentsAnalyzer/StatementUploadCard.jsx": "8a36e4820f25ac38b0928b2daccd62f2202f026b1a517f73b7966582aabae8fd",
     "src/components/shared/LanguageSwitcher.jsx": "560af378671db6110419f242fffeace603a84afe274a58394579815d9f389f19",
     "src/docs/CAMBRA_ADAPTIVE_LEAD_PHASE_3_CORE.md": "90c0252a5c8c5ac5e6cc74f164c450be670fd1f1ada6f608d4092a1ff65adc2e",
@@ -324,7 +324,7 @@
     "src/pages/admin/AdminLayout.jsx": "1d5fbda8ef69c450f048aecf00ffe5f30b78b17e5296bb5a4bfdd59a2e5f50ce",
     "src/pages/admin/AdminMaintenance.jsx": "1e91ef75a936d88d0581604b63b575c361f24e7baa793177b44971a2795ccd29",
     "src/pages/admin/AdminMarkets.jsx": "bfabf0d79879fc1543172fe7f9a588df2299f4b2b2afc3899cca1cb1eebec1bd",
-    "src/pages/admin/AdminSettings.jsx": "074be2c6e02a84f2965d26b55f54ba20d047d8d1393f9edeb482a7d252842baa"
+    "src/pages/admin/AdminSettings.jsx": "a7c477898f45459f54ba7970bd45942a4ff8d5f39a1a457b8c67bcb1374547e1"
   },
   "documentationFiles": {
     "src/docs/CAMBRA_OPERATING_BIBLE.md": "ae6a858d2a8926cd60ffd4239f9d1a0ff9126694b2b3384822bef6399d810b52",

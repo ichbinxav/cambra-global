@@ -5,6 +5,8 @@ import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { safeReturnUrl } from "@/lib/safeRedirect";
 import LoginGateBenefits from "@/components/auth/LoginGateBenefits";
+import { SEO_ORIGIN } from "@/lib/seoConfig";
+import { BASE_FEE_PCT, ENTRY_FEE_PCT } from "@/lib/referralProgram";
 
 /* CAMBRA — Pre-login gate.
    Shown when an unauthenticated user lands on a protected route.
@@ -27,16 +29,60 @@ export default function LoginGate() {
     return `${window.location.origin}/Dashboard`;
   }, []);
 
-  // Contextual copy: when the user was heading to Connect Tools (they clicked
-  // "Connect Stripe/your PSP"), show connection-specific messaging instead of
-  // the generic "your audit is ready" — otherwise the gate looks unrelated to
-  // the action they just took.
+  const intent = useMemo(() => {
+    try {
+      const parsed = new URL(returnUrl);
+      const referralCode = parsed.searchParams.get("ref") || "";
+      return {
+        path: parsed.pathname,
+        referralCode,
+        inviteBack: referralCode ? `/Invite?ref=${encodeURIComponent(referralCode)}` : "/",
+      };
+    } catch {
+      return { path: "", referralCode: "", inviteBack: "/" };
+    }
+  }, [returnUrl]);
+
   const isConnectIntent = /\/ConnectTools|\/ConnectIntegrations/i.test(returnUrl);
-  const headline = isConnectIntent ? t("login_gate_connect_headline") : t("login_gate_headline");
-  const sub = isConnectIntent ? t("login_gate_connect_sub") : t("login_gate_sub");
+  const isReferralManagementIntent = /^\/Referrals\/?$/i.test(intent.path);
+  const isReferralInviteIntent = /^\/Analyzer\/?$/i.test(intent.path) && !!intent.referralCode;
+  const headline = isReferralManagementIntent
+    ? t("ref_title")
+    : isReferralInviteIntent
+      ? `${BASE_FEE_PCT}% → ${ENTRY_FEE_PCT}%`
+      : isConnectIntent
+        ? t("login_gate_connect_headline")
+        : t("login_gate_headline");
+  const sub = isReferralManagementIntent
+    ? t("ref_sub")
+    : isReferralInviteIntent
+      ? t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`)
+      : isConnectIntent
+        ? t("login_gate_connect_sub")
+        : t("login_gate_sub");
+  const benefitTitle = isReferralManagementIntent || isReferralInviteIntent
+    ? t("ref_land_eyebrow")
+    : undefined;
+  const benefitItems = isReferralManagementIntent
+    ? [t("ref_how_1"), t("ref_how_2"), t("ref_how_3")]
+    : isReferralInviteIntent
+      ? [
+          t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`),
+          t("ref_land_trigger"),
+          t("login_gate_b3"),
+        ]
+      : undefined;
+  const backTarget = isReferralInviteIntent ? intent.inviteBack : "/";
+  const backLabel = isReferralManagementIntent || isReferralInviteIntent ? t("bp_back") : t("login_gate_back");
 
   const handleContinue = () => {
     try {
+      if (/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
+        const parsed = new URL(returnUrl);
+        const productionReturnUrl = `${SEO_ORIGIN}${parsed.pathname}${parsed.search}${parsed.hash}`;
+        window.location.href = `${SEO_ORIGIN}/login?from_url=${encodeURIComponent(productionReturnUrl)}`;
+        return;
+      }
       base44.auth.redirectToLogin(returnUrl);
     } catch {
       // Last-resort fallback — should never happen in practice.
@@ -118,7 +164,7 @@ export default function LoginGate() {
         </p>
 
         {/* UX-1 T5 — what an account unlocks (mirrors the locked report items) */}
-        <LoginGateBenefits />
+        <LoginGateBenefits title={benefitTitle} items={benefitItems} />
 
         {/* P0.4 — Base44 exposes one combined auth flow (redirectToLogin).
             Two buttons calling the same handler was misleading. Replaced
@@ -168,10 +214,10 @@ export default function LoginGate() {
         {/* Escape hatch — never trap a user on the gate */}
         <div className="mt-7 text-center">
           <Link
-            to="/"
+            to={backTarget}
             className="inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/75 transition-colors"
           >
-            <ArrowLeft size={12} /> {t("login_gate_back")}
+            <ArrowLeft size={12} /> {backLabel}
           </Link>
         </div>
       </div>

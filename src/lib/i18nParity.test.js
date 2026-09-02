@@ -115,7 +115,6 @@ describe('global i18n contract — EN / FR / ES', () => {
       { file: 'src/components/account/RecoverCommitmentsCard.jsx', requiredLangs: SUPPORTED_LANGUAGES },
       { file: 'src/pages/PaymentsMigration.jsx', requiredLangs: SUPPORTED_LANGUAGES },
       // Declared exceptions (scope calls with an owner and a reason).
-      { file: 'src/pages/Pricing.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'JSX-fragment lookup; per-market pricing wording pending legal review, tracked as I18N-08' },
       { file: 'src/lib/seoConfig.js', requiredLangs: ['en','fr','es'], exceptionReason: 'OG_LOCALE + per-route SEO wording; header comment declares en/fr/es scope' },
       { file: 'src/pages/Privacy.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING per config/legal/dpa-status.json' },
       { file: 'src/pages/Terms.jsx', requiredLangs: ['en','fr','es'], exceptionReason: 'Legal document — legal_review PENDING' },

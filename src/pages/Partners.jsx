@@ -140,6 +140,7 @@ export default function Partners() {
         eyebrow={t("pt_eyebrow")}
         title={<>{t("pt_hero_title")}</>}
         subtitle={t("pt_hero_sub")}
+        tone="dark"
       >
         <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
           <button onClick={scrollToApply} className="btn-base btn-primary-inverse btn-lg">

@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Izrakstīties",
 
     /* landing — hero */
-    hero_badge:           "Atrodi slēptās maksājumu izmaksas",
-    hero_h1_line1:        "Pārtrauc zaudēt maržu",
-    hero_h1_line2:        "katru reizi, kad saņem maksājumu.",
-    hero_sub:             "Maksājumu komisijas paņem daļu no katras pārdošanas. CAMBRA atrod, kur tu, iespējams, maksā pārāk daudz, un palīdz atgūt šo naudu. Tu maksā tikai tad, kad ietaupi.",
-    hero_cta_primary:     "Atrodi manu zaudēto maržu",
+    hero_badge:           "MAKSĀJUMU INTELIĢENCE",
+    hero_h1_line1:        "Samazini karšu komisijas.",
+    hero_h1_line2:        "Saglabā lielāku peļņas daļu.",
+    hero_sub:             "CAMBRA analizē tavas izmaksas, atrod novēršamas karšu komisijas un palīdz vienoties par labākiem nosacījumiem. Sāc bez maksas. Mēs nopelnām tikai tad, kad tu ietaupi.",
+    hero_cta_primary:     "Uzzini, cik vari ietaupīt",
     hero_cta_secondary:   "Kā tas darbojas",
-    hero_trust_1:         "Bezmaksas pirmā analīze",
-    hero_trust_2:         "Maksā tikai par pārbaudītiem ietaupījumiem",
-    hero_trust_3:         "Radīts Eiropas uzņēmumiem",
-    hero_image_alt:       "Ilustratīvs CAMBRA maržas pārskats, kas parāda pirms ieteikuma pārbaudītos faktus",
+    hero_trust_1:         "Bezmaksas izmaksu analīze",
+    hero_trust_2:         "Nav pārbaudīta ietaupījuma, nav maksas",
+    hero_trust_3:         "Eiropas tirgotājiem",
+    hero_image_alt:       "Ilustratīvs CAMBRA 24 mēnešu audits: 5 milj. € gada apjoms, pašreizējā likme 2,70%, mērķis 1,70% un 100 000 € iespējamā pārmaksa",
     hero_visual_title:    "Tavs maržas pārskats",
     hero_visual_status:   "Ilustratīvs",
     hero_visual_market:   "Ko tu pārdod",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Paturi vairāk no katras pārdošanas.",
+    footer_tagline:       "Infrastruktūras inteliģence neatkarīgai tirdzniecībai.",
     footer_privacy:       "Privātuma politika",
     footer_terms:         "Lietošanas noteikumi",
     footer_dpa: "Datu apstrādes līgums",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "vai pievienojies kolektīvam",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "MAKSĀJUMU ĶĪLIS",
+    stack_eyebrow: "MŪSU INTELIĢENCE",
     stack_h2_pre:  "Četri maksājumu izlūkošanas slāņi.",
     stack_h2_kw:   "Viens pierādījumu modelis.",
     stack_c1_t: "Tirgotāja ekonomika",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Pēc gadiem globālos uzņēmumos es sapratu, ka neatkarīgie zīmoli darbojas bez infrastruktūras, ko tie ir pelnījuši.",
     fl_p2:                 "Tāpēc es izveidoju CAMBRA.",
     fl_role:               "Dibinātājs",
+    fl_intro:              "CAMBRA radās no vienkāršas pārliecības: neatkarīgi uzņēmumi ir pelnījuši taisnīgākas cenas un pilnīgu pārredzamību.",
+    fl_metric_years:       "gadi globālos uzņēmumos",
+    fl_metric_mission:     "misija: taisnīgākas cenas",
+    fl_metric_focus:       "fokuss uz reāliem ietaupījumiem",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Pierādījumu standarti",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Cenas",
-    pd_h2_pre:       "Sāc ar analīzi.",
-    pd_h2_kw:        "Rīkojies ar pierādījumiem.",
+    pd_h2_pre:       "Bez sākotnējām izmaksām.",
+    pd_h2_kw:        "Mēs uzvaram, kad uzvari tu.",
     pd_sub:          "Analizē bez maksas. Ja aktivizē Recover, CAMBRA nopelna 25% no pozitīvajiem pārbaudītajiem ietaupījumiem 24 mēnešu Atgūšanas perioda laikā. Tu paturi 75%. Nav pārbaudītu ietaupījumu, nav maksas.",
     pd_sub_v2:       "Analizē bez maksas. Kur apstiprinātie pakāpju nosacījumi ir pieejami, Recover maksā 25% no pozitīvajiem pārbaudītajiem ietaupījumiem 1.–12. mēnesī, 15% 13.–24. mēnesī un 0% pēc tam.",
     pd_step1:        "1. solis",

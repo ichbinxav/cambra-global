@@ -261,16 +261,16 @@ export default {
     sidebar_signout:      "Deconectare",
 
     /* landing — hero */
-    hero_badge:           "Găsește costurile ascunse ale plăților",
-    hero_h1_line1:        "Nu mai pierde marjă",
-    hero_h1_line2:        "de fiecare dată când ești plătit.",
-    hero_sub:             "Comisioanele de plată iau o parte din fiecare vânzare. CAMBRA găsește unde s-ar putea să plătești prea mult și te ajută să recuperezi acei bani. Plătești doar când economisești.",
-    hero_cta_primary:     "Găsește-mi marja pierdută",
+    hero_badge:           "INTELIGENȚA PLĂȚILOR",
+    hero_h1_line1:        "Redu comisioanele de card.",
+    hero_h1_line2:        "Păstrează mai multă marjă.",
+    hero_sub:             "CAMBRA analizează cât plătești, identifică costurile de card evitabile și te ajută să negociezi condiții mai bune. Începi gratuit. Câștigăm doar când economisești.",
+    hero_cta_primary:     "Vezi cât ai putea economisi",
     hero_cta_secondary:   "Cum funcționează",
-    hero_trust_1:         "Prima analiză gratuită",
-    hero_trust_2:         "Plătești doar pe economii verificate",
-    hero_trust_3:         "Făcut pentru afaceri europene",
-    hero_image_alt:       "Raport ilustrativ de marjă CAMBRA cu faptele verificate înaintea unei recomandări",
+    hero_trust_1:         "Analiză gratuită a costurilor",
+    hero_trust_2:         "Fără economii verificate, fără comision",
+    hero_trust_3:         "Creat pentru comercianții europeni",
+    hero_image_alt:       "Audit CAMBRA ilustrativ pe 24 de luni: volum anual de 5 mil. €, rată actuală 2,70%, țintă 1,70% și supracost potențial de 100.000 €",
     hero_visual_title:    "Raportul tău de marjă",
     hero_visual_status:   "Ilustrativ",
     hero_visual_market:   "Ce vinzi",
@@ -315,7 +315,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Păstrează mai mult din fiecare vânzare.",
+    footer_tagline:       "Inteligență de infrastructură pentru comerțul independent.",
     footer_privacy:       "Politica de confidențialitate",
     footer_terms:         "Termeni și condiții",
     footer_dpa: "Acord de prelucrare a datelor",
@@ -839,7 +839,7 @@ export default {
     ac_secondary_coll:       "sau alătură-te colectivului",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PÂRGHIA PLĂȚILOR",
+    stack_eyebrow: "INTELIGENȚA NOASTRĂ",
     stack_h2_pre:  "Patru straturi de inteligență a plăților.",
     stack_h2_kw:   "Un singur model de evidență.",
     stack_c1_t: "Economia comerciantului",
@@ -1103,6 +1103,10 @@ export default {
     fl_p1:                 "După ani în companii globale, am realizat că brandurile independente operau fără infrastructura pe care o meritau.",
     fl_p2:                 "De aceea am pornit CAMBRA.",
     fl_role:               "Fondator",
+    fl_intro:              "CAMBRA s-a născut dintr-o convingere simplă: afacerile independente merită prețuri mai echitabile și transparență totală.",
+    fl_metric_years:       "ani în companii globale",
+    fl_metric_mission:     "misiune: prețuri mai echitabile",
+    fl_metric_focus:       "focus pe economii reale",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standarde de evidență",
@@ -1166,8 +1170,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Prețuri",
-    pd_h2_pre:       "Începe cu analiza.",
-    pd_h2_kw:        "Acționează cu evidență.",
+    pd_h2_pre:       "Fără costuri inițiale.",
+    pd_h2_kw:        "Câștigăm când câștigi.",
     pd_sub:          "Analizează gratuit. Dacă activezi Recover, CAMBRA câștigă 25% din economiile pozitive verificate în Perioada de Recuperare de 24 de luni. Tu păstrezi 75%. Fără economii verificate, fără comision.",
     pd_sub_v2:       "Analizează gratuit. Unde termenii pe trepte aprobați sunt disponibili, Recover costă 25% din economiile pozitive verificate în lunile 1–12, 15% în lunile 13–24 și 0% după.",
     pd_step1:        "Pasul 1",

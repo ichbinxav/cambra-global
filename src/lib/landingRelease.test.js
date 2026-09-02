@@ -51,16 +51,38 @@ describe("landing truth and release controls", () => {
     expect(read("index.html")).toContain("CAMBRA payment cost audit and recovery");
   });
 
-  it("keeps the desktop landing wide and uses the approved report image in the hero", () => {
+  it("keeps the desktop landing wide and uses the 24-month fee-audit illustration", () => {
     const landing = read("src/pages/Landing.jsx");
+    const stack = read("src/components/landing/TheStackSection.jsx");
     const headings = read("src/components/landing/SectionHeading.jsx");
-    expect(landing).toContain("max-w-[1480px]");
+    expect(landing).toContain("max-w-[1500px]");
     expect(landing).toContain("lg:grid-cols-3");
-    expect(landing).toContain("6cf6e66f1_IMG_3459.webp");
-    expect(landing).toContain("clamp(44px, 5vw, 72px)");
+    expect(landing).toContain("/images/cambra-fee-audit-24m-v3.png");
+    expect(stack).toContain("/images/cambra-intelligence-stack-v2.png");
+    expect(landing).not.toContain('t("ri_illustrative")');
+    expect(landing).toContain("clamp(43px, 4.15vw, 64px)");
+    expect(landing).toContain("lg:w-[108%]");
+    expect(landing).toContain("lg:justify-end");
+    expect(landing).not.toContain("lg:translate-x-[7%]");
+    expect(landing).not.toContain("xl:translate-x-[11%]");
+    expect(landing).toContain('to="/ConnectTools"');
+    expect(landing).not.toContain("MarketAvailabilitySection");
+    expect(landing).toContain("<HeroTrustStrip />");
+    expect(landing).toContain("<TheStackSection />");
+    expect(landing).not.toContain("<RealImpactSection />");
     expect(landing).not.toContain("hero_visual_title");
     expect(headings).toContain('align = "center"');
     expect(headings).toContain("clamp(32px, 5vw, 64px)");
+  });
+
+  it("ships the sharper 24-month hero copy in every product locale", () => {
+    for (const dict of PRODUCT_DICTS) {
+      expect(dict.hero_badge).toBeTruthy();
+      expect(dict.hero_h1_line1).toBeTruthy();
+      expect(dict.hero_h1_line2).toBeTruthy();
+      expect(dict.hero_image_alt).toContain("24");
+      expect(dict.stack_eyebrow).not.toMatch(/PAYMENTS WEDGE/i);
+    }
   });
 
   it("defaults optional consent off and exposes accept, reject, manage and withdrawal", () => {

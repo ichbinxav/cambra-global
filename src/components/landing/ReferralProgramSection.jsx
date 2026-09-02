@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT } from "@/lib/referralProgram";
+import { BASE_FEE_PCT, ENTRY_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT } from "@/lib/referralProgram";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
@@ -26,7 +26,7 @@ export default function ReferralProgramSection() {
   const { t } = useTranslation();
   const { experience } = useMarket();
 
-  const entryPct = BASE_FEE_PCT - STEP_POINTS;
+  const entryPct = ENTRY_FEE_PCT;
   const sub = t("ref_land_sub")
     .replace("{step}", String(STEP_POINTS))
     .replace("{floor}", `${FLOOR_FEE_PCT}%`)
@@ -34,13 +34,13 @@ export default function ReferralProgramSection() {
     .replace("{base}", `${BASE_FEE_PCT}%`);
 
   const tiles = [
-    { label: t("ref_land_t1_label"), value: `−${STEP_POINTS}`, unit: "pts", note: t("ref_land_t1_note") },
-    { label: t("ref_land_t2_label"), value: `${FLOOR_FEE_PCT}`, unit: "%", note: t("ref_land_t2_note") },
-    { label: t("ref_land_t3_label"), value: `${entryPct}`, unit: "%", note: t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`) },
+    { icon: Users, label: t("ref_land_t1_label"), value: `−${STEP_POINTS}`, unit: "pts", note: t("ref_land_t1_note") },
+    { icon: ShieldCheck, label: t("ref_land_t2_label"), value: `${FLOOR_FEE_PCT}`, unit: "%", note: t("ref_land_t2_note") },
+    { icon: TrendingUp, label: t("ref_land_t3_label"), value: `${entryPct}`, unit: "%", note: t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`) },
   ];
 
   return (
-    <section className="relative py-12 sm:py-16 overflow-hidden">
+    <section id="referrals" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -51,9 +51,9 @@ export default function ReferralProgramSection() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative max-w-[1500px] mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 xl:gap-14 items-start">
         <motion.div
-          className="lg:col-span-7 text-center lg:text-left"
+          className="lg:col-span-6 text-center lg:text-left"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
@@ -100,52 +100,46 @@ export default function ReferralProgramSection() {
           </div>
         </motion.div>
 
-        <div className="lg:col-span-5 space-y-3">
-          {tiles.map((tile, i) => (
+        <div className="lg:col-span-6 space-y-3.5 lg:pt-40 xl:pt-44">
+          {tiles.map((tile, i) => {
+            const Icon = tile.icon;
+            return (
             <motion.div
               key={tile.label}
-              className="section-ink relative flex items-center px-6 sm:px-7"
-              style={{ borderRadius: 20, maxWidth: "none", minHeight: 96 }}
+              className="group relative grid grid-cols-[108px_1fr_48px] sm:grid-cols-[122px_1fr_58px] items-stretch overflow-hidden"
+              style={{
+                borderRadius: 24,
+                minHeight: 112,
+                background: "linear-gradient(135deg,rgba(255,255,255,.98),rgba(249,249,255,.92))",
+                border: "1px solid rgba(91,76,245,.13)",
+              }}
               initial={{ opacity: 0, x: 28 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 + i * 0.12 }}
-              whileHover={{ y: -3 }}
+              whileHover={{ y: -2 }}
             >
-              {/* Fixed-width numeric column so the three figures sit on the
-                  same optical axis regardless of digit count (−5 / 5 / 20). */}
-              <p
-                className="font-black tabular-nums shrink-0 text-center"
-                style={{
-                  width: 104,
-                  fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                  fontSize: 44,
-                  letterSpacing: "-0.045em",
-                  lineHeight: 1,
-                  background: "linear-gradient(120deg, #B9AEFF 0%, #8B7BFF 45%, #5BD8F5 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {tile.value}
-                <span style={{ fontSize: "0.42em", letterSpacing: 0 }}>{tile.unit}</span>
-              </p>
-              <div
-                aria-hidden
-                className="shrink-0 self-stretch my-5 mr-6"
-                style={{ width: 1, background: "rgba(255,255,255,0.12)" }}
-              />
-              <div className="min-w-0 py-5">
-                <p className="text-[9.5px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "rgba(255,255,255,0.45)" }}>
+              <div className="relative flex items-center justify-center" style={{ borderRight: "1px solid #403889", background: "linear-gradient(145deg,#100D27 0%,#332878 54%,#3156A9 100%)" }}>
+                <span aria-hidden className="absolute left-4 top-3 text-[8px] font-bold tracking-[.2em]" style={{ color: "#B7AFFF" }}>0{i + 1}</span>
+                <p className="flex items-baseline justify-center whitespace-nowrap font-black tabular-nums text-center text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "clamp(42px,4.1vw,52px)", letterSpacing: "-0.045em", lineHeight: 1 }}>
+                  <span>{tile.value}</span>
+                  <span className="ml-1.5 font-bold" style={{ color: "#E4E0FF", fontSize: "0.34em", letterSpacing: ".02em" }}>{tile.unit}</span>
+                </p>
+              </div>
+              <div className="min-w-0 px-4 sm:px-6 py-5 self-center">
+                <p className="text-[9.5px] font-bold uppercase" style={{ letterSpacing: "0.18em", color: "var(--voltio)" }}>
                   {tile.label}
                 </p>
-                <p className="mt-1.5 text-[13.5px] leading-snug" style={{ color: "rgba(255,255,255,0.92)" }}>
+                <p className="mt-2 text-[13.5px] font-medium leading-snug" style={{ color: "var(--ink)" }}>
                   {tile.note}
                 </p>
               </div>
+              <span className="m-auto inline-flex h-10 w-10 items-center justify-center rounded-[13px] transition-transform duration-300 group-hover:scale-105" style={{ color: "var(--voltio)", background: "linear-gradient(145deg,#fff,rgba(91,76,245,.08))", border: "1px solid rgba(91,76,245,.12)", boxShadow: "0 12px 28px -22px rgba(91,76,245,.8)" }}>
+                <Icon size={19} aria-hidden="true" />
+              </span>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

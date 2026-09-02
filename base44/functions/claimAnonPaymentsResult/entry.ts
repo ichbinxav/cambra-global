@@ -24,6 +24,7 @@ import {
   coversCurrentVersions,
   validateLegalAcceptance,
 } from '../../shared/legalAcceptance.ts';
+import { ensureReferralEntryDiscount } from '../../shared/referralEntryDiscount.ts';
 
 // The PaymentsAnalysisSession CAS claim is the only ownership authority and
 // is acquired before any Brand, AnalyzerResult or snapshot materialization.
@@ -271,6 +272,17 @@ Deno.serve(async (req) => {
     if (String(session.claim_brand_id || '') !== String(brand.id)) {
       throw new Error('anonymous_claim_brand_fence_lost');
     }
+
+    // A valid invite is an economic promise, not campaign decoration. Bind the
+    // recipient's one-step entry discount before materializing their result so
+    // a later Recover acceptance resolves 20% rather than silently falling
+    // back to the standard 25%. The claim fence makes this retry-safe.
+    await ensureReferralEntryDiscount(service, {
+      brand,
+      recipientEmail: userEmail,
+      session,
+      now: new Date(),
+    });
 
     await assertAnonymousPaymentsClaimOwned(service, durableClaim);
     if (!result) {

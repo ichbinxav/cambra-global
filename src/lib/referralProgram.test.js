@@ -13,6 +13,7 @@ import {
   BASE_FEE_PCT,
   STEP_POINTS,
   FLOOR_FEE_PCT,
+  ENTRY_FEE_PCT,
 } from "./referralProgram.js";
 
 describe("referral fee ladder (Terms §8)", () => {
@@ -20,6 +21,7 @@ describe("referral fee ladder (Terms §8)", () => {
     expect(BASE_FEE_PCT).toBe(25);
     expect(STEP_POINTS).toBe(5);
     expect(FLOOR_FEE_PCT).toBe(5);
+    expect(ENTRY_FEE_PCT).toBe(20);
   });
 
   it.each([
@@ -74,5 +76,18 @@ describe("referral fee ladder (Terms §8)", () => {
   it("nextFeePct tolerates invalid input like the fee itself", () => {
     expect(nextFeePct(null)).toBe(20);
     expect(nextFeePct(-5)).toBe(20);
+  });
+
+  it("starts an invited business one step lower and keeps rewarding its own activated referrals", () => {
+    expect(feeForActivated(0, STEP_POINTS)).toBe(20);
+    expect(feeForActivated(1, STEP_POINTS)).toBe(15);
+    expect(feeForActivated(2, STEP_POINTS)).toBe(10);
+    expect(feeForActivated(3, STEP_POINTS)).toBe(5);
+    expect(nextFeePct(0, STEP_POINTS)).toBe(15);
+  });
+
+  it("caps the one-time entry reduction at exactly one programme step", () => {
+    expect(feeForActivated(0, 999)).toBe(ENTRY_FEE_PCT);
+    expect(feeForActivated(0, -5)).toBe(BASE_FEE_PCT);
   });
 });

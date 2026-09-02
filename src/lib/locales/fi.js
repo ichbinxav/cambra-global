@@ -261,16 +261,16 @@ export default {
     sidebar_signout:      "Kirjaudu ulos",
 
     /* landing — hero */
-    hero_badge:           "Löydä piilotetut maksukustannukset",
-    hero_h1_line1:        "Lakkaa menettämästä katetta",
-    hero_h1_line2:        "aina kun saat maksun.",
-    hero_sub:             "Maksukulut vievät osan jokaisesta myynnistä. CAMBRA löytää, missä saatat maksaa liikaa, ja auttaa saamaan rahat takaisin. Maksat vain, kun säästät.",
-    hero_cta_primary:     "Etsi menetetty katteeni",
+    hero_badge:           "MAKSULIIKENTEEN ÄLY",
+    hero_h1_line1:        "Laske korttimaksujasi.",
+    hero_h1_line2:        "Säilytä enemmän katetta.",
+    hero_sub:             "CAMBRA analysoi maksusi, tunnistaa vältettävissä olevat korttikulut ja auttaa neuvottelemaan paremmat ehdot. Aloita ilmaiseksi. Ansaitsemme vain, kun sinä säästät.",
+    hero_cta_primary:     "Katso mahdollinen säästösi",
     hero_cta_secondary:   "Miten se toimii",
-    hero_trust_1:         "Ilmainen ensimmäinen analyysi",
-    hero_trust_2:         "Maksat vain vahvistetuista säästöistä",
-    hero_trust_3:         "Tehty eurooppalaisille yrityksille",
-    hero_image_alt:       "Havainnollistava CAMBRA-kateraportti, joka näyttää ennen suositusta tarkistetut faktat",
+    hero_trust_1:         "Maksuton kustannusanalyysi",
+    hero_trust_2:         "Ei vahvistettua säästöä, ei palkkiota",
+    hero_trust_3:         "Eurooppalaisille kauppiaille",
+    hero_image_alt:       "Havainnollistava CAMBRA-auditointi 24 kuukaudelta: 5 milj. € vuosivolyymi, nykyinen 2,70%, tavoite 1,70% ja 100 000 € mahdollinen ylimaksu",
     hero_visual_title:    "Kateraporttisi",
     hero_visual_status:   "Havainnollistava",
     hero_visual_market:   "Mitä myyt",
@@ -315,7 +315,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Pidä enemmän jokaisesta myynnistä.",
+    footer_tagline:       "Infrastruktuuriälyä riippumattomaan kaupankäyntiin.",
     footer_privacy:       "Tietosuojakäytäntö",
     footer_terms:         "Käyttöehdot",
     footer_dpa: "Tietojenkäsittelysopimus",
@@ -839,7 +839,7 @@ export default {
     ac_secondary_coll:       "tai liity kollektiiviin",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "ÄLYMME",
     stack_h2_pre:  "Neljä kerrosta maksuälyä.",
     stack_h2_kw:   "Yksi evidenssimalli.",
     stack_c1_t: "Kauppiaan talous",
@@ -1094,6 +1094,10 @@ export default {
     fl_p1:                 "Vuosien jälkeen globaaleissa yrityksissä tajusin, että itsenäiset brändit toimivat ilman ansaitsemaansa infrastruktuuria.",
     fl_p2:                 "Siksi perustin CAMBRAn.",
     fl_role:               "Perustaja",
+    fl_intro:              "CAMBRA syntyi yksinkertaisesta ajatuksesta: riippumattomat yritykset ansaitsevat oikeudenmukaisemmat hinnat ja täyden läpinäkyvyyden.",
+    fl_metric_years:       "vuotta globaaleissa yrityksissä",
+    fl_metric_mission:     "missio: reilummat hinnat",
+    fl_metric_focus:       "keskittyminen todellisiin säästöihin",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Evidenssistandardit",
@@ -1157,8 +1161,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Hinnoittelu",
-    pd_h2_pre:       "Aloita analyysillä.",
-    pd_h2_kw:        "Toimi evidenssillä.",
+    pd_h2_pre:       "Ei etukäteismaksuja.",
+    pd_h2_kw:        "Voitamme, kun sinä voitat.",
     pd_sub:          "Analysoi ilmaiseksi. Jos aktivoit Recoverin, CAMBRA ansaitsee 25 % positiivisista vahvistetuista säästöistä 24 kuukauden Palautuskauden aikana. Sinä pidät 75 %. Ei vahvistettuja säästöjä, ei palkkiota.",
     pd_sub_v2:       "Analysoi ilmaiseksi. Missä hyväksytyt porrastetut ehdot ovat saatavilla, Recover maksaa 25 % positiivisista vahvistetuista säästöistä kuukausina 1–12, 15 % kuukausina 13–24 ja 0 % sen jälkeen.",
     pd_step1:        "Askel 1",

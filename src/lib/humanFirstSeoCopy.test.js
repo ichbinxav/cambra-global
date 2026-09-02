@@ -5,9 +5,9 @@ const copy=(lang)=>fs.readFileSync(`src/lib/locales/${lang}.js`,'utf8');
 
 describe('human-first and SEO-first public copy seal',()=>{
   it('gives each supported language a native, customer-readable promise',()=>{
-    expect(copy('en')).toContain('Stop losing margin');
-    expect(copy('fr')).toContain('Arrêtez de perdre de la marge');
-    expect(copy('es')).toContain('Deja de perder margen');
+    expect(copy('en')).toContain('Lower your card fees');
+    expect(copy('fr')).toContain('Réduisez vos frais de carte');
+    expect(copy('es')).toContain('Baja tus comisiones');
   });
   it('states the economic promise without guaranteeing savings',()=>{
     for(const lang of ['en','fr','es']){

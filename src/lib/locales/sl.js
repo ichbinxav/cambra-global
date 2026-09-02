@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Odjava",
 
     /* landing — hero */
-    hero_badge:           "Najdi skrite stroške plačil",
-    hero_h1_line1:        "Nehaj izgubljati maržo",
-    hero_h1_line2:        "ob vsakem prejetem plačilu.",
-    hero_sub:             "Provizije za plačila vzamejo del vsake prodaje. CAMBRA najde, kje morda plačuješ preveč, in ti pomaga ta denar dobiti nazaj. Plačaš le, ko prihraniš.",
-    hero_cta_primary:     "Najdi mojo izgubljeno maržo",
+    hero_badge:           "PLAČILNA INTELIGENCA",
+    hero_h1_line1:        "Znižaj provizije za kartice.",
+    hero_h1_line2:        "Ohrani več marže.",
+    hero_sub:             "CAMBRA analizira tvoje stroške, odkrije nepotrebne kartične provizije in pomaga izpogajati boljše pogoje. Začni brezplačno. Zaslužimo le, ko ti prihraniš.",
+    hero_cta_primary:     "Preveri, koliko bi lahko prihranil",
     hero_cta_secondary:   "Kako deluje",
-    hero_trust_1:         "Brezplačna prva analiza",
-    hero_trust_2:         "Plačaš le za preverjene prihranke",
-    hero_trust_3:         "Ustvarjeno za evropska podjetja",
-    hero_image_alt:       "Ilustrativno CAMBRA poročilo o marži, ki prikazuje dejstva, preverjena pred priporočilom",
+    hero_trust_1:         "Brezplačna analiza stroškov",
+    hero_trust_2:         "Brez preverjenega prihranka ni provizije",
+    hero_trust_3:         "Za evropske trgovce",
+    hero_image_alt:       "Ilustrativna 24-mesečna revizija CAMBRA: 5 mio. € letnega obsega, trenutna stopnja 2,70%, cilj 1,70% in 100.000 € možnega preplačila",
     hero_visual_title:    "Tvoje poročilo o marži",
     hero_visual_status:   "Ilustrativno",
     hero_visual_market:   "Kaj prodajaš",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Obdrži več od vsake prodaje.",
+    footer_tagline:       "Infrastrukturna inteligenca za neodvisno trgovino.",
     footer_privacy:       "Politika zasebnosti",
     footer_terms:         "Pogoji uporabe",
     footer_dpa: "Pogodba o obdelavi podatkov",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "ali se pridruži kolektivu",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PLAČILNI KLIN",
+    stack_eyebrow: "NAŠA INTELIGENCA",
     stack_h2_pre:  "Štiri plasti plačilne inteligence.",
     stack_h2_kw:   "En dokazni model.",
     stack_c1_t: "Ekonomika trgovca",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Po letih v globalnih podjetjih sem spoznal, da neodvisne znamke delujejo brez infrastrukture, ki si jo zaslužijo.",
     fl_p2:                 "Zato sem ustanovil CAMBRA.",
     fl_role:               "Ustanovitelj",
+    fl_intro:              "CAMBRA je nastala iz preprostega prepričanja: neodvisna podjetja si zaslužijo pravičnejše cene in popolno preglednost.",
+    fl_metric_years:       "let v globalnih podjetjih",
+    fl_metric_mission:     "poslanstvo: pravičnejše cene",
+    fl_metric_focus:       "osredotočenost na resnične prihranke",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standardi dokazov",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Cene",
-    pd_h2_pre:       "Začni z analizo.",
-    pd_h2_kw:        "Ukrepaj z dokazi.",
+    pd_h2_pre:       "Brez začetnih stroškov.",
+    pd_h2_kw:        "Zmagamo, ko zmagaš ti.",
     pd_sub:          "Analiziraj brezplačno. Če aktiviraš Recover, CAMBRA zasluži 25% pozitivnih preverjenih prihrankov v 24-mesečnem Obdobju povračila. Ti obdržiš 75%. Ni preverjenih prihrankov, ni provizije.",
     pd_sub_v2:       "Analiziraj brezplačno. Kjer so na voljo odobreni stopnjevani pogoji, Recover stane 25% pozitivnih preverjenih prihrankov v mesecih 1–12, 15% v mesecih 13–24 in 0% pozneje.",
     pd_step1:        "Korak 1",

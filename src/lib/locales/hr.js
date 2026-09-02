@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Odjava",
 
     /* landing — hero */
-    hero_badge:           "Pronađi skrivene troškove plaćanja",
-    hero_h1_line1:        "Prestani gubiti maržu",
-    hero_h1_line2:        "svaki put kad primiš uplatu.",
-    hero_sub:             "Naknade za plaćanja uzimaju dio svake prodaje. CAMBRA pronalazi gdje možda plaćaš previše i pomaže ti vratiti taj novac. Plaćaš samo kada uštediš.",
-    hero_cta_primary:     "Pronađi moju izgubljenu maržu",
+    hero_badge:           "INTELIGENCIJA PLAĆANJA",
+    hero_h1_line1:        "Smanji kartične naknade.",
+    hero_h1_line2:        "Zadrži veću maržu.",
+    hero_sub:             "CAMBRA analizira tvoje troškove, otkriva kartične naknade koje se mogu izbjeći i pomaže pregovarati bolje uvjete. Počni besplatno. Zarađujemo samo kada ti štediš.",
+    hero_cta_primary:     "Provjeri koliko bi mogao uštedjeti",
     hero_cta_secondary:   "Kako funkcionira",
-    hero_trust_1:         "Besplatna prva analiza",
-    hero_trust_2:         "Plaćaš samo na provjerene uštede",
-    hero_trust_3:         "Napravljeno za europska poslovanja",
-    hero_image_alt:       "Ilustrativni CAMBRA izvještaj o marži koji prikazuje provjerene činjenice prije preporuke",
+    hero_trust_1:         "Besplatna analiza troškova",
+    hero_trust_2:         "Bez provjerene uštede nema naknade",
+    hero_trust_3:         "Za europske trgovce",
+    hero_image_alt:       "Ilustrativna CAMBRA revizija za 24 mjeseca: 5 mil. € godišnjeg volumena, trenutna stopa 2,70%, cilj 1,70% i 100.000 € mogućeg preplaćivanja",
     hero_visual_title:    "Tvoj izvještaj o marži",
     hero_visual_status:   "Ilustrativno",
     hero_visual_market:   "Što prodaješ",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Zadrži više od svake prodaje.",
+    footer_tagline:       "Inteligencija infrastrukture za neovisno poslovanje.",
     footer_privacy:       "Pravila privatnosti",
     footer_terms:         "Uvjeti korištenja",
     footer_dpa: "Ugovor o obradi podataka",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "ili se pridruži kolektivu",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PLATNI KLIN",
+    stack_eyebrow: "NAŠA INTELIGENCIJA",
     stack_h2_pre:  "Četiri sloja platne inteligencije.",
     stack_h2_kw:   "Jedan dokazni model.",
     stack_c1_t: "Ekonomija trgovca",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Nakon godina u globalnim tvrtkama shvatio sam da neovisni brendovi posluju bez infrastrukture koju zaslužuju.",
     fl_p2:                 "Zato sam pokrenuo CAMBRA-u.",
     fl_role:               "Osnivač",
+    fl_intro:              "CAMBRA je nastala iz jednostavnog uvjerenja: neovisna poduzeća zaslužuju pravednije cijene i potpunu transparentnost.",
+    fl_metric_years:       "godina u globalnim tvrtkama",
+    fl_metric_mission:     "misija: pravednije cijene",
+    fl_metric_focus:       "fokus na stvarnim uštedama",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standardi dokaza",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Cijene",
-    pd_h2_pre:       "Počni s analizom.",
-    pd_h2_kw:        "Djeluj s dokazima.",
+    pd_h2_pre:       "Bez troškova unaprijed.",
+    pd_h2_kw:        "Pobjeđujemo kada ti pobjeđuješ.",
     pd_sub:          "Analiziraj besplatno. Ako aktiviraš Recover, CAMBRA zarađuje 25% pozitivnih provjerenih ušteda tijekom 24-mjesečnog Razdoblja povrata. Ti zadržavaš 75%. Bez provjerenih ušteda, bez naknade.",
     pd_sub_v2:       "Analiziraj besplatno. Gdje su odobreni stupnjevani uvjeti dostupni, Recover košta 25% pozitivnih provjerenih ušteda u mjesecima 1–12, 15% u mjesecima 13–24 i 0% nakon toga.",
     pd_step1:        "Korak 1",

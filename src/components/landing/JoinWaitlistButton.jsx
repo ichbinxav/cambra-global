@@ -69,9 +69,9 @@ export default function JoinWaitlistButton({
       <div
         className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-[14px] font-bold"
         style={{
-          border: "1px solid rgba(34,211,238,0.35)",
-          background: "rgba(34,211,238,0.08)",
-          color: "#7BD9F0",
+          border: "1px solid #2FE0A8",
+          background: "#123A43",
+          color: "#FFFFFF",
         }}
         role="status"
         aria-live="polite"
@@ -87,7 +87,7 @@ export default function JoinWaitlistButton({
     return (
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row items-stretch gap-2 max-w-md"
+        className={`flex flex-col sm:flex-row items-stretch gap-2 max-w-md ${fullWidth ? "w-full" : ""}`}
       >
         <input
           type="email"
@@ -98,8 +98,8 @@ export default function JoinWaitlistButton({
           disabled={submitting}
           className="flex-1 rounded-full px-5 py-3 text-[14px] text-white placeholder:text-white/40 outline-none disabled:opacity-60"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: `1px solid ${error ? "rgba(239,68,68,0.45)" : "rgba(255,255,255,0.14)"}`,
+            background: "#17142F",
+            border: `1px solid ${error ? "#EF4444" : "#6D61D8"}`,
           }}
           aria-label={t("waitlist_email_label")}
           aria-invalid={error ? "true" : "false"}
@@ -126,20 +126,22 @@ export default function JoinWaitlistButton({
           background: "var(--g-voltio)",
           color: "#ffffff",
           boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
-          padding: fullWidth ? "18px 28px" : undefined,
+          padding: fullWidth ? "0 28px" : undefined,
+          height: fullWidth ? 60 : undefined,
         }
       : {
           background: "#1A1638",
-          color: "rgba(255,255,255,0.95)",
-          border: "1px solid rgba(139,123,255,0.5)",
-          padding: fullWidth ? "18px 28px" : undefined,
+          color: "#FFFFFF",
+          border: "1px solid #8B7BFF",
+          padding: fullWidth ? "0 28px" : undefined,
+          height: fullWidth ? 60 : undefined,
         };
 
   return (
     <button
       type="button"
       onClick={() => setState("form")}
-      className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-medium ${variant === "primary" ? "transition-transform hover:-translate-y-0.5" : "transition-colors hover:bg-white/5"} ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
+      className={`${fullWidth ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 rounded-full text-[15px] font-medium transition-transform hover:-translate-y-0.5 ${fullWidth ? "" : "px-6 py-3 text-[14px]"}`}
       style={commonStyle}
     >
       {label || t("waitlist_cta")}

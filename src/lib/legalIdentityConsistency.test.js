@@ -10,7 +10,7 @@ const SIREN = '105 452 916';
 const SIRET = '105 452 916 00015';
 const VAT = 'FR50105452916';
 const STREET = '47 rue Vivienne';
-const DOMICILIATION = 'Chez Vivienne Domiciliation';
+const NON_REGISTERED_COMPLEMENT = 'Chez Vivienne Domiciliation';
 const POSTCODE = '75002';
 
 const USER_VISIBLE_IDENTITY_FILES = [
@@ -36,7 +36,7 @@ describe('CAMBRA legal identity consistency', () => {
       expect(source, file).toContain(SIREN);
       expect(source, file).toContain(SIRET);
       expect(source, file).toContain(VAT);
-      expect(source, file).toContain(DOMICILIATION);
+      expect(source, file).not.toContain(NON_REGISTERED_COMPLEMENT);
     }
   });
 
@@ -44,6 +44,10 @@ describe('CAMBRA legal identity consistency', () => {
     for (const file of USER_VISIBLE_IDENTITY_FILES) {
       expect(read(file), file).not.toContain('42 rue Vivienne');
     }
+  });
+
+  it('keeps the non-registered domiciliation complement out of the shared identity', () => {
+    expect(read('base44/shared/cambraLegalIdentity.ts')).not.toContain(NON_REGISTERED_COMPLEMENT);
   });
 
   it('keeps the canonical legal name on public identity surfaces', () => {

@@ -22,6 +22,7 @@ const Onboarding = lazy(() => import('@/pages/Onboarding.jsx'));
 // components. The legacy multi-vertical Analyzer / Results / AnalyzerTeaser
 // were deleted with the entire wizard + score engine consumer surface.
 const PaymentsAnalyzer = lazy(() => import('@/pages/PaymentsAnalyzer'));
+const ReferralInvite = lazy(() => import('@/pages/ReferralInvite'));
 // FIX 13b — /Results made lazy: it pulls 20+ paymentsResults sub-components
 // into a dedicated chunk instead of the initial bundle. The Suspense +
 // LazyFallback + ErrorBoundary pattern is identical to Dashboard/Reports.
@@ -277,6 +278,7 @@ const AuthenticatedApp = () => {
             Canonical URLs remain unchanged for SEO continuity. */}
         <Route caseSensitive path="/Analyzer" element={withBoundary(<PaymentsAnalyzer />)} />
         <Route caseSensitive path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
+        <Route path="/Invite" element={withBoundary(<ReferralInvite />)} />
         {/* /PaymentsAnalyzer kept as an alias — anything linking to it during
             the transition (marketing, docs, external) still resolves. */}
         <Route path="/PaymentsAnalyzer" element={<Navigate to="/Analyzer" replace />} />

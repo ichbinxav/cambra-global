@@ -261,16 +261,16 @@ export default {
     sidebar_signout:      "Wyloguj się",
 
     /* landing — hero */
-    hero_badge:           "Znajdź ukryte koszty płatności",
-    hero_h1_line1:        "Przestań tracić marżę",
-    hero_h1_line2:        "za każdym razem, gdy dostajesz zapłatę.",
-    hero_sub:             "Opłaty za płatności zabierają część każdej sprzedaży. CAMBRA znajduje miejsca, gdzie możesz przepłacać, i pomaga odzyskać te pieniądze. Płacisz tylko wtedy, gdy oszczędzasz.",
-    hero_cta_primary:     "Znajdź moją utraconą marżę",
+    hero_badge:           "INTELIGENCJA PŁATNOŚCI",
+    hero_h1_line1:        "Obniż opłaty kartowe.",
+    hero_h1_line2:        "Zachowaj większą marżę.",
+    hero_sub:             "CAMBRA analizuje Twoje koszty, wykrywa możliwe do uniknięcia opłaty kartowe i pomaga negocjować lepsze warunki. Zacznij bezpłatnie. Zarabiamy tylko, gdy Ty oszczędzasz.",
+    hero_cta_primary:     "Sprawdź, ile możesz zaoszczędzić",
     hero_cta_secondary:   "Jak to działa",
-    hero_trust_1:         "Pierwsza analiza za darmo",
-    hero_trust_2:         "Płacisz tylko od zweryfikowanych oszczędności",
-    hero_trust_3:         "Stworzone dla europejskich firm",
-    hero_image_alt:       "Poglądowy raport marży CAMBRA pokazujący fakty sprawdzone przed rekomendacją",
+    hero_trust_1:         "Bezpłatna analiza kosztów",
+    hero_trust_2:         "Brak zweryfikowanych oszczędności, brak prowizji",
+    hero_trust_3:         "Dla europejskich sprzedawców",
+    hero_image_alt:       "Przykładowy audyt CAMBRA za 24 miesiące: 5 mln € rocznego wolumenu, obecna stawka 2,70%, docelowa 1,70% i 100 000 € potencjalnej nadpłaty",
     hero_visual_title:    "Twój raport marży",
     hero_visual_status:   "Poglądowy",
     hero_visual_market:   "Co sprzedajesz",
@@ -315,7 +315,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Zatrzymuj więcej z każdej sprzedaży.",
+    footer_tagline:       "Inteligencja infrastruktury dla niezależnego handlu.",
     footer_privacy:       "Polityka prywatności",
     footer_terms:         "Regulamin",
     footer_dpa: "Umowa powierzenia przetwarzania",
@@ -839,7 +839,7 @@ export default {
     ac_secondary_coll:       "albo dołącz do kolektywu",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "NASZA INTELIGENCJA",
     stack_h2_pre:  "Cztery warstwy inteligencji płatniczej.",
     stack_h2_kw:   "Jeden model dowodowy.",
     stack_c1_t: "Ekonomia sprzedawcy",
@@ -1094,6 +1094,10 @@ export default {
     fl_p1:                 "Po latach w globalnych firmach zrozumiałem, że niezależne marki działają bez infrastruktury, na jaką zasługują.",
     fl_p2:                 "Dlatego założyłem CAMBRA.",
     fl_role:               "Założyciel",
+    fl_intro:              "CAMBRA powstała z prostego przekonania: niezależne firmy zasługują na uczciwsze ceny i pełną przejrzystość.",
+    fl_metric_years:       "lat w globalnych firmach",
+    fl_metric_mission:     "misja: uczciwsze ceny",
+    fl_metric_focus:       "koncentracja na realnych oszczędnościach",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standardy dowodowe",
@@ -1157,8 +1161,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Cennik",
-    pd_h2_pre:       "Zacznij od analizy.",
-    pd_h2_kw:        "Działaj z dowodami.",
+    pd_h2_pre:       "Bez opłat z góry.",
+    pd_h2_kw:        "Wygrywamy, gdy Ty wygrywasz.",
     pd_sub:          "Analizuj za darmo. Jeśli aktywujesz Recover, CAMBRA zarabia 25% dodatnich zweryfikowanych oszczędności w 24-miesięcznym Okresie Odzyskiwania. Ty zatrzymujesz 75%. Brak zweryfikowanych oszczędności, brak prowizji.",
     pd_sub_v2:       "Analizuj za darmo. Tam, gdzie zatwierdzone warunki progowe są dostępne, Recover kosztuje 25% dodatnich zweryfikowanych oszczędności w miesiącach 1–12, 15% w miesiącach 13–24 i 0% później.",
     pd_step1:        "Krok 1",

@@ -254,16 +254,16 @@ export default {
     sidebar_signout:      "Cerrar sesión",
 
     /* landing — hero */
-    hero_badge:           "Encuentra los costes de pago que reducen tu margen",
-    hero_h1_line1:        "Deja de perder margen",
-    hero_h1_line2:        "cada vez que cobras.",
-    hero_sub:             "Las comisiones de pago se llevan una parte de cada venta. CAMBRA encuentra dónde podrías estar pagando de más y te ayuda a recuperar ese dinero. Solo pagas cuando ahorras.",
-    hero_cta_primary:     "Recuperar mi margen",
+    hero_badge:           "INTELIGENCIA DE PAGOS",
+    hero_h1_line1:        "Baja tus comisiones.",
+    hero_h1_line2:        "Quédate con más margen.",
+    hero_sub:             "CAMBRA analiza cuánto pagas, detecta costes evitables y te ayuda a negociar mejores condiciones. Empieza gratis. Solo cobramos si ahorras.",
+    hero_cta_primary:     "Descubre cuánto podrías ahorrar",
     hero_cta_secondary:   "Cómo funciona",
-    hero_trust_1:         "Primer análisis gratuito",
-    hero_trust_2:         "Solo pagas sobre ahorro verificado",
-    hero_trust_3:         "Creado para empresas europeas",
-    hero_image_alt:       "Ejemplo de informe CAMBRA sobre margen y datos revisados antes de recomendar un cambio",
+    hero_trust_1:         "Análisis de costes gratuito",
+    hero_trust_2:         "Sin ahorro verificado, no hay comisión",
+    hero_trust_3:         "Creado para comercios europeos",
+    hero_image_alt:       "Ejemplo ilustrativo de auditoría CAMBRA a 24 meses: 5 M€ de volumen anual, tasa actual del 2,70 %, objetivo del 1,70 % y 100.000 € de sobrecoste potencial",
     hero_visual_title:    "Tu informe de margen",
     hero_visual_status:   "Ilustrativo",
     hero_visual_market:   "Qué vendes",
@@ -302,7 +302,7 @@ export default {
 
 
 
-    footer_tagline:       "Quédate con más de cada venta.",
+    footer_tagline:       "Inteligencia de infraestructura para el comercio independiente.",
     footer_privacy:       "Política de privacidad",
     footer_terms:         "Términos de servicio",
     footer_dpa: "Acuerdo de Encargo de Tratamiento",
@@ -820,7 +820,7 @@ export default {
     ac_secondary_coll:       "o únete al colectivo",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PUERTA DE ENTRADA: PAGOS",
+    stack_eyebrow: "NUESTRA INTELIGENCIA",
     stack_h2_pre:  "Cuatro capas de inteligencia de pagos.",
     stack_h2_kw:   "Un solo modelo de evidencia.",
     stack_c1_t: "Economía del comercio",
@@ -1082,6 +1082,10 @@ export default {
     fl_p1:                 "Tras años dentro de empresas globales, me di cuenta de que las marcas independientes operaban sin la infraestructura que merecen.",
     fl_p2:                 "Por eso creé CAMBRA.",
     fl_role:               "Fundador",
+    fl_intro:              "CAMBRA nació de una convicción sencilla: los negocios independientes merecen precios más justos y total transparencia.",
+    fl_metric_years:       "años en empresas globales",
+    fl_metric_mission:     "misión: precios más justos",
+    fl_metric_focus:       "enfocados en ahorro real",
 
     /* Landing — estándares de evidencia */
     tst_eyebrow:           "Estándares de evidencia",
@@ -1145,8 +1149,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Precios",
-    pd_h2_pre:       "Empieza por el análisis.",
-    pd_h2_kw:        "Actúa con evidencia.",
+    pd_h2_pre:       "Sin costes por adelantado.",
+    pd_h2_kw:        "Ganamos cuando tú ganas.",
     pd_sub:          "Analiza gratis. Si activas Recover, CAMBRA cobra el 25% del ahorro positivo verificado durante el plazo de recuperación de 24 meses. Tú te quedas el 75%. Sin ahorro verificado, no hay comisión.",
     pd_sub_v2:       "Analiza gratis. Cuando las condiciones escalonadas aprobadas estén disponibles, Recover cuesta el 25% del ahorro positivo verificado durante los meses 1–12, el 15% durante los meses 13–24 y el 0% después.",
     pd_step1:        "Paso 1",

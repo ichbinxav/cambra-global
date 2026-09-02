@@ -26,6 +26,7 @@
 
 import { feeForActivated } from './referralProgram.ts';
 import { scheduleReferralFee } from './referralBilling.ts';
+import { resolveReferralEntryAttribution } from './referralEntryDiscount.ts';
 import { readRuntimeRows, requireRuntimeSource } from './runtimeSourceRead.ts';
 
 function lower(v: any): string { return String(v || '').trim().toLowerCase(); }
@@ -67,6 +68,8 @@ export async function applyReferralActivation(
   if (emails.includes(lower(link.owner_email))) {
     return { ok: true, applied: false, reason: 'self_referral' };
   }
+  const referrerEntry = await resolveReferralEntryAttribution(svc, link.owner_email);
+  const entryDiscountPoints = referrerEntry.eligible ? Number(referrerEntry.entry_discount_points) || 0 : 0;
 
   // ── Idempotency claim ───────────────────────────────────────────────────
   const referred_key = brand?.id || emails[0];
@@ -79,12 +82,13 @@ export async function applyReferralActivation(
       reason: 'already_counted',
       code,
       activated_count: Number(link.activated_count) || 0,
-      fee_pct: feeForActivated(Number(link.activated_count) || 0),
+      fee_pct: feeForActivated(Number(link.activated_count) || 0, entryDiscountPoints),
+      entry_discount_points: entryDiscountPoints,
     };
   }
 
   const activated_count = (Number(link.activated_count) || 0) + 1;
-  const fee_pct = feeForActivated(activated_count);
+  const fee_pct = feeForActivated(activated_count, entryDiscountPoints);
 
   const claim = await svc.entities.ReferralActivation.create({
     code,
@@ -111,5 +115,5 @@ export async function applyReferralActivation(
     await svc.entities.ReferralActivation.update(claim.id, { scheduled_rules_json: { rules: scheduled } });
   }
 
-  return { ok: true, applied: true, code, referrer_email: link.owner_email, activated_count, fee_pct, scheduled };
+  return { ok: true, applied: true, code, referrer_email: link.owner_email, activated_count, fee_pct, entry_discount_points: entryDiscountPoints, scheduled };
 }

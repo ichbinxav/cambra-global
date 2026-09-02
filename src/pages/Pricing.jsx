@@ -7,13 +7,6 @@ import PricingDual from "@/components/landing/PricingDual";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { getMerchantSharePct, getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
 
-// Split heading — "you keep the margin." in the voltio gradient, per language.
-const PRC_SPLIT_TITLE = {
-  en: <>You <span className="kw">keep the margin.</span> We take a share.</>,
-  fr: <>Vous <span className="kw">gardez la marge.</span> Nous en prenons une part.</>,
-  es: <>Tú te quedas <span className="kw">el margen.</span> Nosotros una parte.</>,
-};
-
 const FAQ = [
   { q: "prc_faq_q1", a: "prc_faq_a1" },
   { q: "prc_faq_q2", a: "prc_faq_a2" },
@@ -39,12 +32,12 @@ const CARD_STYLE = {
 };
 
 function SplitVisual() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   return (
     <div className="relative max-w-4xl mx-auto mb-16 sm:mb-20">
       <div className="mb-8">
         <SectionHeading eyebrow={t("prc_split_eyebrow")}>
-          {PRC_SPLIT_TITLE[lang] || PRC_SPLIT_TITLE.en}
+          {t("prc_split_h2")}
         </SectionHeading>
       </div>
 
@@ -141,27 +134,14 @@ function SplitVisual() {
   );
 }
 
-// FAQ heading — "Clarity" in the voltio gradient, per language.
-const PRC_FAQ_TITLE = {
-  en: <><span className="kw">Clarity</span>, not fine print.</>,
-  fr: <><span className="kw">Clarté</span>, pas de petits caractères.</>,
-  es: <><span className="kw">Claridad</span>, sin letra pequeña.</>,
-};
-
-const PRC_HERO_TITLE = {
-  en: <><span className="kw">First</span> analyze. <span className="kw">Then</span> recover.</>,
-  fr: <><span className="kw">D'abord</span> analyser. <span className="kw">Ensuite</span> récupérer.</>,
-  es: <><span className="kw">Primero</span> analiza. <span className="kw">Luego</span> recupera.</>,
-};
-
 export default function Pricing() {
   const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   return (
     <PublicPageShell>
       <PublicPageHero
         eyebrow={t("prc_hero_badge")}
-        title={PRC_HERO_TITLE[lang] || PRC_HERO_TITLE.en}
+        title={t("prc_hero_h1")}
         subtitle={t("prc_hero_sub")}
       >
         {/* CTA */}
@@ -172,18 +152,18 @@ export default function Pricing() {
           </Link>
           <Link
             to="/how-it-works"
-            className="inline-flex items-center rounded-full px-7 py-3.5 text-[13px] font-medium transition-colors text-white/80 hover:text-white"
-            style={{ border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.04)" }}
+            className="inline-flex items-center rounded-full px-7 py-3.5 text-[13px] font-medium transition-colors"
+            style={{ border: "1px solid var(--linea)", background: "#fff", color: "var(--gris-1)" }}
           >
             {t("prc_cta_secondary")}
           </Link>
         </div>
 
         {/* Trust bar */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[12px] text-white/60">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[12px]" style={{ color: "var(--gris-1)" }}>
           {TRUST_POINTS.map(({ icon: Icon, key }) => (
             <span key={key} className="inline-flex items-center gap-1.5">
-              <Icon size={13} style={{ color: "#7DE3FF" }} />
+              <Icon size={13} style={{ color: "var(--voltio)" }} />
               {t(key)}
             </span>
           ))}
@@ -229,7 +209,7 @@ export default function Pricing() {
           <div className="mt-8 md:mt-12 max-w-3xl mx-auto">
             <div className="mb-8">
               <SectionHeading eyebrow={t("prc_faq_eyebrow")}>
-                {PRC_FAQ_TITLE[lang] || PRC_FAQ_TITLE.en}
+                {t("prc_faq_h2")}
               </SectionHeading>
             </div>
 

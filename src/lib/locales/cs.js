@@ -260,16 +260,16 @@ export default {
     sidebar_signout:      "Odhlásit se",
 
     /* landing — hero */
-    hero_badge:           "Najděte skryté náklady na platby",
-    hero_h1_line1:        "Přestaňte ztrácet marži",
-    hero_h1_line2:        "pokaždé, když dostanete zaplaceno.",
-    hero_sub:             "Platební poplatky si berou podíl z každého prodeje. CAMBRA najde, kde možná přeplácíte, a pomůže vám ty peníze získat zpět. Platíte, jen když šetříte.",
-    hero_cta_primary:     "Najít mou ztracenou marži",
+    hero_badge:           "PLATEBNÍ INTELIGENCE",
+    hero_h1_line1:        "Snižte poplatky za karty.",
+    hero_h1_line2:        "Ponechte si větší marži.",
+    hero_sub:             "CAMBRA analyzuje vaše náklady, odhalí zbytečné karetní poplatky a pomůže vyjednat lepší podmínky. Začněte zdarma. Vyděláváme jen tehdy, když šetříte.",
+    hero_cta_primary:     "Zjistěte, kolik můžete ušetřit",
     hero_cta_secondary:   "Jak to funguje",
-    hero_trust_1:         "První analýza zdarma",
-    hero_trust_2:         "Platíte jen z ověřených úspor",
-    hero_trust_3:         "Vytvořeno pro evropské firmy",
-    hero_image_alt:       "Ilustrativní maržový report CAMBRA ukazující fakta ověřená před doporučením",
+    hero_trust_1:         "Bezplatná analýza nákladů",
+    hero_trust_2:         "Bez ověřené úspory žádný poplatek",
+    hero_trust_3:         "Pro evropské obchodníky",
+    hero_image_alt:       "Ilustrativní audit CAMBRA za 24 měsíců: roční objem 5 mil. €, aktuální sazba 2,70%, cíl 1,70% a možný přeplatek 100 000 €",
     hero_visual_title:    "Váš maržový report",
     hero_visual_status:   "Ilustrativní",
     hero_visual_market:   "Co prodáváte",
@@ -314,7 +314,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Nechte si víc z každého prodeje.",
+    footer_tagline:       "Infrastrukturní inteligence pro nezávislý obchod.",
     footer_privacy:       "Zásady ochrany soukromí",
     footer_terms:         "Podmínky služby",
     footer_dpa: "Smlouva o zpracování údajů",
@@ -838,7 +838,7 @@ export default {
     ac_secondary_coll:       "nebo se přidejte ke kolektivu",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "NAŠE INTELIGENCE",
     stack_h2_pre:  "Čtyři vrstvy platební intelligence.",
     stack_h2_kw:   "Jeden model evidence.",
     stack_c1_t: "Ekonomika obchodníka",
@@ -1093,6 +1093,10 @@ export default {
     fl_p1:                 "Po letech v globálních firmách jsem si uvědomil, že nezávislé značky fungují bez infrastruktury, kterou si zaslouží.",
     fl_p2:                 "Proto jsem založil CAMBRA.",
     fl_role:               "Zakladatel",
+    fl_intro:              "CAMBRA vznikla z jednoduchého přesvědčení: nezávislé firmy si zaslouží férovější ceny a úplnou transparentnost.",
+    fl_metric_years:       "let v globálních firmách",
+    fl_metric_mission:     "mise: férovější ceny",
+    fl_metric_focus:       "zaměření na skutečné úspory",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standardy evidence",
@@ -1156,8 +1160,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Ceník",
-    pd_h2_pre:       "Začněte analýzou.",
-    pd_h2_kw:        "Jednejte s evidencí.",
+    pd_h2_pre:       "Žádné poplatky předem.",
+    pd_h2_kw:        "Vyhráváme, když vyhráváte.",
     pd_sub:          "Analyzujte zdarma. Pokud aktivujete Recover, CAMBRA vydělá 25 % z kladných ověřených úspor během 24měsíčního Období obnovy. Vám zůstává 75 %. Žádné ověřené úspory, žádná provize.",
     pd_sub_v2:       "Analyzujte zdarma. Tam, kde jsou dostupné schválené odstupňované podmínky, stojí Recover 25 % z kladných ověřených úspor v měsících 1–12, 15 % v měsících 13–24 a poté 0 %.",
     pd_step1:        "Krok 1",

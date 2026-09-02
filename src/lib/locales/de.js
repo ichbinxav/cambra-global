@@ -260,16 +260,16 @@ export default {
     sidebar_signout:      "Abmelden",
 
     /* landing — hero */
-    hero_badge:           "Versteckte Zahlungskosten finden",
-    hero_h1_line1:        "Verlieren Sie keine Marge mehr,",
-    hero_h1_line2:        "jedes Mal, wenn Sie bezahlt werden.",
-    hero_sub:             "Zahlungsgebühren nehmen von jedem Verkauf einen Anteil. CAMBRA findet, wo Sie möglicherweise zu viel zahlen, und hilft Ihnen, dieses Geld zurückzuholen. Sie zahlen nur, wenn Sie sparen.",
-    hero_cta_primary:     "Meine verlorene Marge finden",
+    hero_badge:           "ZAHLUNGSINTELLIGENZ",
+    hero_h1_line1:        "Senken Sie Ihre Kartengebühren.",
+    hero_h1_line2:        "Behalten Sie mehr Marge.",
+    hero_sub:             "CAMBRA analysiert Ihre Kosten, erkennt vermeidbare Kartengebühren und hilft, bessere Konditionen auszuhandeln. Der Start ist kostenlos. Wir verdienen nur, wenn Sie sparen.",
+    hero_cta_primary:     "Mögliches Einsparpotenzial prüfen",
     hero_cta_secondary:   "So funktioniert es",
-    hero_trust_1:         "Erste Analyse kostenlos",
-    hero_trust_2:         "Zahlung nur bei verifizierten Einsparungen",
-    hero_trust_3:         "Für europäische Unternehmen gemacht",
-    hero_image_alt:       "Illustrativer CAMBRA-Margenbericht mit den vor einer Empfehlung geprüften Fakten",
+    hero_trust_1:         "Kostenlose Kostenanalyse",
+    hero_trust_2:         "Keine verifizierte Ersparnis, keine Gebühr",
+    hero_trust_3:         "Für europäische Händler entwickelt",
+    hero_image_alt:       "Illustratives CAMBRA-Kartengebühren-Audit über 24 Monate: 5 Mio. € Jahresvolumen, 2,70 % aktueller Satz, 1,70 % Zielsatz und 100.000 € mögliche Überzahlung",
     hero_visual_title:    "Ihr Margenbericht",
     hero_visual_status:   "Illustrativ",
     hero_visual_market:   "Was Sie verkaufen",
@@ -314,7 +314,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Behalten Sie mehr von jedem Verkauf.",
+    footer_tagline:       "Infrastrukturintelligenz für den unabhängigen Handel.",
     footer_privacy:       "Datenschutzerklärung",
     footer_terms:         "Nutzungsbedingungen",
     footer_dpa: "Auftragsverarbeitungsvertrag",
@@ -838,7 +838,7 @@ export default {
     ac_secondary_coll:       "oder dem Kollektiv beitreten",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "UNSERE INTELLIGENZ",
     stack_h2_pre:  "Vier Ebenen von Zahlungs-Intelligence.",
     stack_h2_kw:   "Ein Evidenzmodell.",
     stack_c1_t: "Händler-Ökonomie",
@@ -1093,6 +1093,10 @@ export default {
     fl_p1:                 "Nach Jahren in globalen Unternehmen wurde mir klar, dass unabhängige Marken ohne die Infrastruktur arbeiteten, die sie verdienen.",
     fl_p2:                 "Deshalb habe ich CAMBRA gegründet.",
     fl_role:               "Gründer",
+    fl_intro:              "CAMBRA entstand aus einer einfachen Überzeugung: Unabhängige Unternehmen verdienen fairere Preise und volle Transparenz.",
+    fl_metric_years:       "Jahre in globalen Unternehmen",
+    fl_metric_mission:     "Mission: fairere Preise",
+    fl_metric_focus:       "Fokus auf echte Einsparungen",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Evidenzstandards",
@@ -1156,8 +1160,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Preise",
-    pd_h2_pre:       "Mit Analyse starten.",
-    pd_h2_kw:        "Mit Evidenz handeln.",
+    pd_h2_pre:       "Keine Vorabkosten.",
+    pd_h2_kw:        "Wir gewinnen, wenn Sie gewinnen.",
     pd_sub:          "Analysieren Sie kostenlos. Aktivieren Sie Recover, verdient CAMBRA 25 % der positiven verifizierten Einsparungen während der 24-monatigen Recovery-Laufzeit. Sie behalten 75 %. Keine verifizierten Einsparungen, keine Gebühr.",
     pd_sub_v2:       "Analysieren Sie kostenlos. Wo die freigegebenen Staffelbedingungen verfügbar sind, kostet Recover 25 % der positiven verifizierten Einsparungen in den Monaten 1–12, 15 % in den Monaten 13–24 und danach 0 %.",
     pd_step1:        "Schritt 1",

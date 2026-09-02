@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Atsijungti",
 
     /* landing — hero */
-    hero_badge:           "Rask paslėptas mokėjimų sąnaudas",
-    hero_h1_line1:        "Nustok prarasti maržą",
-    hero_h1_line2:        "kaskart gaudamas mokėjimą.",
-    hero_sub:             "Mokėjimų mokesčiai atsiriekia dalį kiekvieno pardavimo. CAMBRA randa, kur galbūt moki per daug, ir padeda susigrąžinti tuos pinigus. Moki tik tada, kai sutaupai.",
-    hero_cta_primary:     "Rask mano prarastą maržą",
+    hero_badge:           "MOKĖJIMŲ INTELEKTAS",
+    hero_h1_line1:        "Sumažink kortelių mokesčius.",
+    hero_h1_line2:        "Išsaugok didesnę maržą.",
+    hero_sub:             "CAMBRA analizuoja tavo išlaidas, randa išvengiamus kortelių mokesčius ir padeda išsiderėti geresnes sąlygas. Pradėk nemokamai. Uždirbame tik tada, kai tu sutaupai.",
+    hero_cta_primary:     "Sužinok, kiek galėtum sutaupyti",
     hero_cta_secondary:   "Kaip tai veikia",
-    hero_trust_1:         "Nemokama pirmoji analizė",
-    hero_trust_2:         "Moki tik už patikrintus sutaupymus",
-    hero_trust_3:         "Sukurta Europos verslams",
-    hero_image_alt:       "Iliustracinė CAMBRA maržos ataskaita, rodanti prieš rekomendaciją patikrintus faktus",
+    hero_trust_1:         "Nemokama išlaidų analizė",
+    hero_trust_2:         "Nėra patikrinto sutaupymo, nėra mokesčio",
+    hero_trust_3:         "Europos prekybininkams",
+    hero_image_alt:       "Iliustracinis 24 mėnesių CAMBRA auditas: 5 mln. € metinė apyvarta, dabartinis tarifas 2,70%, tikslas 1,70% ir 100 000 € galima permoka",
     hero_visual_title:    "Tavo maržos ataskaita",
     hero_visual_status:   "Iliustracinė",
     hero_visual_market:   "Ką parduodi",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Pasilik daugiau iš kiekvieno pardavimo.",
+    footer_tagline:       "Infrastruktūros analitika nepriklausomai prekybai.",
     footer_privacy:       "Privatumo politika",
     footer_terms:         "Naudojimo sąlygos",
     footer_dpa: "Duomenų tvarkymo sutartis",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "arba prisijunk prie kolektyvo",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "MOKĖJIMŲ PLEIŠTAS",
+    stack_eyebrow: "MŪSŲ INTELEKTAS",
     stack_h2_pre:  "Keturi mokėjimų žvalgybos sluoksniai.",
     stack_h2_kw:   "Vienas įrodymų modelis.",
     stack_c1_t: "Prekybininko ekonomika",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Po metų globaliose įmonėse supratau, kad nepriklausomi prekių ženklai veikia be infrastruktūros, kurios nusipelnė.",
     fl_p2:                 "Todėl įkūriau CAMBRA.",
     fl_role:               "Steigėjas",
+    fl_intro:              "CAMBRA gimė iš paprasto įsitikinimo: nepriklausomos įmonės nusipelno teisingesnių kainų ir visiško skaidrumo.",
+    fl_metric_years:       "metų pasaulinėse įmonėse",
+    fl_metric_mission:     "misija: teisingesnės kainos",
+    fl_metric_focus:       "dėmesys realiam taupymui",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Įrodymų standartai",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Kainos",
-    pd_h2_pre:       "Pradėk nuo analizės.",
-    pd_h2_kw:        "Veik su įrodymais.",
+    pd_h2_pre:       "Jokių išankstinių mokesčių.",
+    pd_h2_kw:        "Laimime, kai laimi tu.",
     pd_sub:          "Analizuok nemokamai. Jei aktyvuoji Recover, CAMBRA uždirba 25% teigiamų patikrintų sutaupymų per 24 mėnesių Susigrąžinimo laikotarpį. Tu pasilieki 75%. Nėra patikrintų sutaupymų, nėra mokesčio.",
     pd_sub_v2:       "Analizuok nemokamai. Kur prieinamos patvirtintos pakopinės sąlygos, Recover kainuoja 25% teigiamų patikrintų sutaupymų 1–12 mėn., 15% 13–24 mėn. ir 0% po to.",
     pd_step1:        "1 žingsnis",

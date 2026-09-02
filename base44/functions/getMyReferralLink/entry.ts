@@ -5,7 +5,8 @@
 // deliberately NOT derivable from the email or any brand id — a leaked code
 // reveals nothing about its owner.
 //
-// The frontend builds the invite URL as `${origin}/Analyzer?ref=<code>`.
+// The frontend builds the invite URL as `${origin}/Invite?ref=<code>`; that
+// page preserves the same code through login and the Analyzer submission.
 // Attribution happens in submitPaymentsAnalysis (referred_by_code on the
 // session + times_used increment). NO reward mechanics in this chunk.
 

@@ -27,9 +27,7 @@ export default function PublicFooter() {
       <div
         className="relative w-full overflow-hidden px-6 sm:px-10 pt-20 pb-14"
         style={{
-          background: "rgba(10,8,24,0.97)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          background: "#0A0818",
           borderTop: "1px solid rgba(255,255,255,0.08)",
         }}
       >
@@ -42,7 +40,7 @@ export default function PublicFooter() {
               <img src={BRAND_ASSETS.cMarkWhite} alt="" width={26} height={26} className="h-[26px] w-[26px]" draggable={false} />
               CAMBRA
             </span>
-            <p className="mt-4 max-w-xs text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.55)" }}>
+            <p className="mt-2 max-w-sm text-[14px] font-bold leading-relaxed text-white">
               {t("footer_tagline")}
             </p>
           </div>
@@ -68,7 +66,7 @@ export default function PublicFooter() {
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-            CAMBRA Global SASU · SIREN 105 452 916 · SIRET 105 452 916 00015 · VAT FR50105452916 · 47 rue Vivienne, Chez Vivienne Domiciliation, 75002 Paris, France · support@cambra.global
+            CAMBRA Global SASU · SIREN 105 452 916 · SIRET 105 452 916 00015 · VAT FR50105452916 · 47 rue Vivienne, 75002 Paris, France · support@cambra.global
             {" · "}
             {/* LEGAL-2 — GDPR access/erasure (ARCO) entry point. Deliberately
                 discreet: same size/colour as the legal line, no emphasis. */}

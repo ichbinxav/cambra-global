@@ -262,16 +262,16 @@ export default {
     sidebar_signout:      "Esci",
 
     /* landing — hero */
-    hero_badge:           "Trova i costi di pagamento nascosti",
-    hero_h1_line1:        "Smetti di perdere margine",
-    hero_h1_line2:        "ogni volta che vieni pagato.",
-    hero_sub:             "Le commissioni di pagamento prendono una parte di ogni vendita. CAMBRA trova dove potresti pagare troppo e ti aiuta a recuperare quei soldi. Paghi solo quando risparmi.",
-    hero_cta_primary:     "Trova il mio margine perso",
+    hero_badge:           "INTELLIGENZA DEI PAGAMENTI",
+    hero_h1_line1:        "Riduci le commissioni sulle carte.",
+    hero_h1_line2:        "Trattieni più margine.",
+    hero_sub:             "CAMBRA analizza quanto paghi, individua i costi evitabili delle carte e ti aiuta a negoziare condizioni migliori. Inizia gratis. Guadagniamo solo quando risparmi.",
+    hero_cta_primary:     "Scopri quanto potresti risparmiare",
     hero_cta_secondary:   "Come funziona",
-    hero_trust_1:         "Prima analisi gratuita",
-    hero_trust_2:         "Paghi solo sui risparmi verificati",
-    hero_trust_3:         "Pensato per le attività europee",
-    hero_image_alt:       "Report di margine CAMBRA illustrativo con i fatti verificati prima di una raccomandazione",
+    hero_trust_1:         "Analisi dei costi gratuita",
+    hero_trust_2:         "Nessun risparmio verificato, nessuna commissione",
+    hero_trust_3:         "Pensato per gli esercenti europei",
+    hero_image_alt:       "Audit CAMBRA illustrativo su 24 mesi: 5 M€ di volume annuo, tasso attuale 2,70%, tasso obiettivo 1,70% e 100.000 € di sovrapprezzo potenziale",
     hero_visual_title:    "Il tuo report di margine",
     hero_visual_status:   "Illustrativo",
     hero_visual_market:   "Cosa vendi",
@@ -316,7 +316,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Tieni di più di ogni vendita.",
+    footer_tagline:       "Intelligence infrastrutturale per il commercio indipendente.",
     footer_privacy:       "Informativa sulla privacy",
     footer_terms:         "Termini di servizio",
     footer_dpa: "Accordo sul trattamento dei dati",
@@ -840,7 +840,7 @@ export default {
     ac_secondary_coll:       "o unisciti al collettivo",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "LA NOSTRA INTELLIGENZA",
     stack_h2_pre:  "Quattro livelli di intelligence sui pagamenti.",
     stack_h2_kw:   "Un solo modello di evidenza.",
     stack_c1_t: "Economia dell'esercente",
@@ -1095,6 +1095,10 @@ export default {
     fl_p1:                 "Dopo anni dentro aziende globali, ho capito che i brand indipendenti operavano senza l'infrastruttura che meritavano.",
     fl_p2:                 "Per questo ho creato CAMBRA.",
     fl_role:               "Fondatore",
+    fl_intro:              "CAMBRA nasce da una convinzione semplice: le imprese indipendenti meritano prezzi più equi e totale trasparenza.",
+    fl_metric_years:       "anni in aziende globali",
+    fl_metric_mission:     "missione: prezzi più equi",
+    fl_metric_focus:       "focus su risparmi reali",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Standard di evidenza",
@@ -1158,8 +1162,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Prezzi",
-    pd_h2_pre:       "Parti dall'analisi.",
-    pd_h2_kw:        "Agisci con l'evidenza.",
+    pd_h2_pre:       "Nessun costo iniziale.",
+    pd_h2_kw:        "Vinciamo quando vinci tu.",
     pd_sub:          "Analizza gratis. Se attivi Recover, CAMBRA guadagna il 25% dei risparmi positivi verificati durante il Periodo di Recupero di 24 mesi. Tu tieni il 75%. Niente risparmi verificati, niente commissione.",
     pd_sub_v2:       "Analizza gratis. Dove i termini scaglionati approvati sono disponibili, Recover costa il 25% dei risparmi positivi verificati nei mesi 1–12, il 15% nei mesi 13–24 e lo 0% dopo.",
     pd_step1:        "Passo 1",

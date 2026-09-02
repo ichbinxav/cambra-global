@@ -20,18 +20,20 @@ import { getReferralStartPct, getReferralStepPct, getReferralFloorPct } from "@/
 const BASE_FEE_PCT = getReferralStartPct();
 const STEP_POINTS = getReferralStepPct();
 const FLOOR_FEE_PCT = getReferralFloorPct();
+const ENTRY_FEE_PCT = Math.max(FLOOR_FEE_PCT, BASE_FEE_PCT - STEP_POINTS);
 
-function feeForActivated(activatedCount) {
+function feeForActivated(activatedCount, entryDiscountPoints = 0) {
   const n = Math.max(0, Math.floor(Number(activatedCount) || 0));
+  const entry = Math.max(0, Math.min(STEP_POINTS, Number(entryDiscountPoints) || 0));
   if (!Number.isFinite(n)) return BASE_FEE_PCT;
-  return Math.max(FLOOR_FEE_PCT, BASE_FEE_PCT - n * STEP_POINTS);
+  return Math.max(FLOOR_FEE_PCT, BASE_FEE_PCT - entry - n * STEP_POINTS);
 }
 
 // Fee after one more activated referral — null when already at the floor.
-function nextFeePct(activatedCount) {
-  const current = feeForActivated(activatedCount);
+function nextFeePct(activatedCount, entryDiscountPoints = 0) {
+  const current = feeForActivated(activatedCount, entryDiscountPoints);
   if (current <= FLOOR_FEE_PCT) return null;
-  return feeForActivated(Math.max(0, Math.floor(Number(activatedCount) || 0)) + 1);
+  return feeForActivated(Math.max(0, Math.floor(Number(activatedCount) || 0)) + 1, entryDiscountPoints);
 }
 // SYNC-END referral-fee-ladder
-export { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT, feeForActivated, nextFeePct };
+export { BASE_FEE_PCT, STEP_POINTS, FLOOR_FEE_PCT, ENTRY_FEE_PCT, feeForActivated, nextFeePct };

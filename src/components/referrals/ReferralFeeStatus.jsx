@@ -5,15 +5,16 @@ import { useTranslation } from "@/lib/i18n.jsx";
 // REFERRAL-1 — the merchant's own state: current fee, activated referrals,
 // link usage, and what the next activated referral would do. Aggregates only:
 // no names, no third-party figures.
-export default function ReferralFeeStatus({ activatedCount, timesUsed, economicsVersion = "legacy-v1" }) {
+export default function ReferralFeeStatus({ activatedCount, timesUsed, economicsVersion = "legacy-v1", entryDiscountPoints = 0 }) {
   const { t } = useTranslation();
   const isV2 = economicsVersion === "recover-economics-v2";
-  const legacyFee = feeForActivated(activatedCount);
-  const legacyNext = nextFeePct(activatedCount);
-  const year1Fee = effectiveRecoverFeeForPhase(25, activatedCount);
-  const year2Fee = effectiveRecoverFeeForPhase(15, activatedCount);
-  const nextYear1 = year1Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(25, activatedCount + 1) : null;
-  const nextYear2 = year2Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(15, activatedCount + 1) : null;
+  const entryPoints = Math.max(0, Number(entryDiscountPoints) || 0);
+  const legacyFee = feeForActivated(activatedCount, entryPoints);
+  const legacyNext = nextFeePct(activatedCount, entryPoints);
+  const year1Fee = effectiveRecoverFeeForPhase(25 - entryPoints, activatedCount);
+  const year2Fee = effectiveRecoverFeeForPhase(15 - entryPoints, activatedCount);
+  const nextYear1 = year1Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(25 - entryPoints, activatedCount + 1) : null;
+  const nextYear2 = year2Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(15 - entryPoints, activatedCount + 1) : null;
 
   const tiles = isV2 ? [
     { label: t("ref_fee_y1_label"), value: `${year1Fee}%` },
@@ -26,14 +27,11 @@ export default function ReferralFeeStatus({ activatedCount, timesUsed, economics
   ];
 
   return (
-    <div
-      className="rounded-2xl p-5 sm:p-6"
-      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.10)" }}
-    >
-      <div className="grid grid-cols-3 gap-3">
+    <div className="cambra-card p-5 sm:p-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {tiles.map((tile) => (
-          <div key={tile.label}>
-            <p className="text-[9.5px] uppercase tracking-[0.16em] font-bold text-white/45 mb-1.5 leading-tight">
+          <div key={tile.label} className="rounded-xl border border-white/[.07] bg-white/[.025] px-4 py-3.5">
+            <p className="text-[9.5px] uppercase tracking-[0.16em] font-bold text-white/45 mb-1.5 leading-tight min-h-[24px]">
               {tile.label}
             </p>
             <p
@@ -52,6 +50,11 @@ export default function ReferralFeeStatus({ activatedCount, timesUsed, economics
               : t("ref_floor_note").replace("{floor}", `${FLOOR_FEE_PCT}%`))
           : (legacyNext !== null ? t("ref_next_step").replace("{next}", `${legacyNext}%`) : t("ref_floor_note").replace("{floor}", `${FLOOR_FEE_PCT}%`))}
         {isV2 && <span className="block mt-1 text-white/40">{t("ref_used_label")}: {timesUsed}</span>}
+        {entryPoints > 0 && (
+          <span className="mt-2 block font-semibold text-cambra-cyan">
+            20% · {t("ref_land_t3_note").replace("{base}", "25%")}
+          </span>
+        )}
       </p>
     </div>
   );

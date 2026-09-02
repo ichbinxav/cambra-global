@@ -294,7 +294,7 @@ export const SEO_DYNAMIC = [
     // …) or an unknown slug is noindex,nofollow — retired slugs redirect to
     // /Help in the UI (HelpCategory), and must never be indexed with stale
     // multi-vertical content.
-    resolve: (pathname /* , lang */) => {
+    resolve: (pathname, _lang = "en") => {
       const slug = decodeURIComponent(pathname.split("/")[2] || "");
       const base = SEO_STATIC["/Help"];
       const live = Boolean(getCategory(slug)) && !isRetiredHelpSlug(slug);

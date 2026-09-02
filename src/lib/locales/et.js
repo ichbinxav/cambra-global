@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Logi välja",
 
     /* landing — hero */
-    hero_badge:           "Leia peidetud maksekulud",
-    hero_h1_line1:        "Lõpeta marginaali kaotamine",
-    hero_h1_line2:        "iga kord, kui sulle makstakse.",
-    hero_sub:             "Maksetasud võtavad osa igast müügist. CAMBRA leiab, kus võid liiga palju maksta, ja aitab selle raha tagasi saada. Maksad ainult siis, kui säästad.",
-    hero_cta_primary:     "Leia mu kadunud marginaal",
+    hero_badge:           "MAKSEINTELLIGENTS",
+    hero_h1_line1:        "Vähenda kaarditasusid.",
+    hero_h1_line2:        "Säilita rohkem marginaali.",
+    hero_sub:             "CAMBRA analüüsib sinu kulusid, leiab välditavad kaarditasud ja aitab läbi rääkida paremad tingimused. Alusta tasuta. Teenime ainult siis, kui sina säästad.",
+    hero_cta_primary:     "Vaata, kui palju võiksid säästa",
     hero_cta_secondary:   "Kuidas see toimib",
-    hero_trust_1:         "Tasuta esimene analüüs",
-    hero_trust_2:         "Maksad ainult kinnitatud säästudelt",
-    hero_trust_3:         "Loodud Euroopa ettevõtetele",
-    hero_image_alt:       "Illustratiivne CAMBRA marginaaliraport, mis näitab enne soovitust kontrollitud fakte",
+    hero_trust_1:         "Tasuta kulude analüüs",
+    hero_trust_2:         "Ilma kinnitatud säästuta pole tasu",
+    hero_trust_3:         "Euroopa kaupmeestele",
+    hero_image_alt:       "Näitlik CAMBRA 24 kuu audit: 5 mln € aastamaht, praegune määr 2,70%, siht 1,70% ja võimalik enammakse 100 000 €",
     hero_visual_title:    "Sinu marginaaliraport",
     hero_visual_status:   "Illustratiivne",
     hero_visual_market:   "Mida sa müüd",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Hoia igast müügist rohkem endale.",
+    footer_tagline:       "Taristuintelligents sõltumatule kaubandusele.",
     footer_privacy:       "Privaatsuspoliitika",
     footer_terms:         "Kasutustingimused",
     footer_dpa: "Andmetöötlusleping",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "või liitu kollektiiviga",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "MAKSETE KIIL",
+    stack_eyebrow: "MEIE INTELLIGENTS",
     stack_h2_pre:  "Neli makseluure kihti.",
     stack_h2_kw:   "Üks tõendusmudel.",
     stack_c1_t: "Kaupleja majandus",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Pärast aastaid globaalsetes ettevõtetes mõistsin, et sõltumatud brändid tegutsevad ilma taristuta, mida nad väärivad.",
     fl_p2:                 "Seepärast alustasin CAMBRA-ga.",
     fl_role:               "Asutaja",
+    fl_intro:              "CAMBRA sündis lihtsast veendumusest: sõltumatud ettevõtted väärivad õiglasemaid hindu ja täielikku läbipaistvust.",
+    fl_metric_years:       "aastat globaalsetes ettevõtetes",
+    fl_metric_mission:     "missioon: õiglasemad hinnad",
+    fl_metric_focus:       "fookus tegelikul säästul",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Tõendusstandardid",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Hinnad",
-    pd_h2_pre:       "Alusta analüüsiga.",
-    pd_h2_kw:        "Tegutse tõenditega.",
+    pd_h2_pre:       "Ei mingeid ettemakseid.",
+    pd_h2_kw:        "Võidame siis, kui sina võidad.",
     pd_sub:          "Analüüsi tasuta. Kui aktiveerid Recoveri, teenib CAMBRA 25% positiivsetest kinnitatud säästudest 24-kuulise Taastamisperioodi jooksul. Sina hoiad 75%. Pole kinnitatud sääste, pole tasu.",
     pd_sub_v2:       "Analüüsi tasuta. Kus kinnitatud astmelised tingimused on saadaval, maksab Recover 25% positiivsetest kinnitatud säästudest kuudel 1–12, 15% kuudel 13–24 ja 0% pärast seda.",
     pd_step1:        "Samm 1",

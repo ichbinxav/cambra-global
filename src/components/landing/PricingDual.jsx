@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Check, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowUpRight, BadgeEuro, Check, LockKeyhole, ShieldCheck, Sparkles, ArrowRight, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -174,8 +174,14 @@ export default function PricingDual() {
   const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
   const { experience } = useMarket();
+  const reassurance = [
+    { icon: ShieldCheck, key: "pd_t2_caption" },
+    { icon: BadgeEuro, key: "hero_trust_2" },
+    { icon: TrendingUp, key: "pd_t2_f4" },
+    { icon: LockKeyhole, key: "trust_sec_b2_t" },
+  ];
   return (
-    <section className="relative py-12 sm:py-16 overflow-hidden">
+    <section id="pricing" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
       {/* ambient halo */}
       <div
         aria-hidden
@@ -194,19 +200,29 @@ export default function PricingDual() {
 
       <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
         {/* Header */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-5 lg:gap-12 items-end mb-12 sm:mb-14">
+        <div className="grid grid-cols-1 lg:grid-cols-[.95fr_1.05fr] gap-7 lg:gap-12 items-end mb-12 sm:mb-14">
           <SectionHeading eyebrow={t("pd_eyebrow")} align="left">
             {t("pd_h2_pre")}
             <br />
             <span className="kw">{t("pd_h2_kw")}</span>
           </SectionHeading>
-          <p className="text-center lg:text-left text-[13px] sm:text-[14px] max-w-xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
-            {t(recoveryV2Available ? "pd_sub_v2" : "pd_sub")}
-          </p>
+          <div>
+            <p className="text-center lg:text-justify text-[13px] sm:text-[14px] max-w-2xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
+              {t(recoveryV2Available ? "pd_sub_v2" : "pd_sub")}
+            </p>
+            <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--linea)" }}>
+              {reassurance.map(({ icon: Icon, key }, index) => (
+                <div key={key} className="flex items-center gap-2.5 p-3.5" style={{ borderRight: index % 2 === 0 ? "1px solid var(--linea)" : "none", borderTop: index > 1 ? "1px solid var(--linea)" : "none" }}>
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ color: "var(--voltio)", background: "rgba(91,76,245,.07)" }}><Icon size={14} aria-hidden="true" /></span>
+                  <span className="text-[10.5px] sm:text-[11.5px] font-semibold leading-snug" style={{ color: "var(--ink)" }}>{t(key)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Two columns — Analyze · Recover */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-5xl mx-auto pt-4">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-7xl mx-auto pt-4">
           {/* Flow connector between the two steps */}
           <motion.div
             aria-hidden
@@ -229,7 +245,6 @@ export default function PricingDual() {
             style={{
               background: "#ffffff",
               border: "1px solid var(--linea)",
-              boxShadow: "0 30px 80px -40px rgba(12,12,22,0.12)",
             }}
           >
             <div
@@ -289,7 +304,6 @@ export default function PricingDual() {
               style={{
                 background: "#ffffff",
                 border: "1px solid rgba(91,76,245,0.30)",
-                boxShadow: "0 30px 80px -40px rgba(91,76,245,0.12)",
               }}
             >
               {/* Animated gradient border sweep — the WOW frame on the featured tier */}

@@ -30,10 +30,9 @@ export default function HowItWorks() {
       />
 
       <div className="relative pt-16 pb-20">
-        <div className="max-w-6xl mx-auto px-5">
+        <div className="max-w-[1400px] mx-auto px-5 sm:px-8">
 
-          {/* Steps — large cinematic, on white paper cards */}
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {STEPS.map((step, i) => {
               const Icon = step.icon;
               return (
@@ -43,15 +42,15 @@ export default function HowItWorks() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.5, delay: i * 0.05 }}
-                  className="p-8 sm:p-12"
-                  style={CARD_STYLE}
+                  className="p-7 sm:p-8 flex flex-col min-h-[390px]"
+                  style={{ ...CARD_STYLE, borderRadius: 24 }}
                 >
                   <div className="flex items-start justify-between gap-4 mb-8">
                     {/* Giant cinematic number — navy gradient on paper */}
                     <div
                       className="cambra-step-number-light"
                       style={{
-                        fontSize: "clamp(4rem, 9vw, 6.5rem)",
+                        fontSize: "clamp(3.5rem, 7vw, 5.6rem)",
                         lineHeight: 1,
                         background: "linear-gradient(180deg, #3A2BB0 0%, var(--voltio-2) 100%)",
                         WebkitBackgroundClip: "text",
@@ -77,7 +76,7 @@ export default function HowItWorks() {
                     </Link>
                   </div>
 
-                  <div>
+                  <div className="mt-auto">
                     <div className="min-w-0">
                       <div
                         className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full"

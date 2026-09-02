@@ -98,6 +98,25 @@ describe("applyReferralActivation — crediting an activated referral", () => {
     expect(svc.store.ReferralLink[0].activated_count).toBe(1);
   });
 
+  it("stacks one earned referral on an invited referrer's 20% entry fee", async () => {
+    svc.store.ReferralLink.push({
+      id: "link_upstream", code: "upstream_code", owner_email: "upstream@shop.test",
+      times_used: 1, activated_count: 0, created_date: "2026-06-01T00:00:00.000Z",
+    });
+    svc.store.PaymentsAnalysisSession.push({
+      id: "sess_referrer", anon_session_id: "uuid-referrer", contact_email: REFERRER,
+      referred_by_code: "upstream_code",
+    });
+
+    const res = await applyReferralActivation(svc, { brand_id: "brand_referred", now: NOW });
+
+    expect(res).toMatchObject({ applied: true, entry_discount_points: 5, fee_pct: 15 });
+    expect(svc.store.BillingRule.find((rule) => rule.id !== "rule_old")).toMatchObject({
+      node_share_percent: 15,
+      effective_start_date: "2026-09-01",
+    });
+  });
+
   it("is IDEMPOTENT — replaying the event does not inflate the counter", async () => {
     const first = await applyReferralActivation(svc, { brand_id: "brand_referred", now: NOW });
     const second = await applyReferralActivation(svc, { brand_id: "brand_referred", now: NOW });

@@ -263,16 +263,16 @@ export default {
     sidebar_signout:      "Kijelentkezés",
 
     /* landing — hero */
-    hero_badge:           "Találd meg a rejtett fizetési költségeket",
-    hero_h1_line1:        "Ne veszíts több árrést",
-    hero_h1_line2:        "minden egyes kifizetésnél.",
-    hero_sub:             "A fizetési díjak minden eladásból levesznek egy részt. A CAMBRA megtalálja, hol fizethetsz túl sokat, és segít visszaszerezni azt a pénzt. Csak akkor fizetsz, ha megtakarítasz.",
-    hero_cta_primary:     "Találd meg az elveszett árrésem",
+    hero_badge:           "FIZETÉSI INTELLIGENCIA",
+    hero_h1_line1:        "Csökkentsd a kártyadíjakat.",
+    hero_h1_line2:        "Tarts meg több árrést.",
+    hero_sub:             "A CAMBRA elemzi a költségeidet, feltárja az elkerülhető kártyadíjakat, és segít jobb feltételeket kialkudni. Kezdd ingyen. Csak akkor keresünk, ha te megtakarítasz.",
+    hero_cta_primary:     "Nézd meg, mennyit takaríthatsz meg",
     hero_cta_secondary:   "Hogyan működik",
-    hero_trust_1:         "Ingyenes első elemzés",
-    hero_trust_2:         "Csak ellenőrzött megtakarítás után fizetsz",
-    hero_trust_3:         "Európai vállalkozásoknak készült",
-    hero_image_alt:       "Illusztratív CAMBRA árrésriport, amely az ajánlás előtt ellenőrzött tényeket mutatja",
+    hero_trust_1:         "Ingyenes költségelemzés",
+    hero_trust_2:         "Nincs ellenőrzött megtakarítás, nincs díj",
+    hero_trust_3:         "Európai kereskedőknek",
+    hero_image_alt:       "Szemléltető 24 hónapos CAMBRA-audit: 5 millió € éves forgalom, 2,70% jelenlegi díj, 1,70% cél és 100 000 € lehetséges túlfizetés",
     hero_visual_title:    "Az árrésriportod",
     hero_visual_status:   "Illusztratív",
     hero_visual_market:   "Amit árulsz",
@@ -317,7 +317,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Tarts meg többet minden eladásból.",
+    footer_tagline:       "Infrastruktúra-intelligencia a független kereskedelemhez.",
     footer_privacy:       "Adatvédelmi irányelvek",
     footer_terms:         "Felhasználási feltételek",
     footer_dpa: "Adatfeldolgozási szerződés",
@@ -841,7 +841,7 @@ export default {
     ac_secondary_coll:       "vagy csatlakozz a kollektívához",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "A FIZETÉSI ÉK",
+    stack_eyebrow: "A MI INTELLIGENCIÁNK",
     stack_h2_pre:  "A fizetési intelligencia négy rétege.",
     stack_h2_kw:   "Egyetlen bizonyítéki modell.",
     stack_c1_t: "Kereskedői gazdaságtan",
@@ -1105,6 +1105,10 @@ export default {
     fl_p1:                 "Évek után globális cégeknél rájöttem, hogy a független márkák az általuk megérdemelt infrastruktúra nélkül működnek.",
     fl_p2:                 "Ezért indítottam el a CAMBRA-t.",
     fl_role:               "Alapító",
+    fl_intro:              "A CAMBRA egy egyszerű meggyőződésből született: a független vállalkozások igazságosabb árakat és teljes átláthatóságot érdemelnek.",
+    fl_metric_years:       "év globális vállalatoknál",
+    fl_metric_mission:     "küldetés: igazságosabb árak",
+    fl_metric_focus:       "fókusz a valódi megtakarításon",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Bizonyítéki standardok",
@@ -1168,8 +1172,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Árazás",
-    pd_h2_pre:       "Kezdd az elemzéssel.",
-    pd_h2_kw:        "Cselekedj bizonyítékkal.",
+    pd_h2_pre:       "Nincs előzetes díj.",
+    pd_h2_kw:        "Akkor nyerünk, ha te nyersz.",
     pd_sub:          "Elemezz ingyen. Ha aktiválod a Recover-t, a CAMBRA az ellenőrzött pozitív megtakarítás 25%-át kapja a 24 hónapos Visszatérítési Időszak alatt. Te 75%-ot tartasz meg. Nincs ellenőrzött megtakarítás, nincs díj.",
     pd_sub_v2:       "Elemezz ingyen. Ahol a jóváhagyott sávos feltételek elérhetők, a Recover az ellenőrzött pozitív megtakarítás 25%-ába kerül az 1–12. hónapban, 15%-ába a 13–24. hónapban és 0%-ába utána.",
     pd_step1:        "1. lépés",

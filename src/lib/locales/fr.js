@@ -254,16 +254,16 @@ export default {
     sidebar_signout:      "Se déconnecter",
 
     /* landing — hero */
-    hero_badge:           "Repérez les frais de paiement qui grignotent votre marge",
-    hero_h1_line1:        "Arrêtez de perdre de la marge",
-    hero_h1_line2:        "à chaque paiement.",
-    hero_sub:             "Les frais de paiement prélèvent une part de chaque vente. CAMBRA repère où vous payez peut-être trop et vous aide à récupérer cette marge. Vous ne payez que si vous économisez.",
-    hero_cta_primary:     "Récupérer ma marge",
+    hero_badge:           "INTELLIGENCE DES PAIEMENTS",
+    hero_h1_line1:        "Réduisez vos frais de carte.",
+    hero_h1_line2:        "Gardez plus de marge.",
+    hero_sub:             "CAMBRA analyse vos coûts, repère les frais de carte évitables et vous aide à négocier de meilleures conditions. Commencez gratuitement. Nous gagnons seulement si vous économisez.",
+    hero_cta_primary:     "Découvrez vos économies possibles",
     hero_cta_secondary:   "Comment ça marche",
-    hero_trust_1:         "Première analyse gratuite",
-    hero_trust_2:         "Paiement uniquement sur les économies vérifiées",
-    hero_trust_3:         "Conçu pour les entreprises européennes",
-    hero_image_alt:       "Exemple de rapport CAMBRA sur la marge et les éléments vérifiés avant toute recommandation",
+    hero_trust_1:         "Analyse des coûts gratuite",
+    hero_trust_2:         "Sans économie vérifiée, aucun frais",
+    hero_trust_3:         "Conçu pour les commerçants européens",
+    hero_image_alt:       "Audit illustratif CAMBRA sur 24 mois : 5 M€ de volume annuel, taux actuel de 2,70 %, taux cible de 1,70 % et 100 000 € de surcoût potentiel",
     hero_visual_title:    "Votre rapport de marge",
     hero_visual_status:   "Illustratif",
     hero_visual_market:   "Ce que vous vendez",
@@ -302,7 +302,7 @@ export default {
 
 
 
-    footer_tagline:       "Gardez davantage sur chaque vente.",
+    footer_tagline:       "Intelligence d’infrastructure pour le commerce indépendant.",
     footer_privacy:       "Politique de confidentialité",
     footer_terms:         "Conditions d'utilisation",
     footer_dpa: "Accord de sous-traitance",
@@ -820,7 +820,7 @@ export default {
     ac_secondary_coll:       "ou rejoignez le collectif",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "POINT D'ENTRÉE PAIEMENTS",
+    stack_eyebrow: "NOTRE INTELLIGENCE",
     stack_h2_pre:  "Quatre couches d'intelligence paiement.",
     stack_h2_kw:   "Un seul modèle de preuve.",
     stack_c1_t: "Économie du commerçant",
@@ -1083,6 +1083,10 @@ export default {
     fl_p1:                 "Après des années au sein de grandes entreprises, j'ai constaté que les marques indépendantes travaillaient sans l'infrastructure qu'elles méritent.",
     fl_p2:                 "C'est pour cela que j'ai créé CAMBRA.",
     fl_role:               "Fondateur",
+    fl_intro:              "CAMBRA est née d’une conviction simple : les entreprises indépendantes méritent des prix plus justes et une transparence totale.",
+    fl_metric_years:       "ans dans des entreprises mondiales",
+    fl_metric_mission:     "mission : des prix plus justes",
+    fl_metric_focus:       "centré sur des économies réelles",
 
     /* Landing — normes de preuve */
     tst_eyebrow:           "Normes de preuve",
@@ -1146,8 +1150,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Tarifs",
-    pd_h2_pre:       "Commencez par l'analyse.",
-    pd_h2_kw:        "Agissez avec des preuves.",
+    pd_h2_pre:       "Aucun frais initial.",
+    pd_h2_kw:        "Nous gagnons quand vous gagnez.",
     pd_sub:          "Analysez gratuitement. Si vous activez Recover, CAMBRA perçoit 25 % des économies positives vérifiées pendant la période Recover de 24 mois. Vous gardez 75 %. Sans économie vérifiée, aucune commission.",
     pd_sub_v2:       "Analysez gratuitement. Lorsque les conditions progressives approuvées sont disponibles, Recover coûte 25 % des économies positives vérifiées pendant les mois 1 à 12, 15 % pendant les mois 13 à 24, puis 0 %.",
     pd_step1:        "Étape 1",

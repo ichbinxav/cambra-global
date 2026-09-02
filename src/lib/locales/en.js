@@ -258,16 +258,16 @@ export default {
     sidebar_signout:      "Sign out",
 
     /* landing — hero */
-    hero_badge:           "Find hidden payment costs",
-    hero_h1_line1:        "Stop losing margin",
-    hero_h1_line2:        "every time you get paid.",
-    hero_sub:             "Payment fees take a cut from every sale. CAMBRA finds where you may be paying too much and helps you get that money back. You only pay when you save.",
-    hero_cta_primary:     "Find my lost margin",
+    hero_badge:           "PAYMENTS INTELLIGENCE",
+    hero_h1_line1:        "Lower your card fees.",
+    hero_h1_line2:        "Keep more of your revenue.",
+    hero_sub:             "CAMBRA analyzes what you pay, spots avoidable card costs and helps negotiate better terms. Start free. We only earn when you save.",
+    hero_cta_primary:     "See what you could save",
     hero_cta_secondary:   "How it works",
-    hero_trust_1:         "Free first analysis",
-    hero_trust_2:         "Pay only on verified savings",
-    hero_trust_3:         "Made for European businesses",
-    hero_image_alt:       "Illustrative CAMBRA margin report showing the facts checked before a recommendation",
+    hero_trust_1:         "Free payment-cost analysis",
+    hero_trust_2:         "No verified savings, no fee",
+    hero_trust_3:         "Built for European merchants",
+    hero_image_alt:       "Illustrative 24-month CAMBRA card-fee audit: €5M yearly volume, 2.70% current rate, 1.70% target rate and €100,000 potential overpayment",
     hero_visual_title:    "Your margin report",
     hero_visual_status:   "Illustrative",
     hero_visual_market:   "What you sell",
@@ -312,7 +312,7 @@ export default {
     /* landing — pricing/cta */
 
     /* footer */
-    footer_tagline:       "Keep more of every sale.",
+    footer_tagline:       "Infrastructure intelligence for independent commerce.",
     footer_privacy:       "Privacy Policy",
     footer_terms:         "Terms of Service",
     footer_dpa: "Data Processing Agreement",
@@ -854,7 +854,7 @@ export default {
     ac_secondary_coll:       "or join the collective",
 
     /* Landing — TheStackSection */
-    stack_eyebrow: "PAYMENTS WEDGE",
+    stack_eyebrow: "OUR INTELLIGENCE",
     stack_h2_pre:  "Four layers of payment intelligence.",
     stack_h2_kw:   "One evidence model.",
     stack_c1_t: "Merchant economics",
@@ -1118,6 +1118,10 @@ export default {
     fl_p1:                 "After years inside global companies, I realized independent brands were operating without the infrastructure they deserved.",
     fl_p2:                 "That's why I started CAMBRA.",
     fl_role:               "Founder",
+    fl_intro:              "CAMBRA was born from a simple belief: independent businesses deserve fairer prices and complete transparency.",
+    fl_metric_years:       "years in global companies",
+    fl_metric_mission:     "mission: fairer prices",
+    fl_metric_focus:       "focused on real savings",
 
     /* Landing — evidence standards */
     tst_eyebrow:           "Evidence standards",
@@ -1181,8 +1185,8 @@ export default {
 
     /* Landing + Pricing — PricingDual (two-step pricing cards) */
     pd_eyebrow:      "Pricing",
-    pd_h2_pre:       "Start with analysis.",
-    pd_h2_kw:        "Act with evidence.",
+    pd_h2_pre:       "No upfront fees.",
+    pd_h2_kw:        "We win when you win.",
     pd_sub:          "Analyze for free. If you activate Recover, CAMBRA earns 25% of positive verified savings during the 24-month Recovery Term. You keep 75%. No verified savings, no fee.",
     pd_sub_v2:       "Analyze for free. Where the approved tiered terms are available, Recover costs 25% of positive verified savings in months 1–12, 15% in months 13–24 and 0% afterwards.",
     pd_step1:        "Step 1",

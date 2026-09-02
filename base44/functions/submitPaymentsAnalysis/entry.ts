@@ -1906,7 +1906,9 @@ Deno.serve(async (req) => {
       const links = await base44.asServiceRole.entities.ReferralLink
         .filter({ code: refRaw }, '-created_date', 1)
         .catch((error:any)=>safeBestEffort(error,{operation:'submitPaymentsAnalysis',fallback:[],severity:'secondary'}));
-      if (links?.[0]) {
+      const visitorEmail = typeof raw?.email === 'string' ? raw.email.trim().toLowerCase() : '';
+      const ownerEmail = String(links?.[0]?.owner_email || '').trim().toLowerCase();
+      if (links?.[0] && visitorEmail && ownerEmail !== visitorEmail) {
         referred_by_code = refRaw;
         await base44.asServiceRole.entities.ReferralLink
           .update(links[0].id, { times_used: (Number(links[0].times_used) || 0) + 1 })

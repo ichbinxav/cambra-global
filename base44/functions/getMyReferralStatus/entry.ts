@@ -20,6 +20,7 @@ import { safeBestEffort } from '../../shared/bestEffort.ts';
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { findOrCreateReferralLink } from '../../shared/referralLink.ts';
+import { resolveReferralEntryAttribution } from '../../shared/referralEntryDiscount.ts';
 import { internalErrorResponse } from '../../shared/publicErrors.ts';
 
 export default async function (req: Request): Promise<Response> {
@@ -32,6 +33,7 @@ export default async function (req: Request): Promise<Response> {
     const row = await findOrCreateReferralLink(svc, user.email);
     const activations = await svc.entities.DealActivation.filter({ user_email: user.email }, '-created_date', 50).catch((error:any)=>safeBestEffort(error,{operation:'getMyReferralStatus',fallback:[],severity:'secondary'}));
     const economic = (activations || []).find((a:any) => a.recovery_economics_version || a.economic_right_status === 'active') || null;
+    const entry = await resolveReferralEntryAttribution(svc, user.email);
 
     return Response.json({
       ok: true,
@@ -39,6 +41,8 @@ export default async function (req: Request): Promise<Response> {
       times_used: Number(row.times_used) || 0,
       activated_count: Number(row.activated_count) || 0,
       recovery_economics_version: economic?.recovery_economics_version || 'legacy-v1',
+      entry_discount_points: entry.eligible ? Number(entry.entry_discount_points) || 0 : 0,
+      entry_fee_pct: entry.eligible ? Number(entry.entry_fee_pct) : null,
     });
   } catch (error) {
     return internalErrorResponse(error, 'getMyReferralStatus');

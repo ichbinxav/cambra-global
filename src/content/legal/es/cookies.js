@@ -58,7 +58,7 @@ export default {
     },
     {
       title: "8. Contacto",
-      body: "Preguntas sobre cómo usa CAMBRA las cookies y el almacenamiento del navegador: privacy@cambra.global. Editor: CAMBRA Global SASU, SIREN 105 452 916, SIRET 105 452 916 00015, IVA intracomunitario FR50105452916, 47 rue Vivienne, Chez Vivienne Domiciliation, 75002 París, Francia.",
+      body: "Preguntas sobre cómo usa CAMBRA las cookies y el almacenamiento del navegador: privacy@cambra.global. Editor: CAMBRA Global SASU, SIREN 105 452 916, SIRET 105 452 916 00015, IVA intracomunitario FR50105452916, 47 rue Vivienne, 75002 París, Francia.",
     },
   ],
 };
