@@ -57,6 +57,7 @@ describe("landing truth and release controls", () => {
     expect(landing).toContain("max-w-[1480px]");
     expect(landing).toContain("lg:grid-cols-3");
     expect(landing).toContain("6cf6e66f1_IMG_3459.webp");
+    expect(landing).toContain("clamp(44px, 5vw, 72px)");
     expect(landing).not.toContain("hero_visual_title");
     expect(headings).toContain('align = "center"');
     expect(headings).toContain("clamp(32px, 5vw, 64px)");

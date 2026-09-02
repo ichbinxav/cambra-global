@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-01T17:07:18.617Z",
+  "generatedAt": "2026-09-02T11:06:37.974Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2014,7 +2014,7 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "8a8d6c72c7858aae0d9ab2e86a2d3a3f80a6c47c5aca43bf7f35ba66752bf3ea",
+      "sha256": "66486f214f277c5f092fb727d34352b1226913cded078a69aca8c986e92ce997",
       "bytes": 30619
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "2500e3d381fd4f1703703a10dbed8849793ba8487449df86e2dee9108cd2d819",
+      "sha256": "d085443b0c9b7dc22f9f8e0dbf1f4a0ed9fe0febcd1dc76183803531b564c2c0",
       "bytes": 43449
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "82870e37748382e270c12df725f7e5c309d1e07cf3c4d4a59fa2c28528f1d789",
+      "sha256": "8bb7af41e63e135bd6676564c2388f1d437e8937ceda45f168e1bf029130e5e2",
       "bytes": 13672
     },
     {
@@ -2264,13 +2264,13 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "d471269bb7b9cb48b31ea91f0e2fe514d38a46d0a5624acf2deb73760731995f",
-      "bytes": 421508
+      "sha256": "532f99259650b5567d6a6278eeca36a85b81932aaf50721713dca10c5d0764cf",
+      "bytes": 421561
     },
     {
       "path": "package.json",
-      "sha256": "abce6ef56d1e5a2e8f36ee52edc6d6ec1de6d340b6f96115f401f6d1e5fe940d",
-      "bytes": 13450
+      "sha256": "f8bf166aca70015a69f61230cfd5748fe8cb0af25c4f2a72b737465d64eaffef",
+      "bytes": 13480
     },
     {
       "path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
@@ -2899,8 +2899,8 @@
     },
     {
       "path": "src/lib/adminLayoutI18n.test.js",
-      "sha256": "3fd2e4f5d630aea4b97a93fe4ce0d72fff8dd2942582c40be7a404d367d96736",
-      "bytes": 2768
+      "sha256": "f3f6b8cdc42033704be03f7d181254cff2e0abe2835968fd15bea693e315b2c5",
+      "bytes": 2830
     },
     {
       "path": "src/lib/adminSettingsV2.test.js",
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "8b88afe18ba2fb88faa40ccac930947f4d33f66e73a5d242edc74e0e057a6b0c",
-      "bytes": 17990
+      "sha256": "3d0927dbd1ee1dbd1895da77959b4981fb9c5dbbe4d9cfdc158de5ee82220e66",
+      "bytes": 17988
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",
@@ -3914,8 +3914,8 @@
     },
     {
       "path": "src/pages/admin/AdminLayout.jsx",
-      "sha256": "bcea420d9b157e19a1fb59783f2c2a56f433dd578d9fbe5895b32f4585e6c4f2",
-      "bytes": 32402
+      "sha256": "1d5fbda8ef69c450f048aecf00ffe5f30b78b17e5296bb5a4bfdd59a2e5f50ce",
+      "bytes": 32396
     },
     {
       "path": "src/pages/admin/AdminMaintenance.jsx",

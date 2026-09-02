@@ -72,7 +72,7 @@ function Hero() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
               color: "var(--ink)",
-              fontSize: "clamp(44px, 5.4vw, 76px)",
+              fontSize: "clamp(44px, 5vw, 72px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.96,

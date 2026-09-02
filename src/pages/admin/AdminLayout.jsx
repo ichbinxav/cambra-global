@@ -455,7 +455,7 @@ export default function AdminLayout() {
             const startsGroup = index === 0 || navGroup(visible[index - 1].path) !== group;
             return (
               <div key={item.path} className="contents">
-              {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65`}>{copy(`group.${group}`)}</p>}
+              {startsGroup && <p className={`${index ? "mt-5" : ""} px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground`}>{copy(`group.${group}`)}</p>}
               <Link
                 key={item.path}
                 to={item.path}
@@ -499,7 +499,7 @@ export default function AdminLayout() {
               the list above without rendering them here would have made eleven routes
               unreachable — the orphaning C13 refused to do. */}
           <details data-testid="advanced-system" className="mt-5">
-            <summary className="px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground/65 cursor-pointer">
+            <summary className="px-3 pb-1 text-[9px] font-black uppercase tracking-[.18em] text-muted-foreground cursor-pointer">
               {copy("group.System")} · {ADVANCED_NAV.length}
             </summary>
             <div className="pl-2 border-l border-border/40 ml-3 mt-1">

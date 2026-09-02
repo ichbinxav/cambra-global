@@ -45,5 +45,6 @@ describe('Admin shell internationalization', () => {
     expect(globalStyles).toContain('.admin-shell {');
     expect(globalStyles).toContain('--foreground: 222 47% 11%');
     expect(globalStyles).toContain('.admin-shell .glass-panel');
+    expect(source).not.toContain('text-muted-foreground/65');
   });
 });
