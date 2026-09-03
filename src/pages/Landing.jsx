@@ -144,7 +144,7 @@ function Hero() {
             alt={t("hero_image_alt")}
             width={1291}
             height={1218}
-            className="relative h-auto w-[92%] max-w-[600px] select-none lg:w-[108%] lg:max-w-[640px]"
+            className="relative h-auto w-[78%] max-w-[510px] select-none lg:w-[92%] lg:max-w-[544px]"
             style={{ filter: "contrast(.995) saturate(1.02) drop-shadow(0 24px 38px rgba(91,76,245,.12))" }}
             draggable={false}
           />
