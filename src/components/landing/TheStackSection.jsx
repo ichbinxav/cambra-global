@@ -49,7 +49,7 @@ export default function TheStackSection() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-auto w-[150%] max-w-none select-none sm:w-[138%] lg:w-[134%]"
-              style={{ filter: "brightness(.90) saturate(.78) contrast(1.03)" }}
+              style={{ filter: "brightness(.78) saturate(.74) contrast(1.04)" }}
               draggable={false}
             />
           </div>
