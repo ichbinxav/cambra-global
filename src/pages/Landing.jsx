@@ -245,7 +245,7 @@ function HowItWorksSection() {
               <motion.div
                 transition={{ duration: 0.3 }}
                 className="relative h-full overflow-hidden p-7 sm:p-9 lg:p-7 group"
-                style={{ background: "#ffffff", border: "1px solid var(--linea)", borderRadius: 26 }}
+                style={{ background: "#ffffff", border: "1px solid rgba(91,76,245,.28)", borderRadius: 26 }}
               >
                 {/* hover glow halo */}
                 <div
@@ -275,7 +275,7 @@ function HowItWorksSection() {
                   {s.n}
                 </span>
 
-                <div className="relative z-10 flex h-full max-w-xl flex-col lg:max-w-none">
+                <div className="relative z-10 flex h-full max-w-xl flex-col pt-14 lg:max-w-none">
                   <div className="flex items-center gap-3 mb-3">
                     <span
                       className="relative inline-flex w-2 h-2 rounded-full"
