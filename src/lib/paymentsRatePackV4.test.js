@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import process from 'node:process';
 import { describe, expect, it } from 'vitest';
 import {
   PAYMENTS_RATE_PACK_V4_MANIFEST as manifest,

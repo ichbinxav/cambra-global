@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 
 describe('scheduled function boundary signatures', () => {
   it('always supplies the Base44 client factory to guardedScheduledServe', () => {
