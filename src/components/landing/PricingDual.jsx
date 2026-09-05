@@ -207,10 +207,7 @@ export default function PricingDual() {
             <span className="kw">{t("pd_h2_kw")}</span>
           </SectionHeading>
           <div>
-            <p className="text-center lg:text-justify text-[13px] sm:text-[14px] max-w-2xl mx-auto lg:mx-0" style={{ color: "var(--gris-1)" }}>
-              {t(recoveryV2Available ? "pd_sub_v2" : "pd_sub")}
-            </p>
-            <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--linea)" }}>
+            <div className="grid grid-cols-2 overflow-hidden rounded-2xl bg-white" style={{ border: "1px solid var(--linea)" }}>
               {reassurance.map(({ icon: Icon, key }, index) => (
                 <div key={key} className="flex items-center gap-2.5 p-3.5" style={{ borderRight: index % 2 === 0 ? "1px solid var(--linea)" : "none", borderTop: index > 1 ? "1px solid var(--linea)" : "none" }}>
                   <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ color: "var(--voltio)", background: "rgba(91,76,245,.07)" }}><Icon size={14} aria-hidden="true" /></span>
