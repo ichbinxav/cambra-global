@@ -34,7 +34,7 @@ export default function ReferralProgramSection() {
     .replace("{base}", `${BASE_FEE_PCT}%`);
 
   const tiles = [
-    { icon: Users, label: t("ref_land_t1_label"), value: `−${STEP_POINTS}`, unit: "pts", note: t("ref_land_t1_note") },
+    { icon: Users, label: t("ref_land_t1_label"), value: `${STEP_POINTS}`, unit: "pts", note: t("ref_land_t1_note") },
     { icon: ShieldCheck, label: t("ref_land_t2_label"), value: `${FLOOR_FEE_PCT}`, unit: "%", note: t("ref_land_t2_note") },
     { icon: TrendingUp, label: t("ref_land_t3_label"), value: `${entryPct}`, unit: "%", note: t("ref_land_t3_note").replace("{base}", `${BASE_FEE_PCT}%`) },
   ];
@@ -100,7 +100,7 @@ export default function ReferralProgramSection() {
           </div>
         </motion.div>
 
-        <div className="lg:col-span-6 space-y-3.5 lg:pt-40 xl:pt-44">
+        <div className="lg:col-span-6 space-y-3.5 lg:self-center">
           {tiles.map((tile, i) => {
             const Icon = tile.icon;
             return (
