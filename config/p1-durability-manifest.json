@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-06T12:20:04.544Z",
+  "generatedAt": "2026-09-06T14:07:42.955Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -474,13 +474,13 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "sha256": "f6a9c27c967f9685bf1c4ad876aea805d761de5677153e08b378bd1a932542fd",
-      "bytes": 24896
+      "sha256": "52e9aca322cbb78c9d74636c2d61880c17b703d6cf3c4a45934558d07ecfbacc",
+      "bytes": 25486
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/function.jsonc",
-      "sha256": "cdbe28dffbd6103f34726b6dc6cf1f77794373fbf2abec2cafcd51a60436704a",
-      "bytes": 592
+      "sha256": "82d64b2d8023b1c5035c13ae590e9eae9a0728856dea348ce1058923fe69d8c9",
+      "bytes": 727
     },
     {
       "path": "base44/functions/apiV1/entry.ts",
@@ -1584,13 +1584,13 @@
     },
     {
       "path": "base44/shared/discoveryV2Admin.ts",
-      "sha256": "15352bbe0e6f7b5fb1af9e7c1c071e585b8224cd12718457a7e70da5cf245bc8",
-      "bytes": 127630
+      "sha256": "aec78995917156b8f9004d2380d60dbd5003aaaac64f3304f73793331767d910",
+      "bytes": 127820
     },
     {
       "path": "base44/shared/discoveryV2Execution.ts",
-      "sha256": "88082f7d331caca2b76d188117927c11864323d92c180224ab943bf5fa6caac5",
-      "bytes": 10371
+      "sha256": "e562cce0c2c1ff3a011e0c6624efc5d54c9e48a01f92d2c0fd19a5a8550336b7",
+      "bytes": 10274
     },
     {
       "path": "base44/shared/discoveryV2Planner.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "d7aa5b5f7530a2002c92fea9d31bf65e6168f96ae3febfb04722d5a4d4127351",
+      "sha256": "d85bfa1846312b3dfa416f7457a6e1b65f32f7c15bd897c4df49a7e3add73a87",
       "bytes": 141334
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "8718080e5e981efc21bcfec0e8c7a4894b347b273eb27e30c1afa478333de609",
+      "sha256": "df2fb163db76aeae3336a1c356e50d5ef319d937693ff67978728c59d367eeb0",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "44a6c2a84aa800de00a411b57f2b1281c71c046c52a6315b76306f8e5efcc7e7",
+      "sha256": "3665b89bed8893d269f7effaaeccdb0c79a63c84a6385539d8134185b3b2ed17",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "1c6ea9efcbbb7540944f27f31713d45f42a9cc9ae16cd8bcdbc8d55b6f7a4730",
+      "sha256": "e5902fb0ae4489c6a210fe2d32169377d68621a09ac41130582bb2343d85336c",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "f0d27a7be7551faa76f76160b65df9a611c73b2eb1ca8fb2684991dd8a026642",
+      "sha256": "5e68bc03de9ab4ccdce903423223b2d782c8a09513e76dd594768c2be2204a32",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "ccb3da5dd160b2908feb6e64a79f786d649627cea9a2380198613ebb90c24ddc",
+      "sha256": "819011ec8b47989464a9104fa2481649b6f333ab4dd4bee010a9acd352cdd5b0",
       "bytes": 97899
     },
     {
@@ -2219,8 +2219,8 @@
     },
     {
       "path": "config/scheduler-inventory.json",
-      "sha256": "c15cd2584314104b20ff96cd0dc1240342129598543afc97c2225ba6091e80fa",
-      "bytes": 192099
+      "sha256": "8b5809db012868e5e940961a8c67303c94a8105f2b3c20655e9b3b20a7c3590c",
+      "bytes": 192094
     },
     {
       "path": "config/typecheck-baseline.json",
@@ -3099,8 +3099,8 @@
     },
     {
       "path": "src/lib/discoveryV2OperationalTruth.test.js",
-      "sha256": "a6598eaf541ef20b3f9e61863dbc362e9b3e74a26d0c8a93d6a4131085f656be",
-      "bytes": 17671
+      "sha256": "6a7f74a88fd10f27fa7eab5b9a85486b75c70afd53bbde56f643896f4e81d94c",
+      "bytes": 18703
     },
     {
       "path": "src/lib/documentExtractionV2.test.js",
