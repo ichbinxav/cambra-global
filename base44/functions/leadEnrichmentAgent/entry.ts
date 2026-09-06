@@ -33,6 +33,7 @@ import { runCompanyEnrichmentOperation } from "../../shared/companyEnrichment.ts
 import {
   callAutomaticAnthropicPublicContactResearch,
   callAutomaticPublicContactResearch,
+  classifyPublicResearchCostReplay,
   DEFAULT_ANTHROPIC_PUBLIC_CONTACT_RESEARCH_MODEL,
   DEFAULT_PUBLIC_CONTACT_RESEARCH_MODEL,
   PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
@@ -127,6 +128,84 @@ function publicResearchSuccessEvidence(
     invented_contact: false,
     provider_attempts: providerAttempts,
   };
+}
+
+async function reserveOrObservePublicResearch(
+  service: any,
+  input: any,
+) {
+  const eventKey = String(input?.event_key || "").trim();
+  const provider = String(input?.provider || "").trim().toLowerCase();
+  const phase = provider === "anthropic"
+    ? "ANTHROPIC_PUBLIC_RESEARCH_IDEMPOTENCY"
+    : "PUBLIC_RESEARCH_IDEMPOTENCY";
+  const status = provider === "anthropic"
+    ? "NEEDS_REVIEW_DUPLICATE_ANTHROPIC_PUBLIC_RESEARCH_EFFECT"
+    : "NEEDS_REVIEW_DUPLICATE_PUBLIC_RESEARCH_EFFECT";
+  const blocker = provider === "anthropic"
+    ? "duplicate_anthropic_public_research_effect_requires_reconciliation"
+    : "duplicate_public_research_effect_requires_reconciliation";
+
+  const observe = async () => {
+    let rows: any;
+    try {
+      rows = await service.entities.CostUsageEvent.filter(
+        { event_key: eventKey },
+        "-occurred_at",
+        2,
+      );
+    } catch {
+      stopContactGate({
+        blocker: "public_research_cost_event_read_failed",
+        phase,
+        status: "NEEDS_REVIEW_PUBLIC_RESEARCH_COST_EVENT_READ",
+      });
+    }
+    if (!Array.isArray(rows) || rows.length > 1) {
+      stopContactGate({
+        blocker: rows?.length > 1
+          ? "multiple_public_research_cost_events"
+          : "public_research_cost_event_read_invalid",
+        phase,
+        status: "NEEDS_REVIEW_PUBLIC_RESEARCH_COST_EVENT_CARDINALITY",
+      });
+    }
+    return classifyPublicResearchCostReplay(rows[0] || null, {
+      event_key: eventKey,
+      provider,
+    });
+  };
+
+  const acceptReplay = (replay: any) => {
+    if (replay.kind === "RECONCILIATION_REQUIRED") {
+      stopContactGate({ blocker, phase, status });
+    }
+    return replay;
+  };
+
+  const previous = acceptReplay(await observe());
+  if (previous.kind !== "NONE") {
+    return { reservation: null, replay: previous };
+  }
+
+  try {
+    const reservation = await reservePaidOperation(service, input);
+    if (!reservation.duplicate) return { reservation, replay: null };
+    const raced = acceptReplay(await observe());
+    if (raced.kind === "NONE") {
+      stopContactGate({ blocker, phase, status });
+    }
+    return { reservation: null, replay: raced };
+  } catch (error: any) {
+    if (error?.code !== "TERMINAL_COST_EVENT_KEY_REUSE_FORBIDDEN") {
+      throw error;
+    }
+    const raced = acceptReplay(await observe());
+    if (raced.kind === "NONE") {
+      stopContactGate({ blocker, phase, status });
+    }
+    return { reservation: null, replay: raced };
+  }
 }
 
 function selectedPublicContact(result: any, currentLead: any) {
@@ -1094,7 +1173,7 @@ Deno.serve(async (req) => {
         // ephemeral hints for the paid fallback.
         if (openAiKey && remaining > 0) {
           const researchDay = now().slice(0, 10);
-          reservation = await reservePaidOperation(service, {
+          const openAiClaim = await reserveOrObservePublicResearch(service, {
             event_key:
               `contact-resolution:public-web:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}:${PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION}`,
             category: "ai",
@@ -1116,14 +1195,12 @@ Deno.serve(async (req) => {
               transferred_fields: ["company_name", "company_domain", "country"],
             },
           });
-          if (reservation.duplicate) {
-            const previousStatus = String(reservation?.event?.status || "")
-              .toUpperCase();
-            const previousUsage = reservation?.event?.usage_json || {};
-            const previousResult = String(previousUsage?.result_state || "");
+          reservation = openAiClaim.reservation;
+          if (openAiClaim.replay) {
+            const previousUsage = openAiClaim.replay.usage || {};
             if (
-              ["OBSERVED", "RECONCILED"].includes(previousStatus) &&
-              previousResult === "NO_VERIFIED_PUBLIC_EMAIL"
+              openAiClaim.replay.kind ===
+                "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL"
             ) {
               publicProviderAttempts.push({
                 provider: "openai",
@@ -1140,13 +1217,8 @@ Deno.serve(async (req) => {
               publicFallbackRequired = false;
               reservation = null;
             } else if (
-              previousResult === "PUBLIC_RESEARCH_FAILED" &&
-              (
-                (previousStatus === "FAILED" &&
-                  previousUsage?.cost_consumed !== true) ||
-                (["OBSERVED", "RECONCILED"].includes(previousStatus) &&
-                  previousUsage?.provider_effect_known === true)
-              )
+              openAiClaim.replay.kind ===
+                "PREVIOUS_KNOWN_RESPONSE_FAILURE"
             ) {
               publicProviderAttempts.push({
                 provider: "openai",
@@ -1314,7 +1386,7 @@ Deno.serve(async (req) => {
         }
 
         if (!safe && publicFallbackRequired && anthropicKey && remaining > 0) {
-          reservation = await reservePaidOperation(service, {
+          const anthropicClaim = await reserveOrObservePublicResearch(service, {
             event_key:
               `contact-resolution:public-web:anthropic:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}:${PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION}`,
             category: "ai",
@@ -1337,14 +1409,12 @@ Deno.serve(async (req) => {
               transferred_fields: ["company_name", "company_domain", "country"],
             },
           });
-          if (reservation.duplicate) {
-            const previousStatus = String(reservation?.event?.status || "")
-              .toUpperCase();
-            const previousUsage = reservation?.event?.usage_json || {};
-            const previousResult = String(previousUsage?.result_state || "");
+          reservation = anthropicClaim.reservation;
+          if (anthropicClaim.replay) {
+            const previousUsage = anthropicClaim.replay.usage || {};
             if (
-              ["OBSERVED", "RECONCILED"].includes(previousStatus) &&
-              previousResult === "NO_VERIFIED_PUBLIC_EMAIL"
+              anthropicClaim.replay.kind ===
+                "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL"
             ) {
               publicProviderAttempts.push({
                 provider: "anthropic",
@@ -1360,13 +1430,8 @@ Deno.serve(async (req) => {
               };
               reservation = null;
             } else if (
-              previousResult === "PUBLIC_RESEARCH_FAILED" &&
-              (
-                (previousStatus === "FAILED" &&
-                  previousUsage?.cost_consumed !== true) ||
-                (["OBSERVED", "RECONCILED"].includes(previousStatus) &&
-                  previousUsage?.provider_effect_known === true)
-              )
+              anthropicClaim.replay.kind ===
+                "PREVIOUS_KNOWN_RESPONSE_FAILURE"
             ) {
               publicProviderAttempts.push({
                 provider: "anthropic",

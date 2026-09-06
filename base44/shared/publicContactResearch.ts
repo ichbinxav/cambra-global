@@ -48,6 +48,69 @@ const text = (value: unknown, maximum = 500) =>
   String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ")
     .replace(/\s+/g, " ").trim().slice(0, maximum);
 
+export function classifyPublicResearchCostReplay(
+  event: any,
+  expected: { event_key: string; provider: string },
+) {
+  if (!event) return { kind: "NONE", event: null, usage: {} };
+
+  const eventKey = String(event?.event_key || "");
+  const provider = String(event?.provider || "").trim().toLowerCase();
+  const expectedProvider = String(expected?.provider || "").trim()
+    .toLowerCase();
+  const status = String(event?.status || "").trim().toUpperCase();
+  const usage = event?.usage_json && typeof event.usage_json === "object"
+    ? event.usage_json
+    : {};
+  const resultState = String(usage?.result_state || "").trim().toUpperCase();
+
+  if (
+    eventKey !== String(expected?.event_key || "") ||
+    provider !== expectedProvider || String(event?.category || "") !== "ai" ||
+    String(event?.source || "") !== "leadEnrichmentAgent"
+  ) {
+    return {
+      kind: "RECONCILIATION_REQUIRED",
+      reason: "public_research_cost_event_identity_mismatch",
+      event,
+      usage,
+    };
+  }
+
+  if (
+    ["OBSERVED", "RECONCILED"].includes(status) &&
+    resultState === "NO_VERIFIED_PUBLIC_EMAIL"
+  ) {
+    return {
+      kind: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+      event,
+      usage,
+    };
+  }
+
+  if (
+    resultState === "PUBLIC_RESEARCH_FAILED" &&
+    (
+      (status === "FAILED" && usage?.cost_consumed !== true) ||
+      (["OBSERVED", "RECONCILED"].includes(status) &&
+        usage?.provider_effect_known === true)
+    )
+  ) {
+    return {
+      kind: "PREVIOUS_KNOWN_RESPONSE_FAILURE",
+      event,
+      usage,
+    };
+  }
+
+  return {
+    kind: "RECONCILIATION_REQUIRED",
+    reason: "public_research_cost_event_state_ambiguous",
+    event,
+    usage,
+  };
+}
+
 function normalizedSourceKey(value: unknown) {
   try {
     const url = new URL(String(value || ""));

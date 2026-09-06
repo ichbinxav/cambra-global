@@ -4,6 +4,7 @@ import process from "node:process";
 import { describe, expect, it, vi } from "vitest";
 import {
   anthropicPublicContactResearchRequest,
+  classifyPublicResearchCostReplay,
   collectAnthropicWebSearchErrors,
   collectAnthropicWebSources,
   collectOpenAiWebSources,
@@ -382,6 +383,81 @@ describe("automatic public contact research", () => {
     })).toEqual(["too_many_requests"]);
   });
 
+  it("observes safe terminal research outcomes without replaying provider cost", () => {
+    const expected = {
+      event_key: "contact-resolution:public-web:lead-1:policy:v1:contract",
+      provider: "openai",
+    };
+    const base = {
+      id: "cost-1",
+      event_key: expected.event_key,
+      category: "ai",
+      provider: "openai",
+      source: "leadEnrichmentAgent",
+    };
+
+    expect(classifyPublicResearchCostReplay(null, expected).kind).toBe("NONE");
+    expect(classifyPublicResearchCostReplay({
+      ...base,
+      status: "FAILED",
+      usage_json: {
+        result_state: "PUBLIC_RESEARCH_FAILED",
+        cost_consumed: false,
+        error_code: "PUBLIC_CONTACT_RESEARCH_HTTP_429",
+      },
+    }, expected)).toMatchObject({
+      kind: "PREVIOUS_KNOWN_RESPONSE_FAILURE",
+      usage: { error_code: "PUBLIC_CONTACT_RESEARCH_HTTP_429" },
+    });
+    expect(classifyPublicResearchCostReplay({
+      ...base,
+      status: "OBSERVED",
+      usage_json: { result_state: "NO_VERIFIED_PUBLIC_EMAIL" },
+    }, expected).kind).toBe("PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL");
+  });
+
+  it("requires reconciliation for ambiguous or mismatched cost events", () => {
+    const expected = { event_key: "research-1", provider: "anthropic" };
+    const base = {
+      event_key: "research-1",
+      category: "ai",
+      provider: "anthropic",
+      source: "leadEnrichmentAgent",
+    };
+    const cases = [
+      { ...base, status: "RESERVED", usage_json: {} },
+      {
+        ...base,
+        status: "FAILED",
+        usage_json: {
+          result_state: "PUBLIC_RESEARCH_FAILED",
+          cost_consumed: true,
+        },
+      },
+      {
+        ...base,
+        provider: "openai",
+        status: "FAILED",
+        usage_json: {
+          result_state: "PUBLIC_RESEARCH_FAILED",
+          cost_consumed: false,
+        },
+      },
+      {
+        ...base,
+        event_key: "different",
+        status: "OBSERVED",
+        usage_json: { result_state: "NO_VERIFIED_PUBLIC_EMAIL" },
+      },
+    ];
+
+    for (const event of cases) {
+      expect(classifyPublicResearchCostReplay(event, expected).kind).toBe(
+        "RECONCILIATION_REQUIRED",
+      );
+    }
+  });
+
   it("runs public research before Apollo and never persists an unverified shortlist", () => {
     const source = read("base44/functions/leadEnrichmentAgent/entry.ts");
     const loop = source.slice(
@@ -405,5 +481,14 @@ describe("automatic public contact research", () => {
     expect(loop).toContain("PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION");
     expect(loop).toContain('provider: "anthropic"');
     expect(loop).toContain("PREVIOUS_KNOWN_PROVIDER_FAILURE");
+    const replayGuard = source.slice(
+      source.indexOf("async function reserveOrObservePublicResearch"),
+      source.indexOf("function selectedPublicContact"),
+    );
+    expect(replayGuard.indexOf("CostUsageEvent.filter")).toBeGreaterThan(-1);
+    expect(replayGuard.indexOf("CostUsageEvent.filter")).toBeLessThan(
+      replayGuard.indexOf("reservePaidOperation"),
+    );
+    expect(replayGuard).toContain("TERMINAL_COST_EVENT_KEY_REUSE_FORBIDDEN");
   });
 });

@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "08e25eadabb945aadd7ad2eb02bbcd796d8d1a6197b2b823b2bb19a1a055e1cf",
+  "source_inventory_hash": "e1aee4880d0119a5a263bb40e6279a9f5c88204aad34306912a2e0a9238b0cf4",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -981,7 +981,7 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "source_sha256": "49e3abbaf0773f38834bd4069370c38655d18078a562dee4e6305f04d5b4d08c",
+      "source_sha256": "3cebf3e8f39eb31160d68ef07ecdcde03929852d049bf06f2da1b2befbef7cb0",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -2831,7 +2831,7 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "source_sha256": "49e3abbaf0773f38834bd4069370c38655d18078a562dee4e6305f04d5b4d08c",
+      "source_sha256": "3cebf3e8f39eb31160d68ef07ecdcde03929852d049bf06f2da1b2befbef7cb0",
       "raw_create_sites": 1,
       "canonical_root_create_sites": 0,
       "canonical_child_link_sites": 0,
