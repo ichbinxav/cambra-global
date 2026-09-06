@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TrendingDown, Zap, Building2, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/lib/i18n";
 
 export default function StepGrid({ statuses }) {
+  const { t } = useTranslation();
   const anyVerticalTouched = statuses
     ? Object.values(statuses).some((s) => (s?.completeness || 0) > 0)
     : false;
@@ -12,45 +14,45 @@ export default function StepGrid({ statuses }) {
   const steps = [
     {
       step: 1,
-      title: "Tell us about your brand",
+      title: t("bp_h2"),
       done: anyVerticalTouched,
       icon: Building2,
       tone: "#8B7BFF",
-      desc: "Name, country, category.",
+      desc: t("bp_sub"),
       cta: (
         <Link to="/BrandProfile" className="w-full">
           <Button className="w-full h-10 rounded-xl gap-1.5 bg-white text-[#06080F] hover:bg-white/90 font-semibold">
-            Open profile <ArrowRight size={14} />
+            {t("bp_title")} <ArrowRight size={14} />
           </Button>
         </Link>
       ),
     },
     {
       step: 2,
-      title: "Run the analyzer",
+      title: t("res_run_title"),
       done: (statuses?.payments?.completeness || 0) >= 50,
-      desc: "Get your savings potential in 2 minutes.",
+      desc: t("res_run_msg"),
       icon: TrendingDown,
       tone: "#2FE0A8",
       cta: (
         <Link to="/Analyzer" className="w-full">
           <Button className="w-full h-10 rounded-xl gap-1.5 bg-white text-[#06080F] hover:bg-white/90 font-semibold">
-            Run the analyzer <ArrowRight size={14} />
+            {t("res_run_cta")} <ArrowRight size={14} />
           </Button>
         </Link>
       ),
     },
     {
       step: 3,
-      title: "Connect your tools",
+      title: t("ci_title"),
       done: false,
-      desc: "Precision and automatic verification.",
+      desc: t("ci_sub"),
       icon: Zap,
       tone: "#7BD9F0",
       cta: (
         <Link to="/ConnectTools" className="w-full">
           <Button className="w-full h-10 rounded-xl gap-1.5 bg-white/10 text-white border border-white/15 hover:bg-white/15 font-semibold">
-            Connect tools <ArrowRight size={14} />
+            {t("ci_title")} <ArrowRight size={14} />
           </Button>
         </Link>
       ),
@@ -73,7 +75,7 @@ export default function StepGrid({ statuses }) {
           />
           {s.done && (
             <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2FE0A8]/15 border border-[#2FE0A8]/35 text-[9px] font-bold text-[#2FE0A8]">
-              <CheckCircle2 className="w-2.5 h-2.5" /> DONE
+              <CheckCircle2 className="w-2.5 h-2.5" /> {t("coll_done")}
             </span>
           )}
           <div className="relative">
@@ -83,7 +85,7 @@ export default function StepGrid({ statuses }) {
                 <p className="text-sm font-semibold text-white">{s.title}</p>
               </div>
               {!s.done && (
-                <span className="text-[10px] font-bold tracking-[0.15em] text-white/45 uppercase">Step {s.step}</span>
+                <span className="text-[10px] font-bold tracking-[0.15em] text-white/45 uppercase">{t("how_step_label")} {s.step}</span>
               )}
             </div>
             {s.desc && <p className="text-xs text-white/65 mb-3">{s.desc}</p>}
