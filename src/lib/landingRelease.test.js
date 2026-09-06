@@ -61,7 +61,7 @@ describe("landing truth and release controls", () => {
     expect(stack).toContain("/images/cambra-intelligence-stack-v2.png");
     expect(landing).not.toContain('t("ri_illustrative")');
     expect(landing).toContain("clamp(43px, 4.15vw, 64px)");
-    expect(landing).toContain("lg:w-[108%]");
+    expect(landing).toContain("lg:w-[92%]");
     expect(landing).toContain("lg:justify-end");
     expect(landing).not.toContain("lg:translate-x-[7%]");
     expect(landing).not.toContain("xl:translate-x-[11%]");

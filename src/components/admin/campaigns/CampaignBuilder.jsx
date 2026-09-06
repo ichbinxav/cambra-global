@@ -32,6 +32,9 @@ function createInitialForm() {
     target_profile_id: "",
     provider_mode: "AUTO",
     market_scope: "",
+    budget_eur: "",
+    contact_limit: "",
+    company_contact_limit: "1",
     language: "en",
     subject: "A payments cost question for {{company_name}}",
     preview_text: "Evidence before any decision",
@@ -161,7 +164,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
       } else {
         setSelectedLeads(new Set());
       }
-      const firstProfile = next.target_profiles?.[0];
+      const firstProfile = next.target_profiles?.find((profile) => profile.readiness?.ready) || next.target_profiles?.[0];
       if (firstProfile) {
         setForm((current) => ({
           ...current,
@@ -197,7 +200,16 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
   const readySelected = selectedLeadRows.filter((lead) => lead.readiness === "READY").length;
   const selectedMarkets = form.market_scope.split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
   const hasUnsubscribe = /unsubscribe|desabonn|baja|darse de baja/i.test(form.text_body);
-  const requiredMissing = !form.name.trim() || !form.target_profile_id || !selectedMarkets.length || !selectedLeads.size || !selectedSenders.size || !form.subject.trim() || !form.text_body.trim() || !hasUnsubscribe;
+  const selectedPolicy = options?.target_profiles?.find((profile) => profile.id === form.target_profile_id) || null;
+  const selectedSenderRows = (options?.senders || []).filter((sender) => selectedSenders.has(sender.profile_key));
+  const selectedSenderReady = selectedSenderRows.some((sender) => sender.readiness?.ready);
+  const budgetMinor = Math.round(Number(form.budget_eur) * 100);
+  const contactLimit = Number(form.contact_limit);
+  const companyContactLimit = Number(form.company_contact_limit);
+  const limitsValid = Number.isSafeInteger(budgetMinor) && budgetMinor > 0
+    && Number.isSafeInteger(contactLimit) && contactLimit > 0 && contactLimit <= selectedLeads.size
+    && Number.isSafeInteger(companyContactLimit) && companyContactLimit > 0 && companyContactLimit <= contactLimit;
+  const requiredMissing = !form.name.trim() || !form.target_profile_id || !selectedMarkets.length || !selectedLeads.size || !selectedSenders.size || !form.subject.trim() || !form.text_body.trim() || !hasUnsubscribe || !limitsValid;
 
   const selectProfile = (profileId) => {
     const profile = options?.target_profiles?.find((row) => row.id === profileId);
@@ -261,6 +273,9 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
         language_scope: [form.language],
         lead_ids: [...selectedLeads],
         sending_profile_keys: [...selectedSenders],
+        budget_limit_minor: budgetMinor,
+        contact_limit: contactLimit,
+        company_contact_limit: companyContactLimit,
         filters: {
           source: "admin_campaign_builder",
           audience_id: selectedAudienceId || null,
@@ -328,6 +343,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
         content: contentResult.validation,
         sequence: sequenceResult.validation,
         preflight: preflight.preflight,
+        partial: preflight.preflight?.approvable !== true,
       });
     } catch (caught) {
       setError(campaignId
@@ -377,11 +393,15 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
           <label className="xl:col-span-2"><Label>Campaign name</Label><input aria-label="Campaign name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} className={inputClass} /></label>
           <label><Label>Lane</Label><select aria-label="Campaign lane" value={form.lane} onChange={(event) => setForm({ ...form, lane: event.target.value })} className={inputClass}><option value="MERCHANT_ACQUISITION">Merchant acquisition</option><option value="PARTNER_ACQUISITION">Partner acquisition</option><option value="PROVIDER_RELATIONS">Provider relations</option><option value="MERCHANT_LIFECYCLE">Merchant lifecycle</option></select></label>
           <label><Label>Objective</Label><input aria-label="Campaign objective" value={form.objective_type} onChange={(event) => setForm({ ...form, objective_type: event.target.value })} className={inputClass} /></label>
-          <label className="md:col-span-2"><Label>Target profile</Label><select aria-label="Target profile" value={form.target_profile_id} onChange={(event) => selectProfile(event.target.value)} className={inputClass}><option value="">Choose a target profile</option>{options.target_profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name} / {profile.status} / {(profile.countries || []).join(", ") || "no market"}</option>)}</select></label>
+          <label className="md:col-span-2"><Label>Target profile</Label><select aria-label="Target profile" value={form.target_profile_id} onChange={(event) => selectProfile(event.target.value)} className={inputClass}><option value="">Choose a target profile</option>{options.target_profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.readiness?.ready ? "READY" : String(profile.status || "NOT READY").toUpperCase()} · {profile.name} · {(profile.countries || []).join(", ") || "no market"}</option>)}</select></label>
           <fieldset aria-label="Campaign markets" className="md:col-span-2 xl:col-span-2"><Label hint="exactly 10 launch markets">Markets</Label><div className="flex min-h-10 flex-wrap gap-1.5 rounded-xl border bg-background p-2">{(options.launch_markets || []).map((market) => <button key={market} type="button" aria-pressed={selectedMarkets.includes(market)} onClick={() => toggleMarket(market)} className={`rounded-lg border px-2.5 py-1 text-[10px] font-black ${selectedMarkets.includes(market) ? "border-emerald-500 bg-emerald-50 text-emerald-800" : "border-border bg-card text-muted-foreground"}`}>{market}</button>)}</div></fieldset>
           <label><Label>Language</Label><select aria-label="Campaign language" value={form.language} onChange={(event) => setForm({ ...form, language: event.target.value })} className={inputClass}><option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="it">Italian</option><option value="pt">Portuguese</option></select></label>
+          <label><Label>Campaign spend ceiling (€)</Label><input aria-label="Campaign spend ceiling" type="number" min="0.01" step="0.01" value={form.budget_eur} onChange={(event) => setForm({ ...form, budget_eur: event.target.value })} placeholder="25.00" className={inputClass} /></label>
+          <label><Label>Total contact limit</Label><input aria-label="Campaign contact limit" type="number" min="1" max={Math.max(1, selectedLeads.size)} value={form.contact_limit} onChange={(event) => setForm({ ...form, contact_limit: event.target.value })} placeholder={selectedLeads.size ? String(selectedLeads.size) : "Select leads first"} className={inputClass} /></label>
+          <label><Label>Contacts per company</Label><input aria-label="Campaign company contact limit" type="number" min="1" max={Math.max(1, contactLimit || 1)} value={form.company_contact_limit} onChange={(event) => setForm({ ...form, company_contact_limit: event.target.value })} className={inputClass} /></label>
           <label className="md:col-span-2 xl:col-span-4"><Label>Description <span className="font-normal normal-case">optional</span></Label><input aria-label="Campaign description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Internal context for this campaign" className={inputClass} /></label>
         </div>
+        {selectedPolicy && !selectedPolicy.readiness?.ready && <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px] text-amber-900"><span><b>This policy is not active.</b> You can save a draft, but approval remains blocked until an active policy is selected.</span><a href="/admin/settings?tab=autonomy" className="rounded-lg border border-amber-300 px-3 py-2 font-black">Manage policies</a></div>}
       </section>
 
       <section className="rounded-2xl border bg-card p-4 md:p-5">
@@ -430,6 +450,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
           <div className="mb-4 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-xs font-black text-background">4</span><div><h3 className="text-sm font-black">Choose sender emails</h3><p className="text-[10px] text-muted-foreground">Explicit transport identities, never a provider default.</p></div></div>
           <div className="max-h-[360px] space-y-2 overflow-auto pr-1">{options.senders.map((sender) => <label key={sender.profile_key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${selectedSenders.has(sender.profile_key) ? "border-cyan-500/40 bg-cyan-500/5" : ""}`}><input aria-label={`Use ${sender.from_address || sender.profile_key}`} type="checkbox" checked={selectedSenders.has(sender.profile_key)} onChange={() => toggleSender(sender.profile_key)} className="mt-1" /><Mail size={14} className="mt-0.5 shrink-0" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{sender.from_address || sender.profile_key}</span><span className="mt-0.5 block text-[9px] text-muted-foreground">{sender.provider} / {sender.domain} / cap {sender.current_daily_cap}/day / webhook {sender.webhook_status}</span></span><Readiness value={sender.readiness?.ready ? "READY" : String(sender.status || "NOT_READY").toUpperCase()} /></label>)}</div>
           {!options.senders.length && <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No sender identity is configured.</p>}
+          {selectedSenders.size > 0 && !selectedSenderReady && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px] text-amber-900"><b>No selected sender is ready.</b> The draft can be preserved, but approval stays blocked until at least one selected mailbox is active, healthy and within cap.</div>}
         </div>
 
         <div className="rounded-2xl border bg-card p-4 md:p-5">
@@ -445,7 +466,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
 
       <section className="sticky bottom-3 z-10 rounded-2xl border bg-background/95 p-4 shadow-2xl backdrop-blur-xl">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-          <div className="flex items-start gap-3"><ShieldCheck size={17} className="mt-0.5 text-emerald-600" /><div><p className="text-xs font-black">Safe draft boundary</p><p className="text-[10px] text-muted-foreground">This creates versioned campaign evidence only. It does not schedule, approve or send a message.</p>{requiredMissing && <p className="mt-1 text-[10px] font-bold text-amber-700">Required: name, target profile, at least one lead, one sender, subject, body and an unsubscribe line.</p>}</div></div>
+          <div className="flex items-start gap-3"><ShieldCheck size={17} className="mt-0.5 text-emerald-600" /><div><p className="text-xs font-black">Safe draft boundary</p><p className="text-[10px] text-muted-foreground">This creates versioned campaign evidence only. It does not schedule, approve or send a message.</p>{requiredMissing && <p className="mt-1 text-[10px] font-bold text-amber-700">Required: name, target profile, leads, sender, positive spend/contact limits, subject, body and an unsubscribe line.</p>}</div></div>
           <div className="flex shrink-0 gap-2"><button onClick={onCancel} disabled={saving} className="h-10 rounded-xl border px-4 text-xs font-bold">Cancel</button>{partialCampaignId && <button onClick={() => onCreated(partialCampaignId, { partial: true })} disabled={saving} className="h-10 rounded-xl border px-4 text-xs font-bold">Open partial draft</button>}<button data-testid="save-campaign-draft" onClick={saveDraft} disabled={requiredMissing || saving} className="inline-flex h-10 items-center gap-2 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40">{saving ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}{saving ? "Building draft..." : "Save campaign draft"}<ArrowRight size={13} /></button></div>
         </div>
       </section>

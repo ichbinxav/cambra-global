@@ -7,7 +7,7 @@
 // these tests instead of letting the UI drift away from it.
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { buildCampaignPreflight } from "../../../base44/shared/campaignPreflight.ts";
 
 globalThis.React = React;
@@ -93,6 +93,7 @@ function respondWith({ preflight = PREFLIGHT_PERMIT_ONLY, approvalResponse } = {
     if (action === "campaign_detail") return { data: DETAIL };
     if (action === "campaign_preflight") return { data: { ok: true, preflight, external_send_performed: false } };
     if (action === "campaign_request_approval") {
+      if (approvalResponse?.throws) throw approvalResponse.throws;
       return { data: approvalResponse ?? { ok: false, error: "preflight_not_passed", preflight, external_send_performed: false } };
     }
     return { data: { ok: false, error: "unsupported_action" } };
@@ -163,10 +164,9 @@ describe("Preflight dialog — the breakdown a founder reads", () => {
   it("gives the missing Founder permit its own prominent notice, not just a table row", async () => {
     await openPreflightDialog();
     const notice = await screen.findByTestId("preflight-founder-permit-notice");
-    expect(notice.textContent).toContain("PROMPT_CAMBRA_COMMAND_V1.md");
-    expect(notice.textContent).toMatch(/not available on this platform yet/i);
-    // And it explains the consequence rather than only naming the gap.
-    expect(notice.textContent).toMatch(/never counts as passed/i);
+    expect(notice.textContent).toMatch(/Scoped founder authorization is required/i);
+    expect(notice.textContent).toMatch(/could not verify a valid FounderPermit/i);
+    expect(notice.textContent).toMatch(/Founder Control/i);
   });
 
   it("does not show the permit notice when that authority is satisfied", async () => {
@@ -185,26 +185,32 @@ describe("Preflight dialog — the breakdown a founder reads", () => {
 });
 
 describe("Request approval — the server is the authority", () => {
-  it("always calls the backend rather than pre-judging from the cached preflight", async () => {
+  it("does not offer approval while the current check is blocked", async () => {
     await openPreflightDialog();
-    // The cached preflight is not approvable, yet the button still asks the server.
     expect(PREFLIGHT_PERMIT_ONLY.approvable).toBe(false);
-    fireEvent.click(screen.getByTestId("request-approval-button"));
-    await waitFor(() =>
-      expect(invoke).toHaveBeenCalledWith("adminSummaries", { action: "campaign_request_approval", campaign_id: "c1" })
-    );
+    expect(screen.queryByTestId("request-approval-button")).toBeNull();
+    expect(screen.getAllByRole("link", { name: "Open Founder Control" }).length).toBeGreaterThan(0);
+    expect(actionsCalled()).not.toContain("campaign_request_approval");
   });
 
-  it("renders a refusal as the per-dimension breakdown, not as a generic error", async () => {
+  it("normalizes an Axios 409 into the fresh refusal breakdown, not a generic request error", async () => {
+    const requestError = Object.assign(new Error("Request failed with status code 409"), {
+      response: {
+        status: 409,
+        data: { ok: false, error: "preflight_not_passed", preflight: PREFLIGHT_BLOCKED, external_send_performed: false },
+      },
+    });
+    respondWith({ preflight: PREFLIGHT_PASS, approvalResponse: { throws: requestError } });
     await openPreflightDialog();
     fireEvent.click(screen.getByTestId("request-approval-button"));
     const rejection = await screen.findByTestId("approval-rejected");
     expect(rejection.textContent).toMatch(/Approval was not granted/i);
     expect(rejection.textContent).toMatch(/Nothing was changed and nothing was sent/i);
     // The reason is shown as dimensions, and the raw error code is not surfaced.
-    expect(await screen.findByTestId("preflight-founder-permit-notice")).toBeTruthy();
+    expect(await screen.findByTestId("preflight-dimension-outbound_control")).toBeTruthy();
     expect(screen.queryByTestId("preflight-error")).toBeNull();
     expect(document.body.textContent).not.toContain("preflight_not_passed");
+    expect(document.body.textContent).not.toContain("Request failed with status code 409");
   });
 
   it("on success shows the approval hash, the bound scope and that this is not a send", async () => {
@@ -224,11 +230,11 @@ describe("Request approval — the server is the authority", () => {
     expect(granted.textContent).toContain("hash-abc123");
     expect(granted.textContent).toContain("READY_FOR_APPROVAL");
     expect(granted.textContent).toMatch(/does\s*not\s*send anything/i);
-    expect(granted.textContent).toMatch(/still requires the founder permit/i);
+    expect(granted.textContent).toMatch(/founder-governed transport authorization/i);
   });
 
   it("surfaces a genuine failure as an error rather than as a refusal", async () => {
-    respondWith({ approvalResponse: { ok: false, error: "campaign_not_found" } });
+    respondWith({ preflight: PREFLIGHT_PASS, approvalResponse: { ok: false, error: "campaign_not_found" } });
     await openPreflightDialog();
     fireEvent.click(screen.getByTestId("request-approval-button"));
     const error = await screen.findByTestId("preflight-error");

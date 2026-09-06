@@ -62,6 +62,11 @@ const LIST = {
 
 const DETAIL = {
   ok: true,
+  campaign: {
+    id: "c1", name: "FR fashion CFOs", status: "DRAFT", lead_ids: Array.from({ length: 120 }, (_, index) => `lead-${index + 1}`),
+    target_profile_id: "policy-1", sending_profile_keys: ["instantly-xavi"], market_scope: ["ES"],
+    budget_limit_minor: null, contact_limit: null, company_contact_limit: null,
+  },
   item: {
     id: "c1", name: "FR fashion CFOs", status: "READY_FOR_APPROVAL", stored_status: "READY_FOR_PILOT",
     status_is_legacy: true, lane: "MERCHANT_ACQUISITION", objective_type: "BOOK_MEETING",
@@ -221,9 +226,11 @@ describe("AdminCampaigns — campaign studio", () => {
     expect(screen.getByLabelText("Campaign message")).toBeTruthy();
     fireEvent.click(screen.getByLabelText("Add Acme Payments"));
     fireEvent.click(screen.getByLabelText("Use xavi@trycambraglobal.com"));
+    fireEvent.change(screen.getByLabelText("Campaign spend ceiling"), { target: { value: "25" } });
+    fireEvent.change(screen.getByLabelText("Campaign contact limit"), { target: { value: "1" } });
     fireEvent.click(screen.getByTestId("save-campaign-draft"));
 
-    await screen.findByText(/Campaign draft, audience, message and sequence were saved/i);
+    await screen.findByText(/draft exists, but preparation needs attention/i);
     const actions = invoke.mock.calls.map(([, body]) => body.action);
     expect(actions).toEqual(expect.arrayContaining([
       "campaign_create_draft", "campaign_build_audience", "campaign_freeze_audience",
@@ -261,5 +268,25 @@ describe("AdminCampaigns — detail", () => {
     await waitFor(() =>
       expect(invoke).toHaveBeenCalledWith("adminSummaries", { action: "campaign_detail", campaign_id: "c1" })
     );
+  });
+
+  it("lets the founder set missing campaign limits and rechecks without sending", async () => {
+    await openDetail();
+    fireEvent.click(await screen.findByTestId("edit-campaign-setup"));
+    await screen.findByLabelText("Campaign setup spend ceiling");
+    fireEvent.change(screen.getByLabelText("Campaign setup spend ceiling"), { target: { value: "50" } });
+    fireEvent.change(screen.getByLabelText("Campaign setup contact limit"), { target: { value: "100" } });
+    fireEvent.click(screen.getByTestId("save-campaign-setup"));
+
+    await waitFor(() => expect(invoke).toHaveBeenCalledWith("adminSummaries", expect.objectContaining({
+      action: "campaign_update_draft",
+      campaign_id: "c1",
+      budget_limit_minor: 5_000,
+      contact_limit: 100,
+      company_contact_limit: 1,
+    })));
+    const actions = invoke.mock.calls.map(([, body]) => body.action);
+    expect(actions).toContain("campaign_preflight");
+    expect(actions.some((action) => /send|schedule|launch|execute|approve/.test(action))).toBe(false);
   });
 });

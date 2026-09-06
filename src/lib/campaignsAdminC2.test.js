@@ -298,6 +298,9 @@ describe("C2 — create draft", () => {
         objective_type: "BOOK_MEETING",
         market_scope: ["ES"],
         lead_ids: ["l1", "l2"],
+        budget_limit_minor: 2_500,
+        contact_limit: 2,
+        company_contact_limit: 1,
       }, svc),
     );
     expect(status).toBe(200);
@@ -306,6 +309,9 @@ describe("C2 — create draft", () => {
     expect(stored.status).toBe("DRAFT");
     expect(stored.lane).toBe("MERCHANT_ACQUISITION");
     expect(stored.market_scope).toEqual(["ES"]);
+    expect(stored.budget_limit_minor).toBe(2_500);
+    expect(stored.contact_limit).toBe(2);
+    expect(stored.company_contact_limit).toBe(1);
     expect(stored.blockers).toContain("founder_pilot_authorization_required");
     expect(body.item.status).toBe("DRAFT");
     expect(body.item.lane).toBe("MERCHANT_ACQUISITION");
@@ -427,6 +433,39 @@ describe("C2 — existing lifecycle actions keep working after the refactor", ()
     expect(status).toBe(409);
     expect(body.error).toBe("active_campaign_not_editable");
     expect(body.status).toBe("RUNNING");
+  });
+
+  it("updates the readiness setup and invalidates a stale approval binding", async () => {
+    const svc = makeSvc({
+      CommercialCampaign: [{
+        id: "c1", status: "READY_FOR_APPROVAL", name: "Ready", lead_ids: ["l1", "l2"],
+        contact_limit: 1, company_contact_limit: 1, approval_binding_json: { approval_hash: "old" },
+      }],
+      CommercialPolicy: [{ id: "policy-1", policy_key: "merchant:1", version: "v2", status: "active" }],
+    });
+    const { status, body } = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "update_draft",
+      campaign_id: "c1",
+      target_profile_id: "policy-1",
+      sending_profile_keys: ["instantly:ready"],
+      budget_limit_minor: 5_000,
+      contact_limit: 2,
+      company_contact_limit: 1,
+    }, svc));
+
+    expect(status).toBe(200);
+    expect(body.external_send_performed).toBe(false);
+    expect(svc.entities.CommercialCampaign.store[0]).toMatchObject({
+      status: "DRAFT",
+      target_profile_id: "policy-1",
+      policy_key: "merchant:1",
+      policy_version: "v2",
+      sending_profile_keys: ["instantly:ready"],
+      budget_limit_minor: 5_000,
+      contact_limit: 2,
+      company_contact_limit: 1,
+      approval_binding_json: {},
+    });
   });
 
   it("prepare_pilot still requires its confirmation token", async () => {

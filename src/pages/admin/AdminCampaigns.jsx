@@ -5,7 +5,7 @@
 // Fail-visible (spec §23.2): an unavailable source renders "Data unavailable"
 // with its blocker, never a silently empty table.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Ban, CheckCircle2, ChevronRight, KeyRound, Layers, Loader2, Plus, RefreshCw, ShieldAlert, Stethoscope } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, ChevronRight, KeyRound, Layers, Loader2, Pencil, Plus, RefreshCw, Settings2, ShieldAlert, Stethoscope } from "lucide-react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -33,11 +33,34 @@ const CANONICAL_STATUSES = [
   "COMPLETED", "STOPPED", "REVIEW_REQUIRED", "ARCHIVED",
 ];
 
+function functionErrorPayload(error) {
+  const candidates = [
+    error?.data?.data,
+    error?.data,
+    error?.response?.data?.data,
+    error?.response?.data,
+    error?.originalError?.response?.data,
+    error?.cause?.data,
+  ];
+  return candidates.find((candidate) => candidate && typeof candidate === "object") || null;
+}
+
 const call = async (action, payload = {}) => {
-  const response = await base44.functions.invoke("adminSummaries", { action: `campaign_${action}`, ...payload });
-  const data = response?.data || response;
-  if (data?.ok === false) throw Object.assign(new Error(data.error || "Campaign operation failed"), { data });
-  return data;
+  try {
+    const response = await base44.functions.invoke("adminSummaries", { action: `campaign_${action}`, ...payload });
+    const data = response?.data || response;
+    if (data?.ok === false) throw Object.assign(new Error(data.error || "Campaign operation failed"), { data });
+    return data;
+  } catch (caught) {
+    const data = functionErrorPayload(caught);
+    if (data?.ok === false || data?.error) {
+      throw Object.assign(new Error(data.error || caught?.message || "Campaign operation failed"), {
+        data,
+        status: caught?.status || caught?.response?.status || caught?.originalError?.response?.status,
+      });
+    }
+    throw caught;
+  }
 };
 
 const count = (value) => (Number.isFinite(Number(value)) ? Number(value).toLocaleString() : "—");
@@ -273,34 +296,52 @@ const VERDICT_PHRASE = {
   BLOCKED: "At least one check blocks approval outright.",
 };
 
+const DIMENSION_GUIDANCE = {
+  audience: "Rebuild and freeze the audience before requesting approval.",
+  content: "Create a validated message version with every required variable resolved.",
+  claims_policy: "Remove unevidenced claims or add the required recipient evidence.",
+  sequence: "Validate the sequence with every mandatory stop condition.",
+  market_authority: "Keep the campaign inside CAMBRA's 10 active launch markets.",
+  commercial_policy: "Select an active acquisition policy in Campaign setup.",
+  sending_infrastructure: "Select at least one active, healthy mailbox with remaining capacity.",
+  outbound_control: "Run the governed canary preflight in Founder Control. This cannot be bypassed here.",
+  emergency: "Resolve the emergency or communications pause in Founder Control.",
+  budget: "Set a positive campaign spend ceiling in Campaign setup.",
+  founder_permit: "Issue and bind a scoped FounderPermit through CAMBRA Command or Founder Control.",
+};
+
 function statusTone2(status) {
   if (status === "PASS") return "good";
   if (status === "BLOCKED") return "bad";
   return "warn";
 }
 
-/** The Founder permit gap deserves its own callout, not a table row. */
 function FounderPermitNotice() {
   return (
     <div data-testid="preflight-founder-permit-notice" className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
       <div className="flex items-start gap-3">
         <KeyRound size={18} className="mt-0.5 shrink-0 text-amber-700" />
         <div>
-          <p className="text-xs font-black text-amber-900">Founder permit is not available on this platform yet</p>
+          <p className="text-xs font-black text-amber-900">Scoped founder authorization is required</p>
           <p className="mt-1 text-[11px] leading-5 text-amber-800">
-            No campaign can be approved until this authority exists. It is activated by running
-            {" "}<code className="rounded bg-amber-100 px-1 font-bold">PROMPT_CAMBRA_COMMAND_V1.md</code>.
-            Until then this check reports as unverified, and an unverified check never counts as passed.
+            CAMBRA could not verify a valid FounderPermit covering this campaign. Use the governed Founder Control or
+            CAMBRA Command flow; this screen never invents or bypasses permission.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href="/admin/founder-control" className="rounded-lg border border-amber-300 px-3 py-2 text-[10px] font-black">Open Founder Control</a>
+            <a href="/admin/chat" className="rounded-lg border border-amber-300 px-3 py-2 text-[10px] font-black">Open CAMBRA Command</a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function PreflightBreakdown({ preflight }) {
+function PreflightBreakdown({ preflight, onEditConfiguration }) {
   const dimensions = preflight?.dimensions || [];
-  const permitUnknown = (preflight?.unknown_dimensions || []).includes("founder_permit");
+  const permitBlocked = dimensions.some((dimension) => dimension.key === "founder_permit" && dimension.status !== "PASS");
+  const setupBlocked = dimensions.some((dimension) => ["commercial_policy", "sending_infrastructure", "budget"].includes(dimension.key) && dimension.status !== "PASS");
+  const authorityBlocked = dimensions.some((dimension) => ["outbound_control", "emergency", "founder_permit"].includes(dimension.key) && dimension.status !== "PASS");
   return (
     <div className="space-y-3">
       <div data-testid="preflight-verdict" className="rounded-xl border bg-secondary/40 p-3">
@@ -310,7 +351,7 @@ function PreflightBreakdown({ preflight }) {
         </div>
       </div>
 
-      {permitUnknown && <FounderPermitNotice />}
+      {permitBlocked && <FounderPermitNotice />}
 
       <ul data-testid="preflight-dimensions" className="divide-y rounded-xl border">
         {dimensions.map((dimension) => (
@@ -321,23 +362,23 @@ function PreflightBreakdown({ preflight }) {
             </div>
             <p className="mt-1 text-[10px] font-bold text-muted-foreground">{STATUS_PHRASE[dimension.status] || dimension.status}</p>
             {dimension.detail && <p className="mt-0.5 text-[10px] text-muted-foreground">{dimension.detail}</p>}
+            {dimension.status !== "PASS" && DIMENSION_GUIDANCE[dimension.key] && <p className="mt-2 text-[10px] font-bold">Next: {DIMENSION_GUIDANCE[dimension.key]}</p>}
           </li>
         ))}
       </ul>
+
+      {(setupBlocked || authorityBlocked) && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {setupBlocked && <button data-testid="fix-campaign-setup" onClick={onEditConfiguration} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border bg-background px-4 text-xs font-black"><Settings2 size={13} />Fix campaign setup</button>}
+          {authorityBlocked && <a href="/admin/founder-control" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-foreground px-4 text-xs font-black text-background"><ShieldAlert size={13} />Open Founder Control</a>}
+        </div>
+      )}
     </div>
   );
 }
 
-/**
- * Preflight + approval dialog.
- *
- * Neither button is ever pre-disabled from a client-side guess about what will
- * fail: the server is the authority on both. "Request approval" therefore
- * always calls the backend, and a 409 (preflight_not_passed) is rendered as a
- * fresh per-dimension breakdown rather than a generic error — the fresh
- * preflight the server returns is more truthful than the cached one on screen.
- */
-function PreflightDialog({ state, onClose, onRequestApproval }) {
+/** A stale PASS can still be refused by the server; its fresh 409 body wins. */
+function PreflightDialog({ state, onClose, onRequestApproval, onEditConfiguration, onRecheck }) {
   const open = Boolean(state);
   const preflight = state?.approvalRejection?.preflight || state?.preflight || null;
   const approval = state?.approval || null;
@@ -380,9 +421,8 @@ function PreflightDialog({ state, onClose, onRequestApproval }) {
               <div className="min-w-0">
                 <p className="text-[11px] font-black text-emerald-900">Configuration approved · status READY_FOR_APPROVAL</p>
                 <p className="mt-1 text-[10px] leading-5 text-emerald-800">
-                  This records that the configuration was reviewed. It does <b>not</b> send anything and does
-                  {" "}<b>not</b> authorize sending. Moving to APPROVED still requires the founder permit, which does not
-                  exist on this platform yet.
+                  This records that the configuration was reviewed. It does <b>not</b> send anything. Real outbound still
+                  requires fresh founder-governed transport authorization and every runtime safety check.
                 </p>
                 <p className="mt-2 break-all text-[10px] text-emerald-800">
                   <span className="font-bold">Approval hash:</span> {approval.approval_hash}
@@ -398,25 +438,101 @@ function PreflightDialog({ state, onClose, onRequestApproval }) {
           </div>
         )}
 
-        {preflight && <PreflightBreakdown preflight={preflight} />}
+        {preflight && <PreflightBreakdown preflight={preflight} onEditConfiguration={onEditConfiguration} />}
 
         <DialogFooter>
           <button onClick={onClose} className="h-10 rounded-xl border px-4 text-xs font-bold">Close</button>
-          <button
-            data-testid="request-approval-button"
-            onClick={onRequestApproval}
-            disabled={Boolean(state?.loading) || Boolean(approval)}
-            className="h-10 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40"
-          >
-            {state?.loading ? "Working…" : "Request approval"}
-          </button>
+          {preflight && !approval && !preflight.approvable && <button onClick={onRecheck} disabled={Boolean(state?.loading)} className="inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-black disabled:opacity-40"><RefreshCw size={13} className={state?.loading ? "animate-spin" : ""} />Recheck</button>}
+          {preflight?.approvable && !approval && <button data-testid="request-approval-button" onClick={onRequestApproval} disabled={Boolean(state?.loading)} className="h-10 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40">{state?.loading ? "Working…" : "Request approval"}</button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-function Detail({ detail, loading, onBack, onCheckStatus }) {
+function CampaignSetupDialog({ state, onClose, onChange, onSave }) {
+  const open = Boolean(state);
+  const form = state?.form || {};
+  const options = state?.options || { target_profiles: [], senders: [] };
+  const campaign = state?.campaign || {};
+  const selectedPolicy = options.target_profiles.find((profile) => profile.id === form.target_profile_id) || null;
+  const selectedSenders = new Set(form.sending_profile_keys || []);
+  const selectedSenderRows = options.senders.filter((sender) => selectedSenders.has(sender.profile_key));
+  const readySenderCount = selectedSenderRows.filter((sender) => sender.readiness?.ready).length;
+  const budgetMinor = Math.round(Number(form.budget_eur) * 100);
+  const contactLimit = Number(form.contact_limit);
+  const companyContactLimit = Number(form.company_contact_limit);
+  const audienceSize = Array.isArray(campaign.lead_ids) ? campaign.lead_ids.length : 0;
+  const valid = Boolean(form.target_profile_id) && selectedSenders.size > 0
+    && Number.isSafeInteger(budgetMinor) && budgetMinor > 0
+    && Number.isSafeInteger(contactLimit) && contactLimit > 0 && contactLimit <= audienceSize
+    && Number.isSafeInteger(companyContactLimit) && companyContactLimit > 0 && companyContactLimit <= contactLimit;
+  const update = (key, value) => onChange((current) => ({ ...current, error: "", form: { ...current.form, [key]: value } }));
+  const toggleSender = (profileKey) => {
+    const next = new Set(selectedSenders);
+    next.has(profileKey) ? next.delete(profileKey) : next.add(profileKey);
+    update("sending_profile_keys", [...next]);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Fix campaign setup</DialogTitle>
+          <DialogDescription>
+            Edit the authority, sender identities and hard limits for this draft. Saving rechecks status and never sends.
+          </DialogDescription>
+        </DialogHeader>
+
+        {state?.loading ? <div className="flex items-center gap-2 p-6 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading current controls…</div> : (
+          <div className="space-y-4">
+            {state?.error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">{state.error}</div>}
+
+            <section className="rounded-2xl border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div><p className="text-xs font-black">Commercial policy</p><p className="mt-1 text-[10px] text-muted-foreground">Approval requires an active acquisition policy with a positive daily cap.</p></div>
+                <a href="/admin/settings?tab=autonomy" className="rounded-lg border px-3 py-2 text-[10px] font-black">Manage policies</a>
+              </div>
+              <select aria-label="Campaign setup target profile" value={form.target_profile_id || ""} onChange={(event) => update("target_profile_id", event.target.value)} className="mt-3 h-10 w-full rounded-xl border bg-background px-3 text-xs">
+                <option value="">Choose a policy</option>
+                {options.target_profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.readiness?.ready ? "READY" : String(profile.status || "NOT READY").toUpperCase()} · {profile.name} · {(profile.countries || []).join(", ") || "no market"}</option>)}
+              </select>
+              {selectedPolicy && !selectedPolicy.readiness?.ready && <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">The selected policy is not active. It can remain attached to the draft, but it cannot pass approval.</p>}
+            </section>
+
+            <section className="rounded-2xl border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black">Sender emails</p><p className="mt-1 text-[10px] text-muted-foreground">Select explicit identities. At least one must be active, healthy and within cap to pass.</p></div><a href="/admin/campaigns?tab=commercial" className="rounded-lg border px-3 py-2 text-[10px] font-black">View mailbox health</a></div>
+              <div className="mt-3 max-h-56 space-y-2 overflow-auto">
+                {options.senders.map((sender) => <label key={sender.profile_key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${selectedSenders.has(sender.profile_key) ? "border-cyan-500/40 bg-cyan-500/5" : ""}`}><input type="checkbox" aria-label={`Configure ${sender.from_address || sender.profile_key}`} checked={selectedSenders.has(sender.profile_key)} onChange={() => toggleSender(sender.profile_key)} className="mt-0.5" /><span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-black">{sender.from_address || sender.profile_key}</span><span className="block text-[9px] text-muted-foreground">{sender.provider} · {sender.status} · cap {sender.current_daily_cap}/day · webhook {sender.webhook_status}</span></span><Chip tone={sender.readiness?.ready ? "good" : "bad"}>{sender.readiness?.ready ? "READY" : "NOT READY"}</Chip></label>)}
+                {!options.senders.length && <p className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">No sender identity is configured.</p>}
+              </div>
+              {selectedSenders.size > 0 && readySenderCount === 0 && <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[10px] font-bold text-amber-800">None of the selected mailboxes is currently ready. This remains a real blocker, not a software error.</p>}
+            </section>
+
+            <section className="rounded-2xl border p-4">
+              <p className="text-xs font-black">Hard campaign limits</p>
+              <p className="mt-1 text-[10px] text-muted-foreground">These are ceilings, not targets. They cannot exceed the {count(audienceSize)} selected people.</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <label className="text-[10px] font-bold">Spend ceiling (€)<input aria-label="Campaign setup spend ceiling" type="number" min="0.01" step="0.01" value={form.budget_eur || ""} onChange={(event) => update("budget_eur", event.target.value)} className="mt-1 h-10 w-full rounded-xl border bg-background px-3 text-xs font-normal" /></label>
+                <label className="text-[10px] font-bold">Total contacts<input aria-label="Campaign setup contact limit" type="number" min="1" max={Math.max(1, audienceSize)} value={form.contact_limit || ""} onChange={(event) => update("contact_limit", event.target.value)} className="mt-1 h-10 w-full rounded-xl border bg-background px-3 text-xs font-normal" /></label>
+                <label className="text-[10px] font-bold">Per company<input aria-label="Campaign setup company contact limit" type="number" min="1" max={Math.max(1, contactLimit || 1)} value={form.company_contact_limit || ""} onChange={(event) => update("company_contact_limit", event.target.value)} className="mt-1 h-10 w-full rounded-xl border bg-background px-3 text-xs font-normal" /></label>
+              </div>
+            </section>
+
+            <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-[10px] text-sky-800"><b>Still separate:</b> global outbound activation and the scoped FounderPermit are only handled by Founder Control. This editor cannot turn sending on.</div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <button onClick={onClose} className="h-10 rounded-xl border px-4 text-xs font-bold">Cancel</button>
+          {!state?.loading && <button data-testid="save-campaign-setup" onClick={() => onSave({ budgetMinor, contactLimit, companyContactLimit })} disabled={!valid || state?.saving} className="inline-flex h-10 items-center gap-2 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40">{state?.saving ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}Save and recheck</button>}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Detail({ detail, loading, onBack, onCheckStatus, onEditConfiguration }) {
   if (loading && !detail) return <div className="flex items-center gap-2 p-8 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading campaign…</div>;
   if (!detail) return <p className="p-6 text-xs text-muted-foreground">Select a campaign from All Campaigns.</p>;
   const item = detail.item || {};
@@ -438,6 +554,7 @@ function Detail({ detail, loading, onBack, onCheckStatus }) {
           >
             <Stethoscope size={13} />Check status
           </button>
+          <button data-testid="edit-campaign-setup" onClick={onEditConfiguration} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-3 text-xs font-black text-background"><Pencil size={13} />Edit setup</button>
         </div>
         <dl className="mt-4 grid gap-3 text-[11px] md:grid-cols-4">
           <div><dt className="text-muted-foreground">Lane</dt><dd className="font-bold">{item.lane || "—"}</dd></div>
@@ -453,6 +570,12 @@ function Detail({ detail, loading, onBack, onCheckStatus }) {
             </ul>
           </div>
         )}
+        <dl className="mt-4 grid gap-2 rounded-xl border bg-secondary/25 p-3 text-[10px] sm:grid-cols-4">
+          <div><dt className="text-muted-foreground">Spend ceiling</dt><dd className="font-black">{Number.isFinite(Number(detail.campaign?.budget_limit_minor)) && Number(detail.campaign?.budget_limit_minor) > 0 ? new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(Number(detail.campaign.budget_limit_minor) / 100) : "Not set"}</dd></div>
+          <div><dt className="text-muted-foreground">Contact limit</dt><dd className="font-black">{detail.campaign?.contact_limit || "Not set"}</dd></div>
+          <div><dt className="text-muted-foreground">Per company</dt><dd className="font-black">{detail.campaign?.company_contact_limit || "Not set"}</dd></div>
+          <div><dt className="text-muted-foreground">Sender identities</dt><dd className="font-black">{(detail.campaign?.sending_profile_keys || []).length || "None"}</dd></div>
+        </dl>
       </section>
 
       <section data-testid="campaign-canonical-model" className="rounded-2xl border bg-card p-5">
@@ -516,6 +639,7 @@ export default function AdminCampaigns() {
   const [notice, setNotice] = useState("");
   const [filters, setFilters] = useState({ status: "ALL", lane: "ALL", search: "", needs_attention: false });
   const [preflightState, setPreflightState] = useState(null);
+  const [setupState, setSetupState] = useState(null);
 
   const loadOverview = useCallback(async () => {
     setLoading(true); setError("");
@@ -541,6 +665,59 @@ export default function AdminCampaigns() {
     catch (caught) { setError(caught.message); setDetail(null); }
     finally { setLoading(false); }
   }, []);
+
+  const openConfiguration = useCallback(async () => {
+    const campaign = detail?.campaign;
+    if (!campaign?.id) return;
+    setPreflightState(null);
+    setSetupState({ campaignId: campaign.id, campaign, loading: true, saving: false });
+    try {
+      const options = await call("builder_options", { limit: 1 });
+      setSetupState({
+        campaignId: campaign.id,
+        campaign,
+        options,
+        loading: false,
+        saving: false,
+        form: {
+          target_profile_id: campaign.target_profile_id || "",
+          sending_profile_keys: Array.isArray(campaign.sending_profile_keys) ? campaign.sending_profile_keys : [],
+          budget_eur: Number(campaign.budget_limit_minor) > 0 ? String(Number(campaign.budget_limit_minor) / 100) : "",
+          contact_limit: Number(campaign.contact_limit) > 0 ? String(campaign.contact_limit) : "",
+          company_contact_limit: Number(campaign.company_contact_limit) > 0 ? String(campaign.company_contact_limit) : "1",
+        },
+      });
+    } catch (caught) {
+      setSetupState({ campaignId: campaign.id, campaign, loading: false, saving: false, error: caught?.message || "Campaign setup is unavailable" });
+    }
+  }, [detail]);
+
+  const saveConfiguration = useCallback(async ({ budgetMinor, contactLimit, companyContactLimit }) => {
+    const campaignId = setupState?.campaignId;
+    const form = setupState?.form;
+    if (!campaignId || !form) return;
+    setSetupState((current) => ({ ...current, saving: true, error: "" }));
+    try {
+      await call("update_draft", {
+        campaign_id: campaignId,
+        target_profile_id: form.target_profile_id,
+        sending_profile_keys: form.sending_profile_keys,
+        budget_limit_minor: budgetMinor,
+        contact_limit: contactLimit,
+        company_contact_limit: companyContactLimit,
+      });
+      const [nextDetail, checked] = await Promise.all([
+        call("detail", { campaign_id: campaignId }),
+        call("preflight", { campaign_id: campaignId }),
+      ]);
+      setDetail(nextDetail);
+      setSetupState(null);
+      setNotice("Campaign setup saved and rechecked. Nothing was sent.");
+      setPreflightState({ campaignId, loading: false, preflight: checked.preflight });
+    } catch (caught) {
+      setSetupState((current) => ({ ...current, saving: false, error: caught?.message || "Campaign setup could not be saved" }));
+    }
+  }, [setupState]);
 
   const campaignCreated = useCallback(async (campaignId, result = {}) => {
     setNotice(result.partial
@@ -596,8 +773,8 @@ export default function AdminCampaigns() {
     if (tab === "overview") return <Overview data={overview} loading={loading} reload={loadOverview} onCreate={() => { setNotice(""); setTab("create"); }} />;
     if (tab === "create") return <CampaignBuilder call={call} initialAudienceId={initialAudienceId} onCancel={() => setTab("overview")} onCreated={campaignCreated} />;
     if (tab === "all") return <AllCampaigns data={list} loading={loading} filters={filters} setFilters={setFilters} reload={loadList} onOpen={openDetail} />;
-    return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} onCheckStatus={checkStatus} />;
-  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus, campaignCreated, initialAudienceId]);
+    return <Detail detail={detail} loading={loading} onBack={() => setTab("all")} onCheckStatus={checkStatus} onEditConfiguration={openConfiguration} />;
+  }, [tab, overview, list, detail, loading, filters, loadOverview, loadList, openDetail, checkStatus, openConfiguration, campaignCreated, initialAudienceId]);
 
   return (
     <div className="space-y-5 p-4 md:p-6">
@@ -629,6 +806,14 @@ export default function AdminCampaigns() {
         state={preflightState}
         onClose={() => setPreflightState(null)}
         onRequestApproval={requestApproval}
+        onEditConfiguration={openConfiguration}
+        onRecheck={checkStatus}
+      />
+      <CampaignSetupDialog
+        state={setupState}
+        onClose={() => setSetupState(null)}
+        onChange={setSetupState}
+        onSave={saveConfiguration}
       />
     </div>
   );

@@ -20,6 +20,11 @@ import { LEAD_LAUNCH_MARKETS, leadMarketScope, projectLeadPerson } from './leadP
 const clean=(value:any,max=240)=>String(value??'').replace(/[\r\n\t]+/g,' ').trim().slice(0,max);
 const unique=(value:any,max=1000)=>[...new Set((Array.isArray(value)?value:[]).map((item:any)=>clean(item,200)).filter(Boolean))].slice(0,max);
 
+function positiveInteger(value:any){
+  const parsed=Number(value);
+  return Number.isSafeInteger(parsed)&&parsed>0?parsed:null;
+}
+
 function normalizeLaunchMarkets(value:any){
   const requested=unique(value,60).map((market)=>leadMarketScope(market));
   return{
@@ -197,7 +202,8 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
         id:policy.id,policy_key:policy.policy_key||'',version:policy.version||'',name:policy.icp_json?.profile_name||policy.version||policy.policy_key||policy.id,
         status:policy.status||'unknown',countries:normalizeLaunchMarkets(policy.countries).markets,daily_send_limit:Number(policy.daily_send_limit||0),
         provider_mode:String(policy.icp_json?.provider_mode||'AUTO').toUpperCase(),sending_profile_keys:Array.isArray(policy.sending_profile_keys)?policy.sending_profile_keys:[],
-      })),
+        readiness:{ready:String(policy.status||'').toLowerCase()==='active'&&Number(policy.daily_send_limit||0)>0,blockers:[...(String(policy.status||'').toLowerCase()==='active'?[]:['policy_not_active']),...(Number(policy.daily_send_limit||0)>0?[]:['daily_limit_missing'])]},
+      })).sort((left:any,right:any)=>Number(right.readiness.ready)-Number(left.readiness.ready)||String(left.name).localeCompare(String(right.name),'en')),
       audiences:currentAudiences.map((view:any)=>({
         id:view.id,view_key:view.view_key||'',name:view.name||view.id,revision:Number(view.revision||1),
         member_count:Number(view.config_json?.member_count||view.config_json?.lead_ids?.length||0),
@@ -212,7 +218,7 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
         id:profile.id,profile_key:profile.profile_key||'',provider:profile.provider||'',domain:profile.domain||'',from_address:profile.from_address||'',
         status:profile.status||'unknown',current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),
         webhook_status:profile.webhook_status||'NOT_CONFIGURED',readiness:readiness(profile),
-      })),
+      })).sort((left:any,right:any)=>Number(right.readiness.ready)-Number(left.readiness.ready)||String(left.from_address||left.profile_key).localeCompare(String(right.from_address||right.profile_key),'en')),
       outbound_posture:{status:outboundStatus,capacity:outboundStatus==='ENABLED'?(profileRead.value||[]).reduce((sum:number,profile:any)=>sum+readiness(profile).cap,0):0},
       source_coverage:sourceCoverage,
       external_send_performed:false,
@@ -235,8 +241,16 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     if(normalizedMarkets.rejected.length)return Response.json({ok:false,error:'campaign_market_outside_active_launch',rejected_markets:normalizedMarkets.rejected,active_launch_markets:LEAD_LAUNCH_MARKETS},{status:409});
     if(!normalizedMarkets.markets.length)return Response.json({ok:false,error:'campaign_market_scope_required',active_launch_markets:LEAD_LAUNCH_MARKETS},{status:400});
     const targetProfileId=clean(body.target_profile_id);const policyRead=targetProfileId?await readRuntimeSource<any>({source:'commercial_campaign_target_policy',read:()=>svc.entities.CommercialPolicy.get(targetProfileId),fallback:null}):null;const policy=policyRead?requireRuntimeSource(policyRead):null;
+    const budgetLimit=body.budget_limit_minor===undefined?null:positiveInteger(body.budget_limit_minor);
+    const contactLimit=body.contact_limit===undefined?null:positiveInteger(body.contact_limit);
+    const companyContactLimit=body.company_contact_limit===undefined?null:positiveInteger(body.company_contact_limit);
+    if(body.budget_limit_minor!==undefined&&!budgetLimit)return Response.json({ok:false,error:'campaign_budget_limit_invalid'},{status:400});
+    if(body.contact_limit!==undefined&&!contactLimit)return Response.json({ok:false,error:'campaign_contact_limit_invalid'},{status:400});
+    if(body.company_contact_limit!==undefined&&!companyContactLimit)return Response.json({ok:false,error:'campaign_company_contact_limit_invalid'},{status:400});
+    if(contactLimit&&contactLimit>leadIds.length)return Response.json({ok:false,error:'campaign_contact_limit_exceeds_audience',selected_leads:leadIds.length},{status:400});
+    if(companyContactLimit&&contactLimit&&companyContactLimit>contactLimit)return Response.json({ok:false,error:'campaign_company_contact_limit_exceeds_total'},{status:400});
     const now=new Date().toISOString();const key=`campaign:${Date.now()}:${crypto.randomUUID().slice(0,8)}`;
-    const campaign=await svc.entities.CommercialCampaign.create({campaign_key:key,name:clean(body.name,120)||`CAMBRA campaign ${now.slice(0,10)}`,status:'DRAFT',...(lane?{lane}:{}),...(clean(body.objective_type,80)?{objective_type:clean(body.objective_type,80)}:{}),...(clean(body.description,500)?{description:clean(body.description,500)}:{}),market_scope:normalizedMarkets.markets,...(Array.isArray(body.language_scope)?{language_scope:unique(body.language_scope,40)}:{}),target_profile_id:policy?.id||'',policy_key:policy?.policy_key||'',policy_version:String(policy?.version||''),provider_mode:['AUTO','APOLLO','INSTANTLY','MANUAL'].includes(String(body.provider_mode).toUpperCase())?String(body.provider_mode).toUpperCase():'AUTO',lead_ids:leadIds,audience_snapshot_json:{lead_count:selected.length,filters:body.filters&&typeof body.filters==='object'?body.filters:{},canonical_company_keys:selected.map((lead:any)=>lead.canonical_company_key).filter(Boolean),market_scope_decision:'FOUNDER_ACTIVE_LAUNCH_10',captured_at:now},strategy_ids:[],message_json:{status:'NOT_PREPARED'},sequence_json:{status:'NOT_PREPARED'},sending_profile_keys:unique(body.sending_profile_keys,100),capacity_preview_json:{capacity:0,blockers:['campaign_not_prepared','founder_pilot_authorization_required']},external_refs_json:{},blockers:['campaign_not_prepared','founder_pilot_authorization_required'],created_by:user.email||user.id,created_at:now,updated_at:now,metrics_json:{selected_leads:selected.length,sent:0,replied:0,meetings:0}});
+    const campaign=await svc.entities.CommercialCampaign.create({campaign_key:key,name:clean(body.name,120)||`CAMBRA campaign ${now.slice(0,10)}`,status:'DRAFT',...(lane?{lane}:{}),...(clean(body.objective_type,80)?{objective_type:clean(body.objective_type,80)}:{}),...(clean(body.description,500)?{description:clean(body.description,500)}:{}),market_scope:normalizedMarkets.markets,...(Array.isArray(body.language_scope)?{language_scope:unique(body.language_scope,40)}:{}),target_profile_id:policy?.id||'',policy_key:policy?.policy_key||'',policy_version:String(policy?.version||''),provider_mode:['AUTO','APOLLO','INSTANTLY','MANUAL'].includes(String(body.provider_mode).toUpperCase())?String(body.provider_mode).toUpperCase():'AUTO',lead_ids:leadIds,audience_snapshot_json:{lead_count:selected.length,filters:body.filters&&typeof body.filters==='object'?body.filters:{},canonical_company_keys:selected.map((lead:any)=>lead.canonical_company_key).filter(Boolean),market_scope_decision:'FOUNDER_ACTIVE_LAUNCH_10',captured_at:now},strategy_ids:[],message_json:{status:'NOT_PREPARED'},sequence_json:{status:'NOT_PREPARED'},sending_profile_keys:unique(body.sending_profile_keys,100),...(budgetLimit?{budget_limit_minor:budgetLimit}:{}),...(contactLimit?{contact_limit:contactLimit}:{}),...(companyContactLimit?{company_contact_limit:companyContactLimit}:{}),capacity_preview_json:{capacity:0,blockers:['campaign_not_prepared','founder_pilot_authorization_required']},external_refs_json:{},blockers:['campaign_not_prepared','founder_pilot_authorization_required'],created_by:user.email||user.id,created_at:now,updated_at:now,metrics_json:{selected_leads:selected.length,sent:0,replied:0,meetings:0}});
     try{await svc.entities.OperationalLog.create({event_type:'commercial_campaign_draft_created',message:campaign.name,data_json:{campaign_id:campaign.id,lead_count:selected.length,provider_mode:campaign.provider_mode,lane:lane||null,external_send_performed:false},actor_email:user.email,created_at:now});}
     catch(error:any){
       const blocker='campaign_audit_persistence_failed';
@@ -292,7 +306,7 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
   if(action==='update_draft'){
     // The guard uses the STORED status so a legacy READY_FOR_PILOT row stays
     // editable exactly as before this refactor.
-    if(!['DRAFT','READY_FOR_PILOT','PAUSED'].includes(String(campaign.status)))return Response.json({ok:false,error:'active_campaign_not_editable',status:canonicalCampaignState(campaign.status).canonical},{status:409});
+    if(!['DRAFT','READY_FOR_PILOT','READY_FOR_APPROVAL','PAUSED'].includes(String(campaign.status)))return Response.json({ok:false,error:'active_campaign_not_editable',status:canonicalCampaignState(campaign.status).canonical},{status:409});
     const patch:any={updated_at:new Date().toISOString()};if(body.name!==undefined)patch.name=clean(body.name,120);if(body.message_json&&typeof body.message_json==='object')patch.message_json=body.message_json;if(body.sequence_json&&typeof body.sequence_json==='object')patch.sequence_json=body.sequence_json;if(Array.isArray(body.sending_profile_keys))patch.sending_profile_keys=unique(body.sending_profile_keys,100);
     if(body.lane!==undefined){const lane=clean(body.lane,60).toUpperCase();if(!(CAMPAIGN_LANES as readonly string[]).includes(lane))return Response.json({ok:false,error:'unsupported_campaign_lane',supported_lanes:CAMPAIGN_LANES},{status:400});patch.lane=lane;}
     if(body.objective_type!==undefined)patch.objective_type=clean(body.objective_type,80);
@@ -304,6 +318,24 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
       patch.market_scope=normalized.markets;
     }
     if(Array.isArray(body.language_scope))patch.language_scope=unique(body.language_scope,40);
+    if(body.target_profile_id!==undefined){
+      const targetProfileId=clean(body.target_profile_id);
+      if(!targetProfileId)return Response.json({ok:false,error:'campaign_target_profile_required'},{status:400});
+      const policyRead=await readRuntimeSource<any>({source:'commercial_campaign_update_policy',read:()=>svc.entities.CommercialPolicy.get(targetProfileId),fallback:null});
+      const policy=requireRuntimeSource(policyRead);
+      if(!policy)return Response.json({ok:false,error:'campaign_target_profile_not_found'},{status:404});
+      patch.target_profile_id=policy.id;patch.policy_key=policy.policy_key||'';patch.policy_version=String(policy.version||'');
+    }
+    if(body.budget_limit_minor!==undefined){const value=positiveInteger(body.budget_limit_minor);if(!value)return Response.json({ok:false,error:'campaign_budget_limit_invalid'},{status:400});patch.budget_limit_minor=value;}
+    if(body.contact_limit!==undefined){const value=positiveInteger(body.contact_limit);if(!value)return Response.json({ok:false,error:'campaign_contact_limit_invalid'},{status:400});if(value>(campaign.lead_ids||[]).length)return Response.json({ok:false,error:'campaign_contact_limit_exceeds_audience',selected_leads:(campaign.lead_ids||[]).length},{status:400});patch.contact_limit=value;}
+    if(body.company_contact_limit!==undefined){const value=positiveInteger(body.company_contact_limit);if(!value)return Response.json({ok:false,error:'campaign_company_contact_limit_invalid'},{status:400});patch.company_contact_limit=value;}
+    const effectiveContactLimit=patch.contact_limit??campaign.contact_limit;
+    const effectiveCompanyLimit=patch.company_contact_limit??campaign.company_contact_limit;
+    if(Number(effectiveCompanyLimit)>Number(effectiveContactLimit))return Response.json({ok:false,error:'campaign_company_contact_limit_exceeds_total'},{status:400});
+    const approvalFields=['target_profile_id','sending_profile_keys','market_scope','budget_limit_minor','contact_limit','company_contact_limit'];
+    if(String(campaign.status)==='READY_FOR_APPROVAL'&&approvalFields.some((field)=>body[field]!==undefined)){
+      patch.status='DRAFT';patch.approval_binding_json={};patch.approved_by='';patch.approved_at=null;
+    }
     const updated=await svc.entities.CommercialCampaign.update(campaign.id,patch);return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),external_send_performed:false});
   }
 
