@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "a4195626c17209fd154d38721ab6aa6404e38aa05fe5481233cd482a4f8b4403",
+  "input_fingerprint_sha256": "d6e8d89ea7cc63b37ca191244847c75742c50cc982d21fb9158478d0decfe7a3",
   "input_file_count": 124,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -2889,8 +2889,8 @@
         },
         {
           "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-          "sha256": "3cebf3e8f39eb31160d68ef07ecdcde03929852d049bf06f2da1b2befbef7cb0",
-          "bytes": 86251
+          "sha256": "7d9507bdf50a24a6116fbec7a2f7b7dcce11a73b2f20b96d0e39315260e0d88e",
+          "bytes": 87099
         },
         {
           "path": "base44/functions/linkedinAgent/entry.ts",

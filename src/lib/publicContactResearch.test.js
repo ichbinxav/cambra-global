@@ -8,6 +8,7 @@ import {
   collectAnthropicWebSearchErrors,
   collectAnthropicWebSources,
   collectOpenAiWebSources,
+  extractAnthropicCandidateEnvelope,
   extractAnthropicOutputText,
   extractOpenAiOutputText,
   normalizeAnthropicPublicResearchCandidates,
@@ -100,6 +101,40 @@ function anthropicPayload(candidates, sources = []) {
   };
 }
 
+function strictAnthropicPayload(candidates, sources = []) {
+  return {
+    stop_reason: "tool_use",
+    content: [
+      {
+        type: "server_tool_use",
+        id: "srvtoolu_test",
+        name: "web_search",
+        input: { query: "Shop Example CFO" },
+      },
+      {
+        type: "web_search_tool_result",
+        tool_use_id: "srvtoolu_test",
+        content: sources.map((source) => ({
+          type: "web_search_result",
+          url: source.url,
+          title: source.title,
+        })),
+      },
+      {
+        type: "tool_use",
+        id: "toolu_candidates",
+        name: "submit_public_contact_candidates",
+        input: { candidates },
+      },
+    ],
+    usage: {
+      input_tokens: 100,
+      output_tokens: 40,
+      server_tool_use: { web_search_requests: 1 },
+    },
+  };
+}
+
 function publicResponse(
   body,
   url = "https://shop.example/contact",
@@ -173,6 +208,46 @@ describe("automatic public contact research", () => {
       email: "ana@shop.example",
       role_source_returned: true,
       email_source_returned: true,
+    });
+  });
+
+  it("extracts strict Anthropic candidates only after completed web research", () => {
+    const sources = [
+      { url: "https://shop.example/team/ana", title: "Team" },
+      { url: "https://shop.example/contact", title: "Contact" },
+    ];
+    const payload = strictAnthropicPayload([candidate()], sources);
+
+    expect(extractAnthropicCandidateEnvelope(payload)).toEqual({
+      valid: true,
+      candidates: [candidate()],
+      output_mode: "strict_tool",
+    });
+    expect(normalizeAnthropicPublicResearchCandidates(
+      payload,
+      { company_domain: "shop.example" },
+    ).candidates[0]).toMatchObject({
+      name: "Ana Finance",
+      email: "ana@shop.example",
+      role_source_returned: true,
+      email_source_returned: true,
+    });
+
+    const beforeSearch = strictAnthropicPayload([candidate()], sources);
+    beforeSearch.content.unshift(beforeSearch.content.pop());
+    expect(extractAnthropicCandidateEnvelope(beforeSearch)).toMatchObject({
+      valid: false,
+      output_mode: "strict_tool_before_search",
+    });
+
+    const duplicate = strictAnthropicPayload([candidate()], sources);
+    duplicate.content.push({
+      ...duplicate.content.at(-1),
+      id: "toolu_candidates_duplicate",
+    });
+    expect(extractAnthropicCandidateEnvelope(duplicate)).toMatchObject({
+      valid: false,
+      output_mode: "ambiguous_strict_tool",
     });
   });
 
@@ -341,15 +416,31 @@ describe("automatic public contact research", () => {
 
     expect(request).toMatchObject({
       model: "claude-sonnet-5",
-      max_tokens: 1200,
-      tools: [{
-        type: "web_search_20250305",
-        name: "web_search",
-        max_uses: 3,
-      }],
+      max_tokens: 1600,
+      tool_choice: { type: "auto", disable_parallel_tool_use: true },
     });
+    expect(request.tools).toHaveLength(2);
+    expect(request.tools[0]).toEqual({
+      type: "web_search_20250305",
+      name: "web_search",
+      max_uses: 3,
+    });
+    expect(request.tools[1]).toMatchObject({
+      name: "submit_public_contact_candidates",
+      strict: true,
+      input_schema: {
+        type: "object",
+        required: ["candidates"],
+        additionalProperties: false,
+      },
+    });
+    expect(request.tools[1].input_schema.properties.candidates).not
+      .toHaveProperty("maxItems");
     expect(request).not.toHaveProperty("output_config");
-    expect(request.system).toContain("return only the requested JSON object");
+    expect(request.system).toContain("First use web_search at least once");
+    expect(request.system).toContain(
+      "call submit_public_contact_candidates exactly once",
+    );
     expect(request.messages[0].content).toContain(
       '{"name":"Shop Example","domain":"shop.example","country":"ES"}',
     );

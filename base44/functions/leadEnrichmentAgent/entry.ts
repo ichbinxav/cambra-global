@@ -100,6 +100,10 @@ function publicProviderFailure(provider: string, error: any) {
       null,
     provider_error_type: String(error?.provider_error_type || "").slice(0, 80) ||
       null,
+    provider_stop_reason:
+      String(error?.provider_stop_reason || "").slice(0, 80) || null,
+    provider_output_mode:
+      String(error?.provider_output_mode || "").slice(0, 80) || null,
     retry_after_seconds: Number(error?.retryAfterSeconds || 0),
     cost_consumed: error?.responseReceived !== true ||
       error?.providerCostConsumed === true,
@@ -123,6 +127,7 @@ function publicResearchSuccessEvidence(
     sources: result.sources,
     candidate_count: result.shortlist.length,
     usage: result.usage,
+    output_mode: result.output_mode || null,
     researched_at: now(),
     explicit_email_verified: Boolean(result.verified_contact),
     invented_contact: false,
@@ -1349,6 +1354,8 @@ Deno.serve(async (req) => {
                   error_code: attempt.error_code,
                   provider_error_code: attempt.provider_error_code,
                   provider_error_type: attempt.provider_error_type,
+                  provider_stop_reason: attempt.provider_stop_reason,
+                  provider_output_mode: attempt.provider_output_mode,
                   retry_after_seconds: attempt.retry_after_seconds,
                   provider_calls: reservationProviderCalls,
                   provider_effect_known: !effectAmbiguous,
@@ -1379,6 +1386,8 @@ Deno.serve(async (req) => {
                 error_code: attempt.error_code,
                 provider_error_code: attempt.provider_error_code,
                 provider_error_type: attempt.provider_error_type,
+                provider_stop_reason: attempt.provider_stop_reason,
+                provider_output_mode: attempt.provider_output_mode,
                 provider_attempts: publicProviderAttempts,
               };
             }
@@ -1545,6 +1554,7 @@ Deno.serve(async (req) => {
                     candidate_count: publicResult.shortlist.length,
                     selected_contact: false,
                     person_persisted: false,
+                    output_mode: publicResult.output_mode,
                     ...publicResult.usage,
                   },
                 });
@@ -1565,6 +1575,8 @@ Deno.serve(async (req) => {
                   error_code: attempt.error_code,
                   provider_error_code: attempt.provider_error_code,
                   provider_error_type: attempt.provider_error_type,
+                  provider_stop_reason: attempt.provider_stop_reason,
+                  provider_output_mode: attempt.provider_output_mode,
                   retry_after_seconds: attempt.retry_after_seconds,
                   provider_calls: reservationProviderCalls,
                   provider_effect_known: !effectAmbiguous,
@@ -1595,6 +1607,8 @@ Deno.serve(async (req) => {
                 error_code: attempt.error_code,
                 provider_error_code: attempt.provider_error_code,
                 provider_error_type: attempt.provider_error_type,
+                provider_stop_reason: attempt.provider_stop_reason,
+                provider_output_mode: attempt.provider_output_mode,
                 provider_attempts: publicProviderAttempts,
               };
             }
