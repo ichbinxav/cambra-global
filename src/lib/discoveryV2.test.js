@@ -24,6 +24,10 @@ describe('Discovery V2 Zero-Waste planner',()=>{
     expect(result.interpretation_method).toBe('DETERMINISTIC_NO_PAID_AI');
   });
 
+  it('uses canonical employee ranges that the provider adapters can execute',()=>{
+    expect(DISCOVERY_FILTER_TAXONOMY.MERCHANT.company_size.map(option=>option.value)).toEqual(['1,10','11,50','51,200','201,500','501,1000','1001,5000','5001,10000','10000,100000000']);
+  });
+
   it('selects the best runtime-available source and degrades source-dependent filters honestly',()=>{
     const result=planDiscoveryQuery({discovery_type:'MERCHANT',source_mode:'AUTO',target_count:100,hard_cap_minor:500,filters:{country:['FR'],industry:['beauty'],technology:['shopify'],sales_channel:['omnichannel']}},liveContext);
     expect(result.selected_source).toBe('APOLLO');

@@ -2,6 +2,8 @@
 // this is not canonical P5 merchant economics and must never emit savings,
 // rates, probability, or executable recommendations.
 
+import { discoveryEmployeeRangeFloor } from "./discoveryRadar.ts";
+
 export const COMPANY_OPPORTUNITY_SCORE_VERSION =
   "merchant-company-opportunity-v3.0.0";
 
@@ -72,6 +74,8 @@ export function deterministicMerchantOpportunity(lead: any) {
     enrichment?.employee_count ?? organization?.estimated_num_employees ??
       organization?.num_employees,
   );
+  const employeeRangeFloor = discoveryEmployeeRangeFloor(lead?.employee_range);
+  const employeeEvidence = employees ?? employeeRangeFloor;
   const stores = observedNumber(
     enrichment?.store_count ?? organization?.store_count,
   );
@@ -138,12 +142,12 @@ export function deterministicMerchantOpportunity(lead: any) {
     commerce += Math.min(7, stores >= 5 ? 7 : 4);
   }
 
-  if (employees !== null && employees > 0) {
-    economic += employees >= 200
+  if (employeeEvidence !== null && employeeEvidence > 0) {
+    economic += employeeEvidence >= 200
       ? 18
-      : employees >= 50
+      : employeeEvidence >= 50
       ? 14
-      : employees >= 10
+      : employeeEvidence >= 10
       ? 9
       : 3;
   }
@@ -181,7 +185,7 @@ export function deterministicMerchantOpportunity(lead: any) {
   if (lead?.source) companyEvidence += 1;
   if (lead?.industry || organization?.industry) companyEvidence += 1;
   if (
-    technologies.length || employees !== null || revenue !== null ||
+    technologies.length || employeeEvidence !== null || revenue !== null ||
     traffic !== null || stores !== null
   ) {
     companyEvidence += 1;
@@ -194,7 +198,9 @@ export function deterministicMerchantOpportunity(lead: any) {
 
   let penalty = 0;
   if (commerce < 8) penalty -= 40;
-  if (employees !== null && employees < 5 && economic < 8) penalty -= 20;
+  if (employeeEvidence !== null && employeeEvidence < 5 && economic < 8) {
+    penalty -= 20;
+  }
 
   // The company-only dimensions have an 85-point raw ceiling. Rescaling keeps
   // the legacy 0-100 consumer contract without smuggling a 15-point contact
@@ -206,7 +212,9 @@ export function deterministicMerchantOpportunity(lead: any) {
     Math.min(100, Math.round((rawCompanyScore / 85) * 100)),
   );
   const evidenceCount =
-    [employees, revenue, traffic, stores].filter((value) => value !== null)
+    [employeeEvidence, revenue, traffic, stores].filter((value) =>
+      value !== null
+    )
       .length +
     [
       /shopify|woocommerce|bigcommerce|prestashop|magento/.test(technologyBlob),
@@ -234,6 +242,7 @@ export function deterministicMerchantOpportunity(lead: any) {
     },
     signals: {
       employees,
+      employee_range: lead?.employee_range || null,
       revenue,
       monthly_traffic: traffic,
       store_count: stores,

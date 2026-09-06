@@ -2,6 +2,10 @@ import { ACTIVE_LAUNCH_MARKETS, EUROPE_MARKETS } from './generated/europeMarkets
 
 const split=(value)=>String(value||'').split('|').map(item=>item.trim()).filter(Boolean);
 const options=(value)=>split(value).map(label=>({value:label.toLowerCase().replaceAll(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''),label}));
+const companySizeOptions=Object.freeze([
+  ['1,10','1–10 employees'],['11,50','11–50 employees'],['51,200','51–200 employees'],['201,500','201–500 employees'],
+  ['501,1000','501–1,000 employees'],['1001,5000','1,001–5,000 employees'],['5001,10000','5,001–10,000 employees'],['10000,100000000','10,000+ employees'],
+].map(([value,label])=>({value,label})));
 
 // Canonical launch geography: EU-27 + NO/IS/LI + CH/GB/AD. Regions are the
 // first-level administrative/commercial regions used by CAMBRA. The picker also
@@ -49,7 +53,7 @@ export const DISCOVERY_ACTIVE_LAUNCH_COUNTRY_OPTIONS=Object.freeze(DISCOVERY_COU
 const TAXONOMY=Object.freeze({
   MERCHANT:{
     industry:options('Ecommerce|Retail|Fashion & apparel|Footwear|Jewellery & watches|Eyewear|Luxury|Beauty & cosmetics|Skincare|Health & wellness|Supplements|Pharmacy|Consumer electronics|Home & furniture|Home improvement|Garden|Office supplies|Food & beverage|Grocery|Alcohol & beverages|Restaurants|Quick-service restaurants|Food delivery|Pet care|Baby & maternity|Toys & games|Books & publishing|Sporting goods|Outdoor recreation|Automotive|Mobility|Car rental|Travel|Airlines|Hospitality|Hotels|Vacation rentals|Marketplaces|B2B marketplaces|Subscription commerce|Subscription boxes|SaaS|Digital goods|Gaming|Streaming|Entertainment|Events|Ticketing|Education|Professional services|B2B wholesale|Manufacturing|Logistics|Real estate|Telecom|Insurance|Fintech|Nonprofit|Creator economy'),
-    company_size:options('1–10 employees|11–50 employees|51–200 employees|201–500 employees|501–1,000 employees|1,001–5,000 employees|5,001–10,000 employees|10,000+ employees'),
+    company_size:companySizeOptions,
     technology:options('Shopify|Shopify Plus|WooCommerce|Magento / Adobe Commerce|PrestaShop|BigCommerce|Salesforce Commerce Cloud|commercetools|SAP Commerce|Shopware|VTEX|Spryker|Elastic Path|Oracle Commerce|HCL Commerce|Ecwid|OpenCart|Sylius|Saleor|Medusa|Wix|Squarespace|Custom / headless|Adobe Experience Manager|Contentful|Sanity|Strapi|Stripe|Stripe Connect|Stripe Radar|Adyen|PayPal|Braintree|Checkout.com|Mollie|Worldline|Nexi|SumUp|Square|Klarna|Amazon Pay|Apple Pay|Google Pay|Revolut Pay|GoCardless|Airwallex|Rapyd|Primer|Spreedly|Gr4vy|Nuvei|Fiserv|Global Payments|ACI Worldwide|Cybersource|Authorize.net|BlueSnap|dLocal|EBANX|Trustly|Tink|TrueLayer|Yapily|Plaid|Mangopay|Lemonway|Paddle|Chargebee|Recurly|Zuora|Riskified|Forter|Sift|Signifyd|Ravelin|Kount|SEON|Sardine|Cloudflare|AWS|Google Cloud|Azure|Akamai|Fastly|Segment|Snowflake|HubSpot|Salesforce|Klaviyo|Braze|Bloomreach|Algolia|Google Analytics 4|Mixpanel|Amplitude|Datadog|New Relic|Sentry|Zendesk|Intercom|SAP S/4HANA|Oracle NetSuite|Microsoft Dynamics 365|Odoo|Sage|Xero|QuickBooks|Pennylane|Exact Online|Lightspeed|Shopify POS|Square POS|Zettle|Toast|NCR Voyix|Cegid|Oracle MICROS|SumUp POS'),
     business_model:options('DTC|B2C|B2B|B2B2C|Marketplace|Subscription|Franchise|Platform|Wholesale|Omnichannel retailer|Aggregator|On-demand|Usage-based|Nonprofit'),
     sales_channel:options('Ecommerce website|Marketplace|Mobile app|Social commerce|POS / in-store|Telesales / MOTO|Invoice|Subscription|Omnichannel'),

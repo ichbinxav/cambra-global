@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-06T14:07:42.955Z",
+  "generatedAt": "2026-09-06T15:36:05.446Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -924,8 +924,8 @@
     },
     {
       "path": "base44/functions/leadDiscoveryAgent/entry.ts",
-      "sha256": "114b64e2b5e0268d8c6ee72cb70daa4f2c2d41c305493f664012027d4f86e6a3",
-      "bytes": 41549
+      "sha256": "038366369508d3d79777ef78c57bb98d06d660603774c3522fab8c8775ca1332",
+      "bytes": 46453
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
@@ -1579,8 +1579,8 @@
     },
     {
       "path": "base44/shared/discoveryRadar.ts",
-      "sha256": "6517272447d8365286be2bd3555045feb76d77823844a434b1c7d69f3ee77513",
-      "bytes": 9449
+      "sha256": "2d5d90c61ebafc85a8dfb6b2589babfb8e36c0f338bded0dfa90ff0aad4ed8e3",
+      "bytes": 11802
     },
     {
       "path": "base44/shared/discoveryV2Admin.ts",
@@ -1809,8 +1809,8 @@
     },
     {
       "path": "base44/shared/merchantOpportunity.ts",
-      "sha256": "6ae41c2412f081681d973ac05eb4026253c20477479d942be50bd9f0f2343f73",
-      "bytes": 8484
+      "sha256": "2d34e5a678f0f771ba450ad794845eaabd48554d1d541af6744d7aebc9dc6d15",
+      "bytes": 8828
     },
     {
       "path": "base44/shared/operationalControl.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "d85bfa1846312b3dfa416f7457a6e1b65f32f7c15bd897c4df49a7e3add73a87",
+      "sha256": "6116a83f564d477990363d08af4e3445282700d16289138e2402d1fdb076aa57",
       "bytes": 141334
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "df2fb163db76aeae3336a1c356e50d5ef319d937693ff67978728c59d367eeb0",
+      "sha256": "d98f9c61d9d846bda33b39e74a313392e1477714e837c341bfb85d0f7654137a",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "3665b89bed8893d269f7effaaeccdb0c79a63c84a6385539d8134185b3b2ed17",
+      "sha256": "11977128d032c567ef14df61ab3d510d678a42fcb9b9a741efd65882df6a6d03",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "e5902fb0ae4489c6a210fe2d32169377d68621a09ac41130582bb2343d85336c",
+      "sha256": "ba807a74b0718f01c8dc0b00d26126feff3d4424cea3eb4a49ef59c6f7ab38f4",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "5e68bc03de9ab4ccdce903423223b2d782c8a09513e76dd594768c2be2204a32",
+      "sha256": "62bfab12fe9e39287b0be80fc96ff63d80e8679c2b3deab4d9d42a7d81a1a3b3",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "819011ec8b47989464a9104fa2481649b6f333ab4dd4bee010a9acd352cdd5b0",
+      "sha256": "9269cfee6a746b28b0e47b107269741c6d12002217f97b74ac6f264f48c05211",
       "bytes": 97899
     },
     {
@@ -3089,13 +3089,13 @@
     },
     {
       "path": "src/lib/discoveryFilterOptions.js",
-      "sha256": "ac01149fd0f217d4992e8afac8c63bf459f39be3871c227280a5b70720a37b44",
-      "bytes": 20853
+      "sha256": "c1dff2c644ef19b25ab632a1f22aacdf857dba9e04e295587150926616e745c5",
+      "bytes": 21070
     },
     {
       "path": "src/lib/discoveryV2.test.js",
-      "sha256": "fec45c3399a8ad40867f2612c957971af54065bf1e4f5baa028b2609052c8b53",
-      "bytes": 11287
+      "sha256": "c6434c76b04c973427283aab050d0ac20c41077690d70572e0bd8dae821e76f3",
+      "bytes": 11563
     },
     {
       "path": "src/lib/discoveryV2OperationalTruth.test.js",
@@ -3284,8 +3284,8 @@
     },
     {
       "path": "src/lib/founderControlV2.test.js",
-      "sha256": "0b4e040bce026e642c9fc308ee13b1647e17e2fe4e86e015fa07b52e812e16cc",
-      "bytes": 13579
+      "sha256": "6465e8af26edf84bf1e484e9d9f3958d19e3936a3fdfbf2f757ffa09a88d082d",
+      "bytes": 13781
     },
     {
       "path": "src/lib/founderMerchantsV2.test.js",
@@ -3534,8 +3534,8 @@
     },
     {
       "path": "src/lib/p6DiscoveryRadar.test.js",
-      "sha256": "fc2fe117004ae7df01a218d019fa88db963ef3d8ca52aff2036332617ec90f9b",
-      "bytes": 6880
+      "sha256": "4086e5145ee141c34357d2cc55a51fde7675996070ca1ef0e2ff42a0ca348f93",
+      "bytes": 8825
     },
     {
       "path": "src/lib/p6p8AutonomousCompany.test.js",
@@ -3894,8 +3894,8 @@
     },
     {
       "path": "src/pages/admin/AdminFounderControl.jsx",
-      "sha256": "7ba32c1a5707d721b963e6cba78f2328e4d5e1e123a7bd7efd052f4e44213ba9",
-      "bytes": 90094
+      "sha256": "ad56bca2ba9e7f29d9f5e9afc60423aee341525a48a33cba613ddfb417c805c2",
+      "bytes": 94264
     },
     {
       "path": "src/pages/admin/AdminGrowth.jsx",

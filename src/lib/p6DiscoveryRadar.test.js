@@ -6,6 +6,7 @@ import {
   cheapDiscoveryPreScore,
   classifyProfessionalEmail,
   discoveryProviderStatus,
+  normalizeDiscoveryEmployeeRange,
   selectDiscoveryPolicies,
 } from "../../base44/shared/discoveryRadar.ts";
 import { buildResilientLeadScore } from "../../base44/shared/leadScoringResilience.ts";
@@ -38,6 +39,18 @@ describe("P6 autonomous discovery radar", () => {
     });
     expect(result.score).toBeGreaterThanOrEqual(45);
     expect(result.enrichment_worthy).toBe(true);
+    const filteredResult = cheapDiscoveryPreScore({
+      organization: {
+        name: "Filtered Merchant",
+        primary_domain: "filtered-merchant.eu",
+        industry: "retail",
+        estimated_num_employees: null,
+        employee_range: "50-200",
+        technologies: ["shopify"],
+      },
+    });
+    expect(filteredResult.enrichment_worthy).toBe(true);
+    expect(filteredResult.reasons).toContain("employee_range_filter_matched");
     const discovery = read("base44/functions/leadDiscoveryAgent/entry.ts");
     const enrichment = read("base44/functions/leadEnrichmentAgent/entry.ts");
     expect(discovery.indexOf("canonical_company_key")).toBeLessThan(
@@ -47,6 +60,13 @@ describe("P6 autonomous discovery radar", () => {
     expect(discovery).not.toContain("providerAdapter.searchPeople");
     expect(discovery).not.toContain("mixed_people/api_search");
     expect(discovery).toContain("new ApolloLeadProvider");
+    expect(discovery).toContain("refresh_existing_company_evidence");
+    expect(discovery).toContain("updateOutboundLeadEvidence");
+    const evidenceWriter = read("base44/shared/outboundLeadEvidence.ts");
+    expect(evidenceWriter).toContain("laneAuthority(MERCHANT_LANE)");
+    expect(evidenceWriter).toContain(
+      "outbound_lead_evidence_patch_refused_stage_fields",
+    );
     expect(discovery).toMatch(/provider_credit_cost_documented:\s*1/);
     expect(enrichment).toContain('operation !== "CONTACT_RESOLUTION"');
     expect(enrichment).toContain("evaluateContactResolutionEligibility");
@@ -68,6 +88,32 @@ describe("P6 autonomous discovery radar", () => {
       .toBe(false);
     expect(classifyProfessionalEmail("cfo@merchant.eu", "merchant.eu"))
       .toMatchObject({ accepted: true, status: "PROFESSIONAL_VERIFIED" });
+  });
+
+  it("translates founder-facing company sizes into provider-native ranges", () => {
+    expect(normalizeDiscoveryEmployeeRange("51_200_employees", "APOLLO"))
+      .toBe("51,200");
+    expect(normalizeDiscoveryEmployeeRange("1,001–5,000 employees", "APOLLO"))
+      .toBe("1001,5000");
+    expect(normalizeDiscoveryEmployeeRange("201,500", "INSTANTLY"))
+      .toBe("201 - 500");
+  });
+
+  it("scores a provider-matched employee range without inventing an exact count", () => {
+    const result = buildResilientLeadScore({
+      id: "lead-range",
+      company_name: "Range Merchant",
+      company_domain: "range-merchant.eu",
+      country: "ES",
+      industry: "retail",
+      employee_range: "200-1000",
+      detected_technologies: ["shopify", "stripe"],
+      probable_payment_stack: ["stripe"],
+      source: "apollo",
+    }, null, "SKIPPED_DETERMINISTIC_ONLY");
+    expect(result.score_breakdown_json.signals.employees).toBeNull();
+    expect(result.score_breakdown_json.signals.employee_range).toBe("200-1000");
+    expect(result.score).toBeGreaterThanOrEqual(70);
   });
 
   it("sunsets Apollo without deleting or breaking the canonical warehouse", () => {

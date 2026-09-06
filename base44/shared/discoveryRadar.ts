@@ -7,6 +7,57 @@ const text = (value: unknown) => String(value || "").trim();
 const clamp = (value: unknown, min = 0, max = 100) =>
   Math.max(min, Math.min(max, Number(value) || 0));
 
+const LEGACY_EMPLOYEE_RANGE_VALUES: Record<string, string> = Object.freeze({
+  "1_10_employees": "1,10",
+  "11_50_employees": "11,50",
+  "51_200_employees": "51,200",
+  "201_500_employees": "201,500",
+  "501_1_000_employees": "501,1000",
+  "1_001_5_000_employees": "1001,5000",
+  "5_001_10_000_employees": "5001,10000",
+  "10_000_employees": "10000,100000000",
+});
+
+/** Converts UI labels and legacy slugs into each provider's native range shape. */
+export function normalizeDiscoveryEmployeeRange(
+  value: unknown,
+  provider: "APOLLO" | "INSTANTLY" = "APOLLO",
+): string {
+  const original = text(value);
+  if (!original) return "";
+  const legacy = LEGACY_EMPLOYEE_RANGE_VALUES[original.toLowerCase()];
+  const cleanedLabel = original.replace(/employees?/gi, "").trim();
+  const withoutThousands = legacy ||
+    (/[-–—+]/.test(cleanedLabel)
+      ? cleanedLabel.replace(/(\d),(?=\d{3}(?:\D|$))/g, "$1")
+      : cleanedLabel);
+  const openEnded = withoutThousands.match(/^(\d[\d\s]*)\s*\+$/);
+  const pair = withoutThousands.match(
+    /^(\d[\d\s]*)\s*[,;\-–—]\s*(\d[\d\s]*)$/,
+  );
+  const minimum = Number(
+    (openEnded?.[1] || pair?.[1] || "").replace(/\s/g, ""),
+  );
+  const maximum = openEnded
+    ? 100_000_000
+    : Number((pair?.[2] || "").replace(/\s/g, ""));
+  if (
+    !Number.isFinite(minimum) || !Number.isFinite(maximum) || minimum < 1 ||
+    maximum < minimum
+  ) return original;
+  return provider === "INSTANTLY"
+    ? `${minimum} - ${maximum}`
+    : `${minimum},${maximum}`;
+}
+
+export function discoveryEmployeeRangeFloor(value: unknown): number | null {
+  const normalized = normalizeDiscoveryEmployeeRange(value, "APOLLO");
+  const match = normalized.match(/^(\d+),(\d+)$/);
+  if (!match) return null;
+  const floor = Number(match[1]);
+  return Number.isFinite(floor) && floor > 0 ? floor : null;
+}
+
 export function normalizeDiscoveryDomain(value: unknown): string {
   const raw = text(value).toLowerCase();
   if (!raw) return "";
@@ -120,9 +171,19 @@ export function cheapDiscoveryPreScore(person: any) {
     technologies,
     name: organization?.name || "",
   });
-  const employees = Number(
-    organization?.estimated_num_employees ?? organization?.num_employees,
+  const rawEmployees = organization?.estimated_num_employees ??
+    organization?.num_employees;
+  const parsedEmployees = rawEmployees === null || rawEmployees === undefined ||
+      rawEmployees === ""
+    ? null
+    : Number(rawEmployees);
+  const employees = parsedEmployees !== null && Number.isFinite(parsedEmployees)
+    ? parsedEmployees
+    : null;
+  const employeeRangeFloor = discoveryEmployeeRangeFloor(
+    organization?.employee_range,
   );
+  const employeeEvidence = employees ?? employeeRangeFloor;
   const revenue = Number(
     organization?.annual_revenue ?? organization?.organization_revenue,
   );
@@ -140,17 +201,21 @@ export function cheapDiscoveryPreScore(person: any) {
     score += 15;
     reasons.push("payments_signal");
   }
-  if (Number.isFinite(employees)) {
-    score += employees >= 200
+  if (employeeEvidence !== null) {
+    score += employeeEvidence >= 200
       ? 14
-      : employees >= 50
+      : employeeEvidence >= 50
       ? 11
-      : employees >= 10
+      : employeeEvidence >= 10
       ? 7
-      : employees >= 5
+      : employeeEvidence >= 5
       ? 3
       : 0;
-    reasons.push("employee_count_observed");
+    reasons.push(
+      employees !== null
+        ? "employee_count_observed"
+        : "employee_range_filter_matched",
+    );
   }
   if (Number.isFinite(revenue) && revenue > 0) {
     score += revenue >= 10_000_000 ? 8 : revenue >= 2_000_000 ? 5 : 2;

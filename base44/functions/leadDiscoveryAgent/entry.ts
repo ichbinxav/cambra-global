@@ -19,12 +19,15 @@ import {
   checkpointBackoff,
   DISCOVERY_ENGINE_VERSION,
   discoveryAttemptNumber,
+  discoveryEmployeeRangeFloor,
   discoveryOperationKey,
   discoveryPartitionKey,
   discoveryProviderStatus,
+  normalizeDiscoveryEmployeeRange,
   normalizeDiscoveryDomain,
   safeApolloUsageSnapshot,
 } from "../../shared/discoveryRadar.ts";
+import { updateOutboundLeadEvidence } from "../../shared/outboundLeadEvidence.ts";
 
 const AGENT_NAME = "lead_discovery";
 const TASK_TYPE = "discover_leads";
@@ -156,6 +159,155 @@ function detectedStack(technologies: string[]) {
       .test(value)
   ).slice(0, 10);
   return { commerce, payments };
+}
+
+function nativeCompanySearchEvidence(
+  organization: any,
+  employeeFilter: unknown,
+  technologyFilter: unknown,
+) {
+  const rawEmployeeCount = organization?.estimated_num_employees ??
+    organization?.num_employees;
+  const parsedEmployeeCount = rawEmployeeCount === null ||
+      rawEmployeeCount === undefined || rawEmployeeCount === ""
+    ? null
+    : Number(rawEmployeeCount);
+  const exactEmployeeCount = parsedEmployeeCount !== null &&
+      Number.isFinite(parsedEmployeeCount)
+    ? parsedEmployeeCount
+    : null;
+  const canonicalEmployeeFilter = discoveryEmployeeRangeFloor(employeeFilter) !==
+      null
+    ? normalizeDiscoveryEmployeeRange(employeeFilter, "APOLLO")
+    : "";
+  const matchedEmployeeRange = exactEmployeeCount !== null
+    ? employeeRange(exactEmployeeCount)
+    : canonicalEmployeeFilter.replace(",", "-") || null;
+  const requestedTechnology = String(technologyFilter || "").trim()
+    .toLowerCase();
+  const observed = observedTechnologies(organization);
+  const technologies = [...new Set([
+    ...observed,
+    ...(requestedTechnology ? [requestedTechnology] : []),
+  ])].slice(0, 100);
+  const stack = detectedStack(technologies);
+  const pre = cheapDiscoveryPreScore({
+    organization: {
+      ...organization,
+      employee_range: matchedEmployeeRange,
+      technologies,
+    },
+  });
+  return {
+    employee_range: matchedEmployeeRange,
+    requested_employee_range: canonicalEmployeeFilter || null,
+    employee_range_source: exactEmployeeCount !== null
+      ? "apollo:organization_employee_count"
+      : canonicalEmployeeFilter
+      ? "apollo:organization_search_filter_match"
+      : null,
+    technologies,
+    requested_technology: requestedTechnology || null,
+    technology_source: observed.length && requestedTechnology &&
+        !observed.includes(requestedTechnology)
+      ? "apollo:organization_technologies+organization_search_filter_match"
+      : observed.length
+      ? "apollo:organization_technologies"
+      : requestedTechnology
+      ? "apollo:organization_search_filter_match"
+      : null,
+    stack,
+    pre,
+  };
+}
+
+function companyEvidencePatch(
+  existing: any,
+  candidate: any,
+  context: { countryCode: string; industry: string; timestamp: string },
+) {
+  const technologies = [...new Set([
+    ...(Array.isArray(existing?.detected_technologies)
+      ? existing.detected_technologies
+      : []),
+    ...candidate.evidence.technologies,
+  ])].slice(0, 100);
+  const stack = detectedStack(technologies);
+  const nativeFilterMatch = {
+    employee_range: candidate.evidence.requested_employee_range,
+    technology: candidate.evidence.requested_technology,
+    industry: context.industry,
+    country: context.countryCode,
+    matched_at: context.timestamp,
+  };
+  return {
+    company_name: existing?.company_name || candidate.organization.name || null,
+    company_domain: existing?.company_domain || candidate.domain,
+    canonical_company_key: candidate.key,
+    country: context.countryCode,
+    industry: existing?.industry || candidate.organization.industry ||
+      context.industry,
+    external_refs_json: {
+      ...(existing?.external_refs_json || {}),
+      apollo_organization_id: candidate.organization.id ||
+        candidate.organization.organization_id ||
+        existing?.external_refs_json?.apollo_organization_id || null,
+      source_adapter: "apollo",
+    },
+    source_evidence_json: {
+      ...(existing?.source_evidence_json || {}),
+      source: existing?.source_evidence_json?.source || "apollo",
+      source_endpoint: "mixed_companies/search",
+      source_observed_at: context.timestamp,
+      latest_source: "apollo",
+      country_source: "apollo:organization_search_filter_match",
+      employee_range_source: candidate.evidence.employee_range_source ||
+        existing?.source_evidence_json?.employee_range_source || null,
+      technology_source: candidate.evidence.technology_source ||
+        existing?.source_evidence_json?.technology_source || null,
+      native_filter_match: nativeFilterMatch,
+      pre_score_source: "CAMBRA:deterministic_pre_score",
+      pre_score_reasons: candidate.pre.reasons,
+      provider_expiry_at: APOLLO_EXPIRY_AT,
+      estimation_boundary:
+        "Discovery inference is not verified merchant savings.",
+    },
+    last_source_checked_at: context.timestamp,
+    employee_range: candidate.evidence.employee_range ||
+      existing?.employee_range || null,
+    revenue_range: candidate.organization.annual_revenue_printed ||
+      existing?.revenue_range || null,
+    detected_technologies: technologies,
+    ecommerce_platform: stack.commerce || existing?.ecommerce_platform || null,
+    probable_payment_stack: [...new Set([
+      ...(Array.isArray(existing?.probable_payment_stack)
+        ? existing.probable_payment_stack
+        : []),
+      ...stack.payments,
+    ])].slice(0, 10),
+    pre_score: Math.max(Number(existing?.pre_score || 0), candidate.pre.score),
+    enrichment_worthy: existing?.enrichment_worthy === true ||
+      candidate.pre.enrichment_worthy,
+    raw_json: {
+      ...(existing?.raw_json || {}),
+      source_adapter: "apollo",
+      matched_native_filters: nativeFilterMatch,
+      organization: {
+        ...(existing?.raw_json?.organization || {}),
+        id: candidate.organization.id ||
+          existing?.raw_json?.organization?.id || null,
+        name: candidate.organization.name || existing?.company_name || null,
+        primary_domain: candidate.domain,
+        industry: candidate.organization.industry ||
+          existing?.raw_json?.organization?.industry || null,
+        estimated_num_employees:
+          candidate.organization.estimated_num_employees ??
+            existing?.raw_json?.organization?.estimated_num_employees ?? null,
+        annual_revenue: candidate.organization.annual_revenue ??
+          existing?.raw_json?.organization?.annual_revenue ?? null,
+      },
+    },
+  };
 }
 
 async function upsertCheckpoint(svc: any, checkpoint: any, patch: any) {
@@ -307,7 +459,7 @@ async function runInstantlyPreviewDiscovery(service: any, body: any) {
       // scores any person field before the contact gate.
       titles: [],
       employee_ranges: body?.employee_range
-        ? [String(body.employee_range)]
+        ? [normalizeDiscoveryEmployeeRange(body.employee_range, "INSTANTLY")]
         : [],
       technologies: body?.technology ? [String(body.technology)] : [],
       limit,
@@ -799,7 +951,7 @@ Deno.serve(async (req) => {
     }
     if (body?.employee_range) {
       organizationSearchBody.organization_num_employees_ranges = [
-        String(body.employee_range),
+        normalizeDiscoveryEmployeeRange(body.employee_range, "APOLLO"),
       ];
     }
     if (body?.technology) {
@@ -830,7 +982,12 @@ Deno.serve(async (req) => {
         organization.primary_domain || organization.website_url,
       );
       const key = canonicalCompanyKey(domain, organization.name);
-      const pre = cheapDiscoveryPreScore({ organization });
+      const evidence = nativeCompanySearchEvidence(
+        organization,
+        body?.employee_range,
+        body?.technology,
+      );
+      const pre = evidence.pre;
       if (pre.score < 20) {
         rejected.push({ reason: "low_pre_score" });
         continue;
@@ -842,6 +999,7 @@ Deno.serve(async (req) => {
           domain,
           key,
           pre,
+          evidence,
         });
       }
     }
@@ -860,81 +1018,57 @@ Deno.serve(async (req) => {
         })
       )
       : [];
-    const existingKeys = new Set(
-      existingRows.map((lead: any) =>
-        String(
-          lead.canonical_company_key ||
-            canonicalCompanyKey(lead.company_domain, lead.company_name),
-        )
-      ).filter(Boolean),
-    );
+    const existingByKey = new Map<string, any>();
+    for (const lead of existingRows) {
+      const key = String(
+        lead.canonical_company_key ||
+          canonicalCompanyKey(lead.company_domain, lead.company_name),
+      );
+      if (key && !existingByKey.has(key)) existingByKey.set(key, lead);
+    }
+    const existingKeys = new Set(existingByKey.keys());
     const duplicates = candidateKeys.filter((key) =>
       existingKeys.has(key)
     ).length;
     const timestamp = now();
     const rows: any[] = [];
+    const refreshedExisting: any[] = [];
     for (const candidate of bestByCompany.values()) {
-      if (existingKeys.has(candidate.key)) continue;
-      const technologies = observedTechnologies(candidate.organization);
-      const stack = detectedStack(technologies);
+      const existing = existingByKey.get(candidate.key);
+      const patch = companyEvidencePatch(existing, candidate, {
+        countryCode,
+        industry,
+        timestamp,
+      });
+      if (existing) {
+        const updated = await updateOutboundLeadEvidence({
+          svc: service,
+          leadId: existing.id,
+          patch,
+        }).catch((error: any) =>
+          safeBestEffort(error, {
+            operation: "leadDiscoveryAgent.refresh_existing_company_evidence",
+            fallback: null,
+            severity: "critical",
+          })
+        );
+        if (updated) refreshedExisting.push(updated);
+        continue;
+      }
       rows.push({
-        company_name: candidate.organization.name || null,
-        company_domain: candidate.domain,
-        canonical_company_key: candidate.key,
-        country: countryCode,
-        industry: candidate.organization.industry || industry,
+        ...patch,
         source: "apollo",
         stage: "lead",
         reservoir_state: "discovered",
         reservoir_updated_at: timestamp,
-        external_refs_json: {
-          apollo_organization_id: candidate.organization.id ||
-            candidate.organization.organization_id || null,
-          source_adapter: "apollo",
-        },
-        source_evidence_json: {
-          source: "apollo",
-          source_endpoint: "mixed_companies/search",
-          source_observed_at: timestamp,
-          country_source: "apollo:organization_location",
-          technology_source: "apollo:organization_technologies",
-          pre_score_source: "CAMBRA:deterministic_pre_score",
-          pre_score_reasons: candidate.pre.reasons,
-          provider_expiry_at: APOLLO_EXPIRY_AT,
-          estimation_boundary:
-            "Discovery inference is not verified merchant savings.",
-        },
         discovered_at: timestamp,
-        last_source_checked_at: timestamp,
-        employee_range: employeeRange(
-          candidate.organization.estimated_num_employees ||
-            candidate.organization.num_employees,
-        ),
-        revenue_range: candidate.organization.annual_revenue_printed || null,
-        detected_technologies: technologies,
-        ecommerce_platform: stack.commerce,
-        probable_payment_stack: stack.payments,
         estimation_status: "UNKNOWN",
-        pre_score: candidate.pre.score,
-        enrichment_worthy: candidate.pre.enrichment_worthy,
         contactability: "UNAVAILABLE",
         outreach_eligibility: "NOT_ASSESSED",
         compliance_status: "REVIEW_REQUIRED",
         legal_basis: "legitimate_interest",
         legal_basis_note:
           `B2B company intelligence about a ${industry} merchant in ${country}. No person endpoint or person field is used at discovery; outreach remains separately governed, suppression-aware and subject to jurisdiction review.`,
-        raw_json: {
-          source_adapter: "apollo",
-          organization: {
-            id: candidate.organization.id || null,
-            name: candidate.organization.name || null,
-            primary_domain: candidate.domain,
-            industry: candidate.organization.industry || null,
-            estimated_num_employees:
-              candidate.organization.estimated_num_employees ?? null,
-            annual_revenue: candidate.organization.annual_revenue ?? null,
-          },
-        },
       });
     }
     const created = rows.length
@@ -1056,7 +1190,7 @@ Deno.serve(async (req) => {
       rejected_by_reason: rejectedByReason,
       duplicate_rejected: duplicates,
       created_ids: createdIds,
-      matched_existing_ids: existingRows.map((row: any) => row.id).filter(
+      matched_existing_ids: refreshedExisting.map((row: any) => row.id).filter(
         Boolean,
       ),
       enrichment_ids: enrichmentIds,
