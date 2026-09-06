@@ -16,7 +16,7 @@
     "base44:functions:check": "node scripts/build-base44-functions.mjs",
     "base44:functions:deploy": "npm run base44:functions:bundle && npx --no-install base44 functions deploy --force",
     "base44:site:deploy": "npm run base44:functions:bundle && npx --no-install base44 site deploy -y",
-    "base44:runtime:smoke": "npx --no-install base44 exec --data-env prod < scripts/base44-runtime-smoke.ts",
+    "base44:runtime:smoke": "npx --no-install base44 exec < scripts/base44-runtime-smoke.ts",
     "dr:catalog:generate": "node scripts/generate-dr-entity-catalog.mjs",
     "dr:catalog:check": "node scripts/generate-dr-entity-catalog.mjs --check",
     "research:import": "node scripts/import-research-knowledge.mjs",
