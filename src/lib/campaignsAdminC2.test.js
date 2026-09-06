@@ -238,7 +238,23 @@ describe("C2 — campaign builder options", () => {
     expect(body.leads.map((lead) => lead.id)).toEqual(["ready", "blocked"]);
     expect(body.launch_markets).toEqual(["ES", "IT", "PT", "GB", "GR", "HR", "DE", "PL", "CZ", "CY"]);
     expect(body.target_profiles[0].name).toBe("Spanish merchants");
-    expect(body.senders[0]).toMatchObject({ profile_key: "instantly:acme", from_address: "xavi@mail.acme.test", readiness: { ready: true, cap: 5 } });
+    expect(body.senders[0]).toMatchObject({ profile_key: "instantly:acme", from_address: "xavi@mail.acme.test", readiness: { ready: true, prepared: true, status: "SEND_READY", cap: 5 } });
+    expect(body.sender_counts).toEqual({ configured: 1, prepared: 1, paused: 0, send_ready: 1, setup_required: 0 });
+  });
+
+  it("shows a configured paused mailbox as prepared but never send-ready", async () => {
+    const svc = makeSvc({
+      OutboundLead: [], CommercialPolicy: [], OutboundControl: [GLOBAL_CONTROL],
+      OutboundSendingProfile: [{
+        id: "sender-paused", profile_key: "instantly:paused", provider: "instantly", domain: "mail.acme.test",
+        from_address: "xavi@mail.acme.test", status: "paused", current_daily_cap: 1,
+        external_campaign_id: "campaign-1", webhook_status: "ACTIVE",
+        provider_config_json: { sender_ready: true, native_ai_conflict: false },
+      }],
+    });
+    const { body } = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "builder_options" }, svc));
+    expect(body.senders[0].readiness).toMatchObject({ configured: true, prepared: true, ready: false, status: "PAUSED", cap: 0 });
+    expect(body.sender_counts).toEqual({ configured: 1, prepared: 1, paused: 1, send_ready: 0, setup_required: 0 });
   });
 
   it("loads one saved people audience without mixing in unrelated leads", async () => {

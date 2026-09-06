@@ -157,7 +157,7 @@ import {
 //                       1.5.0, y un motor cuyos resultados cambian merece traza
 //                       de versión. La resolución country-aware es de M5; este
 //                       bump la acompaña ahora que los datos la activan.
-const ENGINE_VERSION = "payments-gap-1.7.0";
+const ENGINE_VERSION = "payments-gap-1.8.0";
 const RATE_FRESHNESS_MAX_AGE_DAYS = 90;
 const RATE_FRESHNESS_MAX_AGE_MS = RATE_FRESHNESS_MAX_AGE_DAYS * 86_400_000;
 const RATE_FRESHNESS_MAX_CLOCK_SKEW_MS = 5 * 60_000;
@@ -426,9 +426,18 @@ function validateRateTable(rows, opts) {
   // channel name and get an unexpected required-keys list.
   const channels = Array.from(new Set(channelsRaw.filter((c) => KNOWN_CHANNELS.has(c))));
   if (channels.length === 0) channels.push("online");
+  const regionsRaw = (opts && Array.isArray(opts.regions))
+    ? opts.regions
+    : [...KNOWN_REGIONS];
+  const regions = Array.from(new Set(regionsRaw.filter((region) => KNOWN_REGIONS.has(region))));
+  if (regions.length === 0) regions.push(...KNOWN_REGIONS);
   const required = [];
-  if (channels.includes("online")) required.push(...REQUIRED_FALLBACK_KEYS_ONLINE);
-  if (channels.includes("in_store")) required.push(...REQUIRED_FALLBACK_KEYS_IN_STORE);
+  if (channels.includes("online")) {
+    required.push(...REQUIRED_FALLBACK_KEYS_ONLINE.filter((key) => regions.some((region) => key.endsWith(`|${region}`))));
+  }
+  if (channels.includes("in_store")) {
+    required.push(...REQUIRED_FALLBACK_KEYS_IN_STORE.filter((key) => regions.some((region) => key.includes(`|${region}|in_store`))));
+  }
   if (!Array.isArray(rows)) {
     return { ok: false, reason: "rate_table_not_array", missing: required };
   }
@@ -1018,19 +1027,20 @@ function calculateGap(rawInput, rateTable) {
     return { ok: false, error: parsed.reason };
   }
   const { input } = parsed;
-  // Channel-aware table validation: only require the fallback rows for the
-  // channel this call actually needs. Retrocompat lock — an online call
-  // (channel omitted → 'online' default) still checks exactly the 4 legacy
-  // 3-segment keys, so any pre-1.4.0 rate table (test fixture or historical
-  // DB snapshot) validates fine. An in_store call on that same table
-  // correctly fails rate_table_incomplete rather than silently reusing
-  // an online row.
-  const tableCheck = validateRateTable(rateTable, { channels: [input.channel] });
-  if (!tableCheck.ok) {
-    return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
-  }
-
   const { row, matched } = selectRow(rateTable, input.provider_slug, input.region, input.channel, input.country);
+  // A current exact provider row is self-sufficient evidence for this request.
+  // Only require a fallback when selection actually needs one; requiring
+  // unrelated regional fallbacks made verified ES analyses fail because an
+  // unverified RoW estimate was correctly quarantined.
+  if (!row || matched !== "exact") {
+    const tableCheck = validateRateTable(rateTable, {
+      channels: [input.channel],
+      regions: [input.region],
+    });
+    if (!tableCheck.ok) {
+      return { ok: false, error: tableCheck.reason, missing: tableCheck.missing };
+    }
+  }
   if (!row) {
     // Defensive — validateRateTable already guarantees the regional fallback.
     // The missing-key hint uses the 4-segment shape only for in_store lookups
@@ -1728,14 +1738,14 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
 // public knowledge — verified pricing pages).
 async function loadRateTable(base44: any): Promise<{ ok: boolean; rows?: any[]; error?: string; missing?: string[] }> {
   let rows = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 5000);
-  let check = validateRateTable(rows);
-  if (!check.ok) {
-    // Same eventual-consistency retry as the HTTP endpoint uses.
+  if (!Array.isArray(rows) || rows.length === 0) {
+    // Retry transient empty reads without requiring unrelated quarantined rows.
     await new Promise((r) => setTimeout(r, 400));
     rows = await base44.asServiceRole.entities.PaymentsRateTable.list('-created_date', 5000);
-    check = validateRateTable(rows);
   }
-  if (!check.ok) return { ok: false, error: check.reason, missing: check.missing };
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { ok: false, error: 'rate_table_empty', missing: [] };
+  }
   return { ok: true, rows };
 }
 
@@ -1830,7 +1840,10 @@ Deno.serve(async (req) => {
     const limitPerHour = Number(Deno.env.get('PAYMENTS_ANALYSIS_RATE_LIMIT_PER_HOUR') || 10);
     const rl = await consumePublicRequestRateLimit(base44.asServiceRole, req, { namespace: 'submit-payments-analysis', limit: limitPerHour, window_seconds: 3600 });
     if (!rl.ok) {
-      return Response.json({ error: rl.status === 429 ? 'rate_limited' : 'rate_limit_unavailable', retry_after_seconds: rl.retry_after_seconds }, { status: rl.status || 503 });
+      return Response.json({
+        error: rl.status === 429 ? 'rate_limited' : 'rate_limit_unavailable',
+        retry_after_seconds: rl.retry_after_seconds,
+      }, { status: rl.status || 503 });
     }
     const ipHash = String(rl.network_fingerprint || '');
 

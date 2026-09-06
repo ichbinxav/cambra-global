@@ -2,7 +2,7 @@ import { buildDiscoveryAdminRadar } from './discoveryAdmin.ts';
 import { leadProviderRegistry } from './leadIntelligenceProvider.ts';
 import { readRuntimeRows, runtimeSourceCoverage } from './runtimeSourceRead.ts';
 
-export const COMMERCIAL_OPERATING_SYSTEM_VERSION = 'commercial-os-runtime-1.0.1';
+export const COMMERCIAL_OPERATING_SYSTEM_VERSION = 'commercial-os-runtime-1.0.2';
 const text=(value:unknown)=>String(value??'').trim();
 const score=(lead:any)=>Number(lead?.score??lead?.pre_score??0);
 const confidence=(lead:any)=>Number(lead?.revenue_confidence??lead?.score_breakdown_json?.evidence_confidence??0);
@@ -25,15 +25,18 @@ export function commercialSenderReadiness(profile:any){
   const configured=Boolean(text(profile?.profile_key)&&text(profile?.domain)&&text(profile?.from_address));
   const senderReady=profile?.provider_config_json?.sender_ready===true;
   const webhookReady=profile?.provider!=='instantly'||profile?.webhook_status==='ACTIVE';
+  const externalCampaignReady=profile?.provider!=='instantly'||Boolean(profile?.external_campaign_id);
+  const nativeAiSafe=profile?.provider_config_json?.native_ai_conflict!==true;
+  const currentCap=Math.max(0,Number(profile?.current_daily_cap||0));
   const healthy=Number(profile?.bounce_rate_pct||0)<Number(profile?.bounce_pause_threshold_pct||3)&&Number(profile?.complaint_rate_pct||0)<Number(profile?.complaint_pause_threshold_pct||.3);
+  const prepared=configured&&senderReady&&webhookReady&&externalCampaignReady&&nativeAiSafe&&healthy&&currentCap>0;
   let status='SETUP_PENDING';
-  if(profile?.status==='paused')status='PAUSED';
-  else if(!configured||(profile?.provider==='instantly'&&!senderReady))status='SETUP_PENDING';
-  else if(!healthy||profile?.webhook_status==='ERROR')status='BROKEN';
-  else if(profile?.status==='warming')status='WARMING';
-  else if(profile?.status==='active'&&senderReady&&webhookReady&&Number(profile?.current_daily_cap||0)>0)status='READY';
-  else if(profile?.status==='active')status='LIMITED';
-  return{status,ready:status==='READY',cap:status==='READY'?Math.max(0,Number(profile?.current_daily_cap||0)):0,configured,sender_ready:senderReady,webhook_ready:webhookReady,healthy};
+  if(!healthy||profile?.webhook_status==='ERROR')status='BROKEN';
+  else if(prepared&&profile?.status==='paused')status='PAUSED';
+  else if(prepared&&profile?.status==='warming')status='WARMING';
+  else if(prepared&&profile?.status==='active')status='READY';
+  else if(prepared)status='LIMITED';
+  return{status,ready:status==='READY',prepared,cap:status==='READY'?currentCap:0,configured_cap:configured?currentCap:0,configured,sender_ready:senderReady,webhook_ready:webhookReady,external_campaign_ready:externalCampaignReady,native_ai_safe:nativeAiSafe,healthy};
 }
 
 export async function buildCommercialOperatingSystem(service:any){
@@ -66,6 +69,10 @@ export async function buildCommercialOperatingSystem(service:any){
   const senders=profiles.map((profile:any)=>({
     id:profile.id,profile_key:profile.profile_key,provider:profile.provider,domain:profile.domain,from_address:profile.from_address,status:profile.status,current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),bounce_rate_pct:Number(profile.bounce_rate_pct||0),complaint_rate_pct:Number(profile.complaint_rate_pct||0),webhook_status:profile.webhook_status||'NOT_CONFIGURED',external_campaign_id:profile.external_campaign_id||null,readiness:commercialSenderReadiness(profile),
   }));
+  const configuredSenders=senders.filter((sender:any)=>sender.readiness.configured);
+  const preparedSenders=senders.filter((sender:any)=>sender.readiness.prepared);
+  const readySenders=senders.filter((sender:any)=>sender.readiness.ready);
+  const pausedSenders=senders.filter((sender:any)=>String(sender.status||'').toLowerCase()==='paused');
   const domainMap=new Map<string,any>();
   for(const sender of senders){const key=text(sender.domain).toLowerCase()||'unassigned';const current=domainMap.get(key)||{domain:key,status:'SETUP_PENDING',mailboxes:[],daily_capacity:0};current.mailboxes.push(sender);current.daily_capacity+=sender.readiness.cap;const order=['BROKEN','PAUSED','SETUP_PENDING','WARMING','LIMITED','READY'];if(order.indexOf(sender.readiness.status)<order.indexOf(current.status)||current.mailboxes.length===1)current.status=sender.readiness.status;domainMap.set(key,current);}
   const latestByAgent:Record<string,any>={};for(const task of tasks)if(task.agent_name&&!latestByAgent[task.agent_name])latestByAgent[task.agent_name]=task;
@@ -78,7 +85,7 @@ export async function buildCommercialOperatingSystem(service:any){
   if(coverageAttention)attention.push(coverageAttention);
   if(!providers.find((provider:any)=>provider.key==='instantly_supersearch')?.available)attention.push({severity:'info',code:'instantly_supersearch_not_verified',label:'Verify Instantly SuperSearch access after loading the API key.'});
   if(unresolvedLegacy.length)attention.push({severity:'critical',code:'legacy_sending_profiles_unresolved',count:unresolvedLegacy.length,label:'Legacy threads require an explicit sending profile review.'});
-  if(!senders.some((sender:any)=>sender.readiness.ready))attention.push({severity:'critical',code:'no_ready_sender',label:'No mailbox is fully ready for a pilot.'});
+  if(!readySenders.length)attention.push({severity:'critical',code:'no_ready_sender',label:`${configuredSenders.length} mailbox(es) configured, but none is active and fully ready for a pilot.`});
   if(control.acquisition_enabled!==true)attention.push({severity:'safe',code:'outbound_locked',label:'Real outbound is safely OFF until founder pilot authorization.'});
   const compactLeads=(radar.prioritized||[]).slice(0,30).map((lead:any)=>({id:lead.id,canonical_company_key:lead.canonical_company_key,company_name:lead.company_name,company_domain:lead.company_domain,country:lead.country,industry:lead.industry,employee_range:lead.employee_range,revenue_range:lead.revenue_range,estimated_tpv_min_eur:lead.estimated_tpv_min_eur,estimated_tpv_max_eur:lead.estimated_tpv_max_eur,estimation_status:lead.estimation_status,ecommerce_platform:lead.ecommerce_platform,probable_payment_stack:(lead.probable_payment_stack||[]).slice(0,5),contact_full_name:lead.contact_full_name,contact_title:lead.contact_title,contact_email:lead.contact_email,contactability:lead.contactability,icp_score:lead.icp_score,opportunity_score:lead.opportunity_score,confidence:lead.confidence,why:(lead.why||[]).slice(0,4),source:lead.source,outreach_eligibility:lead.outreach_eligibility,compliance_status:lead.compliance_status}));
   const compactCampaigns=campaigns.slice(0,30).map((campaign:any)=>({id:campaign.id,name:campaign.name,status:campaign.status,provider_mode:campaign.provider_mode,lead_ids:campaign.lead_ids||[],created_at:campaign.created_at,capacity_preview_json:campaign.capacity_preview_json,message_json:{status:campaign.message_json?.status||'NOT_PREPARED'},sequence_json:{status:campaign.sequence_json?.status||'NOT_PREPARED'},metrics_json:{sent:Number(campaign.metrics_json?.sent||0)},blockers:campaign.blockers||[]}));
@@ -86,7 +93,7 @@ export async function buildCommercialOperatingSystem(service:any){
   return{
     ok:true,version:COMMERCIAL_OPERATING_SYSTEM_VERSION,generated_at:new Date().toISOString(),data_status:sourceCoverage.status,source_coverage:{commercial:sourceCoverage,discovery:radar.source_coverage||{status:'UNKNOWN',complete:false,blockers:['discovery_source_coverage_missing']}},
     safety:{outbound_locked:controlRead.status!=='COMPLETE'||control.acquisition_enabled!==true,control:{...compactControl,status:controlRead.status},explicit_pilot_required:true,external_send_performed:false},
-    summary:{total_leads:radar.metrics?.companies_discovered||0,unique_companies:radar.metrics?.unique_companies||0,high_fit:radar.metrics?.high_fit||0,verified_contacts:radar.metrics?.usable_verified_contacts||0,outreach_ready:radar.metrics?.outreach_ready||0,active_target_profiles:policies.filter((row:any)=>row.icp_json?.discovery_enabled===true).length,campaigns:campaigns.length,ready_senders:senders.filter((row:any)=>row.readiness.ready).length,open_conversations:openThreads.length,pending_approvals:approvals.length,pending_questions:questions.length},
+    summary:{total_leads:radar.metrics?.companies_discovered||0,unique_companies:radar.metrics?.unique_companies||0,high_fit:radar.metrics?.high_fit||0,verified_contacts:radar.metrics?.usable_verified_contacts||0,outreach_ready:radar.metrics?.outreach_ready||0,active_target_profiles:policies.filter((row:any)=>row.icp_json?.discovery_enabled===true).length,campaigns:campaigns.length,configured_senders:configuredSenders.length,prepared_senders:preparedSenders.length,paused_senders:pausedSenders.length,ready_senders:readySenders.length,configured_daily_cap:configuredSenders.reduce((sum:number,row:any)=>sum+Number(row.readiness.configured_cap||0),0),ready_daily_capacity:readySenders.reduce((sum:number,row:any)=>sum+Number(row.readiness.cap||0),0),open_conversations:openThreads.length,pending_approvals:approvals.length,pending_questions:questions.length},
     providers,target_profiles:policies.map((policy:any)=>({id:policy.id,policy_key:policy.policy_key,name:policy.icp_json?.profile_name||policy.version,status:policy.status,discovery_enabled:policy.icp_json?.discovery_enabled===true,provider_mode:String(policy.icp_json?.provider_mode||'AUTO').toUpperCase(),countries:policy.countries||[],excluded_domains:policy.excluded_domains||[],daily_send_limit:Number(policy.daily_send_limit||0),min_lead_score:Number(policy.min_lead_score||0),icp_json:{verticals:(policy.icp_json?.verticals||[]).slice(0,20)},updated_date:policy.updated_date||policy.created_date||null})),
     leads:compactLeads,campaigns:compactCampaigns,senders,domains:[...domainMap.values()],
     conversations:openThreads.slice(0,50).map((thread:any)=>({id:thread.id,thread_key:thread.thread_key,lead_id:thread.lead_id,company_name:thread.company_name,counterparty_name:thread.counterparty_name,counterparty_email:thread.counterparty_email,status:thread.status,conversation_state:thread.conversation_state,last_message_at:thread.last_message_at,next_action_at:thread.next_action_at,automation_paused:thread.automation_paused===true,sending_profile_key:thread.sending_profile_key||null,resolution_status:thread.sending_profile_resolution_status||null})),

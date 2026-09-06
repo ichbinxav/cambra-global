@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "c49c9cee358898f560627689a5641c3460f6c490639be03e98d39ff28ebae8b0",
+  "source_inventory_hash": "8842eaa108e7546c372e4eae1722884b5fe7b1dd8a7a8742ce3efbb3d11cc9d3",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -387,7 +387,7 @@
     },
     {
       "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-      "source_sha256": "8217ee2d6064344b8e7ecb1c40c7563799b1b1e682c08a0eaa9e80bc5ca506d0",
+      "source_sha256": "7f75811e6426ab7eed483f1a2238123dc63b8a934a2fbac68e0fde4025cddab0",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -571,7 +571,7 @@
     },
     {
       "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-      "source_sha256": "d637bbdaf0eb07651a529984577dc7e222f5ea9f0475fae5bad34e67aa2da9bf",
+      "source_sha256": "9c5b2e28a7d8ba38ba01ebfd6ed24c775c5197338e2e73fc70a903e9fbc8767c",
       "boundary_ids": [
         "MB-PROVIDER-INTEGRATIONS-READ-AUTH"
       ],

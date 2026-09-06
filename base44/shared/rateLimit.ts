@@ -135,12 +135,18 @@ export async function consumePublicRequestRateLimit(svc:any,req:Request,input:{n
   try{derived=await deriveRequestNetworkFingerprints(req,input.namespace,config);}
   catch(error){
     const code=error instanceof RateLimitFingerprintError?error.code:'rate_limit_fingerprint_unavailable';
+    // Keep diagnostics useful without ever logging the address, fingerprint or secret.
+    console.warn('public_rate_limit_unavailable',JSON.stringify({namespace:input.namespace,reason:code}));
     return{ok:false,remaining:0,limit:input.limit,reset:null,retry_after_seconds:input.window_seconds,status:503,reason:code,network_fingerprint:null};
   }
   let last:any=null;
   for(const principalId of derived.principals){
     last=await consumeRateLimit(svc,{principal_id:principalId,principal_type:'network_hmac',limit:input.limit,window_seconds:input.window_seconds,at:input.at});
-    if(!last.ok)return{...last,status:last.reason==='rate_limited'?429:503,network_fingerprint:derived.current,fingerprint_version:derived.secret_version};
+    if(!last.ok){
+      const status=last.reason==='rate_limited'?429:503;
+      if(status===503)console.warn('public_rate_limit_unavailable',JSON.stringify({namespace:input.namespace,reason:last.reason||'rate_limit_store_unavailable'}));
+      return{...last,status,network_fingerprint:derived.current,fingerprint_version:derived.secret_version};
+    }
   }
   return{...last,ok:true,status:200,network_fingerprint:derived.current,fingerprint_version:derived.secret_version};
 }

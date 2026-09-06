@@ -20,11 +20,11 @@ export default function CountryField({ value, onChange, options }) {
       <div className="flex items-baseline justify-between">
         <span
           className="text-[11px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "rgba(255,255,255,0.85)" }}
+          style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}
         >
           {t("az_country_label")} <span style={{ color: "#FCA5A5" }}>*</span>
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <span className="text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>
           {t("az_country_required_hint")}
         </span>
       </div>
@@ -35,10 +35,10 @@ export default function CountryField({ value, onChange, options }) {
         aria-invalid={missing}
         className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
         style={{
-          color: "#ffffff",
-          background: "rgba(30,26,60,0.9)",
-          border: missing ? "1px solid rgba(239,68,68,0.55)" : "1px solid rgba(255,255,255,0.14)",
-          colorScheme: "dark",
+          color: "var(--az-text, #ffffff)",
+          background: "var(--az-input, rgba(30,26,60,0.9))",
+          border: missing ? "1px solid rgba(220,51,77,0.55)" : "1px solid var(--az-border, rgba(255,255,255,0.14))",
+          colorScheme: "var(--az-color-scheme, dark)",
         }}
       >
         <option value="">{t("az_country_placeholder")}</option>
@@ -46,7 +46,7 @@ export default function CountryField({ value, onChange, options }) {
           <option key={c.code} value={c.code}>{c.name}</option>
         ))}
       </select>
-      <p className="text-[10.5px] leading-relaxed" style={{ color: missing ? "#FCA5A5" : "rgba(255,255,255,0.5)" }}>
+      <p className="text-[10.5px] leading-relaxed" style={{ color: missing ? "var(--az-danger, #FCA5A5)" : "var(--az-muted, rgba(255,255,255,0.5))" }}>
         {missing
           ? t("az_country_missing_help")
           : t("az_country_selected_help")}

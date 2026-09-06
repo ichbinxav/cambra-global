@@ -82,8 +82,34 @@ async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,
 
 function readiness(profile:any){
   const status=String(profile?.status||'').toLowerCase();
-  const ready=Boolean(profile?.profile_key&&profile?.domain&&profile?.from_address&&['paused','warming','active'].includes(status)&&Number(profile?.current_daily_cap||0)>0&&(profile?.provider!=='instantly'||(profile?.external_campaign_id&&profile?.provider_config_json?.sender_ready===true&&profile?.provider_config_json?.native_ai_conflict!==true&&profile?.webhook_status==='ACTIVE')));
-  return{ready,cap:ready?Math.max(0,Number(profile.current_daily_cap||0)):0};
+  const provider=String(profile?.provider||'').toLowerCase();
+  const currentCap=Math.max(0,Number(profile?.current_daily_cap||0));
+  const configured=Boolean(profile?.profile_key&&profile?.domain&&profile?.from_address);
+  const senderReady=profile?.provider_config_json?.sender_ready===true;
+  const webhookReady=profile?.webhook_status==='ACTIVE';
+  const externalCampaignReady=provider!=='instantly'||Boolean(profile?.external_campaign_id);
+  const nativeAiSafe=profile?.provider_config_json?.native_ai_conflict!==true;
+  const healthy=Number(profile?.bounce_rate_pct||0)<Number(profile?.bounce_pause_threshold_pct||3)
+    &&Number(profile?.complaint_rate_pct||0)<Number(profile?.complaint_pause_threshold_pct||.3);
+  const blockers=[
+    ...(!configured?['sender_identity_incomplete']:[]),
+    ...(currentCap>0?[]:['sender_daily_cap_missing']),
+    ...(senderReady?[]:['sender_readiness_not_evidenced']),
+    ...(externalCampaignReady?[]:['instantly_campaign_not_bound']),
+    ...(nativeAiSafe?[]:['instantly_native_ai_conflict']),
+    ...(webhookReady?[]:['sender_webhook_not_active']),
+    ...(healthy?[]:['sender_health_threshold_exceeded']),
+  ];
+  const prepared=configured&&currentCap>0&&senderReady&&externalCampaignReady&&nativeAiSafe&&webhookReady&&healthy;
+  let readinessStatus='SETUP_REQUIRED';
+  if(!healthy||profile?.webhook_status==='ERROR')readinessStatus='BROKEN';
+  else if(prepared&&status==='active')readinessStatus='SEND_READY';
+  else if(prepared&&status==='warming')readinessStatus='WARMING';
+  else if(prepared&&status==='paused')readinessStatus='PAUSED';
+  else if(prepared)readinessStatus='NOT_ACTIVE';
+  if(status!=='active')blockers.push(status==='paused'?'sender_paused':status==='warming'?'sender_warming':'sender_not_active');
+  const ready=readinessStatus==='SEND_READY';
+  return{ready,prepared,configured,status:readinessStatus,cap:ready?currentCap:0,configured_cap:configured?currentCap:0,blockers:[...new Set(blockers)]};
 }
 
 /**
@@ -195,6 +221,11 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     const controls=controlRead.value||[];
     const outboundStatus=controlRead.status==='UNAVAILABLE'||controls.length!==1?'UNKNOWN':controls[0]?.acquisition_enabled===true?'ENABLED':'PAUSED_ZERO';
     const sourceCoverage=runtimeSourceCoverage({leads:leadRead,policies:policyRead,sending_profiles:profileRead,outbound_control:controlRead,audiences:audienceRead});
+    const projectedSenders=(profileRead.value||[]).map((profile:any)=>({
+      id:profile.id,profile_key:profile.profile_key||'',provider:profile.provider||'',domain:profile.domain||'',from_address:profile.from_address||'',
+      status:profile.status||'unknown',current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),
+      webhook_status:profile.webhook_status||'NOT_CONFIGURED',readiness:readiness(profile),
+    })).sort((left:any,right:any)=>Number(right.readiness.ready)-Number(left.readiness.ready)||Number(right.readiness.prepared)-Number(left.readiness.prepared)||String(left.from_address||left.profile_key).localeCompare(String(right.from_address||right.profile_key),'en'));
     const response={
       ok:unavailable.length===0,
       ...(unavailable.length?{error:'campaign_builder_sources_unavailable'}:{}),
@@ -217,11 +248,14 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
         member_count:Number(selectedAudience.config_json?.member_count||selectedAudience.config_json?.lead_ids?.length||0),
       }:null,
       audiences_status:audienceRead.status,
-      senders:(profileRead.value||[]).map((profile:any)=>({
-        id:profile.id,profile_key:profile.profile_key||'',provider:profile.provider||'',domain:profile.domain||'',from_address:profile.from_address||'',
-        status:profile.status||'unknown',current_daily_cap:Number(profile.current_daily_cap||0),target_daily_cap:Number(profile.target_daily_cap||0),
-        webhook_status:profile.webhook_status||'NOT_CONFIGURED',readiness:readiness(profile),
-      })).sort((left:any,right:any)=>Number(right.readiness.ready)-Number(left.readiness.ready)||String(left.from_address||left.profile_key).localeCompare(String(right.from_address||right.profile_key),'en')),
+      senders:projectedSenders,
+      sender_counts:{
+        configured:projectedSenders.filter((sender:any)=>sender.readiness.configured).length,
+        prepared:projectedSenders.filter((sender:any)=>sender.readiness.prepared).length,
+        paused:projectedSenders.filter((sender:any)=>String(sender.status).toLowerCase()==='paused').length,
+        send_ready:projectedSenders.filter((sender:any)=>sender.readiness.ready).length,
+        setup_required:projectedSenders.filter((sender:any)=>sender.readiness.status==='SETUP_REQUIRED').length,
+      },
       outbound_posture:{status:outboundStatus,capacity:outboundStatus==='ENABLED'?(profileRead.value||[]).reduce((sum:number,profile:any)=>sum+readiness(profile).cap,0):0},
       source_coverage:sourceCoverage,
       external_send_performed:false,

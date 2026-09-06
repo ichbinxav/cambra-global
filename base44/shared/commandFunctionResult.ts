@@ -54,8 +54,31 @@ function healthSummary(data: any) {
   ].join('; ');
 }
 
+function commercialSummary(data: any) {
+  const summary = data?.summary || {};
+  const attention = Array.isArray(data?.attention) ? data.attention : [];
+  const attentionCodes = attention.map((item: any) => text(item?.code)).filter(Boolean);
+  const observed = (value: any) => value === null || value === undefined ? 'unknown' : value;
+  return [
+    `total_leads=${observed(summary.total_leads)}`,
+    `high_fit=${observed(summary.high_fit)}`,
+    `verified_contacts=${observed(summary.verified_contacts)}`,
+    `outreach_ready=${observed(summary.outreach_ready)}`,
+    `configured_senders=${observed(summary.configured_senders)}`,
+    `prepared_senders=${observed(summary.prepared_senders)}`,
+    `paused_senders=${observed(summary.paused_senders)}`,
+    `send_ready_senders=${observed(summary.ready_senders)}`,
+    `configured_daily_cap=${observed(summary.configured_daily_cap)}`,
+    `ready_daily_capacity=${observed(summary.ready_daily_capacity)}`,
+    `outbound_locked=${data?.safety?.outbound_locked !== false}`,
+    `attention=${attentionCodes.length ? attentionCodes.join(',') : 'none'}`,
+    'source=commercialOperatingSystem',
+  ].join('; ');
+}
+
 export function summarizeCommandFunctionPayload(data: any, toolName = '') {
   if (toolName === 'system_health_check') return healthSummary(data).slice(0, 600);
+  if (toolName === 'commercial_os_status') return commercialSummary(data).slice(0, 600);
   if (typeof data === 'string') return data.slice(0, 600);
   if (Array.isArray(data)) return `${data.length} rows`;
   const candidates = [data?.summary, data?.status, data?.execution_status, data?.error];

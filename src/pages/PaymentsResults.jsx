@@ -32,35 +32,14 @@ import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/landing/Navbar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
+import { ArrowRight, Loader2, AlertTriangle, Search, Lock } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
-import PaymentsGapCard from "@/components/paymentsResults/PaymentsGapCard";
-import FeeBreakdownCard from "@/components/paymentsResults/FeeBreakdownCard";
-import AssumptionsFootnote from "@/components/paymentsResults/AssumptionsFootnote";
-import CombinedGapHero from "@/components/paymentsResults/CombinedGapHero";
-import OptimizedHero from "@/components/paymentsResults/OptimizedHero";
 import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
-import RecoveryRoadmap from "@/components/paymentsResults/RecoveryRoadmap";
-import PeerBenchmark from "@/components/paymentsResults/PeerBenchmark";
-import PaymentsDataInsights from "@/components/paymentsResults/PaymentsDataInsights";
-import PaymentsInStoreInsights from "@/components/paymentsResults/PaymentsInStoreInsights";
-import CombinedChannelSection from "@/components/paymentsResults/CombinedChannelSection";
-import DownloadAuditButton from "@/components/paymentsResults/DownloadAuditButton";
-import ShareResultButton from "@/components/paymentsResults/ShareResultButton";
-import InviteCollectiveBlock from "@/components/paymentsResults/InviteCollectiveBlock";
-import PlusAnchorNote from "@/components/paymentsResults/PlusAnchorNote";
-import ActionCenter from "@/components/dashboard/ActionCenter";
-import CollectiveModal from "@/components/paymentsResults/CollectiveModal";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
-import { buildRecoveryRoadmap } from "@/lib/paymentsRoadmap.js";
+import PaymentsReportExperience from "@/components/paymentsResults/PaymentsReportExperience";
+import { PAYMENT_REPORT_VERSIONS } from "@/lib/paymentReportAccess.js";
 import { trackProductEvent } from "@/lib/productAnalytics";
-
-// A merchant whose opportunity is this large gets routed to a human call
-// instead of the self-serve collective. Either high monthly GMV OR high
-// annual savings crosses the threshold.
-const CALL_GMV_MONTHLY_EUR = 250000;   // ≥ €250k/mo GMV
-const CALL_ANNUAL_SAVINGS_EUR = 25000; // ≥ €25k/yr recoverable
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const OBJECT_ID = /^[0-9a-f]{24}$/i;
@@ -197,7 +176,7 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
 
 export default function PaymentsResults() {
   const navigate = useNavigate();
-  const { t, formatCurrency } = useTranslation();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [params] = useSearchParams();
   // Three mutually-exclusive URL contracts:
@@ -217,21 +196,20 @@ export default function PaymentsResults() {
   const [payload, setPayload] = useState(null);
   const [retryAfter, setRetryAfter] = useState(0);
   const [attempt, setAttempt] = useState(0); // manual retry counter
-  // Roadmap open state + a ref to scroll to it when the Score CTA is clicked.
-  const [roadmapOpen, setRoadmapOpen] = useState(false);
-  const roadmapRef = useRef(null);
-  // CTA destinations — the collective modal (primary) and book-a-call (high value).
-  const [collectiveOpen, setCollectiveOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
-  // uiContext (margin|rate|score|generic) — set by the CTA that opens a modal,
-  // read by CollectiveModal to show a context-adapted subcopy line.
-  const [ctaUiContext, setCtaUiContext] = useState("generic");
+  const [reportAccess, setReportAccess] = useState(null);
+  const [unlockStatus, setUnlockStatus] = useState("idle");
+  const [leaveStatus, setLeaveStatus] = useState("idle");
   // PaymentsRateTable — read once when a result is ready, ONLY to derive the
   // neutral ambition line (marketRange). Public read RLS. Never blocks render.
   const [rateTable, setRateTable] = useState(null);
   const resultsTrackedRef = useRef(false);
 
   useEffect(() => {
+    setReportAccess(null);
+    setUnlockStatus("idle");
+    setLeaveStatus("idle");
+
     if(status==='ready'&&!resultsTrackedRef.current){resultsTrackedRef.current=true;trackProductEvent('results_viewed',{source:'payments_results',mode:isVerifiedPath?'verified':isOwnedResultPath?'owned':'estimated'});}
   },[status,isVerifiedPath,isOwnedResultPath]);
 
@@ -329,73 +307,38 @@ export default function PaymentsResults() {
     setStatus("loading");
     (async () => {
       try {
-        // DIFF 3 — Authenticated readers first try their OWNED AnalyzerResult
-        // (materialized by the claim) and render it UNLOCKED. Base44 is
-        // eventually consistent, so right after a claim the row may not be
-        // visible yet — retry briefly before falling back to the teaser, so a
-        // just-logged-in user never flashes the "create an account" teaser
-        // over their own report. Anonymous readers skip this entirely.
+        // Authentication establishes ownership, but does not itself accept the
+        // collective mandate. The full report remains locked until the owner
+        // makes the separate, versioned, one-click acceptance below.
         if (isAuthenticated) {
-          const delays = [0, 400, 900]; // ~1.3s worst case
-          let owned = null;
-          for (let i = 0; i < delays.length && !cancelled; i++) {
-            if (delays[i]) await new Promise((r) => setTimeout(r, delays[i]));
-            const rows = await base44.entities.AnalyzerResult
-              .filter({ anon_session_id: sessionId }, "-created_date", 1)
-              .catch(() => []);
-            if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
-          }
+          await base44.functions
+            .invoke("claimAnonPaymentsResult", { anon_session_id: sessionId })
+            .catch(() => null);
           if (cancelled) return;
-          // ISSUE 2 FIX (2026-07-13) — already-authenticated user running a
-          // NEW analysis. The session is born anonymous (submitPaymentsAnalysis
-          // never checks auth) and the login-transition claim in AuthContext
-          // does NOT fire (the user was already authenticated → no didAuth
-          // transition), so no owned AnalyzerResult ever gets materialized and
-          // the page would fall to the locked teaser. If we're authenticated
-          // and found no owned row yet, fire the (idempotent) claim right here
-          // — we're already authenticated so it succeeds — then retry the read
-          // briefly (eventual consistency) so we unlock without a teaser flash.
-          // Safe to run alongside AuthContext's claim: claimAnonPaymentsResult
-          // is idempotent (owner-check + already_claimed + create-then-verify).
-          if (!owned && !cancelled) {
-            const claim = await base44.functions
-              .invoke("claimAnonPaymentsResult", { anon_session_id: sessionId })
-              .catch(() => null);
-            const cbody = claim?.data || claim;
-            if (cbody?.ok && !cancelled) {
-              const retryDelays = [0, 400, 900];
-              for (let i = 0; i < retryDelays.length && !cancelled; i++) {
-                if (retryDelays[i]) await new Promise((r) => setTimeout(r, retryDelays[i]));
-                const rows = await base44.entities.AnalyzerResult
-                  .filter({ anon_session_id: sessionId }, "-created_date", 1)
-                  .catch(() => []);
-                if (Array.isArray(rows) && rows[0]) { owned = rows[0]; break; }
+          const accessResponse = await base44.functions
+            .invoke("claimAnonPaymentsResult", {
+              action: "payment_report_status",
+              anon_session_id: sessionId,
+            })
+            .catch(() => null);
+          const accessBody = accessResponse?.data || accessResponse;
+          if (accessBody?.ok && accessBody?.report_access) {
+            setReportAccess(accessBody.report_access);
+            if (accessBody.report_access.unlocked) {
+              const reportResponse = await base44.functions.invoke("claimAnonPaymentsResult", {
+                action: "payment_report_read",
+                anon_session_id: sessionId,
+              });
+              if (cancelled) return;
+              const reportBody = reportResponse?.data || reportResponse;
+              if (reportBody?.ok && reportBody?.engine_result) {
+                setPayload(reportBody);
+                setReportAccess(reportBody.report_access || accessBody.report_access);
+                setStatus("ready");
+                return;
               }
             }
           }
-          // Only use the owned row when it actually carries the payments
-          // engine_result in its details. LEGACY rows materialized by an older
-          // claim (or the pre-pivot scoreEngine path) have a details shape
-          // WITHOUT engine_result/input_snapshot — reading them renders the
-          // whole page blank (every field resolves to "—"). When that happens
-          // we DON'T render the owned row; we fall through to the teaser, which
-          // reads the intact PaymentsAnalysisSession and returns the correct
-          // shape. The teaser is service-role and works pre- and post-auth.
-          if (owned && owned?.details?.engine_result) {
-            // Rebuild the SAME view the teaser showed — engine_result verbatim
-            // + the exact savings_range (matiz #1: number/range unchanged).
-            setPayload({
-              ok: true,
-              engine_result: owned.details.engine_result,
-              engine_version: owned?.details?.engine_version || owned?.savings_model_version || null,
-              input_snapshot: owned?.details?.input_snapshot || null,
-              owned: true,
-            });
-            setStatus("ready");
-            return;
-          }
-          // No owned row (or a legacy row without engine_result) → fall through
-          // to the teaser, which always returns the correct shape.
         }
         const resp = await base44.functions.invoke("getPaymentsGapTeaser", { anon_session_id: sessionId });
         if (cancelled) return;
@@ -428,14 +371,6 @@ export default function PaymentsResults() {
     return () => { cancelled = true; };
   }, [status, rateTable]);
 
-  // Score CTA → open the roadmap and scroll to it.
-  const handleScoreCTA = () => {
-    setRoadmapOpen(true);
-    requestAnimationFrame(() => {
-      roadmapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  };
-
   // Anonymous unlock → route to signup, preserving the session so the report
   // (and the full plan) come back populated after login.
   const handleUnlock = () => {
@@ -451,56 +386,70 @@ export default function PaymentsResults() {
     navigate(`/LoginGate?next=${encodeURIComponent(currentPath)}`);
   };
 
-  // ── CTA routing ────────────────────────────────────────────────────────
-  // Build the context every destination modal needs (email prefill happens in
-  // the modal itself; here we carry the analysis figures + session).
+  const handleReportUnlock = async () => {
+    if (!isAuthenticated) { handleUnlock(); return; }
+    if (!UUID_V4.test(sessionId) || unlockStatus === "working") return;
+    setUnlockStatus("working");
+    try {
+      const acceptedResponse = await base44.functions.invoke("claimAnonPaymentsResult", {
+        action: "payment_report_accept",
+        anon_session_id: sessionId,
+        accepted: true,
+        versions: PAYMENT_REPORT_VERSIONS,
+      });
+      const accepted = acceptedResponse?.data || acceptedResponse;
+      if (!accepted?.ok) throw new Error(accepted?.error || "payment_report_accept_failed");
+      const reportResponse = await base44.functions.invoke("claimAnonPaymentsResult", {
+        action: "payment_report_read",
+        anon_session_id: sessionId,
+      });
+      const report = reportResponse?.data || reportResponse;
+      if (!report?.ok || !report?.engine_result) throw new Error("payment_report_read_failed");
+      setPayload(report);
+      setReportAccess(report.report_access || accepted.report_access);
+      setUnlockStatus("success");
+      trackProductEvent("payment_report_unlocked", { source: "payments_results" });
+    } catch {
+      setUnlockStatus("error");
+    }
+  };
+
+  const handleReportLeave = async () => {
+    if (!isAuthenticated || !UUID_V4.test(sessionId) || leaveStatus === "working") return;
+    setLeaveStatus("working");
+    try {
+      const response = await base44.functions.invoke("claimAnonPaymentsResult", {
+        action: "payment_report_leave",
+        anon_session_id: sessionId,
+      });
+      const body = response?.data || response;
+      if (!body?.ok || !body?.report_access) throw new Error("payment_report_leave_failed");
+      setReportAccess(body.report_access);
+      setLeaveStatus("success");
+      trackProductEvent("payment_report_pool_left", { source: "payments_results" });
+    } catch {
+      setLeaveStatus("error");
+    }
+  };
+
+  // The call request receives only the analysis context already visible to the
+  // authenticated merchant. It never carries the report acceptance snapshot.
   const buildCtaContext = () => {
     const er = payload?.engine_result;
     const snap = payload?.input_snapshot || {};
     const sid = params.get("session") || params.get("anon_session_id") || "";
+    const channelGmv = Array.isArray(snap.channels)
+      ? snap.channels.reduce((sum, channel) => sum + (Number(channel?.monthly_gmv_eur) || 0), 0)
+      : Number(snap?.monthly_gmv_eur) || 0;
     return {
       session_id: sid || undefined,
-      gmv_eur_monthly: Number(snap?.monthly_gmv_eur) || undefined,
-      annual_savings_eur: Number(er?.annual_savings_eur?.point) || undefined,
+      gmv_eur_monthly: channelGmv || undefined,
+      annual_savings_eur: Number(er?.annual_savings_eur?.point ?? er?.total_annual_savings_eur?.point) || undefined,
       provider_slug: snap?.provider_slug || undefined,
       country: snap?.country || undefined,
       channel: er?.cohort?.channel === "in_store" ? "in_store" : "online",
-      uiContext: ctaUiContext,
     };
   };
-
-  // A big-enough opportunity routes to a human call instead of the collective.
-  const isHighValue = () => {
-    const ctx = buildCtaContext();
-    return (
-      (isFinite(ctx.gmv_eur_monthly) && ctx.gmv_eur_monthly >= CALL_GMV_MONTHLY_EUR) ||
-      (isFinite(ctx.annual_savings_eur) && ctx.annual_savings_eur >= CALL_ANNUAL_SAVINGS_EUR)
-    );
-  };
-
-  // Open the right destination for a given intent, honoring the segment rules:
-  //   • anonymous              → sign up first (destination resumes after login)
-  //   • connect_verify         → existing verify flow (dashboard connect)
-  //   • high-value opportunity → book a call
-  //   • everything else        → the collective modal
-  // Map a roadmap route intent → the context-subcopy variant the collective
-  // modal shows. margin renegotiation → "margin"; rate move → "rate";
-  // everything else keeps the generic collective explanation.
-  const intentToUiContext = (intent) =>
-    intent === "managed_migration" ? "margin"
-    : intent === "collective" ? "rate"
-    : "generic";
-
-  const openDestination = (intent) => {
-    if (!isAuthenticated) { handleUnlock(); return; }
-    setCtaUiContext(intentToUiContext(intent));
-    if (intent === "connect_verify") { navigate("/ConnectTools"); return; }
-    if (intent === "call" || isHighValue()) { setCallOpen(true); return; }
-    setCollectiveOpen(true);
-  };
-
-  // Roadmap route CTAs → map the rec's cta_intent to a destination.
-  const handleRouteAction = (rec) => openDestination(rec?.cta_intent || "collective");
 
   // ── loading
   if (status === "loading") {
@@ -604,343 +553,42 @@ export default function PaymentsResults() {
 
   // ── ready
   const engineResult = payload?.engine_result;
-  // In verified mode there's no input_snapshot (the row was materialized
-  // from real Stripe data, not a form). We synthesize a lightweight object
-  // from sample_metrics so PaymentsGapCard / footer can read the same
-  // fields (country, provider, GMV) without knowing which path produced them.
+  // Verified results are measured from connected data and do not carry the
+  // original manual input snapshot. Keep the existing, evidence-based bridge.
   const inputSnapshot = isVerifiedPath
     ? {
-        // The verified path doesn't carry country in the reader response
-        // (see allowlist — Chunk 5). We show the cohort key's region instead,
-        // extracted from the engine result — the cohort is what the user's
-        // rate is actually being compared against.
         country: engineResult?.cohort?.key?.split("|")?.[2] || null,
         provider_slug: engineResult?.cohort?.key?.split("|")?.[0] || null,
         monthly_gmv_eur: payload?.sample_metrics?.gmv_eur_monthly ?? null,
         avg_ticket_eur: payload?.sample_metrics?.avg_ticket_eur ?? null,
       }
-    : payload?.input_snapshot;
-  const engineVersion = payload?.engine_version;
+    : payload?.input_snapshot || {};
   const isVerifiedMode = engineResult?.mode === "verified";
-  const measurementWindow = payload?.measurement_window;
-  const sampleMetrics = payload?.sample_metrics;
-  // M4-TPV Fase 3 — combined submits carry engine_result.combined === true
-  // and a per-channel channels[] array. Detect once here and route to the
-  // combined hero renderer instead of the single-channel gap card.
-  const isCombined = engineResult?.combined === true && Array.isArray(engineResult?.channels);
-  // Anonymous readers get the teaser gating (first route visible, rest locked).
-  // Owned/verified rows are always fully unlocked.
-  const isAnonymous = !isAuthenticated && !payload?.owned;
-  // Recovery roadmap — single-channel only (combined has its own hero). Derived
-  // purely from engine_result + input_snapshot; rateTable only feeds ambition.
-  const roadmap = (!isCombined && engineResult)
-    ? buildRecoveryRoadmap(engineResult, inputSnapshot || {}, rateTable)
-    : null;
-  // M4-refinado (v1.5.0) — classification branches the hero.
-  //   single-channel + already_optimized → OptimizedHero + hide primary CTA
-  //   single-channel + savings_opportunity/insufficient_data → PaymentsGapCard (unchanged)
-  //   combined → CombinedGapHero (which handles per-channel mini-victories itself)
-  // The primary "Stop overpaying" CTA is hidden ONLY when the single-channel
-  // result is already_optimized — there's nothing to stop paying.
-  const classification = engineResult?.classification;
-  const isOptimizedSingle = !isCombined && classification === "already_optimized";
-  const hidePrimaryCTA = isOptimizedSingle;
-
-  // 1.4 — LAYOUT MODE. The anonymous/estimated single-channel teaser is the
-  // conversion hook: it leads with the big figure at FULL WIDTH (hero → CTA →
-  // locked breakdown + assumptions stacked BELOW), so nothing competes with
-  // the number. Verified mode (and combined/optimized heroes) keep the
-  // 2-column grid — the user is already in and wants the "show your work"
-  // panel alongside the hero.
-  const useStackedTeaserLayout = !isVerifiedMode && !isCombined && !isOptimizedSingle;
-
-  // Action Center (compact) for OWNED single-channel reports — the same "next
-  // best step" panel the dashboard shows, driven by the same engine_result.
-  // Only for signed-in owners of an estimated single-channel report; anonymous
-  // (conversion-first), verified-mode, and combined keep the tuned ctaBlock.
-  const showOwnedActionCenter = !isAnonymous && !isVerifiedMode && !isCombined && !hidePrimaryCTA;
-  const ownedActionRow = engineResult
-    ? { details: { engine_result: engineResult, input_snapshot: inputSnapshot }, verification_status: isVerifiedMode ? "verified" : "estimated", total_savings: Number(engineResult?.annual_savings_eur?.point) || 0 }
-    : null;
-  const ownedActionCenter = showOwnedActionCenter && ownedActionRow && (
-    <ActionCenter
-      rows={[ownedActionRow]}
-      latest={ownedActionRow}
-      inCollective={false}
-      onVerify={() => navigate("/ConnectTools")}
-      onCall={() => openDestination("call")}
-      onCollective={() => openDestination("collective")}
-      onAddChannel={() => navigate("/Analyzer")}
-      compact
-    />
-  );
-
-  // Shared CTA block (identical markup in both layouts) — extracted so the
-  // stacked teaser layout and the grid layout render the exact same button.
-  const ctaBlock = !hidePrimaryCTA && (
-    <div
-      className="rounded-2xl p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-4"
-      style={{
-        background:
-          "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
-        border: "1px solid rgba(34,211,238,0.20)",
-      }}
-    >
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.22em] font-bold text-cyan-300/90 mb-1.5">{t("results_next_step")}</p>
-        {isVerifiedMode ? (
-          <>
-            <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-              {t("results_cta_verified_title")}
-            </p>
-            <p className="text-[13px] text-white/60 mt-1">
-              {t("results_cta_verified_sub")}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="text-white font-bold text-[16px] md:text-[18px] leading-tight">
-              {t("results_cta_title")}
-            </p>
-            <p className="text-[13px] text-white/60 mt-1">
-              {isAnonymous
-                ? t("results_cta_anon_sub")
-                : (isHighValue()
-                    ? t("results_cta_call_sub")
-                    : t("results_cta_coll_sub"))}
-            </p>
-          </>
-        )}
-      </div>
-      {/* UX-1 T7 — ONE consolidated CTA. For anonymous readers the label says
-          what actually happens (openDestination already routes them to signup);
-          registered users keep the collective/call routing. */}
-      <Button
-        onClick={() => {
-          if (isVerifiedMode) { navigate("/Dashboard"); return; }
-          openDestination("collective");
-        }}
-        className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 shrink-0"
-        style={{
-          background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
-          boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
-        }}
-      >
-        {isVerifiedMode ? t("results_cta_dashboard") : isAnonymous ? t("results_cta_create") : t("results_cta_stop")} <ArrowRight className="h-4 w-4" />
-      </Button>
-    </div>
-  );
+  const experiencePayload = { ...payload, input_snapshot: inputSnapshot };
 
   return (
-    <ResultsShell withSidebar={isAuthenticated}>
-      {/* Back link + Download audit — desktop shows text, mobile just chevron */}
-      <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
-        <button
-          onClick={() => navigate("/Analyzer")}
-          className="inline-flex items-center gap-1.5 text-[12px] text-white/50 hover:text-white transition-colors"
-        >
-          <ArrowLeft size={12} /> {t("results_rerun")}
-        </button>
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* GROWTH-1 T1 — shareable card (score + reduction %, no sensitive data) */}
-          <ShareResultButton
-            engineResult={engineResult}
-            inputSnapshot={inputSnapshot}
-            isAuthenticated={isAuthenticated}
-          />
-          <DownloadAuditButton
-            engineResult={engineResult}
-            inputSnapshot={inputSnapshot}
-            rateTable={rateTable}
-            brandName={inputSnapshot?.provider_slug || ""}
-          />
-        </div>
-      </div>
-
-      {useStackedTeaserLayout ? (
-        // 1.4 — ESTIMATED TEASER: single column, big figure leads at full
-        // width. Order: hero → CTA → locked breakdown → assumptions. On both
-        // mobile and desktop the number is ALWAYS first — nothing above it.
-        <div className="space-y-5 max-w-3xl mx-auto">
-          <PaymentsGapCard
-            engineResult={engineResult}
-            inputSnapshot={inputSnapshot}
-            sampleMetrics={sampleMetrics}
-            measurementWindow={measurementWindow}
-            compact
-            isAnonymous={isAnonymous}
-            onScoreCTA={handleScoreCTA}
-          />
-          {roadmapOpen && roadmap && (
-            <div ref={roadmapRef}>
-              <RecoveryRoadmap
-                roadmap={roadmap}
-                isAnonymous={isAnonymous}
-                onRouteAction={handleRouteAction}
-                onUnlock={handleUnlock}
-              />
-            </div>
-          )}
-          <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} rateTable={rateTable} />
-          {/* Phase 1·B — insights shown in the anonymous teaser too, but
-              COMPACT: only the 3 highest-punch tiles (total fees · effective
-              rate · current-rate decomposed). Keeps the teaser scannable and
-              lets the conversion CTA below own the spotlight; the full grid
-              unlocks after signup on the owned report. */}
-          <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} compact />
-          {ctaBlock}
-          {/* Locked breakdown — one of the main signup conversion drivers:
-              render the SHAPE, blur the numbers, show a padlock. */}
-          <FeeBreakdownCard engineResult={engineResult} locked={!payload?.owned} />
-          <PlusAnchorNote engineResult={engineResult} inputSnapshot={inputSnapshot} rateTable={rateTable} />
-          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} providerSlug={inputSnapshot?.provider_slug || null} />
-        </div>
-      ) : isCombined ? (
-        // COMBINED — full depth. Aggregate view on top (CombinedGapHero =
-        // combined total + confidence band + per-channel strip), the primary
-        // CTA + top-level breakdown, then ONE complete section PER CHANNEL,
-        // each reusing the single-channel components fed with THAT channel's
-        // own engine_result + input_snapshot. Never mixes figures.
-        <div className="space-y-8 max-w-6xl mx-auto">
-          <CombinedGapHero engineResult={engineResult} country={inputSnapshot?.country} isAnonymous={isAnonymous} />
-          {ctaBlock}
-          <FeeBreakdownCard
-            engineResult={engineResult}
-            locked={engineResult?.mode !== "verified" && !payload?.owned}
-          />
-          {/* Per-channel depth — side by side on desktop (lg+) to compare
-              online vs in-store, stacked in one column on mobile/tablet. The
-              divider becomes the grid gap; a top border separates the block
-              from the aggregate view above. */}
-          {/* UX-1 T3 — per-channel depth reserved for registered users. The
-              anonymous combined teaser shows ONE total only (hero above). */}
-          {!isAnonymous && (
-          <div
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            {engineResult.channels.map((ch) => (
-              <div key={ch.channel} className="min-w-0">
-                <CombinedChannelSection
-                  channel={ch.channel}
-                  engineResult={ch.engine_result}
-                  inputSnapshot={ch.input_snapshot}
-                  rateTable={rateTable}
-                  isAnonymous={isAnonymous}
-                  onRouteAction={handleRouteAction}
-                  onUnlock={handleUnlock}
-                />
-              </div>
-            ))}
-          </div>
-          )}
-          <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} providerSlug={inputSnapshot?.provider_slug || null} />
-        </div>
-      ) : (
-        // Verified / optimized single-channel — 2-column grid, unchanged.
-        // LEFT = hero + CTA · RIGHT = breakdown + assumptions.
-        <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-6 lg:items-start gap-5">
-          <div className="lg:col-span-3 space-y-5">
-            {isOptimizedSingle ? (
-              <OptimizedHero
-                engineResult={engineResult}
-                inputSnapshot={inputSnapshot}
-                t={t}
-                onRerun={() => navigate("/Analyzer")}
-              />
-            ) : (
-              <PaymentsGapCard
-                engineResult={engineResult}
-                inputSnapshot={inputSnapshot}
-                sampleMetrics={sampleMetrics}
-                measurementWindow={measurementWindow}
-                isAnonymous={isAnonymous}
-                onScoreCTA={handleScoreCTA}
-              />
-            )}
-            {roadmapOpen && roadmap && (
-              <div ref={roadmapRef}>
-                <RecoveryRoadmap
-                  roadmap={roadmap}
-                  isAnonymous={isAnonymous}
-                  onRouteAction={handleRouteAction}
-                  onUnlock={handleUnlock}
-                />
-              </div>
-            )}
-            {!isOptimizedSingle && (
-              <PeerBenchmark engineResult={engineResult} country={inputSnapshot?.country} rateTable={rateTable} />
-            )}
-            <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
-            {/* Phase 3 — in-store (TPE) tiles. Self-hides for online/single-online. */}
-            <PaymentsInStoreInsights
-              engineResult={engineResult}
-              inputSnapshot={inputSnapshot}
-            />
-            {ownedActionCenter || ctaBlock}
-          </div>
-
-          <div className="lg:col-span-2 space-y-5">
-            <FeeBreakdownCard
-              engineResult={engineResult}
-              locked={engineResult?.mode !== "verified" && !payload?.owned}
-            />
-            <PlusAnchorNote engineResult={engineResult} inputSnapshot={inputSnapshot} rateTable={rateTable} />
-            <AssumptionsFootnote engineResult={engineResult} engineVersion={engineVersion} />
-          </div>
-        </div>
-      )}
-
-      {/* GROWTH-1 T2 — collective-framing invite block, under the result after
-          the primary CTA. The frame is the incentive (no rewards this chunk). */}
-      <div className="max-w-3xl mx-auto mt-8">
-        <InviteCollectiveBlock isAuthenticated={isAuthenticated} onUnlock={handleUnlock} />
-      </div>
-
-      {/* Footer line — snapshot of what produced the number, for transparency.
-          Full-width under the grid so it reads as a single closing note.
-          Verified mode shows the measurement window ("measured from N charges
-          over M days"); estimated mode keeps the "run on X GMV" line. */}
-      <div className="pt-6 text-[11px] text-white/35 text-center">
-        {isVerifiedMode ? (
-          <>
-            Measured from {sampleMetrics?.tx_count_charges_90d ?? "—"} charges over {measurementWindow?.days_covered ?? "—"} days ·
-            {sampleMetrics?.gmv_eur_monthly ? ` ${formatCurrency(Math.round(sampleMetrics.gmv_eur_monthly))}/mo GMV ` : " "}·
-            {" "}{inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
-          </>
-        ) : (
-          <>
-            {/* FX-2 — show what the merchant actually typed: the original
-                amounts in their declared currency when the submission was
-                converted, the EUR figures otherwise. Formatting follows the
-                active locale, never en-US. */}
-            Analysis run on {(() => {
-              const cur = inputSnapshot?.currency || "EUR";
-              const gmv = inputSnapshot?.original_amounts?.monthly_gmv ?? inputSnapshot?.monthly_gmv_eur;
-              return gmv ? formatCurrency(Number(gmv), cur) : "—";
-            })()} monthly GMV
-            {(() => {
-              const cur = inputSnapshot?.currency || "EUR";
-              const ticket = inputSnapshot?.original_amounts?.avg_ticket ?? inputSnapshot?.avg_ticket_eur;
-              return ticket ? `, ${formatCurrency(Number(ticket), cur)} average ticket` : "";
-            })()} · {inputSnapshot?.provider_slug || "—"} · {inputSnapshot?.country || "—"}
-          </>
-        )}
-      </div>
-
-      {/* CTA destinations — the collective (primary) and book-a-call (high value). */}
-      <CollectiveModal
-        open={collectiveOpen}
-        onClose={() => setCollectiveOpen(false)}
-        context={buildCtaContext()}
-        onSwitch={() => { setCollectiveOpen(false); setCallOpen(true); }}
+    <>
+      <PaymentsReportExperience
+        payload={experiencePayload}
+        isAuthenticated={isAuthenticated}
+        isVerifiedMode={isVerifiedMode}
+        isOwnedResultPath={isOwnedResultPath}
+        reportAccess={reportAccess}
+        unlockStatus={unlockStatus}
+        leaveStatus={leaveStatus}
+        rateTable={rateTable}
+        onBack={() => navigate("/Analyzer")}
+        onCreateAccount={handleUnlock}
+        onUnlock={handleReportUnlock}
+        onLeave={handleReportLeave}
+        onViewStatus={() => navigate("/Dashboard")}
+        onBookReview={() => setCallOpen(true)}
       />
       <BookCallModal
         open={callOpen}
         onClose={() => setCallOpen(false)}
         context={buildCtaContext()}
-        onSwitch={() => { setCallOpen(false); setCollectiveOpen(true); }}
       />
-    </ResultsShell>
+    </>
   );
 }

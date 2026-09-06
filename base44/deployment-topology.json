@@ -234,6 +234,14 @@
       },
       "boundary": "authenticated_merchant_self"
     },
+    "paymentReportAccess": {
+      "host": "claimAnonPaymentsResult",
+      "source_module": "base44/shared/paymentReportAccess.ts",
+      "route": {
+        "action_prefix": "payment_report_"
+      },
+      "boundary": "authenticated_claim_owner_single_click_versioned"
+    },
     "conversationAdmin": {
       "host": "adminSummaries",
       "source_module": "base44/shared/conversationAdminCore.ts",

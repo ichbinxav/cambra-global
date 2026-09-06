@@ -1585,6 +1585,7 @@ export default {
     az_err_website_len: "Websted: højst 200 tegn.",
     az_err_sector: "Branche: vælg en af de anførte muligheder.",
     az_err_rate_limited: "For mange analyser fra dit netværk lige nu. Prøv igen om cirka {mins} min.",
+    az_err_rate_unavailable: "Den sikre anmodningskontrol er midlertidigt utilgængelig. Intet blev indsendt. Prøv igen om et par minutter.",
     az_err_invalid_input: "Tjek «{field}» — værdien er uden for intervallet.",
     az_err_generic: "Vi kunne ikke køre din analyse lige nu. Prøv igen om lidt.",
     az_err_network: "Vi kunne ikke nå serveren. Tjek din forbindelse og prøv igen.",
@@ -1616,4 +1617,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Betalingsinfrastruktur",
+    onboarding_payments_title: "Kortlæg din betalingsinfrastruktur.",
+    onboarding_payments_subtitle: "Udfyld betalingsprofilen for skarpere benchmarks og dybere indsigt i margin på interchange, netværksgebyrer og processorens avance.",
+    onboarding_coverage: "Samlet dækning",
 };

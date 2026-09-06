@@ -8,13 +8,13 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "d6e8d89ea7cc63b37ca191244847c75742c50cc982d21fb9158478d0decfe7a3",
+  "input_fingerprint_sha256": "0f9b271150aa490c3f18e62589ae5c472aba8f0b42d12906d5d88aaf2b41907f",
   "input_file_count": 124,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
     "physical_function_target": 276,
-    "logical_route_count": 39,
+    "logical_route_count": 40,
     "stale_production_surface_inventory_declared_functions": 162,
     "stale_production_surface_inventory_detected": true
   },
@@ -1861,8 +1861,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "787f7760c7e30a027d4a306633a517719bba4a2a13748c30281faf79c968332e",
-          "bytes": 10630
+          "sha256": "5792416dcf7fbd819d13cc4dc97cd41c8344e4322bc2753625f1c0007f258148",
+          "bytes": 10908
         },
         {
           "path": "base44/functions/marketPolicyAdmin/entry.ts",
@@ -2854,8 +2854,8 @@
         },
         {
           "path": "base44/functions/chatChiefOrchestrator/entry.ts",
-          "sha256": "8217ee2d6064344b8e7ecb1c40c7563799b1b1e682c08a0eaa9e80bc5ca506d0",
-          "bytes": 31284
+          "sha256": "7f75811e6426ab7eed483f1a2238123dc63b8a934a2fbac68e0fde4025cddab0",
+          "bytes": 31691
         },
         {
           "path": "base44/functions/commercialSendMessage/entry.ts",
@@ -3298,8 +3298,8 @@
       "source_evidence": [
         {
           "path": "base44/deployment-topology.json",
-          "sha256": "787f7760c7e30a027d4a306633a517719bba4a2a13748c30281faf79c968332e",
-          "bytes": 10630
+          "sha256": "5792416dcf7fbd819d13cc4dc97cd41c8344e4322bc2753625f1c0007f258148",
+          "bytes": 10908
         },
         {
           "path": "base44/functions/maintenanceEngine/entry.ts",
@@ -3355,8 +3355,8 @@
         },
         {
           "path": "base44/functions/computeStripeVerifiedGap/entry.ts",
-          "sha256": "d637bbdaf0eb07651a529984577dc7e222f5ea9f0475fae5bad34e67aa2da9bf",
-          "bytes": 107767
+          "sha256": "9c5b2e28a7d8ba38ba01ebfd6ed24c775c5197338e2e73fc70a903e9fbc8767c",
+          "bytes": 108098
         },
         {
           "path": "base44/functions/dataSyncAgent/entry.ts",

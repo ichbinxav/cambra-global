@@ -1584,6 +1584,7 @@ export default {
     az_err_website_len: "Web: maximálně 200 znaků.",
     az_err_sector: "Obor: vyberte jednu z uvedených možností.",
     az_err_rate_limited: "Příliš mnoho analýz z vaší sítě právě teď. Zkuste to znovu asi za {mins} min.",
+    az_err_rate_unavailable: "Zabezpečené řízení požadavků je dočasně nedostupné. Nic nebylo odesláno. Zkuste to znovu za několik minut.",
     az_err_invalid_input: "Zkontrolujte «{field}» — hodnota je mimo rozsah.",
     az_err_generic: "Analýzu se teď nepodařilo spustit. Zkuste to za chvíli znovu.",
     az_err_network: "Nepodařilo se spojit se serverem. Zkontrolujte připojení a zkuste to znovu.",
@@ -1615,4 +1616,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Platební infrastruktura",
+    onboarding_payments_title: "Zmapujte svou platební infrastrukturu.",
+    onboarding_payments_subtitle: "Doplňte platební profil pro přesnější benchmarky a hlubší pohled na marži u interchange, síťových poplatků a marže zpracovatele.",
+    onboarding_coverage: "Celkové pokrytí",
 };

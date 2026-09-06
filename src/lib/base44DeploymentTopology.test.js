@@ -38,8 +38,10 @@ describe('Base44 quota-safe backend deployment topology', () => {
   // DASHBOARD-C12 (2026-08-17): 37 -> 38 for integrationRegistryAdmin.
   // AGENTTASK-OUTBOX (2026-08-21): 38 -> 39 for the scheduled terminal Event
   // reconciler hosted by processWebhookDeadLetters. Physical stays 276.
-  it('consolidates exactly 39 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(39);
+  // PAYMENT-REPORT (2026-09-06): 39 -> 40 for versioned report access hosted
+  // by claimAnonPaymentsResult. Physical stays 276.
+  it('consolidates exactly 40 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(40);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {

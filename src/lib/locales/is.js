@@ -1631,6 +1631,7 @@ export default {
     az_err_website_len: "Vefsíða: mest 200 stafir.",
     az_err_sector: "Geiri: veldu einn af skráðu valkostunum.",
     az_err_rate_limited: "Of margar greiningar frá netinu þínu núna. Reyndu aftur eftir um {mins} mín.",
+    az_err_rate_unavailable: "Örugg beiðnistýring er tímabundið ekki tiltæk. Ekkert var sent inn. Reyndu aftur eftir nokkrar mínútur.",
     az_err_invalid_input: "Athugaðu „{field}“ — gildið er utan bils.",
     az_err_generic: "Við gátum ekki keyrt greininguna þína núna. Reyndu aftur eftir andartak.",
     az_err_network: "Við náðum ekki í netþjóninn. Athugaðu tenginguna og reyndu aftur.",
@@ -1662,4 +1663,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Greiðsluinnviðir",
+    onboarding_payments_title: "Kortleggðu greiðsluuppsetninguna þína.",
+    onboarding_payments_subtitle: "Ljúktu við greiðsluprófílinn til að skerpa samanburð og fá dýpri sýn á interchange, netgjöld og álagningu greiðslumiðlara.",
+    onboarding_coverage: "Heildaryfirsýn",
 };

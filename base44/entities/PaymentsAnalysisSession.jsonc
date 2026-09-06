@@ -96,7 +96,55 @@
     "claim_intelligence_snapshot_id": {
       "type": "string",
       "description": "Winner-only IntelligenceSnapshot bound after tenant/brand checks."
-    }
+    },
+    "report_access_state": {
+      "type": "string",
+      "enum": ["LOCKED", "ACCEPTING", "UNLOCKED"],
+      "default": "LOCKED",
+      "description": "Durable server-owned gate for the full payment report. Leaving the collective never changes UNLOCKED back to LOCKED."
+    },
+    "report_access_revision": {
+      "type": "number",
+      "default": 0,
+      "description": "Monotonic CAS fence for payment report acceptance and withdrawal transitions."
+    },
+    "report_access_token": {
+      "type": "string",
+      "description": "Opaque token fencing the single-click acceptance transition."
+    },
+    "report_access_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pool_membership_status": {
+      "type": "string",
+      "enum": ["INACTIVE", "ACTIVE", "REVOKED"],
+      "default": "INACTIVE",
+      "description": "Merchant collective participation. REVOKED preserves report access and only withdraws future pool participation."
+    },
+    "pool_collective_member_id": {
+      "type": "string",
+      "description": "Canonical CollectiveMember evidence row created or reused by the payment report unlock."
+    },
+    "pool_accepted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pool_revoked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pool_acceptance_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 of the exact versioned, bounded-authority acceptance snapshot."
+    },
+    "pool_acceptance_snapshot_json": {
+      "type": "object",
+      "description": "Exact server-built acceptance evidence, including action limits and the versions shown to the merchant."
+    },
+    "pool_collective_terms_version": { "type": "string" },
+    "pool_public_terms_version": { "type": "string" },
+    "pool_privacy_version": { "type": "string" }
   },
   "required": [
     "anon_session_id",

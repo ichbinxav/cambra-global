@@ -16,18 +16,18 @@ export default function CardMixSlider({ value, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}>
           {t("az_cardmix_title")}
         </span>
         <span
           className="tabular-nums font-bold"
-          style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "18px", letterSpacing: "-0.02em" }}
+          style={{ color: "var(--az-text, #ffffff)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "18px", letterSpacing: "-0.02em" }}
         >
           {isSet ? (
             <>
               <span style={{ color: "var(--voltio-2)" }}>{debitPct}%</span>
-              <span className="mx-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>/</span>
-              <span style={{ color: "#ffffff" }}>{creditPct}%</span>
+              <span className="mx-1.5" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>/</span>
+              <span style={{ color: "var(--az-text, #ffffff)" }}>{creditPct}%</span>
             </>
           ) : (
             "—"
@@ -46,12 +46,12 @@ export default function CardMixSlider({ value, onChange }) {
         aria-label={t("az_cardmix_aria")}
       />
 
-      <div className="flex items-center justify-between text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <div className="flex items-center justify-between text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>
         <span>{t("az_cardmix_all_credit")}</span>
         <span>{t("az_cardmix_all_debit")}</span>
       </div>
 
-      <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <p className="text-[11px]" style={{ color: "var(--az-muted, rgba(255,255,255,0.5))" }}>
         {t("az_cardmix_help")}
       </p>
     </div>

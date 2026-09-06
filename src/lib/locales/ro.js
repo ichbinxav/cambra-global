@@ -1628,6 +1628,7 @@ export default {
     az_err_website_len: "Site web: maximum 200 de caractere.",
     az_err_sector: "Sector: alege una dintre opțiunile listate.",
     az_err_rate_limited: "Prea multe analize din rețeaua ta chiar acum. Încearcă din nou în circa {mins} min.",
+    az_err_rate_unavailable: "Controlul securizat al solicitărilor este temporar indisponibil. Nu s-a trimis nimic. Încearcă din nou peste câteva minute.",
     az_err_invalid_input: "Verifică „{field}” — valoarea e în afara intervalului.",
     az_err_generic: "Nu am putut rula analiza ta chiar acum. Încearcă din nou în câteva momente.",
     az_err_network: "Nu am putut contacta serverul. Verifică-ți conexiunea și încearcă din nou.",
@@ -1659,4 +1660,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Infrastructură de plăți",
+    onboarding_payments_title: "Cartografiază infrastructura ta de plăți.",
+    onboarding_payments_subtitle: "Completează profilul de plăți pentru benchmarkuri mai precise și o perspectivă mai profundă asupra marjei din interchange, taxe de rețea și marja procesatorului.",
+    onboarding_coverage: "Acoperire totală",
 };

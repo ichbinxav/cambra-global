@@ -1586,6 +1586,7 @@ export default {
     az_err_website_len: "Ιστότοπος: έως 200 χαρακτήρες.",
     az_err_sector: "Κλάδος: επιλέξτε μία από τις αναφερόμενες επιλογές.",
     az_err_rate_limited: "Πάρα πολλές αναλύσεις από το δίκτυό σας αυτή τη στιγμή. Δοκιμάστε ξανά σε περίπου {mins} λεπτά.",
+    az_err_rate_unavailable: "Ο ασφαλής έλεγχος αιτημάτων δεν είναι προσωρινά διαθέσιμος. Δεν υποβλήθηκε τίποτα. Δοκιμάστε ξανά σε λίγα λεπτά.",
     az_err_invalid_input: "Ελέγξτε το «{field}» — η τιμή είναι εκτός εύρους.",
     az_err_generic: "Δεν μπορέσαμε να εκτελέσουμε την ανάλυσή σας τώρα. Δοκιμάστε ξανά σε λίγο.",
     az_err_network: "Δεν μπορέσαμε να επικοινωνήσουμε με τον διακομιστή. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.",
@@ -1617,4 +1618,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Υποδομή πληρωμών",
+    onboarding_payments_title: "Χαρτογραφήστε την υποδομή πληρωμών σας.",
+    onboarding_payments_subtitle: "Συμπληρώστε το προφίλ πληρωμών για ακριβέστερα benchmarks και βαθύτερη εικόνα περιθωρίου σε interchange, χρεώσεις δικτύου και περιθώριο επεξεργαστή.",
+    onboarding_coverage: "Συνολική κάλυψη",
 };

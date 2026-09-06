@@ -1,16 +1,18 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Building2, CreditCard, Zap } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 // FASE 1.3 — payments-only. Logistics + Commerce SaaS tabs removed.
 export default function OnboardingLayout({ children, activeTab, onTabChange, statuses }){
+  const { t } = useTranslation();
   const total = ['payments'];
   const done = total.filter(v => (statuses?.[v]?.completeness||0) >= 70).length;
   const overall = Math.round((done/total.length)*100);
 
   const tabs = [
-    { value: 'general', label: 'General', icon: Building2, color: 'text-muted-foreground' },
-    { value: 'payments', label: 'Payments', icon: CreditCard, color: 'text-chart-1' },
+    { value: 'general', label: t('ct_general'), icon: Building2, color: 'text-muted-foreground' },
+    { value: 'payments', label: t('cat_payments'), icon: CreditCard, color: 'text-chart-1' },
   ];
 
   return (
@@ -20,16 +22,16 @@ export default function OnboardingLayout({ children, activeTab, onTabChange, sta
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 mb-3 px-2.5 py-1.5 rounded-full border border-border/60 bg-card">
               <Zap className="h-3 w-3 text-foreground" />
-              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">Payments infrastructure</span>
+              <span className="text-[10px] font-bold tracking-[0.22em] uppercase text-muted-foreground">{t('onboarding_payments_eyebrow')}</span>
             </div>
             <h1 className="font-display text-[clamp(2rem,4.5vw,3rem)] font-black tracking-[-0.04em] leading-[0.95] text-foreground">
-              Map your payments stack.
+              {t('onboarding_payments_title')}
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xl">Complete your payments profile to sharpen benchmarks and unlock deeper margin intelligence on interchange, scheme fees and processor margin.</p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">{t('onboarding_payments_subtitle')}</p>
           </div>
           <div className="w-full sm:w-56 shrink-0">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
-              <span className="font-semibold">Overall coverage</span>
+              <span className="font-semibold">{t('onboarding_coverage')}</span>
               <span className="font-bold tabular-nums">{overall}%</span>
             </div>
             <Progress value={overall} />

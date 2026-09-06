@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Уебсайт: максимум 200 знака.",
     az_err_sector: "Сектор: избери една от изброените опции.",
     az_err_rate_limited: "Твърде много анализи от твоята мрежа в момента. Опитай отново след около {mins} мин.",
+    az_err_rate_unavailable: "Защитеният контрол на заявките временно не е наличен. Нищо не е изпратено. Опитай отново след няколко минути.",
     az_err_invalid_input: "Провери „{field}“ — стойността е извън диапазона.",
     az_err_generic: "Не успяхме да изпълним анализа ти в момента. Моля, опитай отново след малко.",
     az_err_network: "Не успяхме да достигнем сървъра. Провери връзката си и опитай отново.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Платежна инфраструктура",
+    onboarding_payments_title: "Картографирайте платежната си инфраструктура.",
+    onboarding_payments_subtitle: "Попълнете платежния си профил за по-точни benchmarks и по-дълбок поглед върху маржа при interchange, мрежови такси и маржа на процесора.",
+    onboarding_coverage: "Общо покритие",
 };

@@ -108,7 +108,7 @@ describe("classifyResult — matrix from Decision_Log_Iter4", () => {
     // country=ES rows + ES anchors change real ES results; zero logic change).
     // Same pin update as paymentsGap.test.js — this second pin was missed in
     // the original chunk and caught by external verification.
-    expect(ENGINE_VERSION).toBe("payments-gap-1.7.0");
+    expect(ENGINE_VERSION).toBe("payments-gap-1.8.0");
   });
 
   const base = { monthly_gmv_eur: 40000, ticket_present: true, multi_anchor_ran: false, multi_anchor_empty: false, channel: "online" };

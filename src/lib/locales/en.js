@@ -1643,6 +1643,7 @@ export default {
     az_err_website_len: "Website: must be 200 characters or fewer.",
     az_err_sector: "Sector: pick one of the listed options.",
     az_err_rate_limited: "Too many analyses from your network right now. Try again in about {mins} min.",
+    az_err_rate_unavailable: "The secure request control is temporarily unavailable. Nothing was submitted. Please try again in a few minutes.",
     az_err_invalid_input: "Please review \"{field}\" — the value is out of range.",
     az_err_generic: "We couldn't run your analysis right now. Please try again in a moment.",
     az_err_network: "We couldn't reach the server. Please check your connection and try again.",
@@ -1674,4 +1675,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Payments infrastructure",
+    onboarding_payments_title: "Map your payments stack.",
+    onboarding_payments_subtitle: "Complete your payments profile to sharpen benchmarks and unlock deeper margin intelligence across interchange, scheme fees and processor margin.",
+    onboarding_coverage: "Overall coverage",
 };

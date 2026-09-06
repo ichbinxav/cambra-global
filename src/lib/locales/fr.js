@@ -1576,6 +1576,7 @@ export default {
     az_err_website_len: "Site web : 200 caractères maximum.",
     az_err_sector: "Secteur : choisissez l'une des options proposées.",
     az_err_rate_limited: "Trop d'analyses depuis votre réseau en ce moment. Réessayez dans environ {mins} min.",
+    az_err_rate_unavailable: "Le contrôle sécurisé des demandes est temporairement indisponible. Rien n'a été envoyé. Réessayez dans quelques minutes.",
     az_err_invalid_input: "Veuillez vérifier « {field} » — la valeur est hors limites.",
     az_err_generic: "Nous n'avons pas pu lancer votre analyse pour le moment. Merci de réessayer dans un instant.",
     az_err_network: "Nous n'avons pas pu joindre le serveur. Vérifiez votre connexion et réessayez.",
@@ -1607,4 +1608,8 @@ export default {
     psp_connect_title: "Connecter {provider}",
     psp_connect_body: "Nous mesurons ce que vous payez vraiment sur 90 jours de transactions réelles — rien d'estimé.",
     psp_connect_cta: "Connecter {provider}",
+    onboarding_payments_eyebrow: "Infrastructure de paiement",
+    onboarding_payments_title: "Cartographiez votre infrastructure de paiement.",
+    onboarding_payments_subtitle: "Complétez votre profil de paiement pour affiner les benchmarks et révéler la marge liée à l'interchange, aux frais de réseau et à la marge du prestataire.",
+    onboarding_coverage: "Couverture globale",
 };

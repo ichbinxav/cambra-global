@@ -1584,6 +1584,7 @@ export default {
     az_err_website_len: "Website: Darf höchstens 200 Zeichen lang sein.",
     az_err_sector: "Branche: Wählen Sie eine der aufgeführten Optionen.",
     az_err_rate_limited: "Zu viele Analysen aus Ihrem Netzwerk gerade. Versuchen Sie es in etwa {mins} Min. erneut.",
+    az_err_rate_unavailable: "Die sichere Anfragekontrolle ist vorübergehend nicht verfügbar. Es wurde nichts gesendet. Bitte versuchen Sie es in einigen Minuten erneut.",
     az_err_invalid_input: "Bitte prüfen Sie „{field}“ — der Wert liegt außerhalb des Bereichs.",
     az_err_generic: "Wir konnten Ihre Analyse gerade nicht ausführen. Bitte versuchen Sie es gleich erneut.",
     az_err_network: "Wir konnten den Server nicht erreichen. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
@@ -1615,4 +1616,8 @@ export default {
     psp_connect_title: "{provider} verbinden",
     psp_connect_body: "Wir messen, was Sie wirklich zahlen — aus 90 Tagen echter Transaktionen, nichts geschätzt.",
     psp_connect_cta: "{provider} verbinden",
+    onboarding_payments_eyebrow: "Zahlungsinfrastruktur",
+    onboarding_payments_title: "Erfassen Sie Ihre Zahlungsinfrastruktur.",
+    onboarding_payments_subtitle: "Vervollständigen Sie Ihr Zahlungsprofil, um Benchmarks zu schärfen und Margenpotenziale bei Interchange, Scheme-Gebühren und Prozessoraufschlägen zu erkennen.",
+    onboarding_coverage: "Gesamtabdeckung",
 };

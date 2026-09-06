@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Veebileht: kuni 200 tähemärki.",
     az_err_sector: "Sektor: vali üks loetletud valikutest.",
     az_err_rate_limited: "Praegu liiga palju analüüse sinu võrgust. Proovi uuesti umbes {mins} min pärast.",
+    az_err_rate_unavailable: "Turvaline päringukontroll pole ajutiselt saadaval. Midagi ei saadetud. Proovi mõne minuti pärast uuesti.",
     az_err_invalid_input: "Kontrolli välja „{field}“ — väärtus on vahemikust väljas.",
     az_err_generic: "Me ei saanud sinu analüüsi praegu teha. Palun proovi hetke pärast uuesti.",
     az_err_network: "Me ei saanud serveriga ühendust. Kontrolli ühendust ja proovi uuesti.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Makseinfrastruktuur",
+    onboarding_payments_title: "Kaardista oma makseinfrastruktuur.",
+    onboarding_payments_subtitle: "Täida makseprofiil, et saada täpsemad võrdlused ning sügavam ülevaade interchange'i, võrgutasude ja töötleja marginaalist.",
+    onboarding_coverage: "Üldine katvus",
 };

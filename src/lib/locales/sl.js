@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Spletna stran: največ 200 znakov.",
     az_err_sector: "Sektor: izberi eno od navedenih možnosti.",
     az_err_rate_limited: "Trenutno preveč analiz iz tvojega omrežja. Poskusi znova čez približno {mins} min.",
+    az_err_rate_unavailable: "Varni nadzor zahtev je začasno nedosegljiv. Nič ni bilo poslano. Poskusi znova čez nekaj minut.",
     az_err_invalid_input: "Preveri »{field}« — vrednost je zunaj razpona.",
     az_err_generic: "Tvoje analize trenutno ni bilo mogoče izvesti. Prosimo, poskusi znova čez trenutek.",
     az_err_network: "Strežnika nismo mogli doseči. Preveri povezavo in poskusi znova.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Plačilna infrastruktura",
+    onboarding_payments_title: "Začrtajte svojo plačilno infrastrukturo.",
+    onboarding_payments_subtitle: "Dopolnite plačilni profil za natančnejše benchmarke in globlji vpogled v maržo pri interchangeu, omrežnih pristojbinah in marži procesorja.",
+    onboarding_coverage: "Skupna pokritost",
 };

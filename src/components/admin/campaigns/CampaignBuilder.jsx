@@ -56,12 +56,16 @@ function Label({ children, hint = null }) {
 }
 
 function Readiness({ value }) {
-  const style = value === "READY"
+  const style = ["READY", "SEND_READY"].includes(value)
     ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700"
-    : value === "BLOCKED"
+    : ["BLOCKED", "BROKEN", "SETUP_REQUIRED", "SETUP_PENDING"].includes(value)
       ? "border-rose-500/25 bg-rose-500/10 text-rose-700"
       : "border-amber-500/25 bg-amber-500/10 text-amber-700";
   return <span className={`rounded-full border px-2 py-1 text-[9px] font-black ${style}`}>{String(value || "UNKNOWN").replaceAll("_", " ")}</span>;
+}
+
+function senderState(sender) {
+  return sender?.readiness?.status || (sender?.readiness?.ready ? "SEND_READY" : "SETUP_REQUIRED");
 }
 
 function firstName(value) {
@@ -203,6 +207,7 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
   const selectedPolicy = options?.target_profiles?.find((profile) => profile.id === form.target_profile_id) || null;
   const selectedSenderRows = (options?.senders || []).filter((sender) => selectedSenders.has(sender.profile_key));
   const selectedSenderReady = selectedSenderRows.some((sender) => sender.readiness?.ready);
+  const selectedSenderPrepared = selectedSenderRows.filter((sender) => sender.readiness?.prepared).length;
   const budgetMinor = Math.round(Number(form.budget_eur) * 100);
   const contactLimit = Number(form.contact_limit);
   const companyContactLimit = Number(form.company_contact_limit);
@@ -379,7 +384,8 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
             <div className="rounded-2xl border border-white/10 bg-white/[.05] px-4 py-3">
               <p className="text-[9px] font-black uppercase tracking-wider text-white/50">Outbound posture</p>
               <p className="mt-1 text-sm font-black">{options.outbound_posture?.status || "UNKNOWN"}</p>
-              <p className="mt-1 text-[10px] text-white/55">Observed send capacity: {options.outbound_posture?.capacity || 0}/day</p>
+              <p className="mt-1 text-[10px] text-white/70">{options.sender_counts?.configured ?? options.senders.length} configured · {options.sender_counts?.prepared ?? 0} technically prepared · {options.sender_counts?.send_ready ?? 0} send-ready</p>
+              <p className="mt-1 text-[10px] text-white/55">Authorized live capacity: {options.outbound_posture?.capacity || 0}/day</p>
             </div>
           </div>
         </div>
@@ -448,9 +454,9 @@ export default function CampaignBuilder({ call, onCreated, onCancel, initialAudi
       <section className="grid gap-5 xl:grid-cols-2">
         <div className="rounded-2xl border bg-card p-4 md:p-5">
           <div className="mb-4 flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-xs font-black text-background">4</span><div><h3 className="text-sm font-black">Choose sender emails</h3><p className="text-[10px] text-muted-foreground">Explicit transport identities, never a provider default.</p></div></div>
-          <div className="max-h-[360px] space-y-2 overflow-auto pr-1">{options.senders.map((sender) => <label key={sender.profile_key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${selectedSenders.has(sender.profile_key) ? "border-cyan-500/40 bg-cyan-500/5" : ""}`}><input aria-label={`Use ${sender.from_address || sender.profile_key}`} type="checkbox" checked={selectedSenders.has(sender.profile_key)} onChange={() => toggleSender(sender.profile_key)} className="mt-1" /><Mail size={14} className="mt-0.5 shrink-0" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{sender.from_address || sender.profile_key}</span><span className="mt-0.5 block text-[9px] text-muted-foreground">{sender.provider} / {sender.domain} / cap {sender.current_daily_cap}/day / webhook {sender.webhook_status}</span></span><Readiness value={sender.readiness?.ready ? "READY" : String(sender.status || "NOT_READY").toUpperCase()} /></label>)}</div>
+          <div className="max-h-[360px] space-y-2 overflow-auto pr-1">{options.senders.map((sender) => <label key={sender.profile_key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${selectedSenders.has(sender.profile_key) ? "border-cyan-500/40 bg-cyan-500/5" : ""}`}><input aria-label={`Use ${sender.from_address || sender.profile_key}`} type="checkbox" checked={selectedSenders.has(sender.profile_key)} onChange={() => toggleSender(sender.profile_key)} className="mt-1" /><Mail size={14} className="mt-0.5 shrink-0" /><span className="min-w-0 flex-1"><span className="block truncate text-xs font-black">{sender.from_address || sender.profile_key}</span><span className="mt-0.5 block text-[9px] text-muted-foreground">{sender.provider} / {sender.domain} / configured cap {sender.current_daily_cap}/day / webhook {sender.webhook_status}</span><span className="mt-1 block text-[9px] text-muted-foreground">{(sender.readiness?.blockers || []).join(" / ") || "All sender checks pass."}</span></span><Readiness value={senderState(sender)} /></label>)}</div>
           {!options.senders.length && <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No sender identity is configured.</p>}
-          {selectedSenders.size > 0 && !selectedSenderReady && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px] text-amber-900"><b>No selected sender is ready.</b> The draft can be preserved, but approval stays blocked until at least one selected mailbox is active, healthy and within cap.</div>}
+          {selectedSenders.size > 0 && !selectedSenderReady && <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10px] text-amber-900"><b>{selectedSenderPrepared ? `${selectedSenderPrepared} selected mailbox(es) are configured and technically prepared, but paused.` : "The selected mailbox setup is incomplete."}</b> The draft can be preserved, but approval stays blocked until at least one selected mailbox is active, healthy and within cap.</div>}
         </div>
 
         <div className="rounded-2xl border bg-card p-4 md:p-5">

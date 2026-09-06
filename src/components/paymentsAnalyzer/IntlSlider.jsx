@@ -24,12 +24,12 @@ export default function IntlSlider({ value, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}>
           {t("az_intl_title")}
         </span>
         <span
           className="tabular-nums font-bold"
-          style={{ color: "#ffffff", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "22px", letterSpacing: "-0.02em" }}
+          style={{ color: "var(--az-text, #ffffff)", fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "22px", letterSpacing: "-0.02em" }}
         >
           {isSet ? `${pct}%` : "—"}
         </span>
@@ -46,9 +46,9 @@ export default function IntlSlider({ value, onChange }) {
         aria-label={t("az_intl_aria")}
       />
 
-      <div className="flex items-center justify-between text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <div className="flex items-center justify-between text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>
         <span>0%</span>
-        <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.8)" }}>{contextLabel}</span>
+        <span className="text-[11px]" style={{ color: "var(--az-text, rgba(255,255,255,0.8))" }}>{contextLabel}</span>
         <span>100%</span>
       </div>
     </div>

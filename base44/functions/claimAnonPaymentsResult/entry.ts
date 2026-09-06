@@ -25,6 +25,18 @@ import {
   validateLegalAcceptance,
 } from '../../shared/legalAcceptance.ts';
 import { ensureReferralEntryDiscount } from '../../shared/referralEntryDiscount.ts';
+import {
+  COLLECTIVE_TERMS_VERSION,
+  PRIVACY_VERSION,
+  PUBLIC_TERMS_VERSION,
+  buildPaymentReportAcceptanceSnapshot,
+  buildPaymentReportCollectiveMember,
+  normalizePoolMembershipStatus,
+  normalizeReportAccessState,
+  paymentReportAccessView,
+  sanitizeUnlockedPaymentReport,
+  validatePaymentReportAcceptance,
+} from '../../shared/paymentReportAccess.ts';
 
 // The PaymentsAnalysisSession CAS claim is the only ownership authority and
 // is acquired before any Brand, AnalyzerResult or snapshot materialization.
@@ -51,6 +63,226 @@ function claimResponse(session: any, claimed: boolean) {
     analyzer_result_id: session.claim_analyzer_result_id,
     brand_id: session.claim_brand_id,
   });
+}
+
+function mutationUpdatedExactlyOne(result: any) {
+  const counts = [result?.updated, result?.modified_count, result?.matched_count]
+    .filter((value) => value !== undefined && value !== null)
+    .map(Number);
+  return counts.length > 0 && counts.every((value) => value === 1);
+}
+
+async function readOwnedCompletedSession(service: any, anonymousSessionId: string, userEmail: string) {
+  if (!UUID_V4.test(anonymousSessionId)) return null;
+  const sessions = await service.entities.PaymentsAnalysisSession.filter(
+    { anon_session_id: anonymousSessionId },
+    '-created_date',
+    2,
+  );
+  const eligibility = selectAnonymousPaymentsClaimSession(sessions, userEmail);
+  if (!eligibility.eligible) return null;
+  const session = eligibility.session;
+  if (
+    String(session?.claim_state || '').toUpperCase() !== 'COMPLETED' ||
+    normalizeAnonymousClaimEmail(session?.claim_owner) !== userEmail
+  ) return null;
+  return session;
+}
+
+async function mutateReportAccess(
+  service: any,
+  session: any,
+  patch: Record<string, unknown>,
+) {
+  const rawState = session?.report_access_state ?? null;
+  const rawRevision = session?.report_access_revision !== undefined &&
+      session?.report_access_revision !== null &&
+      Number.isSafeInteger(Number(session.report_access_revision))
+    ? Number(session.report_access_revision)
+    : null;
+  const nextRevision = (rawRevision ?? 0) + 1;
+  const result = await service.entities.PaymentsAnalysisSession.updateMany(
+    {
+      id: String(session.id),
+      anon_session_id: String(session.anon_session_id),
+      claim_state: 'COMPLETED',
+      claim_owner: String(session.claim_owner),
+      report_access_state: rawState,
+      report_access_revision: rawRevision,
+    },
+    { $set: { ...patch, report_access_revision: nextRevision } },
+  );
+  const observed = await service.entities.PaymentsAnalysisSession.get(String(session.id));
+  return {
+    ok: mutationUpdatedExactlyOne(result),
+    session: observed,
+    revision: nextRevision,
+  };
+}
+
+async function handlePaymentReportAction(
+  service: any,
+  req: Request,
+  body: any,
+  userEmail: string,
+) {
+  const anonymousSessionId = String(body?.anon_session_id || body?.session_id || '');
+  const session = await readOwnedCompletedSession(service, anonymousSessionId, userEmail);
+  if (!session) return blocked();
+  const action = String(body?.action || '');
+
+  if (action === 'payment_report_status') {
+    return Response.json({ ok: true, report_access: paymentReportAccessView(session) });
+  }
+
+  if (action === 'payment_report_read') {
+    if (normalizeReportAccessState(session) !== 'UNLOCKED') {
+      return Response.json({ ok: false, error: 'report_locked' }, { status: 403 });
+    }
+    return Response.json(sanitizeUnlockedPaymentReport(session));
+  }
+
+  if (action === 'payment_report_leave') {
+    if (normalizeReportAccessState(session) !== 'UNLOCKED') {
+      return Response.json({ ok: false, error: 'report_locked' }, { status: 403 });
+    }
+    const leftAt = new Date().toISOString();
+    const memberId = String(session.pool_collective_member_id || '');
+    if (memberId) {
+      const member = await service.entities.CollectiveMember.get(memberId);
+      if (
+        member?.id &&
+        normalizeAnonymousClaimEmail(member.email) === userEmail &&
+        String(member.source_session || '') === anonymousSessionId &&
+        String(member.status || '') !== 'declined'
+      ) {
+        await service.entities.CollectiveMember.update(member.id, {
+          status: 'declined',
+          left_at: leftAt,
+        });
+      }
+    }
+    const mutation = await mutateReportAccess(service, session, {
+      report_access_state: 'UNLOCKED',
+      pool_membership_status: 'REVOKED',
+      pool_revoked_at: leftAt,
+      report_access_updated_at: leftAt,
+    });
+    if (!mutation.ok && normalizePoolMembershipStatus(mutation.session) !== 'REVOKED') {
+      return internalError();
+    }
+    return Response.json({ ok: true, report_access: paymentReportAccessView(mutation.session) });
+  }
+
+  if (action !== 'payment_report_accept') {
+    return Response.json({ ok: false, error: 'unsupported_action' }, { status: 400 });
+  }
+
+  const validated = validatePaymentReportAcceptance(body);
+  if (!validated.ok) {
+    return Response.json(validated, { status: 409 });
+  }
+  if (
+    normalizeReportAccessState(session) === 'UNLOCKED' &&
+    normalizePoolMembershipStatus(session) === 'ACTIVE'
+  ) {
+    return Response.json({ ok: true, already_accepted: true, report_access: paymentReportAccessView(session) });
+  }
+  if (normalizeReportAccessState(session) === 'ACCEPTING') {
+    return Response.json({ ok: false, error: 'acceptance_in_progress' }, { status: 409 });
+  }
+
+  const previousAccessState = normalizeReportAccessState(session);
+  const acceptanceToken = `payment-report:${crypto.randomUUID()}`;
+  const acceptanceStartedAt = new Date().toISOString();
+  const acquired = await mutateReportAccess(service, session, {
+    report_access_state: 'ACCEPTING',
+    report_access_token: acceptanceToken,
+    report_access_updated_at: acceptanceStartedAt,
+  });
+  if (
+    !acquired.ok ||
+    normalizeReportAccessState(acquired.session) !== 'ACCEPTING' ||
+    String(acquired.session.report_access_token || '') !== acceptanceToken
+  ) {
+    const observed = paymentReportAccessView(acquired.session);
+    if (observed.unlocked && observed.membership_status === 'ACTIVE') {
+      return Response.json({ ok: true, already_accepted: true, report_access: observed });
+    }
+    return Response.json({ ok: false, error: 'acceptance_in_progress' }, { status: 409 });
+  }
+
+  try {
+    const acceptedAt = new Date().toISOString();
+    const snapshot = buildPaymentReportAcceptanceSnapshot({
+      session: acquired.session,
+      user_email: userEmail,
+      accepted_at: acceptedAt,
+      ip_address: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
+      user_agent: req.headers.get('user-agent'),
+    });
+    const acceptanceSnapshotHash = await sha256(snapshot);
+    const existingMembers = await service.entities.CollectiveMember.filter(
+      { source_session: anonymousSessionId, email: userEmail },
+      '-accepted_at',
+      10,
+    );
+    let member = Array.isArray(existingMembers)
+      ? existingMembers.find((row: any) => row?.id)
+      : null;
+    const memberPayload = buildPaymentReportCollectiveMember({
+      session: acquired.session,
+      user_email: userEmail,
+      accepted_at: acceptedAt,
+      acceptance_snapshot_hash: acceptanceSnapshotHash,
+    });
+    member = member?.id
+      ? await service.entities.CollectiveMember.update(member.id, { ...memberPayload, left_at: null })
+      : await service.entities.CollectiveMember.create(memberPayload);
+    if (!member?.id) throw new Error('payment_report_member_not_persisted');
+
+    const finalised = await mutateReportAccess(service, acquired.session, {
+      report_access_state: 'UNLOCKED',
+      report_access_token: '',
+      report_access_updated_at: acceptedAt,
+      pool_membership_status: 'ACTIVE',
+      pool_collective_member_id: String(member.id),
+      pool_accepted_at: acceptedAt,
+      pool_revoked_at: null,
+      pool_acceptance_snapshot_hash: acceptanceSnapshotHash,
+      pool_acceptance_snapshot_json: snapshot,
+      pool_collective_terms_version: COLLECTIVE_TERMS_VERSION,
+      pool_public_terms_version: PUBLIC_TERMS_VERSION,
+      pool_privacy_version: PRIVACY_VERSION,
+    });
+    if (
+      !finalised.ok ||
+      normalizeReportAccessState(finalised.session) !== 'UNLOCKED' ||
+      normalizePoolMembershipStatus(finalised.session) !== 'ACTIVE'
+    ) throw new Error('payment_report_acceptance_not_finalised');
+    return Response.json({ ok: true, already_accepted: false, report_access: paymentReportAccessView(finalised.session) });
+  } catch (error) {
+    const latest = await service.entities.PaymentsAnalysisSession.get(String(acquired.session.id)).catch((readError: any) => safeBestEffort(readError, {
+      operation: 'claimAnonPaymentsResult:payment_report_acceptance_recovery_read',
+      fallback: null,
+      severity: 'critical',
+    }));
+    if (
+      normalizeReportAccessState(latest) === 'ACCEPTING' &&
+      String(latest?.report_access_token || '') === acceptanceToken
+    ) {
+      await mutateReportAccess(service, latest, {
+        report_access_state: previousAccessState,
+        report_access_token: '',
+        report_access_updated_at: new Date().toISOString(),
+      }).catch((recoveryError: any) => safeBestEffort(recoveryError, {
+        operation: 'claimAnonPaymentsResult:payment_report_acceptance_recovery_write',
+        fallback: null,
+        severity: 'critical',
+      }));
+    }
+    throw error;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -151,6 +383,10 @@ Deno.serve(async (req) => {
         return Response.json({ ok: false, error: 'legal_acceptance_not_persisted' }, { status: 503 });
       }
       return Response.json({ ok: true, already_accepted: false, acceptance_id: created.id });
+    }
+
+    if (String(body?.action || '').startsWith('payment_report_')) {
+      return await handlePaymentReportAction(service, req, body, userEmail);
     }
 
     const anonymousSessionId = body?.anon_session_id || body?.session_id || null;

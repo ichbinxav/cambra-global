@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Svetainė: ne daugiau kaip 200 simbolių.",
     az_err_sector: "Sektorius: pasirink vieną iš išvardytų parinkčių.",
     az_err_rate_limited: "Šiuo metu per daug analizių iš tavo tinklo. Bandyk dar kartą maždaug po {mins} min.",
+    az_err_rate_unavailable: "Saugus užklausų valdymas laikinai nepasiekiamas. Niekas nebuvo išsiųsta. Bandyk dar kartą po kelių minučių.",
     az_err_invalid_input: "Patikrink „{field}“ — reikšmė už diapazono ribų.",
     az_err_generic: "Šiuo metu negalėjome atlikti tavo analizės. Prašome bandyti dar kartą po akimirkos.",
     az_err_network: "Nepavyko pasiekti serverio. Patikrink ryšį ir bandyk dar kartą.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Mokėjimų infrastruktūra",
+    onboarding_payments_title: "Susisteminkite savo mokėjimų infrastruktūrą.",
+    onboarding_payments_subtitle: "Užpildykite mokėjimų profilį, kad benchmarkai būtų tikslesni ir geriau matytumėte interchange, tinklo mokesčių bei apdorojimo maržą.",
+    onboarding_coverage: "Bendra aprėptis",
 };

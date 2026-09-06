@@ -1585,6 +1585,7 @@ export default {
     az_err_website_len: "Website: no máximo 200 caracteres.",
     az_err_sector: "Setor: escolha uma das opções listadas.",
     az_err_rate_limited: "Demasiadas análises da sua rede neste momento. Tente novamente dentro de {mins} min.",
+    az_err_rate_unavailable: "O controlo seguro de pedidos está temporariamente indisponível. Nada foi enviado. Tente novamente dentro de alguns minutos.",
     az_err_invalid_input: "Reveja «{field}» — o valor está fora do intervalo.",
     az_err_generic: "Não conseguimos executar a sua análise agora. Tente novamente dentro de momentos.",
     az_err_network: "Não conseguimos contactar o servidor. Verifique a ligação e tente novamente.",
@@ -1616,4 +1617,8 @@ export default {
     psp_connect_title: "Ligar {provider}",
     psp_connect_body: "Medimos o que realmente paga a partir de 90 dias de transações reais — nada estimado.",
     psp_connect_cta: "Ligar {provider}",
+    onboarding_payments_eyebrow: "Infraestrutura de pagamentos",
+    onboarding_payments_title: "Mapeie a sua infraestrutura de pagamentos.",
+    onboarding_payments_subtitle: "Complete o perfil de pagamentos para afinar benchmarks e revelar margem em interchange, taxas de rede e margem do processador.",
+    onboarding_coverage: "Cobertura total",
 };

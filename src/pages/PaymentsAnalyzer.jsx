@@ -18,9 +18,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import Navbar from "@/components/landing/Navbar";
-import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp, Building2, CreditCard, ShieldCheck, CheckCircle2, BarChart3 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { trackProductEvent } from "@/lib/productAnalytics";
 
@@ -37,6 +35,8 @@ import AnalyzingOverlay from "@/components/paymentsAnalyzer/AnalyzingOverlay";
 import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import CountryField from "@/components/paymentsAnalyzer/CountryField";
 import CurrencyField from "@/components/paymentsAnalyzer/CurrencyField";
+import AnalyzerJourneyShell from "@/components/paymentsAnalyzer/AnalyzerJourneyShell";
+import { getPaymentsJourneyCopy } from "@/lib/paymentsJourneyCopy";
 import {
   ACTIVE_LAUNCH_MARKETS,
   EUROPE_MARKETS,
@@ -222,9 +222,23 @@ function fieldRangeError(key, value, t, lang, currency = "EUR") {
   return null;
 }
 
+function readFunctionErrorBody(error) {
+  const candidates = [error?.data, error?.response?.data, error?.originalError?.response?.data];
+  for (const candidate of candidates) {
+    let value = candidate;
+    for (let layer = 0; layer < 4 && typeof value === "string"; layer += 1) {
+      try { value = JSON.parse(value); }
+      catch { break; }
+    }
+    if (value && typeof value === "object") return value;
+  }
+  return null;
+}
+
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
-  const { t, lang, locale } = useTranslation();
+  const { t, lang, locale, formatCurrency } = useTranslation();
+  const journeyCopy = getPaymentsJourneyCopy(lang);
   const { marketCode, setMarket } = useMarket();
   const countryOptions = useMemo(() => EUROPE_MARKETS
     .filter((market) => ACTIVE_LAUNCH_MARKETS.includes(market.iso2))
@@ -299,9 +313,17 @@ export default function PaymentsAnalyzer() {
   // funnel change: no report without a valid email). Validated here AND in
   // submitPaymentsAnalysis — the backend is authoritative.
   const [email, setEmail]               = useState("");
+  const [activeStep, setActiveStep]     = useState(1);
+  const [entryMode, setEntryMode]       = useState("manual");
 
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
+
+  const changeStep = (next) => {
+    setErrorBanner("");
+    setActiveStep(Math.max(1, Math.min(4, next)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // GROWTH-1 T3 — time-to-value: ms from Analyzer mount to the submit request,
   // sent as time_to_result_ms (bounded + validated server-side; no PII).
@@ -462,6 +484,55 @@ export default function PaymentsAnalyzer() {
     return { done, total, pct: Math.round((done / total) * 100) };
   }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore, email]);
 
+  const businessReady = useMemo(() => {
+    const trimmedBrand = brandName.trim();
+    const brandValid = !trimmedBrand || (trimmedBrand.length >= 2 && trimmedBrand.length <= 80);
+    const websiteValue = website.trim();
+    const websiteValid = !websiteValue || (!/\s/.test(websiteValue) && /\./.test(websiteValue) && websiteValue.length <= 200);
+    return Boolean(
+      country &&
+      ACTIVE_LAUNCH_MARKETS.includes(country) &&
+      EMAIL_RE.test(email.trim()) &&
+      brandValid &&
+      websiteValid &&
+      (!sector || BRAND_SECTOR_SLUGS.includes(sector))
+    );
+  }, [brandName, country, email, sector, website]);
+
+  const paymentReady = useMemo(() => {
+    const inRange = (key, value) => value !== "" && !fieldRangeError(key, value, t, lang, currency);
+    if (channel === "combined") {
+      return inRange("monthly_gmv_eur", combinedOnline.monthly_gmv_eur)
+        && inRange("avg_ticket_eur", combinedOnline.avg_ticket_eur)
+        && inRange("intl_pct", combinedOnline.intl_pct)
+        && Boolean(combinedOnline.provider_slug)
+        && inRange("monthly_gmv_eur", combinedInStore.monthly_gmv_eur)
+        && inRange("avg_ticket_eur", combinedInStore.avg_ticket_eur)
+        && Boolean(combinedInStore.provider_slug)
+        && (!cardMixDebit || inRange("card_mix_debit_pct", cardMixDebit));
+    }
+    return inRange("monthly_gmv_eur", gmv)
+      && inRange("avg_ticket_eur", avgTicket)
+      && Boolean(providerSlug)
+      && (channel !== "online" || inRange("intl_pct", intlPct))
+      && (!cardMixDebit || inRange("card_mix_debit_pct", cardMixDebit));
+  }, [avgTicket, cardMixDebit, channel, combinedInStore, combinedOnline, currency, gmv, intlPct, lang, providerSlug, t]);
+
+  const providerLabel = useMemo(() => {
+    const options = channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions;
+    return options.find((item) => item.slug === providerSlug)?.label || providerSlug || "—";
+  }, [channel, inStoreProviderOptions, onlineProviderOptions, providerSlug]);
+
+  const visibleMonthlyVolume = channel === "combined"
+    ? Number(combinedOnline.monthly_gmv_eur || 0) + Number(combinedInStore.monthly_gmv_eur || 0)
+    : Number(gmv || 0);
+  const visibleOnlineVolume = channel === "combined"
+    ? Number(combinedOnline.monthly_gmv_eur || 0)
+    : channel === "online" ? visibleMonthlyVolume : 0;
+  const visibleOnlineShare = visibleMonthlyVolume > 0
+    ? Math.round((visibleOnlineVolume / visibleMonthlyVolume) * 100)
+    : 0;
+
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
     if (submitting) return; // double-submit guard (CONSOLIDATE-1 T2)
@@ -535,6 +606,12 @@ export default function PaymentsAnalyzer() {
       const resp = await base44.functions.invoke("submitPaymentsAnalysis", payload);
       const body = resp?.data || resp;
 
+      if (body?.error === "rate_limit_unavailable") {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'rate_limit_unavailable'});
+        setErrorBanner(t("az_err_rate_unavailable"));
+        setSubmitting(false);
+        return;
+      }
       if (body?.error === "rate_limited") {
         trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'rate_limited'});
         const secs = Number(body.retry_after_seconds) || 0;
@@ -568,7 +645,22 @@ export default function PaymentsAnalyzer() {
       // query string in the process, breaking the session handoff.
       trackProductEvent('analysis_completed',{source:'payments_analyzer',channel,mode:'estimated'});
       navigate(`/Results?session=${encodeURIComponent(body.anon_session_id)}`);
-    } catch {
+    } catch (error) {
+      const body = readFunctionErrorBody(error);
+      if (body?.error === "rate_limit_unavailable") {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'rate_limit_unavailable'});
+        setErrorBanner(t("az_err_rate_unavailable"));
+        setSubmitting(false);
+        return;
+      }
+      if (body?.error === "rate_limited") {
+        trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'rate_limited'});
+        const secs = Number(body.retry_after_seconds) || 0;
+        const mins = Math.max(1, Math.ceil(secs / 60));
+        setErrorBanner(t("az_err_rate_limited", { mins }));
+        setSubmitting(false);
+        return;
+      }
       trackProductEvent('analysis_failed',{source:'payments_analyzer',channel,reason_code:'network'});
       setErrorBanner(t("az_err_network"));
       setSubmitting(false);
@@ -576,115 +668,85 @@ export default function PaymentsAnalyzer() {
   };
 
   return (
-    <div
-      className="relative min-h-screen flex flex-col font-inter overflow-x-hidden"
-      style={{
-        color: "#ffffff",
-        background:
-          "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
-      }}
-    >
-      {/* Fixed ambient DOT mesh — violet dots on the dark navy canvas */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(139,123,255,0.22) 1.3px, transparent 2px)",
-          backgroundSize: "34px 30px",
-          backgroundPosition: "0 0",
-          opacity: 1,
-          maskImage:
-            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(120% 90% at 82% 12%, #000 0%, rgba(0,0,0,0.35) 55%, transparent 100%)",
-        }}
-      />
-
-      <Navbar />
-
-      {/* Analyzing overlay — live progress steps while the audit runs. The
-          sequence advances on a timer (so a cold-start submit never looks
-          hung), but the overlay CLOSES the moment `submitting` flips back to
-          false — i.e. dictated by the real response, not the animation. */}
+    <AnalyzerJourneyShell activeStep={activeStep} onStepChange={changeStep}>
       {submitting && <AnalyzingOverlay />}
+      <div className="payment-journey__content">
+        <section className="payment-journey__workspace">
+          <div className="payment-journey__eyebrow">{t("az_pill")}</div>
+          <h1 className="payment-journey__title">
+            {activeStep === 1 ? t("az_title") : activeStep === 2 ? t("bp_h2") : activeStep === 3 ? journeyCopy.paymentsTitle : journeyCopy.reviewTitle}
+          </h1>
+          <p className="payment-journey__intro">
+            {activeStep === 1 ? t("az_sub") : activeStep === 2 ? t("bp_sub") : activeStep === 3 ? journeyCopy.paymentsBody : journeyCopy.reviewBody}
+          </p>
 
-      {/* Thin progress bar under navbar */}
-      <div className="fixed top-14 left-0 right-0 z-40 h-[2px]" style={{ background: "rgba(255,255,255,0.05)" }}>
-        <div
-          className="h-full transition-all duration-500"
-          style={{
-            width: `${progress.pct}%`,
-            background: "var(--g-voltio)",
-            boxShadow: "0 0 12px rgba(91,76,245,0.55)",
-          }}
-        />
-      </div>
+          {activeStep === 1 && (
+            <>
+              <AnalyzerEntryCards
+                selected={entryMode}
+                onSelect={(mode) => {
+                  setEntryMode(mode);
+                  if (mode === "connect") {
+                    navigate("/ConnectTools");
+                    return;
+                  }
+                  changeStep(2);
+                }}
+              />
+              <div className="payment-journey__disclosure">
+                <ShieldCheck size={18} />
+                <div>
+                  <strong>{journeyCopy.evidenceTitle}</strong>
+                  <p>{t("coll_sub")}</p>
+                </div>
+              </div>
+            </>
+          )}
 
-      {/* Container widens progressively — mobile stays at max-w-lg (phone-
-          shaped form), lg lifts to max-w-3xl, xl uses max-w-5xl so the
-          desktop layout can afford a 3-column row (ticket + intl + country)
-          without stretching sliders past the useful width. */}
-      <main className="relative z-10 flex-1 max-w-lg lg:max-w-3xl xl:max-w-5xl mx-auto w-full px-5 lg:px-8 pt-20 pb-16">
-        {/* Header pill + counter */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="inline-flex items-center gap-2 rounded-full px-3 py-1"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "var(--g-voltio)", boxShadow: "0 4px 14px -6px rgba(91,76,245,0.6)" }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "#ffffff" }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "#ffffff" }} />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "#ffffff" }}>{t("az_pill")}</span>
-          </div>
-          <span className="text-[11px] font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.55)" }}>
-            {t("az_progress", { done: progress.done, total: progress.total })}
-          </span>
-        </div>
+          {activeStep === 2 && (
+            <div className="journey-form space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FieldCard><CountryField value={country} onChange={setCountry} options={countryOptions} /></FieldCard>
+                <FieldCard><CurrencyField value={currency} onChange={setCurrencyChoice} options={currencyOptions} /></FieldCard>
+              </div>
+              <FieldCard>
+                <BrandBlock
+                  brandName={brandName}
+                  onBrandNameChange={setBrandName}
+                  website={website}
+                  onWebsiteChange={setWebsite}
+                  sector={sector}
+                  onSectorChange={setSector}
+                />
+              </FieldCard>
+              <FieldCard>
+                <div className="space-y-2.5">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="analyzer-field-label">{t("analyzer_email_label")}</span>
+                    <span className="analyzer-field-hint">{t("analyzer_email_hint")}</span>
+                  </div>
+                  <input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder={t("analyzer_email_placeholder")}
+                    className="analyzer-text-input"
+                  />
+                  {email.trim() !== "" && !EMAIL_RE.test(email.trim()) && <p className="analyzer-field-error" role="alert">{t("analyzer_email_invalid")}</p>}
+                  <p className="analyzer-field-help">{t("analyzer_email_privacy_note")} <Link to="/Privacy">{t("analyzer_email_privacy_link")}</Link></p>
+                </div>
+              </FieldCard>
+              <div className="payment-journey__actions">
+                <button type="button" className="journey-button journey-button--ghost" onClick={() => changeStep(1)}><ArrowLeft size={16} />{t("az_back")}</button>
+                <button type="button" className="journey-button journey-button--primary" disabled={!businessReady} onClick={() => changeStep(3)}>{journeyCopy.continue}<ArrowRight size={16} /></button>
+              </div>
+              {!businessReady && <p className="payment-journey__needed">{journeyCopy.incomplete} · {t("az_country_label")} · {t("analyzer_email_label")}</p>}
+            </div>
+          )}
 
-        <h1
-          className="mb-3"
-          style={{
-            color: "#ffffff",
-            fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-            fontSize: "clamp(30px, 5vw, 44px)",
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.02,
-          }}
-        >
-          {t("az_title")}
-        </h1>
-        <p className="text-[14px] mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
-          {t("az_sub")}
-        </p>
-
-        {/* 3-way entry cards — Connect / Upload / Manual. Presentational only:
-            selecting Connect routes to /ConnectTools (protected → login gate),
-            Upload is disabled (surface for now, not wired to anonymous flow),
-            Manual keeps the current form visible below (default state). */}
-        <AnalyzerEntryCards
-          selected="manual"
-          onSelect={(mode) => {
-            if (mode === "connect") navigate("/ConnectTools");
-            // "upload" (FASE B) — the real upload path is per-PSP, living
-            // under the provider selector. Scroll the user there to pick
-            // their provider and reveal the Upload-statements card. In
-            // combined mode #psp-selector doesn't exist, so fall back to the
-            // top of the form.
-            if (mode === "upload") {
-              const target =
-                document.getElementById("psp-selector") ||
-                document.getElementById("analyzer-form");
-              target?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-            // "manual" — scroll down to where the questions begin so the user
-            // sees something happen (they clicked a card, they expect motion).
-            if (mode === "manual") {
-              document.getElementById("analyzer-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-          }}
-        />
+          {activeStep === 3 && <div className="journey-form">
 
         {/* Channel toggle — M4-TPV Fase 2B — OCULTO tras IN_STORE_UI_ENABLED
             hasta Fase 2A-redo. Ver comentario del useState de `channel`. */}
@@ -692,11 +754,7 @@ export default function PaymentsAnalyzer() {
           <div
             role="tablist"
             aria-label={t("az_channel_aria")}
-            className="mb-8 inline-flex items-center rounded-full p-1"
-            style={{
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)",
-            }}
+            className="analyzer-channel-tabs"
           >
             {[
               { key: "online",   label: t("analyzer_channel_online") },
@@ -714,16 +772,7 @@ export default function PaymentsAnalyzer() {
                     if (opt.key !== channel) setProviderSlug("");
                     setChannel(opt.key);
                   }}
-                  className="h-8 px-4 rounded-full text-[12px] font-bold transition-colors"
-                  style={
-                    active
-                      ? {
-                          background: "var(--g-voltio)",
-                          color: "#ffffff",
-                          boxShadow: "0 4px 12px -4px rgba(91,76,245,0.55)",
-                        }
-                      : { background: "transparent", color: "rgba(255,255,255,0.6)" }
-                  }
+                  className={active ? "is-active" : ""}
                 >
                   {opt.label}
                 </button>
@@ -736,11 +785,10 @@ export default function PaymentsAnalyzer() {
           <div
             role="alert"
             aria-live="polite"
-            className="mb-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
-            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}
+            className="analyzer-error-banner"
           >
             <AlertTriangle size={14} className="text-red-300 mt-0.5 shrink-0" aria-hidden="true" />
-            <p className="text-[12px] text-red-200 leading-relaxed whitespace-pre-line">{errorBanner}</p>
+            <p>{errorBanner}</p>
           </div>
         )}
 
@@ -761,16 +809,6 @@ export default function PaymentsAnalyzer() {
                 inStoreProviders={inStoreProviderOptions}
                 currency={currency}
               />
-              {/* Country + currency live at the top level — shared by both
-                  channels (a merchant is in one country, one currency). */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-8">
-                <FieldCard>
-                  <CountryField value={country} onChange={setCountry} options={countryOptions} />
-                </FieldCard>
-                <FieldCard>
-                  <CurrencyField value={currency} onChange={setCurrencyChoice} options={currencyOptions} />
-                </FieldCard>
-              </div>
             </>
           ) : (
           <>
@@ -783,7 +821,7 @@ export default function PaymentsAnalyzer() {
               row. On mobile they stack; on lg they pair (2 cols); on xl they
               spread to 3 cols so the extra desktop width actually earns its
               keep instead of leaving dead space on the right. */}
-          <div className={`grid grid-cols-1 lg:grid-cols-2 ${channel === "online" ? "xl:grid-cols-3" : ""} gap-x-8 gap-y-8`}>
+          <div className={`grid grid-cols-1 ${channel === "online" ? "lg:grid-cols-2" : ""} gap-4`}>
             <FieldCard>
               <AvgTicketInput value={avgTicket} onChange={setAvgTicket} currency={currency} />
             </FieldCard>
@@ -796,18 +834,6 @@ export default function PaymentsAnalyzer() {
                 <IntlSlider value={intlPct} onChange={setIntlPct} />
               </FieldCard>
             )}
-            {/* Country — kept as a native <select>: single-choice from 22
-                options, low frequency, no need for a grid. Lifted from its
-                own row into this one to reclaim the desktop width. */}
-            <FieldCard>
-              <CountryField value={country} onChange={setCountry} options={countryOptions} />
-            </FieldCard>
-            {/* FX-2 — merchant currency, proposed from the country but freely
-                changeable. Declares what the typed amounts mean; conversion to
-                EUR happens server-side at the frozen ECB rate. */}
-            <FieldCard>
-              <CurrencyField value={currency} onChange={setCurrencyChoice} options={currencyOptions} />
-            </FieldCard>
           </div>
 
           {/* Provider grid — ProviderGrid owns responsive density internally
@@ -816,10 +842,10 @@ export default function PaymentsAnalyzer() {
           <FieldCard>
             <div id="psp-selector" className="space-y-2.5 scroll-mt-24">
               <div className="flex items-baseline justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+                <span className="analyzer-field-label">
                   {t(channel === "in_store" ? "az_tpv_label" : "az_provider_label")}
                 </span>
-                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_one_tap")}</span>
+                <span className="analyzer-field-hint">{t("az_one_tap")}</span>
               </div>
               <ProviderGrid
                 options={channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions}
@@ -851,11 +877,10 @@ export default function PaymentsAnalyzer() {
             <button
               type="button"
               onClick={() => setCardMixOpen((o) => !o)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[44px] transition-colors"
-              style={{ border: "1px solid rgba(255,255,255,0.10)", background: "linear-gradient(180deg, #14112e 0%, #0a0818 100%)", color: "rgba(255,255,255,0.8)" }}
+              className="analyzer-optional-toggle"
             >
               <span className="flex items-center gap-2 text-[13px] font-medium">
-                {t("az_cardmix")} <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_optional")}</span>
+                {t("az_cardmix")} <span>{t("az_optional")}</span>
               </span>
               {cardMixOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -866,112 +891,58 @@ export default function PaymentsAnalyzer() {
             )}
           </div>
 
-          {/* UX-1 T1 — REQUIRED email. Nobody gets a report without one
-              (deliberate funnel change — lead capture before value). */}
-          <FieldCard>
-            <div className="space-y-2.5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
-                  {t("analyzer_email_label")}
-                </span>
-                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("analyzer_email_hint")}</span>
-              </div>
-              <input
-                type="email"
-                inputMode="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("analyzer_email_placeholder")}
-                className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
-                style={{ color: "#ffffff", background: "rgba(30,26,60,0.9)", border: "1px solid rgba(255,255,255,0.14)" }}
-              />
-              {email.trim() !== "" && !EMAIL_RE.test(email.trim()) && (
-                <p className="text-[11px]" style={{ color: "#FCA5A5" }} role="alert">{t("analyzer_email_invalid")}</p>
-              )}
-              {/* UX-1-FIX T3 — explicit use + visible privacy link next to the
-                  now-mandatory email field. Report delivery only; any future
-                  marketing use requires a separate explicit opt-in checkbox. */}
-              <p className="text-[10.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-                {t("analyzer_email_privacy_note")}{" "}
-                <Link to="/Privacy" className="underline hover:opacity-80" style={{ color: "rgba(255,255,255,0.75)" }}>
-                  {t("analyzer_email_privacy_link")}
-                </Link>
-              </p>
-            </div>
-          </FieldCard>
-
-          {/* About your brand — REQUIRED brand name, optional website + sector.
-              Placed at the end of the form on purpose: cost-per-field is
-              highest here (users have already answered the payment questions
-              and are committed), so this is where we can afford to ask for
-              lead-intelligence metadata without hurting conversion. */}
-          <FieldCard>
-            <BrandBlock
-              brandName={brandName}
-              onBrandNameChange={setBrandName}
-              website={website}
-              onWebsiteChange={setWebsite}
-              sector={sector}
-              onSectorChange={setSector}
-            />
-          </FieldCard>
-
-          {/* Privacy microcopy */}
-          <div className="flex items-start gap-2 pt-2 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
-            <Lock size={11} className="mt-0.5 shrink-0" />
-            <span>{t("az_privacy_note")}</span>
+          <div className="payment-journey__actions">
+            <button type="button" className="journey-button journey-button--ghost" onClick={() => changeStep(2)}><ArrowLeft size={16} />{t("az_back")}</button>
+            <button type="button" className="journey-button journey-button--primary" disabled={!paymentReady} onClick={() => changeStep(4)}>{journeyCopy.review}<ArrowRight size={16} /></button>
           </div>
-
-          {/* Primary CTA — inline, full width, at the end of the form.
-              Replaces the floating footer button that was clipping on some
-              viewports. Secondary Back link sits right below. */}
-          <div className="pt-2 space-y-3">
-            <Button
-              onClick={handleSubmit}
-              disabled={!validation.valid || submitting}
-              className="w-full h-12 rounded-full text-sm font-bold gap-2 text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
-              style={{
-                background: "var(--g-voltio)",
-                boxShadow: "0 0 32px rgba(91,76,245,0.45), 0 12px 32px -12px rgba(91,76,245,0.6)",
-              }}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> {t("az_running")}
-                </>
-              ) : (
-                <>
-                  {t("az_cta")} <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-            {/* Missing-fields hint — only shown when the CTA is disabled AND
-                the user hasn't been shown a hard error banner yet. Answers
-                the "why is this button grey?" question on mobile, where the
-                required fields above scroll off-screen. UX-only, no logic
-                change: the validation itself is unchanged. */}
-            {!validation.valid && !submitting && !errorBanner && (
-              <p className="text-center text-[11.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
-                {t("az_still_needed")} <span style={{ color: "#ffffff" }}>{validation.errors[0].replace(/[.!]$/, "")}</span>
-                {validation.errors.length > 1 && (
-                  <span style={{ color: "rgba(255,255,255,0.45)" }}> · {t("az_more_above", { count: validation.errors.length - 1 })}</span>
-                )}
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => navigate("/")}
-              disabled={submitting}
-              className="w-full h-11 rounded-full text-[13px] font-medium transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
-              style={{ color: "rgba(255,255,255,0.6)" }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              {t("az_back")}
-            </button>
-          </div>
+          {!paymentReady && <p className="payment-journey__needed">{journeyCopy.incomplete} · {validation.errors.find((message) => !/country|market|email|brand|business|website|sector|país|mercado|correo|empresa|sitio/i.test(message)) || journeyCopy.paymentsBody}</p>}
         </div>
-      </main>
-    </div>
+          </div>}
+
+          {activeStep === 4 && (
+            <div className="journey-review">
+              {errorBanner && <div className="analyzer-error-banner" role="alert"><AlertTriangle size={16} /><p>{errorBanner}</p></div>}
+              <section className="journey-review__group">
+                <div className="journey-review__heading"><Building2 size={18} /><strong>{t("bp_title")}</strong><button type="button" onClick={() => changeStep(2)}>{journeyCopy.edit}</button></div>
+                <dl>
+                  <div><dt>{t("brand_name_optional")}</dt><dd>{brandName.trim() || t("brand_fallback")}</dd></div>
+                  <div><dt>{t("az_country_label")}</dt><dd>{countryOptions.find((item) => item.code === country)?.name || "—"}</dd></div>
+                  <div><dt>{t("az_currency_label")}</dt><dd>{currency}</dd></div>
+                  <div><dt>{t("analyzer_email_label")}</dt><dd>{email || "—"}</dd></div>
+                </dl>
+              </section>
+              <section className="journey-review__group">
+                <div className="journey-review__heading"><CreditCard size={18} /><strong>{journeyCopy.compositionTitle}</strong><button type="button" onClick={() => changeStep(3)}>{journeyCopy.edit}</button></div>
+                <dl>
+                  <div><dt>{t("az_channel_aria")}</dt><dd>{t(channel === "online" ? "analyzer_channel_online" : channel === "in_store" ? "analyzer_channel_in_store" : "analyzer_channel_combined")}</dd></div>
+                  {channel === "combined" ? <>
+                    <div><dt>{t("az_online_provider_label")}</dt><dd>{onlineProviderOptions.find((item) => item.slug === combinedOnline.provider_slug)?.label || "—"}</dd></div>
+                    <div><dt>{t("az_tpv_label")}</dt><dd>{inStoreProviderOptions.find((item) => item.slug === combinedInStore.provider_slug)?.label || "—"}</dd></div>
+                  </> : <div><dt>{t(channel === "in_store" ? "az_tpv_label" : "az_provider_label")}</dt><dd>{providerLabel}</dd></div>}
+                  <div><dt>{t("az_lbl_gmv")}</dt><dd>{visibleMonthlyVolume > 0 ? formatCurrency(visibleMonthlyVolume, currency) : "—"}</dd></div>
+                </dl>
+              </section>
+              <div className="journey-review__notice"><Lock size={16} /><span>{t("az_privacy_note")}</span></div>
+              {!validation.valid && <p className="payment-journey__needed">{journeyCopy.incomplete} · {validation.errors[0]}</p>}
+              <div className="payment-journey__actions">
+                <button type="button" className="journey-button journey-button--ghost" onClick={() => changeStep(3)}><ArrowLeft size={16} />{t("az_back")}</button>
+                <button type="button" className="journey-button journey-button--primary" disabled={!validation.valid || submitting} onClick={handleSubmit}>
+                  {submitting ? <><Loader2 size={16} className="animate-spin" />{t("az_running")}</> : <>{t("az_cta")}<ArrowRight size={16} /></>}
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        <aside className="payment-journey__preview">
+          <div className="payment-journey__preview-label"><BarChart3 size={14} />{journeyCopy.previewTitle}</div>
+          {activeStep === 1 && <div className="journey-preview-state"><ShieldCheck size={34} /><h2>{journeyCopy.evidenceTitle}</h2><p>{t("az_entry_manual_body")}</p><ul><li><CheckCircle2 size={15} />{t("login_gate_trust_1")}</li><li><CheckCircle2 size={15} />{t("login_gate_trust_2")}</li><li><CheckCircle2 size={15} />{t("login_gate_trust_3")}</li></ul></div>}
+          {activeStep === 2 && <div className="journey-preview-state"><Building2 size={34} /><h2>{journeyCopy.profileTitle}</h2><div className="journey-preview-metric"><span>{t("az_country_label")}</span><strong>{countryOptions.find((item) => item.code === country)?.name || "—"}</strong></div><div className="journey-preview-metric"><span>{t("az_currency_label")}</span><strong>{currency}</strong></div><div className="journey-preview-metric"><span>{t("brand_name_optional")}</span><strong>{brandName.trim() || "—"}</strong></div></div>}
+          {activeStep === 3 && <div className="journey-preview-state"><CreditCard size={34} /><h2>{journeyCopy.compositionTitle}</h2><div className="journey-preview-metric is-large"><span>{t("az_lbl_gmv")}</span><strong>{visibleMonthlyVolume > 0 ? formatCurrency(visibleMonthlyVolume, currency) : "—"}</strong></div>{visibleMonthlyVolume > 0 && <><div className="journey-preview-bar"><span style={{ width: `${visibleOnlineShare}%` }} /></div><div className="journey-preview-split"><span>{t("analyzer_channel_online")} {visibleOnlineShare}%</span><span>{t("analyzer_channel_in_store")} {100 - visibleOnlineShare}%</span></div></>}<div className="journey-preview-metric"><span>{t("az_provider_label")}</span><strong>{channel === "combined" ? `${journeyCopy.selected} · 2` : providerLabel}</strong></div></div>}
+          {activeStep === 4 && <div className="journey-preview-state"><CheckCircle2 size={34} /><h2>{journeyCopy.readinessTitle}</h2><p>{journeyCopy.reviewBody}</p><div className="journey-readiness"><span style={{ width: `${progress.pct}%` }} /></div><strong className="journey-readiness-label">{progress.pct}%</strong></div>}
+          <div className="payment-journey__preview-foot"><Lock size={13} />{t("sec_chip_1")} · {t("analyzer_email_privacy_note")}</div>
+        </aside>
+      </div>
+    </AnalyzerJourneyShell>
   );
 }

@@ -20,11 +20,11 @@ export default function CurrencyField({ value, onChange, options }) {
       <div className="flex items-baseline justify-between">
         <span
           className="text-[11px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: "rgba(255,255,255,0.85)" }}
+          style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}
         >
           {t("az_currency_label")}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <span className="text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>
           {t("az_currency_hint")}
         </span>
       </div>
@@ -34,17 +34,17 @@ export default function CurrencyField({ value, onChange, options }) {
         aria-label={t("az_currency_label")}
         className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
         style={{
-          color: "#ffffff",
-          background: "rgba(30,26,60,0.9)",
-          border: "1px solid rgba(255,255,255,0.14)",
-          colorScheme: "dark",
+          color: "var(--az-text, #ffffff)",
+          background: "var(--az-input, rgba(30,26,60,0.9))",
+          border: "1px solid var(--az-border, rgba(255,255,255,0.14))",
+          colorScheme: "var(--az-color-scheme, dark)",
         }}
       >
         {options.map((code) => (
           <option key={code} value={code}>{code}</option>
         ))}
       </select>
-      <p className="text-[10.5px] leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <p className="text-[10.5px] leading-relaxed" style={{ color: "var(--az-muted, rgba(255,255,255,0.5))" }}>
         {t("az_currency_help")}
       </p>
     </div>

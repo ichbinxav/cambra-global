@@ -53,6 +53,27 @@
       "type": "string",
       "description": "Version tag IDENTIFYING the Collective Terms text that was accepted. Currently 'draft-v0' \u2014 an opaque historical identifier kept verbatim so existing acceptance records stay comparable; since LEGAL-2/EMAIL-1 (2026-07-31) it is NOT a statement about the document's review status, which is no longer surfaced in the UI or the confirmation email. Recorded so we can re-consent members whenever the text changes."
     },
+    "public_terms_version": {
+      "type": "string",
+      "description": "Version of CAMBRA's public Terms shown alongside the collective acceptance."
+    },
+    "privacy_version": {
+      "type": "string",
+      "description": "Version of CAMBRA's Privacy Policy shown alongside the collective acceptance."
+    },
+    "acceptance_method": {
+      "type": "string",
+      "description": "How the collective mandate was accepted. Payment report unlocks use in_app_informed_single_click."
+    },
+    "acceptance_snapshot_hash": {
+      "type": "string",
+      "description": "SHA-256 of the bounded-authority acceptance snapshot stored on the related PaymentsAnalysisSession."
+    },
+    "left_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Server timestamp when the merchant withdrew from the collective. The unlocked report remains available."
+    },
     "status": {
       "type": "string",
       "enum": [

@@ -23,7 +23,9 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // DASHBOARD-C9 (2026-08-17): 35 -> 36 for financeWorkspaceAdmin. Physical stays 276.
 // DASHBOARD-C10 (2026-08-17): 36 -> 37 for intelligenceWorkspaceAdmin. Physical stays 276.
 // AGENTTASK-OUTBOX (2026-08-21): 38 -> 39 for agentTaskTerminalEventReconciler. Physical stays 276.
-export const BASE44_LOGICAL_ROUTE_TARGET = 39;
+// PAYMENT-REPORT (2026-09-06): 39 -> 40 for versioned report access hosted
+// by claimAnonPaymentsResult. Physical stays 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 40;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

@@ -56,7 +56,7 @@ export const RECOVER_UI_COPY = {
       },
     },
     modal: {
-      close: 'Fermer', eyebrow: 'Recover margin', title: 'Autoriser CAMBRA à récupérer votre marge', intro: 'Vous nous autorisez à négocier avec votre prestataire, ou à vous faire passer à de meilleures conditions, en votre nom.',
+      close: 'Fermer', eyebrow: 'Récupérer la marge', title: 'Autoriser CAMBRA à récupérer votre marge', intro: 'Vous nous autorisez à négocier avec votre prestataire, ou à vous faire passer à de meilleures conditions, en votre nom.',
       preparing: 'Préparation de vos conditions…', evidence: 'Preuve de paiement vérifiée', name: 'Nom complet', namePlaceholder: 'Jeanne Dupont', role: 'Fonction (facultatif)', rolePlaceholder: 'Fondatrice / Fondateur',
       evidenceFallback: 'Je confirme, à ma connaissance, que la référence vérifiée et les coûts de paiement affichés ici sont exacts.',
       legalFallback: (entity) => `Je confirme pouvoir engager juridiquement ${entity || 'mon entreprise'} et j’accepte ces conditions.`,
@@ -75,7 +75,7 @@ export const RECOVER_UI_COPY = {
   es: {
     __translation_readiness: 'APPROVED',
     panel: {
-      eyebrow: 'Recover margin', authorized: 'Autorización activa', authorize: 'Autorízanos a recuperar tu margen',
+      eyebrow: 'Recupera margen', authorized: 'Autorización activa', authorize: 'Autorízanos a recuperar tu margen',
       accepted: (fee) => `Nos has autorizado con una comisión del ${fee}% sobre el ahorro verificado. Solo cobramos sobre ahorros confirmados frente a tus propios extractos. Estamos revisando tu caso y te diremos cuál es el siguiente paso antes de contactar con ningún proveedor en tu nombre. Puedes revocar la autorización en cualquier momento.`,
       pitch: (fee) => `Negociaremos con tu proveedor o te moveremos a mejores condiciones y cobraremos el ${fee}% de lo que recuperemos de verdad — verificado frente a tus extractos. Sin ahorro, no hay comisión.`,
       review: 'Revisar y autorizar', revoke: 'Revocar autorización', revoking: 'Revocando…', revokeConfirm: '¿Revocar la autorización de CAMBRA? Esto detiene futuras acciones de migración. Los ahorros ya verificados permanecen en el histórico.', revoked: 'Autorización revocada. CAMBRA no realizará más acciones de migración bajo este mandato.', revokeError: 'No hemos podido revocar la autorización de forma segura. No se ha cambiado nada; inténtalo de nuevo.', notReady: 'Esta operación todavía no está en la fase de autorización. Te avisaremos en cuanto lo esté.',
@@ -88,7 +88,7 @@ export const RECOVER_UI_COPY = {
       },
     },
     modal: {
-      close: 'Cerrar', eyebrow: 'Recover margin', title: 'Autoriza a CAMBRA a recuperar tu margen', intro: 'Nos autorizas a negociar con tu proveedor o a moverte a mejores condiciones en tu nombre.',
+      close: 'Cerrar', eyebrow: 'Recupera margen', title: 'Autoriza a CAMBRA a recuperar tu margen', intro: 'Nos autorizas a negociar con tu proveedor o a moverte a mejores condiciones en tu nombre.',
       preparing: 'Preparando tus condiciones…', evidence: 'Evidencia de pago verificada', name: 'Nombre completo', namePlaceholder: 'María García', role: 'Cargo (opcional)', rolePlaceholder: 'Fundador/a',
       evidenceFallback: 'Confirmo, según mi leal saber y entender, que la baseline verificada y los costes de pago mostrados aquí son correctos.',
       legalFallback: (entity) => `Confirmo que puedo vincular jurídicamente a ${entity || 'mi empresa'} y acepto estas condiciones.`,

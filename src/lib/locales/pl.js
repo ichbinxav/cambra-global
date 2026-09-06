@@ -1585,6 +1585,7 @@ export default {
     az_err_website_len: "Strona internetowa: maksymalnie 200 znaków.",
     az_err_sector: "Branża: wybierz jedną z wymienionych opcji.",
     az_err_rate_limited: "Zbyt wiele analiz z Twojej sieci w tej chwili. Spróbuj ponownie za około {mins} min.",
+    az_err_rate_unavailable: "Bezpieczna kontrola żądań jest tymczasowo niedostępna. Nic nie wysłano. Spróbuj ponownie za kilka minut.",
     az_err_invalid_input: "Sprawdź „{field}” — wartość jest poza zakresem.",
     az_err_generic: "Nie mogliśmy teraz uruchomić Twojej analizy. Spróbuj za chwilę.",
     az_err_network: "Nie mogliśmy połączyć się z serwerem. Sprawdź połączenie i spróbuj ponownie.",
@@ -1616,4 +1617,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Infrastruktura płatnicza",
+    onboarding_payments_title: "Zmapuj swoją infrastrukturę płatniczą.",
+    onboarding_payments_subtitle: "Uzupełnij profil płatności, aby doprecyzować benchmarki i odkryć potencjał marży w opłatach interchange, systemowych i marży operatora.",
+    onboarding_coverage: "Łączne pokrycie",
 };

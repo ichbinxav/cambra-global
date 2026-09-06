@@ -1585,6 +1585,7 @@ export default {
     az_err_website_len: "Verkkosivusto: enintään 200 merkkiä.",
     az_err_sector: "Toimiala: valitse yksi luetelluista vaihtoehdoista.",
     az_err_rate_limited: "Liikaa analyysejä verkostasi juuri nyt. Yritä uudelleen noin {mins} min kuluttua.",
+    az_err_rate_unavailable: "Suojattu pyyntöjen hallinta ei ole tilapäisesti käytettävissä. Mitään ei lähetetty. Yritä uudelleen muutaman minuutin kuluttua.",
     az_err_invalid_input: "Tarkista «{field}» — arvo on rajan ulkopuolella.",
     az_err_generic: "Emme voineet ajaa analyysiäsi juuri nyt. Yritä hetken kuluttua uudelleen.",
     az_err_network: "Emme tavoittaneet palvelinta. Tarkista yhteytesi ja yritä uudelleen.",
@@ -1616,4 +1617,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Maksuinfrastruktuuri",
+    onboarding_payments_title: "Kartoita maksuinfrastruktuurisi.",
+    onboarding_payments_subtitle: "Täydennä maksuprofiilisi tarkempia vertailuja ja syvempää marginaalinäkymää varten interchange-, verkosto- ja käsittelijämaksuissa.",
+    onboarding_coverage: "Kokonaiskattavuus",
 };

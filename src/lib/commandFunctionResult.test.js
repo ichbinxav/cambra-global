@@ -43,6 +43,26 @@ describe('Command function response truth boundary', () => {
     expect(result.summary).toContain('critical_incidents=0');
     expect(result.summary).not.toContain('missed schedule');
   });
+
+  it('keeps configured, paused and send-ready mailboxes distinct for Ask CAMBRA', () => {
+    const result = inspectCommandFunctionResponse({ data: JSON.stringify({
+      ok: true,
+      summary: {
+        total_leads: 1243, high_fit: 5, verified_contacts: 0, outreach_ready: 0,
+        configured_senders: 14, prepared_senders: 12, paused_senders: 14,
+        ready_senders: 0, configured_daily_cap: 107, ready_daily_capacity: 0,
+      },
+      safety: { outbound_locked: true },
+      attention: [{ code: 'no_ready_sender' }, { code: 'outbound_locked' }],
+    }) }, 'commercial_os_status');
+    expect(result.ok).toBe(true);
+    expect(result.summary).toContain('configured_senders=14');
+    expect(result.summary).toContain('prepared_senders=12');
+    expect(result.summary).toContain('paused_senders=14');
+    expect(result.summary).toContain('send_ready_senders=0');
+    expect(result.summary).toContain('outbound_locked=true');
+    expect(result.summary).not.toContain('unconfigured');
+  });
 });
 
 describe('Command read-state projection', () => {

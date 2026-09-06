@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Tīmekļa vietne: ne vairāk kā 200 rakstzīmes.",
     az_err_sector: "Nozare: izvēlies vienu no norādītajām opcijām.",
     az_err_rate_limited: "Pašlaik pārāk daudz analīžu no tava tīkla. Mēģini vēlreiz pēc apmēram {mins} min.",
+    az_err_rate_unavailable: "Drošā pieprasījumu kontrole īslaicīgi nav pieejama. Nekas netika nosūtīts. Mēģini vēlreiz pēc dažām minūtēm.",
     az_err_invalid_input: "Pārbaudi lauku „{field}“ — vērtība ir ārpus diapazona.",
     az_err_generic: "Mēs pašlaik nevarējām veikt tavu analīzi. Lūdzu, mēģini vēlreiz pēc brīža.",
     az_err_network: "Mēs nevarējām sasniegt serveri. Pārbaudi savienojumu un mēģini vēlreiz.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Maksājumu infrastruktūra",
+    onboarding_payments_title: "Kartējiet savu maksājumu infrastruktūru.",
+    onboarding_payments_subtitle: "Aizpildiet maksājumu profilu precīzākiem benchmarkiem un dziļākam skatījumam uz interchange, tīkla maksām un apstrādātāja maržu.",
+    onboarding_coverage: "Kopējais pārklājums",
 };

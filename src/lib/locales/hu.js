@@ -1630,6 +1630,7 @@ export default {
     az_err_website_len: "Weboldal: legfeljebb 200 karakter lehet.",
     az_err_sector: "Szektor: válassz a felsorolt lehetőségek közül.",
     az_err_rate_limited: "Túl sok elemzés a hálózatodról most. Próbáld újra körülbelül {mins} perc múlva.",
+    az_err_rate_unavailable: "A biztonságos kérésvezérlés átmenetileg nem érhető el. Semmit sem küldtünk el. Próbáld újra néhány perc múlva.",
     az_err_invalid_input: "Ellenőrizd a(z) „{field}” mezőt — az érték tartományon kívüli.",
     az_err_generic: "Most nem tudtuk lefuttatni az elemzésed. Kérjük, próbáld újra kicsit később.",
     az_err_network: "Nem értük el a szervert. Ellenőrizd a kapcsolatod, és próbáld újra.",
@@ -1661,4 +1662,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Fizetési infrastruktúra",
+    onboarding_payments_title: "Térképezze fel fizetési infrastruktúráját.",
+    onboarding_payments_subtitle: "Töltse ki fizetési profilját a pontosabb benchmarkokért, valamint az interchange, hálózati díjak és feldolgozói árrés mélyebb megértéséért.",
+    onboarding_coverage: "Teljes lefedettség",
 };

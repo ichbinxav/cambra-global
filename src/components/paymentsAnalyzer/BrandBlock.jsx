@@ -112,12 +112,12 @@ export default function BrandBlock({
     <div className="space-y-4">
       {/* Section header */}
       <div className="flex items-baseline justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}>
           {copy.about}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{copy.compare}</span>
+        <span className="text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>{copy.compare}</span>
       </div>
-      <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>
+      <p className="text-[11.5px] leading-relaxed -mt-1" style={{ color: "var(--az-muted, rgba(255,255,255,0.7))" }}>
         {copy.help}
       </p>
 
@@ -126,7 +126,7 @@ export default function BrandBlock({
         <label
           htmlFor="brand-name-input"
           className="text-[11px] font-medium"
-          style={{ color: "rgba(255,255,255,0.75)" }}
+          style={{ color: "var(--az-label, rgba(255,255,255,0.75))" }}
         >
           {t("brand_name_optional")}
         </label>
@@ -141,9 +141,9 @@ export default function BrandBlock({
           placeholder={copy.brandPlaceholder}
           className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
           style={{
-            color: "#ffffff",
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.14)",
+            color: "var(--az-text, #ffffff)",
+            background: "var(--az-input, rgba(255,255,255,0.06))",
+            border: "1px solid var(--az-border, rgba(255,255,255,0.14))",
           }}
         />
       </div>
@@ -155,9 +155,9 @@ export default function BrandBlock({
           <label
             htmlFor="brand-website-input"
             className="text-[11px] font-medium"
-            style={{ color: "rgba(255,255,255,0.75)" }}
+            style={{ color: "var(--az-label, rgba(255,255,255,0.75))" }}
           >
-            {copy.website} <span style={{ color: "rgba(255,255,255,0.5)" }}>({copy.optional})</span>
+            {copy.website} <span style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>({copy.optional})</span>
           </label>
           <input
             id="brand-website-input"
@@ -170,9 +170,9 @@ export default function BrandBlock({
             placeholder="aimestudio.com"
             className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              color: "#ffffff",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.14)",
+              color: "var(--az-text, #ffffff)",
+              background: "var(--az-input, rgba(255,255,255,0.06))",
+              border: "1px solid var(--az-border, rgba(255,255,255,0.14))",
             }}
           />
         </div>
@@ -182,9 +182,9 @@ export default function BrandBlock({
           <label
             htmlFor="brand-sector-input"
             className="text-[11px] font-medium"
-            style={{ color: "rgba(255,255,255,0.75)" }}
+            style={{ color: "var(--az-label, rgba(255,255,255,0.75))" }}
           >
-            {copy.sector} <span style={{ color: "rgba(255,255,255,0.5)" }}>({copy.optional})</span>
+            {copy.sector} <span style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>({copy.optional})</span>
           </label>
           <select
             id="brand-sector-input"
@@ -192,10 +192,10 @@ export default function BrandBlock({
             onChange={(e) => onSectorChange(e.target.value)}
             className="w-full h-11 px-3 rounded-md text-sm focus:outline-none transition-colors"
             style={{
-              color: "#ffffff",
-              background: "rgba(30,26,60,0.9)",
-              border: "1px solid rgba(255,255,255,0.14)",
-              colorScheme: "dark",
+              color: "var(--az-text, #ffffff)",
+              background: "var(--az-input, rgba(30,26,60,0.9))",
+              border: "1px solid var(--az-border, rgba(255,255,255,0.14))",
+              colorScheme: "var(--az-color-scheme, dark)",
             }}
           >
             <option value="">

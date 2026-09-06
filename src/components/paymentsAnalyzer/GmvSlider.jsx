@@ -109,17 +109,17 @@ export default function GmvSlider({ value, onChange, currency = "EUR" }) {
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--az-label, rgba(255,255,255,0.85))" }}>
           {`${t("az_lbl_gmv")} (${currency})`}
         </span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_hint_slide_or_type")}</span>
+        <span className="text-[10px]" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>{t("az_hint_slide_or_type")}</span>
       </div>
 
       {/* The single most consequential clarification in the form: this figure
           must be CARD sales only. A merchant who includes cash inflates the
           divisor, understates their effective rate and doubles the apparent
           saving — and nothing downstream can detect it. */}
-      <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_gmv_help")}</p>
+      <p className="text-[11px]" style={{ color: "var(--az-muted, rgba(255,255,255,0.5))" }}>{t("az_gmv_help")}</p>
 
       {/* Hero value + exact input, side by side */}
       <div className="flex items-baseline gap-3">
@@ -132,14 +132,14 @@ export default function GmvSlider({ value, onChange, currency = "EUR" }) {
             // Dimmer color while it's a default placeholder — the moment the
             // user drags or types, it becomes fully white. Zero cognitive
             // load, clearly signals "this is a preview".
-            color: isSet ? "#ffffff" : "rgba(255,255,255,0.45)",
+            color: isSet ? "var(--az-text, #ffffff)" : "var(--az-placeholder, rgba(255,255,255,0.45))",
           }}
         >
           {formatAmount(displayValue, (n) => formatCurrency(n, currency))}
         </div>
-        <span className="text-[12px] shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_per_month_suffix")}</span>
+        <span className="text-[12px] shrink-0" style={{ color: "var(--az-muted, rgba(255,255,255,0.5))" }}>{t("az_per_month_suffix")}</span>
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>{t("az_exact")}</span>
+          <span className="text-[11px]" style={{ color: "var(--az-muted, rgba(255,255,255,0.5))" }}>{t("az_exact")}</span>
           <input
             type="number"
             min={SLIDER_MIN}
@@ -149,7 +149,7 @@ export default function GmvSlider({ value, onChange, currency = "EUR" }) {
             onChange={handleInputChange}
             placeholder={t("az_gmv_placeholder")}
             className="cambra-num-input w-28 h-9 rounded-md px-2.5 text-sm text-right focus:outline-none transition-colors"
-            style={{ color: "#ffffff", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
+            style={{ color: "var(--az-text, #ffffff)", background: "var(--az-input, rgba(255,255,255,0.06))", border: "1px solid var(--az-border, rgba(255,255,255,0.14))" }}
             aria-label={t("az_gmv_aria_exact")}
           />
         </div>
@@ -167,7 +167,7 @@ export default function GmvSlider({ value, onChange, currency = "EUR" }) {
       />
 
       {/* Anchor tick labels — decorative, help calibrate the log scale */}
-      <div className="flex justify-between text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.5)" }}>
+      <div className="flex justify-between text-[9px] font-medium" style={{ color: "var(--az-subtle, rgba(255,255,255,0.5))" }}>
         {tickLabels.map((label, i) => <span key={TICK_VALUES[i]}>{label}</span>)}
       </div>
       {/* Anchor points kept in a const so lint doesn't flag it as unused —

@@ -20,7 +20,7 @@ const MONO = "'JetBrains Mono', ui-monospace, monospace";
 // the request). Empty = form-only flow.
 const CALENDLY_URL = "";
 
-export default function BookCallModal({ open, onClose, context = {}, onSwitch }) {
+export default function BookCallModal({ open, onClose, context = {}, onSwitch = null }) {
   const { t, lang } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [name, setName] = useState("");

@@ -130,12 +130,13 @@ describe("reproducible Base44 physical bundle pipeline", () => {
   // DASHBOARD-C12 (2026-08-17) — 37 -> 38 for integrationRegistryAdmin. Physical stays 276.
   // AGENTTASK-OUTBOX (2026-08-21) — 38 -> 39 for the terminal Event reconciler.
   // It is hosted by processWebhookDeadLetters, so the physical total remains 276.
-  it("rebuilds a clean source checkout into the exact 276 physical / 39 logical topology", () => {
+  // PAYMENT-REPORT (2026-09-06) — 39 -> 40 for versioned report access.
+  it("rebuilds a clean source checkout into the exact 276 physical / 40 logical topology", () => {
     expect(firstIdentity).toMatchObject({
       schema_version: "cambra-base44-function-bundle-v2",
       functions_dir: BASE44_FUNCTIONS_DIR,
       physical_function_count: 276,
-      logical_route_count: 39,
+      logical_route_count: 40,
       hash_algorithm: BASE44_BUNDLE_HASH_ALGORITHM,
       escaped_relative_import_count: 0,
       unresolved_relative_import_count: 0,

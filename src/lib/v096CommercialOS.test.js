@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
+import { commercialSenderReadiness } from '../../base44/shared/commercialOperatingSystem.ts';
 const read=(path)=>fs.readFileSync(path,'utf8');
 
 describe('CAMBRA v0.96 Commercial Operating System seal',()=>{
+  it('distinguishes configured paused senders from send-ready capacity',()=>{
+    const sender=commercialSenderReadiness({
+      profile_key:'instantly:one',provider:'instantly',domain:'mail.example',from_address:'xavi@mail.example',
+      status:'paused',current_daily_cap:1,external_campaign_id:'campaign-1',webhook_status:'ACTIVE',
+      provider_config_json:{sender_ready:true,native_ai_conflict:false},
+    });
+    expect(sender).toMatchObject({configured:true,prepared:true,status:'PAUSED',ready:false,cap:0,configured_cap:1});
+  });
   it('mounts one founder-operable commercial workspace inside the protected admin shell',()=>{
     expect(read('src/App.jsx')).toContain('/admin/commercial');
     expect(read('src/pages/admin/AdminLayout.jsx')).toContain('Commercial OS');

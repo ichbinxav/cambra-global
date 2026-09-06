@@ -274,15 +274,25 @@ describe('calculateGap — end-to-end', () => {
     expect(result.error).toBe('avg_ticket_eur_invalid');
   });
 
-  it('refuses to calculate against a rate table missing a fallback row', () => {
+  it('uses an exact verified row without requiring an unrelated fallback', () => {
     const partial = FULL_TABLE.filter(r => r.cohort_key !== 'ANY|ANY|US');
     const result = calculateGap(
       { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'US', provider_slug: 'stripe' },
       partial
     );
+    expect(result.ok).toBe(true);
+    expect(result.cohort.matched).toBe('exact');
+  });
+
+  it('still refuses when this request needs a missing regional fallback', () => {
+    const partial = FULL_TABLE.filter(r => r.cohort_key !== 'ANY|ANY|US');
+    const result = calculateGap(
+      { monthly_gmv_eur: 50000, avg_ticket_eur: 80, region: 'US', provider_slug: 'unknown_psp' },
+      partial
+    );
     expect(result.ok).toBe(false);
     expect(result.error).toBe('rate_table_incomplete');
-    expect(result.missing).toContain('ANY|ANY|US');
+    expect(result.missing).toEqual(['ANY|ANY|US']);
   });
 
   it('Stripe EU (achievable_fixed == current_fixed) → different effective rates, IDENTICAL savings', () => {
@@ -591,8 +601,8 @@ describe('calculateGap — end-to-end', () => {
     // first country=ES rows + ES anchors in the multi-anchor pool change real
     // results for ES merchants, so the version gets a trace. Every numeric
     // assertion in this file is untouched (fixture has no country rows).
-    expect(result.engine_version).toBe('payments-gap-1.7.0');
-    expect(ENGINE_VERSION).toBe('payments-gap-1.7.0');
+    expect(result.engine_version).toBe('payments-gap-1.8.0');
+    expect(ENGINE_VERSION).toBe('payments-gap-1.8.0');
   });
 });
 

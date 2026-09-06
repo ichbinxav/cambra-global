@@ -1585,6 +1585,7 @@ export default {
     az_err_website_len: "Webbplats: högst 200 tecken.",
     az_err_sector: "Bransch: välj ett av de listade alternativen.",
     az_err_rate_limited: "För många analyser från ditt nätverk just nu. Försök igen om cirka {mins} min.",
+    az_err_rate_unavailable: "Den säkra förfrågningskontrollen är tillfälligt otillgänglig. Inget skickades. Försök igen om några minuter.",
     az_err_invalid_input: "Kontrollera «{field}» — värdet är utanför intervallet.",
     az_err_generic: "Vi kunde inte köra din analys just nu. Försök igen om en stund.",
     az_err_network: "Vi kunde inte nå servern. Kontrollera anslutningen och försök igen.",
@@ -1616,4 +1617,8 @@ export default {
     psp_connect_title: "Connect {provider}",
     psp_connect_body: "We measure what you really pay from 90 days of real transactions — nothing estimated.",
     psp_connect_cta: "Connect {provider}",
+    onboarding_payments_eyebrow: "Betalningsinfrastruktur",
+    onboarding_payments_title: "Kartlägg din betalningsinfrastruktur.",
+    onboarding_payments_subtitle: "Slutför betalningsprofilen för skarpare benchmarks och djupare marginalinsikter om interchange, nätverksavgifter och processormarginal.",
+    onboarding_coverage: "Total täckning",
 };

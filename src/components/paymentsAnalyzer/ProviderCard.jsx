@@ -37,7 +37,7 @@ function LogoMark({ slug, label, selected }) {
   // Every mark occupies the same 32×32 tile so lines stay aligned regardless
   // of which fallback branch fires.
   const wrapClass = "inline-flex items-center justify-center h-8 w-8 shrink-0";
-  const tint = selected ? "text-[#8B7BFF]" : "text-white/60";
+  const tint = selected ? "text-[#5B4CF5]" : "analyzer-provider-mark";
 
   // Branch 1 — vendor has an inline SVG.
   if (hasProviderLogo(slug)) {
@@ -70,13 +70,13 @@ function LogoMark({ slug, label, selected }) {
       aria-hidden="true"
       style={{
         borderRadius: 999,
-        background: selected ? "rgba(139,123,255,0.2)" : "rgba(255,255,255,0.06)",
-        border: `1px solid ${selected ? "rgba(139,123,255,0.55)" : "rgba(255,255,255,0.14)"}`,
+        background: selected ? "rgba(91,76,245,0.12)" : "var(--az-input, rgba(255,255,255,0.06))",
+        border: `1px solid ${selected ? "rgba(91,76,245,0.42)" : "var(--az-border, rgba(255,255,255,0.14))"}`,
       }}
     >
       <span
         className="text-[13px] font-bold"
-        style={{ color: selected ? "var(--voltio-2)" : "rgba(255,255,255,0.75)", letterSpacing: "-0.02em" }}
+        style={{ color: selected ? "var(--voltio)" : "var(--az-muted, rgba(255,255,255,0.75))", letterSpacing: "-0.02em" }}
       >
         {initial}
       </span>
@@ -95,14 +95,14 @@ export default function ProviderCard({ option, value, onChange }) {
       style={
         selected
           ? {
-              background: "rgba(139,123,255,0.16)",
-              border: "1px solid rgba(139,123,255,0.6)",
+              background: "rgba(91,76,245,0.08)",
+              border: "1px solid rgba(91,76,245,0.55)",
               boxShadow:
                 "0 0 0 3px rgba(139,123,255,0.12), 0 6px 20px -8px rgba(91,76,245,0.5)",
             }
           : {
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.12)",
+              background: "var(--az-input, rgba(255,255,255,0.05))",
+              border: "1px solid var(--az-border, rgba(255,255,255,0.12))",
             }
       }
       aria-pressed={selected}
@@ -111,7 +111,7 @@ export default function ProviderCard({ option, value, onChange }) {
       <LogoMark slug={option.slug} label={option.label} selected={selected} />
       <span
         className="text-[13px] font-semibold leading-tight"
-        style={{ color: selected ? "#ffffff" : "rgba(255,255,255,0.8)" }}
+        style={{ color: selected ? "var(--voltio)" : "var(--az-text, rgba(255,255,255,0.8))" }}
       >
         {option.label}
       </span>
