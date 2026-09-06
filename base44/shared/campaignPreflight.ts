@@ -50,7 +50,6 @@ export type PreflightInput = {
   emergency?: any;
   emergencyAvailable?: boolean;
   budget?: { remaining_minor?: number | null; available?: boolean };
-  /** FounderPermit authority does not exist on this tree — see C0. */
   founderPermit?: { present?: boolean; authority_available?: boolean; blockers?: string[] } | null;
 };
 
@@ -163,19 +162,25 @@ export function buildCampaignPreflight(input: PreflightInput) {
     dimensions.push(dimension('sending_infrastructure', 'UNKNOWN', 'Sending profile health could not be read.'));
   } else {
     const profiles = Array.isArray(input.sendingProfiles) ? input.sendingProfiles : [];
-    const healthy = profiles.filter((profile) =>
-      text(profile?.status).toLowerCase() === 'active' &&
-      Number(profile?.current_daily_cap || 0) > 0 &&
-      // Health must be OBSERVED, not assumed from an old row.
-      text(profile?.webhook_status).toUpperCase() !== 'UNKNOWN'
-    );
+    const healthy = profiles.filter((profile) => {
+      const status = text(profile?.status).toLowerCase();
+      const provider = text(profile?.provider).toLowerCase();
+      const providerReady = provider !== 'instantly' || Boolean(
+        text(profile?.external_campaign_id) &&
+        profile?.provider_config_json?.sender_ready === true &&
+        profile?.provider_config_json?.native_ai_conflict !== true &&
+        text(profile?.webhook_status).toUpperCase() === 'ACTIVE'
+      );
+      return ['paused', 'warming', 'active'].includes(status) &&
+        Number(profile?.current_daily_cap || 0) > 0 && providerReady;
+    });
     const capacity = healthy.reduce((sum, profile) => sum + Math.max(0, Number(profile?.current_daily_cap || 0)), 0);
     if (!profiles.length) {
       dimensions.push(dimension('sending_infrastructure', 'BLOCKED', 'No sending profile is configured.'));
     } else if (!healthy.length) {
       dimensions.push(dimension('sending_infrastructure', 'BLOCKED', 'No sending profile is healthy and within cap.', { profiles: profiles.length }));
     } else {
-      dimensions.push(dimension('sending_infrastructure', 'PASS', 'At least one healthy sending profile with capacity.', {
+      dimensions.push(dimension('sending_infrastructure', 'PASS', 'At least one prepared sending profile has bounded capacity.', {
         healthy_profiles: healthy.length, daily_capacity: capacity,
       }));
     }
@@ -185,7 +190,7 @@ export function buildCampaignPreflight(input: PreflightInput) {
   if (input.outboundControlAvailable === false) {
     dimensions.push(dimension('outbound_control', 'UNKNOWN', 'The outbound control authority could not be read or is ambiguous.'));
   } else if (input.outboundControl?.acquisition_enabled !== true) {
-    dimensions.push(dimension('outbound_control', 'BLOCKED', 'Outbound is globally paused (PAUSED_ZERO).'));
+    dimensions.push(dimension('outbound_control', 'PASS', 'Outbound is safely paused. Sending still requires a separate fresh GO preflight and explicit start.'));
   } else {
     dimensions.push(dimension('outbound_control', 'PASS', 'Outbound master control is enabled.'));
   }

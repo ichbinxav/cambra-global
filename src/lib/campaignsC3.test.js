@@ -432,16 +432,18 @@ describe("C3 — preflight has no silent partial PASS", () => {
     const result = buildCampaignPreflight({
       ...CLEAN,
       budget: { available: false },
-      outboundControl: { acquisition_enabled: false },
+      emergency: { safe_mode: true, communications_paused: true },
     });
     expect(result.verdict).toBe("BLOCKED");
-    expect(result.blocked_dimensions).toContain("outbound_control");
+    expect(result.blocked_dimensions).toContain("emergency");
     expect(result.unknown_dimensions).toContain("budget");
   });
 
-  it("blocks on SAFE MODE, on a paused outbound master and on an empty audience", () => {
+  it("blocks on SAFE MODE and an empty audience, while paused outbound remains safe for approval", () => {
     expect(buildCampaignPreflight({ ...CLEAN, emergency: { safe_mode: true } }).blocked_dimensions).toContain("emergency");
-    expect(buildCampaignPreflight({ ...CLEAN, outboundControl: { acquisition_enabled: false } }).blocked_dimensions).toContain("outbound_control");
+    const paused = buildCampaignPreflight({ ...CLEAN, outboundControl: { acquisition_enabled: false } });
+    expect(paused.blocked_dimensions).not.toContain("outbound_control");
+    expect(paused.approvable).toBe(true);
     expect(buildCampaignPreflight({
       ...CLEAN, audienceVersion: { status: "FROZEN", final_eligible_count: 0 },
     }).blocked_dimensions).toContain("audience");

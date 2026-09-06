@@ -220,7 +220,8 @@ describe("C2 — campaign builder options", () => {
       OutboundSendingProfile: [{
         id: "sender-1", profile_key: "instantly:acme", provider: "instantly", domain: "mail.acme.test",
         from_address: "xavi@mail.acme.test", status: "active", current_daily_cap: 5, target_daily_cap: 10,
-        webhook_status: "ACTIVE", provider_config_json: { sender_ready: true, native_ai_conflict: false },
+        external_campaign_id: "campaign-1", webhook_status: "ACTIVE",
+        provider_config_json: { sender_ready: true, native_ai_conflict: false },
       }],
       OutboundControl: [{ id: "control-1", control_key: "global", acquisition_enabled: false }],
     });

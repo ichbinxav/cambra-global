@@ -6,6 +6,7 @@
     "permit_id": { "type": "string" },
     "objective": { "type": "string", "description": "What the founder actually asked for, in their words. Bound into permit_hash." },
     "issued_by": { "type": "string" },
+    "delegated_to": { "type": "array", "items": { "type": "string" }, "description": "Explicit system actors allowed to execute within this permit. A permit is never an unrestricted bearer token." },
     "status": {
       "type": "string",
       "enum": ["DRAFT", "ACTIVE", "EXPIRED", "REVOKED", "CONSUMED"],

@@ -38,12 +38,12 @@ describe('final autonomy — merchant fallback, communication and runtime guards
     expect(send).toContain('claimCommercialSendSlot');
   });
 
-  it('pushes merchants naturally toward the free Analyzer without inventing savings',()=>{
+  it('uses the approved Analyzer CTA without inventing savings',()=>{
     const cold=r('base44/functions/outboundVolumeWorker/entry.ts');
     const reply=r('base44/functions/commercialReplyAgent/entry.ts');
-    expect(cold).toContain('free Analyzer');
-    expect(cold).toContain('with their own numbers');
-    expect(cold).toContain('not salesy');
+    expect(cold).toContain('analyzer_link: "https://cambra.global/Analyzer"');
+    expect(cold).toContain('renderCampaignContent(content, x)');
+    expect(cold).toContain('evaluateClaimsGate');
     expect(reply).toContain('gently prefer the free Analyzer');
     expect(reply).toContain('Never force the CTA');
   });

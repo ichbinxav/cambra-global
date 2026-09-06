@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Checkbox } from "@/components/ui/checkbox";
+import { normalizeBase44FunctionError } from "@/lib/base44FunctionError";
 import { useTranslation } from "@/lib/i18n.jsx";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader,
@@ -308,9 +309,7 @@ export default function AdminFounderControl() {
       if (data.ok === false) throw Object.assign(new Error(data.error || tr("Operation blocked")), { data });
       return data;
     } catch (cause) {
-      if (cause?.data) throw cause;
-      const data = payload(cause?.response?.data || cause?.data || {});
-      throw Object.assign(new Error(data?.error || cause?.message || tr("Operation failed")), { data });
+      throw normalizeBase44FunctionError(cause, tr("Operation failed"));
     }
   }, [tr]);
 

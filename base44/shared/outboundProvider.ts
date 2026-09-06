@@ -372,6 +372,25 @@ export class InstantlyOutboundProvider implements OutboundProvider {
       this.fetcher,
     );
   }
+  updateCampaign(id: string, input: any) {
+    return instantlyRequest(
+      this.apiKey,
+      `/campaigns/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        body: {
+          email_list: Array.isArray(input?.account_emails)
+            ? input.account_emails
+            : [],
+          daily_limit: Math.max(
+            1,
+            Math.min(15, Math.floor(Number(input?.daily_limit) || 1)),
+          ),
+        },
+      },
+      this.fetcher,
+    );
+  }
   activateCampaign(id: string) {
     return instantlyRequest(
       this.apiKey,

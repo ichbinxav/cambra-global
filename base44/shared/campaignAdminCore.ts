@@ -14,8 +14,9 @@ import { validateCampaignSequence } from './campaignSequenceValidator.ts';
 import { buildApprovalBinding, buildCampaignPreflight } from './campaignPreflight.ts';
 import { sha256 } from './intelligenceCore.ts';
 // COMMAND-C1: the FounderPermit authority now exists and is consulted here.
-import { evaluatePermit } from './founderPermitAuthority.ts';
+import { buildPermitHash, evaluatePermit } from './founderPermitAuthority.ts';
 import { LEAD_LAUNCH_MARKETS, leadMarketScope, projectLeadPerson } from './leadPeopleProjection.ts';
+import { INSTANTLY_API_BASE } from './outboundProvider.ts';
 
 const clean=(value:any,max=240)=>String(value??'').replace(/[\r\n\t]+/g,' ').trim().slice(0,max);
 const unique=(value:any,max=1000)=>[...new Set((Array.isArray(value)?value:[]).map((item:any)=>clean(item,200)).filter(Boolean))].slice(0,max);
@@ -41,7 +42,7 @@ function normalizeLaunchMarkets(value:any){
  * against the same live hard controls as any other action, so an emergency or a
  * protected market blocks coverage even when the permit itself is valid.
  */
-async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,emergencyAvailable:boolean){
+async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,emergencyAvailable:boolean,actor=''){
   const permitId=clean(campaign?.founder_permit_id);
   if(!permitId)return{covered:false,blockers:['no_founder_permit_bound_to_campaign'],permit_id:null};
   const read=await readRuntimeSource<any>({source:'campaign_preflight_permit',read:()=>svc.entities.FounderPermit.get(permitId),fallback:null});
@@ -59,6 +60,7 @@ async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,
       effect_class:'campaign_config',
       entity_type:'CommercialCampaign',
       entity_id:clean(campaign?.id),
+      actor:clean(actor),
       market:(Array.isArray(campaign?.market_scope)?campaign.market_scope:[])[0],
       environment:'production',
     },
@@ -79,7 +81,8 @@ async function resolveCampaignPermitCoverage(svc:any,campaign:any,emergency:any,
 }
 
 function readiness(profile:any){
-  const ready=Boolean(profile?.profile_key&&profile?.domain&&profile?.from_address&&profile?.status==='active'&&Number(profile?.current_daily_cap||0)>0&&(profile?.provider!=='instantly'||(profile?.provider_config_json?.sender_ready===true&&profile?.provider_config_json?.native_ai_conflict!==true&&profile?.webhook_status==='ACTIVE')));
+  const status=String(profile?.status||'').toLowerCase();
+  const ready=Boolean(profile?.profile_key&&profile?.domain&&profile?.from_address&&['paused','warming','active'].includes(status)&&Number(profile?.current_daily_cap||0)>0&&(profile?.provider!=='instantly'||(profile?.external_campaign_id&&profile?.provider_config_json?.sender_ready===true&&profile?.provider_config_json?.native_ai_conflict!==true&&profile?.webhook_status==='ACTIVE')));
   return{ready,cap:ready?Math.max(0,Number(profile.current_daily_cap||0)):0};
 }
 
@@ -264,6 +267,99 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
   }
 
   const id=clean(body.campaign_id);if(!id)return Response.json({ok:false,error:'campaign_id_required'},{status:400});const campaignRead=await readRuntimeRows({source:'commercial_campaign_authority',read:()=>svc.entities.CommercialCampaign.filter({id},'-updated_at',2)});const campaignRows=requireRuntimeSource(campaignRead);if(campaignRows.length>1)return Response.json({ok:false,error:'campaign_authority_ambiguous'},{status:409});const campaign=campaignRows[0]||null;if(!campaign)return Response.json({ok:false,error:'campaign_not_found'},{status:404});
+
+  if(action==='issue_permit'){
+    const actor=String(user.email||user.id||'admin');
+    const emergencies=await requireRuntimeSource(await readRuntimeRows({source:'campaign_permit_emergency',limit:2,read:()=>svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_at',2)}));
+    if(emergencies.length!==1)return Response.json({ok:false,error:emergencies.length?'emergency_control_authority_ambiguous':'emergency_control_required',external_send_performed:false},{status:409});
+    const emergency=emergencies[0];
+    if(emergency.safe_mode===true||emergency.communications_paused===true)return Response.json({ok:false,error:'emergency_pause_active',external_send_performed:false},{status:409});
+
+    const existingCoverage=await resolveCampaignPermitCoverage(svc,campaign,emergency,true,actor);
+    if(existingCoverage.covered)return Response.json({ok:true,already_bound:true,permit_id:existingCoverage.permit_id,permit_hash:existingCoverage.permit_hash,external_send_performed:false});
+
+    const confirmation='ISSUE_SCOPED_CAMBRA_CAMPAIGN_PERMIT';
+    const commandKey=clean(body.command_key,200)||`campaign-permit:${campaign.id}:${crypto.randomUUID()}`;
+    if(body.confirmed===true){
+      if(body.confirmation!==confirmation)return Response.json({ok:false,error:'confirmation_required',required:confirmation,external_send_performed:false},{status:409});
+      const executed=(await svc.entities.FounderCommandAudit.filter({command_key:commandKey,actor_email:actor,action:'issue_campaign_permit',status:'executed'},'-created_at',2))[0]||null;
+      if(executed)return Response.json({ok:true,idempotent_replay:true,permit_id:executed.result_json?.permit_id||null,permit_hash:executed.result_json?.permit_hash||null,external_send_performed:false});
+      const stored=(await svc.entities.FounderCommandAudit.filter({command_key:commandKey,actor_email:actor,action:'issue_campaign_permit',status:'previewed'},'-created_at',2))[0]||null;
+      const preview=stored?.preview_json||{};
+      if(!stored||preview.preview_hash!==body.preview_hash||Date.parse(preview.expires_at||'')<=Date.now())return Response.json({ok:false,error:'campaign_permit_preview_stale',external_send_performed:false},{status:409});
+      const permitDraft=preview.permit_json||{};
+      if(!Array.isArray(permitDraft.allowed_entity_ids)||!permitDraft.allowed_entity_ids.includes(campaign.id)||Number(permitDraft.emergency_control_revision)!==Number(emergency.control_revision))return Response.json({ok:false,error:'campaign_permit_scope_changed',external_send_performed:false},{status:409});
+      const expectedPermitHash=await buildPermitHash(sha256,permitDraft);
+      if(expectedPermitHash!==permitDraft.permit_hash)return Response.json({ok:false,error:'campaign_permit_hash_mismatch',external_send_performed:false},{status:409});
+      const duplicate=(await svc.entities.FounderPermit.filter({issue_command_key:commandKey},'-created_at',2))[0]||null;
+      const permit=duplicate||await svc.entities.FounderPermit.create({...permitDraft,issue_command_key:commandKey});
+      const at=new Date().toISOString();
+      const updated=await svc.entities.CommercialCampaign.update(campaign.id,{founder_permit_id:permit.id,approval_binding_json:{...(campaign.approval_binding_json||{}),permit_id:permit.id,permit_hash:permit.permit_hash},updated_at:at});
+      await svc.entities.FounderCommandAudit.update(stored.id,{confirmed:true,status:'executed',result_json:{campaign_id:campaign.id,permit_id:permit.id,permit_hash:permit.permit_hash},executed_at:at});
+      await svc.entities.OperationalLog.create({event_type:'campaign_founder_permit_issued',message:campaign.name,data_json:{campaign_id:campaign.id,permit_id:permit.id,max_external_messages:permit.max_external_messages,markets:permit.allowed_markets,expires_at:permit.expires_at,external_send_performed:false},actor_email:actor,created_at:at});
+      return Response.json({ok:true,permit_id:permit.id,permit_hash:permit.permit_hash,campaign:updated,item:projectCampaignSummary(updated),expires_at:permit.expires_at,max_external_messages:permit.max_external_messages,external_send_performed:false});
+    }
+
+    const now=new Date();
+    const validFrom=now.toISOString();
+    const expiresAt=new Date(now.getTime()+7*24*60*60*1000).toISOString();
+    const contactLimit=Math.max(1,Math.min(50,positiveInteger(campaign.contact_limit)||Math.min(15,(campaign.lead_ids||[]).length||15)));
+    const permitDraft:any={
+      permit_id:`campaign:${campaign.id}:${crypto.randomUUID()}`,
+      objective:clean(body.objective,500)||`Authorize the reviewed ${campaign.name} configuration and its bounded pilot.`,
+      issued_by:actor,delegated_to:['outbound_volume_worker'],status:'ACTIVE',preset:'OPERATE',
+      allowed_domains:['campaign'],
+      allowed_tool_ids:['cambra.campaign.request_approval','cambra.campaign.send'],
+      allowed_effect_classes:['campaign_config','external_message'],
+      allowed_entity_types:['CommercialCampaign'],allowed_entity_ids:[campaign.id],
+      allowed_tenants:['platform'],allowed_markets:unique(campaign.market_scope,60),allowed_environments:['production'],
+      allowed_network_domains:[new URL(INSTANTLY_API_BASE).host],allowed_data_classes:['professional_contact'],
+      explicit_denials:['billing','payments','migrations','refund'],
+      max_cost_minor:positiveInteger(campaign.budget_limit_minor)||2500,max_tool_calls:500,max_records_affected:contactLimit,max_external_messages:contactLimit,max_parallel_workers:1,max_runtime_seconds:7*24*60*60,
+      consumed_cost_minor:0,consumed_tokens:0,consumed_tool_calls:0,consumed_records_affected:0,consumed_external_messages:0,consumption_revision:0,
+      valid_from:validFrom,expires_at:expiresAt,auto_approval_policy:{campaign_configuration:true,external_send:false},rollback_policy:{pause_campaign:true,pause_global_outbound:true},
+      policy_snapshot_refs:[campaign.target_profile_id,campaign.policy_key,campaign.policy_version].filter(Boolean),emergency_control_ref:emergency.id,emergency_control_revision:Number(emergency.control_revision),requires_strong_reauth:false,
+      issue_nonce:crypto.randomUUID(),created_at:validFrom,updated_at:validFrom,
+    };
+    permitDraft.permit_hash=await buildPermitHash(sha256,permitDraft);
+    const previewHash=await sha256({action:'issue_campaign_permit',campaign_id:campaign.id,permit:permitDraft});
+    const preview={action:'issue_campaign_permit',campaign_id:campaign.id,permit_json:permitDraft,preview_hash:previewHash,expires_at:new Date(Date.now()+10*60*1000).toISOString(),impact:{markets:permitDraft.allowed_markets,max_external_messages:contactLimit,permit_expires_at:expiresAt,global_outbound_unchanged:true,external_send_performed:false}};
+    await svc.entities.FounderCommandAudit.create({command_key:commandKey,actor_email:actor,intent:'campaign_permit',action:'issue_campaign_permit',scope_json:{campaign_id:campaign.id},risk_level:3,material:true,requires_confirmation:true,confirmed:false,preview_json:preview,status:'previewed',result_json:{},policy_json:{founder_permit:'founder-permit-authority-1.0.0'},created_at:validFrom});
+    return Response.json({ok:true,requires_confirmation:true,confirmation_required:confirmation,command_key:commandKey,preview,external_send_performed:false});
+  }
+
+  if(action==='approve_campaign'){
+    const confirmation='APPROVE_CAMBRA_CAMPAIGN_CONFIGURATION';
+    if(body.confirmation!==confirmation)return Response.json({ok:false,error:'confirmation_required',required:confirmation,external_send_performed:false},{status:409});
+    if(String(campaign.status)!=='READY_FOR_APPROVAL')return Response.json({ok:false,error:'campaign_not_ready_for_approval',status:campaign.status,external_send_performed:false},{status:409});
+    const binding=campaign.approval_binding_json||{};
+    if(!binding.approval_hash||body.approval_hash!==binding.approval_hash)return Response.json({ok:false,error:'matching_campaign_approval_hash_required',external_send_performed:false},{status:409});
+    if(!binding.expires_at||Date.parse(binding.expires_at)<=Date.now())return Response.json({ok:false,error:'campaign_approval_binding_expired',external_send_performed:false},{status:409});
+
+    const checkedResponse=await handleCampaignAdminAction(user,{action:'preflight',campaign_id:campaign.id},svc);
+    const checked=await checkedResponse.json();
+    if(checkedResponse.status!==200||checked?.preflight?.approvable!==true)return Response.json({ok:false,error:'campaign_preflight_changed',preflight:checked?.preflight||null,external_send_performed:false},{status:409});
+    const emergencyRows=requireRuntimeSource(await readRuntimeRows({source:'campaign_approval_emergency',limit:2,read:()=>svc.entities.EmergencyControl.filter({control_key:'global'},'-updated_at',2)}));
+    if(emergencyRows.length!==1)return Response.json({ok:false,error:'emergency_control_authority_changed',external_send_performed:false},{status:409});
+    const emergency=emergencyRows[0];
+    const [audience,content,sequence,permit]=await Promise.all([
+      svc.entities.CampaignAudienceVersion.get(campaign.audience_current_version_id),
+      svc.entities.CampaignContentVersion.get(campaign.content_current_version_id),
+      svc.entities.CampaignSequenceVersion.get(campaign.sequence_current_version_id),
+      svc.entities.FounderPermit.get(campaign.founder_permit_id),
+    ]);
+    const rebuilt=await buildApprovalBinding(sha256,{
+      campaign_id:campaign.id,audience_content_hash:audience?.content_hash||null,content_hash:content?.content_hash||null,sequence_hash:sequence?.sequence_hash||null,
+      policy_version:campaign.policy_version||null,market_scope:campaign.market_scope||[],sending_profile_keys:campaign.sending_profile_keys||[],
+      limits:{contact_limit:campaign.contact_limit??null,company_contact_limit:campaign.company_contact_limit??null},budget_limit_minor:Number.isFinite(Number(campaign.budget_limit_minor))?Number(campaign.budget_limit_minor):null,
+      emergency_control_revision:Number(emergency?.control_revision||0),actor:String(binding.actor||''),nonce:String(binding.nonce||''),expires_at:String(binding.expires_at||''),
+    });
+    if(rebuilt.approval_hash!==binding.approval_hash||String(permit?.permit_hash||'')!==String(binding.permit_hash||''))return Response.json({ok:false,error:'campaign_approval_binding_changed',external_send_performed:false},{status:409});
+    const at=new Date().toISOString();
+    const updated=await svc.entities.CommercialCampaign.update(campaign.id,{status:'APPROVED',approved_by:String(user.email||user.id||'admin'),approved_at:at,blockers:[],updated_at:at});
+    await svc.entities.OperationalLog.create({event_type:'commercial_campaign_approved',message:campaign.name,data_json:{campaign_id:campaign.id,approval_hash:binding.approval_hash,permit_id:campaign.founder_permit_id,markets:campaign.market_scope,contact_limit:campaign.contact_limit,external_send_performed:false},actor_email:String(user.email||user.id||'admin'),created_at:at});
+    return Response.json({ok:true,campaign:updated,item:projectCampaignSummary(updated),approval_hash:binding.approval_hash,note:'Configuration approved. No message was sent; a fresh global GO preflight and explicit transport start are still required.',external_send_performed:false});
+  }
 
   if(action==='detail'){
     // Versioned authorities are read per campaign. Their absence on a legacy
@@ -512,7 +608,7 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     // COMMAND-C1: resolve whether a real FounderPermit covers this campaign.
     // A campaign with no permit reference, an unreadable permit, or a permit
     // that fails evaluation is simply "not covered" — never assumed covered.
-    const permitCoverage=await resolveCampaignPermitCoverage(svc,campaign,emergencies.length===1?emergencies[0]:null,emergencyRead.status!=='UNAVAILABLE'&&emergencies.length===1);
+    const permitCoverage=await resolveCampaignPermitCoverage(svc,campaign,emergencies.length===1?emergencies[0]:null,emergencyRead.status!=='UNAVAILABLE'&&emergencies.length===1,String(user.email||user.id||''));
     const audienceVersion=audienceRead?.value||null;
     const contentVersion=contentRead?.value||null;
     const sequenceVersion=sequenceRead?.value||null;
@@ -568,7 +664,7 @@ export async function handleCampaignAdminAction(user:any,body:any,svc:any):Promi
     });
     const at=new Date().toISOString();
     const updated=await svc.entities.CommercialCampaign.update(campaign.id,{
-      status:'READY_FOR_APPROVAL',approval_binding_json:{...binding.scope,approval_hash:binding.approval_hash,preflight_verdict:preflight.verdict,requested_at:at},updated_at:at,
+      status:'READY_FOR_APPROVAL',approval_binding_json:{...binding.scope,approval_hash:binding.approval_hash,preflight_verdict:preflight.verdict,permit_id:permitCoverage.permit_id,permit_hash:permitCoverage.permit_hash,requested_at:at},updated_at:at,
     });
     return Response.json({ok:true,preflight,approval:{approval_hash:binding.approval_hash,scope:binding.scope},campaign:updated,item:projectCampaignSummary(updated),
       note:'Approving this configuration does not authorize any send. External sends require a separate authorization and the execution engine (C4).',

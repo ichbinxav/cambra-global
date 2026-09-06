@@ -231,6 +231,10 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
       thread_id: "thread-1",
       idempotency_key: "key-1",
     });
+    await provider.updateCampaign("campaign-1", {
+      account_emails: ["one@outbound.example", "two@outbound.example"],
+      daily_limit: 50,
+    });
     await provider.sendReply({
       eaccount: "sender@outbound.example",
       reply_to_uuid: "external-inbound",
@@ -248,13 +252,19 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
     await provider.pauseAccount("sender@outbound.example");
     expect(calls.map((call) => call.url)).toEqual([
       "https://api.instantly.ai/api/v2/leads",
+      "https://api.instantly.ai/api/v2/campaigns/campaign-1",
       "https://api.instantly.ai/api/v2/emails/reply",
       "https://api.instantly.ai/api/v2/webhooks/webhook-1",
       "https://api.instantly.ai/api/v2/webhooks/webhook-1/test",
       "https://api.instantly.ai/api/v2/accounts/sender%40outbound.example/resume",
       "https://api.instantly.ai/api/v2/accounts/sender%40outbound.example/pause",
     ]);
-    expect(JSON.parse(calls[2].init.body)).toMatchObject({
+    expect(calls[1].init.method).toBe("PATCH");
+    expect(JSON.parse(calls[1].init.body)).toEqual({
+      email_list: ["one@outbound.example", "two@outbound.example"],
+      daily_limit: 15,
+    });
+    expect(JSON.parse(calls[3].init.body)).toMatchObject({
       event_type: "all_events",
       headers: { "x-cambra-instantly-secret": "signing-secret" },
     });
@@ -406,6 +416,9 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
       "const transportProfiles = profiles.filter(instantlyTransportProfile)",
     );
     expect(admin).toContain("RESUME_CAMBRA_INSTANTLY_SENDER");
+    expect(admin).toContain("UPDATE_CAMBRA_INSTANTLY_CAMPAIGN_ACCOUNTS");
+    expect(admin).toContain("outbound_must_be_paused_before_campaign_update");
+    expect(admin).toContain("campaign_accounts_must_match_profile_domain");
     expect(admin).toContain("outbound_must_be_paused_before_sender_resume");
     expect(admin).toContain("provider.pauseAccount");
     expect(send).toContain("follow_up_cancelled_by_new_reply");
@@ -427,6 +440,7 @@ describe("P7/P8 provider-agnostic Instantly execution seal", () => {
         "handleCommercialExecutionDryRun",
         "handleCommercialStrategyAgent",
         "instantly_status",
+        "instantly_update_campaign_accounts",
         "commercial_dry_run",
       ]
     ) expect(adminHost).toContain(token);

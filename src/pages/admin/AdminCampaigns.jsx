@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import CampaignBuilder from "@/components/admin/campaigns/CampaignBuilder";
 import { base44 } from "@/api/base44Client";
+import { normalizeBase44FunctionError } from "@/lib/base44FunctionError";
 
 const TABS = [
   ["overview", "Overview"],
@@ -33,18 +34,6 @@ const CANONICAL_STATUSES = [
   "COMPLETED", "STOPPED", "REVIEW_REQUIRED", "ARCHIVED",
 ];
 
-function functionErrorPayload(error) {
-  const candidates = [
-    error?.data?.data,
-    error?.data,
-    error?.response?.data?.data,
-    error?.response?.data,
-    error?.originalError?.response?.data,
-    error?.cause?.data,
-  ];
-  return candidates.find((candidate) => candidate && typeof candidate === "object") || null;
-}
-
 const call = async (action, payload = {}) => {
   try {
     const response = await base44.functions.invoke("adminSummaries", { action: `campaign_${action}`, ...payload });
@@ -52,14 +41,7 @@ const call = async (action, payload = {}) => {
     if (data?.ok === false) throw Object.assign(new Error(data.error || "Campaign operation failed"), { data });
     return data;
   } catch (caught) {
-    const data = functionErrorPayload(caught);
-    if (data?.ok === false || data?.error) {
-      throw Object.assign(new Error(data.error || caught?.message || "Campaign operation failed"), {
-        data,
-        status: caught?.status || caught?.response?.status || caught?.originalError?.response?.status,
-      });
-    }
-    throw caught;
+    throw normalizeBase44FunctionError(caught, "Campaign operation failed");
   }
 };
 
@@ -303,7 +285,7 @@ const DIMENSION_GUIDANCE = {
   sequence: "Validate the sequence with every mandatory stop condition.",
   market_authority: "Keep the campaign inside CAMBRA's 10 active launch markets.",
   commercial_policy: "Select an active acquisition policy in Campaign setup.",
-  sending_infrastructure: "Select at least one active, healthy mailbox with remaining capacity.",
+  sending_infrastructure: "Select at least one prepared mailbox with a verified webhook and bounded capacity.",
   outbound_control: "Run the governed canary preflight in Founder Control. This cannot be bypassed here.",
   emergency: "Resolve the emergency or communications pause in Founder Control.",
   budget: "Set a positive campaign spend ceiling in Campaign setup.",
@@ -316,7 +298,7 @@ function statusTone2(status) {
   return "warn";
 }
 
-function FounderPermitNotice() {
+function FounderPermitNotice({ preview, loading, onPreview, onConfirm }) {
   return (
     <div data-testid="preflight-founder-permit-notice" className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
       <div className="flex items-start gap-3">
@@ -324,12 +306,20 @@ function FounderPermitNotice() {
         <div>
           <p className="text-xs font-black text-amber-900">Scoped founder authorization is required</p>
           <p className="mt-1 text-[11px] leading-5 text-amber-800">
-            CAMBRA could not verify a valid FounderPermit covering this campaign. Use the governed Founder Control or
-            CAMBRA Command flow; this screen never invents or bypasses permission.
+            CAMBRA could not verify a valid FounderPermit covering this campaign. Create a narrow permit for this exact
+            campaign, its selected markets and its hard contact limit. This does not start sending.
           </p>
+          {preview && (
+            <div className="mt-3 rounded-lg border border-amber-300 bg-white/70 p-3 text-[10px] text-amber-950">
+              <p className="font-black">Review before confirming</p>
+              <p className="mt-1">Markets: {(preview.impact?.markets || []).join(", ") || "none"} · Maximum messages: {preview.impact?.max_external_messages || 0} · Expires: {date(preview.impact?.permit_expires_at)}</p>
+              <p className="mt-1 font-bold">Global outbound remains paused and no email is sent by this action.</p>
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
+            {!preview && <button data-testid="preview-campaign-permit" onClick={onPreview} disabled={loading} className="rounded-lg bg-amber-900 px-3 py-2 text-[10px] font-black text-white disabled:opacity-40">{loading ? "Preparing…" : "Preview scoped permit"}</button>}
+            {preview && <button data-testid="confirm-campaign-permit" onClick={onConfirm} disabled={loading} className="rounded-lg bg-amber-900 px-3 py-2 text-[10px] font-black text-white disabled:opacity-40">{loading ? "Issuing…" : "Confirm scoped permit"}</button>}
             <a href="/admin/founder-control" className="rounded-lg border border-amber-300 px-3 py-2 text-[10px] font-black">Open Founder Control</a>
-            <a href="/admin/chat" className="rounded-lg border border-amber-300 px-3 py-2 text-[10px] font-black">Open CAMBRA Command</a>
           </div>
         </div>
       </div>
@@ -337,7 +327,7 @@ function FounderPermitNotice() {
   );
 }
 
-function PreflightBreakdown({ preflight, onEditConfiguration }) {
+function PreflightBreakdown({ preflight, permitPreview, loading, onEditConfiguration, onPreviewPermit, onConfirmPermit }) {
   const dimensions = preflight?.dimensions || [];
   const permitBlocked = dimensions.some((dimension) => dimension.key === "founder_permit" && dimension.status !== "PASS");
   const setupBlocked = dimensions.some((dimension) => ["commercial_policy", "sending_infrastructure", "budget"].includes(dimension.key) && dimension.status !== "PASS");
@@ -351,7 +341,7 @@ function PreflightBreakdown({ preflight, onEditConfiguration }) {
         </div>
       </div>
 
-      {permitBlocked && <FounderPermitNotice />}
+      {permitBlocked && <FounderPermitNotice preview={permitPreview} loading={loading} onPreview={onPreviewPermit} onConfirm={onConfirmPermit} />}
 
       <ul data-testid="preflight-dimensions" className="divide-y rounded-xl border">
         {dimensions.map((dimension) => (
@@ -378,7 +368,7 @@ function PreflightBreakdown({ preflight, onEditConfiguration }) {
 }
 
 /** A stale PASS can still be refused by the server; its fresh 409 body wins. */
-function PreflightDialog({ state, onClose, onRequestApproval, onEditConfiguration, onRecheck }) {
+function PreflightDialog({ state, onClose, onRequestApproval, onApproveCampaign, onEditConfiguration, onRecheck, onPreviewPermit, onConfirmPermit }) {
   const open = Boolean(state);
   const preflight = state?.approvalRejection?.preflight || state?.preflight || null;
   const approval = state?.approval || null;
@@ -419,10 +409,10 @@ function PreflightDialog({ state, onClose, onRequestApproval, onEditConfiguratio
             <div className="flex items-start gap-2">
               <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-700" />
               <div className="min-w-0">
-                <p className="text-[11px] font-black text-emerald-900">Configuration approved · status READY_FOR_APPROVAL</p>
+                <p className="text-[11px] font-black text-emerald-900">Approval package ready · status READY_FOR_APPROVAL</p>
                 <p className="mt-1 text-[10px] leading-5 text-emerald-800">
-                  This records that the configuration was reviewed. It does <b>not</b> send anything. Real outbound still
-                  requires fresh founder-governed transport authorization and every runtime safety check.
+                  The scope is hash-bound and ready for your final campaign approval. Neither step sends anything; real
+                  outbound still requires a fresh global GO preflight and an explicit transport start.
                 </p>
                 <p className="mt-2 break-all text-[10px] text-emerald-800">
                   <span className="font-bold">Approval hash:</span> {approval.approval_hash}
@@ -438,12 +428,19 @@ function PreflightDialog({ state, onClose, onRequestApproval, onEditConfiguratio
           </div>
         )}
 
-        {preflight && <PreflightBreakdown preflight={preflight} onEditConfiguration={onEditConfiguration} />}
+        {state?.approved && (
+          <div data-testid="campaign-approved" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-[11px] font-bold text-emerald-900">
+            Campaign configuration approved. Sending remains paused until the separate global start.
+          </div>
+        )}
+
+        {preflight && <PreflightBreakdown preflight={preflight} permitPreview={state?.permitPreview} loading={state?.loading} onEditConfiguration={onEditConfiguration} onPreviewPermit={onPreviewPermit} onConfirmPermit={onConfirmPermit} />}
 
         <DialogFooter>
           <button onClick={onClose} className="h-10 rounded-xl border px-4 text-xs font-bold">Close</button>
           {preflight && !approval && !preflight.approvable && <button onClick={onRecheck} disabled={Boolean(state?.loading)} className="inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-black disabled:opacity-40"><RefreshCw size={13} className={state?.loading ? "animate-spin" : ""} />Recheck</button>}
           {preflight?.approvable && !approval && <button data-testid="request-approval-button" onClick={onRequestApproval} disabled={Boolean(state?.loading)} className="h-10 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40">{state?.loading ? "Working…" : "Request approval"}</button>}
+          {approval && !state?.approved && <button data-testid="approve-campaign-button" onClick={onApproveCampaign} disabled={Boolean(state?.loading)} className="h-10 rounded-xl bg-foreground px-4 text-xs font-black text-background disabled:opacity-40">{state?.loading ? "Approving…" : "Approve this campaign"}</button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -501,7 +498,7 @@ function CampaignSetupDialog({ state, onClose, onChange, onSave }) {
             </section>
 
             <section className="rounded-2xl border p-4">
-              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black">Sender emails</p><p className="mt-1 text-[10px] text-muted-foreground">Select explicit identities. At least one must be active, healthy and within cap to pass.</p></div><a href="/admin/campaigns?tab=commercial" className="rounded-lg border px-3 py-2 text-[10px] font-black">View mailbox health</a></div>
+              <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-black">Sender emails</p><p className="mt-1 text-[10px] text-muted-foreground">Select explicit identities. A paused but fully verified mailbox counts as prepared; sending stays off until the separate GO start.</p></div><a href="/admin/campaigns?tab=commercial" className="rounded-lg border px-3 py-2 text-[10px] font-black">View mailbox health</a></div>
               <div className="mt-3 max-h-56 space-y-2 overflow-auto">
                 {options.senders.map((sender) => <label key={sender.profile_key} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${selectedSenders.has(sender.profile_key) ? "border-cyan-500/40 bg-cyan-500/5" : ""}`}><input type="checkbox" aria-label={`Configure ${sender.from_address || sender.profile_key}`} checked={selectedSenders.has(sender.profile_key)} onChange={() => toggleSender(sender.profile_key)} className="mt-0.5" /><span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-black">{sender.from_address || sender.profile_key}</span><span className="block text-[9px] text-muted-foreground">{sender.provider} · {sender.status} · cap {sender.current_daily_cap}/day · webhook {sender.webhook_status}</span></span><Chip tone={sender.readiness?.ready ? "good" : "bad"}>{sender.readiness?.ready ? "READY" : "NOT READY"}</Chip></label>)}
                 {!options.senders.length && <p className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">No sender identity is configured.</p>}
@@ -766,6 +763,72 @@ export default function AdminCampaigns() {
     }
   }, [detail, preflightState]);
 
+  const previewPermit = useCallback(async () => {
+    const campaignId = preflightState?.campaignId || detail?.item?.id;
+    if (!campaignId) return;
+    setPreflightState((current) => ({ ...(current || {}), campaignId, loading: true, error: "" }));
+    try {
+      const response = await call("issue_permit", { campaign_id: campaignId });
+      if (response.already_bound) {
+        const checked = await call("preflight", { campaign_id: campaignId });
+        setPreflightState({ campaignId, loading: false, preflight: checked.preflight });
+        return;
+      }
+      setPreflightState((current) => ({
+        ...(current || {}), campaignId, loading: false,
+        permitPreview: response.preview,
+        permitCommandKey: response.command_key,
+        permitConfirmation: response.confirmation_required,
+      }));
+    } catch (caught) {
+      setPreflightState((current) => ({ ...(current || {}), campaignId, loading: false, error: caught.message }));
+    }
+  }, [detail, preflightState]);
+
+  const confirmPermit = useCallback(async () => {
+    const campaignId = preflightState?.campaignId || detail?.item?.id;
+    const preview = preflightState?.permitPreview;
+    if (!campaignId || !preview || !preflightState?.permitCommandKey) return;
+    setPreflightState((current) => ({ ...(current || {}), loading: true, error: "" }));
+    try {
+      await call("issue_permit", {
+        campaign_id: campaignId,
+        confirmed: true,
+        confirmation: preflightState.permitConfirmation,
+        command_key: preflightState.permitCommandKey,
+        preview_hash: preview.preview_hash,
+      });
+      const [nextDetail, checked] = await Promise.all([
+        call("detail", { campaign_id: campaignId }),
+        call("preflight", { campaign_id: campaignId }),
+      ]);
+      setDetail(nextDetail);
+      setPreflightState({ campaignId, loading: false, preflight: checked.preflight });
+      setNotice("Scoped founder permit issued for this exact campaign. Nothing was sent.");
+    } catch (caught) {
+      setPreflightState((current) => ({ ...(current || {}), loading: false, error: caught.message }));
+    }
+  }, [detail, preflightState]);
+
+  const approveCampaign = useCallback(async () => {
+    const campaignId = preflightState?.campaignId || detail?.item?.id;
+    const approvalHash = preflightState?.approval?.approval_hash;
+    if (!campaignId || !approvalHash) return;
+    setPreflightState((current) => ({ ...(current || {}), loading: true, error: "" }));
+    try {
+      const response = await call("approve_campaign", {
+        campaign_id: campaignId,
+        approval_hash: approvalHash,
+        confirmation: "APPROVE_CAMBRA_CAMPAIGN_CONFIGURATION",
+      });
+      setDetail((current) => current ? { ...current, campaign: response.campaign, item: response.item } : current);
+      setPreflightState((current) => ({ ...(current || {}), loading: false, approved: true }));
+      setNotice("Campaign configuration approved. Sending is still paused pending the separate GO start.");
+    } catch (caught) {
+      setPreflightState((current) => ({ ...(current || {}), loading: false, error: caught.message }));
+    }
+  }, [detail, preflightState]);
+
   useEffect(() => { if (tab === "overview") loadOverview(); }, [tab, loadOverview]);
   useEffect(() => { if (tab === "all") loadList(); }, [tab, loadList]);
 
@@ -806,8 +869,11 @@ export default function AdminCampaigns() {
         state={preflightState}
         onClose={() => setPreflightState(null)}
         onRequestApproval={requestApproval}
+        onApproveCampaign={approveCampaign}
         onEditConfiguration={openConfiguration}
         onRecheck={checkStatus}
+        onPreviewPermit={previewPermit}
+        onConfirmPermit={confirmPermit}
       />
       <CampaignSetupDialog
         state={setupState}

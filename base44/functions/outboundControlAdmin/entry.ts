@@ -83,6 +83,7 @@ const INSTANTLY_ADMIN_ACTIONS = new Set([
   "instantly_diagnose",
   "instantly_diagnose_supersearch",
   "instantly_create_campaign",
+  "instantly_update_campaign_accounts",
   "instantly_register_webhook",
   "instantly_test_webhook",
   "instantly_resume_sender",

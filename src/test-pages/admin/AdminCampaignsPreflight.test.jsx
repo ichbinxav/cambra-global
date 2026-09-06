@@ -41,6 +41,7 @@ const PREFLIGHT_BLOCKED = buildCampaignPreflight({
   ...CLEAN_INPUT,
   outboundControl: { acquisition_enabled: false },
   founderPermit: { authority_available: true, present: true },
+  emergency: { safe_mode: true, communications_paused: true, control_revision: 7 },
 });
 const PREFLIGHT_PASS = buildCampaignPreflight({
   ...CLEAN_INPUT,
@@ -92,6 +93,17 @@ function respondWith({ preflight = PREFLIGHT_PERMIT_ONLY, approvalResponse } = {
     if (action === "campaign_list") return { data: LIST };
     if (action === "campaign_detail") return { data: DETAIL };
     if (action === "campaign_preflight") return { data: { ok: true, preflight, external_send_performed: false } };
+    if (action === "campaign_issue_permit") {
+      if (body.confirmed) return { data: { ok: true, permit_id: "permit-1", external_send_performed: false } };
+      return { data: {
+        ok: true, requires_confirmation: true,
+        confirmation_required: "ISSUE_SCOPED_CAMBRA_CAMPAIGN_PERMIT",
+        command_key: "permit-command-1",
+        preview: { preview_hash: "permit-preview-1", impact: { markets: ["ES"], max_external_messages: 50, permit_expires_at: "2099-01-01T00:00:00.000Z" } },
+        external_send_performed: false,
+      } };
+    }
+    if (action === "campaign_approve_campaign") return { data: { ok: true, campaign: { id: "c1", status: "APPROVED" }, item: { ...DETAIL.item, status: "APPROVED" }, external_send_performed: false } };
     if (action === "campaign_request_approval") {
       if (approvalResponse?.throws) throw approvalResponse.throws;
       return { data: approvalResponse ?? { ok: false, error: "preflight_not_passed", preflight, external_send_performed: false } };
@@ -175,12 +187,29 @@ describe("Preflight dialog — the breakdown a founder reads", () => {
     expect(screen.queryByTestId("preflight-founder-permit-notice")).toBeNull();
   });
 
-  it("explains a blocked dimension using the engine's own detail text", async () => {
+  it("treats paused outbound as the safe approval posture while another real blocker remains visible", async () => {
     respondWith({ preflight: PREFLIGHT_BLOCKED });
     await openPreflightDialog();
     const row = await screen.findByTestId("preflight-dimension-outbound_control");
-    expect(row.textContent).toContain("BLOCKED");
-    expect(row.textContent).toMatch(/globally paused/i);
+    expect(row.textContent).toContain("PASS");
+    expect(row.textContent).toMatch(/safely paused/i);
+    expect(screen.getByTestId("preflight-dimension-emergency").textContent).toContain("BLOCKED");
+  });
+
+  it("previews the exact permit scope before a separate confirmation click", async () => {
+    await openPreflightDialog();
+    fireEvent.click(screen.getByTestId("preview-campaign-permit"));
+    const confirm = await screen.findByTestId("confirm-campaign-permit");
+    expect(document.body.textContent).toMatch(/Maximum messages: 50/i);
+    expect(actionsCalled().filter((action) => action === "campaign_issue_permit")).toHaveLength(1);
+    fireEvent.click(confirm);
+    await screen.findByText(/Scoped founder permit issued/i);
+    expect(actionsCalled().filter((action) => action === "campaign_issue_permit")).toHaveLength(2);
+    expect(invoke).toHaveBeenCalledWith("adminSummaries", expect.objectContaining({
+      action: "campaign_issue_permit", confirmed: true,
+      confirmation: "ISSUE_SCOPED_CAMBRA_CAMPAIGN_PERMIT",
+      preview_hash: "permit-preview-1",
+    }));
   });
 });
 
@@ -229,8 +258,15 @@ describe("Request approval — the server is the authority", () => {
     const granted = await screen.findByTestId("approval-granted");
     expect(granted.textContent).toContain("hash-abc123");
     expect(granted.textContent).toContain("READY_FOR_APPROVAL");
-    expect(granted.textContent).toMatch(/does\s*not\s*send anything/i);
-    expect(granted.textContent).toMatch(/founder-governed transport authorization/i);
+    expect(granted.textContent).toMatch(/Neither step sends anything/i);
+    expect(granted.textContent).toMatch(/fresh global GO preflight/i);
+    fireEvent.click(screen.getByTestId("approve-campaign-button"));
+    expect(await screen.findByTestId("campaign-approved")).toBeTruthy();
+    expect(invoke).toHaveBeenCalledWith("adminSummaries", expect.objectContaining({
+      action: "campaign_approve_campaign",
+      approval_hash: "hash-abc123",
+      confirmation: "APPROVE_CAMBRA_CAMPAIGN_CONFIGURATION",
+    }));
   });
 
   it("surfaces a genuine failure as an error rather than as a refusal", async () => {

@@ -8,8 +8,8 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "a73b4647648a9d79da135555a81afad92ec48d6e3d2e509ac9198bc8b8ff336f",
-  "input_file_count": 125,
+  "input_fingerprint_sha256": "15753380575b99f88a074cfbbd062bbaed460884eb0316b43c82e1f0379bf4e3",
+  "input_file_count": 124,
   "surface_snapshot": {
     "source_function_directories": 300,
     "source_entry_files": 300,
@@ -83,7 +83,7 @@
   },
   "paid_ai_inventory": {
     "primitive": "callCambraClaude|callCambraModel",
-    "caller_count": 37,
+    "caller_count": 36,
     "callers": [
       "autonomousCommercialWorker",
       "autonomousPartnerWorker",
@@ -108,7 +108,6 @@
       "linkedinAgent",
       "newsletterAgent",
       "onboardingConciergeWorker",
-      "outboundVolumeWorker",
       "outreachAgent",
       "postMeetingWorker",
       "providerMonetizationAgent",
@@ -2910,8 +2909,8 @@
         },
         {
           "path": "base44/functions/outboundControlAdmin/entry.ts",
-          "sha256": "ffca5727015f771af4b9dd627c72c10ab190d96e8eb0050994dafa839882a49f",
-          "bytes": 34417
+          "sha256": "4978688a211417afc01f9c42af1e655af8124e6ea734a04ea8639b843b4a9403",
+          "bytes": 34457
         },
         {
           "path": "base44/functions/processUploadedFile/entry.ts",
@@ -3018,7 +3017,6 @@
         "linkedinAgent",
         "newsletterAgent",
         "onboardingConciergeWorker",
-        "outboundVolumeWorker",
         "outreachAgent",
         "postMeetingWorker",
         "providerMonetizationAgent",
@@ -3033,7 +3031,7 @@
         "seoAgent",
         "xTwitterAgent"
       ],
-      "actor": "Inherited from 37 physical callers",
+      "actor": "Inherited from 36 physical callers",
       "tenant_key": "Caller brand/entity or _platform",
       "policy": [
         "CostBudgetControl",
@@ -3172,11 +3170,6 @@
           "path": "base44/functions/onboardingConciergeWorker/entry.ts",
           "sha256": "a2c4080ba68b1785f4e695b67a2e9da452573888897d04ffc89b730c7b656430",
           "bytes": 5174
-        },
-        {
-          "path": "base44/functions/outboundVolumeWorker/entry.ts",
-          "sha256": "3d51f4af2ed38449f5deaab65855b479166c86786d87cc86dd0d6cb05872a17b",
-          "bytes": 23727
         },
         {
           "path": "base44/functions/outreachAgent/entry.ts",

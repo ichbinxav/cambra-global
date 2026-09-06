@@ -25,6 +25,7 @@ import {
 } from "../costGovernance.ts";
 
 const CONFIRM_CREATE = "CREATE_CAMBRA_INSTANTLY_CAMPAIGN";
+const CONFIRM_UPDATE_ACCOUNTS = "UPDATE_CAMBRA_INSTANTLY_CAMPAIGN_ACCOUNTS";
 const CONFIRM_WEBHOOK = "REGISTER_CAMBRA_INSTANTLY_WEBHOOK";
 const CONFIRM_WEBHOOK_TEST = "TEST_CAMBRA_INSTANTLY_WEBHOOK";
 const CONFIRM_RESUME_SENDER = "RESUME_CAMBRA_INSTANTLY_SENDER";
@@ -453,6 +454,162 @@ export async function handleInstantlyProviderAdmin(req: Request) {
             error_code: String(error?.code || "FAILED"),
           },
         }).catch((error:any)=>safeBestEffort(error,{operation:'instantlyProviderAdmin',fallback:null,severity:'secondary'}));
+        throw error;
+      }
+    }
+    if (action === "update_campaign_accounts") {
+      if (body.confirmation !== CONFIRM_UPDATE_ACCOUNTS)
+        return Response.json(
+          {
+            ok: false,
+            error: "confirmation_required",
+            required: CONFIRM_UPDATE_ACCOUNTS,
+          },
+          { status: 409 },
+        );
+      if (
+        !control || control.acquisition_enabled === true ||
+        control.instantly_enabled === true
+      )
+        return Response.json(
+          { ok: false, error: "outbound_must_be_paused_before_campaign_update" },
+          { status: 409 },
+        );
+      if (profile.status !== "paused")
+        return Response.json(
+          { ok: false, error: "profile_must_be_paused" },
+          { status: 409 },
+        );
+      const campaignId = String(profile.external_campaign_id || "");
+      if (!campaignId)
+        return Response.json(
+          { ok: false, error: "instantly_campaign_required" },
+          { status: 409 },
+        );
+      const accounts = [
+        ...new Set<string>(
+          (Array.isArray(body.account_emails) ? body.account_emails : [])
+            .map((value: any) => String(value || "").trim().toLowerCase())
+            .filter(Boolean),
+        ),
+      ];
+      const domain = String(profile.domain || "").trim().toLowerCase();
+      if (
+        !accounts.length || !domain ||
+        accounts.some((email: string) => !email.endsWith(`@${domain}`))
+      )
+        return Response.json(
+          { ok: false, error: "campaign_accounts_must_match_profile_domain" },
+          { status: 400 },
+        );
+      const daily = Math.max(
+        1,
+        Math.min(
+          15,
+          Math.floor(Number(body.daily_limit || profile.current_daily_cap || 1)),
+        ),
+      );
+      const requestKey = String(body.request_key || "default")
+        .replace(/[^a-zA-Z0-9._-]/g, "")
+        .slice(0, 80);
+      const reservation = await reservePaidOperation(svc, {
+        event_key:
+          `api:instantly:update-campaign:${profile.profile_key}:${requestKey}`,
+        category: "api",
+        provider: "instantly",
+        source: "instantlyProviderAdmin",
+        related_entity_type: "OutboundSendingProfile",
+        related_entity_id: profile.id,
+      });
+      try {
+        const campaign = await guardReservedPaidProviderEffect(
+          svc,
+          reservation,
+          {
+            category: "api",
+            provider: "instantly",
+            source: "instantlyProviderAdmin",
+            event_key: reservation.event?.event_key,
+            effect_key: `instantly_update_campaign:${profile.profile_key}`,
+          },
+          () => provider.updateCampaign(campaignId, {
+            account_emails: accounts,
+            daily_limit: daily,
+          }),
+        );
+        const returnedAccounts = Array.isArray(campaign?.email_list)
+          ? campaign.email_list.map((value: any) =>
+            String(value || "").trim().toLowerCase()
+          ).filter(Boolean)
+          : [];
+        const accountsConfirmed = accounts.length === returnedAccounts.length &&
+          accounts.every((email: string) => returnedAccounts.includes(email));
+        await settlePaidOperation(svc, reservation, {
+          ok: accountsConfirmed,
+          usage_json: {
+            operation: "update_campaign_accounts",
+            campaign_id: campaignId,
+            account_count: accounts.length,
+          },
+        });
+        if (!accountsConfirmed)
+          return Response.json(
+            {
+              ok: false,
+              error: "instantly_campaign_account_update_unconfirmed",
+              outbound_unchanged: true,
+              no_campaign_message_sent: true,
+            },
+            { status: 502 },
+          );
+        await svc.entities.OutboundSendingProfile.update(profile.id, {
+          provider_config_json: {
+            ...(profile.provider_config_json || {}),
+            account_emails: accounts,
+            sender_ready: false,
+            remote_campaign_status: Number(campaign?.status),
+          },
+          last_provider_health_at: new Date().toISOString(),
+          notes:
+            "Instantly campaign sender accounts updated while campaign and global outbound remained paused.",
+        });
+        await svc.entities.OperationalLog.create({
+          event_type: "instantly_campaign_accounts_updated",
+          message: profile.profile_key,
+          data_json: {
+            profile_key: profile.profile_key,
+            campaign_id: campaignId,
+            account_count: accounts.length,
+            daily_limit: daily,
+            outbound_sent: false,
+          },
+          actor_email: gate.user?.email || "founder_admin",
+          created_at: new Date().toISOString(),
+        });
+        return Response.json({
+          ok: true,
+          campaign_id: campaignId,
+          account_count: accounts.length,
+          daily_limit: daily,
+          campaign_status: Number(campaign?.status),
+          sender_ready: false,
+          outbound_unchanged: true,
+          no_campaign_message_sent: true,
+        });
+      } catch (error: any) {
+        await settlePaidOperation(svc, reservation, {
+          ok: false,
+          usage_json: {
+            operation: "update_campaign_accounts",
+            error_code: String(error?.code || "FAILED"),
+          },
+        }).catch((settleError: any) =>
+          safeBestEffort(settleError, {
+            operation: "instantlyProviderAdmin.update_campaign_accounts.settle",
+            fallback: null,
+            severity: "secondary",
+          })
+        );
         throw error;
       }
     }
@@ -1059,6 +1216,7 @@ export async function handleInstantlyProviderAdmin(req: Request) {
           "diagnose",
           "diagnose_supersearch",
           "create_campaign",
+          "update_campaign_accounts",
           "register_webhook",
           "test_webhook",
           "resume_sender",

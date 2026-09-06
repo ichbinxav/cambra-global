@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "2ec5d5824114a92fcbe9f5d120d7161d264e9f594c93150d0061ac681633ac75",
+  "source_inventory_hash": "9a32c1a5475b51e4fe548897f6444a7851a3d6e66d449e25654cdb0260b89825",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -1213,7 +1213,7 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "source_sha256": "ffca5727015f771af4b9dd627c72c10ab190d96e8eb0050994dafa839882a49f",
+      "source_sha256": "4978688a211417afc01f9c42af1e655af8124e6ea734a04ea8639b843b4a9403",
       "boundary_ids": [
         "MB-PAID-API-ENRICHMENT"
       ],
@@ -1230,15 +1230,12 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "source_sha256": "3d51f4af2ed38449f5deaab65855b479166c86786d87cc86dd0d6cb05872a17b",
+      "source_sha256": "11d0d10943d03b5aec61ba9a698bcf68f844ca23113aaa78149f4d6201c4659b",
       "boundary_ids": [
-        "MB-PAID-AI",
         "MB-SCHEDULER-BASE"
       ],
       "material_effect_kinds": [
         "material_schedule",
-        "paid_spend",
-        "provider_effect",
         "send"
       ],
       "agenttask_creator": false,

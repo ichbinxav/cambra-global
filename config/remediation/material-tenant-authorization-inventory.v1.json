@@ -4,9 +4,9 @@
   "truth_boundary": "This inventory maps every R0 material boundary to source wiring and executable shared/pure authorization tests where they exist. A shared-gate test is partial criterion evidence, not proof that every physical handler and deployed provider effect is authorized end-to-end.",
   "closure_rule": "No route closes unless its complete handler-to-effect path is locally exercised, non-owner and unknown actors are non-enumerably denied where applicable, authority outages/ambiguity fail closed, and deployed runtime evidence exists.",
   "material_registry_path": "config/remediation/material-boundary-registry.v1.json",
-  "material_registry_sha256": "20828e531040c10e69ce3a6e74da58203339ecb288e0ae23764d831e078a4521",
-  "material_registry_input_fingerprint_sha256": "a73b4647648a9d79da135555a81afad92ec48d6e3d2e509ac9198bc8b8ff336f",
-  "input_fingerprint_sha256": "3e6895f605a2de71f395d91ea711bde067ebdee02c99b12372c475d53ba38e61",
+  "material_registry_sha256": "f0d27a7be7551faa76f76160b65df9a611c73b2eb1ca8fb2684991dd8a026642",
+  "material_registry_input_fingerprint_sha256": "15753380575b99f88a074cfbbd062bbaed460884eb0316b43c82e1f0379bf4e3",
+  "input_fingerprint_sha256": "063969f16d35e4311521581b4ff64bedf0bfffcf301d2b7486ae8884a314c2a5",
   "reproducible_local_test_run": {
     "command": "node_modules/.bin/vitest run src/lib/apiUsageBillingConcurrency.test.js src/lib/approvalAuthoritySaga.test.js src/lib/commercialSendSafety.test.js src/lib/contractPolicyE2E.test.js src/lib/developerMigrationLifecycle.test.js src/lib/disasterRecovery.test.js src/lib/externalApprovalExecution.test.js src/lib/financialEntityServiceRoleRls.test.js src/lib/intelligenceFoundationContracts.test.js src/lib/intelligenceTenantScope.test.js src/lib/materialTenantAuthorization.test.js src/lib/p4CostGovernance.test.js src/lib/recoverFinancialHardening.test.js src/lib/schedulerLeaseFencing.test.js src/lib/tenantOwnership.test.js src/lib/webhookDeadLetterClaim.test.js",
     "test_files": [
@@ -1771,7 +1771,7 @@
         "paid_spend",
         "provider_effect"
       ],
-      "actor": "Inherited from 37 physical callers",
+      "actor": "Inherited from 36 physical callers",
       "tenant_key": "Caller brand/entity or _platform",
       "material_registry_status": "PARTIAL_HARD_GAP",
       "material_registry_gap_codes": [
@@ -1811,7 +1811,6 @@
         "base44/functions/linkedinAgent/entry.ts",
         "base44/functions/newsletterAgent/entry.ts",
         "base44/functions/onboardingConciergeWorker/entry.ts",
-        "base44/functions/outboundVolumeWorker/entry.ts",
         "base44/functions/outreachAgent/entry.ts",
         "base44/functions/postMeetingWorker/entry.ts",
         "base44/functions/processUploadedFile/entry.ts",
@@ -1869,7 +1868,7 @@
       ],
       "remaining_gaps": [
         "no deployed Base44 authorization trace proves this complete material path",
-        "only 2 of the 37 dynamically inventoried AI callers are wired to the canonical owner gate",
+        "only 2 of the 36 dynamically inventoried AI callers are wired to the canonical owner gate",
         "the material registry still records paid-AI emergency and provider-receipt hard gaps"
       ]
     },

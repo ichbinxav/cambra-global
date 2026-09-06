@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-06T09:49:26.114Z",
+  "generatedAt": "2026-09-06T11:43:41.094Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1029,8 +1029,8 @@
     },
     {
       "path": "base44/functions/outboundControlAdmin/entry.ts",
-      "sha256": "ffca5727015f771af4b9dd627c72c10ab190d96e8eb0050994dafa839882a49f",
-      "bytes": 34417
+      "sha256": "4978688a211417afc01f9c42af1e655af8124e6ea734a04ea8639b843b4a9403",
+      "bytes": 34457
     },
     {
       "path": "base44/functions/outboundDeliverabilityManager/entry.ts",
@@ -1039,8 +1039,8 @@
     },
     {
       "path": "base44/functions/outboundVolumeWorker/entry.ts",
-      "sha256": "3d51f4af2ed38449f5deaab65855b479166c86786d87cc86dd0d6cb05872a17b",
-      "bytes": 23727
+      "sha256": "11d0d10943d03b5aec61ba9a698bcf68f844ca23113aaa78149f4d6201c4659b",
+      "bytes": 39469
     },
     {
       "path": "base44/functions/outcomeLearningWorker/entry.ts",
@@ -1819,8 +1819,8 @@
     },
     {
       "path": "base44/shared/outboundProvider.ts",
-      "sha256": "3ca963fab26aed56b9b1906162894f97dfabc253ec0f8bac1c174245d847b218",
-      "bytes": 17917
+      "sha256": "e0ba25ece4fcf6f1af3cfda5f987c877c7585f44f40b76abf98fe328f5ac15be",
+      "bytes": 18398
     },
     {
       "path": "base44/shared/outboundProviderEventProcessing.ts",
@@ -2019,8 +2019,8 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "7a3395a75ccc86b0a01932d83d30e34fd509349c86abbe5c7f7da9dbabc8c491",
-      "bytes": 141405
+      "sha256": "d7aa5b5f7530a2002c92fea9d31bf65e6168f96ae3febfb04722d5a4d4127351",
+      "bytes": 141334
     },
     {
       "path": "config/data-retention-matrix.json",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "5b9c2715d17bdf6146b06f9f91e9668a5c19f1d4fb30c8ac0ed044e44e77fadd",
+      "sha256": "5b771bc49a69d0d3f07a3224ca2797fcd5cf76f6f38cdf7be99040b8a7d07341",
       "bytes": 43449
     },
     {
@@ -2189,23 +2189,23 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "60a1e0d4d539e237a219cbdf74a675a46526139c8f278179b1410c57171aff5a",
+      "sha256": "44a6c2a84aa800de00a411b57f2b1281c71c046c52a6315b76306f8e5efcc7e7",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "5cc7e99911272aac11e6ca80e7679d34792826615996169725c36f82009025db",
+      "sha256": "1c6ea9efcbbb7540944f27f31713d45f42a9cc9ae16cd8bcdbc8d55b6f7a4730",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "20828e531040c10e69ce3a6e74da58203339ecb288e0ae23764d831e078a4521",
-      "bytes": 144990
+      "sha256": "f0d27a7be7551faa76f76160b65df9a611c73b2eb1ca8fb2684991dd8a026642",
+      "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "11cdf489d7ed4b359d9515ce20e9319ef5ba31a54bd69f953f656aa77f76352a",
-      "bytes": 97957
+      "sha256": "ccb3da5dd160b2908feb6e64a79f786d649627cea9a2380198613ebb90c24ddc",
+      "bytes": 97899
     },
     {
       "path": "config/remediation/material-transition-saga-inventory.v1.json",
@@ -3254,8 +3254,8 @@
     },
     {
       "path": "src/lib/finalAutonomyMerchantFallback.test.js",
-      "sha256": "f52bf0f38834b52a1c553b8c45040e978d7889374980aab284dd9f45cf05a6fa",
-      "bytes": 3468
+      "sha256": "199cf96b506a50ff79cca3b8b2d63608eecd3a3909bd1d93a14152b6cdfaf864",
+      "bytes": 3500
     },
     {
       "path": "src/lib/finalRevenueEngineSeal.test.js",
@@ -3459,8 +3459,8 @@
     },
     {
       "path": "src/lib/outboundSendingSafety.test.js",
-      "sha256": "0ea72b6018a550cfd7882ad743b49297743285d5deda3466a2aba45bf740cded",
-      "bytes": 4069
+      "sha256": "32c836f35d79159a18ac3ae92d31978418b503727a2a2808fff95d0cc304f29b",
+      "bytes": 4374
     },
     {
       "path": "src/lib/outcomeCalibration.test.js",
@@ -3469,8 +3469,8 @@
     },
     {
       "path": "src/lib/outreachExperimentation.test.js",
-      "sha256": "2086fe40b314cc7704d2f82f450437f6002380c364d54ebd42081bbd2cd49266",
-      "bytes": 1925
+      "sha256": "6f2ffa48b3f35d1868ab770c0211a2ed65b65e4fc568e4ef019d70b850f50395",
+      "bytes": 2131
     },
     {
       "path": "src/lib/p11AutonomousOperations.test.js",
@@ -3544,8 +3544,8 @@
     },
     {
       "path": "src/lib/p7p8InstantlyIntegration.test.js",
-      "sha256": "9d48f0abb4fb9ce47845947f6fdf27b90df3d68ed2ad993a09ff8e752c55095f",
-      "bytes": 18001
+      "sha256": "601450d5a7aa56eee8babd20579b700640e9d8aa3b10831ae3e4fc709e05ce4d",
+      "bytes": 18691
     },
     {
       "path": "src/lib/partnerAcquisitionAutonomy.test.js",
@@ -3894,8 +3894,8 @@
     },
     {
       "path": "src/pages/admin/AdminFounderControl.jsx",
-      "sha256": "dddd50841edd8e746ff3ee0bc662c656a72becf82f55b55ec91aabad51ffa71c",
-      "bytes": 90160
+      "sha256": "7ba32c1a5707d721b963e6cba78f2328e4d5e1e123a7bd7efd052f4e44213ba9",
+      "bytes": 90094
     },
     {
       "path": "src/pages/admin/AdminGrowth.jsx",

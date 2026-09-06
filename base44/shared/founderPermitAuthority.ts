@@ -283,6 +283,7 @@ export async function buildPermitHash(
   return sha256({
     objective: text(permit?.objective),
     issued_by: text(permit?.issued_by),
+    delegated_to: sortedList(permit?.delegated_to),
     preset: text(permit?.preset).toUpperCase(),
     allowed_domains: sortedList(permit?.allowed_domains),
     allowed_tool_ids: sortedList(permit?.allowed_tool_ids),

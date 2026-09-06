@@ -343,11 +343,76 @@ describe("C3 — preflight and approval", () => {
     expect(preflight.body.preflight.approvable).toBe(false);
   });
 
-  it("blocks the preflight when outbound is globally paused", async () => {
+  it("allows configuration approval while outbound remains safely paused", async () => {
     const svc = readySvc({ entities: { OutboundControl: [{ id: "oc1", control_key: "global", acquisition_enabled: false }] } });
     const { body } = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "preflight", campaign_id: "c1" }, svc));
-    expect(body.preflight.blocked_dimensions).toContain("outbound_control");
+    expect(body.preflight.blocked_dimensions).not.toContain("outbound_control");
+    expect(body.preflight.dimensions.find((row) => row.key === "outbound_control").detail).toMatch(/safely paused/i);
     expect(body.preflight.verdict).toBe("BLOCKED");
+  });
+
+  it("previews, confirms and binds a narrow campaign permit without sending", async () => {
+    const svc = readySvc({
+      entities: { OutboundControl: [{ id: "oc1", control_key: "global", acquisition_enabled: false }] },
+    });
+    const preview = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "issue_permit", campaign_id: "c1",
+    }, svc));
+    expect(preview.status).toBe(200);
+    expect(preview.body.requires_confirmation).toBe(true);
+    expect(preview.body.preview.impact).toMatchObject({
+      markets: ["ES"], global_outbound_unchanged: true, external_send_performed: false,
+    });
+
+    const confirmed = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "issue_permit", campaign_id: "c1", confirmed: true,
+      confirmation: preview.body.confirmation_required,
+      command_key: preview.body.command_key,
+      preview_hash: preview.body.preview.preview_hash,
+    }, svc));
+    expect(confirmed.status).toBe(200);
+    expect(confirmed.body.external_send_performed).toBe(false);
+    expect(svc.entities.FounderPermit.store).toHaveLength(1);
+    expect(svc.entities.FounderPermit.store[0]).toMatchObject({
+      preset: "OPERATE",
+      allowed_entity_ids: ["c1"],
+      allowed_markets: ["ES"],
+      allowed_tool_ids: ["cambra.campaign.request_approval", "cambra.campaign.send"],
+    });
+    expect(svc.entities.CommercialCampaign.store[0].founder_permit_id).toBe(confirmed.body.permit_id);
+  });
+
+  it("requires a second explicit confirmation before promoting READY_FOR_APPROVAL to APPROVED", async () => {
+    const permit = {
+      id: "permit-1", permit_id: "permit-1", objective: "Launch the ES fashion campaign",
+      issued_by: ADMIN.email, delegated_to: ["outbound_volume_worker"], status: "ACTIVE", preset: "OPERATE",
+      permit_hash: "permit-hash-1", allowed_domains: ["campaign"],
+      allowed_tool_ids: ["cambra.campaign.request_approval", "cambra.campaign.send"],
+      allowed_effect_classes: ["campaign_config", "external_message"],
+      allowed_entity_types: ["CommercialCampaign"], allowed_entity_ids: ["c1"],
+      allowed_markets: ["ES"], allowed_environments: ["production"], explicit_denials: [],
+      valid_from: "2020-01-01T00:00:00.000Z", expires_at: "2099-01-01T00:00:00.000Z",
+      emergency_control_revision: 7,
+    };
+    const svc = readySvc({ campaign: { founder_permit_id: "permit-1" }, entities: { FounderPermit: [permit] } });
+    const requested = await jsonOf(await handleCampaignAdminAction(ADMIN, { action: "request_approval", campaign_id: "c1" }, svc));
+    expect(requested.status).toBe(200);
+    expect(svc.entities.CommercialCampaign.store[0].status).toBe("READY_FOR_APPROVAL");
+
+    const missingConfirmation = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "approve_campaign", campaign_id: "c1", approval_hash: requested.body.approval.approval_hash,
+    }, svc));
+    expect(missingConfirmation.status).toBe(409);
+    expect(missingConfirmation.body.error).toBe("confirmation_required");
+
+    const approved = await jsonOf(await handleCampaignAdminAction(ADMIN, {
+      action: "approve_campaign", campaign_id: "c1",
+      approval_hash: requested.body.approval.approval_hash,
+      confirmation: "APPROVE_CAMBRA_CAMPAIGN_CONFIGURATION",
+    }, svc));
+    expect(approved.status).toBe(200);
+    expect(approved.body.external_send_performed).toBe(false);
+    expect(svc.entities.CommercialCampaign.store[0].status).toBe("APPROVED");
   });
 
   it("blocks the preflight under SAFE MODE", async () => {

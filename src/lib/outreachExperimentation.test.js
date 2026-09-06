@@ -17,11 +17,14 @@ describe("outreach personalization and learning", () => {
     expect(s).toMatch(/eligible_sample_size\s*\|\|\s*0\)\s*>=\s*20/);
     expect(s).toContain("OUTREACH_EXPERIMENT_ADVISORY_LABEL_CONTRACT");
   });
-  it("merchant drafts use verified personalization and store experiment provenance", () => {
+  it("merchant sends use validated campaign content and store versioned provenance", () => {
     const s = r("base44/functions/outboundVolumeWorker/entry.ts");
     expect(s).toContain("personalizationFacts");
-    expect(s).toMatch(/experiment_key:\s*["']merchant-outreach-v1["']/);
-    expect(s).toContain("APPROACH:");
+    expect(s).toContain("renderCampaignContent(content, x)");
+    expect(s).toContain("evaluateClaimsGate");
+    expect(s).toContain("experiment_key: `campaign:${campaign.id}`");
+    expect(s).toContain("campaign_content_version_id: content.id");
+    expect(s).toContain("campaign_sequence_version_id: sequence.id");
   });
   it("partner drafts do the same", () => {
     const s = r("base44/functions/autonomousPartnerWorker/entry.ts");
