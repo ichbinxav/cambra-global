@@ -263,7 +263,7 @@ export default {
     hero_badge:           "PLATEBNÍ INTELIGENCE",
     hero_h1_line1:        "Snižte poplatky za karty.",
     hero_h1_line2:        "Ponechte si větší marži.",
-    hero_sub:             "CAMBRA analyzuje vaše náklady, odhalí zbytečné karetní poplatky a pomůže vyjednat lepší podmínky. Začněte zdarma. Vyděláváme jen tehdy, když šetříte.",
+    hero_sub: "CAMBRA je určena nezávislým značkám, obchodům a rostoucím firmám: najde skryté vícenáklady, spojí vaši kupní sílu a pomůže vám získat lepší obchodní podmínky. Zdarma. Bez počátečních nákladů.",
     hero_cta_primary:     "Zjistěte, kolik můžete ušetřit",
     hero_cta_secondary:   "Jak to funguje",
     hero_trust_1:         "Bezplatná analýza nákladů",

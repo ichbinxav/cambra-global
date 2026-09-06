@@ -266,7 +266,7 @@ export default {
     hero_badge:           "FIZETÉSI INTELLIGENCIA",
     hero_h1_line1:        "Csökkentsd a kártyadíjakat.",
     hero_h1_line2:        "Tarts meg több árrést.",
-    hero_sub:             "A CAMBRA elemzi a költségeidet, feltárja az elkerülhető kártyadíjakat, és segít jobb feltételeket kialkudni. Kezdd ingyen. Csak akkor keresünk, ha te megtakarítasz.",
+    hero_sub: "A CAMBRA független márkáknak, kereskedőknek és növekvő vállalkozásoknak készült: feltárja a rejtett többletköltségeket, összefogja a vásárlóerődet, és segít jobb kereskedelmi feltételeket elérni. Ingyenes. Nincs előzetes költség.",
     hero_cta_primary:     "Nézd meg, mennyit takaríthatsz meg",
     hero_cta_secondary:   "Hogyan működik",
     hero_trust_1:         "Ingyenes költségelemzés",

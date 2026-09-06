@@ -264,7 +264,7 @@ export default {
     hero_badge:           "MAKSULIIKENTEEN ÄLY",
     hero_h1_line1:        "Laske korttimaksujasi.",
     hero_h1_line2:        "Säilytä enemmän katetta.",
-    hero_sub:             "CAMBRA analysoi maksusi, tunnistaa vältettävissä olevat korttikulut ja auttaa neuvottelemaan paremmat ehdot. Aloita ilmaiseksi. Ansaitsemme vain, kun sinä säästät.",
+    hero_sub: "CAMBRA on tehty itsenäisille brändeille, kaupoille ja kasvaville yrityksille: se löytää piilokulut, kokoaa ostovoimasi yhteen ja auttaa saamaan paremmat kaupalliset ehdot. Maksutta. Ei aloituskuluja.",
     hero_cta_primary:     "Katso mahdollinen säästösi",
     hero_cta_secondary:   "Miten se toimii",
     hero_trust_1:         "Maksuton kustannusanalyysi",

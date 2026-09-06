@@ -263,7 +263,7 @@ export default {
     hero_badge:           "ZAHLUNGSINTELLIGENZ",
     hero_h1_line1:        "Senken Sie Ihre Kartengebühren.",
     hero_h1_line2:        "Behalten Sie mehr Marge.",
-    hero_sub:             "CAMBRA analysiert Ihre Kosten, erkennt vermeidbare Kartengebühren und hilft, bessere Konditionen auszuhandeln. Der Start ist kostenlos. Wir verdienen nur, wenn Sie sparen.",
+    hero_sub: "Entwickelt für unabhängige Marken, Händler und wachsende Unternehmen: CAMBRA findet versteckte Mehrkosten, bündelt Ihre Einkaufsmacht und hilft Ihnen, bessere Geschäftsbedingungen zu erhalten. Kostenlos nutzbar. Keine Vorabkosten.",
     hero_cta_primary:     "Mögliches Einsparpotenzial prüfen",
     hero_cta_secondary:   "So funktioniert es",
     hero_trust_1:         "Kostenlose Kostenanalyse",

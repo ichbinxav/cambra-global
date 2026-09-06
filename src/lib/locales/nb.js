@@ -268,7 +268,7 @@ export default {
     hero_badge:           "BETALINGSINTELLIGENS",
     hero_h1_line1:        "Senk kortgebyrene dine.",
     hero_h1_line2:        "Behold mer margin.",
-    hero_sub:             "CAMBRA analyserer kostnadene dine, finner kortgebyrer som kan unngås, og hjelper deg å forhandle bedre vilkår. Start gratis. Vi tjener bare når du sparer.",
+    hero_sub: "Laget for uavhengige merker, butikker og voksende virksomheter: CAMBRA finner skjulte merkostnader, samler kjøpekraften din og hjelper deg å sikre bedre kommersielle vilkår. Gratis å bruke. Ingen kostnad på forhånd.",
     hero_cta_primary:     "Se hva du kan spare",
     hero_cta_secondary:   "Slik fungerer det",
     hero_trust_1:         "Gratis kostnadsanalyse",

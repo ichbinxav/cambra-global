@@ -267,7 +267,7 @@ export default {
     hero_badge:           "GREIÐSLUGREIND",
     hero_h1_line1:        "Lækkaðu kortagjöldin.",
     hero_h1_line2:        "Haltu eftir meiri framlegð.",
-    hero_sub:             "CAMBRA greinir kostnaðinn þinn, finnur kortagjöld sem hægt er að forðast og hjálpar þér að semja um betri kjör. Byrjaðu ókeypis. Við fáum aðeins greitt þegar þú sparar.",
+    hero_sub: "CAMBRA er gerð fyrir sjálfstæð vörumerki, verslanir og fyrirtæki í vexti: hún finnur faldan aukakostnað, safnar kaupkrafti þínum og hjálpar þér að tryggja betri viðskiptakjör. Ókeypis. Enginn upphafskostnaður.",
     hero_cta_primary:     "Sjáðu hvað þú gætir sparað",
     hero_cta_secondary:   "Svona virkar það",
     hero_trust_1:         "Ókeypis kostnaðargreining",

@@ -266,7 +266,7 @@ export default {
     hero_badge:           "PLAČILNA INTELIGENCA",
     hero_h1_line1:        "Znižaj provizije za kartice.",
     hero_h1_line2:        "Ohrani več marže.",
-    hero_sub:             "CAMBRA analizira tvoje stroške, odkrije nepotrebne kartične provizije in pomaga izpogajati boljše pogoje. Začni brezplačno. Zaslužimo le, ko ti prihraniš.",
+    hero_sub: "Ustvarjena za neodvisne blagovne znamke, trgovce in rastoča podjetja: CAMBRA odkrije skrite previsoke stroške, združi tvojo kupno moč in ti pomaga doseči boljše poslovne pogoje. Brezplačno. Brez začetnih stroškov.",
     hero_cta_primary:     "Preveri, koliko bi lahko prihranil",
     hero_cta_secondary:   "Kako deluje",
     hero_trust_1:         "Brezplačna analiza stroškov",

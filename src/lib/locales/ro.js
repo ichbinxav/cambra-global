@@ -264,7 +264,7 @@ export default {
     hero_badge:           "INTELIGENȚA PLĂȚILOR",
     hero_h1_line1:        "Redu comisioanele de card.",
     hero_h1_line2:        "Păstrează mai multă marjă.",
-    hero_sub:             "CAMBRA analizează cât plătești, identifică costurile de card evitabile și te ajută să negociezi condiții mai bune. Începi gratuit. Câștigăm doar când economisești.",
+    hero_sub: "Creată pentru branduri independente, comercianți și afaceri în creștere, CAMBRA găsește costurile ascunse, agregă puterea ta de cumpărare și te ajută să obții condiții comerciale mai bune. Gratuit. Fără cost inițial.",
     hero_cta_primary:     "Vezi cât ai putea economisi",
     hero_cta_secondary:   "Cum funcționează",
     hero_trust_1:         "Analiză gratuită a costurilor",

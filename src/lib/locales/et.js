@@ -266,7 +266,7 @@ export default {
     hero_badge:           "MAKSEINTELLIGENTS",
     hero_h1_line1:        "Vähenda kaarditasusid.",
     hero_h1_line2:        "Säilita rohkem marginaali.",
-    hero_sub:             "CAMBRA analüüsib sinu kulusid, leiab välditavad kaarditasud ja aitab läbi rääkida paremad tingimused. Alusta tasuta. Teenime ainult siis, kui sina säästad.",
+    hero_sub: "CAMBRA on loodud sõltumatutele brändidele, kauplustele ja kasvavatele ettevõtetele: see leiab varjatud lisakulud, koondab sinu ostujõu ja aitab saada paremaid ärilisi tingimusi. Tasuta. Ilma alguskuludeta.",
     hero_cta_primary:     "Vaata, kui palju võiksid säästa",
     hero_cta_secondary:   "Kuidas see toimib",
     hero_trust_1:         "Tasuta kulude analüüs",

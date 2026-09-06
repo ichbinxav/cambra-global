@@ -266,7 +266,7 @@ export default {
     hero_badge:           "MAKSĀJUMU INTELIĢENCE",
     hero_h1_line1:        "Samazini karšu komisijas.",
     hero_h1_line2:        "Saglabā lielāku peļņas daļu.",
-    hero_sub:             "CAMBRA analizē tavas izmaksas, atrod novēršamas karšu komisijas un palīdz vienoties par labākiem nosacījumiem. Sāc bez maksas. Mēs nopelnām tikai tad, kad tu ietaupi.",
+    hero_sub:             "CAMBRA ir veidota neatkarīgiem zīmoliem, tirgotājiem un augošiem uzņēmumiem: tā atrod slēptās papildu izmaksas, apvieno tavu pirktspēju un palīdz iegūt labākus komerciālos nosacījumus. Bez maksas. Bez sākuma izmaksām.",
     hero_cta_primary:     "Uzzini, cik vari ietaupīt",
     hero_cta_secondary:   "Kā tas darbojas",
     hero_trust_1:         "Bezmaksas izmaksu analīze",

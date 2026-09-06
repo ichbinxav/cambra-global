@@ -266,7 +266,7 @@ export default {
     hero_badge:           "MOKĖJIMŲ INTELEKTAS",
     hero_h1_line1:        "Sumažink kortelių mokesčius.",
     hero_h1_line2:        "Išsaugok didesnę maržą.",
-    hero_sub:             "CAMBRA analizuoja tavo išlaidas, randa išvengiamus kortelių mokesčius ir padeda išsiderėti geresnes sąlygas. Pradėk nemokamai. Uždirbame tik tada, kai tu sutaupai.",
+    hero_sub: "CAMBRA sukurta nepriklausomiems prekių ženklams, prekybininkams ir augančiam verslui: ji randa paslėptas papildomas išlaidas, sujungia tavo pirkimo galią ir padeda gauti geresnes komercines sąlygas. Nemokamai. Be pradinių išlaidų.",
     hero_cta_primary:     "Sužinok, kiek galėtum sutaupyti",
     hero_cta_secondary:   "Kaip tai veikia",
     hero_trust_1:         "Nemokama išlaidų analizė",

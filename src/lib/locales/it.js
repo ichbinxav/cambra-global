@@ -265,7 +265,7 @@ export default {
     hero_badge:           "INTELLIGENZA DEI PAGAMENTI",
     hero_h1_line1:        "Riduci le commissioni sulle carte.",
     hero_h1_line2:        "Trattieni più margine.",
-    hero_sub:             "CAMBRA analizza quanto paghi, individua i costi evitabili delle carte e ti aiuta a negoziare condizioni migliori. Inizia gratis. Guadagniamo solo quando risparmi.",
+    hero_sub: "Creata per marchi indipendenti, negozi e aziende in crescita, CAMBRA individua i costi nascosti, aggrega il tuo potere d'acquisto e ti aiuta a ottenere condizioni commerciali migliori. Gratis. Nessun costo iniziale.",
     hero_cta_primary:     "Scopri quanto potresti risparmiare",
     hero_cta_secondary:   "Come funziona",
     hero_trust_1:         "Analisi dei costi gratuita",

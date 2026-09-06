@@ -264,7 +264,7 @@ export default {
     hero_badge:           "INTELIGENCJA PŁATNOŚCI",
     hero_h1_line1:        "Obniż opłaty kartowe.",
     hero_h1_line2:        "Zachowaj większą marżę.",
-    hero_sub:             "CAMBRA analizuje Twoje koszty, wykrywa możliwe do uniknięcia opłaty kartowe i pomaga negocjować lepsze warunki. Zacznij bezpłatnie. Zarabiamy tylko, gdy Ty oszczędzasz.",
+    hero_sub: "Stworzona dla niezależnych marek, sklepów i rozwijających się firm — CAMBRA znajduje ukryte nadmierne koszty, łączy Twoją siłę zakupową i pomaga uzyskać lepsze warunki handlowe. Bezpłatnie. Bez kosztów początkowych.",
     hero_cta_primary:     "Sprawdź, ile możesz zaoszczędzić",
     hero_cta_secondary:   "Jak to działa",
     hero_trust_1:         "Bezpłatna analiza kosztów",
