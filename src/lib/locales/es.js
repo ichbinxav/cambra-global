@@ -257,7 +257,7 @@ export default {
     hero_badge:           "INTELIGENCIA DE PAGOS",
     hero_h1_line1:        "Baja tus comisiones.",
     hero_h1_line2:        "Quédate con más margen.",
-    hero_sub:             "CAMBRA analiza cuánto pagas, detecta costes evitables y te ayuda a negociar mejores condiciones. Empieza gratis. Solo cobramos si ahorras.",
+    hero_sub: "Pensada para marcas independientes, comercios y negocios en crecimiento, CAMBRA detecta sobrecostes ocultos, agrega tu poder de compra y te ayuda a conseguir mejores condiciones comerciales. Gratis. Sin coste inicial.",
     hero_cta_primary:     "Descubre cuánto podrías ahorrar",
     hero_cta_secondary:   "Cómo funciona",
     hero_trust_1:         "Análisis de costes gratuito",

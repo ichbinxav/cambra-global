@@ -261,7 +261,7 @@ export default {
     hero_badge:           "PAYMENTS INTELLIGENCE",
     hero_h1_line1:        "Lower your card fees.",
     hero_h1_line2:        "Keep more of your revenue.",
-    hero_sub:             "CAMBRA analyzes what you pay, spots avoidable card costs and helps negotiate better terms. Start free. We only earn when you save.",
+    hero_sub: "Built for independent brands, retailers and growing businesses, CAMBRA finds hidden overcosts, aggregates your buying power and helps you secure better commercial terms. Free to use. No upfront cost.",
     hero_cta_primary:     "See what you could save",
     hero_cta_secondary:   "How it works",
     hero_trust_1:         "Free payment-cost analysis",
