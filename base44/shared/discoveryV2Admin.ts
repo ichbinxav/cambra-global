@@ -72,6 +72,16 @@ const responsePayload = async (value: Response) => {
   }
 };
 const unwrap = (value: any) => value?.data ?? value ?? {};
+const invocationFailure = (error: any) => {
+  const outer = error?.response?.data ?? error?.data ?? null;
+  const payload = outer?.data ?? outer ?? {};
+  return {
+    ok: false,
+    error: text(payload?.error || payload?.code || error?.message || error),
+    blockers: list(payload?.blockers, 100),
+    http_status: optionalNumber(error?.response?.status || payload?.status),
+  };
+};
 const TERMINAL = new Set([
   "COMPLETED",
   "COMPLETED_PARTIAL",
@@ -1575,10 +1585,7 @@ export async function stageDiscovery(service: any, run: any, claim: any) {
           cost_reason:
             `Founder accepted native company discovery plan for ${country}`,
           internal_secret: internal,
-        }).catch((error: any) => ({
-          ok: false,
-          error: text(error?.message || error),
-        }));
+        }).catch((error: any) => invocationFailure(error));
       let result = unwrap(await invokeDiscovery(activeProviderKey));
       // DSCV2-B.2: if Apollo fails with an auth-shaped error BEFORE its
       // contract expiry, fall over to Instantly when it is genuinely
@@ -1791,7 +1798,7 @@ export async function stagePrefit(service: any, run: any, claim: any) {
       run.hard_cap_minor > 0 &&
       accepted.some((row: any) =>
         row.enrichment_worthy === true ||
-        number(row.pre_score) >= config.high_fit_threshold
+        number(row.score ?? row.pre_score) >= config.high_fit_threshold
       )
       ? "SELECTIVE_COMPANY_ENRICHMENT"
       : "SCORING";
@@ -1826,7 +1833,7 @@ export async function stageEnrich(service: any, run: any, claim: any) {
   );
   const candidateIds = rows.filter((row: any) =>
     row.enrichment_worthy === true ||
-    number(row.pre_score) >= config.high_fit_threshold
+    number(row.score ?? row.pre_score) >= config.high_fit_threshold
   ).slice(0, Math.min(100, Math.ceil(run.target_count * .25))).map((row: any) =>
     row.id
   );
@@ -1856,10 +1863,7 @@ export async function stageEnrich(service: any, run: any, claim: any) {
       cost_stage: "SELECTIVE_COMPANY_ENRICHMENT",
       cost_reason: "Candidate survived dedupe, exclusions and local pre-fit",
       internal_secret: Deno.env.get("INTERNAL_CALL_SECRET") || "",
-    }).catch((error: any) => ({
-      ok: false,
-      error: text(error?.message || error),
-    })),
+    }).catch((error: any) => invocationFailure(error)),
   );
   if (result.ok === false) {
     const code = text(result.error || "SELECTIVE_ENRICHMENT_FAILED");
@@ -1915,10 +1919,7 @@ export async function stageScore(service: any, run: any, claim: any) {
           limit: batch.length,
           deterministic_only: true,
           internal_secret: Deno.env.get("INTERNAL_CALL_SECRET") || "",
-        }).catch((error: any) => ({
-          ok: false,
-          error: text(error?.message || error),
-        })),
+        }).catch((error: any) => invocationFailure(error)),
       );
       scoringBatches.push({
         offset,
@@ -1987,10 +1988,7 @@ export async function stageScore(service: any, run: any, claim: any) {
           cost_reason:
             "Scored Discovery V2 candidate cleared for governed contact-last resolution",
           internal_secret: Deno.env.get("INTERNAL_CALL_SECRET") || "",
-        }).catch((error: any) => ({
-          ok: false,
-          error: text(error?.message || error),
-        })),
+        }).catch((error: any) => invocationFailure(error)),
       );
       contactResolution = {
         requested: contactCandidates.length,

@@ -257,6 +257,32 @@ describe("Discovery V2 operational truth", () => {
     })).rejects.toThrow("discovery_stage_history_must_be_append_only");
   });
 
+  it("commits multiple append-only substages from one fenced stage", async () => {
+    const source = fakeRun({
+      actual_stages_json: [{
+        stage: "PLAN",
+        status: "COMPLETED",
+        at: "2026-01-01T00:00:00.000Z",
+      }],
+    });
+    const service = serviceFor(source);
+    const claim = await claimDiscoveryRun(service, source, "worker-a", 1_000);
+    const completed = await commitDiscoveryStage(service, claim, {
+      current_stage: "COMPLETE",
+      status: "COMPLETED",
+      actual_stages_json: [
+        ...source.actual_stages_json,
+        { stage: "SCORING", status: "COMPLETED", at: "2026-01-02T00:00:00.000Z" },
+        { stage: "CONTACT_RESOLUTION", status: "COMPLETED", at: "2026-01-02T00:00:01.000Z" },
+      ],
+    });
+    expect(completed.actual_stages_json).toHaveLength(3);
+    expect(completed.actual_stages_json.slice(1)).toEqual([
+      expect.objectContaining({ stage: "SCORING", attempt: 1 }),
+      expect.objectContaining({ stage: "CONTACT_RESOLUTION", attempt: 1 }),
+    ]);
+  });
+
   it("turns an expired ambiguous paid effect into Needs Review", async () => {
     const run = fakeRun({
       current_stage: "NATIVE_DISCOVERY",

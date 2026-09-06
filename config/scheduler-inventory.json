@@ -390,8 +390,8 @@
       "hosted_workers": [],
       "function_directory": "alwaysOnLeadDiscoveryWorker",
       "automation_index": 0,
-      "name": "Always-On Lead Discovery — hourly",
-      "responsibility": "24/7 company-first discovery, enrichment, scoring and qualified-reservoir preparation. Never sends outreach; business-hours and warm-up apply only at SEND.",
+      "name": "Discovery queue every 5 minutes with hourly harvest",
+      "responsibility": "Resumes accepted Discovery V2 runs every 5 minutes and performs company-first autonomous harvest once per hour. Never sends outreach.",
       "owner_system": "Base44",
       "trigger": "scheduled",
       "is_active": true,
@@ -400,10 +400,10 @@
       "schedule": {
         "mode": "recurring",
         "type": "simple",
-        "repeat_unit": "hours",
-        "repeat_interval": 1,
-        "cadence_seconds": 3600,
-        "start_time": "2026-08-10T00:00:00.000Z"
+        "repeat_unit": "minutes",
+        "repeat_interval": 5,
+        "cadence_seconds": 300,
+        "start_time": "2026-09-06T13:05:00.000Z"
       },
       "claim_primitive": "SchedulerRun CONTROL/ATTEMPT CAS",
       "lease_seconds": 900,

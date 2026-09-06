@@ -8,7 +8,7 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "15753380575b99f88a074cfbbd062bbaed460884eb0316b43c82e1f0379bf4e3",
+  "input_fingerprint_sha256": "59da06b54e2fa195b6aca18ccb62853ad3b68ea41a2e6425107fea447d96c2d6",
   "input_file_count": 124,
   "surface_snapshot": {
     "source_function_directories": 300,
@@ -3501,8 +3501,8 @@
         },
         {
           "path": "config/scheduler-inventory.json",
-          "sha256": "c15cd2584314104b20ff96cd0dc1240342129598543afc97c2225ba6091e80fa",
-          "bytes": 192099
+          "sha256": "8b5809db012868e5e940961a8c67303c94a8105f2b3c20655e9b3b20a7c3590c",
+          "bytes": 192094
         }
       ]
     },

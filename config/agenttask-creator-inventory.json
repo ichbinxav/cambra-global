@@ -7,7 +7,7 @@
     "config/remediation/material-boundary-registry.v1.json"
   ],
   "material_registry_schema_version": "cambra-material-boundary-registry-v1",
-  "source_inventory_hash": "9a32c1a5475b51e4fe548897f6444a7851a3d6e66d449e25654cdb0260b89825",
+  "source_inventory_hash": "48f4bb562fa31654fec4b5595147f1e3d0bae82448783283ad2fdc241196da81",
   "counts": {
     "creator_files": 60,
     "raw_create_sites": 50,
@@ -262,7 +262,7 @@
     },
     {
       "path": "base44/functions/alwaysOnLeadDiscoveryWorker/entry.ts",
-      "source_sha256": "f6a9c27c967f9685bf1c4ad876aea805d761de5677153e08b378bd1a932542fd",
+      "source_sha256": "52e9aca322cbb78c9d74636c2d61880c17b703d6cf3c4a45934558d07ecfbacc",
       "boundary_ids": [
         "MB-SCHEDULER-BASE"
       ],

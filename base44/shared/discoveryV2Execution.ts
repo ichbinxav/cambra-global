@@ -245,8 +245,7 @@ export async function commitDiscoveryStage(
   if (
     requestedStages &&
     (requestedStages.length < previousStages.length ||
-      historicalStageChanged ||
-      requestedStages.length > previousStages.length + 1)
+      historicalStageChanged)
   ) throw error("discovery_stage_history_must_be_append_only");
   let durableStages = requestedStages ? requestedStages : previousStages;
   if (durableStages.length === previousStages.length) {
@@ -260,9 +259,8 @@ export async function commitDiscoveryStage(
     }];
   }
   if (durableStages.length > previousStages.length) {
-    const lastIndex = durableStages.length - 1;
     durableStages = durableStages.map((item: any, index: number) =>
-      index === lastIndex
+      index >= previousStages.length
         ? {
           ...item,
           started_at: item?.started_at || observed.stage_started_at || null,

@@ -22,15 +22,18 @@ function countBy(rows:any[], value:(row:any)=>unknown) {
   return output;
 }
 
-Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;
+Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=null;let __schedulerOk=true;let __schedulerWorkerKey='alwaysOnLeadDiscoveryWorker';
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.clone().json().catch(() => ({}));
     const gate = await requireAdminOrInternal(req, base44, body);
     if (!gate.ok) return gate.response;
     const service = base44.asServiceRole;
+    const executionOnly=body?.execution_only===true;
+    const autonomousHarvestSlot=Math.floor(Date.now()/300000)%12===0;
+    __schedulerWorkerKey=executionOnly?'discoveryExecutionWorker':'alwaysOnLeadDiscoveryWorker';
     __schedulerSvc=service;
-    __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:'alwaysOnLeadDiscoveryWorker',cadence_seconds:3600});
+    __schedulerClaim=await claimSchedulerRun(service,req,{worker_key:__schedulerWorkerKey,cadence_seconds:300});
     {const denied=schedulerClaimDeniedResponse(__schedulerClaim);if(denied)return denied;}
     const emergency=await emergencyState(service);
     const internal = Deno.env.get('INTERNAL_CALL_SECRET') || '';
@@ -53,6 +56,7 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
       : scheduledDiscoveryWorkPresent
       ? await processScheduledDiscoverySearches(service).catch((error:any)=>({ok:false,action:'SAFE_FAILURE',error:String(error?.message||error).slice(0,120)}))
       : {ok:true,action:'NO_DUE_SAVED_SEARCH'};
+    if(executionOnly||!autonomousHarvestSlot)return Response.json({ok:scheduledDiscovery.ok!==false,status:executionOnly?'discovery_execution_only':'discovery_queue_tick',scheduled_discovery:scheduledDiscovery,note:'Accepted Discovery V2 runs were considered. Autonomous harvest remains hourly and no outbound send was attempted.'});
     if (!policy) return Response.json({ ok:true, status:'waiting_discovery_policy', engine_version:VERSION, scheduled_discovery:scheduledDiscovery, note:'Autonomous harvest requires an explicitly active ICP configuration. Founder-scheduled Discovery V2 uses its own accepted saved-search budget.' });
 
     const [before, profiles, capabilityControls, marketProfiles, checkpoints, diagnosticRows, outboundControls,providerStates] = await Promise.all([
@@ -177,5 +181,5 @@ Deno.serve(async (req) => {let __schedulerSvc:any=null;let __schedulerClaim:any=
     await service.entities.Event.create({brand_id:'_platform',event_type:'commercial.intelligence.snapshot.created',source:'always_on_lead_discovery',entity_type:'CommercialIntelligenceSnapshot',entity_id:commercialSnapshot.id,payload_json:{engine_version:COMMERCIAL_INTELLIGENCE_VERSION,reservoir_snapshot_id:reservoir.id,market_methodology:intelligence.market_sizing.methodology},status:'pending'}).catch((error:any)=>safeBestEffort(error,{operation:'alwaysOnLeadDiscoveryWorker',fallback:null,severity:'secondary'}));
     return Response.json({ok:true,engine_version:VERSION,reservoir_snapshot_id:reservoir.id,commercial_intelligence_snapshot_id:commercialSnapshot.id,discovery_enabled:true,scheduled_discovery:scheduledDiscovery,outbound_policy_status:policy.status,coverage_days:coverage,target_coverage_days:targetDays,coverage_status:coverageStatus,outreach_ready:outreachReady,safe_daily_send_capacity:capacity,discovery_action:discoveryAction,discovery_runs:discoveryRuns,safe_mode:emergency.safe_mode,deduplicated,suppressed,harvest_metrics:harvestMetrics,provider_status:{selected:selectedProvider,reason:providerSelection.reason,apollo:provider.status,instantly_supersearch:instantlyState?.status||'NOT_CONFIGURED'},market_sizing:intelligence.market_sizing,source_coverage:intelligence.source_coverage});
   }catch(error){__schedulerOk=false;console.error('alwaysOnLeadDiscoveryWorker failed',String((error as Error)?.message||error).slice(0,200));return Response.json({ok:false,error:'always_on_lead_discovery_failed'},{status:500})}
-  finally{if(__schedulerSvc&&__schedulerClaim?.allowed===true)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:'alwaysOnLeadDiscoveryWorker'},__schedulerOk)}
+  finally{if(__schedulerSvc&&__schedulerClaim?.allowed===true)await finishSchedulerRunOrThrow(__schedulerSvc,__schedulerClaim,{worker_key:__schedulerWorkerKey},__schedulerOk)}
 });

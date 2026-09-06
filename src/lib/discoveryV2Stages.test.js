@@ -12,6 +12,7 @@ import {
   resultAction,
   stageDiscovery,
   stageEnrich,
+  stagePrefit,
 } from "../../base44/shared/discoveryV2Admin.ts";
 import {
   APOLLO_CONTRACT_EXPIRES_AT,
@@ -284,6 +285,25 @@ describe("stageDiscovery — provider selection is consulted, not assumed", () =
     });
     expect(svc.invocations).toHaveLength(0);
   });
+
+  it("preserves a governed child-function error instead of reporting a generic HTTP 500", async () => {
+    envMap = { APOLLO_API_KEY: "ak" };
+    const run = runRow();
+    const svc = makeSvc(
+      { DiscoveryExecutionRun: [run], CommercialProviderState: [] },
+      () => {
+        const error = new Error("Request failed with status code 500");
+        error.response = {
+          status: 409,
+          data: { ok: false, error: "COST_BUDGET_BLOCKED", blockers: ["api_daily_cost_budget_exceeded"] },
+        };
+        throw error;
+      },
+    );
+    await expect(stageDiscovery(svc, run, claimFor(run))).rejects.toMatchObject({
+      code: "COST_BUDGET_BLOCKED",
+    });
+  });
 });
 
 describe("Fase C — selective company enrichment is real", () => {
@@ -359,6 +379,50 @@ describe("Fase C — selective company enrichment is real", () => {
     expect(result.skipped).toBe(1);
     expect(providerCalls).toBe(0);
     expect(reservations).toBe(0);
+  });
+
+  it("uses the canonical score when a legacy lead has no pre_score", async () => {
+    const prefitRun = runRow({
+      current_stage: "LOCAL_PREFIT",
+      result_ids: ["lead-scored"],
+      configuration_json: { high_fit_threshold: 50, enrichment_policy: "SELECTIVE" },
+    });
+    const prefitSvc = makeSvc({
+      DiscoveryExecutionRun: [prefitRun],
+      OutboundLead: [{
+        id: "lead-scored",
+        stage: "lead",
+        score: 55,
+        company_domain: "scored.example",
+      }],
+    });
+    const afterPrefit = await stagePrefit(prefitSvc, prefitRun, claimFor(prefitRun));
+    expect(afterPrefit.current_stage).toBe("SELECTIVE_COMPANY_ENRICHMENT");
+    expect(afterPrefit.funnel_json.high_fit).toBe(1);
+
+    const enrichRun = runRow({
+      current_stage: "SELECTIVE_COMPANY_ENRICHMENT",
+      result_ids: ["lead-scored"],
+      configuration_json: { high_fit_threshold: 50, enrichment_policy: "SELECTIVE" },
+    });
+    const enrichSvc = makeSvc(
+      {
+        DiscoveryExecutionRun: [enrichRun],
+        OutboundLead: [{
+          id: "lead-scored",
+          stage: "lead",
+          score: 55,
+          company_domain: "scored.example",
+        }],
+      },
+      (_name, body) => {
+        expect(body.lead_ids).toEqual(["lead-scored"]);
+        return { ok: true, enriched: 1, skipped: 0, failed: 0, provider_calls: 1 };
+      },
+    );
+    const afterEnrich = await stageEnrich(enrichSvc, enrichRun, claimFor(enrichRun));
+    expect(enrichSvc.invocations).toHaveLength(1);
+    expect(afterEnrich.current_stage).toBe("SCORING");
   });
 
   it("stageEnrich only sends enrichment_worthy / above-threshold leads to the agent", async () => {
