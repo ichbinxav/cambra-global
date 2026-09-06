@@ -235,12 +235,13 @@ export function contactRoleTarget(
       "FINANCE",
       "PAYMENTS",
       "ECOMMERCE",
+      "PROCUREMENT",
       "EXECUTIVE",
       "OPERATIONS",
     ],
     seniority: ["C_LEVEL", "VP", "HEAD", "DIRECTOR"],
     priority_logic:
-      "Prefer payments/finance ownership, then ecommerce/operations, then executive ownership; person data never affects company fit.",
+      "Prefer payments/finance ownership, then ecommerce/procurement/operations, then executive ownership; person data never affects company fit.",
     market,
     language,
     maximum_contacts: maximumContacts,
@@ -451,6 +452,7 @@ export async function readCompleteContactUsageWindow(
     window_start: string;
     limit: number;
     page_size?: number;
+    provider?: string;
   },
 ) {
   const limit = Number(input?.limit);
@@ -460,9 +462,10 @@ export async function readCompleteContactUsageWindow(
     1,
     Math.min(500, Math.floor(Number(input?.page_size || 500))),
   );
+  const provider = text(input?.provider || "apollo").toLowerCase();
   if (
     !Number.isInteger(limit) || limit <= 0 || limit > 1250 ||
-    !Number.isFinite(startMs)
+    !Number.isFinite(startMs) || !/^[a-z0-9_-]{2,40}$/.test(provider)
   ) {
     return {
       allowed: false,
@@ -483,7 +486,7 @@ export async function readCompleteContactUsageWindow(
     try {
       rows = await service.entities.CostUsageEvent.filter(
         {
-          provider: "apollo",
+          provider,
           source: "leadEnrichmentAgent",
           status: { $in: ["RESERVED", "OBSERVED", "RECONCILED"] },
           occurred_at: { $gte: new Date(startMs).toISOString() },
@@ -517,7 +520,7 @@ export async function readCompleteContactUsageWindow(
       };
     }
     const malformed = rows.some((row: any) =>
-      text(row?.provider).toLowerCase() !== "apollo" ||
+      text(row?.provider).toLowerCase() !== provider ||
       text(row?.source) !== "leadEnrichmentAgent" ||
       !["RESERVED", "OBSERVED", "RECONCILED"].includes(
         text(row?.status).toUpperCase(),

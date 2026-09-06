@@ -244,7 +244,7 @@ describe('final GO-live hard gates', () => {
 
   it('guards every known metered provider endpoint with the centralized cost governor', () => {
     const providerPattern = /api\.(?:anthropic|openai|perplexity)|api\.resend|api\.apollo|api\.surferseo|api\.taplio|api\.typefully|api\.instantly|api\.cal\.com|api\.attio/i;
-    const guardPattern = /reservePaidOperation|callCambraClaude|paidProviderFetch|sendCostGovernedEmail/;
+    const guardPattern = /reservePaidOperation|guardReservedPaidProviderEffect|callCambraClaude|paidProviderFetch|sendCostGovernedEmail/;
     const roots = ['base44/functions', 'base44/shared'];
     const files = roots.flatMap(root => fs.readdirSync(path.join(ROOT, root), { recursive:true, withFileTypes:true })
       .filter(entry => entry.isFile() && entry.name.endsWith('.ts'))

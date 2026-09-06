@@ -369,7 +369,10 @@ describe("Company-before-person / Contact Last runtime", () => {
 
   it("caps the role target at two and requires a current employer match", () => {
     expect(contactRoleTarget(lead(), policy(), { maximum_contacts: 99 }))
-      .toMatchObject({ maximum_contacts: MAX_CONTACTS_PER_COMPANY });
+      .toMatchObject({
+        maximum_contacts: MAX_CONTACTS_PER_COMPANY,
+        role_families: expect.arrayContaining(["PROCUREMENT"]),
+      });
     expect(sameEmployer(lead(), { organization_id: "org-1" })).toBe(true);
     expect(sameEmployer(lead(), {
       organization_id: "other",

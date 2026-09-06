@@ -30,6 +30,12 @@ import {
   verifyCommittedAdaptiveLeadDecisionProjection,
 } from "../../shared/intelligenceFoundationContracts.ts";
 import { runCompanyEnrichmentOperation } from "../../shared/companyEnrichment.ts";
+import {
+  callAutomaticPublicContactResearch,
+  DEFAULT_PUBLIC_CONTACT_RESEARCH_MODEL,
+  PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+} from "../../shared/publicContactResearch.ts";
+import { updateOutboundLeadEvidence } from "../../shared/outboundLeadEvidence.ts";
 
 const AGENT_NAME = "lead_enrichment";
 const TASK_TYPE = "enrich_leads";
@@ -55,10 +61,72 @@ function contactPriority(person: any) {
     return 6;
   }
   if (/head of e-?commerce|e-?commerce director/i.test(title)) return 5;
-  if (/chief operating|\bcoo\b/i.test(title)) return 4;
-  if (/founder|owner|chief executive|\bceo\b/i.test(title)) return 3;
+  if (/head of procurement|procurement director|purchasing director/i.test(title)) {
+    return 4;
+  }
+  if (/chief operating|\bcoo\b/i.test(title)) return 3;
+  if (/founder|owner|chief executive|\bceo\b/i.test(title)) return 2;
   if (/\b(vp|head|director)\b/i.test(title)) return 2;
   return 0;
+}
+
+function normalizePersonName(value: unknown) {
+  return String(value || "").toLowerCase().normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function publicHintPriority(person: any, hints: any[]) {
+  const personName = normalizePersonName(
+    person?.name || [person?.first_name, person?.last_name].filter(Boolean)
+      .join(" "),
+  );
+  const match = (Array.isArray(hints) ? hints : []).find((hint: any) =>
+    personName && normalizePersonName(hint?.name) === personName
+  );
+  return match ? 100 + Number(match?.role_priority || 0) : 0;
+}
+
+async function readContactUsageAcrossProviders(
+  service: any,
+  input: { window_start: string; limit: number; providers: string[] },
+) {
+  const providers = [...new Set(input.providers.map((provider) =>
+    String(provider || "").trim().toLowerCase()
+  ).filter(Boolean))];
+  const windows = await Promise.all(providers.map((provider) =>
+    readCompleteContactUsageWindow(service, {
+      window_start: input.window_start,
+      limit: input.limit,
+      provider,
+    })
+  ));
+  const failed = windows.find((window) => !window.allowed);
+  if (failed) {
+    return {
+      ...failed,
+      providers,
+      provider_windows: providers.map((provider, index) => ({
+        provider,
+        ...windows[index],
+      })),
+    };
+  }
+  const used = windows.reduce((sum, window) => sum + Number(window.used || 0), 0);
+  return {
+    allowed: true,
+    complete: true,
+    exhausted: used >= input.limit,
+    used,
+    remaining: Math.max(0, input.limit - used),
+    pages: windows.reduce((sum, window) => sum + Number(window.pages || 0), 0),
+    coverage: used >= input.limit ? "COMPLETE_TO_POLICY_CAP" : "FULL_WINDOW",
+    blocker: null,
+    providers,
+    provider_windows: providers.map((provider, index) => ({
+      provider,
+      ...windows[index],
+    })),
+  };
 }
 
 async function apolloRequest(
@@ -115,6 +183,7 @@ async function searchApolloContacts(
   key: string,
   lead: any,
   maximumContacts: number,
+  publicHints: any[] = [],
 ) {
   const organizationId = String(
     lead?.external_refs_json?.apollo_organization_id || "",
@@ -135,6 +204,9 @@ async function searchApolloContacts(
         "Payments Director",
         "Head of Ecommerce",
         "Ecommerce Director",
+        "Head of Procurement",
+        "Procurement Director",
+        "Purchasing Director",
         "Chief Operating Officer",
         "Founder",
         "Chief Executive Officer",
@@ -154,7 +226,10 @@ async function searchApolloContacts(
   });
   const people = Array.isArray(payload?.people) ? payload.people : [];
   return people.filter((person: any) => sameEmployer(lead, person)).sort(
-    (left: any, right: any) => contactPriority(right) - contactPriority(left),
+    (left: any, right: any) =>
+      publicHintPriority(right, publicHints) -
+        publicHintPriority(left, publicHints) ||
+      contactPriority(right) - contactPriority(left),
   ).slice(0, maximumContacts);
 }
 
@@ -629,6 +704,11 @@ Deno.serve(async (req) => {
 
     const apolloKey = Deno.env.get("APOLLO_API_KEY") || "";
     const apolloStatus = discoveryProviderStatus(Boolean(apolloKey));
+    const openAiKey = Deno.env.get("OPENAI_API_KEY") || "";
+    const publicResearchModel = Deno.env.get(
+      "OPENAI_CONTACT_RESEARCH_MODEL",
+    ) || DEFAULT_PUBLIC_CONTACT_RESEARCH_MODEL;
+    const contactUsageProviders = ["openai", "apollo", "instantly"];
     const configuredDailyLimit = Math.max(
       0,
       Math.min(
@@ -659,13 +739,15 @@ Deno.serve(async (req) => {
       clock.getTime() - 7 * 86_400_000,
     ).toISOString();
     const [dailyUsage, weeklyUsage] = await Promise.all([
-      readCompleteContactUsageWindow(service, {
+      readContactUsageAcrossProviders(service, {
         window_start: todayStart,
         limit: configuredDailyLimit,
+        providers: contactUsageProviders,
       }),
-      readCompleteContactUsageWindow(service, {
+      readContactUsageAcrossProviders(service, {
         window_start: rollingWeekStart,
         limit: configuredWeeklyLimit,
+        providers: contactUsageProviders,
       }),
     ]);
     if (!dailyUsage.allowed || !weeklyUsage.allowed) {
@@ -676,7 +758,7 @@ Deno.serve(async (req) => {
         status: "waiting_input",
         review_required: true,
         output_summary:
-          "Contact resolution blocked: complete daily and weekly Apollo usage coverage could not be proven",
+          "Contact resolution blocked: complete daily and weekly provider usage coverage could not be proven",
         output_payload_json: {
           contact_calls: 0,
           paid_reservations: 0,
@@ -726,7 +808,10 @@ Deno.serve(async (req) => {
       let qualification: any = null;
       let reservation: any = null;
       let leadProviderCalls = 0;
+      let reservationProviderCalls = 0;
       let personWasPersisted = false;
+      let resolvedProvider = "apollo";
+      let providerEndpoint = "mixed_people/api_search + people/match";
       try {
         // Never authorize contact from a stale list result. Re-read immediately
         // before the initial suppression and company-only gates.
@@ -832,12 +917,12 @@ Deno.serve(async (req) => {
             status: "NEEDS_REVIEW_ADAPTIVE_EXPERIENCE_PROJECTION",
           });
         }
-        if (!apolloStatus.available || remaining <= 0) {
+        if ((!openAiKey && !apolloStatus.available) || remaining <= 0) {
           skipped++;
           blocked.push({
             lead_id: currentLead.id,
             blockers: [
-              !apolloStatus.available
+              !openAiKey && !apolloStatus.available
                 ? "contact_provider_unavailable"
                 : "contact_resolution_budget_exhausted",
             ],
@@ -889,243 +974,509 @@ Deno.serve(async (req) => {
           });
         }
 
-        reservation = await reservePaidOperation(service, {
-          event_key:
-            `contact-resolution:apollo:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}`,
-          category: "enrichment",
-          provider: "apollo",
-          source: "leadEnrichmentAgent",
-          related_entity_type: body?.discovery_run_id
-            ? "DiscoveryExecutionRun"
-            : "OutboundLead",
-          related_entity_id: body?.discovery_run_id || currentLead.id,
-          max_related_spend_minor: body?.max_related_spend_minor,
-          usage_json: {
-            discovery_run_id: body?.discovery_run_id || null,
-            lead_id: currentLead.id,
-            stage: "CONTACT_RESOLUTION",
-            role_target_id: eligibility.role_target?.role_target_id,
-            maximum_contacts: maximumContacts,
-            reason: "Company passed outreach-worthiness before contact lookup",
-          },
-        });
-        if (reservation.duplicate) {
-          reviewRequired++;
-          blocked.push({
-            lead_id: currentLead.id,
-            blockers: ["duplicate_paid_contact_effect_requires_reconciliation"],
+        let candidates: any[] = [];
+        let selected: any = null;
+        let safe: any = null;
+        let professional: any = null;
+        let providerExpiryAt: string | null = APOLLO_EXPIRY_AT;
+        let publicShortlist: any[] = [];
+        let publicResearchEvidence: any = {
+          contract_version: PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+          status: openAiKey ? "PENDING" : "UNAVAILABLE_NOT_CONFIGURED",
+          automatic: true,
+          paid_enrichment_fallback_only: true,
+        };
+
+        // Automatic public research is always first. It may persist a person
+        // only when the exact professional email is observed verbatim on the
+        // company's own cited page; names without a verified channel remain
+        // ephemeral hints for the paid fallback.
+        if (openAiKey && remaining > 0) {
+          const researchDay = now().slice(0, 10);
+          reservation = await reservePaidOperation(service, {
+            event_key:
+              `contact-resolution:public-web:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}:${PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION}`,
+            category: "ai",
+            provider: "openai",
+            source: "leadEnrichmentAgent",
+            related_entity_type: body?.discovery_run_id
+              ? "DiscoveryExecutionRun"
+              : "OutboundLead",
+            related_entity_id: body?.discovery_run_id || currentLead.id,
+            max_related_spend_minor: body?.max_related_spend_minor,
+            usage_json: {
+              discovery_run_id: body?.discovery_run_id || null,
+              lead_id: currentLead.id,
+              operation_phase: "PUBLIC_CONTACT_RESEARCH",
+              role_target_id: eligibility.role_target?.role_target_id,
+              maximum_contacts: maximumContacts,
+              contract_version: PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+              automatic: true,
+              transferred_fields: ["company_name", "company_domain", "country"],
+            },
           });
-          await service.entities.OutboundLead.update(currentLead.id, {
-            source_evidence_json: contactLastEvidence(currentLead, {
-              status: "NEEDS_REVIEW_DUPLICATE_EFFECT",
-              error_code: "DUPLICATE_PAID_CONTACT_EFFECT_REVIEW_REQUIRED",
-              company_qualification: qualification,
-              role_target: eligibility.role_target,
-              contact_calls: 0,
-              replay_blocked: true,
-            }),
-          });
-          continue;
+          if (reservation.duplicate) {
+            const previousStatus = String(reservation?.event?.status || "")
+              .toUpperCase();
+            const previousResult = String(
+              reservation?.event?.usage_json?.result_state || "",
+            );
+            if (
+              ["OBSERVED", "RECONCILED"].includes(previousStatus) &&
+              previousResult === "NO_VERIFIED_PUBLIC_EMAIL"
+            ) {
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+                checked_on: researchDay,
+                replayed_provider_call: false,
+              };
+              reservation = null;
+            } else {
+              stopContactGate({
+                blocker: "duplicate_public_research_effect_requires_reconciliation",
+                phase: "PUBLIC_RESEARCH_IDEMPOTENCY",
+                status: "NEEDS_REVIEW_DUPLICATE_PUBLIC_RESEARCH_EFFECT",
+              });
+            }
+          } else {
+            currentLead = await readLeadForContactGate(
+              service,
+              currentLead.id,
+            );
+            const beforePublicGate = await currentContactGate(
+              service,
+              currentLead,
+              activePolicy,
+              qualification,
+              maximumContacts,
+              "IMMEDIATELY_BEFORE_PUBLIC_RESEARCH",
+            );
+            const beforePublicSuppression = await strictSuppressionLookup(
+              service,
+              currentLead.contact_email,
+              "IMMEDIATELY_BEFORE_PUBLIC_RESEARCH",
+            );
+            if (!beforePublicGate.allowed || !beforePublicSuppression.allowed) {
+              stopContactGate({
+                blocker: beforePublicSuppression.blocker ||
+                  beforePublicGate.blockers[0] || "contact_gate_changed",
+                blockers: [
+                  ...beforePublicGate.blockers,
+                  ...(beforePublicSuppression.blocker
+                    ? [beforePublicSuppression.blocker]
+                    : []),
+                ],
+                phase: "IMMEDIATELY_BEFORE_PUBLIC_RESEARCH",
+                status: "NEEDS_REVIEW_PRE_PUBLIC_RESEARCH_TOCTOU",
+                suppressed: beforePublicSuppression.suppressed,
+              });
+            }
+            providerCalls++;
+            leadProviderCalls++;
+            reservationProviderCalls = 1;
+            remaining--;
+            try {
+              const publicResult = await callAutomaticPublicContactResearch({
+                service,
+                reservation,
+                apiKey: openAiKey,
+                lead: currentLead,
+                maximumContacts,
+                model: publicResearchModel,
+              });
+              publicShortlist = publicResult.shortlist;
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: publicResult.verified_contact
+                  ? "VERIFIED_PUBLIC_EMAIL_FOUND"
+                  : "NO_VERIFIED_PUBLIC_EMAIL",
+                model: publicResult.model,
+                web_search_calls: publicResult.web_search_calls,
+                source_count: publicResult.sources.length,
+                sources: publicResult.sources,
+                candidate_count: publicResult.shortlist.length,
+                usage: publicResult.usage,
+                researched_at: now(),
+                explicit_email_verified: Boolean(
+                  publicResult.verified_contact,
+                ),
+                invented_contact: false,
+              };
+              if (publicResult.verified_contact) {
+                selected = publicResult.verified_contact;
+                candidates = [selected];
+                safe = {
+                  person: {
+                    name: selected.name,
+                    title: selected.title,
+                    email: selected.email,
+                    email_status: "public_source_verified",
+                    linkedin_url: selected.linkedin_url,
+                  },
+                  organization: {
+                    primary_domain: currentLead.company_domain,
+                  },
+                  snapshot: {
+                    provider: "public_web",
+                    model: publicResult.model,
+                    contract_version:
+                      PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+                    normalized_role: selected.normalized_role,
+                    email_source_url: selected.email_source_url,
+                    role_source_url: selected.role_source_url,
+                    verified_at: selected.verified_at,
+                    exact_email_observed: true,
+                    personal_email_requested: false,
+                    phone_requested: false,
+                    email_inferred: false,
+                  },
+                };
+                professional = classifyProfessionalEmail(
+                  selected.email,
+                  currentLead.company_domain,
+                );
+                resolvedProvider = "public_web";
+                providerEndpoint =
+                  "responses:web_search + official_source_verification";
+                providerExpiryAt = null;
+              } else {
+                await settlePaidOperation(service, reservation, {
+                  ok: true,
+                  usage_json: {
+                    result_state: "NO_VERIFIED_PUBLIC_EMAIL",
+                    endpoint: "responses:web_search",
+                    model: publicResult.model,
+                    web_search_calls: publicResult.web_search_calls,
+                    source_count: publicResult.sources.length,
+                    candidate_count: publicResult.shortlist.length,
+                    selected_contact: false,
+                    person_persisted: false,
+                    ...publicResult.usage,
+                  },
+                });
+                reservation = null;
+                reservationProviderCalls = 0;
+              }
+            } catch (publicError: any) {
+              const effectAmbiguous = publicError?.responseReceived !== true;
+              await settlePaidOperation(service, reservation, {
+                // A transport-ambiguous request consumes the reservation so a
+                // timeout can never escape the contact-resolution cost cap.
+                ok: effectAmbiguous,
+                usage_json: {
+                  result_state: effectAmbiguous
+                    ? "PUBLIC_RESEARCH_EFFECT_AMBIGUOUS"
+                    : "PUBLIC_RESEARCH_FAILED",
+                  error_code: String(
+                    publicError?.code || "PUBLIC_CONTACT_RESEARCH_FAILED",
+                  ).slice(0, 80),
+                  provider_calls: reservationProviderCalls,
+                  cost_consumed: effectAmbiguous,
+                },
+              }).catch((settleError: any) =>
+                safeBestEffort(settleError, {
+                  operation:
+                    "leadEnrichmentAgent.publicResearchSettlement",
+                  fallback: null,
+                  severity: "critical",
+                })
+              );
+              reservation = null;
+              reservationProviderCalls = 0;
+              if (effectAmbiguous) {
+                stopContactGate({
+                  blocker: "public_contact_research_effect_ambiguous",
+                  phase: "PUBLIC_CONTACT_RESEARCH",
+                  status: "NEEDS_REVIEW_PUBLIC_RESEARCH_EFFECT_AMBIGUOUS",
+                });
+              }
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "FAILED_KNOWN_RESPONSE_FALLBACK_ALLOWED",
+                error_code: String(
+                  publicError?.code || "PUBLIC_CONTACT_RESEARCH_FAILED",
+                ).slice(0, 80),
+              };
+            }
+          }
         }
 
-        // Reservation is not authority. Re-read all mutable safety inputs once
-        // more immediately before the first provider/person endpoint.
-        currentLead = await readLeadForContactGate(service, currentLead.id);
-        const beforeProviderGate = await currentContactGate(
-          service,
-          currentLead,
-          activePolicy,
-          qualification,
-          maximumContacts,
-          "IMMEDIATELY_BEFORE_PROVIDER",
-        );
-        const beforeProviderSuppression = await strictSuppressionLookup(
-          service,
-          currentLead.contact_email,
-          "IMMEDIATELY_BEFORE_PROVIDER",
-        );
-        if (!beforeProviderGate.allowed || !beforeProviderSuppression.allowed) {
-          stopContactGate({
-            blocker: beforeProviderSuppression.blocker ||
-              beforeProviderGate.blockers[0] || "contact_gate_changed",
-            blockers: [
-              ...beforeProviderGate.blockers,
-              ...(beforeProviderSuppression.blocker
-                ? [beforeProviderSuppression.blocker]
-                : []),
-            ],
-            phase: "IMMEDIATELY_BEFORE_PROVIDER",
-            status: "NEEDS_REVIEW_PRE_PROVIDER_TOCTOU",
-            suppressed: beforeProviderSuppression.suppressed,
-          });
-        }
+        if (!safe) {
+          if (!apolloStatus.available || remaining <= 0) {
+            noContact++;
+            await updateOutboundLeadEvidence({
+              svc: service,
+              leadId: currentLead.id,
+              patch: {
+                contactability: "UNAVAILABLE",
+                source_evidence_json: contactLastEvidence(currentLead, {
+                  status: "NO_VALID_CONTACT_SAFE_STOP",
+                  company_qualification: qualification,
+                  role_target: eligibility.role_target,
+                  public_research: publicResearchEvidence,
+                  requested_contacts: maximumContacts,
+                  returned_contacts: 0,
+                  contact_calls: leadProviderCalls,
+                  invented_contact: false,
+                  paid_fallback_available: apolloStatus.available,
+                  paid_fallback_budget_available: remaining > 0,
+                }),
+              },
+            });
+            continue;
+          }
 
-        providerCalls++;
-        leadProviderCalls++;
-        remaining--;
-        const candidates = await searchApolloContacts(
-          service,
-          reservation,
-          apolloKey,
-          currentLead,
-          maximumContacts,
-        );
-        if (!candidates.length) {
+          reservation = await reservePaidOperation(service, {
+            event_key:
+              `contact-resolution:apollo:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}`,
+            category: "enrichment",
+            provider: "apollo",
+            source: "leadEnrichmentAgent",
+            related_entity_type: body?.discovery_run_id
+              ? "DiscoveryExecutionRun"
+              : "OutboundLead",
+            related_entity_id: body?.discovery_run_id || currentLead.id,
+            max_related_spend_minor: body?.max_related_spend_minor,
+            usage_json: {
+              discovery_run_id: body?.discovery_run_id || null,
+              lead_id: currentLead.id,
+              stage: "CONTACT_RESOLUTION",
+              role_target_id: eligibility.role_target?.role_target_id,
+              maximum_contacts: maximumContacts,
+              reason: "Company passed outreach-worthiness before contact lookup",
+              public_research_completed_first: true,
+            },
+          });
+          if (reservation.duplicate) {
+            reviewRequired++;
+            blocked.push({
+              lead_id: currentLead.id,
+              blockers: [
+                "duplicate_paid_contact_effect_requires_reconciliation",
+              ],
+            });
+            await service.entities.OutboundLead.update(currentLead.id, {
+              source_evidence_json: contactLastEvidence(currentLead, {
+                status: "NEEDS_REVIEW_DUPLICATE_EFFECT",
+                error_code: "DUPLICATE_PAID_CONTACT_EFFECT_REVIEW_REQUIRED",
+                company_qualification: qualification,
+                role_target: eligibility.role_target,
+                public_research: publicResearchEvidence,
+                contact_calls: leadProviderCalls,
+                replay_blocked: true,
+              }),
+            });
+            continue;
+          }
+          reservationProviderCalls = 0;
+
+          // Reservation is not authority. Re-read all mutable safety inputs once
+          // more immediately before the first provider/person endpoint.
           currentLead = await readLeadForContactGate(service, currentLead.id);
-          const noContactGate = await currentContactGate(
+          const beforeProviderGate = await currentContactGate(
             service,
             currentLead,
             activePolicy,
             qualification,
             maximumContacts,
-            "AFTER_PROVIDER_NO_CONTACT",
+            "IMMEDIATELY_BEFORE_PROVIDER",
           );
-          const noContactSuppression = await strictSuppressionLookup(
+          const beforeProviderSuppression = await strictSuppressionLookup(
             service,
             currentLead.contact_email,
-            "AFTER_PROVIDER_NO_CONTACT",
+            "IMMEDIATELY_BEFORE_PROVIDER",
           );
-          if (!noContactGate.allowed || !noContactSuppression.allowed) {
+          if (!beforeProviderGate.allowed || !beforeProviderSuppression.allowed) {
             stopContactGate({
-              blocker: noContactSuppression.blocker ||
-                noContactGate.blockers[0] || "contact_gate_changed",
+              blocker: beforeProviderSuppression.blocker ||
+                beforeProviderGate.blockers[0] || "contact_gate_changed",
               blockers: [
-                ...noContactGate.blockers,
-                ...(noContactSuppression.blocker
-                  ? [noContactSuppression.blocker]
+                ...beforeProviderGate.blockers,
+                ...(beforeProviderSuppression.blocker
+                  ? [beforeProviderSuppression.blocker]
                   : []),
               ],
-              phase: "AFTER_PROVIDER_NO_CONTACT",
-              status: "NEEDS_REVIEW_POST_PROVIDER_TOCTOU",
-              suppressed: noContactSuppression.suppressed,
+              phase: "IMMEDIATELY_BEFORE_PROVIDER",
+              status: "NEEDS_REVIEW_PRE_PROVIDER_TOCTOU",
+              suppressed: beforeProviderSuppression.suppressed,
             });
           }
-          noContact++;
-          await service.entities.OutboundLead.update(currentLead.id, {
-            contactability: "UNAVAILABLE",
-            source_evidence_json: contactLastEvidence(currentLead, {
-              status: "NO_VALID_CONTACT_SAFE_STOP",
-              company_qualification: qualification,
-              role_target: eligibility.role_target,
-              requested_contacts: maximumContacts,
-              returned_contacts: 0,
-              contact_calls: 1,
-              invented_contact: false,
-            }),
-          });
-          await settlePaidOperation(service, reservation, {
-            ok: true,
-            usage_json: {
-              endpoint: "mixed_people/api_search",
-              requested_contacts: maximumContacts,
-              returned_contacts: 0,
-              selected_contact: false,
-            },
-          });
-          continue;
-        }
 
-        const selected = candidates[0];
-        // The provider search above and the person match below are distinct
-        // person-data effects. Re-prove the immutable decision projection and
-        // suppression state before advancing to the second endpoint.
-        currentLead = await readLeadForContactGate(service, currentLead.id);
-        const beforePersonMatchGate = await currentContactGate(
-          service,
-          currentLead,
-          activePolicy,
-          qualification,
-          maximumContacts,
-          "IMMEDIATELY_BEFORE_PERSON_MATCH",
-        );
-        const beforePersonMatchSuppression = await strictSuppressionLookup(
-          service,
-          selected?.email,
-          "IMMEDIATELY_BEFORE_PERSON_MATCH",
-        );
-        if (
-          !beforePersonMatchGate.allowed ||
-          !beforePersonMatchSuppression.allowed
-        ) {
-          stopContactGate({
-            blocker: beforePersonMatchSuppression.blocker ||
-              beforePersonMatchGate.blockers[0] ||
-              "contact_gate_changed_before_person_match",
-            blockers: [
-              ...beforePersonMatchGate.blockers,
-              ...(beforePersonMatchSuppression.blocker
-                ? [beforePersonMatchSuppression.blocker]
-                : []),
-            ],
-            phase: "IMMEDIATELY_BEFORE_PERSON_MATCH",
-            status: "NEEDS_REVIEW_PRE_PERSON_MATCH_TOCTOU",
-            suppressed: beforePersonMatchSuppression.suppressed,
-          });
-        }
-        providerCalls++;
-        leadProviderCalls++;
-        const payload = await matchApolloContact(
-          service,
-          reservation,
-          apolloKey,
-          currentLead,
-          selected,
-        );
-        const safe = safeApolloPerson(payload);
-        if (!sameEmployer(currentLead, safe.person, safe.organization)) {
-          throw Object.assign(new Error("contact_employer_mismatch"), {
-            code: "CONTACT_EMPLOYER_MISMATCH",
-          });
-        }
-        const professional = classifyProfessionalEmail(
-          safe.person?.email,
-          currentLead.company_domain || safe.organization?.primary_domain,
-        );
-        if (!professional.accepted) {
+          providerCalls++;
+          leadProviderCalls++;
+          reservationProviderCalls++;
+          remaining--;
+          candidates = await searchApolloContacts(
+            service,
+            reservation,
+            apolloKey,
+            currentLead,
+            maximumContacts,
+            publicShortlist,
+          );
+          if (!candidates.length) {
+            currentLead = await readLeadForContactGate(service, currentLead.id);
+            const noContactGate = await currentContactGate(
+              service,
+              currentLead,
+              activePolicy,
+              qualification,
+              maximumContacts,
+              "AFTER_PROVIDER_NO_CONTACT",
+            );
+            const noContactSuppression = await strictSuppressionLookup(
+              service,
+              currentLead.contact_email,
+              "AFTER_PROVIDER_NO_CONTACT",
+            );
+            if (!noContactGate.allowed || !noContactSuppression.allowed) {
+              stopContactGate({
+                blocker: noContactSuppression.blocker ||
+                  noContactGate.blockers[0] || "contact_gate_changed",
+                blockers: [
+                  ...noContactGate.blockers,
+                  ...(noContactSuppression.blocker
+                    ? [noContactSuppression.blocker]
+                    : []),
+                ],
+                phase: "AFTER_PROVIDER_NO_CONTACT",
+                status: "NEEDS_REVIEW_POST_PROVIDER_TOCTOU",
+                suppressed: noContactSuppression.suppressed,
+              });
+            }
+            noContact++;
+            await service.entities.OutboundLead.update(currentLead.id, {
+              contactability: "UNAVAILABLE",
+              source_evidence_json: contactLastEvidence(currentLead, {
+                status: "NO_VALID_CONTACT_SAFE_STOP",
+                company_qualification: qualification,
+                role_target: eligibility.role_target,
+                public_research: publicResearchEvidence,
+                requested_contacts: maximumContacts,
+                returned_contacts: 0,
+                contact_calls: leadProviderCalls,
+                invented_contact: false,
+              }),
+            });
+            await settlePaidOperation(service, reservation, {
+              ok: true,
+              usage_json: {
+                endpoint: "mixed_people/api_search",
+                requested_contacts: maximumContacts,
+                returned_contacts: 0,
+                provider_calls: reservationProviderCalls,
+                selected_contact: false,
+              },
+            });
+            continue;
+          }
+
+          selected = candidates[0];
+          // The provider search above and the person match below are distinct
+          // person-data effects. Re-prove the immutable decision projection and
+          // suppression state before advancing to the second endpoint.
           currentLead = await readLeadForContactGate(service, currentLead.id);
-          const unavailableGate = await currentContactGate(
+          const beforePersonMatchGate = await currentContactGate(
             service,
             currentLead,
             activePolicy,
             qualification,
             maximumContacts,
-            "AFTER_PROVIDER_CHANNEL_UNAVAILABLE",
+            "IMMEDIATELY_BEFORE_PERSON_MATCH",
           );
-          if (!unavailableGate.allowed) {
+          const beforePersonMatchSuppression = await strictSuppressionLookup(
+            service,
+            selected?.email,
+            "IMMEDIATELY_BEFORE_PERSON_MATCH",
+          );
+          if (
+            !beforePersonMatchGate.allowed ||
+            !beforePersonMatchSuppression.allowed
+          ) {
             stopContactGate({
-              blocker: unavailableGate.blockers[0] || "contact_gate_changed",
-              blockers: unavailableGate.blockers,
-              phase: "AFTER_PROVIDER_CHANNEL_UNAVAILABLE",
-              status: "NEEDS_REVIEW_POST_PROVIDER_TOCTOU",
+              blocker: beforePersonMatchSuppression.blocker ||
+                beforePersonMatchGate.blockers[0] ||
+                "contact_gate_changed_before_person_match",
+              blockers: [
+                ...beforePersonMatchGate.blockers,
+                ...(beforePersonMatchSuppression.blocker
+                  ? [beforePersonMatchSuppression.blocker]
+                  : []),
+              ],
+              phase: "IMMEDIATELY_BEFORE_PERSON_MATCH",
+              status: "NEEDS_REVIEW_PRE_PERSON_MATCH_TOCTOU",
+              suppressed: beforePersonMatchSuppression.suppressed,
             });
           }
-          noContact++;
-          await service.entities.OutboundLead.update(currentLead.id, {
-            contactability: "UNAVAILABLE",
-            source_evidence_json: contactLastEvidence(currentLead, {
-              status: "CONTACT_CHANNEL_UNAVAILABLE_NO_PERSON_PERSISTENCE",
-              company_qualification: qualification,
-              role_target: eligibility.role_target,
-              requested_contacts: maximumContacts,
-              returned_contacts: candidates.length,
-              discarded_contacts: candidates.length,
-              contact_calls: leadProviderCalls,
-              professional_email_reason: professional.reason ||
-                "not_accepted",
-              person_persistence_allowed: false,
-            }),
-          });
-          await settlePaidOperation(service, reservation, {
-            ok: true,
-            usage_json: {
-              endpoint: "mixed_people/api_search + people/match",
-              returned_contacts: candidates.length,
-              selected_contact: false,
-              professional_email_returned: false,
-              person_persisted: false,
-            },
-          });
-          continue;
+          providerCalls++;
+          leadProviderCalls++;
+          reservationProviderCalls++;
+          const payload = await matchApolloContact(
+            service,
+            reservation,
+            apolloKey,
+            currentLead,
+            selected,
+          );
+          safe = safeApolloPerson(payload);
+          if (!sameEmployer(currentLead, safe.person, safe.organization)) {
+            throw Object.assign(new Error("contact_employer_mismatch"), {
+              code: "CONTACT_EMPLOYER_MISMATCH",
+            });
+          }
+          professional = classifyProfessionalEmail(
+            safe.person?.email,
+            currentLead.company_domain || safe.organization?.primary_domain,
+          );
+          if (!professional.accepted) {
+            currentLead = await readLeadForContactGate(service, currentLead.id);
+            const unavailableGate = await currentContactGate(
+              service,
+              currentLead,
+              activePolicy,
+              qualification,
+              maximumContacts,
+              "AFTER_PROVIDER_CHANNEL_UNAVAILABLE",
+            );
+            if (!unavailableGate.allowed) {
+              stopContactGate({
+                blocker: unavailableGate.blockers[0] || "contact_gate_changed",
+                blockers: unavailableGate.blockers,
+                phase: "AFTER_PROVIDER_CHANNEL_UNAVAILABLE",
+                status: "NEEDS_REVIEW_POST_PROVIDER_TOCTOU",
+              });
+            }
+            noContact++;
+            await service.entities.OutboundLead.update(currentLead.id, {
+              contactability: "UNAVAILABLE",
+              source_evidence_json: contactLastEvidence(currentLead, {
+                status: "CONTACT_CHANNEL_UNAVAILABLE_NO_PERSON_PERSISTENCE",
+                company_qualification: qualification,
+                role_target: eligibility.role_target,
+                public_research: publicResearchEvidence,
+                requested_contacts: maximumContacts,
+                returned_contacts: candidates.length,
+                discarded_contacts: candidates.length,
+                contact_calls: leadProviderCalls,
+                professional_email_reason: professional.reason ||
+                  "not_accepted",
+                person_persistence_allowed: false,
+              }),
+            });
+            await settlePaidOperation(service, reservation, {
+              ok: true,
+              usage_json: {
+                endpoint: "mixed_people/api_search + people/match",
+                returned_contacts: candidates.length,
+                provider_calls: reservationProviderCalls,
+                selected_contact: false,
+                professional_email_returned: false,
+                person_persisted: false,
+              },
+            });
+            continue;
+          }
         }
         currentLead = await readLeadForContactGate(service, currentLead.id);
         const afterProviderGate = await currentContactGate(
@@ -1194,8 +1545,12 @@ Deno.serve(async (req) => {
             suppressed: finalSuppression.suppressed,
           });
         }
-        const providerVerified = String(safe.person?.email_status || "")
-          .toLowerCase() === "verified";
+        const emailStatus = String(safe.person?.email_status || "")
+          .toLowerCase();
+        const providerVerified = resolvedProvider === "public_web"
+          ? emailStatus === "public_source_verified" &&
+            safe.snapshot?.exact_email_observed === true
+          : emailStatus === "verified";
         const contactName = String(
           safe.person?.name || selected?.name ||
             [safe.person?.first_name, safe.person?.last_name].filter(Boolean)
@@ -1204,6 +1559,21 @@ Deno.serve(async (req) => {
         const contactTitle = safe.person?.title || selected?.title || null;
         const linkedIn = safe.person?.linkedin_url || selected?.linkedin_url ||
           null;
+        const resolvedExternalRefs = {
+          ...(currentLead.external_refs_json || {}),
+        };
+        if (resolvedProvider === "public_web") {
+          delete resolvedExternalRefs.apollo_person_id;
+          resolvedExternalRefs.public_contact_source_url =
+            safe.snapshot?.email_source_url || null;
+          resolvedExternalRefs.public_contact_role_source_url =
+            safe.snapshot?.role_source_url || null;
+        } else {
+          delete resolvedExternalRefs.public_contact_source_url;
+          delete resolvedExternalRefs.public_contact_role_source_url;
+          resolvedExternalRefs.apollo_person_id = safe.person?.id ||
+            selected?.id || null;
+        }
         await service.entities.OutboundLead.update(currentLead.id, {
           contact_full_name: contactName,
           contact_title: contactTitle,
@@ -1222,27 +1592,29 @@ Deno.serve(async (req) => {
           reservoir_updated_at: now(),
           last_enriched_at: now(),
           enrichment_json: {
-            provider: "apollo",
+            provider: resolvedProvider,
             contact_resolution: safe.snapshot,
           },
-          external_refs_json: {
-            ...(currentLead.external_refs_json || {}),
-            apollo_person_id: safe.person?.id || selected?.id || null,
-          },
+          external_refs_json: resolvedExternalRefs,
           source_evidence_json: contactLastEvidence(currentLead, {
             status: professional.accepted
               ? "CONTACT_RESOLVED_PENDING_COMPLIANCE"
               : "CONTACT_PROFILE_FOUND_CHANNEL_UNAVAILABLE",
             company_qualification: qualification,
             role_target: eligibility.role_target,
-            provider: "apollo",
-            provider_expiry_at: APOLLO_EXPIRY_AT,
+            provider: resolvedProvider,
+            provider_expiry_at: providerExpiryAt,
+            public_research: publicResearchEvidence,
             requested_contacts: maximumContacts,
             returned_contacts: candidates.length,
-            selected_contact_provider_id: safe.person?.id || selected?.id ||
-              null,
+            selected_contact_provider_id: resolvedProvider === "apollo"
+              ? safe.person?.id || selected?.id || null
+              : null,
+            selected_contact_source_url: resolvedProvider === "public_web"
+              ? safe.snapshot?.email_source_url || null
+              : null,
             discarded_contacts: Math.max(0, candidates.length - 1),
-            contact_calls: 2,
+            contact_calls: leadProviderCalls,
             professional_email_reason: professional.reason || "accepted",
             compliance_gate_passed: false,
             person_persistence_allowed: true,
@@ -1288,10 +1660,24 @@ Deno.serve(async (req) => {
         await settlePaidOperation(service, reservation, {
           ok: true,
           usage_json: {
-            endpoint: "mixed_people/api_search + people/match",
-            provider_credit_cost_documented_range: "1-9",
+            endpoint: providerEndpoint,
+            ...(resolvedProvider === "apollo"
+              ? { provider_credit_cost_documented_range: "1-9" }
+              : {
+                model: publicResearchEvidence?.model || publicResearchModel,
+                web_search_calls: Number(
+                  publicResearchEvidence?.web_search_calls || 0,
+                ),
+                input_tokens: Number(
+                  publicResearchEvidence?.usage?.input_tokens || 0,
+                ),
+                output_tokens: Number(
+                  publicResearchEvidence?.usage?.output_tokens || 0,
+                ),
+              }),
             requested_contacts: maximumContacts,
             returned_contacts: candidates.length,
+            provider_calls: reservationProviderCalls,
             selected_contact: true,
             professional_email_returned: professional.accepted,
             personal_email_requested: false,
@@ -1319,18 +1705,20 @@ Deno.serve(async (req) => {
           });
           if (reservation && !reservation.duplicate) {
             await settlePaidOperation(service, reservation, {
-              // Once Apollo has been called, the cost remains consumed even
+              // Once a provider has been called, the cost remains consumed even
               // when a later safety gate blocks/scrubs the contact. Only a
               // pre-provider gate may void the reservation.
-              ok: leadProviderCalls > 0,
+              ok: reservationProviderCalls > 0,
               usage_json: {
                 error_code: String(error?.code || "CONTACT_GATE_FAILED").slice(
                   0,
                   80,
                 ),
                 gate_phase: error?.phase || "UNKNOWN",
-                provider_calls: leadProviderCalls,
-                cost_consumed: leadProviderCalls > 0,
+                provider: resolvedProvider,
+                endpoint: providerEndpoint,
+                provider_calls: reservationProviderCalls,
+                cost_consumed: reservationProviderCalls > 0,
                 selected_contact: false,
                 person_persisted_then_scrubbed: error.personPersisted === true,
               },
@@ -1344,6 +1732,8 @@ Deno.serve(async (req) => {
           }
           const externalRefs = { ...(currentLead?.external_refs_json || {}) };
           delete externalRefs.apollo_person_id;
+          delete externalRefs.public_contact_source_url;
+          delete externalRefs.public_contact_role_source_url;
           const enrichment = { ...(currentLead?.enrichment_json || {}) };
           delete enrichment.contact_resolution;
           await service.entities.OutboundLead.update(
@@ -1384,6 +1774,9 @@ Deno.serve(async (req) => {
           await settlePaidOperation(service, reservation, {
             ok: false,
             usage_json: {
+              provider: resolvedProvider,
+              endpoint: providerEndpoint,
+              provider_calls: reservationProviderCalls,
               error_code: String(
                 error?.code ||
                   (Number(error?.status || 0) === 429

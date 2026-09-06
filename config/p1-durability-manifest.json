@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-06T15:36:05.446Z",
+  "generatedAt": "2026-09-06T18:09:48.217Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -929,8 +929,8 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "sha256": "ebd5e20f1875e3915586a9a274b4f83492cd6c027b91fb703723e35ca8c288b0",
-      "bytes": 53698
+      "sha256": "2c25c899368c314dc14992f1828f22d7ee69cab34fa2c01b0458495bffca7e20",
+      "bytes": 70615
     },
     {
       "path": "base44/functions/leadOrchestrator/entry.ts",
@@ -1534,8 +1534,8 @@
     },
     {
       "path": "base44/shared/contactLast.ts",
-      "sha256": "4e6ac6d107398b15395404e24552ca69be2d4ba1cb858e7ff83af12580c7aea9",
-      "bytes": 20393
+      "sha256": "e0e39851e688a6bb8871876c83baed88eac6242bf4d2e1593fbcf6dd5df13141",
+      "bytes": 20547
     },
     {
       "path": "base44/shared/copilotSupport.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "6116a83f564d477990363d08af4e3445282700d16289138e2402d1fdb076aa57",
+      "sha256": "30b1975dc831763795e00c6665163d41d301765f1566af16d40b9653cb9aa21c",
       "bytes": 141334
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "d98f9c61d9d846bda33b39e74a313392e1477714e837c341bfb85d0f7654137a",
+      "sha256": "bfe56ee6d907864a8eaf9b0d333649dadd4dbf07f908e485e848ae48d0d0cd65",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "11977128d032c567ef14df61ab3d510d678a42fcb9b9a741efd65882df6a6d03",
+      "sha256": "428e7350282a5f222f13a6cd5fd642a17c00929795df3205d4f04d90b492203d",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "ba807a74b0718f01c8dc0b00d26126feff3d4424cea3eb4a49ef59c6f7ab38f4",
+      "sha256": "f5649e27b652e4739313e1c61d1154cd34116434edea6704c53b7727615b207a",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "62bfab12fe9e39287b0be80fc96ff63d80e8679c2b3deab4d9d42a7d81a1a3b3",
+      "sha256": "2bf8e58df631815a43f53b309c2a3d1b3395d3e262d8ccc6c8fa83c33680120c",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "9269cfee6a746b28b0e47b107269741c6d12002217f97b74ac6f264f48c05211",
+      "sha256": "d1c9011be11b2f898312bc2461cb898ca776033b24306e28743a19b20a3021f7",
       "bytes": 97899
     },
     {
@@ -2229,8 +2229,8 @@
     },
     {
       "path": "deno.lock",
-      "sha256": "342bc49194a547369b77d3139f951f9ddb41940fcb8ef1d145cae10c3b5cbda7",
-      "bytes": 11546
+      "sha256": "c98d53032d1fdfc2b06fed11195532f3337d27298dc63673cf192d155b106efd",
+      "bytes": 11413
     },
     {
       "path": "docs/CAMBRA_EUROPE_V1_FINAL_SEAL_REPORT.json",
@@ -3039,8 +3039,8 @@
     },
     {
       "path": "src/lib/contactLastRuntime.test.js",
-      "sha256": "2bf60154c1cb66036b5439906af0fa48b1cb6325a2d3bbf9d420271e0f1a176b",
-      "bytes": 20750
+      "sha256": "2b52ae103f406455e2841482dd37f1b11d955c1f3df2f74648ee75de27110c7e",
+      "bytes": 20829
     },
     {
       "path": "src/lib/contractPolicyE2E.test.js",
@@ -3309,8 +3309,8 @@
     },
     {
       "path": "src/lib/goLiveHardGates.test.js",
-      "sha256": "3a9c03f7063c909a4b3a9957e77df5c1e351904aac1865043d7860a16116026f",
-      "bytes": 23607
+      "sha256": "efb9bd167251b75e128e0ce10843448a33a6f5fd64eaac5849a7985a29054bcc",
+      "bytes": 23639
     },
     {
       "path": "src/lib/helpCenterContent.js",
