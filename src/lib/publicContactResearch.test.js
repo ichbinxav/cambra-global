@@ -3,11 +3,17 @@ import path from "node:path";
 import process from "node:process";
 import { describe, expect, it, vi } from "vitest";
 import {
+  anthropicPublicContactResearchRequest,
+  collectAnthropicWebSearchErrors,
+  collectAnthropicWebSources,
   collectOpenAiWebSources,
+  extractAnthropicOutputText,
   extractOpenAiOutputText,
+  normalizeAnthropicPublicResearchCandidates,
   normalizePublicResearchCandidates,
   publicContactResearchRequest,
   safePublicHttpsUrl,
+  sanitizedProviderError,
   sourceBelongsToCompany,
   verifyExplicitPublicEmail,
 } from "../../base44/shared/publicContactResearch.ts";
@@ -51,6 +57,45 @@ function candidate(overrides = {}) {
     role_source_url: "https://shop.example/team/ana",
     linkedin_url: null,
     ...overrides,
+  };
+}
+
+function anthropicPayload(candidates, sources = []) {
+  return {
+    content: [
+      {
+        type: "text",
+        text: "I will search the public web.",
+      },
+      {
+        type: "server_tool_use",
+        id: "srvtoolu_test",
+        name: "web_search",
+        input: { query: "Shop Example CFO" },
+      },
+      {
+        type: "web_search_tool_result",
+        content: sources.map((source) => ({
+          type: "web_search_result",
+          url: source.url,
+          title: source.title,
+        })),
+      },
+      {
+        type: "text",
+        text: JSON.stringify({ candidates }),
+        citations: sources.map((source) => ({
+          type: "web_search_result_location",
+          url: source.url,
+          title: source.title,
+        })),
+      },
+    ],
+    usage: {
+      input_tokens: 100,
+      output_tokens: 40,
+      server_tool_use: { web_search_requests: 1 },
+    },
   };
 }
 
@@ -105,6 +150,28 @@ describe("automatic public contact research", () => {
     ]);
     expect(JSON.parse(extractOpenAiOutputText(payload))).toEqual({
       candidates: [candidate()],
+    });
+  });
+
+  it("normalizes cited Anthropic web-search output through the same gates", () => {
+    const sources = [
+      { url: "https://shop.example/team/ana", title: "Team" },
+      { url: "https://shop.example/contact", title: "Contact" },
+    ];
+    const payload = anthropicPayload([candidate()], sources);
+
+    expect(collectAnthropicWebSources(payload)).toEqual(sources);
+    expect(JSON.parse(extractAnthropicOutputText(payload))).toEqual({
+      candidates: [candidate()],
+    });
+    expect(normalizeAnthropicPublicResearchCandidates(
+      payload,
+      { company_domain: "shop.example" },
+    ).candidates[0]).toMatchObject({
+      name: "Ana Finance",
+      email: "ana@shop.example",
+      role_source_returned: true,
+      email_source_returned: true,
     });
   });
 
@@ -256,22 +323,87 @@ describe("automatic public contact research", () => {
     expect(serialized).not.toContain("DO_NOT_TRANSFER_SECRET_77129");
   });
 
+  it("uses the same minimal company-only transfer for Anthropic fallback", () => {
+    const request = anthropicPublicContactResearchRequest(
+      {
+        company_name: "Shop Example",
+        company_domain: "https://www.shop.example/path",
+        country: "es",
+        contact_email: "private-contact@shop.example",
+        internal_notes: "DO_NOT_TRANSFER_INTERNAL_NOTES_91827",
+        enrichment_json: { secret: "DO_NOT_TRANSFER_SECRET_77129" },
+      },
+      99,
+      "claude-sonnet-5",
+    );
+    const serialized = JSON.stringify(request);
+
+    expect(request).toMatchObject({
+      model: "claude-sonnet-5",
+      max_tokens: 1200,
+      tools: [{
+        type: "web_search_20250305",
+        name: "web_search",
+        max_uses: 3,
+      }],
+    });
+    expect(request).not.toHaveProperty("output_config");
+    expect(request.system).toContain("return only the requested JSON object");
+    expect(request.messages[0].content).toContain(
+      '{"name":"Shop Example","domain":"shop.example","country":"ES"}',
+    );
+    expect(serialized).not.toContain("private-contact@shop.example");
+    expect(serialized).not.toContain("DO_NOT_TRANSFER_INTERNAL_NOTES_91827");
+    expect(serialized).not.toContain("DO_NOT_TRANSFER_SECRET_77129");
+  });
+
+  it("retains only sanitized provider error metadata", () => {
+    expect(sanitizedProviderError({
+      error: {
+        code: "insufficient_quota",
+        type: "insufficient_quota",
+        message: "secret provider message",
+      },
+    })).toEqual({
+      provider_error_code: "insufficient_quota",
+      provider_error_type: "insufficient_quota",
+    });
+  });
+
+  it("detects Anthropic web-search errors returned inside HTTP 200 responses", () => {
+    expect(collectAnthropicWebSearchErrors({
+      content: [{
+        type: "web_search_tool_result",
+        content: {
+          type: "web_search_tool_result_error",
+          error_code: "too_many_requests",
+        },
+      }],
+    })).toEqual(["too_many_requests"]);
+  });
+
   it("runs public research before Apollo and never persists an unverified shortlist", () => {
     const source = read("base44/functions/leadEnrichmentAgent/entry.ts");
     const loop = source.slice(
       source.indexOf("for (const queuedLead of leads)"),
     );
     const publicCall = loop.indexOf("callAutomaticPublicContactResearch");
+    const anthropicCall = loop.indexOf(
+      "callAutomaticAnthropicPublicContactResearch",
+    );
     const apolloCall = loop.indexOf("searchApolloContacts");
     expect(publicCall).toBeGreaterThan(-1);
-    expect(apolloCall).toBeGreaterThan(publicCall);
+    expect(anthropicCall).toBeGreaterThan(publicCall);
+    expect(apolloCall).toBeGreaterThan(anthropicCall);
     expect(loop).toContain("publicShortlist = publicResult.shortlist");
     expect(loop).toContain("publicShortlist,");
     expect(loop).not.toMatch(/contact_full_name:\s*publicShortlist/);
     expect(loop).not.toMatch(/contact_email:\s*publicShortlist/);
-    expect(loop).toContain("selected = publicResult.verified_contact");
-    expect(loop).toContain("exact_email_observed: true");
+    expect(loop).toContain("selected = publicContact.selected");
+    expect(source).toContain("exact_email_observed: true");
     expect(loop).toContain("public_research_completed_first: true");
     expect(loop).toContain("PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION");
+    expect(loop).toContain('provider: "anthropic"');
+    expect(loop).toContain("PREVIOUS_KNOWN_PROVIDER_FAILURE");
   });
 });

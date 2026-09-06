@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-06T18:09:48.217Z",
+  "generatedAt": "2026-09-06T18:44:45.821Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -929,8 +929,8 @@
     },
     {
       "path": "base44/functions/leadEnrichmentAgent/entry.ts",
-      "sha256": "2c25c899368c314dc14992f1828f22d7ee69cab34fa2c01b0458495bffca7e20",
-      "bytes": 70615
+      "sha256": "49e3abbaf0773f38834bd4069370c38655d18078a562dee4e6305f04d5b4d08c",
+      "bytes": 84543
     },
     {
       "path": "base44/functions/leadOrchestrator/entry.ts",
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "30b1975dc831763795e00c6665163d41d301765f1566af16d40b9653cb9aa21c",
+      "sha256": "24190790f253c1372d18c34321bd96a04e747a95ac3b058d3a8027913733e683",
       "bytes": 141334
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "bfe56ee6d907864a8eaf9b0d333649dadd4dbf07f908e485e848ae48d0d0cd65",
+      "sha256": "0274c8e571d1f9790bd8145be826d8f9bbe74c46e502133009c307203aa79520",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "428e7350282a5f222f13a6cd5fd642a17c00929795df3205d4f04d90b492203d",
+      "sha256": "7d754c450392b1c2764ca9880a14c5e3ad9b7fbe06a0da761b71268021f389fe",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "f5649e27b652e4739313e1c61d1154cd34116434edea6704c53b7727615b207a",
+      "sha256": "57ea1955c9c7f8d9dfb2a2161f2a7dec31d88d528db0fc0c12fc98ed5e78d3f2",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "2bf8e58df631815a43f53b309c2a3d1b3395d3e262d8ccc6c8fa83c33680120c",
+      "sha256": "7993c2f8c488cda1b1400876611d79abb7e5486034682e9e6b1c493809cca6fc",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "d1c9011be11b2f898312bc2461cb898ca776033b24306e28743a19b20a3021f7",
+      "sha256": "f76f8146116c55b49d34aa1da4e5f9f696929e0e77b8f3d68d0d4907cd818e29",
       "bytes": 97899
     },
     {

@@ -31,7 +31,9 @@ import {
 } from "../../shared/intelligenceFoundationContracts.ts";
 import { runCompanyEnrichmentOperation } from "../../shared/companyEnrichment.ts";
 import {
+  callAutomaticAnthropicPublicContactResearch,
   callAutomaticPublicContactResearch,
+  DEFAULT_ANTHROPIC_PUBLIC_CONTACT_RESEARCH_MODEL,
   DEFAULT_PUBLIC_CONTACT_RESEARCH_MODEL,
   PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
 } from "../../shared/publicContactResearch.ts";
@@ -84,6 +86,86 @@ function publicHintPriority(person: any, hints: any[]) {
     personName && normalizePersonName(hint?.name) === personName
   );
   return match ? 100 + Number(match?.role_priority || 0) : 0;
+}
+
+function publicProviderFailure(provider: string, error: any) {
+  return {
+    provider,
+    status: "FAILED_KNOWN_RESPONSE",
+    error_code: String(
+      error?.code || "PUBLIC_CONTACT_RESEARCH_FAILED",
+    ).slice(0, 80),
+    provider_error_code: String(error?.provider_error_code || "").slice(0, 80) ||
+      null,
+    provider_error_type: String(error?.provider_error_type || "").slice(0, 80) ||
+      null,
+    retry_after_seconds: Number(error?.retryAfterSeconds || 0),
+    cost_consumed: error?.responseReceived !== true ||
+      error?.providerCostConsumed === true,
+  };
+}
+
+function publicResearchSuccessEvidence(
+  current: any,
+  result: any,
+  providerAttempts: any[],
+) {
+  return {
+    ...current,
+    status: result.verified_contact
+      ? "VERIFIED_PUBLIC_EMAIL_FOUND"
+      : "NO_VERIFIED_PUBLIC_EMAIL",
+    provider: result.provider,
+    model: result.model,
+    web_search_calls: result.web_search_calls,
+    source_count: result.sources.length,
+    sources: result.sources,
+    candidate_count: result.shortlist.length,
+    usage: result.usage,
+    researched_at: now(),
+    explicit_email_verified: Boolean(result.verified_contact),
+    invented_contact: false,
+    provider_attempts: providerAttempts,
+  };
+}
+
+function selectedPublicContact(result: any, currentLead: any) {
+  const selected = result.verified_contact;
+  if (!selected) return null;
+  return {
+    selected,
+    candidates: [selected],
+    safe: {
+      person: {
+        name: selected.name,
+        title: selected.title,
+        email: selected.email,
+        email_status: "public_source_verified",
+        linkedin_url: selected.linkedin_url,
+      },
+      organization: {
+        primary_domain: currentLead.company_domain,
+      },
+      snapshot: {
+        provider: "public_web",
+        research_provider: result.provider,
+        model: result.model,
+        contract_version: PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+        normalized_role: selected.normalized_role,
+        email_source_url: selected.email_source_url,
+        role_source_url: selected.role_source_url,
+        verified_at: selected.verified_at,
+        exact_email_observed: true,
+        personal_email_requested: false,
+        phone_requested: false,
+        email_inferred: false,
+      },
+    },
+    professional: classifyProfessionalEmail(
+      selected.email,
+      currentLead.company_domain,
+    ),
+  };
 }
 
 async function readContactUsageAcrossProviders(
@@ -708,7 +790,17 @@ Deno.serve(async (req) => {
     const publicResearchModel = Deno.env.get(
       "OPENAI_CONTACT_RESEARCH_MODEL",
     ) || DEFAULT_PUBLIC_CONTACT_RESEARCH_MODEL;
-    const contactUsageProviders = ["openai", "apollo", "instantly"];
+    const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY") || "";
+    const anthropicPublicResearchModel = Deno.env.get(
+      "ANTHROPIC_CONTACT_RESEARCH_MODEL",
+    ) || Deno.env.get("ANTHROPIC_STANDARD_MODEL") ||
+      DEFAULT_ANTHROPIC_PUBLIC_CONTACT_RESEARCH_MODEL;
+    const contactUsageProviders = [
+      "openai",
+      "anthropic",
+      "apollo",
+      "instantly",
+    ];
     const configuredDailyLimit = Math.max(
       0,
       Math.min(
@@ -917,12 +1009,15 @@ Deno.serve(async (req) => {
             status: "NEEDS_REVIEW_ADAPTIVE_EXPERIENCE_PROJECTION",
           });
         }
-        if ((!openAiKey && !apolloStatus.available) || remaining <= 0) {
+        if (
+          (!openAiKey && !anthropicKey && !apolloStatus.available) ||
+          remaining <= 0
+        ) {
           skipped++;
           blocked.push({
             lead_id: currentLead.id,
             blockers: [
-              !openAiKey && !apolloStatus.available
+              !openAiKey && !anthropicKey && !apolloStatus.available
                 ? "contact_provider_unavailable"
                 : "contact_resolution_budget_exhausted",
             ],
@@ -980,11 +1075,17 @@ Deno.serve(async (req) => {
         let professional: any = null;
         let providerExpiryAt: string | null = APOLLO_EXPIRY_AT;
         let publicShortlist: any[] = [];
+        const publicProviderAttempts: any[] = [];
+        let publicFallbackRequired = !openAiKey;
         let publicResearchEvidence: any = {
           contract_version: PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
-          status: openAiKey ? "PENDING" : "UNAVAILABLE_NOT_CONFIGURED",
+          status: openAiKey || anthropicKey
+            ? "PENDING"
+            : "UNAVAILABLE_NOT_CONFIGURED",
           automatic: true,
           paid_enrichment_fallback_only: true,
+          transferred_fields: ["company_name", "company_domain", "country"],
+          provider_attempts: publicProviderAttempts,
         };
 
         // Automatic public research is always first. It may persist a person
@@ -1018,19 +1119,51 @@ Deno.serve(async (req) => {
           if (reservation.duplicate) {
             const previousStatus = String(reservation?.event?.status || "")
               .toUpperCase();
-            const previousResult = String(
-              reservation?.event?.usage_json?.result_state || "",
-            );
+            const previousUsage = reservation?.event?.usage_json || {};
+            const previousResult = String(previousUsage?.result_state || "");
             if (
               ["OBSERVED", "RECONCILED"].includes(previousStatus) &&
               previousResult === "NO_VERIFIED_PUBLIC_EMAIL"
             ) {
+              publicProviderAttempts.push({
+                provider: "openai",
+                status: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+                replayed_provider_call: false,
+              });
               publicResearchEvidence = {
                 ...publicResearchEvidence,
                 status: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+                provider: "openai",
                 checked_on: researchDay,
                 replayed_provider_call: false,
               };
+              publicFallbackRequired = false;
+              reservation = null;
+            } else if (
+              previousResult === "PUBLIC_RESEARCH_FAILED" &&
+              (
+                (previousStatus === "FAILED" &&
+                  previousUsage?.cost_consumed !== true) ||
+                (["OBSERVED", "RECONCILED"].includes(previousStatus) &&
+                  previousUsage?.provider_effect_known === true)
+              )
+            ) {
+              publicProviderAttempts.push({
+                provider: "openai",
+                status: "PREVIOUS_KNOWN_RESPONSE_FAILURE",
+                error_code: previousUsage?.error_code || null,
+                provider_error_code: previousUsage?.provider_error_code || null,
+                provider_error_type: previousUsage?.provider_error_type || null,
+                cost_consumed: previousUsage?.cost_consumed === true,
+                replayed_provider_call: false,
+              });
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "PREVIOUS_KNOWN_PROVIDER_FAILURE",
+                provider: "openai",
+                replayed_provider_call: false,
+              };
+              publicFallbackRequired = true;
               reservation = null;
             } else {
               stopContactGate({
@@ -1040,10 +1173,7 @@ Deno.serve(async (req) => {
               });
             }
           } else {
-            currentLead = await readLeadForContactGate(
-              service,
-              currentLead.id,
-            );
+            currentLead = await readLeadForContactGate(service, currentLead.id);
             const beforePublicGate = await currentContactGate(
               service,
               currentLead,
@@ -1085,60 +1215,32 @@ Deno.serve(async (req) => {
                 maximumContacts,
                 model: publicResearchModel,
               });
-              publicShortlist = publicResult.shortlist;
-              publicResearchEvidence = {
-                ...publicResearchEvidence,
+              publicProviderAttempts.push({
+                provider: "openai",
                 status: publicResult.verified_contact
                   ? "VERIFIED_PUBLIC_EMAIL_FOUND"
                   : "NO_VERIFIED_PUBLIC_EMAIL",
                 model: publicResult.model,
                 web_search_calls: publicResult.web_search_calls,
-                source_count: publicResult.sources.length,
-                sources: publicResult.sources,
-                candidate_count: publicResult.shortlist.length,
-                usage: publicResult.usage,
-                researched_at: now(),
-                explicit_email_verified: Boolean(
-                  publicResult.verified_contact,
-                ),
-                invented_contact: false,
-              };
-              if (publicResult.verified_contact) {
-                selected = publicResult.verified_contact;
-                candidates = [selected];
-                safe = {
-                  person: {
-                    name: selected.name,
-                    title: selected.title,
-                    email: selected.email,
-                    email_status: "public_source_verified",
-                    linkedin_url: selected.linkedin_url,
-                  },
-                  organization: {
-                    primary_domain: currentLead.company_domain,
-                  },
-                  snapshot: {
-                    provider: "public_web",
-                    model: publicResult.model,
-                    contract_version:
-                      PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
-                    normalized_role: selected.normalized_role,
-                    email_source_url: selected.email_source_url,
-                    role_source_url: selected.role_source_url,
-                    verified_at: selected.verified_at,
-                    exact_email_observed: true,
-                    personal_email_requested: false,
-                    phone_requested: false,
-                    email_inferred: false,
-                  },
-                };
-                professional = classifyProfessionalEmail(
-                  selected.email,
-                  currentLead.company_domain,
-                );
+              });
+              publicShortlist = publicResult.shortlist;
+              publicResearchEvidence = publicResearchSuccessEvidence(
+                publicResearchEvidence,
+                publicResult,
+                publicProviderAttempts,
+              );
+              const publicContact = selectedPublicContact(
+                publicResult,
+                currentLead,
+              );
+              if (publicContact) {
+                selected = publicContact.selected;
+                candidates = publicContact.candidates;
+                safe = publicContact.safe;
+                professional = publicContact.professional;
                 resolvedProvider = "public_web";
                 providerEndpoint =
-                  "responses:web_search + official_source_verification";
+                  "openai:responses:web_search + official_source_verification";
                 providerExpiryAt = null;
               } else {
                 await settlePaidOperation(service, reservation, {
@@ -1158,21 +1260,27 @@ Deno.serve(async (req) => {
                 reservation = null;
                 reservationProviderCalls = 0;
               }
+              publicFallbackRequired = false;
             } catch (publicError: any) {
               const effectAmbiguous = publicError?.responseReceived !== true;
+              const attempt = publicProviderFailure("openai", publicError);
+              const costConsumed = attempt.cost_consumed === true;
+              publicProviderAttempts.push(attempt);
               await settlePaidOperation(service, reservation, {
                 // A transport-ambiguous request consumes the reservation so a
                 // timeout can never escape the contact-resolution cost cap.
-                ok: effectAmbiguous,
+                ok: costConsumed,
                 usage_json: {
                   result_state: effectAmbiguous
                     ? "PUBLIC_RESEARCH_EFFECT_AMBIGUOUS"
                     : "PUBLIC_RESEARCH_FAILED",
-                  error_code: String(
-                    publicError?.code || "PUBLIC_CONTACT_RESEARCH_FAILED",
-                  ).slice(0, 80),
+                  error_code: attempt.error_code,
+                  provider_error_code: attempt.provider_error_code,
+                  provider_error_type: attempt.provider_error_type,
+                  retry_after_seconds: attempt.retry_after_seconds,
                   provider_calls: reservationProviderCalls,
-                  cost_consumed: effectAmbiguous,
+                  provider_effect_known: !effectAmbiguous,
+                  cost_consumed: costConsumed,
                 },
               }).catch((settleError: any) =>
                 safeBestEffort(settleError, {
@@ -1191,12 +1299,238 @@ Deno.serve(async (req) => {
                   status: "NEEDS_REVIEW_PUBLIC_RESEARCH_EFFECT_AMBIGUOUS",
                 });
               }
+              publicFallbackRequired = true;
               publicResearchEvidence = {
                 ...publicResearchEvidence,
                 status: "FAILED_KNOWN_RESPONSE_FALLBACK_ALLOWED",
-                error_code: String(
-                  publicError?.code || "PUBLIC_CONTACT_RESEARCH_FAILED",
-                ).slice(0, 80),
+                provider: "openai",
+                error_code: attempt.error_code,
+                provider_error_code: attempt.provider_error_code,
+                provider_error_type: attempt.provider_error_type,
+                provider_attempts: publicProviderAttempts,
+              };
+            }
+          }
+        }
+
+        if (!safe && publicFallbackRequired && anthropicKey && remaining > 0) {
+          reservation = await reservePaidOperation(service, {
+            event_key:
+              `contact-resolution:public-web:anthropic:${currentLead.id}:${activePolicy.policy_key}:${activePolicy.version}:${PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION}`,
+            category: "ai",
+            provider: "anthropic",
+            source: "leadEnrichmentAgent",
+            related_entity_type: body?.discovery_run_id
+              ? "DiscoveryExecutionRun"
+              : "OutboundLead",
+            related_entity_id: body?.discovery_run_id || currentLead.id,
+            max_related_spend_minor: body?.max_related_spend_minor,
+            usage_json: {
+              discovery_run_id: body?.discovery_run_id || null,
+              lead_id: currentLead.id,
+              operation_phase: "PUBLIC_CONTACT_RESEARCH_FALLBACK",
+              role_target_id: eligibility.role_target?.role_target_id,
+              maximum_contacts: maximumContacts,
+              contract_version: PUBLIC_CONTACT_RESEARCH_CONTRACT_VERSION,
+              automatic: true,
+              fallback_after: "openai",
+              transferred_fields: ["company_name", "company_domain", "country"],
+            },
+          });
+          if (reservation.duplicate) {
+            const previousStatus = String(reservation?.event?.status || "")
+              .toUpperCase();
+            const previousUsage = reservation?.event?.usage_json || {};
+            const previousResult = String(previousUsage?.result_state || "");
+            if (
+              ["OBSERVED", "RECONCILED"].includes(previousStatus) &&
+              previousResult === "NO_VERIFIED_PUBLIC_EMAIL"
+            ) {
+              publicProviderAttempts.push({
+                provider: "anthropic",
+                status: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+                replayed_provider_call: false,
+              });
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "PREVIOUS_NO_VERIFIED_PUBLIC_EMAIL",
+                provider: "anthropic",
+                replayed_provider_call: false,
+                provider_attempts: publicProviderAttempts,
+              };
+              reservation = null;
+            } else if (
+              previousResult === "PUBLIC_RESEARCH_FAILED" &&
+              (
+                (previousStatus === "FAILED" &&
+                  previousUsage?.cost_consumed !== true) ||
+                (["OBSERVED", "RECONCILED"].includes(previousStatus) &&
+                  previousUsage?.provider_effect_known === true)
+              )
+            ) {
+              publicProviderAttempts.push({
+                provider: "anthropic",
+                status: "PREVIOUS_KNOWN_RESPONSE_FAILURE",
+                error_code: previousUsage?.error_code || null,
+                provider_error_code: previousUsage?.provider_error_code || null,
+                provider_error_type: previousUsage?.provider_error_type || null,
+                cost_consumed: previousUsage?.cost_consumed === true,
+                replayed_provider_call: false,
+              });
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "PREVIOUS_ALL_PUBLIC_PROVIDERS_FAILED",
+                provider: "anthropic",
+                replayed_provider_call: false,
+                provider_attempts: publicProviderAttempts,
+              };
+              reservation = null;
+            } else {
+              stopContactGate({
+                blocker:
+                  "duplicate_anthropic_public_research_effect_requires_reconciliation",
+                phase: "ANTHROPIC_PUBLIC_RESEARCH_IDEMPOTENCY",
+                status:
+                  "NEEDS_REVIEW_DUPLICATE_ANTHROPIC_PUBLIC_RESEARCH_EFFECT",
+              });
+            }
+          } else {
+            currentLead = await readLeadForContactGate(service, currentLead.id);
+            const beforeAnthropicGate = await currentContactGate(
+              service,
+              currentLead,
+              activePolicy,
+              qualification,
+              maximumContacts,
+              "IMMEDIATELY_BEFORE_ANTHROPIC_PUBLIC_RESEARCH",
+            );
+            const beforeAnthropicSuppression = await strictSuppressionLookup(
+              service,
+              currentLead.contact_email,
+              "IMMEDIATELY_BEFORE_ANTHROPIC_PUBLIC_RESEARCH",
+            );
+            if (
+              !beforeAnthropicGate.allowed ||
+              !beforeAnthropicSuppression.allowed
+            ) {
+              stopContactGate({
+                blocker: beforeAnthropicSuppression.blocker ||
+                  beforeAnthropicGate.blockers[0] || "contact_gate_changed",
+                blockers: [
+                  ...beforeAnthropicGate.blockers,
+                  ...(beforeAnthropicSuppression.blocker
+                    ? [beforeAnthropicSuppression.blocker]
+                    : []),
+                ],
+                phase: "IMMEDIATELY_BEFORE_ANTHROPIC_PUBLIC_RESEARCH",
+                status: "NEEDS_REVIEW_PRE_ANTHROPIC_PUBLIC_RESEARCH_TOCTOU",
+                suppressed: beforeAnthropicSuppression.suppressed,
+              });
+            }
+            providerCalls++;
+            leadProviderCalls++;
+            reservationProviderCalls = 1;
+            remaining--;
+            try {
+              const publicResult =
+                await callAutomaticAnthropicPublicContactResearch({
+                  service,
+                  reservation,
+                  apiKey: anthropicKey,
+                  lead: currentLead,
+                  maximumContacts,
+                  model: anthropicPublicResearchModel,
+                });
+              publicProviderAttempts.push({
+                provider: "anthropic",
+                status: publicResult.verified_contact
+                  ? "VERIFIED_PUBLIC_EMAIL_FOUND"
+                  : "NO_VERIFIED_PUBLIC_EMAIL",
+                model: publicResult.model,
+                web_search_calls: publicResult.web_search_calls,
+              });
+              publicShortlist = publicResult.shortlist;
+              publicResearchEvidence = publicResearchSuccessEvidence(
+                publicResearchEvidence,
+                publicResult,
+                publicProviderAttempts,
+              );
+              const publicContact = selectedPublicContact(
+                publicResult,
+                currentLead,
+              );
+              if (publicContact) {
+                selected = publicContact.selected;
+                candidates = publicContact.candidates;
+                safe = publicContact.safe;
+                professional = publicContact.professional;
+                resolvedProvider = "public_web";
+                providerEndpoint =
+                  "anthropic:messages:web_search + official_source_verification";
+                providerExpiryAt = null;
+              } else {
+                await settlePaidOperation(service, reservation, {
+                  ok: true,
+                  usage_json: {
+                    result_state: "NO_VERIFIED_PUBLIC_EMAIL",
+                    endpoint: "messages:web_search",
+                    model: publicResult.model,
+                    web_search_calls: publicResult.web_search_calls,
+                    source_count: publicResult.sources.length,
+                    candidate_count: publicResult.shortlist.length,
+                    selected_contact: false,
+                    person_persisted: false,
+                    ...publicResult.usage,
+                  },
+                });
+                reservation = null;
+                reservationProviderCalls = 0;
+              }
+            } catch (publicError: any) {
+              const effectAmbiguous = publicError?.responseReceived !== true;
+              const attempt = publicProviderFailure("anthropic", publicError);
+              const costConsumed = attempt.cost_consumed === true;
+              publicProviderAttempts.push(attempt);
+              await settlePaidOperation(service, reservation, {
+                ok: costConsumed,
+                usage_json: {
+                  result_state: effectAmbiguous
+                    ? "PUBLIC_RESEARCH_EFFECT_AMBIGUOUS"
+                    : "PUBLIC_RESEARCH_FAILED",
+                  error_code: attempt.error_code,
+                  provider_error_code: attempt.provider_error_code,
+                  provider_error_type: attempt.provider_error_type,
+                  retry_after_seconds: attempt.retry_after_seconds,
+                  provider_calls: reservationProviderCalls,
+                  provider_effect_known: !effectAmbiguous,
+                  cost_consumed: costConsumed,
+                },
+              }).catch((settleError: any) =>
+                safeBestEffort(settleError, {
+                  operation:
+                    "leadEnrichmentAgent.anthropicPublicResearchSettlement",
+                  fallback: null,
+                  severity: "critical",
+                })
+              );
+              reservation = null;
+              reservationProviderCalls = 0;
+              if (effectAmbiguous) {
+                stopContactGate({
+                  blocker: "anthropic_public_contact_research_effect_ambiguous",
+                  phase: "ANTHROPIC_PUBLIC_CONTACT_RESEARCH",
+                  status:
+                    "NEEDS_REVIEW_ANTHROPIC_PUBLIC_RESEARCH_EFFECT_AMBIGUOUS",
+                });
+              }
+              publicResearchEvidence = {
+                ...publicResearchEvidence,
+                status: "ALL_PUBLIC_RESEARCH_PROVIDERS_FAILED_FALLBACK_ALLOWED",
+                provider: "anthropic",
+                error_code: attempt.error_code,
+                provider_error_code: attempt.provider_error_code,
+                provider_error_type: attempt.provider_error_type,
+                provider_attempts: publicProviderAttempts,
               };
             }
           }

@@ -2,18 +2,18 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "4c066608d6ece5eb541da748a654f9f05076608997ca601742643f25c6fe5f97",
+  "input_fingerprint_sha256": "8edb2e1d7225f1497da3ac962def41251785a874d74a78bb5ca85e4a1523df8a",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "f5649e27b652e4739313e1c61d1154cd34116434edea6704c53b7727615b207a",
+      "sha256": "57ea1955c9c7f8d9dfb2a2161f2a7dec31d88d528db0fc0c12fc98ed5e78d3f2",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "30b1975dc831763795e00c6665163d41d301765f1566af16d40b9653cb9aa21c",
+      "sha256": "24190790f253c1372d18c34321bd96a04e747a95ac3b058d3a8027913733e683",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
