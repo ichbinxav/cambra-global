@@ -13,6 +13,7 @@ import {
   findScheduledDiscoveryRun,
   recoverPreparedScheduledRevision,
   scheduledDiscoveryClaimActive,
+  selectLatestApolloHealthCheckpoint,
 } from "../../base44/shared/discoveryV2Admin.ts";
 import {
   buildDiscoveryPartitions,
@@ -133,6 +134,32 @@ function scheduleServiceFor(initialViews, initialRuns = []) {
 describe("Discovery V2 operational truth", () => {
   const read = (file) =>
     fs.readFileSync(path.join(process.cwd(), file), "utf8");
+
+  it("reports Apollo health from the newest operational evidence", () => {
+    const recovered = selectLatestApolloHealthCheckpoint([{
+      checkpoint_key: "apollo:provider:diagnostic",
+      source_key: "apollo",
+      provider_status: "DEGRADED",
+      last_attempt_at: "2026-09-06T13:27:58.624Z",
+    }, {
+      checkpoint_key: "discovery-v2:latest-success",
+      source_key: "apollo",
+      provider_status: "ACTIVE",
+      last_attempt_at: "2026-09-06T16:46:33.527Z",
+      last_success_at: "2026-09-06T16:46:34.826Z",
+    }]);
+    expect(recovered?.checkpoint_key).toBe("discovery-v2:latest-success");
+    expect(recovered?.provider_status).toBe("ACTIVE");
+
+    const degraded = selectLatestApolloHealthCheckpoint([recovered, {
+      checkpoint_key: "apollo:provider:diagnostic",
+      source_key: "apollo",
+      provider_status: "DEGRADED",
+      last_attempt_at: "2026-09-06T17:00:00.000Z",
+    }]);
+    expect(degraded?.provider_status).toBe("DEGRADED");
+  });
+
   it("preserves every multiselect native dimension or blocks an oversized cartesian product", () => {
     const config = {
       filters: {

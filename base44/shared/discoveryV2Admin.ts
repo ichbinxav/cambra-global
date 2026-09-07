@@ -164,6 +164,28 @@ const firstNumericMetric = (
   return null;
 };
 
+const checkpointEvidenceAt = (row: any) => Math.max(
+  ...[
+    row?.last_attempt_at,
+    row?.last_success_at,
+    row?.updated_date,
+    row?.created_date,
+  ].map((value) => Date.parse(text(value))).filter(Number.isFinite),
+  0,
+);
+
+export function selectLatestApolloHealthCheckpoint(checkpoints: any[] = []) {
+  return checkpoints
+    .filter((row: any) =>
+      text(row?.source_key).toLowerCase() === "apollo" &&
+      Boolean(text(row?.provider_status))
+    )
+    .reduce((latest: any, row: any) =>
+      !latest || checkpointEvidenceAt(row) > checkpointEvidenceAt(latest)
+        ? row
+        : latest, null);
+}
+
 function matchesValue(observed: any, requested: any) {
   const requests = Array.isArray(requested) ? requested : [requested];
   const haystack = Array.isArray(observed)
@@ -657,11 +679,10 @@ async function plannerContext(service: any) {
   const apolloRows = checkpoints.filter((row: any) =>
     text(row.source_key).toLowerCase() === "apollo"
   );
-  const apolloCheckpoint =
-    apolloRows.find((row: any) =>
-      row.checkpoint_key === "apollo:provider:diagnostic"
-    ) || apolloRows.find((row: any) => row.provider_status === "ACTIVE") ||
-    apolloRows[0];
+  const apolloCheckpoint = selectLatestApolloHealthCheckpoint(apolloRows);
+  const apolloDiagnostic = apolloRows.find((row: any) =>
+    row.checkpoint_key === "apollo:provider:diagnostic"
+  );
   const instantly =
     providerStates.find((row: any) =>
       row.provider_key === "instantly_supersearch" &&
@@ -709,7 +730,8 @@ async function plannerContext(service: any) {
   };
   const apolloCredits = providerCredits("apollo"),
     instantlyCredits = providerCredits("instantly");
-  const apolloUsage = apolloCheckpoint?.provider_usage_json?.usage || {};
+  const apolloUsage = apolloDiagnostic?.provider_usage_json?.usage ||
+    apolloCheckpoint?.provider_usage_json?.usage || {};
   const instantlyUsage = instantly?.metrics_json || {};
   const providerUsage = {
     APOLLO: {
