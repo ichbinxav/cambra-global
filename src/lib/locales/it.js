@@ -267,6 +267,7 @@ export default {
     hero_h1_line2:        "accettare pagamenti nella tua attività.",
     hero_sub: "CAMBRA analizza le commissioni dei pagamenti online e in negozio, le confronta con attività simili e mostra dove potresti pagare troppo.",
     hero_audience:        "Per ecommerce, retailer e team omnicanale.",
+    landing_audience_other: "Altre aziende con costi di pagamento rilevanti",
     hero_cta_primary:     "Analizza i miei pagamenti",
     hero_cta_secondary:   "Prenota una demo",
     hero_trust_1:         "Analisi dei costi gratuita",
@@ -1138,7 +1139,7 @@ export default {
     cta_final_t4:          "Niente risparmi, niente commissione",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "IL COSTO NASCOSTO IN OGNI VENDITA",
+    prob_eyebrow:          "COSA FA CAMBRA",
     prob_h2_pre:           "Una sola tariffa di pagamento può nascondere",
     prob_h2_kw:            "dove è finito il tuo margine.",
     prob_h2_post:          "CAMBRA scompone il costo in linguaggio semplice.",

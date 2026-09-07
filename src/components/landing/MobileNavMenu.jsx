@@ -120,7 +120,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="md:hidden absolute inset-x-0 top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto overflow-x-hidden border-b border-white/[0.08]"
+          className="xl:hidden absolute inset-x-0 top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto overflow-x-hidden border-b border-white/[0.08]"
           style={{
             background:
               "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",

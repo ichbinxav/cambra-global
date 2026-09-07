@@ -265,6 +265,7 @@ export default {
     hero_h1_line2:        "Ihr Unternehmen wirklich kostet.",
     hero_sub: "CAMBRA analysiert Ihre Online- und Vor-Ort-Zahlungsgebühren, vergleicht sie mit ähnlichen Unternehmen und zeigt, wo Sie möglicherweise zu viel bezahlen.",
     hero_audience:        "Für E-Commerce, Einzelhandel und Omnichannel-Teams.",
+    landing_audience_other: "Weitere Unternehmen mit relevanten Zahlungskosten",
     hero_cta_primary:     "Meine Zahlungen analysieren",
     hero_cta_secondary:   "Demo buchen",
     hero_trust_1:         "Kostenlose Kostenanalyse",
@@ -1136,7 +1137,7 @@ export default {
     cta_final_t4:          "Keine Einsparungen, keine Gebühr",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "DIE KOSTEN, DIE SICH IN JEDEM VERKAUF VERSTECKEN",
+    prob_eyebrow:          "WAS CAMBRA LEISTET",
     prob_h2_pre:           "Ein einziger Zahlungssatz kann verbergen,",
     prob_h2_kw:            "wohin Ihre Marge ging.",
     prob_h2_post:          "CAMBRA schlüsselt die Kosten in Klartext auf.",

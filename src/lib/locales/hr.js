@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "stvarno košta tvoje poslovanje.",
     hero_sub: "CAMBRA analizira naknade za online plaćanja i plaćanja u trgovini, uspoređuje ih sa sličnim poslovima i pokazuje gdje možda plaćaš previše.",
     hero_audience:        "Za ecommerce, maloprodaju i omnichannel timove.",
+    landing_audience_other: "Druge tvrtke sa značajnim troškovima plaćanja",
     hero_cta_primary:     "Analiziraj moja plaćanja",
     hero_cta_secondary:   "Rezerviraj demo",
     hero_trust_1:         "Besplatna analiza troškova",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Bez ušteda, bez naknade",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "TROŠAK SKRIVEN U SVAKOJ PRODAJI",
+    prob_eyebrow:          "ŠTO CAMBRA RADI",
     prob_h2_pre:           "Jedna stopa plaćanja može sakriti",
     prob_h2_kw:            "kamo je otišla tvoja marža.",
     prob_h2_post:          "CAMBRA raščlanjuje trošak razumljivim jezikom.",

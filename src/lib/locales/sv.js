@@ -266,6 +266,7 @@ export default {
     hero_h1_line2:        "ditt företag att ta emot betalningar.",
     hero_sub: "CAMBRA analyserar dina betalningsavgifter online och i butik, jämför dem med liknande företag och visar var du kan betala för mycket.",
     hero_audience:        "För ecommerce, detaljhandel och omnichannel-team.",
+    landing_audience_other: "Andra företag med betydande betalningskostnader",
     hero_cta_primary:     "Analysera mina betalningar",
     hero_cta_secondary:   "Boka en demo",
     hero_trust_1:         "Kostnadsfri kostnadsanalys",
@@ -1137,7 +1138,7 @@ export default {
     cta_final_t4:          "Inga besparingar, ingen avgift",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "KOSTNADEN SOM GÖMMER SIG I VARJE FÖRSÄLJNING",
+    prob_eyebrow:          "VAD CAMBRA GÖR",
     prob_h2_pre:           "En enda betalavgift kan dölja",
     prob_h2_kw:            "vart din marginal tog vägen.",
     prob_h2_post:          "CAMBRA bryter ner kostnaden i klarspråk.",

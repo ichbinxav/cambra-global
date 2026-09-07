@@ -259,6 +259,7 @@ export default {
     hero_h1_line2:        "coûte vraiment à votre entreprise.",
     hero_sub: "CAMBRA analyse vos frais de paiement en ligne et en magasin, les compare à ceux d'entreprises similaires et révèle où vous payez peut-être trop.",
     hero_audience:        "Pour les e-commerçants, les retailers et les équipes omnicanales.",
+    landing_audience_other: "Autres entreprises à coûts de paiement significatifs",
     hero_cta_primary:     "Analyser mes paiements",
     hero_cta_secondary:   "Réserver une démo",
     hero_trust_1:         "Analyse des coûts gratuite",
@@ -1126,7 +1127,7 @@ export default {
     cta_final_t4:          "Pas d'économie, pas de commission",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "LE COÛT CACHÉ DANS CHAQUE VENTE",
+    prob_eyebrow:          "CE QUE FAIT CAMBRA",
     prob_h2_pre:           "Un seul taux de paiement peut cacher",
     prob_h2_kw:            "où votre marge est partie.",
     prob_h2_post:          "CAMBRA décompose le coût avec des mots simples.",

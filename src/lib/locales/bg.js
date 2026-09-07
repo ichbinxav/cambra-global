@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "на бизнеса ви да приема плащания.",
     hero_sub: "CAMBRA анализира таксите ви за онлайн плащания и плащания в магазина, сравнява ги с подобни бизнеси и показва къде може да плащате повече.",
     hero_audience:        "За ecommerce, търговци на дребно и omnichannel екипи.",
+    landing_audience_other: "Други компании със значителни разходи за плащания",
     hero_cta_primary:     "Анализирайте плащанията ми",
     hero_cta_secondary:   "Резервирайте демо",
     hero_trust_1:         "Безплатен анализ на разходите",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Без спестявания, без такса",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "РАЗХОДЪТ, СКРИТ ВЪВ ВСЯКА ПРОДАЖБА",
+    prob_eyebrow:          "КАКВО ПРАВИ CAMBRA",
     prob_h2_pre:           "Една ставка за плащания може да скрие",
     prob_h2_kw:            "къде отиде маржът ти.",
     prob_h2_post:          "CAMBRA разбива разхода на разбираем език.",

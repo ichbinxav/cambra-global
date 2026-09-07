@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "patiesībā izmaksā tavam uzņēmumam.",
     hero_sub:             "CAMBRA analizē tavas tiešsaistes un veikala maksājumu komisijas, salīdzina tās ar līdzīgiem uzņēmumiem un parāda, kur, iespējams, pārmaksā.",
     hero_audience:        "Ecommerce, mazumtirdzniecības un omnichannel komandām.",
+    landing_audience_other: "Citi uzņēmumi ar būtiskām maksājumu izmaksām",
     hero_cta_primary:     "Analizēt manus maksājumus",
     hero_cta_secondary:   "Rezervēt demo",
     hero_trust_1:         "Bezmaksas izmaksu analīze",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Nav ietaupījumu, nav maksas",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "IZMAKSAS, KAS SLĒPJAS KATRĀ PĀRDOŠANĀ",
+    prob_eyebrow:          "KO DARA CAMBRA",
     prob_h2_pre:           "Viena maksājumu likme var noslēpt,",
     prob_h2_kw:            "kur palika tava marža.",
     prob_h2_post:          "CAMBRA sadala izmaksas saprotamā valodā.",

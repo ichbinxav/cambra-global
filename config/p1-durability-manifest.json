@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T11:40:55.890Z",
+  "generatedAt": "2026-09-07T15:06:22.618Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2599,12 +2599,12 @@
     },
     {
       "path": "src/components/landing/MobileNavMenu.jsx",
-      "sha256": "711280cf8392245e28c1a7db356c2761809e15fe96689ddb3aa8bbf45de14460",
+      "sha256": "95bf04a6385f9a8b67081b62fb64ed7f26a49cac6a7bca2448873572f51a97c4",
       "bytes": 14199
     },
     {
       "path": "src/components/landing/Navbar.jsx",
-      "sha256": "f867ffdfed9404585ba7cdb492f542e59a6842945791203d6e7eee72c17804b6",
+      "sha256": "a27130b2c92558861776a4278dc663db1fc69dc4aca85f3811d1fd9e9675d963",
       "bytes": 8073
     },
     {
@@ -3389,18 +3389,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "3b8888de10ac5ba4fa1c4fc93a715e1ceda7954f60622fa69a6a74f540855169",
-      "bytes": 103970
+      "sha256": "4abd86e90e7602730241da96625a4ffc9c55e55f9bfed2c0841f357524fca095",
+      "bytes": 104023
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "bad605d0fc9270a1fcf5d06eb56b08285fe9cbc12df34de3edaae7b6dd0e7362",
-      "bytes": 105633
+      "sha256": "04c5d0ac877d67e3a6711889377368cc56f5b65ae17a535c9c37b2872fd5b100",
+      "bytes": 105696
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "8d64553884f6bba99ee1a381b398306abb988480f0835969c99858a2998bf8c3",
-      "bytes": 111305
+      "sha256": "105ff4b97e35daaf139954619e703e26ca54353d543321170b9223dd06c08361",
+      "bytes": 111376
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "bc22d561dadb8b66ff54646b1d41bb13efae5f702e4c24b7657b8ceaf6e82c9d",
-      "bytes": 20270
+      "sha256": "28396ae37caf8a0a5055027ecad753332b9cb83359308e046830ed494302e78c",
+      "bytes": 20159
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",

@@ -57,13 +57,16 @@ describe("landing truth and release controls", () => {
     const security = read("src/components/landing/TrustSecuritySection.jsx");
     const assets = read("src/lib/brandAssets.js");
     const headings = read("src/components/landing/SectionHeading.jsx");
+    const navbar = read("src/components/landing/Navbar.jsx");
+    const mobileNav = read("src/components/landing/MobileNavMenu.jsx");
     expect(landing).toContain("max-w-[1560px]");
     expect(landing).toContain("md:grid-cols-3");
     expect(landing).toContain("BRAND_ASSETS.landingHero");
     expect(security).toContain("BRAND_ASSETS.securityVisual");
     expect(assets).toContain("/images/cambra-hero-5m-sleek-transparent-final.png");
     expect(assets).toContain("/images/cambra-intelligence-stack-transparent-v3.png");
-    expect(assets).toContain("/images/cambra-security-subtle-violet-transparent-final.png");
+    expect(assets).toContain("/images/cambra-security-vault-transparent-v2.png");
+    expect(fs.existsSync(path.join(root, "public/images/cambra-security-vault-transparent-v2.png"))).toBe(true);
     expect(landing).not.toContain("cambra-fee-audit-24m-v3.png");
     expect(stack).not.toContain("cambra-intelligence-stack-v2.png");
     expect(landing).not.toContain('t("ri_illustrative")');
@@ -76,11 +79,36 @@ describe("landing truth and release controls", () => {
     expect(landing).not.toContain("MarketAvailabilitySection");
     expect(landing).toContain("<HeroTrustStrip />");
     expect(landing).toContain("<TheStackSection />");
+    expect(landing).toContain("<AudienceSection />");
     expect(landing).toContain("<BookCallModal");
     expect(landing).not.toContain("<RealImpactSection />");
     expect(landing).not.toContain("hero_visual_title");
     expect(headings).toContain('align = "center"');
     expect(headings).toContain("clamp(32px, 5vw, 64px)");
+    expect(navbar).toContain('className="hidden xl:flex items-center gap-1"');
+    expect(navbar).toContain('className="xl:hidden flex items-center gap-1"');
+    expect(mobileNav).toContain('className="xl:hidden absolute inset-x-0 top-14');
+  });
+
+  it("keeps the homepage narrative in the founder-approved order", () => {
+    const landing = read("src/pages/Landing.jsx");
+    const sections = [
+      "<Hero onBookDemo=",
+      "<HeroTrustStrip />",
+      "<ProblemSectionWow />",
+      "<HowItWorksSection />",
+      "<TheStackSection />",
+      "<TrustSecuritySection />",
+      "<AudienceSection />",
+      "<PricingDual />",
+      "<StopLeavingMarginCTA",
+      "<LandingFooter />",
+    ];
+    const positions = sections.map((section) => landing.indexOf(section));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    expect(landing).not.toContain("ReferralProgramSection");
+    expect(landing).not.toContain("FounderLetter");
   });
 
   it("ships the sharper 24-month hero copy in every product locale", () => {
@@ -89,6 +117,7 @@ describe("landing truth and release controls", () => {
       expect(dict.hero_h1_line1).toBeTruthy();
       expect(dict.hero_h1_line2).toBeTruthy();
       expect(dict.hero_audience).toBeTruthy();
+      expect(dict.landing_audience_other).toBeTruthy();
       expect(dict.hero_image_alt).toContain("CAMBRA");
       expect(dict.hero_image_alt).not.toMatch(/(?:€?5\s?M|2[,.]70|1[,.]70|100[.,\s]?000|24\s(?:month|mes))/i);
       expect(dict.stack_eyebrow).not.toMatch(/PAYMENTS WEDGE/i);

@@ -267,6 +267,7 @@ export default {
     hero_h1_line2:        "στην επιχείρησή σας η αποδοχή πληρωμών.",
     hero_sub: "Η CAMBRA αναλύει τις χρεώσεις πληρωμών online και στο κατάστημα, τις συγκρίνει με παρόμοιες επιχειρήσεις και δείχνει πού ενδέχεται να πληρώνετε παραπάνω.",
     hero_audience:        "Για ecommerce, λιανεμπόριο και omnichannel ομάδες.",
+    landing_audience_other: "Άλλες επιχειρήσεις με σημαντικό κόστος πληρωμών",
     hero_cta_primary:     "Ανάλυση των πληρωμών μου",
     hero_cta_secondary:   "Κράτηση demo",
     hero_trust_1:         "Δωρεάν ανάλυση κόστους",
@@ -1138,7 +1139,7 @@ export default {
     cta_final_t4:          "Χωρίς εξοικονομήσεις, χωρίς αμοιβή",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "ΤΟ ΚΟΣΤΟΣ ΠΟΥ ΚΡΥΒΕΤΑΙ ΣΕ ΚΑΘΕ ΠΩΛΗΣΗ",
+    prob_eyebrow:          "ΤΙ ΚΑΝΕΙ Η CAMBRA",
     prob_h2_pre:           "Μία τιμή πληρωμών μπορεί να κρύβει",
     prob_h2_kw:            "πού πήγε το περιθώριό σας.",
     prob_h2_post:          "Η CAMBRA αναλύει το κόστος σε απλή γλώσσα.",

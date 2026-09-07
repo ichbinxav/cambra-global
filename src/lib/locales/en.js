@@ -263,6 +263,7 @@ export default {
     hero_h1_line2:        "really costs your business.",
     hero_sub: "CAMBRA analyses your online and in-store payment fees, compares them with similar businesses and shows where you may be overpaying.",
     hero_audience:        "For ecommerce businesses, retailers and omnichannel teams.",
+    landing_audience_other: "Other payment-intensive businesses",
     hero_cta_primary:     "Analyze my payments",
     hero_cta_secondary:   "Book a demo",
     hero_trust_1:         "Free payment-cost analysis",
@@ -1161,7 +1162,7 @@ export default {
     cta_final_t4:          "No savings, no fee",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "THE COST HIDING IN EVERY SALE",
+    prob_eyebrow:          "WHAT CAMBRA DOES",
     prob_h2_pre:           "One payment rate can hide",
     prob_h2_kw:            "where your margin went.",
     prob_h2_post:          "CAMBRA breaks the cost down in plain language.",

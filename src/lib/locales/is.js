@@ -269,6 +269,7 @@ export default {
     hero_h1_line2:        "í raun að taka við greiðslum.",
     hero_sub: "CAMBRA greinir greiðslugjöld þín á netinu og í verslun, ber þau saman við svipuð fyrirtæki og sýnir hvar þú gætir verið að greiða of mikið.",
     hero_audience:        "Fyrir ecommerce, smásölu og omnichannel-teymi.",
+    landing_audience_other: "Önnur fyrirtæki með verulegan greiðslukostnað",
     hero_cta_primary:     "Greina greiðslurnar mínar",
     hero_cta_secondary:   "Bóka kynningu",
     hero_trust_1:         "Ókeypis kostnaðargreining",
@@ -1149,7 +1150,7 @@ export default {
     cta_final_t4:          "Enginn sparnaður, engin þóknun",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "KOSTNAÐURINN SEM FELST Í HVERRI SÖLU",
+    prob_eyebrow:          "HVAÐ CAMBRA GERIR",
     prob_h2_pre:           "Eitt greiðsluhlutfall getur falið",
     prob_h2_kw:            "hvert framlegðin þín fór.",
     prob_h2_post:          "CAMBRA sundurliðar kostnaðinn á skýru máli.",

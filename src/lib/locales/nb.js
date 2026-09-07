@@ -270,6 +270,7 @@ export default {
     hero_h1_line2:        "bedriften din å ta imot betalinger.",
     hero_sub: "CAMBRA analyserer betalingsgebyrene dine på nett og i butikk, sammenligner dem med lignende bedrifter og viser hvor du kanskje betaler for mye.",
     hero_audience:        "For ecommerce, detaljhandel og omnichannel-team.",
+    landing_audience_other: "Andre virksomheter med betydelige betalingskostnader",
     hero_cta_primary:     "Analyser betalingene mine",
     hero_cta_secondary:   "Book en demo",
     hero_trust_1:         "Gratis kostnadsanalyse",
@@ -1150,7 +1151,7 @@ export default {
     cta_final_t4:          "Ingen besparelser, ingen honorar",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "KOSTNADEN SOM SKJULER SEG I HVERT SALG",
+    prob_eyebrow:          "HVA CAMBRA GJØR",
     prob_h2_pre:           "Én betalingssats kan skjule",
     prob_h2_kw:            "hvor marginen din tok veien.",
     prob_h2_post:          "CAMBRA bryter kostnaden ned i klart språk.",

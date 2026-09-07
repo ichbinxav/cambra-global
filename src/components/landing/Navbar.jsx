@@ -124,7 +124,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden xl:flex items-center gap-1">
           {NAV.map(item => {
             const activeHref = "activeHref" in item ? item.activeHref : item.href;
             const active = location.pathname === activeHref || location.pathname.startsWith(activeHref + "/");
@@ -148,7 +148,7 @@ export default function Navbar() {
         </nav>
 
         {/* Desktop CTAs — dark variant to match landing */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden xl:flex items-center gap-2">
           <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" className="mr-1" />
           {isAuthenticated ? (
@@ -179,7 +179,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile — language switcher always visible + menu toggle */}
-        <div className="md:hidden flex items-center gap-1">
+        <div className="xl:hidden flex items-center gap-1">
           <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" />
           <button

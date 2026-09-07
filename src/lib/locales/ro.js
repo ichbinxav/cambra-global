@@ -266,6 +266,7 @@ export default {
     hero_h1_line2:        "afacerea ta să accepte plăți.",
     hero_sub: "CAMBRA analizează comisioanele plăților online și din magazin, le compară cu afaceri similare și arată unde ai putea plăti prea mult.",
     hero_audience:        "Pentru ecommerce, retail și echipe omnichannel.",
+    landing_audience_other: "Alte companii cu costuri de plată semnificative",
     hero_cta_primary:     "Analizează plățile mele",
     hero_cta_secondary:   "Programează un demo",
     hero_trust_1:         "Analiză gratuită a costurilor",
@@ -1146,7 +1147,7 @@ export default {
     cta_final_t4:          "Fără economii, fără comision",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "COSTUL ASCUNS ÎN FIECARE VÂNZARE",
+    prob_eyebrow:          "CE FACE CAMBRA",
     prob_h2_pre:           "O singură rată de plată poate ascunde",
     prob_h2_kw:            "unde ți s-a dus marja.",
     prob_h2_post:          "CAMBRA descompune costul pe limbaj clar.",

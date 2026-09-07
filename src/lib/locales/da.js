@@ -266,6 +266,7 @@ export default {
     hero_h1_line2:        "din virksomhed at modtage betalinger.",
     hero_sub: "CAMBRA analyserer dine betalingsgebyrer online og i butik, sammenligner dem med lignende virksomheder og viser, hvor du muligvis betaler for meget.",
     hero_audience:        "Til ecommerce, detailhandel og omnichannel-teams.",
+    landing_audience_other: "Andre virksomheder med væsentlige betalingsomkostninger",
     hero_cta_primary:     "Analyser mine betalinger",
     hero_cta_secondary:   "Book en demo",
     hero_trust_1:         "Gratis omkostningsanalyse",
@@ -1137,7 +1138,7 @@ export default {
     cta_final_t4:          "Ingen besparelser, intet gebyr",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "OMKOSTNINGEN DER GEMMER SIG I HVERT SALG",
+    prob_eyebrow:          "HVAD CAMBRA GØR",
     prob_h2_pre:           "Én betalingssats kan skjule,",
     prob_h2_kw:            "hvor din margin blev af.",
     prob_h2_post:          "CAMBRA bryder omkostningen ned i klart sprog.",

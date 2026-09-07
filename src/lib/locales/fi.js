@@ -266,6 +266,7 @@ export default {
     hero_h1_line2:        "todella maksaa yrityksellesi.",
     hero_sub: "CAMBRA analysoi verkko- ja myymälämaksujesi kulut, vertaa niitä samankaltaisiin yrityksiin ja näyttää, missä saatat maksaa liikaa.",
     hero_audience:        "Verkkokaupalle, vähittäiskaupalle ja monikanavaisille tiimeille.",
+    landing_audience_other: "Muut yritykset, joilla on merkittäviä maksukuluja",
     hero_cta_primary:     "Analysoi maksuni",
     hero_cta_secondary:   "Varaa demo",
     hero_trust_1:         "Maksuton kustannusanalyysi",
@@ -1137,7 +1138,7 @@ export default {
     cta_final_t4:          "Ei säästöjä, ei palkkiota",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "KUSTANNUS JOKA PIILOUTUU JOKAISEEN MYYNTIIN",
+    prob_eyebrow:          "MITÄ CAMBRA TEKEE",
     prob_h2_pre:           "Yksi maksuhinta voi piilottaa,",
     prob_h2_kw:            "minne katteesi meni.",
     prob_h2_post:          "CAMBRA purkaa kustannuksen selkokielellä.",

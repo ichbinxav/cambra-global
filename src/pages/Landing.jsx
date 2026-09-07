@@ -8,13 +8,12 @@ import Navbar from "@/components/landing/Navbar";
 import { useTranslation } from "@/lib/i18n.jsx"; // used by HowItWorksSection + LandingFooter
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
-import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import TheStackSection from "@/components/landing/TheStackSection";
-import ReferralProgramSection from "@/components/landing/ReferralProgramSection";
 import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
+import AudienceSection from "@/components/landing/AudienceSection";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
@@ -429,12 +428,11 @@ export default function Landing() {
         <Hero onBookDemo={() => setDemoOpen(true)} />
         <HeroTrustStrip />
         <ProblemSectionWow />
-        <TheStackSection />
         <HowItWorksSection />
-        <PricingDual />
-        <ReferralProgramSection />
+        <TheStackSection />
         <TrustSecuritySection />
-        <FounderLetter />
+        <AudienceSection />
+        <PricingDual />
         <StopLeavingMarginCTA onBookDemo={() => setDemoOpen(true)} />
       </main>
       <LandingFooter />

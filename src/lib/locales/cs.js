@@ -265,6 +265,7 @@ export default {
     hero_h1_line2:        "přijímání plateb.",
     hero_sub: "CAMBRA analyzuje poplatky za online i kamenné platby, porovnává je s podobnými firmami a ukazuje, kde možná přeplácíte.",
     hero_audience:        "Pro ecommerce, maloobchod a omnichannel týmy.",
+    landing_audience_other: "Další firmy s významnými náklady na platby",
     hero_cta_primary:     "Analyzovat moje platby",
     hero_cta_secondary:   "Rezervovat demo",
     hero_trust_1:         "Bezplatná analýza nákladů",
@@ -1136,7 +1137,7 @@ export default {
     cta_final_t4:          "Žádné úspory, žádná provize",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "NÁKLAD SKRYTÝ V KAŽDÉM PRODEJI",
+    prob_eyebrow:          "CO CAMBRA DĚLÁ",
     prob_h2_pre:           "Jediná platební sazba může skrývat,",
     prob_h2_kw:            "kam se poděla vaše marže.",
     prob_h2_post:          "CAMBRA rozloží náklad jasným jazykem.",

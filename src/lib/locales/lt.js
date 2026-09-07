@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "iš tikrųjų kainuoja tavo verslui.",
     hero_sub: "CAMBRA analizuoja internetinių ir parduotuvės mokėjimų mokesčius, lygina juos su panašiais verslais ir parodo, kur gali permokėti.",
     hero_audience:        "Ecommerce, mažmenai ir omnichannel komandoms.",
+    landing_audience_other: "Kitos įmonės, patiriančios reikšmingas mokėjimų sąnaudas",
     hero_cta_primary:     "Analizuoti mano mokėjimus",
     hero_cta_secondary:   "Rezervuoti demo",
     hero_trust_1:         "Nemokama išlaidų analizė",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Nėra sutaupymų, nėra mokesčio",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "SĄNAUDOS, SLYPINČIOS KIEKVIENAME PARDAVIME",
+    prob_eyebrow:          "KĄ DARO CAMBRA",
     prob_h2_pre:           "Vienas mokėjimų tarifas gali paslėpti,",
     prob_h2_kw:            "kur dingo tavo marža.",
     prob_h2_post:          "CAMBRA išskaido sąnaudas suprantama kalba.",

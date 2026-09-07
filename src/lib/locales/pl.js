@@ -266,6 +266,7 @@ export default {
     hero_h1_line2:        "Twoją firmę przyjmowanie płatności.",
     hero_sub: "CAMBRA analizuje opłaty za płatności online i stacjonarne, porównuje je z podobnymi firmami i pokazuje, gdzie możesz przepłacać.",
     hero_audience:        "Dla ecommerce, handlu detalicznego i zespołów omnichannel.",
+    landing_audience_other: "Inne firmy o istotnych kosztach płatności",
     hero_cta_primary:     "Przeanalizuj moje płatności",
     hero_cta_secondary:   "Umów demo",
     hero_trust_1:         "Bezpłatna analiza kosztów",
@@ -1137,7 +1138,7 @@ export default {
     cta_final_t4:          "Brak oszczędności, brak prowizji",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "KOSZT UKRYTY W KAŻDEJ SPRZEDAŻY",
+    prob_eyebrow:          "CO ROBI CAMBRA",
     prob_h2_pre:           "Jedna stawka płatności może ukrywać,",
     prob_h2_kw:            "dokąd poszła Twoja marża.",
     prob_h2_post:          "CAMBRA rozkłada koszt prostym językiem.",

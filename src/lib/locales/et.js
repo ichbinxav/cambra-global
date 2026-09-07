@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "sinu ettevõttele tegelikult maksab.",
     hero_sub: "CAMBRA analüüsib sinu veebi- ja poemaksete tasusid, võrdleb neid sarnaste ettevõtetega ja näitab, kus võid liiga palju maksta.",
     hero_audience:        "Ecommerce'i, jaemüügi ja omnichannel-tiimidele.",
+    landing_audience_other: "Muud ettevõtted, kelle maksekulud on märkimisväärsed",
     hero_cta_primary:     "Analüüsi minu makseid",
     hero_cta_secondary:   "Broneeri demo",
     hero_trust_1:         "Tasuta kulude analüüs",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Pole sääste, pole tasu",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "IGAS MÜÜGIS PEITUV KULU",
+    prob_eyebrow:          "MIDA CAMBRA TEEB",
     prob_h2_pre:           "Üks maksemäär võib varjata,",
     prob_h2_kw:            "kuhu sinu marginaal kadus.",
     prob_h2_post:          "CAMBRA võtab kulu selges keeles lahti.",

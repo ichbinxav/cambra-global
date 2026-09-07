@@ -268,6 +268,7 @@ export default {
     hero_h1_line2:        "a fizetések elfogadása a vállalkozásodnak.",
     hero_sub: "A CAMBRA elemzi az online és üzleti fizetési díjaidat, hasonló vállalkozásokkal veti össze őket, és megmutatja, hol fizethetsz túl sokat.",
     hero_audience:        "Ecommerce, kiskereskedelmi és omnichannel csapatoknak.",
+    landing_audience_other: "Más, jelentős fizetési költségű vállalkozások",
     hero_cta_primary:     "Fizetéseim elemzése",
     hero_cta_secondary:   "Demo foglalása",
     hero_trust_1:         "Ingyenes költségelemzés",
@@ -1148,7 +1149,7 @@ export default {
     cta_final_t4:          "Nincs megtakarítás, nincs díj",
 
     /* Landing — ProblemSectionWow (hidden cost problem) */
-    prob_eyebrow:          "A MINDEN ELADÁSBAN REJTŐZŐ KÖLTSÉG",
+    prob_eyebrow:          "MIT TESZ A CAMBRA",
     prob_h2_pre:           "Egyetlen fizetési díj elrejtheti,",
     prob_h2_kw:            "hová tűnt az árrésed.",
     prob_h2_post:          "A CAMBRA közérthetően bontja le a költséget.",
