@@ -23,7 +23,7 @@ export default function BrandProfile() {
         <div className="cambra-card p-5">
           <div className="relative">
             <h2 className="text-xl font-black tracking-[-0.02em] mb-1 text-white">{t("bp_h2")}</h2>
-            <p className="text-sm text-white/55">Name, country, category, and basics to personalize your analysis.</p>
+            <p className="text-sm text-white/55">{t("bp_sub")}</p>
           </div>
         </div>
 
