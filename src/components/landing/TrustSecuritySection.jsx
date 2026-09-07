@@ -15,8 +15,8 @@ import { useTranslation } from "@/lib/i18n.jsx";
  */
 /* I18N-GAP — copy lives in the i18n dictionary (trust_sec_*). */
 const BULLETS = [
-  { icon: Lock,        tKey: "trust_sec_b1_t", dKey: "trust_sec_b1_d" },
-  { icon: Eye,         tKey: "trust_sec_b2_t", dKey: "trust_sec_b2_d" },
+  { icon: Eye,         tKey: "trust_sec_b1_t", dKey: "trust_sec_b1_d" },
+  { icon: Lock,        tKey: "trust_sec_b2_t", dKey: "trust_sec_b2_d" },
   { icon: ShieldCheck, tKey: "trust_sec_b3_t", dKey: "trust_sec_b3_d" },
   { icon: Boxes,       tKey: "trust_sec_b4_t", dKey: "trust_sec_b4_d" },
 ];
@@ -39,7 +39,7 @@ export default function TrustSecuritySection() {
       >
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Copy + bullets */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-6">
             <SectionLabel as="p" tone="dark" className="mb-5">{t("trust_sec_eyebrow")}</SectionLabel>
             <h2
               style={{
@@ -55,8 +55,8 @@ export default function TrustSecuritySection() {
               <span className="kw">{t("trust_sec_h2_kw")}</span>
             </h2>
 
-            <p className="mt-6 max-w-2xl text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,.62)" }}>
-              {t("sec_sub")}
+            <p className="mt-6 max-w-2xl text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "rgba(255,255,255,.72)" }}>
+              {t("trust_sec_b1_d")} {t("trust_sec_b4_d")}
             </p>
 
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-7">
@@ -103,23 +103,17 @@ export default function TrustSecuritySection() {
             </div>
           </div>
 
-          {/* Vault render with its Aurora glow. The source image has a
-              baked-in bounding box that shows against the ink panel — a radial
-              mask fades its edges (especially the bottom) into the panel so
-              there's no visible rectangle. */}
-          <div className="relative lg:col-span-5 flex justify-center items-center">
+          <div className="relative lg:col-span-6 flex justify-center items-center">
             <img
-              src={BRAND_ASSETS.vaultGlow}
+              src={BRAND_ASSETS.securityVisual}
               alt={t("trust_sec_vault_alt")}
-              width={480}
-              height={480}
-              className="relative h-auto w-[112%] max-w-[552px] select-none lg:w-[120%]"
+              width={1536}
+              height={1024}
+              loading="lazy"
+              className="relative h-auto w-[112%] max-w-[700px] select-none sm:w-[108%] lg:w-[112%] lg:max-w-[700px]"
               draggable={false}
               style={{
-                maskImage:
-                  "radial-gradient(ellipse 70% 70% at 50% 40%, #000 48%, transparent 82%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse 70% 70% at 50% 40%, #000 48%, transparent 82%)",
+                filter: "brightness(.83) saturate(.8) contrast(1.04)",
               }}
             />
           </div>

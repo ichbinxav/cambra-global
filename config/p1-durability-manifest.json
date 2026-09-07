@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T00:10:00.330Z",
+  "generatedAt": "2026-09-07T09:30:53.374Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2014,7 +2014,7 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "295b4b6d3aa71059cde5b09a5bb24cbbba482a2737f16a5d050a4c17e7cf0cf4",
+      "sha256": "e81282ef105afef5d03ef75793fe9fc2726e9002343a9a0c12c5dd3825181c31",
       "bytes": 30619
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "20c806f01af185bee84eb5b08e4b274530ece26e42c9a0472ef5afd2ec749762",
+      "sha256": "e02697e068f7821e30aac593bd3f7016a9208d328bd71b0e0d1408b93d2afc7e",
       "bytes": 43449
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "98162c17315a01b0c9cf4b3c3f4f88e4356e7faadf303aeb33ca57cf9731afcc",
+      "sha256": "346f250e1a8e547c2539262288b9702e72347e5bc643b6809c0fdc83660732f5",
       "bytes": 13672
     },
     {
@@ -2264,12 +2264,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "9e19fc2ae853d02fa43e65e3a7ebbe389659496b4f4173246ad1c17f213f2241",
+      "sha256": "91af918c6922ea26fbcb64abdfaa467026ccf510ce6b2b194acbc5da47d41a2d",
       "bytes": 422043
     },
     {
       "path": "package.json",
-      "sha256": "d5035299905528ea731f6d1b6c43b8f42d7ba26f23622b90adaefa5ce716913d",
+      "sha256": "75bfdc26523a1e1a523a52da1527835132567c5850978ecc72b82c2317a8d10e",
       "bytes": 13538
     },
     {
@@ -2604,8 +2604,8 @@
     },
     {
       "path": "src/components/landing/Navbar.jsx",
-      "sha256": "4622eab1ca06cf27a1d03d61dee2a7f248d5ca855513389c935bac3538cb8d28",
-      "bytes": 6746
+      "sha256": "f867ffdfed9404585ba7cdb492f542e59a6842945791203d6e7eee72c17804b6",
+      "bytes": 8073
     },
     {
       "path": "src/components/landing/PricingDual.jsx",
@@ -3324,8 +3324,8 @@
     },
     {
       "path": "src/lib/humanFirstSeoCopy.test.js",
-      "sha256": "2efa65f83d2322bb73fcbe1be7135c487f1a6047635a7b6f32ecb696c2044478",
-      "bytes": 3076
+      "sha256": "d22eba73c4e10e7433fa15f15db13e5ad48a20c1a76d2e6ee887d5247c8f2339",
+      "bytes": 3114
     },
     {
       "path": "src/lib/i18n.jsx",
@@ -3334,8 +3334,8 @@
     },
     {
       "path": "src/lib/i18nParity.test.js",
-      "sha256": "a442b116c5f35f26429063630ce7fa856de1063e1b2c1ae63234fe6215b1e71d",
-      "bytes": 9520
+      "sha256": "7e6b14df4d520bef1b015072f73887984d79b2e03eb0f04ec9888dbf6870e863",
+      "bytes": 9693
     },
     {
       "path": "src/lib/incidentAlerting.test.js",
@@ -3389,18 +3389,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "5305f52035a0b1d5c5a3e491a5bcc70dc78d26694fb9f9c56eb269a2411df4cb",
-      "bytes": 103874
+      "sha256": "3b8888de10ac5ba4fa1c4fc93a715e1ceda7954f60622fa69a6a74f540855169",
+      "bytes": 103970
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "ec32bb8c718239bfdc2131dde70670d075da9080c70d87bc34eef11f084e0321",
-      "bytes": 105558
+      "sha256": "bad605d0fc9270a1fcf5d06eb56b08285fe9cbc12df34de3edaae7b6dd0e7362",
+      "bytes": 105633
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "4bd4401430b293e72d981d898dd2da46eb0be7f449f06e7954f41ac296273cbe",
-      "bytes": 111183
+      "sha256": "8d64553884f6bba99ee1a381b398306abb988480f0835969c99858a2998bf8c3",
+      "bytes": 111305
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "11a15ae0f5cee1074217f451c6b5a849948f2e0ce4f24aef60e75fe7c39288e8",
-      "bytes": 19252
+      "sha256": "577375ce14c298b8c2916ceb89060dcaacae909734c7b032072d50e5b60ea764",
+      "bytes": 20422
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",

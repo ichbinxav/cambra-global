@@ -39,15 +39,15 @@ export default function ProblemSectionWow() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: .65, delay: index * .1, ease: [0.22, 1, 0.36, 1] }}
-                className="relative rounded-2xl p-6 sm:p-7 overflow-hidden"
-                style={{ background: "linear-gradient(180deg,#14112e 0%,#0a0818 100%)", border: "1px solid rgba(255,255,255,.10)" }}
+                className="relative rounded-[24px] p-6 sm:p-7 overflow-hidden"
+                style={{ background: "rgba(255,255,255,.9)", border: "1px solid rgba(91,76,245,.12)", boxShadow: "0 24px 54px -42px rgba(14,14,26,.45)" }}
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: `${card.color}18`, border: `1px solid ${card.color}55`, color: card.color }}><Icon size={18} /></span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[.16em] font-bold" style={{ color: card.color, background: `${card.color}12`, border: `1px solid ${card.color}35` }}><ShieldCheck size={11} />{t(card.status)}</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] uppercase tracking-[.16em] font-bold" style={{ color: "var(--voltio)", background: "rgba(91,76,245,.055)", border: "1px solid rgba(91,76,245,.12)" }}><ShieldCheck size={11} />{t(card.status)}</span>
                 </div>
-                <h3 className="mt-6 text-[20px] font-bold text-white" style={{ letterSpacing: "-.025em" }}>{t(card.title)}</h3>
-                <p className="mt-3 text-[13px] leading-relaxed text-white/55">{t(card.body)}</p>
+                <h3 className="mt-6 text-[20px] font-bold" style={{ color: "var(--ink)", letterSpacing: "-.025em" }}>{t(card.title)}</h3>
+                <p className="mt-3 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(card.body)}</p>
               </motion.article>
             );
           })}

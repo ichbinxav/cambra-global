@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BadgeEuro, Eye, FileSearch, Handshake, LockKeyhole, ScanSearch, ShieldCheck } from "lucide-react";
+import { ArrowRight, Building2, CalendarDays, MonitorSmartphone, PanelsTopLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
@@ -12,31 +12,26 @@ import FounderLetter from "@/components/landing/FounderLetter";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
 import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
-import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import TheStackSection from "@/components/landing/TheStackSection";
 import ReferralProgramSection from "@/components/landing/ReferralProgramSection";
 import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
+import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
 /* ──────────────────────────────────────────────────────────
-   CAMBRA Landing — editorial redesign · EN / FR / ES
+   CAMBRA Landing — editorial redesign · all product locales
    ────────────────────────────────────────────────────────── */
 
-function Hero() {
+function Hero({ onBookDemo }) {
   const { t } = useTranslation();
   const { experience } = useMarket();
-  const benefits = [
-    { icon: FileSearch, key: "how_step2_title" },
-    { icon: Handshake, key: "pd_t2_f2" },
-    { icon: ShieldCheck, key: "pd_t2_caption" },
-  ];
 
   return (
     <section
       id="overview"
       className="relative flex items-center overflow-hidden"
       aria-labelledby="landing-hero-title"
-      style={{ minHeight: "clamp(680px, 88vh, 860px)", color: "var(--ink)", paddingTop: 76 }}
+      style={{ minHeight: "clamp(700px, 88vh, 900px)", color: "var(--ink)", paddingTop: 76 }}
     >
       <motion.div
         aria-hidden
@@ -46,14 +41,15 @@ function Hero() {
           background: "radial-gradient(circle, rgba(91,76,245,0.10) 0%, rgba(57,198,240,0.03) 46%, transparent 72%)",
           filter: "blur(80px)",
         }}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.85, 0.6] }}
-        transition={{ duration: 7, ease: "easeInOut", repeat: Infinity }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.78 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       />
 
-      <div className="relative z-10 w-full max-w-[1500px] mx-auto px-6 sm:px-10 lg:px-14 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,.92fr)] gap-8 lg:gap-3 xl:gap-0 items-center">
-        <div className="min-w-0 lg:pr-0">
+      <div className="relative z-10 w-full max-w-[1560px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-14 py-10 lg:py-14 grid grid-cols-1 min-[1180px]:grid-cols-[minmax(0,1.12fr)_minmax(0,.88fr)] gap-6 min-[1180px]:gap-0 items-center">
+        <div className="relative z-10 min-w-0 lg:pr-4 xl:pr-0">
           <motion.div
-            className="mb-6"
+            className="mb-7"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -68,21 +64,20 @@ function Hero() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
               color: "var(--ink)",
-              fontSize: "clamp(43px, 4.15vw, 64px)",
+              fontSize: "clamp(44px, 4.65vw, 74px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
-              lineHeight: 0.98,
-              maxWidth: 760,
+              lineHeight: 0.99,
+              maxWidth: 800,
+              textWrap: "balance",
             }}
           >
-            {t("hero_h1_line1")}
-            <br />
-            <span className="kw">{t("hero_h1_line2")}</span>
+            {t("hero_h1_line1")} <span className="kw">{t("hero_h1_line2")}</span>
           </motion.h1>
 
           <motion.p
             className="mt-7"
-            style={{ maxWidth: 590, fontSize: 17, lineHeight: 1.58, color: "var(--gris-1)" }}
+            style={{ maxWidth: 650, fontSize: 17, lineHeight: 1.58, color: "var(--gris-1)" }}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
@@ -90,21 +85,16 @@ function Hero() {
             {t("hero_sub")}
           </motion.p>
 
-          <motion.ul
-            className="mt-7 grid gap-3"
+          <motion.p
+            className="mt-5 inline-flex items-center gap-2.5 text-[13.5px] font-bold"
+            style={{ color: "var(--ink)" }}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.75, delay: 0.34 }}
           >
-            {benefits.map(({ icon: Icon, key }) => (
-              <li key={key} className="flex items-center gap-3 text-[13.5px] font-semibold" style={{ color: "var(--ink)" }}>
-                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ color: "var(--voltio)", background: "rgba(91,76,245,.08)", border: "1px solid rgba(91,76,245,.14)" }}>
-                  <Icon size={16} strokeWidth={2} aria-hidden="true" />
-                </span>
-                {t(key)}
-              </li>
-            ))}
-          </motion.ul>
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: "var(--voltio)", boxShadow: "0 0 0 6px rgba(91,76,245,.08)" }} />
+            {t("hero_audience")}
+          </motion.p>
 
           <motion.div
             className="mt-8"
@@ -112,42 +102,51 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
           >
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-              <Link
-                to={experience.analyzer.href}
-                className="inline-flex items-center gap-2 rounded-full px-8 py-4 font-medium text-[14px] transition-transform hover:-translate-y-0.5"
-                style={{
-                  background: "var(--g-voltio)",
-                  color: "#fff",
-                  boxShadow: "0 12px 32px -12px rgba(91,76,245,0.5)",
-                }}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-[560px]">
+              <motion.div className="flex-1" whileHover={{ scale: 1.025 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  to={experience.analyzer.href}
+                  className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-7 font-bold text-[14px] transition-transform hover:-translate-y-0.5"
+                  style={{
+                    background: "var(--g-voltio)",
+                    color: "#fff",
+                    boxShadow: "0 15px 34px -14px rgba(91,76,245,0.58)",
+                  }}
+                >
+                  {t(experience.analyzer.status === "ENABLED" ? "hero_cta_primary" : "market_cta_access")}
+                  <ArrowRight size={16} />
+                </Link>
+              </motion.div>
+              <button
+                type="button"
+                onClick={onBookDemo}
+                className="inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-full border px-7 text-[14px] font-bold transition-colors hover:bg-white"
+                style={{ color: "var(--ink)", background: "rgba(255,255,255,.68)", borderColor: "rgba(14,14,26,.15)" }}
               >
-                {t(experience.analyzer.status === "ENABLED" ? "hero_cta_primary" : "market_cta_access")}
-                <ArrowRight size={16} />
-              </Link>
-            </motion.div>
-            <p className="mt-3 inline-flex items-center gap-1.5 text-[11.5px]" style={{ color: "var(--gris-2)" }}>
-              <ShieldCheck size={13} style={{ color: "var(--voltio)" }} aria-hidden="true" />
-              {t("hero_trust_1")}
-            </p>
+                <CalendarDays size={16} /> {t("hero_cta_secondary")}
+              </button>
+            </div>
           </motion.div>
         </div>
 
         <motion.div
-          className="relative flex min-w-0 items-center justify-center overflow-visible lg:justify-end"
+          className="relative flex min-w-0 items-center justify-center overflow-visible min-[1180px]:justify-center"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
           <img
-            src="/images/cambra-fee-audit-24m-v3.png"
+            src={BRAND_ASSETS.landingHero}
             alt={t("hero_image_alt")}
-            width={1291}
-            height={1218}
-            className="relative h-auto w-[78%] max-w-[510px] select-none lg:w-[92%] lg:max-w-[544px]"
-            style={{ filter: "contrast(.995) saturate(1.02) drop-shadow(0 24px 38px rgba(91,76,245,.12))" }}
+            width={1536}
+            height={1024}
+            className="relative h-auto w-[104%] max-w-[790px] select-none sm:w-[96%] min-[1180px]:w-[120%] min-[1180px]:max-w-[820px] min-[1180px]:-translate-x-[10%] xl:w-[118%]"
+            style={{ filter: "contrast(.995) saturate(1.01) drop-shadow(0 26px 42px rgba(91,76,245,.13))" }}
             draggable={false}
           />
+          <p className="absolute inset-x-4 -bottom-1 mx-auto max-w-[520px] text-center text-[10.5px] leading-relaxed lg:bottom-3" style={{ color: "var(--gris-2)" }}>
+            {t("hero_visual_footer")}
+          </p>
         </motion.div>
       </div>
     </section>
@@ -157,34 +156,35 @@ function Hero() {
 function HeroTrustStrip() {
   const { t } = useTranslation();
   const items = [
-    { icon: Eye, title: "trust_sec_b2_t", body: "trust_sec_b2_d", accent: "#8B7BFF" },
-    { icon: BadgeEuro, title: "pd_t2_caption", body: "hero_trust_2", accent: "#6B8CFF" },
-    { icon: ScanSearch, title: "stack_c3_t", body: "stack_c3_d", accent: "#39C6F0" },
-    { icon: LockKeyhole, title: "trust_sec_b1_t", body: "trust_sec_b1_d", accent: "#2FE0A8" },
+    { icon: MonitorSmartphone, title: "analyzer_channel_online", body: "az_ch_online_sub", accent: "#8B7BFF" },
+    { icon: Building2, title: "az_tpv_label", body: "az_ch_instore_sub", accent: "#5E82FF" },
+    { icon: PanelsTopLeft, title: "ac_chip_impact_complete", body: "hero_audience", accent: "#39C6F0" },
   ];
 
   return (
-    <section className="relative px-5 sm:px-8 pb-12 sm:pb-16" aria-label={t("trust_sec_eyebrow")}>
+    <section className="relative px-5 sm:px-8 pb-12 sm:pb-16" aria-label={t("hero_audience")}>
       <div
-        className="relative max-w-[1440px] mx-auto overflow-hidden rounded-[28px]"
+        className="relative max-w-[1440px] mx-auto overflow-hidden rounded-[26px]"
         style={{
-          background: "linear-gradient(118deg,#090817 0%,#151139 48%,#071923 100%)",
-          border: "1px solid #302A66",
+          background: "rgba(255,255,255,.88)",
+          border: "1px solid rgba(91,76,245,.13)",
+          boxShadow: "0 26px 70px -48px rgba(20,17,46,.48), inset 0 1px 0 rgba(255,255,255,.9)",
+          backdropFilter: "blur(18px)",
         }}
       >
-        <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(circle at 22% 0%,rgba(139,123,255,.18),transparent 36%),radial-gradient(circle at 82% 110%,rgba(57,198,240,.13),transparent 38%)" }} />
+        <div aria-hidden className="absolute inset-0" style={{ background: "radial-gradient(circle at 12% 0%,rgba(139,123,255,.09),transparent 34%),radial-gradient(circle at 90% 110%,rgba(57,198,240,.07),transparent 34%)" }} />
         <div aria-hidden className="absolute left-[6%] right-[6%] top-0 h-px" style={{ background: "linear-gradient(90deg,transparent,#8B7BFF,#39C6F0,transparent)" }} />
-        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#302A57]">
-          {items.map(({ icon: Icon, title, body, accent }, index) => (
+        <div className="relative grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#E7E4F4]">
+          {items.map(({ icon: Icon, title, body, accent }) => (
             <article key={title} className="group relative flex items-center gap-4 px-6 py-7 sm:px-7 lg:min-h-[124px]">
-              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] transition-transform duration-300 group-hover:-translate-y-0.5" style={{ color: accent, background: `linear-gradient(145deg,${accent}2A,#0B0A1A)`, border: `1px solid ${accent}66` }}>
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] transition-transform duration-300 group-hover:-translate-y-0.5" style={{ color: accent, background: `linear-gradient(145deg,${accent}18,#fff)`, border: `1px solid ${accent}38`, boxShadow: `0 14px 28px -24px ${accent}` }}>
                 <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
               </span>
               <div className="min-w-0">
-                <h2 className="text-[13.5px] font-bold leading-snug tracking-[-.015em] text-white">{t(title)}</h2>
-                <p className="mt-1.5 text-[11.5px] leading-relaxed" style={{ color: "#CAC7DF" }}>{t(body)}</p>
+                <h2 className="text-[13.5px] font-bold leading-snug tracking-[-.015em]" style={{ color: "var(--ink)" }}>{t(title)}</h2>
+                <p className="mt-1.5 text-[11.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(body)}</p>
               </div>
-              <span aria-hidden className="absolute right-4 top-4 text-[9px] font-bold tabular-nums" style={{ color: accent, letterSpacing: ".12em" }}>0{index + 1}</span>
+              <span aria-hidden className="absolute right-4 top-4 h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
             </article>
           ))}
         </div>
@@ -197,6 +197,7 @@ function HeroTrustStrip() {
 
 function HowItWorksSection() {
   const { t } = useTranslation();
+  const { experience } = useMarket();
   // Three plain-language steps: show us → understand → recover.
   const steps = [
     { n: "01", title: t("how_step1_title"), desc: t("how_step1_desc"), connect: true },
@@ -299,7 +300,13 @@ function HowItWorksSection() {
                   )}
                   {s.cta && (
                     <div className="mt-auto flex justify-center pt-6">
-                      <JoinWaitlistButton />
+                      <Link
+                        to={experience.analyzer.href}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 text-[12.5px] font-bold text-white"
+                        style={{ background: "var(--g-voltio)", boxShadow: "0 14px 30px -18px rgba(91,76,245,.72)" }}
+                      >
+                        {t(experience.analyzer.status === "ENABLED" ? "hero_cta_primary" : "market_cta_access")} <ArrowRight size={14} />
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -381,6 +388,8 @@ function LandingFooter() {
 }
 
 export default function Landing() {
+  const [demoOpen, setDemoOpen] = useState(false);
+
   return (
     <div
       className="min-h-screen font-inter relative"
@@ -417,7 +426,7 @@ export default function Landing() {
       <main className="relative">
         {/* DA v1.1 — decorative dot-grid corner (hero) */}
         <div className="dot-grid" aria-hidden />
-        <Hero />
+        <Hero onBookDemo={() => setDemoOpen(true)} />
         <HeroTrustStrip />
         <ProblemSectionWow />
         <TheStackSection />
@@ -426,9 +435,14 @@ export default function Landing() {
         <ReferralProgramSection />
         <TrustSecuritySection />
         <FounderLetter />
-        <StopLeavingMarginCTA />
+        <StopLeavingMarginCTA onBookDemo={() => setDemoOpen(true)} />
       </main>
       <LandingFooter />
+      <BookCallModal
+        open={demoOpen}
+        onClose={() => setDemoOpen(false)}
+        context={{ source: "landing_demo" }}
+      />
     </div>
   );
 }

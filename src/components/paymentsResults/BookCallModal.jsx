@@ -8,7 +8,7 @@
 //
 // Payments only. Same dark/glass aesthetic as the report.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -28,6 +28,9 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
   const [errorMsg, setErrorMsg] = useState("");
+  const dialogRef = useRef(null);
+  const nameInputRef = useRef(null);
+  const previousFocusRef = useRef(null);
 
   useEffect(() => {
     if (open && isAuthenticated) {
@@ -39,6 +42,37 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
   useEffect(() => {
     if (open) { setStatus("idle"); setErrorMsg(""); }
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    previousFocusRef.current = document.activeElement;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll(
+        'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKeyDown);
+    window.setTimeout(() => nameInputRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      previousFocusRef.current?.focus?.();
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -78,6 +112,10 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="book-call-title"
         className="relative w-full max-w-md rounded-3xl p-6 md:p-7 overflow-hidden animate-fade-up"
         style={{ background: "#070c16", border: "1px solid rgba(255,255,255,0.10)", boxShadow: "0 32px 80px -24px rgba(0,0,0,0.8)" }}
         onClick={(e) => e.stopPropagation()}
@@ -92,7 +130,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
             WebkitMaskImage: "radial-gradient(ellipse 90% 80% at 50% 0%, #000 30%, transparent 100%)",
           }}
         />
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 text-white/40 hover:text-white transition-colors" aria-label="Close">
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 z-20 text-white/40 hover:text-white transition-colors" aria-label={t("vlt_close")}>
           <X size={18} />
         </button>
 
@@ -102,11 +140,11 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
               <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl mb-4" style={{ background: "rgba(45,212,191,0.10)", border: "1px solid rgba(45,212,191,0.30)" }}>
                 <CheckCircle2 size={26} className="text-teal-300" />
               </div>
-              <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 22, letterSpacing: "-0.02em" }}>
+              <h3 id="book-call-title" className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 22, letterSpacing: "-0.02em" }}>
                 {t("call_success_title")}
               </h3>
               <p className="text-[14px] text-white/60 leading-snug max-w-xs mx-auto">{t("call_success_body")}</p>
-              <button onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}>
+              <button type="button" onClick={onClose} className="mt-5 inline-flex items-center justify-center h-10 rounded-full px-6 text-sm font-bold text-white hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)" }}>
                 {t("coll_done")}
               </button>
             </div>
@@ -116,13 +154,15 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
                 <PhoneCall size={14} className="text-cyan-300" />
                 <span className="uppercase font-bold" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.2em", color: "#585868" }}>{t("call_eyebrow")}</span>
               </div>
-              <h3 className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+              <h3 id="book-call-title" className="text-white font-black mb-2" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
                 {t("call_title")}
               </h3>
               <p className="text-[13px] text-white/55 leading-snug mb-5">{t("call_sub")}</p>
 
-              <label className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_name_label")}</label>
+              <label htmlFor="book-call-name" className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_name_label")}</label>
               <input
+                id="book-call-name"
+                ref={nameInputRef}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t("call_name_ph")}
@@ -130,8 +170,9 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
               />
 
-              <label className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_email_label")}</label>
+              <label htmlFor="book-call-email" className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_email_label")}</label>
               <input
+                id="book-call-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -140,8 +181,9 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)" }}
               />
 
-              <label className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_msg_label")}</label>
+              <label htmlFor="book-call-message" className="block text-[11px] uppercase tracking-[0.14em] font-bold text-white/50 mb-1.5">{t("call_msg_label")}</label>
               <textarea
+                id="book-call-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={t("call_msg_ph")}
@@ -151,6 +193,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
               />
 
               <button
+                type="button"
                 onClick={submit}
                 disabled={!canSubmit}
                 className="w-full h-12 rounded-full text-sm font-bold text-white inline-flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -158,7 +201,7 @@ export default function BookCallModal({ open, onClose, context = {}, onSwitch = 
               >
                 {status === "submitting" ? <><Loader2 size={16} className="animate-spin" /> {t("call_submitting")}</> : t("call_submit")}
               </button>
-              {status === "error" && <p className="text-[12px] text-red-300 mt-2 text-center">{errorMsg}</p>}
+              {status === "error" && <p role="alert" className="text-[12px] text-red-300 mt-2 text-center">{errorMsg}</p>}
 
               {/* Secondary — discreet link to the collective flow. */}
               {onSwitch && (

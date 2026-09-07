@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import JoinWaitlistButton from "@/components/landing/JoinWaitlistButton";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -14,7 +13,7 @@ import { useMarket } from "@/lib/publicExperience.jsx";
  * right-aligned, and a giant ghosted C-mark filling the whole pill as the
  * background brand mark.
  */
-export default function StopLeavingMarginCTA() {
+export default function StopLeavingMarginCTA({ onBookDemo }) {
   const { t } = useTranslation();
   const { experience } = useMarket();
   return (
@@ -28,8 +27,7 @@ export default function StopLeavingMarginCTA() {
          border: "1px solid rgba(255,255,255,0.08)",
        }}
      >
-      {/* Pulsing multi-layer ambient halo — the heartbeat of the closing */}
-      <motion.div
+      <div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
@@ -42,10 +40,8 @@ export default function StopLeavingMarginCTA() {
             "radial-gradient(circle, rgba(91,76,245,0.24) 0%, transparent 65%)",
           filter: "blur(120px)",
         }}
-        animate={{ scale: [1, 1.08, 1], opacity: [0.55, 0.8, 0.55] }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
       />
-      <motion.div
+      <div
         aria-hidden
         className="absolute pointer-events-none"
         style={{
@@ -58,8 +54,6 @@ export default function StopLeavingMarginCTA() {
             "radial-gradient(circle, rgba(139,123,255,0.18) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
-        animate={{ scale: [1.05, 1, 1.05], opacity: [0.45, 0.7, 0.45] }}
-        transition={{ duration: 8, ease: "easeInOut", repeat: Infinity, delay: 1.5 }}
       />
 
       {/* Top hairline — cinematic frame */}
@@ -161,7 +155,15 @@ export default function StopLeavingMarginCTA() {
             </div>
 
             <div className="flex flex-1">
-              <JoinWaitlistButton variant="ghost" label={t("cta_final_secondary")} fullWidth />
+              <button
+                type="button"
+                onClick={onBookDemo}
+                className="group h-[60px] w-full inline-flex items-center justify-center gap-3 rounded-full border px-7 font-medium text-[15px] text-white transition-transform hover:-translate-y-0.5"
+                style={{ background: "#1A1638", borderColor: "#8B7BFF" }}
+              >
+                <span>{t("hero_cta_secondary")}</span>
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+              </button>
             </div>
           </motion.div>
 

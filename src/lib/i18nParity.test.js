@@ -148,6 +148,9 @@ describe('global i18n contract — EN / FR / ES', () => {
     const navbar = source('src/components/landing/Navbar.jsx');
     expect(navbar).toContain('aria-expanded={open}');
     expect(navbar).toContain('aria-controls="cambra-mobile-navigation"');
+    expect(navbar).toContain('event.key === "Escape"');
+    expect(navbar).toContain('menuButtonRef.current?.focus()');
+    expect(navbar).toContain('event.key !== "Tab"');
     expect(source('src/components/landing/MobileNavMenu.jsx')).toContain('id="cambra-mobile-navigation"');
   });
 });

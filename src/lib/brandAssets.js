@@ -3,6 +3,8 @@
 // meant for LIGHT surfaces; vault-glow is meant for the closing INK block;
 // the C-mark SVGs are the wordmark glyph.
 export const BRAND_ASSETS = {
+  landingHero: "/images/cambra-hero-5m-sleek-transparent-final.png",
+  securityVisual: "/images/cambra-security-subtle-violet-transparent-final.png",
   // PNG transparent-background renders (no white backdrop) — hero, coin, cube.
   stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/ecfd9af5a_stack-frosted2x.webp",
   coinFrosted:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d06587bdf_coin-frosted2x.webp",
@@ -13,6 +15,6 @@ export const BRAND_ASSETS = {
   cMarkMono:    "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/887838027_c-mark-mono.svg",
   cMarkVoltio:  "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/17cdcb4aa_c-mark-voltio.svg",
   cMarkVoltioPng: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/d62c05e68_c-mark-voltio2x.png",
-  cMarkWhite:   "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/bb67087b2_c-mark-white.svg",
+  cMarkWhite:   "/images/cambra-logo-mark-white-original.svg",
   cMarkWhitePng: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/f34aeeff4_c-mark-white2x.png",
 };

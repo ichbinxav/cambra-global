@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ArrowRight, Tag, HelpCircle, Mail, Shield, Sparkles, Activity, UserPlus, Handshake } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -31,6 +31,7 @@ const NAV_PUBLIC = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const menuButtonRef = useRef(null);
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const { t } = useTranslation();
@@ -60,6 +61,43 @@ export default function Navbar() {
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const menu = document.getElementById("cambra-mobile-navigation");
+    const focusable = /** @type {HTMLElement[]} */ (
+      Array.from(
+        menu?.querySelectorAll('a[href], button:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])') || [],
+      ).filter((element) => element instanceof HTMLElement && element.getClientRects().length > 0)
+    );
+
+    focusable[0]?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+        return;
+      }
+
+      if (event.key !== "Tab" || focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   return (
     <header
@@ -145,6 +183,7 @@ export default function Navbar() {
           <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" />
           <button
+            ref={menuButtonRef}
             type="button"
             className="p-2 text-white/70 hover:text-white transition-colors -mr-2"
             onClick={() => setOpen(v => !v)}

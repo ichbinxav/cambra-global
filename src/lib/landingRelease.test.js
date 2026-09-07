@@ -51,24 +51,29 @@ describe("landing truth and release controls", () => {
     expect(read("index.html")).toContain("CAMBRA payment cost audit and recovery");
   });
 
-  it("keeps the desktop landing wide and uses the 24-month fee-audit illustration", () => {
+  it("keeps the desktop landing wide and uses only the approved final visuals", () => {
     const landing = read("src/pages/Landing.jsx");
     const stack = read("src/components/landing/TheStackSection.jsx");
+    const security = read("src/components/landing/TrustSecuritySection.jsx");
+    const assets = read("src/lib/brandAssets.js");
     const headings = read("src/components/landing/SectionHeading.jsx");
-    expect(landing).toContain("max-w-[1500px]");
-    expect(landing).toContain("lg:grid-cols-3");
-    expect(landing).toContain("/images/cambra-fee-audit-24m-v3.png");
-    expect(stack).toContain("/images/cambra-intelligence-stack-v2.png");
+    expect(landing).toContain("max-w-[1560px]");
+    expect(landing).toContain("md:grid-cols-3");
+    expect(landing).toContain("BRAND_ASSETS.landingHero");
+    expect(security).toContain("BRAND_ASSETS.securityVisual");
+    expect(assets).toContain("/images/cambra-hero-5m-sleek-transparent-final.png");
+    expect(assets).toContain("/images/cambra-security-subtle-violet-transparent-final.png");
+    expect(landing).not.toContain("cambra-fee-audit-24m-v3.png");
+    expect(stack).not.toContain("cambra-intelligence-stack-v2.png");
     expect(landing).not.toContain('t("ri_illustrative")');
-    expect(landing).toContain("clamp(43px, 4.15vw, 64px)");
-    expect(landing).toContain("lg:w-[92%]");
-    expect(landing).toContain("lg:justify-end");
-    expect(landing).not.toContain("lg:translate-x-[7%]");
-    expect(landing).not.toContain("xl:translate-x-[11%]");
+    expect(landing).toContain("clamp(44px, 4.65vw, 74px)");
+    expect(landing).toContain("min-[1180px]:w-[120%]");
+    expect(landing).toContain("min-[1180px]:justify-center");
     expect(landing).toContain('to="/ConnectTools"');
     expect(landing).not.toContain("MarketAvailabilitySection");
     expect(landing).toContain("<HeroTrustStrip />");
     expect(landing).toContain("<TheStackSection />");
+    expect(landing).toContain("<BookCallModal");
     expect(landing).not.toContain("<RealImpactSection />");
     expect(landing).not.toContain("hero_visual_title");
     expect(headings).toContain('align = "center"');
@@ -80,7 +85,9 @@ describe("landing truth and release controls", () => {
       expect(dict.hero_badge).toBeTruthy();
       expect(dict.hero_h1_line1).toBeTruthy();
       expect(dict.hero_h1_line2).toBeTruthy();
-      expect(dict.hero_image_alt).toContain("24");
+      expect(dict.hero_audience).toBeTruthy();
+      expect(dict.hero_image_alt).toContain("CAMBRA");
+      expect(dict.hero_image_alt).not.toMatch(/(?:€?5\s?M|2[,.]70|1[,.]70|100[.,\s]?000|24\s(?:month|mes))/i);
       expect(dict.stack_eyebrow).not.toMatch(/PAYMENTS WEDGE/i);
     }
   });
