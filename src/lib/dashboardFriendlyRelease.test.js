@@ -97,4 +97,11 @@ describe("friendly dashboard release surface", () => {
     expect(source).toContain("dash_verify_no_estimate");
     expect(source).toContain("!isVerified ?");
   });
+
+  it("lets a referrer preview their own invite without an invalid-code warning", () => {
+    const source = read("src/components/referrals/ReferralAttributionCapture.jsx");
+    expect(source).toContain('body?.reason === "self_referral"');
+    expect(source).toContain('window.location.pathname.toLowerCase() === "/invite"');
+    expect(source).toContain('toast.error(t("ref_code_rejected"), t("ref_code_rejected_body"))');
+  });
 });

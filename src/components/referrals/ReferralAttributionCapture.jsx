@@ -71,6 +71,10 @@ export default function ReferralAttributionCapture() {
         claimAttempts.delete(attemptKey);
         try { sessionStorage.removeItem(REFERRAL_STORAGE_KEY); } catch {}
         removeReferralQuery();
+        // Owners often open their own invite to preview it before sharing.
+        // Keep the server-side refusal, but do not present that safe preview
+        // as a broken or expired code.
+        if (body?.reason === "self_referral" && window.location.pathname.toLowerCase() === "/invite") return;
         toast.error(t("ref_code_rejected"), t("ref_code_rejected_body"));
         return;
       }
