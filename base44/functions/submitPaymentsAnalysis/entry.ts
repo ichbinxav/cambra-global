@@ -1430,7 +1430,7 @@ const VALIDATION = {
   intl_pct:        { min: 0,        max: 100 },
   card_mix_debit_pct: { min: 0,     max: 100 }, // optional; validated only when present
   brand_name:      { minLen: 2,     maxLen: 80 },
-  website:         { maxLen: 200 },              // optional
+  website:         { maxLen: 200 },
 };
 
 // Sector enum — VERBATIM copy of BRAND_SECTOR_SLUGS in
@@ -1678,18 +1678,20 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
     card_mix_debit_pct = debit;
   }
 
-  // brand_name — OPTIONAL (SWEEP-1 T2, 2026-07-24 — conversion friction).
-  // When present must be 2-80 chars after trim. Session metadata ONLY — never
+  // Business metadata is required before a source is selected. It remains
+  // session metadata ONLY — never
   // an engine input (see engineInput construction), so optionality cannot
   // affect any calculation.
   const brand_name_raw = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
-  if (brand_name_raw && (brand_name_raw.length < VALIDATION.brand_name.minLen || brand_name_raw.length > VALIDATION.brand_name.maxLen)) {
+  if (!brand_name_raw) return { ok: false, failure: { field: 'brand_name', reason: 'missing' } };
+  if (brand_name_raw.length < VALIDATION.brand_name.minLen || brand_name_raw.length > VALIDATION.brand_name.maxLen) {
     return { ok: false, failure: { field: 'brand_name', reason: 'out_of_range' } };
   }
 
-  // website — optional; normalized to bare hostname. Non-empty garbage is
+  // website — required; normalized to bare hostname. Garbage is
   // rejected rather than silently dropped so the client can course-correct.
   let website: string | undefined = undefined;
+  if (raw.website === undefined || raw.website === null || raw.website === '') return { ok: false, failure: { field: 'website', reason: 'missing' } };
   if (raw.website !== undefined && raw.website !== null && raw.website !== '') {
     if (typeof raw.website !== 'string') return { ok: false, failure: { field: 'website', reason: 'invalid_type' } };
     if (raw.website.length > VALIDATION.website.maxLen) return { ok: false, failure: { field: 'website', reason: 'out_of_range' } };
@@ -1698,8 +1700,9 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
     website = normalized;
   }
 
-  // sector — optional; must be in the shared enum when present.
+  // sector — required and constrained to the shared enum.
   let sector: string | undefined = undefined;
+  if (raw.sector === undefined || raw.sector === null || raw.sector === '') return { ok: false, failure: { field: 'sector', reason: 'missing' } };
   if (raw.sector !== undefined && raw.sector !== null && raw.sector !== '') {
     if (typeof raw.sector !== 'string') return { ok: false, failure: { field: 'sector', reason: 'invalid_type' } };
     const s = raw.sector.trim().toLowerCase();
@@ -1722,10 +1725,10 @@ function validateInput(raw: any): { ok: true; clean: any; email: string } | { ok
       country,
       region,
       channel,
-      ...(brand_name_raw ? { brand_name: brand_name_raw } : {}),
+      brand_name: brand_name_raw,
       ...(card_mix_debit_pct !== undefined ? { card_mix_debit_pct } : {}),
-      ...(website !== undefined ? { website } : {}),
-      ...(sector !== undefined ? { sector } : {}),
+      website,
+      sector,
     },
   };
 }
@@ -1944,9 +1947,10 @@ Deno.serve(async (req) => {
       // ── Combined path: validate top-level lead metadata + each channel ──
       const country = launchMarket.country;
 
-      // brand_name — OPTIONAL (SWEEP-1 T2). Same rule as the single path.
+      // Required business metadata, matching the single-channel path.
       const brandName = typeof raw.brand_name === 'string' ? raw.brand_name.trim() : '';
-      if (brandName && (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen)) {
+      if (!brandName) return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'missing' }, { status: 400 });
+      if (brandName.length < VALIDATION.brand_name.minLen || brandName.length > VALIDATION.brand_name.maxLen) {
         return Response.json({ error: 'invalid_input', field: 'brand_name', reason: 'out_of_range' }, { status: 400 });
       }
 
@@ -1973,8 +1977,9 @@ Deno.serve(async (req) => {
         cleanChannels.push(cv.clean);
       }
 
-      // Optional lead metadata at top level.
+      // Required lead metadata at top level.
       let website: string | undefined;
+      if (raw.website === undefined || raw.website === null || raw.website === '') return Response.json({ error: 'invalid_input', field: 'website', reason: 'missing' }, { status: 400 });
       if (raw.website !== undefined && raw.website !== null && raw.website !== '') {
         if (typeof raw.website !== 'string') return Response.json({ error: 'invalid_input', field: 'website', reason: 'invalid_type' }, { status: 400 });
         if (raw.website.length > VALIDATION.website.maxLen) return Response.json({ error: 'invalid_input', field: 'website', reason: 'out_of_range' }, { status: 400 });
@@ -1983,6 +1988,7 @@ Deno.serve(async (req) => {
         website = norm;
       }
       let sector: string | undefined;
+      if (raw.sector === undefined || raw.sector === null || raw.sector === '') return Response.json({ error: 'invalid_input', field: 'sector', reason: 'missing' }, { status: 400 });
       if (raw.sector !== undefined && raw.sector !== null && raw.sector !== '') {
         const s = typeof raw.sector === 'string' ? raw.sector.trim().toLowerCase() : '';
         if (!ALLOWED_SECTOR_SET.has(s)) return Response.json({ error: 'invalid_input', field: 'sector', reason: 'not_in_enum' }, { status: 400 });
@@ -2074,9 +2080,9 @@ Deno.serve(async (req) => {
           mode: 'combined',
           country,
           region,
-          ...(brandName ? { brand_name: brandName } : {}),
-          ...(website !== undefined ? { website } : {}),
-          ...(sector !== undefined ? { sector } : {}),
+          brand_name: brandName,
+          website,
+          sector,
           // Primary-channel projection at the top level for the teaser's
           // fixed allowlist (monthly_gmv_eur/avg_ticket_eur/provider_slug).
           monthly_gmv_eur: primary.input_snapshot.monthly_gmv_eur,

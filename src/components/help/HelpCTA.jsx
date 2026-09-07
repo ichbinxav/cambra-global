@@ -8,8 +8,8 @@ import { useTranslation } from "@/lib/i18n.jsx";
 // primary flag are language-neutral structure.
 const ACTIONS = [
   { icon: Activity, titleKey: "runAnalyzer", descKey: "runAnalyzerDesc", href: "/Analyzer", primary: true },
-  { icon: Upload, titleKey: "uploadInvoices", descKey: "uploadInvoicesDesc", href: "/ConnectTools?mode=upload" },
-  { icon: Plug, titleKey: "connectTools", descKey: "connectToolsDesc", href: "/ConnectTools?mode=connect" },
+  { icon: Upload, titleKey: "uploadInvoices", descKey: "uploadInvoicesDesc", href: "/UploadStatement" },
+  { icon: Plug, titleKey: "connectTools", descKey: "connectToolsDesc", href: "/ConnectStripe" },
   { icon: MessageSquare, titleKey: "talkToCambra", descKey: "talkToCambraDesc", href: "/Contact" },
 ];
 
@@ -17,8 +17,8 @@ export default function HelpCTA() {
   const { lang } = useTranslation();
 
   return (
-    <section className="py-16 px-5">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-16">
+      <div className="cambra-public-container">
         <div className="flex items-baseline justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
             {helpUi(lang, "stillExploring")}

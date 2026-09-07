@@ -14,6 +14,7 @@ describe("owned payments history detail contract", () => {
 
   it("deep-links history cards by owned result id, not a disposable session id", () => {
     expect(history).toContain("/Results?result=${encodeURIComponent(item.id)}");
+    expect(history).toContain("/Results?verified=${encodeURIComponent(item.id)}");
     expect(history).not.toContain("/Results?session=${encodeURIComponent(item.anon_session_id)}");
     expect(results).toContain('const resultId = params.get("result")');
   });
@@ -41,6 +42,14 @@ describe("owned payments history detail contract", () => {
     expect(reader).toContain("currency: r.currency || r.details?.input_snapshot?.currency || 'EUR'");
     expect(history).toContain('const currency = item.currency || "EUR"');
     expect(history).not.toContain("function fmtEUR");
+  });
+
+  it("merges Stripe-verified reports through their explicit owner key", () => {
+    expect(reader).toContain(".filter({ owner_email: email }, '-created_date', 100)");
+    expect(reader).toContain("normalizeEmail(r?.owner_email) === email");
+    expect(reader).toContain("kind: 'verified'");
+    expect(reader).toContain("verification_status: 'verified'");
+    expect(history).toContain('item.kind === "verified"');
   });
 });
 

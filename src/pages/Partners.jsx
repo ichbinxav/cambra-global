@@ -150,13 +150,42 @@ export default function Partners() {
             {t("pt_hero_cta2")}
           </Link>
         </div>
+        <p className="mt-5 text-[12px] font-bold uppercase tracking-[.18em] text-white/70">{t("pt_hero_trust")}</p>
       </PublicPageHero>
 
-      {/* ── 01 · THE PARTNER ROLE ── */}
+      {/* ── 01 · WHO IT'S FOR ── */}
       <section className="py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
+        <div className="cambra-public-container">
           <SectionHead
             index="01"
+            label={t("pt_s3_label")}
+            title={t("pt_s3_title")}
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {WHO_FOR.map((c, i) => (
+              <LightCard
+                key={c.titleKey}
+                index={i}
+                icon={WHO_ICONS[i]}
+                title={t(c.titleKey)}
+                body={t(c.bodyKey)}
+              />
+            ))}
+          </div>
+          <div className="mt-8 flex flex-col items-center justify-center gap-2.5 text-center sm:flex-row">
+            <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{t("pt_s3_provider_note")}</p>
+            <Link to="/ForProviders" className="inline-flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--voltio)" }}>
+              {t("pt_s3_provider_cta")} <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 02 · THE PARTNER ROLE ── */}
+      <section className="py-16 sm:py-24">
+        <div className="cambra-public-container">
+          <SectionHead
+            index="02"
             label={t("pt_s2_label")}
             title={t("pt_s2_title")}
             intro={t("pt_s2_body")}
@@ -175,12 +204,12 @@ export default function Partners() {
         </div>
       </section>
 
-      {/* ── 02 · WHAT YOU GAIN (dark) ── */}
-      <section className="px-5 py-20 sm:py-24">
-        <div className="section-ink px-6 sm:px-12 py-14 sm:py-20 max-w-5xl mx-auto">
+      {/* ── 03 · WHAT YOU GAIN (dark) ── */}
+      <section className="py-20 sm:py-24">
+        <div className="cambra-public-container section-ink px-6 sm:px-12 py-14 sm:py-20">
           <div className="mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>02</span>
+              <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>03</span>
               <span className="h-px w-8" style={{ background: "rgba(125,227,255,0.35)" }} />
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(255,255,255,0.55)" }}>{t("pt_s4_label")}</span>
             </div>
@@ -221,37 +250,9 @@ export default function Partners() {
         </div>
       </section>
 
-      {/* ── 03 · WHO IT'S FOR ── */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8">
-          <SectionHead
-            index="03"
-            label={t("pt_s3_label")}
-            title={t("pt_s3_title")}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {WHO_FOR.map((c, i) => (
-              <LightCard
-                key={c.titleKey}
-                index={i}
-                icon={WHO_ICONS[i]}
-                title={t(c.titleKey)}
-                body={t(c.bodyKey)}
-              />
-            ))}
-          </div>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2.5 text-center">
-            <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{t("pt_s3_provider_note")}</p>
-            <Link to="/ForProviders" className="inline-flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: "var(--voltio)" }}>
-              {t("pt_s3_provider_cta")} <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ── 04 · HOW IT WORKS ── */}
-      <section className="px-5 py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-16 sm:py-24">
+        <div className="cambra-public-container">
           <SectionHead
             index="04"
             label={t("pt_s5_label")}
@@ -295,8 +296,8 @@ export default function Partners() {
       </section>
 
       {/* ── 05 · THE BOUNDARIES (promises + role) ── */}
-      <section className="px-5 py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-16 sm:py-24">
+        <div className="cambra-public-container">
           <SectionHead
             index="05"
             label={t("pt_princ_title")}
@@ -375,8 +376,8 @@ export default function Partners() {
       </section>
 
       {/* ── 06 · APPLY ── */}
-      <section id="apply" className="scroll-mt-20 px-5 pb-20 sm:pb-28">
-        <div className="section-ink px-6 sm:px-12 py-14 sm:py-16 max-w-2xl mx-auto">
+      <section id="apply" className="scroll-mt-20 pb-20 sm:pb-28">
+        <div className="cambra-public-container section-ink px-6 py-14 sm:px-12 sm:py-16 lg:px-[18%]">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
               <span className="mono-num text-[12px] font-semibold tracking-[0.16em]" style={{ color: "#7DE3FF" }}>06</span>

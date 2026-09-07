@@ -38,6 +38,8 @@ import CookieConsent from '@/components/shared/CookieConsent';
 // no longer ship in the initial chunk. jspdf was already dynamic (BACKLOG-1 T4).
 const Dashboard     = lazy(() => import('@/pages/Dashboard'));
 const ConnectTools  = lazy(() => import('@/pages/ConnectTools'));
+const ConnectStripe = lazy(() => import('@/pages/ConnectStripe'));
+const UploadStatement = lazy(() => import('@/pages/UploadStatement'));
 const Reports = lazy(() => import('@/pages/Reports'));
 // FASE 1.2 — /Network, /Insights, /InsightDetail deprecated (multi-vertical /
 // pre-pivot collective model). Components kept dormant in src/pages/.
@@ -297,7 +299,11 @@ const AuthenticatedApp = () => {
         <Route path="/AnalyzerTeaser" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/analyzerteaser" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/ConnectTools" element={<ProtectedRoute>{withBoundary(<ConnectTools />)}</ProtectedRoute>} />
-        <Route path="/connecttools" element={<Navigate to="/ConnectTools" replace />} />
+        <Route path="/connecttools" element={<Navigate to="/ConnectStripe" replace />} />
+        <Route path="/ConnectStripe" element={<ProtectedRoute>{withBoundary(<ConnectStripe />)}</ProtectedRoute>} />
+        <Route path="/connectstripe" element={<Navigate to="/ConnectStripe" replace />} />
+        <Route path="/UploadStatement" element={<ProtectedRoute>{withBoundary(<UploadStatement />)}</ProtectedRoute>} />
+        <Route path="/uploadstatement" element={<Navigate to="/UploadStatement" replace />} />
         <Route caseSensitive path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route caseSensitive path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route caseSensitive path="/Terms" element={withBoundary(<Terms />)} />
@@ -372,7 +378,7 @@ const AuthenticatedApp = () => {
           <Route path="/Vault" element={withBoundary(<Vault />)} />
           <Route path="/Referrals" element={withBoundary(<Referrals />)} />
           <Route path="/referrals" element={<Navigate to="/Referrals" replace />} />
-          <Route path="/ConnectIntegrations" element={<Navigate to="/ConnectTools" replace />} />
+          <Route path="/ConnectIntegrations" element={<Navigate to="/ConnectStripe" replace />} />
           <Route path="/IntegrationsCallback" element={withBoundary(<IntegrationsCallback />)} />
         </Route>
 

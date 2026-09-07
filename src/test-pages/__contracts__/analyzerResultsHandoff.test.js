@@ -212,64 +212,41 @@ describe('CONTRACT — Verified analysis handoff (M3-Chunk 6+7)', () => {
 // without noise from the routing block above.
 //
 // Contract: the "About your brand" block adds THREE metadata fields to the
-// anonymous session — brand_name (OPTIONAL), website (optional), sector
-// (optional). These are lead-intelligence metadata, NOT engine inputs. The
+// anonymous session — brand_name, website and sector are REQUIRED. These are
+// lead-intelligence metadata, NOT engine inputs. The
 // motor must not read them; downstream aggregators must be able to join on
 // them without the client being able to inject nonsense.
 //
-// brand_name is OPTIONAL since SWEEP-1 T2 (2026-07-24) — product decision:
-// asking for the brand name before showing the gap added conversion friction
-// to the anonymous funnel. The name is now requested in the CLAIM flow,
-// once the merchant has already seen their gap. When present, the 2-80 char
-// range still applies (strict conditional validation, no silent clamping).
-// When absent, the results surface must NEVER render an empty string or
-// "undefined" — the i18n fallback key `brand_fallback` ("Your brand" /
-// "Votre marque" / "Tu marca") is the sanctioned placeholder.
+// The business profile is step one of the Analyzer, before source selection.
+// Its values stay outside the calculation engine but are mandatory for a
+// useful, attributable report.
 describe('CONTRACT — Brand-block metadata (name / website / sector)', () => {
   const analyzer   = fs.readFileSync(path.join(ROOT, 'src/pages/PaymentsAnalyzer.jsx'), 'utf-8');
   const brandBlock = fs.readFileSync(path.join(ROOT, 'src/components/paymentsAnalyzer/BrandBlock.jsx'), 'utf-8');
   const submit     = fs.readFileSync(path.join(ROOT, 'base44/functions/submitPaymentsAnalysis/entry.ts'), 'utf-8');
 
-  // 1. Client → server field names match verbatim. Since SWEEP-1 T2 the
-  //    client sends brand_name ONLY when the user typed one — same
-  //    "left blank → send nothing" convention as website/sector.
-  it('Client sends brand_name only when the user filled it (conditional spread)', () => {
-    expect(analyzer).toMatch(/\.\.\.\(brandName\.trim\(\)\s*!==\s*""\s*\?\s*\{\s*brand_name:\s*brandName\.trim\(\)\s*\}\s*:\s*\{\}\)/);
+  // 1. Client → server field names match verbatim and are always sent.
+  it('Client sends the complete business profile', () => {
+    expect(analyzer).toMatch(/brand_name:\s*brandName\.trim\(\)/);
+    expect(analyzer).toMatch(/website:\s*website\.trim\(\)/);
+    expect(analyzer).toMatch(/\bsector,/);
   });
 
-  it('Client sends website and sector only when the user filled them', () => {
-    // Both must be guarded by a non-empty check — this is the difference
-    // between "user left blank" (send nothing) vs. "user typed garbage"
-    // (send empty string, server rejects as invalid_type). We want the
-    // former, always.
-    expect(analyzer).toMatch(/website\.trim\(\)\s*!==\s*""/);
-    expect(analyzer).toMatch(/sector\s*!==\s*""/);
-  });
-
-  // 2. Server treats brand_name as OPTIONAL (SWEEP-1 T2, 2026-07-24).
-  //    Strict inverse of the pre-T2 contract: a missing/empty brand_name is
-  //    ACCEPTED — there must be NO 'missing' rejection branch for it, and the
-  //    normalizer must coerce absence to '' (never undefined) on BOTH paths
-  //    (single-channel and combined).
-  it('submitPaymentsAnalysis accepts a missing brand_name (no invalid_input for absence)', () => {
-    // No validation branch may reject brand_name for being absent.
-    expect(submit).not.toMatch(/field:\s*'brand_name',\s*reason:\s*'missing'/);
-    // Absence is normalized to '' via the presence-safe trim — single path…
+  // 2. Server rejects missing business metadata on both calculation paths.
+  it('submitPaymentsAnalysis requires brand_name, website and sector', () => {
+    expect(submit).toMatch(/field:\s*'brand_name',\s*reason:\s*'missing'/);
+    expect(submit).toMatch(/field:\s*'website',\s*reason:\s*'missing'/);
+    expect(submit).toMatch(/field:\s*'sector',\s*reason:\s*'missing'/);
     expect(submit).toMatch(/const brand_name_raw = typeof raw\.brand_name === 'string' \? raw\.brand_name\.trim\(\) : '';/);
-    // …and combined path.
     expect(submit).toMatch(/const brandName = typeof raw\.brand_name === 'string' \? raw\.brand_name\.trim\(\) : '';/);
   });
 
-  // 3. When brand_name IS present, the 2-80 range still applies — the
-  //    validation is CONDITIONAL on presence (truthy guard before the range
-  //    check), not dropped.
-  it('submitPaymentsAnalysis enforces the 2-80 range on brand_name ONLY when present', () => {
+  // 3. The mandatory value must still stay inside the 2-80 range.
+  it('submitPaymentsAnalysis enforces the 2-80 range on brand_name', () => {
     // The constant is still declared…
     expect(submit).toMatch(/brand_name:\s*\{\s*minLen:\s*2,\s*maxLen:\s*80\s*\}/);
-    // …and applied behind a presence guard on the single path…
-    expect(submit).toMatch(/if \(brand_name_raw && \(brand_name_raw\.length < VALIDATION\.brand_name\.minLen/);
-    // …and on the combined path.
-    expect(submit).toMatch(/if \(brandName && \(brandName\.length < VALIDATION\.brand_name\.minLen/);
+    expect(submit).toMatch(/if \(brand_name_raw\.length < VALIDATION\.brand_name\.minLen/);
+    expect(submit).toMatch(/if \(brandName\.length < VALIDATION\.brand_name\.minLen/);
   });
 
   // 4. Fallback seal — when brand_name is absent, the results surface never

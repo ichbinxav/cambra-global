@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, CheckCircle2, LockKeyhole, LogOut, Mail, Settings, Shield, Store, User } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, FileText, FolderOpen, LockKeyhole, LogOut, Mail, Settings, Shield, Store, Upload, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import MonthlyEmailPreference from "@/components/account/MonthlyEmailPreference"
 import RecoverCommitmentsCard from "@/components/account/RecoverCommitmentsCard";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { signOutToHome } from "@/lib/logout";
 
 function Section({ icon: Icon, title, children, className = "" }) {
   return (
@@ -78,6 +79,19 @@ export default function Account() {
         <p className="mt-3 text-[11px] font-semibold text-[#7B8399]">{t("account_required_note")}</p>
       </header>
 
+      <nav className="mt-8 grid gap-3 sm:grid-cols-3" aria-label={t("account_security_title")}>
+        {[
+          { to: "/ConnectStripe", icon: LockKeyhole, label: t("account_manage_data") },
+          { to: "/UploadStatement", icon: Upload, label: t("az_entry_upload_title") },
+          { to: "/Reports", icon: FileText, label: t("rpt_title") },
+        ].map(({ to, icon: Icon, label }) => (
+          <Link key={to} to={to} className="cambra-paper-card group flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold text-[#17213A] transition-transform hover:-translate-y-0.5">
+            <span className="inline-flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFEDFF] text-[#4D3DF1]"><Icon size={15} /></span>{label}</span>
+            <ArrowRight size={14} className="text-[#5B4CF5] transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        ))}
+      </nav>
+
       <div className="mt-10 grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,.55fr)]">
         <div className="space-y-6">
           {brand && (
@@ -109,12 +123,15 @@ export default function Account() {
           </Section>
 
           <Section icon={Shield} title={t("account_security_title")}>
-            <Link to="/ConnectTools" className="flex min-h-11 items-center justify-between rounded-xl border border-[#E0E3EC] bg-[#F9F9FC] px-4 text-[12px] font-bold text-[#4D3DF1]"><span className="inline-flex items-center gap-2"><LockKeyhole size={14} /> {t("account_manage_data")}</span><span aria-hidden="true">→</span></Link>
+            <div className="space-y-2">
+              <Link to="/ConnectStripe" className="flex min-h-11 items-center justify-between rounded-xl border border-[#E0E3EC] bg-[#F9F9FC] px-4 text-[12px] font-bold text-[#4D3DF1]"><span className="inline-flex items-center gap-2"><LockKeyhole size={14} /> {t("account_manage_data")}</span><span aria-hidden="true">→</span></Link>
+              <Link to="/Vault" className="flex min-h-11 items-center justify-between rounded-xl border border-[#E0E3EC] bg-[#F9F9FC] px-4 text-[12px] font-bold text-[#4D3DF1]"><span className="inline-flex items-center gap-2"><FolderOpen size={14} /> {t("sidebar_documents")}</span><span aria-hidden="true">→</span></Link>
+            </div>
           </Section>
 
           <Section icon={Settings} title={t("acc_s_session")}>
             <p className="text-[12px] leading-relaxed text-[#677089]">{t("acc_session_text")}</p>
-            <Button variant="outline" size="sm" onClick={() => base44.auth.logout()} className="mt-5 h-10 rounded-xl border-[#D8DCE8] bg-white px-4 text-xs font-bold text-[#1C2641] hover:bg-[#F4F3FF]">
+            <Button variant="outline" size="sm" onClick={signOutToHome} className="mt-5 h-10 rounded-xl border-[#D8DCE8] bg-white px-4 text-xs font-bold text-[#1C2641] hover:bg-[#F4F3FF]">
               <LogOut size={13} /> {t("acc_signout")}
             </Button>
           </Section>

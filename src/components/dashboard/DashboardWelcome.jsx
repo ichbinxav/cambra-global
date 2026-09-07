@@ -71,9 +71,9 @@ function StageCard({ stage, state, index, onRecover }) {
   );
 
   if (stage.key === "analyze") return <Link to="/Analyzer" aria-current={isCurrent ? "step" : undefined} {...sharedProps}>{content}</Link>;
-  if (stage.key === "verify") return <Link to="/ConnectTools" aria-current={isCurrent ? "step" : undefined} {...sharedProps}>{content}</Link>;
+  if (stage.key === "verify") return <Link to="/ConnectStripe" aria-current={isCurrent ? "step" : undefined} {...sharedProps}>{content}</Link>;
   if (isCurrent && onRecover) return <button type="button" onClick={onRecover} aria-current="step" {...sharedProps}>{content}</button>;
-  if (isComplete) return <Link to="/Results" {...sharedProps}>{content}</Link>;
+  if (isComplete) return <Link to="/Reports" {...sharedProps}>{content}</Link>;
   return <div {...sharedProps} aria-disabled="true">{content}</div>;
 }
 
@@ -94,9 +94,9 @@ export default function DashboardWelcome({
   };
 
   const shortcuts = [
-    { to: "/Results", label: t("sidebar_results"), icon: FileText },
+    { to: "/Reports", label: t("rpt_title"), icon: FileText },
     { to: "/Vault", label: t("sidebar_documents"), icon: FolderOpen },
-    { to: "/ConnectTools", label: t("nav_connect"), icon: Plug },
+    { to: "/ConnectStripe", label: t("nav_connect"), icon: Plug },
   ];
 
   return (

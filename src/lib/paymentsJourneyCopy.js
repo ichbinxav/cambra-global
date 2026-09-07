@@ -24,7 +24,18 @@ const COPY = {
   is: { steps: ["Byrja", "Fyrirtæki", "Greiðslur", "Yfirferð", "Niðurstaða", "Opna"], paymentsTitle: "Bættu við hverri greiðsluleið.", paymentsBody: "Við reiknum net- og verslunarkostnað sérstaklega eftir sömu sönnunarreglum.", reviewTitle: "Farðu yfir það sem CAMBRA mun greina.", reviewBody: "Ekkert er ályktað hér. Breyttu svari áður en útreikningur fer fram.", previewTitle: "Lifandi gagnasýn", evidenceTitle: "Veldu gögn", profileTitle: "Samanburðarsnið", compositionTitle: "Samsetning greiðslna", readinessTitle: "Tilbúið til greiningar", continue: "Halda áfram", review: "Fara yfir svör", edit: "Breyta", selected: "Valið", incomplete: "Enn ófullgert" },
 };
 
-export function getPaymentsJourneyCopy(language) {
-  return COPY[language] || COPY.en;
-}
+const SOURCE_STEP = {
+  en: "Source", fr: "Source", es: "Fuente", de: "Quelle", it: "Fonte",
+  pl: "Źródło", pt: "Fonte", el: "Πηγή", sv: "Källa", da: "Kilde",
+  fi: "Lähde", cs: "Zdroj", ro: "Sursă", hu: "Forrás", bg: "Източник",
+  hr: "Izvor", et: "Allikas", lv: "Avots", lt: "Šaltinis", sk: "Zdroj",
+  sl: "Vir", nb: "Kilde", is: "Gagnagjafi",
+};
 
+export function getPaymentsJourneyCopy(language) {
+  const copy = COPY[language] || COPY.en;
+  return {
+    ...copy,
+    steps: [copy.steps[1], SOURCE_STEP[language] || SOURCE_STEP.en, ...copy.steps.slice(2)],
+  };
+}

@@ -17,7 +17,7 @@
 //   estimated (default)   → amber   "Estimated · connect Stripe to sharpen"
 //
 // CTAs:
-//   "Connect Stripe to verify" → /ConnectTools (hidden once verified)
+//   "Connect Stripe to verify" → /ConnectStripe (hidden once verified)
 //   "Start recovery"           → onStartRecovery() (opens collective/call modal)
 //
 // Payments only. No external PSP names. No over-promised rates.
@@ -183,7 +183,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {!isVerified ? (
               <Link
-                to="/ConnectTools"
+                to="/ConnectStripe"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
                 style={{
                   background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",

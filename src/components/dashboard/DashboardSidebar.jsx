@@ -3,9 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, Home, ShieldCheck, FolderOpen, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { signOutToHome } from "@/lib/logout";
 import HeaderBrand from "@/components/shared/HeaderBrand";
 
 // Shared workspace navigation — used by DashboardLayout (as a layout route)
@@ -14,7 +14,7 @@ import HeaderBrand from "@/components/shared/HeaderBrand";
 const NAV_ITEMS = [
   { path: "/Dashboard", labelKey: "nav_dashboard", icon: LayoutDashboard },
   { path: "/Analyzer", labelKey: "nav_analyzer", icon: BarChart3 },
-  { path: "/Results", labelKey: "sidebar_results", icon: FileText },
+  { path: "/Reports", labelKey: "rpt_title", icon: FileText },
   { path: "/Vault", labelKey: "sidebar_documents", icon: FolderOpen },
   { path: "/Referrals", labelKey: "nav_referrals", icon: Gift },
   { path: "/Account", labelKey: "sidebar_account", icon: Settings },
@@ -27,6 +27,9 @@ export default function DashboardSidebar() {
   const location = useLocation();
 
   const isAdmin = user?.role === "admin";
+  const navLabel = (item) => item.path === "/Reports"
+    ? String(t(item.labelKey)).replace(/[.!?]$/, "")
+    : t(item.labelKey);
 
   return (
     <>
@@ -73,7 +76,7 @@ export default function DashboardSidebar() {
                   transition={{ type: "spring", stiffness: 500, damping: 40 }}
                 >
                   <item.icon size={14} strokeWidth={active ? 2.4 : 1.8} />
-                  {t(item.labelKey)}
+                  {navLabel(item)}
                 </motion.div>
               </Link>
             );
@@ -97,7 +100,7 @@ export default function DashboardSidebar() {
             </div>
           </Link>
           <button
-            onClick={() => base44.auth.logout("/Landing")}
+            onClick={signOutToHome}
             className="flex items-center gap-2.5 px-3 py-2.5 w-full rounded-lg text-sm transition-colors text-white/60 hover:bg-[rgba(139,123,255,0.10)]"
           >
             <LogOut size={14} />
@@ -152,7 +155,7 @@ export default function DashboardSidebar() {
                           : { color: "rgba(255,255,255,0.6)" }}
                       >
                         <item.icon size={16} />
-                        {t(item.labelKey)}
+                        {navLabel(item)}
                       </div>
                     </Link>
                   );
@@ -174,7 +177,7 @@ export default function DashboardSidebar() {
                   </div>
                 </Link>
                 <button
-                  onClick={() => base44.auth.logout("/Landing")}
+                  onClick={signOutToHome}
                   className="flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm text-white/60"
                 >
                   <LogOut size={16} /> {t("sidebar_signout")}

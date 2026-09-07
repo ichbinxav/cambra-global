@@ -104,7 +104,7 @@ export default function LoginGate() {
     try { return new URL(returnUrl).pathname; }
     catch { return ""; }
   }, [returnUrl]);
-  const isConnectIntent = /\/ConnectTools|\/ConnectIntegrations/i.test(returnUrl);
+  const isConnectIntent = /\/ConnectTools|\/ConnectIntegrations|\/ConnectStripe|\/UploadStatement/i.test(returnUrl);
   const isReferralManagementIntent = /^\/Referrals\/?$/i.test(intent);
   const headline = isReferralManagementIntent
     ? t("ref_title")

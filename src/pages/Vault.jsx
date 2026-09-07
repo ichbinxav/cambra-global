@@ -21,14 +21,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import PageHero from '@/components/shared/PageHero';
-import { FolderLock } from 'lucide-react';
+import { CheckCircle2, Clock3, FileText, FolderLock, Search, UploadCloud } from 'lucide-react';
 import DownloadAuditButton from '@/components/paymentsResults/DownloadAuditButton';
 import { getMyActiveBrand } from '@/lib/getMyActiveBrand';
 import { useTranslation } from '@/lib/i18n.jsx';
 import VaultDocumentDrawer from '@/components/vault/VaultDocumentDrawer';
 import { DOC_CATEGORIES, DOC_STATUSES, categoryLabel, statusLabel } from '@/components/vault/vaultLabels';
 import { toast } from 'sonner';
+import SectionLabel from '@/components/shared/SectionLabel';
 
 const EXTRACTABLE_CATEGORIES = new Set([
   'invoices',
@@ -39,8 +39,21 @@ const EXTRACTABLE_CATEGORIES = new Set([
   'pricing_docs',
 ]);
 
+function statusTone(value) {
+  if (['approved', 'verified'].includes(value)) return 'border-[#BDEBD7] bg-[#EAF9F2] text-[#147651]';
+  if (['rejected', 'superseded'].includes(value)) return 'border-[#FFD5D8] bg-[#FFF0F1] text-[#B43B47]';
+  return 'border-[#DDD8FF] bg-[#F2F0FF] text-[#5545D4]';
+}
+
+function formatFileSize(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return '';
+  if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function Vault() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -139,78 +152,86 @@ export default function Vault() {
     await load();
   };
 
-  return (
-    <div className="space-y-5">
-      <PageHero
-        eyebrow={t('vlt_eyebrow')}
-        title={t('vlt_title')}
-        subtitle={t('vlt_subtitle')}
-        icon={FolderLock}
-        actions={
-          <div className="flex items-center gap-2">
-            {latestAudit && (
-              <DownloadAuditButton
-                engineResult={latestAudit.engineResult}
-                inputSnapshot={latestAudit.inputSnapshot}
-                brandName={latestAudit.inputSnapshot?.provider_slug || ''}
-              />
-            )}
-            <Select value={newCat} onValueChange={setNewCat}>
-              <SelectTrigger className="w-44 bg-white/10 border-white/20 text-white"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
-              <SelectContent>{DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}</SelectContent>
-            </Select>
-            <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
-            <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 rounded-full px-5 bg-white text-[#06080F] hover:bg-white/90 font-bold">{uploading ? t('vlt_uploading') : t('vlt_upload')}</Button>
-          </div>
-        }
-      />
+  const pendingCount = items.filter((item) => !['approved', 'verified'].includes(item.review_status)).length;
+  const verifiedCount = items.length - pendingCount;
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <Input placeholder={t('vlt_search_ph')} value={q} onChange={e=>setQ(e.target.value)} className="w-52 bg-white/[0.04] border-white/10 text-white placeholder:text-white/30" />
+  return (
+    <div className="workspace-light-page pb-12">
+      <header className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="max-w-[820px]">
+          <SectionLabel>{t('vlt_eyebrow')}</SectionLabel>
+          <h1 className="workspace-page-title mt-5">{t('vlt_title')}</h1>
+          <p className="workspace-page-lead mt-4">{t('vlt_subtitle')}</p>
+        </div>
+        {latestAudit && (
+          <DownloadAuditButton
+            engineResult={latestAudit.engineResult}
+            inputSnapshot={latestAudit.inputSnapshot}
+            brandName={latestAudit.inputSnapshot?.provider_slug || ''}
+          />
+        )}
+      </header>
+
+      <section className="mt-9 grid gap-3 sm:grid-cols-3">
+        <div className="cambra-paper-card flex min-h-24 items-center gap-4 p-5"><span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFEDFF] text-[#5545D4]"><FolderLock size={18} /></span><div><strong className="block text-[26px] leading-none text-[#11182D]">{items.length}</strong><span className="mt-1 block text-[10px] font-bold uppercase tracking-[.14em] text-[#747D92]">{t('vlt_all_categories')}</span></div></div>
+        <div className="cambra-paper-card flex min-h-24 items-center gap-4 p-5"><span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#EAF9F2] text-[#147651]"><CheckCircle2 size={18} /></span><div><strong className="block text-[26px] leading-none text-[#11182D]">{verifiedCount}</strong><span className="mt-1 block text-[10px] font-bold uppercase tracking-[.14em] text-[#747D92]">{statusLabel(t, 'approved')}</span></div></div>
+        <div className="cambra-paper-card flex min-h-24 items-center gap-4 p-5"><span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#F2F0FF] text-[#5545D4]"><Clock3 size={18} /></span><div><strong className="block text-[26px] leading-none text-[#11182D]">{pendingCount}</strong><span className="mt-1 block text-[10px] font-bold uppercase tracking-[.14em] text-[#747D92]">{statusLabel(t, 'pending')}</span></div></div>
+      </section>
+
+      <section className="cambra-paper-card mt-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B1530] text-white"><UploadCloud size={18} /></span>
+          <div><p className="text-[14px] font-bold text-[#11182D]">{t('vlt_upload')}</p><p className="mt-1 text-[11px] text-[#727B91]">{t('vlt_subtitle')}</p></div>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Select value={newCat} onValueChange={setNewCat}>
+            <SelectTrigger className="h-11 w-full border-[#DDE1EB] bg-white text-[#28324A] sm:w-48"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
+            <SelectContent>{DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}</SelectContent>
+          </Select>
+          <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
+          <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-11 rounded-xl bg-[var(--g-voltio)] px-5 font-bold text-white hover:opacity-90"><UploadCloud size={14} /> {uploading ? t('vlt_uploading') : t('vlt_upload')}</Button>
+        </div>
+      </section>
+
+      <div className="cambra-paper-card mt-6 flex flex-wrap items-center gap-2 p-4">
+        <div className="relative min-w-[210px] flex-1 sm:max-w-xs"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#858DA0]" /><Input placeholder={t('vlt_search_ph')} value={q} onChange={e=>setQ(e.target.value)} className="h-11 border-[#DDE1EB] bg-white pl-9 text-[#1F2942] placeholder:text-[#9AA1B1]" /></div>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-44 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
+          <SelectTrigger className="h-11 w-44 border-[#DDE1EB] bg-white text-[#28324A]"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('vlt_all_categories')}</SelectItem>
             {DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}
           </SelectContent>
         </Select>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-40 bg-white/[0.04] border-white/10 text-white"><SelectValue placeholder={t('vlt_status_ph')} /></SelectTrigger>
+          <SelectTrigger className="h-11 w-40 border-[#DDE1EB] bg-white text-[#28324A]"><SelectValue placeholder={t('vlt_status_ph')} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('vlt_all_statuses')}</SelectItem>
             {DOC_STATUSES.map(s => (<SelectItem key={s} value={s}>{statusLabel(t, s)}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={onFilter} className="bg-white/[0.04] border-white/10 text-white hover:bg-white/10 hover:text-white">{t('vlt_filter')}</Button>
+        <Button variant="outline" onClick={onFilter} className="h-11 rounded-xl border-[#DDE1EB] bg-[#0B1530] px-5 font-bold text-white hover:bg-[#152341] hover:text-white">{t('vlt_filter')}</Button>
       </div>
 
       {loading ? (
-        <div className="py-24 text-center text-sm text-muted-foreground">{t('vlt_loading')}</div>
+        <div className="py-24 text-center text-sm text-[#70798E]">{t('vlt_loading')}</div>
       ) : items.length === 0 ? (
         // The grid used to render blank here — an empty result was
         // indistinguishable from a page that had failed to load.
-        <div className="py-24 text-center text-sm text-white/50">{t('vlt_empty')}</div>
+        <div className="cambra-paper-card mt-6 py-24 text-center text-sm text-[#70798E]">{t('vlt_empty')}</div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="cambra-paper-card mt-6 overflow-hidden">
           {items.map(doc => (
-            <div key={doc.id} className={`cambra-card p-4 cursor-pointer ${selected?.id===doc.id? 'ring-1 ring-cambra-cyan' : ''}`} onClick={()=>setSelected(doc)}>
-              <div className="relative">
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold truncate max-w-[70%] text-white">{doc.title || doc.file_name}</div>
-                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{categoryLabel(t, doc.category)}</Badge>
-                </div>
-                <div className="text-xs text-white/50 mt-1 truncate">{doc.file_name}</div>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  <Badge className="border border-white/10 bg-white/[0.06] text-white/75 text-[10px]">{statusLabel(t, doc.review_status)}</Badge>
-                  <Badge variant="outline" className="text-[10px] border-white/15 text-white/70">{doc.visibility}</Badge>
-                  {Array.isArray(doc.tags) && doc.tags.slice(0,3).map(tag => <Badge key={tag} variant="outline" className="text-[10px] border-white/15 text-white/70">#{tag}</Badge>)}
-                </div>
-                <div className="mt-3 text-xs"><a className="text-cambra-cyan underline" href={doc.file_url} target="_blank" rel="noopener noreferrer">{t('vlt_open')}</a></div>
-                {doc.links && doc.links.length>0 && (
-                  <div className="mt-2 text-[11px] text-white/50">{t('vlt_links')}: {doc.links.map(l=>`${l.target_type}:${l.target_id}`).join(', ')}</div>
-                )}
+            <article key={doc.id} className={`group grid cursor-pointer gap-4 border-b border-[#E7E9EF] p-5 last:border-b-0 hover:bg-[#FAFAFD] sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center ${selected?.id===doc.id ? 'bg-[#F6F4FF]' : ''}`} onClick={()=>setSelected(doc)}>
+              <div className="flex min-w-0 items-center gap-4">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#DDD9FF] bg-[#F2F0FF] text-[#5545D4]"><FileText size={18} /></span>
+                <div className="min-w-0"><h2 className="truncate text-[14px] font-bold text-[#11182D]">{doc.title || doc.file_name}</h2><p className="mt-1 truncate text-[11px] text-[#788096]">{categoryLabel(t, doc.category)}{doc.created_date ? ` · ${new Date(doc.created_date).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}{formatFileSize(doc.file_size) ? ` · ${formatFileSize(doc.file_size)}` : ''}</p></div>
               </div>
-            </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={`border text-[10px] ${statusTone(doc.review_status)}`}>{statusLabel(t, doc.review_status)}</Badge>
+                {Array.isArray(doc.tags) && doc.tags.slice(0,2).map(tag => <Badge key={tag} variant="outline" className="border-[#E1E4EB] bg-white text-[9px] text-[#687189]">#{tag}</Badge>)}
+              </div>
+              <a onClick={(event) => event.stopPropagation()} className="text-[11px] font-bold text-[#4D3DF1] underline decoration-[#C8C2FF] underline-offset-4" href={doc.file_url} target="_blank" rel="noopener noreferrer">{t('vlt_open')}</a>
+            </article>
           ))}
         </div>
       )}

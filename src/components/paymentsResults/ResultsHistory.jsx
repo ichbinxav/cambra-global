@@ -45,6 +45,7 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
     ? formatCurrency(Math.round(value), currency)
     : "—";
   const hasDetail = item.detail_available === true;
+  const statusLabel = item.kind === "verified" ? copy.verified : hasDetail ? copy.estimate : copy.legacy;
   const Card = hasDetail ? "button" : "div";
   return (
     <Card
@@ -59,7 +60,7 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full shrink-0"
               style={{ background: "#F0EEFF", color: "#4D3DF1", border: "1px solid #D9D5FF" }}
             >
-              {hasDetail ? copy.estimate : copy.legacy}
+              {statusLabel}
             </span>
           </div>
           <p className="text-[11px] text-[#7A8296]">
@@ -101,12 +102,13 @@ function FeaturedAnalysis({ item, onOpen, onNew, copy, locale, formatCurrency })
     ? formatCurrency(Math.round(point), currency)
     : "—";
   const hasDetail = item.detail_available === true;
+  const statusLabel = item.kind === "verified" ? copy.verified : hasDetail ? copy.estimate : copy.legacy;
   const date = fmtDate(item.created_date, locale);
 
   return (
     <section className="cambra-paper-card mt-9 grid overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(420px,.86fr)]">
       <div className="p-7 sm:p-9">
-        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#5B4CF5]">{copy.latest} · {hasDetail ? copy.estimate : copy.legacy}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#5B4CF5]">{copy.latest} · {statusLabel}</p>
         <p className="mt-7 text-[11px] font-bold uppercase tracking-[.13em] text-[#717A91]">{copy.annualGap}</p>
         <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
           <strong className="text-[clamp(50px,7vw,82px)] font-bold leading-none tracking-[-.065em] text-[#091126]">{amount}</strong>
@@ -144,6 +146,7 @@ export default function ResultsHistory() {
   const { t, locale, formatCurrency } = useTranslation();
   const copy = {
     estimate: t("rpt_vs_estimated"),
+    verified: t("dh_badge_verified"),
     annualGap: t("rpt_recovery_potential"),
     openReport: t("results_cta_title"),
     otherProvider: t("cat_other"),
@@ -183,7 +186,9 @@ export default function ResultsHistory() {
 
   const openReport = (item) => {
     if (item.id && item.detail_available === true) {
-      navigate(`/Results?result=${encodeURIComponent(item.id)}`);
+      navigate(item.kind === "verified"
+        ? `/Results?verified=${encodeURIComponent(item.id)}`
+        : `/Results?result=${encodeURIComponent(item.id)}`);
     }
   };
 

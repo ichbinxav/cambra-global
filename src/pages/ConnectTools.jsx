@@ -14,7 +14,7 @@
 // No business logic changed: StripeConnectCard and the upload flow are the
 // same components/endpoints as before. Only the catalog surface is removed.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, BarChart3, CheckCircle2, FileSearch, LockKeyhole, Percent } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -38,12 +38,10 @@ function CardSkeleton() {
   );
 }
 
-export default function ConnectTools() {
+export default function ConnectTools({ mode = undefined }) {
   const { t, lang } = useTranslation();
   const [searchParams] = useSearchParams();
-  const requestedMode = searchParams.get("mode");
-  const connectRef = useRef(null);
-  const uploadRef = useRef(null);
+  const requestedMode = mode || searchParams.get("mode");
   const [brandId, setBrandId] = useState(null);
   const [loading, setLoading] = useState(true);
   // null = capability probe in flight (StatementUploadCard renders a skeleton).
@@ -85,17 +83,6 @@ export default function ConnectTools() {
     })();
   }, []);
 
-  useEffect(() => {
-    if (loading || !["connect", "upload"].includes(requestedMode)) return undefined;
-    const target = requestedMode === "upload" ? uploadRef.current : connectRef.current;
-    if (!target) return undefined;
-    const timer = window.setTimeout(() => {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      target.focus({ preventScroll: true });
-    }, 120);
-    return () => window.clearTimeout(timer);
-  }, [extractionLive, loading, requestedMode]);
-
   return (
     <div className="cambra-tool-page relative flex min-h-screen flex-col overflow-x-hidden font-inter">
       <Navbar />
@@ -104,9 +91,11 @@ export default function ConnectTools() {
         <header className="max-w-[930px]">
           <SectionLabel>{uploadMode ? t("az_entry_upload_title") : t("az_entry_connect_title")}</SectionLabel>
           <h1 className="mt-6 text-[clamp(40px,5.2vw,70px)] font-bold leading-[.98] tracking-[-.058em] text-[#081126]">
-            {t("ct_page_title")}<span className="text-[#6657F7]">.</span>
+            {uploadMode ? t("az_entry_upload_title") : t("ct_page_title")}<span className="text-[#6657F7]">.</span>
           </h1>
-          <p className="mt-5 max-w-[760px] text-[clamp(15px,1.35vw,18px)] leading-[1.65] text-[#626B86]">{t("ct_page_sub")}</p>
+          <p className="mt-5 max-w-[760px] text-[clamp(15px,1.35vw,18px)] leading-[1.65] text-[#626B86]">
+            {uploadMode ? t("az_entry_upload_body") : t("ct_page_sub")}
+          </p>
           <p className="mt-5 inline-flex items-center gap-2 text-[12px] font-bold text-[#4B5571]"><LockKeyhole size={15} className="text-[#5B4CF5]" /> {t("trust_sec_b1_t")} · {t("trust_sec_b4_t")}</p>
         </header>
 
@@ -115,22 +104,12 @@ export default function ConnectTools() {
             {loading ? (
               <CardSkeleton />
             ) : uploadMode ? (
-              <div
-                ref={uploadRef}
-                id="statement-upload"
-                tabIndex={-1}
-                className="h-full scroll-mt-28 rounded-[28px] outline-none"
-              >
+              <div id="statement-upload" className="h-full rounded-[28px]">
                 <StatementUploadCard providerLabel={genericProviderLabel} extractionLive={extractionLive} />
               </div>
             ) : (
-              <div
-                ref={connectRef}
-                id="connect-provider"
-                tabIndex={-1}
-                className="h-full rounded-[28px] outline-none"
-              >
-                <StripeConnectCard brandId={brandId} />
+              <div id="connect-provider" className="h-full rounded-[28px]">
+                <StripeConnectCard brandId={brandId} redirectAfter="/ConnectStripe" />
               </div>
             )}
           </section>
@@ -167,35 +146,11 @@ export default function ConnectTools() {
           </aside>
         </div>
 
-        <section className="cambra-paper-card mt-6 p-6 sm:p-7">
-          <div className="mb-6 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-[17px] font-bold tracking-[-.025em] text-[#11182D]">{t("az_entry_label")}</p>
-              <p className="mt-1 text-[12px] text-[#747C91]">{uploadMode ? t("az_entry_connect_subtitle") : t("az_entry_upload_subtitle")}</p>
-            </div>
-            <Link to="/Analyzer" className="hidden text-[12px] font-bold text-[#4D3DF1] sm:inline-flex sm:items-center sm:gap-2">{t("az_entry_manual_title")} <ArrowRight size={13} /></Link>
-          </div>
-          {!loading && (uploadMode ? (
-            <div
-              ref={connectRef}
-              id="connect-provider"
-              tabIndex={-1}
-              className="rounded-[24px] outline-none"
-            >
-              <StripeConnectCard brandId={brandId} />
-            </div>
-          ) : (
-            <div
-              ref={uploadRef}
-              id="statement-upload"
-              tabIndex={-1}
-              className="scroll-mt-28 rounded-[24px] outline-none"
-            >
-              <StatementUploadCard providerLabel={genericProviderLabel} extractionLive={extractionLive} />
-            </div>
-          ))}
-          <Link to="/Analyzer" className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#D8DCE8] bg-white text-[12px] font-bold text-[#27314D] sm:hidden">{t("az_entry_manual_title")} <ArrowRight size={13} /></Link>
-        </section>
+        <nav className="mt-6 grid gap-3 sm:grid-cols-3" aria-label={t("az_entry_label")}>
+          <Link to="/ConnectStripe" className={`cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold ${!uploadMode ? "border-[#7C6CF8] text-[#4D3DF1]" : "text-[#27314D]"}`}>{t("az_entry_connect_title")} <ArrowRight size={14} /></Link>
+          <Link to="/UploadStatement" className={`cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold ${uploadMode ? "border-[#7C6CF8] text-[#4D3DF1]" : "text-[#27314D]"}`}>{t("az_entry_upload_title")} <ArrowRight size={14} /></Link>
+          <Link to="/Analyzer" className="cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold text-[#27314D]">{t("az_entry_manual_title")} <ArrowRight size={14} /></Link>
+        </nav>
       </main>
     </div>
   );

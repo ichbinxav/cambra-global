@@ -1,5 +1,5 @@
 import React from "react";
-import { Building2, PanelsTopLeft, ShoppingBag, Store } from "lucide-react";
+import { PanelsTopLeft, ShoppingBag, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import SectionHeading from "@/components/landing/SectionHeading";
@@ -8,8 +8,7 @@ import { useTranslation } from "@/lib/i18n.jsx";
 const AUDIENCES = [
   { icon: ShoppingBag, title: "analyzer_channel_online", body: "az_ch_online_sub", accent: "#795FFF" },
   { icon: Store, title: "az_tpv_label", body: "az_ch_instore_sub", accent: "#4D7CFF" },
-  { icon: PanelsTopLeft, title: "ac_chip_impact_complete", body: "stack_c1_d", accent: "#31BEE7" },
-  { icon: Building2, title: "landing_audience_other", body: "cta_final_sub1", accent: "#28B98B" },
+  { icon: PanelsTopLeft, title: "analyzer_channel_combined", body: "hero_audience", accent: "#31BEE7" },
 ];
 
 export default function AudienceSection() {
@@ -17,7 +16,7 @@ export default function AudienceSection() {
 
   return (
     <section id="audience" className="relative scroll-mt-20 overflow-hidden py-12 sm:py-16">
-      <div className="relative mx-auto max-w-[1400px] px-6 sm:px-10">
+      <div className="cambra-public-container relative">
         <AnimatedSection className="grid grid-cols-1 items-end gap-6 lg:grid-cols-[minmax(0,.9fr)_minmax(360px,.72fr)] lg:gap-14">
           <SectionHeading eyebrow={t("pt_s3_label")} align="left">
             {t("hero_audience")}
@@ -27,7 +26,7 @@ export default function AudienceSection() {
           </p>
         </AnimatedSection>
 
-        <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-3">
           {AUDIENCES.map(({ icon: Icon, title, body, accent }, index) => (
             <motion.article
               key={title}

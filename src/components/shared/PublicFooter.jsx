@@ -14,10 +14,10 @@ export default function PublicFooter() {
   const links = [
     { to: "/Partners", label: t("footer_partners") },
     { to: "/ForProviders", label: t("footer_for_providers") },
-    { to: "/Security", label: "Security" },
+    { to: "/Security", label: t("footer_security") },
     { to: "/Privacy", label: t("footer_privacy") },
     { to: "/Terms", label: t("footer_terms") },
-    { to: "/Cookies", label: "Cookies" },
+    { to: "/Cookies", label: t("footer_cookies") },
     { to: "/Dpa", label: t("footer_dpa") },
     { to: "/Subprocessors", label: t("footer_subprocessors") },
     { to: "/Contact", label: t("footer_contact") },
@@ -25,13 +25,13 @@ export default function PublicFooter() {
   return (
     <footer className="relative mt-16">
       <div
-        className="relative w-full overflow-hidden px-6 sm:px-10 pt-20 pb-14"
+        className="relative w-full overflow-hidden pt-20 pb-14"
         style={{
           background: "#0A0818",
           borderTop: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+        <div className="cambra-public-container relative flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div>
             <span
               className="font-black text-white inline-flex items-center gap-2.5"
@@ -62,7 +62,7 @@ export default function PublicFooter() {
         </div>
 
         <div
-          className="relative max-w-6xl mx-auto mt-12 pt-6"
+          className="cambra-public-container relative mt-12 pt-6"
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>

@@ -5,6 +5,7 @@ import { CheckCircle2, RefreshCw, LogOut, Clock, Sparkles, Loader2, LockKeyhole,
 import { useToast } from "@/components/shared/Toast.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { trackProductEvent } from "@/lib/productAnalytics";
+import { ProviderLogoSvg } from "@/components/paymentsAnalyzer/providerLogos";
 // M3-Chunk 6 — Verified analysis is an EXPLICIT user action, not an
 // automatic post-sync side effect (the auto-materialize cadena was retired
 // in the payments-only cutover, see Decision_Log 2026-07-09). After the
@@ -93,7 +94,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
         mode: "start",
         provider: "stripe",
         brand_id: brandId,
-        redirect_after: redirectAfter || "/ConnectTools",
+        redirect_after: redirectAfter || "/ConnectStripe",
       });
       const data = res?.data || res;
       // 503 when STRIPE_CLIENT_ID isn't configured — surface the coming-soon state.
@@ -238,7 +239,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
   const Header = ({ children }) => (
     <div className="flex items-center gap-4">
       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#635BFF]/20 bg-[#635BFF]/10">
-        <span className="text-[19px] font-black text-[#635BFF]">ST</span>
+        <span className="text-[#635BFF]"><ProviderLogoSvg slug="stripe" size={30} /></span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6253F3]">{t("az_entry_connect_badge")}</p>
@@ -293,7 +294,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
               <p className="flex items-center gap-2 text-[13px] font-bold text-[#172039]"><Sparkles size={14} className="text-[#5B4CF5]" /> {t("sc_run_title")}</p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-[#69728A]">{computing ? t("sc_run_computing") : t("sc_run_sub")}</p>
             </div>
-            <button onClick={handleRunVerifiedAnalysis} disabled={computing || busy} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[var(--g-voltio)] px-5 text-[11px] font-bold text-white disabled:opacity-60">
+            <button onClick={handleRunVerifiedAnalysis} disabled={computing || busy} style={{ background: "var(--g-voltio)" }} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-5 text-[11px] font-bold text-white disabled:opacity-60">
               {computing ? <><Loader2 size={12} className="animate-spin" /> {t("sc_running")}</> : t("sc_run")}
             </button>
           </div>
@@ -318,7 +319,7 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
             <div key={text} className="flex items-center gap-3 rounded-xl border border-[#E5E7EE] bg-[#FAFAFC] px-3 py-3 text-[10.5px] font-semibold text-[#45506A]"><Icon size={14} className="shrink-0 text-[#5B4CF5]" /> {text}</div>
           ))}
         </div>
-        <button onClick={handleConnect} disabled={busy || !brandId} className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-[var(--g-voltio)] px-5 text-[13px] font-bold text-white shadow-[0_18px_36px_-22px_rgba(91,76,245,.9)] disabled:opacity-50">
+        <button onClick={handleConnect} disabled={busy || !brandId} style={{ background: "var(--g-voltio)" }} className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center rounded-xl px-5 text-[13px] font-bold text-white shadow-[0_18px_36px_-22px_rgba(91,76,245,.9)] disabled:opacity-50">
           {busy ? t("sc_connecting") : !brandId ? t("sc_setting_up") : t("sc_connect")}
         </button>
         <span className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-semibold text-[#7A8296]"><LockKeyhole size={11} /> {t("sc_readonly")}</span>

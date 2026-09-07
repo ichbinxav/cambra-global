@@ -45,7 +45,7 @@ function Hero({ onBookDemo }) {
         transition={{ duration: 0.8, ease: "easeOut" }}
       />
 
-      <div className="relative z-10 w-full max-w-[1560px] mx-auto px-6 sm:px-10 lg:px-12 py-10 lg:py-14 grid grid-cols-1 min-[1180px]:grid-cols-[minmax(0,.96fr)_minmax(500px,1.04fr)] gap-8 min-[1180px]:gap-10 items-center">
+      <div className="cambra-public-container relative z-10 grid w-full grid-cols-1 items-center gap-8 py-10 lg:py-14 min-[1180px]:grid-cols-[minmax(0,1.02fr)_minmax(520px,.98fr)] min-[1180px]:gap-8">
         <div className="relative z-10 min-w-0">
           <motion.div
             className="mb-7"
@@ -67,7 +67,7 @@ function Hero({ onBookDemo }) {
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.99,
-              maxWidth: 730,
+              maxWidth: 780,
               textWrap: "pretty",
             }}
           >
@@ -134,7 +134,7 @@ function Hero({ onBookDemo }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
-          <div className="relative w-full max-w-[720px]">
+          <div className="relative w-full max-w-[760px] min-[1180px]:translate-x-2">
             <img
               src={BRAND_ASSETS.landingHero}
               alt={t("hero_image_alt")}
@@ -144,25 +144,15 @@ function Hero({ onBookDemo }) {
               style={{ filter: "contrast(.995) saturate(1.01) drop-shadow(0 26px 42px rgba(91,76,245,.13))" }}
               draggable={false}
             />
-            {/* The approved render has a tiny baked-in example badge. This
-                frosted patch removes only that badge while preserving the
-                real alpha canvas and every approved figure in the artwork. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-[58.1%] top-[16.4%] h-[5.9%] w-[13.5%]"
+              className="pointer-events-none absolute left-[57.9%] top-[16.1%] h-[6.3%] w-[14.8%] rounded-[10px]"
               style={{
-                background: "transparent",
-                backdropFilter: "blur(20px) brightness(1.025) saturate(.65)",
-                WebkitBackdropFilter: "blur(20px) brightness(1.025) saturate(.65)",
-                WebkitMaskImage: "radial-gradient(ellipse at center,#000 48%,rgba(0,0,0,.92) 66%,transparent 100%)",
-                maskImage: "radial-gradient(ellipse at center,#000 48%,rgba(0,0,0,.92) 66%,transparent 100%)",
-                transform: "scale(1.12)",
+                background: "linear-gradient(145deg,rgba(255,255,255,.98),rgba(245,247,255,.94))",
+                boxShadow: "0 0 16px 8px rgba(249,250,255,.72)",
               }}
             />
           </div>
-          <p className="mt-2 w-full max-w-[560px] text-center text-[10.5px] leading-relaxed min-[1180px]:self-center" style={{ color: "var(--gris-2)" }}>
-            {t("hero_visual_footer")}
-          </p>
         </motion.div>
       </div>
     </section>
@@ -178,9 +168,9 @@ function HeroTrustStrip() {
   ];
 
   return (
-    <section className="relative px-5 sm:px-8 pb-12 sm:pb-16" aria-label={t("hero_audience")}>
+    <section className="relative pb-12 sm:pb-16" aria-label={t("hero_audience")}>
       <div
-        className="relative max-w-[1440px] mx-auto overflow-hidden rounded-[26px]"
+        className="cambra-public-container relative overflow-hidden rounded-[26px]"
         style={{
           background: "rgba(255,255,255,.88)",
           border: "1px solid rgba(91,76,245,.13)",
@@ -233,7 +223,7 @@ function HowItWorksSection() {
           filter: "blur(90px)",
         }}
       />
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
+      <div className="cambra-public-container relative">
         <AnimatedSection>
           <SectionHeading eyebrow={t("how_label")} align="left" className="mb-10">
             {t("how_h2_pre")}{" "}
@@ -306,7 +296,7 @@ function HowItWorksSection() {
                   {s.connect && (
                     <div className="mt-auto flex justify-center pt-6">
                       <Link
-                        to="/ConnectTools"
+                        to="/Analyzer"
                         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 text-[12.5px] font-bold text-white"
                         style={{ background: "var(--ink)", boxShadow: "0 12px 28px -18px rgba(12,12,22,.65)" }}
                       >
@@ -360,7 +350,7 @@ function LandingFooter() {
           borderTop: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+        <div className="cambra-public-container relative flex flex-col lg:flex-row lg:items-end justify-between gap-10">
           <div>
             <span
               className="font-black text-white inline-flex items-center gap-2.5"
@@ -391,7 +381,7 @@ function LandingFooter() {
         </div>
 
         <div
-          className="relative max-w-6xl mx-auto mt-12 pt-6"
+          className="cambra-public-container relative mt-12 pt-6"
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <p className="text-[11.5px]" style={{ color: "rgba(255,255,255,0.35)" }}>

@@ -6,23 +6,23 @@ import { useTranslation } from "@/lib/i18n.jsx";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 
 const LAYERS = [
-  { icon: PieChart, title: "stack_c1_t", desc: "stack_c1_d", color: "#A678FF" },
+  { icon: PieChart, title: "stack_c1_t", desc: "prob_c1_body", color: "#A678FF" },
   { icon: Database, title: "stack_c2_t", desc: "stack_c2_d", color: "#5E82FF" },
-  { icon: ChartNoAxesCombined, title: "stack_c3_t", desc: "stack_c3_d", color: "#57D9F4" },
-  { icon: Target, title: "stack_c4_t", desc: "stack_c4_d", color: "#91E56F" },
+  { icon: ChartNoAxesCombined, title: "stack_c3_t", desc: "prob_c2_body", color: "#57D9F4" },
+  { icon: Target, title: "stack_c4_t", desc: "prob_c3_body", color: "#91E56F" },
 ];
 
 export default function TheStackSection() {
   const { t } = useTranslation();
 
   return (
-    <section id="intelligence" className="relative scroll-mt-20 px-5 sm:px-8 py-12 sm:py-16 overflow-hidden">
+    <section id="intelligence" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-        className="relative max-w-[1400px] mx-auto overflow-hidden rounded-[32px] px-6 sm:px-10 lg:px-14 xl:px-16 py-12 sm:py-16"
+        className="cambra-public-container relative overflow-hidden rounded-[32px] px-6 sm:px-10 lg:px-14 xl:px-16 py-12 sm:py-16"
         style={{ background: "#060711", border: "1px solid rgba(139,123,255,.16)" }}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-40" style={{ backgroundImage: "radial-gradient(rgba(139,123,255,.16) 1px,transparent 1px)", backgroundSize: "30px 30px", maskImage: "radial-gradient(ellipse 55% 75% at 88% 20%,#000,transparent 78%)" }} />
@@ -35,12 +35,12 @@ export default function TheStackSection() {
             </h2>
           </div>
           <p className="max-w-[440px] text-[13.5px] sm:text-[14.5px] leading-relaxed lg:justify-self-end" style={{ color: "rgba(255,255,255,.67)" }}>
-            {t("stack_c1_d")} {t("stack_c3_d")}
+            {t("prob_intro")}
           </p>
         </div>
 
         <div className="relative mt-10 sm:mt-12 grid grid-cols-1 lg:grid-cols-[minmax(340px,.84fr)_minmax(0,1.16fr)] gap-8 lg:gap-16 items-center">
-          <div className="relative flex h-[430px] sm:h-[540px] lg:h-[610px] items-center justify-center overflow-hidden" aria-hidden="true">
+          <div className="relative flex h-[460px] sm:h-[580px] lg:h-[650px] items-center justify-center overflow-hidden" aria-hidden="true">
             <div className="absolute h-[60%] w-[72%] rounded-full" style={{ background: "radial-gradient(circle,rgba(62,93,255,.13),transparent 72%)", filter: "blur(74px)" }} />
             <motion.img
               src={BRAND_ASSETS.intelligenceStack}
@@ -53,7 +53,7 @@ export default function TheStackSection() {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-full w-full select-none object-contain"
-              style={{ filter: "saturate(.88) brightness(.94)" }}
+              style={{ filter: "saturate(.74) brightness(.88) contrast(.98)" }}
               draggable={false}
             />
           </div>

@@ -1516,8 +1516,12 @@ body, p {
   .payment-journey__brand img { width: 21px; height: 21px; }
   .payment-journey__account { display: none; }
   .payment-journey__tools { gap: 3px; }
-  .payment-journey__stepper ol { min-height: 72px; }
-  .payment-journey__stepper button { height: 72px; }
+  .payment-journey__stepper { overflow-x: hidden; }
+  .payment-journey__stepper ol { width: 100%; min-width: 0; min-height: 70px; padding: 0 7px; }
+  .payment-journey__stepper li:not(:last-child)::after { top: 22px; left: calc(50% + 15px); right: calc(-50% + 15px); }
+  .payment-journey__stepper button { height: 70px; gap: 5px; padding: 0 2px; font-size: 8px; }
+  .payment-journey__step-number { width: 25px; height: 25px; font-size: 9px; }
+  .payment-journey__step-label { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .payment-journey__content, .payment-journey__footer { width: min(100% - 28px, 680px); }
   .payment-journey__content { padding-top: 34px; gap: 26px; }
   .payment-journey__title { font-size: clamp(35px, 11vw, 48px); }

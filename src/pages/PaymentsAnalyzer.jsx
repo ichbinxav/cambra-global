@@ -8,8 +8,8 @@
 //   country                 ISO-3166-1 alpha-2 (required)
 //   brand_name              2-80 chars         (required — lead intelligence)
 //   card_mix_debit_pct      0   .. 100         (optional)
-//   website                 URL-ish, ≤200 chars (optional)
-//   sector                  enum (see BrandBlock.SECTOR_OPTIONS) (optional)
+//   website                 URL-ish, ≤200 chars (required)
+//   sector                  enum (see BrandBlock.SECTOR_OPTIONS) (required)
 //
 // UX changes only. NO business logic changes: same validation ranges, same
 // payload shape, same enum in the same order. Every slider produces a value
@@ -262,6 +262,17 @@ function AnalyzerLivePreview({
 
       {activeStep === 1 && (
         <div className="journey-preview-state">
+          <Building2 size={32} />
+          <span className="journey-preview-kicker">{journeyCopy.steps[0]}</span>
+          <h2>{journeyCopy.profileTitle}</h2>
+          <div className="journey-preview-metric"><span>{t("az_country_label")}</span><strong>{countryName}</strong></div>
+          <div className="journey-preview-metric"><span>{t("az_currency_label")}</span><strong>{currency}</strong></div>
+          <div className="journey-preview-metric"><span>{t("acc_brand_name")}</span><strong>{brandName || "—"}</strong></div>
+        </div>
+      )}
+
+      {activeStep === 2 && (
+        <div className="journey-preview-state">
           <ShieldCheck size={32} />
           <span className="journey-preview-kicker">{journeyCopy.selected}</span>
           <h2>{sourceTitle}</h2>
@@ -271,17 +282,6 @@ function AnalyzerLivePreview({
             <li><CheckCircle2 size={15} />{t("login_gate_trust_2")}</li>
             <li><CheckCircle2 size={15} />{t("login_gate_trust_3")}</li>
           </ul>
-        </div>
-      )}
-
-      {activeStep === 2 && (
-        <div className="journey-preview-state">
-          <Building2 size={32} />
-          <span className="journey-preview-kicker">{journeyCopy.steps[1]}</span>
-          <h2>{journeyCopy.profileTitle}</h2>
-          <div className="journey-preview-metric"><span>{t("az_country_label")}</span><strong>{countryName}</strong></div>
-          <div className="journey-preview-metric"><span>{t("az_currency_label")}</span><strong>{currency}</strong></div>
-          <div className="journey-preview-metric"><span>{t("brand_name_optional")}</span><strong>{brandName || "—"}</strong></div>
         </div>
       )}
 
@@ -313,9 +313,13 @@ function AnalyzerLivePreview({
       )}
 
       <div className="journey-preview-summary">
-        <div className={activeStep === 2 ? "is-current" : ""}>
+        <div className={activeStep === 1 ? "is-current" : ""}>
           <Building2 size={15} />
-          <span><small>{journeyCopy.steps[1]}</small><strong>{brandName || countryName}</strong><em>{countryName} · {currency}</em></span>
+          <span><small>{journeyCopy.steps[0]}</small><strong>{brandName || countryName}</strong><em>{countryName} · {currency}</em></span>
+        </div>
+        <div className={activeStep === 2 ? "is-current" : ""}>
+          <ShieldCheck size={15} />
+          <span><small>{journeyCopy.steps[1]}</small><strong>{sourceTitle}</strong><em>{sourceBody}</em></span>
         </div>
         <div className={activeStep === 3 ? "is-current" : ""}>
           <CreditCard size={15} />
@@ -513,17 +517,19 @@ export default function PaymentsAnalyzer() {
     if (!country) errors.push(t("az_err_country_req"));
     else if (!ACTIVE_LAUNCH_MARKETS.includes(country)) errors.push(t("az_err_market_limited"));
 
-    // Brand name — OPTIONAL (SWEEP-1 T2). When provided, 2-80 chars.
+    // The business profile is required before a data source can be chosen.
     const trimmedBrand = brandName.trim();
-    if (trimmedBrand !== "" && (trimmedBrand.length < 2 || trimmedBrand.length > 80)) {
+    if (trimmedBrand.length < 2 || trimmedBrand.length > 80) {
       errors.push(t("az_err_brand_len"));
     }
 
-    // Website — optional; light URL sanity check only (backend does the
+    // Website — required; light URL sanity check only (backend does the
     // authoritative normalization). Reject only obvious garbage like spaces
     // or missing domain dot; leave real validation to the server so we don't
     // block users on edge-case TLDs.
-    if (website.trim() !== "") {
+    if (website.trim() === "") {
+      errors.push(t("az_err_website"));
+    } else {
       const w = website.trim();
       if (/\s/.test(w) || !/\./.test(w)) {
         errors.push(t("az_err_website"));
@@ -532,8 +538,7 @@ export default function PaymentsAnalyzer() {
       }
     }
 
-    // Sector — optional; if set, must be in the shared enum.
-    if (sector !== "" && !BRAND_SECTOR_SLUGS.includes(sector)) {
+    if (!BRAND_SECTOR_SLUGS.includes(sector)) {
       errors.push(t("az_err_sector"));
     }
 
@@ -550,12 +555,8 @@ export default function PaymentsAnalyzer() {
     return { valid: errors.length === 0, errors };
   }, [gmv, avgTicket, intlPct, providerSlug, country, currency, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email, t, lang]);
 
-  // ── Progress counter — 6 required fields (5 payment + brand name) plus 1
-  //    optional (card mix) when the drawer is open. Website and sector are
-  //    intentionally NOT counted so the pill doesn't nag users into filling
-  //    optional fields.
-  //    In-store channel: intl_pct is not asked, so the counter drops to 5
-  //    payment fields + brand = 5 required.
+  // ── Progress counter — the mandatory business profile and payment inputs
+  //    are both represented. Card mix remains the only optional field.
   const progress = useMemo(() => {
     let paymentFields;
     if (channel === "combined") {
@@ -569,30 +570,27 @@ export default function PaymentsAnalyzer() {
     } else {
       paymentFields = [gmv, avgTicket, intlPct, providerSlug, country];  // classic online
     }
-    // UX-1 T1 — email is required in every mode, so it counts toward progress.
-    paymentFields.push(email);
+    paymentFields.push(email, brandName.trim(), website.trim(), sector);
     const filled = paymentFields.filter((v) => v !== "" && v !== undefined && v !== null).length;
-    // SWEEP-1 T2 — brand name is optional now, so it no longer counts toward
-    // the progress pill (same policy as website/sector: never nag optionals).
     const optionalCounts = cardMixOpen;
     const optionalFilled = optionalCounts && cardMixDebit !== "" ? 1 : 0;
     const total = paymentFields.length + (optionalCounts ? 1 : 0);
     const done = filled + optionalFilled;
     return { done, total, pct: Math.round((done / total) * 100) };
-  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, channel, combinedOnline, combinedInStore, email]);
+  }, [gmv, avgTicket, intlPct, providerSlug, country, cardMixOpen, cardMixDebit, brandName, website, sector, channel, combinedOnline, combinedInStore, email]);
 
   const businessReady = useMemo(() => {
     const trimmedBrand = brandName.trim();
-    const brandValid = !trimmedBrand || (trimmedBrand.length >= 2 && trimmedBrand.length <= 80);
+    const brandValid = trimmedBrand.length >= 2 && trimmedBrand.length <= 80;
     const websiteValue = website.trim();
-    const websiteValid = !websiteValue || (!/\s/.test(websiteValue) && /\./.test(websiteValue) && websiteValue.length <= 200);
+    const websiteValid = Boolean(websiteValue) && !/\s/.test(websiteValue) && /\./.test(websiteValue) && websiteValue.length <= 200;
     return Boolean(
       country &&
       ACTIVE_LAUNCH_MARKETS.includes(country) &&
       EMAIL_RE.test(email.trim()) &&
       brandValid &&
       websiteValid &&
-      (!sector || BRAND_SECTOR_SLUGS.includes(sector))
+      BRAND_SECTOR_SLUGS.includes(sector)
     );
   }, [brandName, country, email, sector, website]);
 
@@ -664,7 +662,7 @@ export default function PaymentsAnalyzer() {
           // GROWTH-1 — attribution + time-to-value (never engine inputs).
           ...(refCodeRef.current ? { referred_by_code: refCodeRef.current } : {}),
           time_to_result_ms: Date.now() - startedAtRef.current,
-          ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
+          brand_name: brandName.trim(),
           channels: [
             {
               channel: "online",
@@ -680,8 +678,8 @@ export default function PaymentsAnalyzer() {
               avg_ticket_eur: Number(combinedInStore.avg_ticket_eur),
             },
           ],
-          ...(website.trim() !== "" ? { website: website.trim() } : {}),
-          ...(sector !== "" ? { sector } : {}),
+          website: website.trim(),
+          sector,
         };
       } else {
         payload = {
@@ -703,10 +701,10 @@ export default function PaymentsAnalyzer() {
           // GROWTH-1 — attribution + time-to-value (never engine inputs).
           ...(refCodeRef.current ? { referred_by_code: refCodeRef.current } : {}),
           time_to_result_ms: Date.now() - startedAtRef.current,
-          ...(brandName.trim() !== "" ? { brand_name: brandName.trim() } : {}),
+          brand_name: brandName.trim(),
           ...(cardMixDebit !== "" ? { card_mix_debit_pct: Number(cardMixDebit) } : {}),
-          ...(website.trim() !== "" ? { website: website.trim() } : {}),
-          ...(sector !== "" ? { sector } : {}),
+          website: website.trim(),
+          sector,
         };
       }
       const resp = await base44.functions.invoke("submitPaymentsAnalysis", payload);
@@ -780,40 +778,13 @@ export default function PaymentsAnalyzer() {
         <section className="payment-journey__workspace">
           <div className="payment-journey__eyebrow">{t("az_pill")}</div>
           <h1 className="payment-journey__title">
-            {activeStep === 1 ? t("az_title") : activeStep === 2 ? t("bp_h2") : activeStep === 3 ? journeyCopy.paymentsTitle : journeyCopy.reviewTitle}
+            {activeStep === 1 ? t("bp_h2") : activeStep === 2 ? t("az_title") : activeStep === 3 ? journeyCopy.paymentsTitle : journeyCopy.reviewTitle}
           </h1>
           <p className="payment-journey__intro">
-            {activeStep === 1 ? t("az_sub") : activeStep === 2 ? t("bp_sub") : activeStep === 3 ? journeyCopy.paymentsBody : journeyCopy.reviewBody}
+            {activeStep === 1 ? t("bp_sub") : activeStep === 2 ? t("az_sub") : activeStep === 3 ? journeyCopy.paymentsBody : journeyCopy.reviewBody}
           </p>
 
           {activeStep === 1 && (
-            <>
-              <AnalyzerEntryCards
-                selected={entryMode}
-                onSelect={(mode) => {
-                  setEntryMode(mode);
-                  if (mode === "connect") {
-                    navigate("/ConnectTools?mode=connect");
-                    return;
-                  }
-                  if (mode === "upload") {
-                    navigate("/ConnectTools?mode=upload");
-                    return;
-                  }
-                  changeStep(2);
-                }}
-              />
-              <div className="payment-journey__disclosure">
-                <ShieldCheck size={18} />
-                <div>
-                  <strong>{journeyCopy.evidenceTitle}</strong>
-                  <p>{t("coll_sub")}</p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeStep === 2 && (
             <div className="journey-form space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldCard><CountryField value={country} onChange={setCountry} options={countryOptions} /></FieldCard>
@@ -837,6 +808,7 @@ export default function PaymentsAnalyzer() {
                   </div>
                   <input
                     type="email"
+                    required
                     inputMode="email"
                     autoComplete="email"
                     value={email}
@@ -849,11 +821,41 @@ export default function PaymentsAnalyzer() {
                 </div>
               </FieldCard>
               <div className="payment-journey__actions">
-                <button type="button" className="journey-button journey-button--ghost" onClick={() => changeStep(1)}><ArrowLeft size={16} />{t("az_back")}</button>
-                <button type="button" className="journey-button journey-button--primary" disabled={!businessReady} onClick={() => changeStep(3)}>{journeyCopy.continue}<ArrowRight size={16} /></button>
+                <Link to="/" className="journey-button journey-button--ghost"><ArrowLeft size={16} />{t("az_back")}</Link>
+                <button type="button" className="journey-button journey-button--primary" disabled={!businessReady} onClick={() => changeStep(2)}>{journeyCopy.continue}<ArrowRight size={16} /></button>
               </div>
-              {!businessReady && <p className="payment-journey__needed">{journeyCopy.incomplete} · {t("az_country_label")} · {t("analyzer_email_label")}</p>}
+              {!businessReady && <p className="payment-journey__needed">{journeyCopy.incomplete} · {t("acc_brand_name")} · {t("acc_website")} · {t("cb_category")} · {t("az_country_label")} · {t("analyzer_email_label")}</p>}
             </div>
+          )}
+
+          {activeStep === 2 && (
+            <>
+              <AnalyzerEntryCards
+                selected={entryMode}
+                onSelect={(mode) => {
+                  setEntryMode(mode);
+                  if (mode === "connect") {
+                    navigate("/ConnectStripe");
+                    return;
+                  }
+                  if (mode === "upload") {
+                    navigate("/UploadStatement");
+                    return;
+                  }
+                  changeStep(3);
+                }}
+              />
+              <div className="payment-journey__disclosure">
+                <ShieldCheck size={18} />
+                <div>
+                  <strong>{journeyCopy.evidenceTitle}</strong>
+                  <p>{t("coll_sub")}</p>
+                </div>
+              </div>
+              <div className="payment-journey__actions">
+                <button type="button" className="journey-button journey-button--ghost" onClick={() => changeStep(1)}><ArrowLeft size={16} />{t("az_back")}</button>
+              </div>
+            </>
           )}
 
           {activeStep === 3 && <div className="journey-form">
@@ -977,7 +979,8 @@ export default function PaymentsAnalyzer() {
               (channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions)
                 .find((o) => o.slug === providerSlug)?.label
             }
-            onConnect={() => navigate("/ConnectTools?mode=connect")}
+            onConnect={() => navigate("/ConnectStripe")}
+            onUpload={() => navigate("/UploadStatement")}
           />
           </>
           )}
@@ -1013,9 +1016,9 @@ export default function PaymentsAnalyzer() {
             <div className="journey-review">
               {errorBanner && <div className="analyzer-error-banner" role="alert"><AlertTriangle size={16} /><p>{errorBanner}</p></div>}
               <section className="journey-review__group">
-                <div className="journey-review__heading"><Building2 size={18} /><strong>{t("bp_title")}</strong><button type="button" onClick={() => changeStep(2)}>{journeyCopy.edit}</button></div>
+                <div className="journey-review__heading"><Building2 size={18} /><strong>{t("bp_title")}</strong><button type="button" onClick={() => changeStep(1)}>{journeyCopy.edit}</button></div>
                 <dl>
-                  <div><dt>{t("brand_name_optional")}</dt><dd>{brandName.trim() || t("brand_fallback")}</dd></div>
+                  <div><dt>{t("acc_brand_name")}</dt><dd>{brandName.trim() || t("brand_fallback")}</dd></div>
                   <div><dt>{t("az_country_label")}</dt><dd>{countryOptions.find((item) => item.code === country)?.name || "—"}</dd></div>
                   <div><dt>{t("az_currency_label")}</dt><dd>{currency}</dd></div>
                   <div><dt>{t("analyzer_email_label")}</dt><dd>{email || "—"}</dd></div>

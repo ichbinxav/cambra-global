@@ -198,7 +198,7 @@ export default function PricingDual() {
         }}
       />
 
-      <div className="relative max-w-[1380px] mx-auto px-6 sm:px-10">
+      <div className="cambra-public-container relative">
         {/* Header */}
         <div className="grid grid-cols-1 lg:grid-cols-[.95fr_1.05fr] gap-7 lg:gap-12 items-end mb-12 sm:mb-14">
           <SectionHeading eyebrow={t("pd_eyebrow")} align="left">

@@ -2,7 +2,7 @@
 // own opaque code are returned; referred-business identities stay private.
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Copy, FileText, Link2, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, FileText, Linkedin, Link2, Loader2, Mail, MessageCircle, RefreshCw, Share2, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import ReferralFeeStatus from "@/components/referrals/ReferralFeeStatus";
 import SectionLabel from "@/components/shared/SectionLabel";
@@ -14,6 +14,7 @@ export default function Referrals() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState("");
+  const [shareOpen, setShareOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,6 +47,15 @@ export default function Referrals() {
     } catch {
       // Values remain visible and selectable when Clipboard is unavailable.
     }
+  };
+
+  const shareText = `${t("ref_land_h1_l1")} ${t("ref_land_h1_kw")} ${inviteUrl}`;
+  const nativeShare = async () => {
+    if (navigator.share) {
+      await navigator.share({ title: "CAMBRA", text: shareText, url: inviteUrl }).catch(() => null);
+      return;
+    }
+    setShareOpen((open) => !open);
   };
 
   return (
@@ -89,9 +99,22 @@ export default function Referrals() {
                     {copied === "link" ? <Check size={14} /> : <Copy size={14} />}{copied === "link" ? t("ref_copied") : t("ref_copy")}
                   </button>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E2E4ED] bg-[#F8F8FC] px-4 py-3">
-                  <span className="font-mono text-[12px] font-bold tracking-[.12em] text-[#11182D]">{state.code}</span>
-                  <button type="button" onClick={() => copyValue(state.code, "code")} className="inline-flex items-center gap-2 text-[11px] font-bold text-[#4D3DF1]">{copied === "code" ? <Check size={13} /> : <Copy size={13} />}{copied === "code" ? t("ref_copied") : t("share_copy_text")}</button>
+                <div className="cambra-dark-panel mt-4 overflow-visible p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[9px] font-bold uppercase tracking-[.18em] text-[#B7ACFF]">{t("ref_code_verified")}</span>
+                      <p className="mt-2 font-mono text-[clamp(22px,3vw,34px)] font-bold tracking-[.16em] text-white">{state.code}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => copyValue(state.code, "code")} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 text-[11px] font-bold text-white">{copied === "code" ? <Check size={13} /> : <Copy size={13} />}{copied === "code" ? t("ref_copied") : t("share_copy_text")}</button>
+                      <button type="button" onClick={nativeShare} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-[11px] font-bold text-[#11182D]"><Share2 size={13} /> {t("share_native")}</button>
+                    </div>
+                  </div>
+                  <div className={`mt-4 grid gap-2 border-t border-white/10 pt-4 sm:grid-cols-3 ${shareOpen ? "" : "hidden sm:grid"}`}>
+                    <a href={`mailto:?subject=${encodeURIComponent("CAMBRA")}&body=${encodeURIComponent(shareText)}`} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[.06] text-[11px] font-bold text-white"><Mail size={14} /> Email</a>
+                    <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[.06] text-[11px] font-bold text-white"><MessageCircle size={14} /> WhatsApp</a>
+                    <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(inviteUrl)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/[.06] text-[11px] font-bold text-white"><Linkedin size={14} /> LinkedIn</a>
+                  </div>
                 </div>
               </div>
             </div>

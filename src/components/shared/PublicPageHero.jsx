@@ -18,12 +18,12 @@ export default function PublicPageHero({ eyebrow, title, subtitle, children = nu
   const isCenter = align === "center";
   const isDark = tone === "dark";
   return (
-    <div className="px-5 sm:px-8 pt-28 sm:pt-32">
+    <div className="pt-28 sm:pt-32">
       <motion.section
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className={`relative max-w-[1400px] mx-auto overflow-hidden px-6 sm:px-12 lg:px-16 py-14 sm:py-20 ${isDark ? "section-ink" : "rounded-[28px]"} ${isCenter ? "text-center" : "text-left"}`}
+        className={`cambra-public-container relative overflow-hidden px-6 sm:px-12 lg:px-16 py-14 sm:py-20 ${isDark ? "section-ink" : "rounded-[28px]"} ${isCenter ? "text-center" : "text-left"}`}
         style={isDark ? undefined : { background: "linear-gradient(140deg,rgba(255,255,255,.88) 0%,rgba(247,247,255,.88) 68%,rgba(241,246,255,.74) 100%)", border: "1px solid var(--linea)", boxShadow: "0 24px 75px -52px rgba(12,12,22,.34)" }}
       >
         {!isDark && <div aria-hidden="true" className="absolute pointer-events-none" style={{ width: 620, height: 620, right: "-14%", top: "-65%", background: "radial-gradient(circle,rgba(91,76,245,.10),transparent 70%)", filter: "blur(60px)" }} />}

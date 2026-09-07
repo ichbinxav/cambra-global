@@ -84,8 +84,15 @@ Deno.serve(async (req) => {
     // silent empty list (the exact history-empty bug). Instead we filter by
     // created_by server-side and do the shape/engine_result check in JS below,
     // the same robust pattern PaymentsResults already uses.
-    const rows = await base44.asServiceRole.entities.AnalyzerResult
-      .filter({ created_by: user.email }, '-created_date', 100);
+    const [rows, verifiedRows] = await Promise.all([
+      base44.asServiceRole.entities.AnalyzerResult
+        .filter({ created_by: user.email }, '-created_date', 100),
+      // Stripe analyses are written by the service role, so `created_by`
+      // belongs to that service account. Their immutable tenant key is the
+      // denormalized owner_email populated by computeStripeVerifiedGap.
+      base44.asServiceRole.entities.PaymentsAnalysisVerified
+        .filter({ owner_email: email }, '-created_date', 100),
+    ]);
 
     // Defense-in-depth ownership gate, all in JS. Legacy owned rows remain
     // visible as historical summaries; detail_available is true only when the
@@ -94,8 +101,9 @@ Deno.serve(async (req) => {
       (r) => normalizeEmail(r.created_by) === email
     );
 
-    const items = mine.map((r) => ({
+    const estimatedItems = mine.map((r) => ({
       id: r.id,
+      kind: 'estimated',
       anon_session_id: r.anon_session_id || null,
       created_date: r.created_date,
       total_savings: typeof r.total_savings === 'number' ? r.total_savings : null,
@@ -103,9 +111,32 @@ Deno.serve(async (req) => {
       provider_slug: r.details?.input_snapshot?.provider_slug || r.provider_slug || r.provider || null,
       country: r.details?.input_snapshot?.country || r.country || null,
       currency: r.currency || r.details?.input_snapshot?.currency || 'EUR',
+      verification_status: r.verification_status || 'estimated',
       detail_available: Boolean(r?.details?.engine_result),
       legacy_summary: !r?.details?.engine_result,
     }));
+
+    const verifiedItems = (Array.isArray(verifiedRows) ? verifiedRows : [])
+      .filter((r) => normalizeEmail(r?.owner_email) === email)
+      .map((r) => ({
+        id: r.id,
+        kind: 'verified',
+        anon_session_id: null,
+        created_date: r.created_date,
+        total_savings: typeof r?.engine_result?.annual_savings_eur?.point === 'number'
+          ? r.engine_result.annual_savings_eur.point
+          : null,
+        savings_range: r?.engine_result?.annual_savings_eur || null,
+        provider_slug: 'stripe',
+        country: r?.sample_metrics?.account_country || null,
+        currency: r?.sample_metrics?.currency || r?.engine_result?.currency || 'EUR',
+        verification_status: 'verified',
+        detail_available: Boolean(r?.engine_result),
+        legacy_summary: false,
+      }));
+
+    const items = [...estimatedItems, ...verifiedItems]
+      .sort((a, b) => Date.parse(String(b.created_date || '')) - Date.parse(String(a.created_date || '')));
 
     return Response.json({ ok: true, items });
   } catch (error) {

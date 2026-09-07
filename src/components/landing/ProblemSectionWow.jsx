@@ -1,14 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ChartNoAxesCombined, Scale, Target, ShieldCheck } from "lucide-react";
+import { Eye, Scale, Target, ShieldCheck } from "lucide-react";
 import AnimatedSection from "@/components/landing/AnimatedSection";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 const CARD_KEYS = [
-  { icon: ChartNoAxesCombined, title: "stack_c1_t", body: "stack_c1_d", status: "prob_c1_status", color: "#8B7BFF" },
+  { icon: Eye, title: "prob_c1_cat", body: "prob_c1_body", status: "prob_c1_status", color: "#8B7BFF" },
   { icon: Scale, title: "prob_c2_cat", body: "prob_c2_body", status: "prob_c2_status", color: "#39C6F0" },
-  { icon: Target, title: "stack_c4_t", body: "stack_c4_d", status: "prob_c3_status", color: "#2FE0A8" },
+  { icon: Target, title: "prob_c3_cat", body: "prob_c3_body", status: "prob_c3_status", color: "#2FE0A8" },
 ];
 
 export default function ProblemSectionWow() {
@@ -16,7 +16,7 @@ export default function ProblemSectionWow() {
   return (
     <section id="what" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
       <div aria-hidden className="absolute pointer-events-none" style={{ width: 700, height: 700, left: "50%", top: "5%", transform: "translateX(-50%)", background: "radial-gradient(circle, rgba(91,76,245,.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
+      <div className="cambra-public-container relative">
         <AnimatedSection className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
           <div className="lg:col-span-7">
             <SectionHeading eyebrow={t("prob_eyebrow")} align="left">

@@ -19,8 +19,8 @@ export default function CategoryGrid() {
   const countLabel = helpUi(lang, "categoriesCount").replace("{n}", String(visibleCategories.length));
 
   return (
-    <section className="py-12 px-5">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-12">
+      <div className="cambra-public-container">
         <div className="flex items-baseline justify-between mb-8">
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.03em]" style={{ color: "var(--ink)" }}>
             {helpUi(lang, "exploreTitle")}

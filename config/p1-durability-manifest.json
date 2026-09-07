@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T18:52:31.934Z",
+  "generatedAt": "2026-09-07T22:21:12.913Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -1374,8 +1374,8 @@
     },
     {
       "path": "base44/functions/submitPaymentsAnalysis/entry.ts",
-      "sha256": "598d672cf6ea7a551e82e3133ebe86a6c27c7e0c8d54753e352788aa0e663024",
-      "bytes": 116738
+      "sha256": "03e8b75e14501a907c09f4c1e02fee02e430c982b985f44792b3c83f35898c6b",
+      "bytes": 117296
     },
     {
       "path": "base44/functions/submitWaitlistSignup/entry.ts",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "8c282bd6e8b28b552f9b538dffc8a18da29c10d88301c1af36d9364d313ca951",
+      "sha256": "317e1738775b37f19719e987fcb1416dc4fcd58c203ef4c6ec1715f84e2bc1c8",
       "bytes": 43449
     },
     {
@@ -2559,8 +2559,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "e4b62e6307f87a83466289ac22a0df83ff90d49f00221128678e77a0299d18ec",
-      "bytes": 29887
+      "sha256": "b2fbb874195d63e3ef26bcf5a1bd5f08ecdda3095cb7b1f12e4c365400064fa3",
+      "bytes": 30451
     },
     {
       "path": "src/README.md",
@@ -2609,8 +2609,8 @@
     },
     {
       "path": "src/components/landing/PricingDual.jsx",
-      "sha256": "a0f29e9426dc45c62c0175d92cf3d30a1a207bebc73f8bcad013b61444a8c1c9",
-      "bytes": 13626
+      "sha256": "2e6b308ec12b1e2d7893e56734f30192f0406e4920a25c5869adac61be950de6",
+      "bytes": 13613
     },
     {
       "path": "src/components/landing/RealImpactSection.jsx",
@@ -2629,8 +2629,8 @@
     },
     {
       "path": "src/components/paymentsAnalyzer/PspVerificationOptions.jsx",
-      "sha256": "801f67409965b66591aea27fb638af082b9561af18c46f6cb8454afaf425d7ff",
-      "bytes": 6256
+      "sha256": "ffd553eb8f9d83ac8c600f3b5bf20975833321908dc267e1e31572ec1ee593dd",
+      "bytes": 6355
     },
     {
       "path": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
@@ -3819,23 +3819,23 @@
     },
     {
       "path": "src/pages/Dashboard.jsx",
-      "sha256": "4fc187ea998cd0ef194304220cc8d3ec6f13d36410ceb243d3cdce50b1b18fb4",
-      "bytes": 21245
+      "sha256": "90e9f12ddb9149f0eb57a95520defd498e55f5d3e0b41b82e88f0210f6ec39ed",
+      "bytes": 22935
     },
     {
       "path": "src/pages/HowItWorks.jsx",
-      "sha256": "20736d7b870c9451272315fa513b129a94efea350e618710e3b8ab2705d8a50b",
-      "bytes": 5916
+      "sha256": "ec224810c6a0caad7610edb4be01a8de557db154588f8bf2fb0f7144e3f59e58",
+      "bytes": 9619
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "f126680cbea7641cf767476d59c5a70cc26ad410cfab2c4731abf4e3823eca89",
-      "bytes": 21149
+      "sha256": "c824089614f4fb10b89e8d7278f69950d35947d7b68f1d36e166a1911b0984b5",
+      "bytes": 20407
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",
-      "sha256": "c9521c786d0c0b28688fa960476c855f211f2638df9f96a59a230118a35bbd71",
-      "bytes": 55888
+      "sha256": "cb494edf02cf67700c22b3c0524ab099d46eb4f128b5bd15d64a0165b868dcd9",
+      "bytes": 55729
     },
     {
       "path": "src/pages/Testimonials.jsx",
@@ -3844,8 +3844,8 @@
     },
     {
       "path": "src/pages/Vault.jsx",
-      "sha256": "51e97846578c11e45cd943bd8e44cf2cf783a518034abe9a0d44804f0d0ceb40",
-      "bytes": 10991
+      "sha256": "b03d455c4acb82e6dabfead182036ef2316bb2dd84092ac45aa3643e9104e786",
+      "bytes": 14252
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",

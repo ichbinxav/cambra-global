@@ -50,7 +50,7 @@ export default function StepGrid({ statuses }) {
       icon: Zap,
       tone: "#7BD9F0",
       cta: (
-        <Link to="/ConnectTools" className="w-full">
+        <Link to="/ConnectStripe" className="w-full">
           <Button className="w-full h-10 rounded-xl gap-1.5 bg-white/10 text-white border border-white/15 hover:bg-white/15 font-semibold">
             {t("ci_title")} <ArrowRight size={14} />
           </Button>

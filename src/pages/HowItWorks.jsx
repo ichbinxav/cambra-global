@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Activity, BarChart3, Sparkles } from "lucide-react";
+import { ArrowRight, Activity, BarChart3, PencilLine, Plug, Sparkles, Upload } from "lucide-react";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,11 @@ const CARD_STYLE = {
 
 export default function HowItWorks() {
   const { t } = useTranslation();
+  const ENTRY_PATHS = [
+    { icon: PencilLine, title: t("az_entry_manual_title"), detail: t("az_entry_manual_body"), badge: t("az_entry_manual_badge"), cta: t("az_entry_manual_cta"), href: "/Analyzer", accent: "#5B4CF5" },
+    { icon: Plug, title: t("az_entry_connect_title"), detail: t("az_entry_connect_body"), badge: t("az_entry_connect_badge"), cta: t("az_entry_connect_cta"), href: "/ConnectStripe", accent: "#3C72F2" },
+    { icon: Upload, title: t("az_entry_upload_title"), detail: t("az_entry_upload_body"), badge: t("az_entry_upload_badge"), cta: t("az_entry_upload_cta"), href: "/UploadStatement", accent: "#26A9C9" },
+  ];
   const STEPS = [
     { n: "01", eyebrow: t("hiw_s1_eyebrow"), icon: Activity,  title: t("hiw_s1_title"), detail: t("hiw_s1_detail"), cta: { label: t("hiw_s1_cta"), href: "/Analyzer" } },
     { n: "02", eyebrow: t("hiw_s2_eyebrow"), icon: BarChart3, title: t("hiw_s2_title"), detail: t("hiw_s2_detail"), cta: { label: t("hiw_s2_cta"), href: "/Analyzer" } },
@@ -30,7 +35,45 @@ export default function HowItWorks() {
       />
 
       <div className="relative pt-16 pb-20">
-        <div className="max-w-[1400px] mx-auto px-5 sm:px-8">
+        <div className="cambra-public-container">
+
+          <section className="mb-16 sm:mb-20" aria-labelledby="entry-paths-title">
+            <div className="mb-8 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#5B4CF5]">{t("how_step_label")} 01</p>
+                <h2 id="entry-paths-title" className="mt-3 text-[clamp(30px,4vw,48px)] font-black leading-[1.02] tracking-[-.045em] text-[#0B1228]">
+                  {t("az_entry_label")}
+                </h2>
+              </div>
+              <p className="max-w-md text-[13px] leading-relaxed text-[#667087] sm:text-right">{t("hiw_s1_detail")}</p>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              {ENTRY_PATHS.map(({ icon: Icon, title, detail, badge, cta, href, accent }, index) => (
+                <motion.article
+                  key={href}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: .5, delay: index * .07 }}
+                  className={`relative flex min-h-[300px] flex-col overflow-hidden rounded-[24px] p-7 ${index === 1 ? "text-white" : "text-[#0B1228]"}`}
+                  style={index === 1
+                    ? { background: "radial-gradient(circle at 100% 0,rgba(57,198,240,.20),transparent 44%),linear-gradient(145deg,#0B1731,#080D1D)", border: "1px solid rgba(255,255,255,.1)" }
+                    : { background: "rgba(255,255,255,.88)", border: "1px solid rgba(91,76,245,.14)", boxShadow: "0 24px 60px -48px rgba(10,18,40,.5)" }}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl" style={{ color: index === 1 ? "#fff" : accent, background: index === 1 ? "rgba(255,255,255,.08)" : `${accent}12`, border: `1px solid ${index === 1 ? "rgba(255,255,255,.12)" : `${accent}2d`}` }}><Icon size={20} /></span>
+                    <span className="rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-[.16em]" style={{ color: index === 1 ? "#9EDFFF" : accent, background: index === 1 ? "rgba(57,198,240,.09)" : `${accent}0d` }}>{badge}</span>
+                  </div>
+                  <h3 className="mt-7 text-[21px] font-bold leading-tight tracking-[-.03em]">{title}</h3>
+                  <p className={`mt-3 text-[13px] leading-relaxed ${index === 1 ? "text-white/65" : "text-[#667087]"}`}>{detail}</p>
+                  <Link to={href} className="mt-auto inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-[12px] font-bold" style={{ color: index === 1 ? "#0B1228" : "#fff", background: index === 1 ? "#fff" : `linear-gradient(120deg,${accent},#39C6F0)` }}>
+                    {cta} <ArrowRight size={14} />
+                  </Link>
+                </motion.article>
+              ))}
+            </div>
+          </section>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {STEPS.map((step, i) => {

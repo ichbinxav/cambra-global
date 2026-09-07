@@ -98,6 +98,14 @@ describe("friendly dashboard release surface", () => {
     expect(source).toContain("!isVerified ?");
   });
 
+  it("uses the latest Stripe-verified analysis as the dashboard source of truth", () => {
+    const source = read("src/pages/Dashboard.jsx");
+    expect(source).toContain("function dashboardResultFromVerified(payload)");
+    expect(source).toContain('invoke("getPaymentsAnalysisVerified", { brand_id: b.id, latest: true })');
+    expect(source).toContain('verification_status: "verified"');
+    expect(source).toContain("const latestResult = verifiedResult || results[0] || null");
+  });
+
   it("lets a referrer preview their own invite without an invalid-code warning", () => {
     const source = read("src/components/referrals/ReferralAttributionCapture.jsx");
     expect(source).toContain('body?.reason === "self_referral"');
@@ -107,11 +115,22 @@ describe("friendly dashboard release surface", () => {
 
   it("routes statement upload to a localized, high-contrast upload surface", () => {
     const connectTools = read("src/pages/ConnectTools.jsx");
+    const uploadPage = read("src/pages/UploadStatement.jsx");
     const upload = read("src/components/paymentsAnalyzer/StatementUploadCard.jsx");
-    expect(connectTools).toContain('searchParams.get("mode")');
+    expect(connectTools).toContain('requestedMode === "upload"');
+    expect(uploadPage).toContain('<ConnectTools mode="upload" />');
+    expect(connectTools).toContain('uploadMode ? t("az_entry_upload_title") : t("ct_page_title")');
+    expect(connectTools).toContain('uploadMode ? t("az_entry_upload_body") : t("ct_page_sub")');
     expect(connectTools).toContain('toLocaleLowerCase(lang)');
     expect(connectTools).not.toContain('providerLabel="provider"');
     expect(upload).toContain('style={{ background: "var(--g-voltio)" }}');
     expect(upload).toContain('accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"');
+  });
+
+  it("keeps every Analyzer step visible on narrow screens", () => {
+    const styles = read("src/index.css");
+    expect(styles).toContain(".payment-journey__stepper { overflow-x: hidden; }");
+    expect(styles).toContain(".payment-journey__stepper ol { width: 100%; min-width: 0;");
+    expect(styles).toContain("grid-template-columns: repeat(6, 1fr)");
   });
 });

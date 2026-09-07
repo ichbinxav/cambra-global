@@ -26,6 +26,16 @@ const PAGE_META = {
     title: 'Connect Tools',
     description: 'This page improves analysis quality by connecting live data sources or adding files.',
   },
+  '/ConnectStripe': {
+    key: 'documents',
+    title: 'Connect Stripe',
+    description: 'This page securely connects read-only Stripe payment data for a verified analysis.',
+  },
+  '/UploadStatement': {
+    key: 'documents',
+    title: 'Upload a statement',
+    description: 'This page adds payment statements and invoices without sending you through the questionnaire.',
+  },
   '/Vault': {
     key: 'documents',
     title: 'Documents',
@@ -130,8 +140,8 @@ function buildGuidance(state, page, journey, missing, blockers) {
         : 'This is the fastest way to get a clear savings estimate.',
       unlocks: 'This gets you to results faster and makes tool connection more useful.',
       ctas: state.paymentsProfile
-        ? [cta('Connect Stripe', '/ConnectTools'), cta('View results', '/Results')]
-        : [cta('Start analyzer', '/Analyzer'), cta('Connect tools', '/ConnectTools')],
+        ? [cta('Connect Stripe', '/ConnectStripe'), cta('View reports', '/Reports')]
+        : [cta('Start analyzer', '/Analyzer'), cta('Connect Stripe', '/ConnectStripe')],
       nudges: ['Do the Analyzer first. Then connect Stripe to verify.'],
     };
   }
@@ -144,7 +154,7 @@ function buildGuidance(state, page, journey, missing, blockers) {
         ? 'You have a first result. Now improve it with real data.'
         : 'Real data makes the Analyzer more useful and actionable.',
       unlocks: 'This sharpens accuracy and helps you move faster.',
-      ctas: [cta('Connect tools', '/ConnectTools'), cta('Run analyzer', '/Analyzer?mode=questionnaire&module=payments')],
+      ctas: [cta('Connect Stripe', '/ConnectStripe'), cta('Run analyzer', '/Analyzer?mode=questionnaire&module=payments')],
       nudges: ['Best flow: Analyzer first, tools second, results stronger.'],
     };
   }
@@ -170,7 +180,7 @@ function buildGuidance(state, page, journey, missing, blockers) {
       nextStep: state.documents.length ? 'Connect a tool or add one more high-signal file.' : 'Connect a tool or upload your first file.',
       why: 'Connected sources and key files make the Analyzer sharper.',
       unlocks: 'This improves accuracy and makes next steps easier.',
-      ctas: [cta('Connect tools', '/ConnectTools'), cta('Upload file', '/ConnectTools?mode=upload')],
+      ctas: [cta('Connect Stripe', '/ConnectStripe'), cta('Upload statement', '/UploadStatement')],
       nudges: ['Fastest path: Analyzer, then connect tools.'],
     };
   }
@@ -182,7 +192,7 @@ function buildGuidance(state, page, journey, missing, blockers) {
       ? 'You already have signal. Now make it stronger with better data.'
       : 'The Analyzer is the fastest way to get value from Cambra.',
     unlocks: state.latestResult ? 'This makes your next action clearer.' : 'This gets you to your first savings estimate fast.',
-    ctas: [cta('Start analyzer', '/Analyzer'), cta('Connect tools', '/ConnectTools')],
+    ctas: [cta('Start analyzer', '/Analyzer'), cta('Connect Stripe', '/ConnectStripe')],
     nudges: ['Keep it simple: Analyzer first, tools next.'],
   };
 }

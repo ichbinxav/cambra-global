@@ -17,11 +17,11 @@ export default function StopLeavingMarginCTA({ onBookDemo }) {
   const { t } = useTranslation();
   const { experience } = useMarket();
   return (
-    <section id="start" className="relative scroll-mt-20 py-16 sm:py-20 px-4 sm:px-6">
+    <section id="start" className="relative scroll-mt-20 py-16 sm:py-20">
      {/* Dark closer pill — this section is a full-bleed cinematic dark block,
          so it renders as its own navy card on the paper canvas. */}
      <div
-       className="relative mx-auto max-w-6xl rounded-[32px] overflow-hidden py-24 sm:py-32"
+       className="cambra-public-container relative rounded-[32px] overflow-hidden py-24 sm:py-32"
        style={{
          background: "linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",
          border: "1px solid rgba(255,255,255,0.08)",
@@ -67,7 +67,7 @@ export default function StopLeavingMarginCTA({ onBookDemo }) {
         }}
       />
 
-      <div className="relative max-w-3xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center">
+      <div className="relative max-w-6xl mx-auto px-6 sm:px-10 flex flex-col items-center text-center">
         {/* Giant background C-mark — fills the whole pill as the brand watermark */}
         <motion.img
           src={BRAND_ASSETS.cMarkWhitePng}
@@ -100,18 +100,17 @@ export default function StopLeavingMarginCTA({ onBookDemo }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="text-white"
+            className="text-white min-[1180px]:whitespace-nowrap"
             style={{
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(44px, 6vw, 76px)",
+              fontSize: "clamp(38px, 3.55vw, 54px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.9,
               textShadow: "0 0 80px rgba(91,76,245,0.25)",
             }}
           >
-            {t("cta_final_h2_pre")}
-            <br />
+            {t("cta_final_h2_pre")}{" "}
             {/* Keyword highlight → violet→cyan gradient (reference style). */}
             <span className="kw">{t("cta_final_h2_kw")}</span>
           </motion.h2>

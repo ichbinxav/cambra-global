@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, MessageSquare, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, MessageSquare, ArrowRight, CalendarDays, Loader2, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import PublicPageShell from "@/components/shared/PublicPageShell";
 import PublicPageHero from "@/components/shared/PublicPageHero";
+import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -29,6 +30,7 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [callOpen, setCallOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,51 +74,49 @@ export default function Contact() {
         subtitle={t("ct_subtitle")}
       />
 
-      <div className="relative pt-16 pb-20">
-        <div className="max-w-3xl mx-auto px-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-            {[
-              { icon: Mail, label: t("ct_general"), value: "hello@cambra.global", href: "mailto:hello@cambra.global" },
-              { icon: MessageSquare, label: t("ct_support"), value: "support@cambra.global", href: "mailto:support@cambra.global" },
-            ].map((c, i) => (
-              <motion.a
-                key={i}
-                href={c.href}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="group p-6 text-center transition hover:-translate-y-1 hover:shadow-lg block"
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid var(--linea)",
-                  borderRadius: 14,
-                  boxShadow: "0 8px 24px rgba(12,12,22,.06)",
-                }}
-              >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ border: "1px solid rgba(58,43,176,0.20)", background: "rgba(58,43,176,0.06)", color: "var(--voltio)" }}
-                >
-                  <c.icon className="w-5 h-5" />
-                </div>
-                <p className="text-sm font-semibold mb-1" style={{ color: "var(--ink)" }}>{c.label}</p>
-                <p className="text-sm" style={{ color: "var(--gris-1)" }}>{c.value}</p>
-              </motion.a>
-            ))}
-          </div>
+      <div className="relative pb-20 pt-16">
+        <div className="cambra-public-container grid items-stretch gap-6 lg:grid-cols-[minmax(340px,.74fr)_minmax(0,1.26fr)]">
+          <motion.aside
+            initial={{ opacity: 0, x: -18 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="cambra-dark-panel flex flex-col p-7 sm:p-9"
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#AFA2FF]">{t("ct_eyebrow")}</p>
+            <h2 className="mt-5 text-[clamp(29px,3vw,44px)] font-black leading-[1.02] tracking-[-.045em] text-white">{t("call_title")}</h2>
+            <p className="mt-4 max-w-md text-[13px] leading-relaxed text-white/65">{t("call_sub")}</p>
+
+            <div className="mt-8 space-y-3">
+              {[
+                { icon: Mail, label: t("ct_general"), value: "hello@cambra.global", href: "mailto:hello@cambra.global" },
+                { icon: MessageSquare, label: t("ct_support"), value: "support@cambra.global", href: "mailto:support@cambra.global" },
+              ].map(({ icon: Icon, label, value, href }) => (
+                <a key={href} href={href} className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.055] p-4 transition-colors hover:bg-white/[.09]">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[.07] text-[#AFA2FF]"><Icon size={17} /></span>
+                  <span className="min-w-0"><strong className="block text-[11px] font-bold text-white">{label}</strong><span className="mt-1 block truncate text-[12px] text-white/60">{value}</span></span>
+                  <ArrowRight size={14} className="ml-auto text-white/35 transition-transform group-hover:translate-x-0.5" />
+                </a>
+              ))}
+            </div>
+
+            <button type="button" onClick={() => setCallOpen(true)} className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 text-[13px] font-bold text-[#10172D] transition-transform hover:-translate-y-0.5">
+              <CalendarDays size={16} /> {t("hero_cta_secondary")}
+            </button>
+            <p className="mt-auto flex items-start gap-2 pt-8 text-[11px] leading-relaxed text-white/50"><ShieldCheck size={14} className="mt-0.5 shrink-0 text-[#AFA2FF]" />{t("trust_sec_b4_d")}</p>
+          </motion.aside>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden p-8"
+            className="relative overflow-hidden p-7 sm:p-9"
             style={{
               background: "#FFFFFF",
               border: "1px solid var(--linea)",
-              borderRadius: 14,
-              boxShadow: "0 8px 24px rgba(12,12,22,.06)",
+              borderRadius: 24,
+              boxShadow: "0 24px 70px -50px rgba(12,12,22,.34)",
             }}
           >
             <div className="relative">
@@ -163,7 +163,7 @@ export default function Contact() {
                   type="submit"
                   disabled={submitting}
                   className="w-full h-12 rounded-full font-bold gap-2 text-white hover:opacity-90"
-                  style={{ background: "var(--ink)" }}
+                  style={{ background: "var(--g-voltio)", boxShadow: "0 14px 30px -18px rgba(91,76,245,.7)" }}
                 >
                   {submitting
                     ? <>{t("ct_sending")} <Loader2 className="w-4 h-4 animate-spin" /></>
@@ -179,6 +179,7 @@ export default function Contact() {
           </motion.div>
         </div>
       </div>
+      <BookCallModal open={callOpen} onClose={() => setCallOpen(false)} context={{ source: "contact_page" }} />
     </PublicPageShell>
   );
 }

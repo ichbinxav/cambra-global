@@ -52,6 +52,35 @@ const CATEGORY_I18N_KEY = {
   Commerce: "cat_commerce",
 };
 
+function dashboardResultFromVerified(payload) {
+  if (!payload?.ok || !payload?.engine_result) return null;
+  const engineResult = payload.engine_result;
+  const annual = engineResult?.annual_savings_eur || {};
+  const sample = payload.sample_metrics || {};
+  return {
+    id: `verified-${payload.brand_id || "latest"}`,
+    brand_id: payload.brand_id || null,
+    created_date: payload.measurement_window?.to || null,
+    currency: sample.currency || engineResult.currency || "EUR",
+    total_savings: Number.isFinite(Number(annual.point)) ? Number(annual.point) : 0,
+    payment_savings: Number.isFinite(Number(annual.point)) ? Number(annual.point) : 0,
+    verification_status: "verified",
+    details: {
+      details_shape: "payments-v1",
+      engine_version: payload.engine_version || engineResult.engine_version || null,
+      engine_result: engineResult,
+      savings_range: annual,
+      input_snapshot: {
+        provider_slug: "stripe",
+        country: sample.account_country || null,
+        currency: sample.currency || engineResult.currency || "EUR",
+        monthly_gmv_eur: Number(sample.gmv_eur_monthly) || null,
+        data_source: "stripe_verified",
+      },
+    },
+  };
+}
+
 function nodeBadge(node, t) {
   const status = node.status || "detected";
   const cc = node.cost_confidence || "estimated";
@@ -92,14 +121,20 @@ export default function Dashboard() {
         // without a brand, same visible behavior as the previous empty case.
         // Phase 2 — fetch up to 20 (newest first) to power the account
         // aggregate; `latest` stays the first (unchanged behavior for the hero).
-        const results = b
-          ? await base44.entities.AnalyzerResult
-              .filter({ brand_id: b.id }, "-created_date", 20)
-              .catch(() => [])
-          : [];
-        const latestResult = results[0] || null;
+        const [results, verifiedResponse] = b
+          ? await Promise.all([
+              base44.entities.AnalyzerResult
+                .filter({ brand_id: b.id }, "-created_date", 20)
+                .catch(() => []),
+              base44.functions.invoke("getPaymentsAnalysisVerified", { brand_id: b.id, latest: true })
+                .catch(() => null),
+            ])
+          : [[], null];
+        const verifiedPayload = verifiedResponse?.data || verifiedResponse;
+        const verifiedResult = dashboardResultFromVerified(verifiedPayload);
+        const latestResult = verifiedResult || results[0] || null;
         setLatest(latestResult);
-        setAllResults(results);
+        setAllResults(verifiedResult ? [verifiedResult, ...results] : results);
 
         if (b) {
           // P10 — never read credential-bearing Integration/StripeConnection rows in the browser.
@@ -283,6 +318,15 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 pb-10">
       <MerchantInformationTasks lang={lang} />
+
+      {/* The latest measured outcome leads the workspace. It used to sit below
+          onboarding cards, which made a completed analysis look empty. */}
+      <DashboardHeroV2
+        latest={latest}
+        stripeConnected={stripeConnected}
+        onStartRecovery={handleStartRecovery}
+      />
+
       <DashboardWelcome
         firstName={firstName}
         hasAnalysis
@@ -298,17 +342,10 @@ export default function Dashboard() {
         rows={allResults}
         latest={latest}
         inCollective={inCollective}
-        onVerify={() => navigate("/ConnectTools")}
+        onVerify={() => navigate("/ConnectStripe")}
         onCall={() => setCallOpen(true)}
         onCollective={() => setCollectiveOpen(true)}
         onAddChannel={() => navigate("/Analyzer")}
-      />
-
-      {/* ── SAVINGS HERO v2 — single source of truth (engine_result), gauge, CTAs ── */}
-      <DashboardHeroV2
-        latest={latest}
-        stripeConnected={stripeConnected}
-        onStartRecovery={handleStartRecovery}
       />
 
       {/* Recover is a first-class merchant journey: authorize once, then see
@@ -354,7 +391,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between">
             <h2 className="text-base font-black tracking-tight text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>{t("your_infrastructure")}</h2>
-            <Link to="/ConnectTools" className="text-[11px] font-semibold text-white/55 hover:text-white transition-colors inline-flex items-center gap-1">
+            <Link to="/ConnectStripe" className="text-[11px] font-semibold text-white/55 hover:text-white transition-colors inline-flex items-center gap-1">
               <Plug size={10} /> {t("connect_more")}
             </Link>
           </div>

@@ -28,34 +28,15 @@
 // SCOPE LOCK: presentational + one read-only capability probe. No engine, no
 // computeStripeVerifiedGap, no estimated path touched.
 
-import { useEffect, useState } from "react";
-import { Zap, ArrowRight, ShieldCheck } from "lucide-react";
-import { base44 } from "@/api/base44Client";
-import StatementUploadCard from "@/components/paymentsAnalyzer/StatementUploadCard";
+import { Zap, ArrowRight, ShieldCheck, FileUp } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 // The one provider whose verified path is live today. Kept as a set so a
 // future chunk that lights up a second provider only edits this line.
 const LIVE_VERIFIED_PROVIDERS = new Set(["stripe"]);
 
-export default function PspVerificationOptions({ providerSlug, providerLabel, onConnect }) {
+export default function PspVerificationOptions({ providerSlug, providerLabel, onConnect, onUpload }) {
   const { t } = useTranslation();
-  const [extractionLive, setExtractionLive] = useState(null); // null = loading
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const resp = await base44.functions.invoke("getUploadCapability", {});
-        const body = resp?.data || resp;
-        if (!cancelled) setExtractionLive(!!body?.extraction_live);
-      } catch {
-        // Fail closed — treat as not-live so copy stays honest.
-        if (!cancelled) setExtractionLive(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
   // Nothing selected yet — don't show a verification path (the provider grid
   // above is still the active question).
@@ -63,6 +44,22 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
 
   const label = providerLabel || providerSlug.replace(/_/g, " ");
   const isLiveVerified = LIVE_VERIFIED_PROVIDERS.has(providerSlug);
+  const uploadAction = (
+    <button
+      type="button"
+      onClick={() => onUpload?.()}
+      className="w-full rounded-2xl border border-[#DFE2EB] bg-white p-4 text-left transition-all hover:border-[#8B7BFF] hover:bg-[#FAF9FF] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B4CF5]/40"
+    >
+      <span className="flex items-start gap-3">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F0EEFF] text-[#5B4CF5]"><FileUp size={16} /></span>
+        <span className="min-w-0 flex-1">
+          <strong className="block text-[14px] text-[#11182D]">{t("psp_upload_title", { provider: label })}</strong>
+          <span className="mt-1 block text-[12px] leading-relaxed text-[#69718A]">{t("az_entry_upload_body")}</span>
+          <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-[#4D3DF1]">{t("az_entry_upload_cta")} <ArrowRight size={11} /></span>
+        </span>
+      </span>
+    </button>
+  );
 
   return (
     <div className="mt-4">
@@ -115,17 +112,11 @@ export default function PspVerificationOptions({ providerSlug, providerLabel, on
 
           {/* Alternative — upload statements instead of connecting. Same
               extraction-gated copy as every other PSP. */}
-          <StatementUploadCard
-            providerLabel={label}
-            extractionLive={extractionLive}
-          />
+          {uploadAction}
         </div>
       ) : (
         // ── UPLOAD path — every other PSP. Copy gated by extraction_live.
-        <StatementUploadCard
-          providerLabel={label}
-          extractionLive={extractionLive}
-        />
+        uploadAction
       )}
     </div>
   );

@@ -16,19 +16,15 @@
 // into components/reports/ — they were inline IIFEs in this file.
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
-import { ArrowRight, TrendingUp, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import PageHero from "@/components/shared/PageHero";
 import ReportsKPIStrip from "@/components/reports/ReportsKPIStrip";
 import EffectiveFeePanel from "@/components/reports/EffectiveFeePanel";
 import RecoverMandatePanel from "@/components/recover/RecoverMandatePanel";
 import PaymentsMigrationCard from "@/components/recover/PaymentsMigrationCard";
 import VerificationChecklist from "@/components/reports/VerificationChecklist";
 import InStoreBenchmarkPanel from "@/components/reports/InStoreBenchmarkPanel";
-import AuditHistoryList from "@/components/reports/AuditHistoryList";
+import ResultsHistory from "@/components/paymentsResults/ResultsHistory";
 import { formatShortDate } from "@/components/reports/reportsLabels";
 import { useTranslation } from "@/lib/i18n.jsx";
 
@@ -100,59 +96,32 @@ export default function Reports() {
   };
 
   return (
-    <div>
-      <PageHero
-        eyebrow={t("rpt_eyebrow")}
-        title={t("rpt_title")}
-        subtitle={t("rpt_subtitle")}
-        icon={TrendingUp}
-        actions={
-          <Link to="/Analyzer">
-            <Button size="sm" className="h-10 rounded-full px-5 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-1.5">
-              <Sparkles className="h-3.5 w-3.5" /> {t("rpt_new_scan")} <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        }
-      />
+    <div className="workspace-light-page pb-12">
+      <ResultsHistory />
 
       {loading ? (
-        <div className="flex items-center justify-center py-40">
+        <div className="mt-8 flex items-center justify-center py-16">
           <span
             style={{
               display: "inline-block",
               width: 32, height: 32, borderRadius: "50%",
-              border: "2px solid rgba(255,255,255,0.12)",
-              borderTopColor: "#39C6F0",
+              border: "2px solid rgba(91,76,245,0.14)",
+              borderTopColor: "#5B4CF5",
               animation: "cambra-spin 0.8s linear infinite",
             }}
           />
           <style>{`@keyframes cambra-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : results.length === 0 ? (
-        <div
-          className="relative rounded-2xl border border-white/[0.08] overflow-hidden p-12 sm:p-16 text-center"
-          style={{
-            background:
-              "radial-gradient(120% 80% at 0% 0%, rgba(31,78,216,0.18) 0%, transparent 55%), linear-gradient(180deg, hsl(222 60% 7%) 0%, hsl(222 65% 4%) 100%)",
-          }}
-        >
-          <div className="absolute inset-0 dot-grid opacity-[0.08] pointer-events-none" />
-          <div className="relative">
-            <div className="h-14 w-14 rounded-2xl border border-white/[0.10] bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
-              <TrendingUp className="h-6 w-6 text-cambra-cyan" strokeWidth={1.6} />
-            </div>
-            <h3 className="text-xl font-black text-white tracking-tight mb-2">{t("rpt_empty_title")}</h3>
-            <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto">{t("rpt_empty_sub")}</p>
-            <Link to="/Analyzer">
-              <Button className="rounded-full px-7 h-11 text-sm font-bold bg-white text-[#06080F] hover:bg-white/90 gap-2">
-                <Sparkles className="h-3.5 w-3.5" /> {t("rpt_empty_cta")} <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
+        null
       ) : (
         <>
-          <ReportsKPIStrip results={results} />
+          <section className="mt-12 border-t border-[#E1E4EC] pt-9">
+            <p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#5B4CF5]">{t("rpt_chart_eyebrow")}</p>
+            <h2 className="mt-2 text-[24px] font-bold tracking-[-.035em] text-[#11182D]">{t("rpt_chart_title")}</h2>
+          </section>
+
+          <div className="mt-6"><ReportsKPIStrip results={results} /></div>
 
           {/* REFERRAL-2 T3 — the merchant's REAL fee and what they keep after it. */}
           {!vLoading && <EffectiveFeePanel report={lastReport} />}
@@ -167,29 +136,29 @@ export default function Reports() {
           <PaymentsMigrationCard />
 
           {chartData.length > 0 && (
-            <div className="cambra-card p-7 mb-6">
+            <div className="cambra-paper-card mb-6 p-7">
               <div className="relative">
                 <div className="mb-6 flex items-end justify-between gap-4">
                   <div>
                     <p className="cc-eyebrow mb-1.5">{t("rpt_chart_eyebrow")}</p>
-                    <p className="text-base font-black text-white tracking-tight">{t("rpt_chart_title")}</p>
-                    <p className="text-[11px] text-white/45 font-mono mt-0.5">{t("rpt_chart_note")}</p>
+                    <p className="text-base font-black text-[#11182D] tracking-tight">{t("rpt_chart_title")}</p>
+                    <p className="text-[11px] text-[#737B90] font-mono mt-0.5">{t("rpt_chart_note")}</p>
                   </div>
-                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/[0.10] bg-white/[0.04]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-cambra-cyan" />
-                    <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-white/65">{t("rpt_live")}</span>
+                  <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[#DADDE7] bg-[#F8F8FC] px-2.5 py-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#39C6F0]" />
+                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#646D83]">{t("rpt_live")}</span>
                   </div>
                 </div>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={chartData} barCategoryGap="35%">
-                    <CartesianGrid strokeDasharray="2 4" stroke="rgba(255,255,255,0.08)" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} tickFormatter={compactAxisFormat} />
+                    <CartesianGrid strokeDasharray="2 4" stroke="rgba(17,24,45,0.08)" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#747D91" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: "#747D91" }} axisLine={false} tickLine={false} tickFormatter={compactAxisFormat} />
                     <Tooltip
-                      contentStyle={{ borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", fontSize: 11, background: "#0B1023", color: "#fff" }}
+                      contentStyle={{ borderRadius: 12, border: "1px solid #E0E3EC", fontSize: 11, background: "#fff", color: "#11182D" }}
                       formatter={v => [`${formatCurrency(Number(v) || 0, chartCurrency)}${t("rpt_per_year")}`, t("rpt_chart_series")]}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "rgba(255,255,255,0.7)" }} />
+                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16, color: "#5F687E" }} />
                     {/* dataKey stays the stored field; `name` is what the legend
                         and tooltip display, so the series label localizes. */}
                     <Bar dataKey="payments" name={t("rpt_chart_series")} fill="var(--voltio-2)" radius={[3, 3, 0, 0]} />
@@ -205,7 +174,7 @@ export default function Reports() {
 
           {lastReport && <InStoreBenchmarkPanel result={results[0]} brand={brand} />}
 
-          <AuditHistoryList results={results} />
+          {/* ResultsHistory above is the canonical report library. */}
         </>
       )}
     </div>

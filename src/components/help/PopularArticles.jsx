@@ -10,14 +10,14 @@ export default function PopularArticles() {
 
   return (
     <section
-      className="py-12 px-5"
+      className="py-12"
       style={{
         background: "rgba(12,12,22,0.02)",
         borderTop: "1px solid var(--linea)",
         borderBottom: "1px solid var(--linea)",
       }}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="cambra-public-container">
         <div className="flex items-baseline justify-between mb-8">
           <div>
             <p className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] uppercase mb-2" style={{ color: "var(--gris-2)" }}>

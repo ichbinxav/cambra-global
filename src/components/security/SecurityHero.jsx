@@ -43,7 +43,7 @@ export default function SecurityHero() {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link to="/ConnectTools" className="btn-primary inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-6 text-[13px] font-bold text-white">
+            <Link to="/ConnectStripe" className="btn-primary inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-6 text-[13px] font-bold text-white">
               {t("sec_cta_analyze")} <ArrowRight size={15} />
             </Link>
             <Link to="/Privacy" className="inline-flex min-h-[52px] items-center justify-center px-3 text-[13px] font-bold text-[#4433E8]">
@@ -55,10 +55,10 @@ export default function SecurityHero() {
         <div className="cambra-security-visual-panel cambra-dark-panel" aria-label={t("trust_sec_vault_alt")}>
           <div aria-hidden="true" className="absolute inset-[16%] rounded-full bg-[#5B4CF5]/20 blur-[80px]" />
           <img
-            src={BRAND_ASSETS.securityShield}
+            src={BRAND_ASSETS.securityDataPrism}
             alt=""
-            width={1448}
-            height={1086}
+            width={1672}
+            height={941}
             className="relative z-10 h-auto w-full select-none object-contain"
             draggable={false}
           />
