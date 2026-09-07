@@ -40,7 +40,7 @@ export default function ReferralProgramSection() {
   ];
 
   return (
-    <section id="referrals" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
+    <section id="referrals" className="relative scroll-mt-20 overflow-hidden pb-12 pt-8 sm:pb-16 sm:pt-12">
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -51,9 +51,9 @@ export default function ReferralProgramSection() {
         }}
       />
 
-      <div className="relative max-w-[1500px] mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-10 xl:gap-14 items-start">
+      <div className="relative max-w-[1380px] mx-auto px-6 sm:px-10 grid grid-cols-1 lg:grid-cols-[minmax(0,.88fr)_minmax(0,1.12fr)] gap-10 lg:gap-12 xl:gap-16 items-center">
         <motion.div
-          className="lg:col-span-6 text-center lg:text-left"
+          className="text-center lg:text-left"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
@@ -66,7 +66,7 @@ export default function ReferralProgramSection() {
             style={{
               color: "var(--ink)",
               fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(38px, 5vw, 60px)",
+              fontSize: "clamp(38px, 3.4vw, 58px)",
               fontWeight: 900,
               letterSpacing: "-0.045em",
               lineHeight: 1.0,
@@ -100,7 +100,7 @@ export default function ReferralProgramSection() {
           </div>
         </motion.div>
 
-        <div className="lg:col-span-6 space-y-3.5 lg:self-center">
+        <div className="space-y-3.5">
           {tiles.map((tile, i) => {
             const Icon = tile.icon;
             return (

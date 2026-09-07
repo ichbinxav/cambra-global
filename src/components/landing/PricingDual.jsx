@@ -181,7 +181,7 @@ export default function PricingDual() {
     { icon: LockKeyhole, key: "trust_sec_b2_t" },
   ];
   return (
-    <section id="pricing" className="relative scroll-mt-20 py-12 sm:py-16 overflow-hidden">
+    <section id="pricing" className="relative scroll-mt-20 overflow-hidden pb-8 pt-12 sm:pb-12 sm:pt-16">
       {/* ambient halo */}
       <div
         aria-hidden
@@ -198,7 +198,7 @@ export default function PricingDual() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-10">
+      <div className="relative max-w-[1380px] mx-auto px-6 sm:px-10">
         {/* Header */}
         <div className="grid grid-cols-1 lg:grid-cols-[.95fr_1.05fr] gap-7 lg:gap-12 items-end mb-12 sm:mb-14">
           <SectionHeading eyebrow={t("pd_eyebrow")} align="left">
@@ -219,7 +219,7 @@ export default function PricingDual() {
         </div>
 
         {/* Two columns — Analyze · Recover */}
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 max-w-7xl mx-auto pt-4">
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 mx-auto pt-4">
           {/* Flow connector between the two steps */}
           <motion.div
             aria-hidden

@@ -235,6 +235,103 @@ function readFunctionErrorBody(error) {
   return null;
 }
 
+function AnalyzerLivePreview({
+  activeStep,
+  entryMode,
+  journeyCopy,
+  t,
+  countryName,
+  currency,
+  brandName,
+  channelLabel,
+  monthlyVolumeLabel,
+  providerLabel,
+  onlineShare,
+  hasVolume,
+  progress,
+}) {
+  const sourceTitle = t(`az_entry_${entryMode}_title`);
+  const sourceBody = t(`az_entry_${entryMode}_body`);
+
+  return (
+    <aside className="payment-journey__preview" aria-live="polite">
+      <div className="payment-journey__preview-head">
+        <div className="payment-journey__preview-label"><BarChart3 size={14} />{journeyCopy.previewTitle}</div>
+        <span className="payment-journey__preview-pct">{progress.pct}%</span>
+      </div>
+
+      {activeStep === 1 && (
+        <div className="journey-preview-state">
+          <ShieldCheck size={32} />
+          <span className="journey-preview-kicker">{journeyCopy.selected}</span>
+          <h2>{sourceTitle}</h2>
+          <p>{sourceBody}</p>
+          <ul>
+            <li><CheckCircle2 size={15} />{t("login_gate_trust_1")}</li>
+            <li><CheckCircle2 size={15} />{t("login_gate_trust_2")}</li>
+            <li><CheckCircle2 size={15} />{t("login_gate_trust_3")}</li>
+          </ul>
+        </div>
+      )}
+
+      {activeStep === 2 && (
+        <div className="journey-preview-state">
+          <Building2 size={32} />
+          <span className="journey-preview-kicker">{journeyCopy.steps[1]}</span>
+          <h2>{journeyCopy.profileTitle}</h2>
+          <div className="journey-preview-metric"><span>{t("az_country_label")}</span><strong>{countryName}</strong></div>
+          <div className="journey-preview-metric"><span>{t("az_currency_label")}</span><strong>{currency}</strong></div>
+          <div className="journey-preview-metric"><span>{t("brand_name_optional")}</span><strong>{brandName || "—"}</strong></div>
+        </div>
+      )}
+
+      {activeStep === 3 && (
+        <div className="journey-preview-state">
+          <CreditCard size={32} />
+          <span className="journey-preview-kicker">{journeyCopy.steps[2]}</span>
+          <h2>{journeyCopy.compositionTitle}</h2>
+          <div className="journey-preview-metric is-large"><span>{t("az_lbl_gmv")}</span><strong>{monthlyVolumeLabel}</strong></div>
+          {hasVolume && (
+            <>
+              <div className="journey-preview-bar"><span style={{ width: `${onlineShare}%` }} /></div>
+              <div className="journey-preview-split"><span>{t("analyzer_channel_online")} {onlineShare}%</span><span>{t("analyzer_channel_in_store")} {100 - onlineShare}%</span></div>
+            </>
+          )}
+          <div className="journey-preview-metric"><span>{t("az_provider_label")}</span><strong>{providerLabel}</strong></div>
+        </div>
+      )}
+
+      {activeStep === 4 && (
+        <div className="journey-preview-state">
+          <CheckCircle2 size={32} />
+          <span className="journey-preview-kicker">{journeyCopy.steps[3]}</span>
+          <h2>{journeyCopy.readinessTitle}</h2>
+          <p>{journeyCopy.reviewBody}</p>
+          <div className="journey-readiness"><span style={{ width: `${progress.pct}%` }} /></div>
+          <strong className="journey-readiness-label">{progress.pct}%</strong>
+        </div>
+      )}
+
+      <div className="journey-preview-summary">
+        <div className={activeStep === 2 ? "is-current" : ""}>
+          <Building2 size={15} />
+          <span><small>{journeyCopy.steps[1]}</small><strong>{brandName || countryName}</strong><em>{countryName} · {currency}</em></span>
+        </div>
+        <div className={activeStep === 3 ? "is-current" : ""}>
+          <CreditCard size={15} />
+          <span><small>{journeyCopy.steps[2]}</small><strong>{channelLabel}</strong><em>{providerLabel}</em></span>
+        </div>
+        <div className={activeStep === 4 ? "is-current" : ""}>
+          <BarChart3 size={15} />
+          <span><small>{journeyCopy.steps[3]}</small><strong>{progress.pct}%</strong><em>{progress.done}/{progress.total}</em></span>
+        </div>
+      </div>
+
+      <div className="payment-journey__preview-foot"><Lock size={13} />{t("sec_chip_1")} · {t("analyzer_email_privacy_note")}</div>
+    </aside>
+  );
+}
+
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
   const { t, lang, locale, formatCurrency } = useTranslation();
@@ -532,6 +629,15 @@ export default function PaymentsAnalyzer() {
   const visibleOnlineShare = visibleMonthlyVolume > 0
     ? Math.round((visibleOnlineVolume / visibleMonthlyVolume) * 100)
     : 0;
+  const previewCountryName = countryOptions.find((item) => item.code === country)?.name || "—";
+  const previewChannelLabel = t(channel === "online" ? "analyzer_channel_online" : channel === "in_store" ? "analyzer_channel_in_store" : "analyzer_channel_combined");
+  const previewProviderLabel = channel === "combined"
+    ? [
+        onlineProviderOptions.find((item) => item.slug === combinedOnline.provider_slug)?.label,
+        inStoreProviderOptions.find((item) => item.slug === combinedInStore.provider_slug)?.label,
+      ].filter(Boolean).join(" + ") || "—"
+    : providerLabel;
+  const previewMonthlyVolume = visibleMonthlyVolume > 0 ? formatCurrency(visibleMonthlyVolume, currency) : "—";
 
   // ── Submit → submitPaymentsAnalysis → /PaymentsResults?session=<id>
   const handleSubmit = async () => {
@@ -687,7 +793,11 @@ export default function PaymentsAnalyzer() {
                 onSelect={(mode) => {
                   setEntryMode(mode);
                   if (mode === "connect") {
-                    navigate("/ConnectTools");
+                    navigate("/ConnectTools?mode=connect");
+                    return;
+                  }
+                  if (mode === "upload") {
+                    navigate("/ConnectTools?mode=upload");
                     return;
                   }
                   changeStep(2);
@@ -867,7 +977,7 @@ export default function PaymentsAnalyzer() {
               (channel === "in_store" ? inStoreProviderOptions : onlineProviderOptions)
                 .find((o) => o.slug === providerSlug)?.label
             }
-            onConnect={() => navigate("/ConnectTools")}
+            onConnect={() => navigate("/ConnectTools?mode=connect")}
           />
           </>
           )}
@@ -934,14 +1044,21 @@ export default function PaymentsAnalyzer() {
           )}
         </section>
 
-        <aside className="payment-journey__preview">
-          <div className="payment-journey__preview-label"><BarChart3 size={14} />{journeyCopy.previewTitle}</div>
-          {activeStep === 1 && <div className="journey-preview-state"><ShieldCheck size={34} /><h2>{journeyCopy.evidenceTitle}</h2><p>{t("az_entry_manual_body")}</p><ul><li><CheckCircle2 size={15} />{t("login_gate_trust_1")}</li><li><CheckCircle2 size={15} />{t("login_gate_trust_2")}</li><li><CheckCircle2 size={15} />{t("login_gate_trust_3")}</li></ul></div>}
-          {activeStep === 2 && <div className="journey-preview-state"><Building2 size={34} /><h2>{journeyCopy.profileTitle}</h2><div className="journey-preview-metric"><span>{t("az_country_label")}</span><strong>{countryOptions.find((item) => item.code === country)?.name || "—"}</strong></div><div className="journey-preview-metric"><span>{t("az_currency_label")}</span><strong>{currency}</strong></div><div className="journey-preview-metric"><span>{t("brand_name_optional")}</span><strong>{brandName.trim() || "—"}</strong></div></div>}
-          {activeStep === 3 && <div className="journey-preview-state"><CreditCard size={34} /><h2>{journeyCopy.compositionTitle}</h2><div className="journey-preview-metric is-large"><span>{t("az_lbl_gmv")}</span><strong>{visibleMonthlyVolume > 0 ? formatCurrency(visibleMonthlyVolume, currency) : "—"}</strong></div>{visibleMonthlyVolume > 0 && <><div className="journey-preview-bar"><span style={{ width: `${visibleOnlineShare}%` }} /></div><div className="journey-preview-split"><span>{t("analyzer_channel_online")} {visibleOnlineShare}%</span><span>{t("analyzer_channel_in_store")} {100 - visibleOnlineShare}%</span></div></>}<div className="journey-preview-metric"><span>{t("az_provider_label")}</span><strong>{channel === "combined" ? `${journeyCopy.selected} · 2` : providerLabel}</strong></div></div>}
-          {activeStep === 4 && <div className="journey-preview-state"><CheckCircle2 size={34} /><h2>{journeyCopy.readinessTitle}</h2><p>{journeyCopy.reviewBody}</p><div className="journey-readiness"><span style={{ width: `${progress.pct}%` }} /></div><strong className="journey-readiness-label">{progress.pct}%</strong></div>}
-          <div className="payment-journey__preview-foot"><Lock size={13} />{t("sec_chip_1")} · {t("analyzer_email_privacy_note")}</div>
-        </aside>
+        <AnalyzerLivePreview
+          activeStep={activeStep}
+          entryMode={entryMode}
+          journeyCopy={journeyCopy}
+          t={t}
+          countryName={previewCountryName}
+          currency={currency}
+          brandName={brandName.trim()}
+          channelLabel={previewChannelLabel}
+          monthlyVolumeLabel={previewMonthlyVolume}
+          providerLabel={previewProviderLabel}
+          onlineShare={visibleOnlineShare}
+          hasVolume={visibleMonthlyVolume > 0}
+          progress={progress}
+        />
       </div>
     </AnalyzerJourneyShell>
   );

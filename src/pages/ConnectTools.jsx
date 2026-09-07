@@ -14,8 +14,8 @@
 // No business logic changed: StripeConnectCard and the upload flow are the
 // same components/endpoints as before. Only the catalog surface is removed.
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -40,6 +40,10 @@ function CardSkeleton() {
 
 export default function ConnectTools() {
   const { t, lang } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const requestedMode = searchParams.get("mode");
+  const connectRef = useRef(null);
+  const uploadRef = useRef(null);
   const [brandId, setBrandId] = useState(null);
   const [loading, setLoading] = useState(true);
   // null = capability probe in flight (StatementUploadCard renders a skeleton).
@@ -79,6 +83,17 @@ export default function ConnectTools() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (loading || !["connect", "upload"].includes(requestedMode)) return undefined;
+    const target = requestedMode === "upload" ? uploadRef.current : connectRef.current;
+    if (!target) return undefined;
+    const timer = window.setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.focus({ preventScroll: true });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [extractionLive, loading, requestedMode]);
+
   return (
     <div className="relative min-h-screen bg-background font-inter flex flex-col overflow-x-hidden">
       <Navbar />
@@ -97,10 +112,26 @@ export default function ConnectTools() {
         ) : (
           <>
             {/* Path 1 — the live, verified route. */}
-            <StripeConnectCard brandId={brandId} />
+            <div
+              ref={connectRef}
+              id="connect-provider"
+              tabIndex={-1}
+              className="rounded-2xl outline-none transition-shadow"
+              style={requestedMode === "connect" ? { boxShadow: "0 0 0 3px rgba(91,76,245,.35), 0 20px 54px -34px rgba(91,76,245,.75)" } : undefined}
+            >
+              <StripeConnectCard brandId={brandId} />
+            </div>
 
             {/* Path 2 — everyone else: statements. */}
-            <StatementUploadCard providerLabel="provider" extractionLive={extractionLive} />
+            <div
+              ref={uploadRef}
+              id="statement-upload"
+              tabIndex={-1}
+              className="scroll-mt-28 rounded-2xl outline-none transition-shadow"
+              style={requestedMode === "upload" ? { boxShadow: "0 0 0 3px rgba(57,198,240,.34), 0 20px 54px -34px rgba(57,198,240,.70)" } : undefined}
+            >
+              <StatementUploadCard providerLabel="provider" extractionLive={extractionLive} />
+            </div>
           </>
         )}
 

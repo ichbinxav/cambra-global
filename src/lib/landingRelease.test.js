@@ -51,7 +51,7 @@ describe("landing truth and release controls", () => {
     expect(read("index.html")).toContain("CAMBRA payment cost audit and recovery");
   });
 
-  it("keeps the desktop landing wide and uses only the approved final visuals", () => {
+  it("keeps the desktop landing wide without overlapping approved visuals", () => {
     const landing = read("src/pages/Landing.jsx");
     const stack = read("src/components/landing/TheStackSection.jsx");
     const security = read("src/components/landing/TrustSecuritySection.jsx");
@@ -62,13 +62,16 @@ describe("landing truth and release controls", () => {
     expect(landing).toContain("BRAND_ASSETS.landingHero");
     expect(security).toContain("BRAND_ASSETS.securityVisual");
     expect(assets).toContain("/images/cambra-hero-5m-sleek-transparent-final.png");
+    expect(assets).toContain("/images/cambra-intelligence-stack-transparent-v3.png");
     expect(assets).toContain("/images/cambra-security-subtle-violet-transparent-final.png");
     expect(landing).not.toContain("cambra-fee-audit-24m-v3.png");
     expect(stack).not.toContain("cambra-intelligence-stack-v2.png");
     expect(landing).not.toContain('t("ri_illustrative")');
-    expect(landing).toContain("clamp(44px, 4.65vw, 74px)");
-    expect(landing).toContain("min-[1180px]:w-[120%]");
-    expect(landing).toContain("min-[1180px]:justify-center");
+    expect(landing).toContain("clamp(44px, 3.85vw, 68px)");
+    expect(landing).toContain("max-w-[720px]");
+    expect(landing).not.toContain("min-[1180px]:w-[120%]");
+    expect(landing).not.toContain("min-[1180px]:-translate-x");
+    expect(stack).toContain("BRAND_ASSETS.intelligenceStack");
     expect(landing).toContain('to="/ConnectTools"');
     expect(landing).not.toContain("MarketAvailabilitySection");
     expect(landing).toContain("<HeroTrustStrip />");

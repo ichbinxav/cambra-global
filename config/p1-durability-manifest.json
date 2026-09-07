@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T09:30:53.374Z",
+  "generatedAt": "2026-09-07T11:40:55.890Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2014,7 +2014,7 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "e81282ef105afef5d03ef75793fe9fc2726e9002343a9a0c12c5dd3825181c31",
+      "sha256": "827f0294b5d732f27d8953ea0efd8aeecf3d2ad7b99181de3afbcdbc6b95ad17",
       "bytes": 30619
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "e02697e068f7821e30aac593bd3f7016a9208d328bd71b0e0d1408b93d2afc7e",
+      "sha256": "dced60e37a96c767074d30d27239e9c320755b55b190a0d161b29f6469cefc21",
       "bytes": 43449
     },
     {
@@ -2189,7 +2189,7 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "346f250e1a8e547c2539262288b9702e72347e5bc643b6809c0fdc83660732f5",
+      "sha256": "2db9df2c76509a516cc51108162a8230f22fbb59fc831daddc0924a81c8fbacb",
       "bytes": 13672
     },
     {
@@ -2264,12 +2264,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "91af918c6922ea26fbcb64abdfaa467026ccf510ce6b2b194acbc5da47d41a2d",
+      "sha256": "112937f6226cd2d540c6c2f698f95719cb04850fa7bd458722c832336bcd486e",
       "bytes": 422043
     },
     {
       "path": "package.json",
-      "sha256": "75bfdc26523a1e1a523a52da1527835132567c5850978ecc72b82c2317a8d10e",
+      "sha256": "1cb9cca56f2ed5a28ee4a5f545a204b2dcec76b15de0bdb1f32134f7201ed284",
       "bytes": 13538
     },
     {
@@ -2609,8 +2609,8 @@
     },
     {
       "path": "src/components/landing/PricingDual.jsx",
-      "sha256": "a8817679f9e2c1e9d426da6a7f1cb576c5ad41c432f51d5ddac758ef031d3819",
-      "bytes": 13616
+      "sha256": "a0f29e9426dc45c62c0175d92cf3d30a1a207bebc73f8bcad013b61444a8c1c9",
+      "bytes": 13626
     },
     {
       "path": "src/components/landing/RealImpactSection.jsx",
@@ -3829,13 +3829,13 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "577375ce14c298b8c2916ceb89060dcaacae909734c7b032072d50e5b60ea764",
-      "bytes": 20422
+      "sha256": "bc22d561dadb8b66ff54646b1d41bb13efae5f702e4c24b7657b8ceaf6e82c9d",
+      "bytes": 20270
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",
-      "sha256": "23e5a6298fbf70b25815f44cdaa203bd6edbde061feaabb791565baa82d9a43b",
-      "bytes": 52687
+      "sha256": "c9521c786d0c0b28688fa960476c855f211f2638df9f96a59a230118a35bbd71",
+      "bytes": 55888
     },
     {
       "path": "src/pages/Testimonials.jsx",

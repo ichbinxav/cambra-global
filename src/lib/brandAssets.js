@@ -4,6 +4,7 @@
 // the C-mark SVGs are the wordmark glyph.
 export const BRAND_ASSETS = {
   landingHero: "/images/cambra-hero-5m-sleek-transparent-final.png",
+  intelligenceStack: "/images/cambra-intelligence-stack-transparent-v3.png",
   securityVisual: "/images/cambra-security-subtle-violet-transparent-final.png",
   // PNG transparent-background renders (no white backdrop) — hero, coin, cube.
   stackFrosted: "https://media.base44.com/images/public/6a16288b833b3c26d7ac1fab/ecfd9af5a_stack-frosted2x.webp",

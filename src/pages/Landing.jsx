@@ -31,7 +31,7 @@ function Hero({ onBookDemo }) {
       id="overview"
       className="relative flex items-center overflow-hidden"
       aria-labelledby="landing-hero-title"
-      style={{ minHeight: "clamp(700px, 88vh, 900px)", color: "var(--ink)", paddingTop: 76 }}
+      style={{ minHeight: "clamp(680px, 84vh, 860px)", color: "var(--ink)", paddingTop: 76 }}
     >
       <motion.div
         aria-hidden
@@ -46,8 +46,8 @@ function Hero({ onBookDemo }) {
         transition={{ duration: 0.8, ease: "easeOut" }}
       />
 
-      <div className="relative z-10 w-full max-w-[1560px] mx-auto px-6 sm:px-10 lg:px-12 xl:px-14 py-10 lg:py-14 grid grid-cols-1 min-[1180px]:grid-cols-[minmax(0,1.12fr)_minmax(0,.88fr)] gap-6 min-[1180px]:gap-0 items-center">
-        <div className="relative z-10 min-w-0 lg:pr-4 xl:pr-0">
+      <div className="relative z-10 w-full max-w-[1560px] mx-auto px-6 sm:px-10 lg:px-12 py-10 lg:py-14 grid grid-cols-1 min-[1180px]:grid-cols-[minmax(0,.96fr)_minmax(500px,1.04fr)] gap-8 min-[1180px]:gap-10 items-center">
+        <div className="relative z-10 min-w-0">
           <motion.div
             className="mb-7"
             initial={{ opacity: 0, y: -8 }}
@@ -64,12 +64,12 @@ function Hero({ onBookDemo }) {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
             style={{
               color: "var(--ink)",
-              fontSize: "clamp(44px, 4.65vw, 74px)",
+              fontSize: "clamp(44px, 3.85vw, 68px)",
               fontWeight: 900,
               letterSpacing: "-0.05em",
               lineHeight: 0.99,
-              maxWidth: 800,
-              textWrap: "balance",
+              maxWidth: 730,
+              textWrap: "pretty",
             }}
           >
             {t("hero_h1_line1")} <span className="kw">{t("hero_h1_line2")}</span>
@@ -130,7 +130,7 @@ function Hero({ onBookDemo }) {
         </div>
 
         <motion.div
-          className="relative flex min-w-0 items-center justify-center overflow-visible min-[1180px]:justify-center"
+          className="relative flex min-w-0 flex-col items-center justify-center min-[1180px]:items-end"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
@@ -140,11 +140,11 @@ function Hero({ onBookDemo }) {
             alt={t("hero_image_alt")}
             width={1536}
             height={1024}
-            className="relative h-auto w-[104%] max-w-[790px] select-none sm:w-[96%] min-[1180px]:w-[120%] min-[1180px]:max-w-[820px] min-[1180px]:-translate-x-[10%] xl:w-[118%]"
+            className="relative h-auto w-full max-w-[720px] select-none"
             style={{ filter: "contrast(.995) saturate(1.01) drop-shadow(0 26px 42px rgba(91,76,245,.13))" }}
             draggable={false}
           />
-          <p className="absolute inset-x-4 -bottom-1 mx-auto max-w-[520px] text-center text-[10.5px] leading-relaxed lg:bottom-3" style={{ color: "var(--gris-2)" }}>
+          <p className="mt-2 w-full max-w-[560px] text-center text-[10.5px] leading-relaxed min-[1180px]:self-center" style={{ color: "var(--gris-2)" }}>
             {t("hero_visual_footer")}
           </p>
         </motion.div>
