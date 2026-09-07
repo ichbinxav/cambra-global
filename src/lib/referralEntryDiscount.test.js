@@ -8,6 +8,7 @@ function makeSvc(seed = {}) {
   const store = {
     PaymentsAnalysisSession: [],
     ReferralLink: [],
+    ReferralAccountAttribution: [],
     Mandate: [],
     BillingRule: [],
     ...seed,

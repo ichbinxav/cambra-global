@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { Check, LockKeyhole } from "lucide-react";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
 import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import MarketSwitcher from "@/components/shared/MarketSwitcher";
 import { getPaymentsJourneyCopy } from "@/lib/paymentsJourneyCopy";
+import HeaderBrand from "@/components/shared/HeaderBrand";
 
 export default function AnalyzerJourneyShell({ activeStep, onStepChange, children }) {
   const { isAuthenticated } = useAuth();
@@ -15,10 +15,7 @@ export default function AnalyzerJourneyShell({ activeStep, onStepChange, childre
   return (
     <div className="payment-journey min-h-screen">
       <header className="payment-journey__header">
-        <Link to={isAuthenticated ? "/Dashboard" : "/"} className="payment-journey__brand" aria-label="CAMBRA">
-          <img src={BRAND_ASSETS.cMarkWhite} alt="" width="24" height="24" draggable={false} />
-          <span>CAMBRA</span>
-        </Link>
+        <HeaderBrand to={isAuthenticated ? "/Dashboard" : "/"} tone="dark" ariaLabel="CAMBRA" />
         <div className="payment-journey__tools">
           <MarketSwitcher variant="dark" />
           <LanguageSwitcher variant="dark" />

@@ -23,6 +23,7 @@ const Onboarding = lazy(() => import('@/pages/Onboarding.jsx'));
 // were deleted with the entire wizard + score engine consumer surface.
 const PaymentsAnalyzer = lazy(() => import('@/pages/PaymentsAnalyzer'));
 const ReferralInvite = lazy(() => import('@/pages/ReferralInvite'));
+const ReferralProgramme = lazy(() => import('@/pages/ReferralProgramme'));
 // FIX 13b — /Results made lazy: it pulls 20+ paymentsResults sub-components
 // into a dedicated chunk instead of the initial bundle. The Suspense +
 // LazyFallback + ErrorBoundary pattern is identical to Dashboard/Reports.
@@ -147,6 +148,7 @@ import ScrollToTop from '@/components/shared/ScrollToTop.jsx';
 import SeoMeta from '@/components/shared/SeoMeta.jsx';
 import ErrorBoundary from '@/components/shared/ErrorBoundary.jsx';
 import { ToastProvider } from '@/components/shared/Toast.jsx';
+import ReferralAttributionCapture from '@/components/referrals/ReferralAttributionCapture.jsx';
 
 // Inline lazy chunk fallback — NOT fullscreen, so it doesn't blank out the
 // screen or fight the auth loading screen. Renders inside whatever shell is
@@ -279,6 +281,9 @@ const AuthenticatedApp = () => {
         <Route caseSensitive path="/Analyzer" element={withBoundary(<PaymentsAnalyzer />)} />
         <Route caseSensitive path="/analyzer" element={<Navigate to="/Analyzer" replace />} />
         <Route path="/Invite" element={withBoundary(<ReferralInvite />)} />
+        <Route caseSensitive path="/ReferralProgramme" element={withBoundary(<ReferralProgramme />)} />
+        <Route caseSensitive path="/referral-programme" element={<Navigate to="/ReferralProgramme" replace />} />
+        <Route caseSensitive path="/referralprogramme" element={<Navigate to="/ReferralProgramme" replace />} />
         {/* /PaymentsAnalyzer kept as an alias — anything linking to it during
             the transition (marketing, docs, external) still resolves. */}
         <Route path="/PaymentsAnalyzer" element={<Navigate to="/Analyzer" replace />} />
@@ -438,6 +443,7 @@ function App({ initialLanguageState = null }) {
               <Router>
                 <ScrollToTop />
                 <SeoMeta />
+                <ReferralAttributionCapture />
                 <AuthenticatedApp />
                 <CopilotPanel />
                 <CookieConsent />

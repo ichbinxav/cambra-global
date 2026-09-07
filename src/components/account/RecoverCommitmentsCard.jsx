@@ -11,14 +11,96 @@ const COPY={
 for (const code of ['de','it','pl','pt','el','sv','da','fi','cs','ro','hu','bg','hr','et','lv','lt','sk','sl','nb','is']) {
   COPY[code] = COPY.en;
 }
-export default function RecoverCommitmentsCard(){
- const {lang}=useTranslation(); const c=COPY[lang]||COPY.en; const [state,setState]=useState(null); const [ack,setAck]=useState(false); const [reason,setReason]=useState(''); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
- const load=()=>base44.functions.invoke('getMyRecoveryCommitments',{}).then(r=>setState(r?.data||null)).catch(()=>setError(c.error));
- useEffect(()=>{load();},[]);
- if(!state?.exists) return null;
- const cancel=async()=>{if(!ack||busy)return;setBusy(true);setError('');try{const r=await base44.functions.invoke('cancelCambraService',{confirm:true,recovery_terms_acknowledged:true,reason});if(r?.data?.error)throw new Error();await load();}catch{setError(c.error)}finally{setBusy(false)}};
- return <div className="cambra-card p-6"><div className="relative"><div className="flex items-center gap-2 mb-3"><ShieldCheck size={14} className="text-cambra-cyan"/><p className="cc-eyebrow">{c.title}</p></div><p className="text-xs text-white/55 mb-4">{c.sub}</p><p className="text-sm font-bold text-white mb-3">{state.brand?.service_status==='cancelled'?c.cancelled:c.active}</p>
- <div className="space-y-2">{(state.recoveries||[]).length?(state.recoveries||[]).map(r=><div key={r.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3"><div className="flex justify-between gap-3"><div><p className="text-xs font-bold text-white">{r.name}</p><p className="text-[10px] text-white/45 mt-1">{r.economic_right_status||r.status}</p></div>{r.current_fee_pct!=null&&<p className="text-sm font-black text-white">{r.current_fee_pct}%</p>}</div>{r.recovery_term_end_date&&<p className="text-[11px] text-white/60 mt-2">{c.term}: <b>{r.recovery_term_end_date}</b></p>}<p className="text-[11px] text-white/45 mt-1">{c.verify}: {r.verification_access_status||'—'}</p></div>):<p className="text-xs text-white/45">{c.none}</p>}</div>
- {state.brand?.service_status!=='cancelled'&&<div className="mt-5 pt-4 border-t border-white/10"><p className="text-[11px] text-amber-300/80 flex gap-2"><AlertTriangle size={13} className="shrink-0 mt-0.5"/>{c.warning}</p><label className="mt-3 flex items-start gap-2 text-[11.5px] text-white/65"><input type="checkbox" checked={ack} onChange={e=>setAck(e.target.checked)} className="mt-0.5"/><span>{c.confirm}</span></label><input value={reason} onChange={e=>setReason(e.target.value)} placeholder={c.reason} className="mt-3 h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-xs text-white"/><button onClick={cancel} disabled={!ack||busy} className="mt-3 h-9 px-4 rounded-full border border-white/15 text-xs font-bold text-white disabled:opacity-40">{busy?'…':c.go}</button></div>}
- {error&&<p role="alert" className="mt-3 text-xs text-red-400">{error}</p>}</div></div>;
+export default function RecoverCommitmentsCard() {
+  const { lang } = useTranslation();
+  const c = COPY[lang] || COPY.en;
+  const [state, setState] = useState(null);
+  const [ack, setAck] = useState(false);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [manageOpen, setManageOpen] = useState(false);
+
+  const load = () => base44.functions
+    .invoke('getMyRecoveryCommitments', {})
+    .then((response) => setState(response?.data || null))
+    .catch(() => setError(c.error));
+
+  useEffect(() => { load(); }, []);
+  if (!state?.exists) return null;
+
+  const cancel = async () => {
+    if (!ack || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const response = await base44.functions.invoke('cancelCambraService', {
+        confirm: true,
+        recovery_terms_acknowledged: true,
+        reason,
+      });
+      if (response?.data?.error) throw new Error('service_cancellation_failed');
+      await load();
+      setManageOpen(false);
+    } catch {
+      setError(c.error);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const cancelled = state.brand?.service_status === 'cancelled';
+  const recoveries = state.recoveries || [];
+
+  return (
+    <section className="cambra-paper-card p-6 sm:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <div className="max-w-2xl">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFEDFF] text-[#4D3DF1]"><ShieldCheck size={18} /></span>
+            <div>
+              <p className="text-[17px] font-bold tracking-[-.025em] text-[#11182D]">{c.title}</p>
+              <span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.1em] ${cancelled ? 'bg-[#F3F4F7] text-[#6D7588]' : 'bg-[#E5F8EE] text-[#168552]'}`}>{cancelled ? c.cancelled : c.active}</span>
+            </div>
+          </div>
+          <p className="mt-5 text-[12px] leading-relaxed text-[#68718A]">{c.sub}</p>
+        </div>
+        {!cancelled && (
+          <button type="button" onClick={() => setManageOpen(true)} className="inline-flex min-h-10 items-center rounded-xl border border-[#D8DCE8] bg-white px-4 text-[11px] font-bold text-[#26304A]">{c.cancel}</button>
+        )}
+      </div>
+
+      <div className="mt-6 grid gap-3">
+        {recoveries.length ? recoveries.map((recovery) => (
+          <article key={recovery.id} className="rounded-2xl border border-[#E2E5ED] bg-[#FAFAFC] p-4">
+            <div className="flex justify-between gap-3">
+              <div><p className="text-xs font-bold text-[#131B33]">{recovery.name}</p><p className="mt-1 text-[10px] text-[#7B8397]">{recovery.economic_right_status || recovery.status}</p></div>
+              {recovery.current_fee_pct != null && <p className="text-sm font-black text-[#4D3DF1]">{recovery.current_fee_pct}%</p>}
+            </div>
+            {recovery.recovery_term_end_date && <p className="mt-2 text-[11px] text-[#566079]">{c.term}: <b>{recovery.recovery_term_end_date}</b></p>}
+            <p className="mt-1 text-[11px] text-[#7B8397]">{c.verify}: {recovery.verification_access_status || '—'}</p>
+          </article>
+        )) : <p className="rounded-xl border border-[#E4E6ED] bg-[#F9F9FC] px-4 py-4 text-xs text-[#68718A]">{c.none}</p>}
+      </div>
+
+      {error && <p role="alert" className="mt-3 text-xs font-semibold text-red-600">{error}</p>}
+
+      {manageOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#071022]/55 p-5 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setManageOpen(false); }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="manage-cambra-service-title" className="w-full max-w-xl rounded-[24px] border border-[#E0E3EB] bg-white p-6 shadow-[0_32px_100px_-40px_rgba(7,16,34,.8)] sm:p-8">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF2E7] text-[#C56A1A]"><AlertTriangle size={18} /></span>
+              <div><h2 id="manage-cambra-service-title" className="text-[20px] font-bold tracking-[-.03em] text-[#11182D]">{c.cancel}</h2><p className="mt-2 text-[12px] leading-relaxed text-[#68718A]">{c.warning}</p></div>
+            </div>
+            <label className="mt-6 flex items-start gap-3 rounded-xl border border-[#E3E5ED] bg-[#FAFAFC] p-4 text-[11.5px] leading-relaxed text-[#4E5870]"><input type="checkbox" checked={ack} onChange={(event) => setAck(event.target.checked)} className="mt-0.5" /><span>{c.confirm}</span></label>
+            <label className="mt-5 block text-[11px] font-bold text-[#303A55]">{c.reason}<input value={reason} onChange={(event) => setReason(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-[#DCE0EA] bg-white px-3 text-xs text-[#11182D] outline-none focus:border-[#7567F8]" /></label>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button type="button" onClick={() => setManageOpen(false)} className="min-h-11 rounded-xl px-5 text-[11px] font-bold text-[#5F6880]">×</button>
+              <button type="button" onClick={cancel} disabled={!ack || busy} className="min-h-11 rounded-xl bg-[#10182E] px-5 text-[11px] font-bold text-white disabled:opacity-40">{busy ? '…' : c.go}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }

@@ -7,7 +7,7 @@ import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
 import MarketSwitcher from "@/components/shared/MarketSwitcher";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useMarket } from "@/lib/publicExperience.jsx";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
+import HeaderBrand from "@/components/shared/HeaderBrand";
 
 // CAMBRA public navigation — SAME set of links in every public page, whether
 // the visitor is signed in or not. Member navigation (Dashboard, Reports,
@@ -23,7 +23,7 @@ const NAV_PUBLIC = [
   { label: "Analyzer",     href: "/Analyzer",     icon: Activity },
   { label: "How it works", href: "/how-it-works", icon: Sparkles },
   { label: "Pricing",      href: "/pricing",      icon: Tag },
-  { label: "Referrals",    href: "/Referrals",    icon: UserPlus },
+  { label: "Referrals",    href: "/ReferralProgramme", icon: UserPlus },
   { label: "Partners",     href: "/Partners",     icon: Handshake },
   { label: "Help",         href: "/Help",         icon: HelpCircle },
   { label: "Contact",      href: "/Contact",      icon: Mail },
@@ -110,18 +110,15 @@ export default function Navbar() {
         borderBottom: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
+      <div className="cambra-public-container flex h-[72px] items-center justify-between">
 
         {/* Logo — always a way out. Signed in → Dashboard, else → home. */}
-        <Link
+        <HeaderBrand
           to={isAuthenticated ? "/Dashboard" : "/"}
-          className="flex-shrink-0 inline-flex items-center gap-2"
-          style={{ fontWeight: 900, letterSpacing: "-0.04em", fontSize: 18, color: "#ffffff" }}
-          aria-label={t(isAuthenticated ? "nav_logo_dashboard_aria" : "nav_logo_home_aria")}
-        >
-          <img src={BRAND_ASSETS.cMarkWhite} alt="" width={22} height={22} className="h-[22px] w-[22px]" draggable={false} />
-          CAMBRA
-        </Link>
+          tone="dark"
+          className="flex-shrink-0"
+          ariaLabel={t(isAuthenticated ? "nav_logo_dashboard_aria" : "nav_logo_home_aria")}
+        />
 
         {/* Desktop nav */}
         <nav className="hidden xl:flex items-center gap-1">
@@ -140,7 +137,7 @@ export default function Navbar() {
               >
                 {trLabel(item.label)}
                 {active && (
-                  <span className="absolute left-3 right-3 -bottom-[14px] h-[2px] rounded-full" style={{ background: "#ffffff" }} />
+                  <span className="absolute -bottom-[21px] left-3 right-3 h-[2px] rounded-full" style={{ background: "#ffffff" }} />
                 )}
               </Link>
             );

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, ArrowUpRight, Home, ShieldCheck, FolderOpen } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileText, Settings, Menu, X, LogOut, Home, ShieldCheck, FolderOpen, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { BRAND_ASSETS } from "@/lib/brandAssets";
+import HeaderBrand from "@/components/shared/HeaderBrand";
 
 // Shared workspace navigation — used by DashboardLayout (as a layout route)
 // AND by pages that live OUTSIDE the layout but still want the sidebar when a
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { path: "/Analyzer", labelKey: "nav_analyzer", icon: BarChart3 },
   { path: "/Results", labelKey: "sidebar_results", icon: FileText },
   { path: "/Vault", labelKey: "sidebar_documents", icon: FolderOpen },
+  { path: "/Referrals", labelKey: "nav_referrals", icon: Gift },
   { path: "/Account", labelKey: "sidebar_account", icon: Settings },
 ];
 
@@ -37,12 +38,8 @@ export default function DashboardSidebar() {
           borderRight: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div className="relative px-5 h-14 flex items-center" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <Link to="/" className="group flex items-center gap-2" aria-label="CAMBRA home">
-            <img src={BRAND_ASSETS.cMarkVoltio} alt="" width={22} height={22} className="h-[22px] w-[22px]" draggable={false} />
-            <span className="text-[13px] font-black tracking-[-0.02em] text-white">CAMBRA</span>
-            <ArrowUpRight size={10} className="text-white/40 group-hover:text-[#8B7BFF] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-          </Link>
+        <div className="relative flex h-[72px] items-center px-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+          <HeaderBrand to="/" tone="dark" externalCue ariaLabel="CAMBRA home" />
         </div>
 
         {/* Status pill */}
@@ -111,7 +108,7 @@ export default function DashboardSidebar() {
 
       {/* Mobile header */}
       <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 h-14"
+        className="fixed left-0 right-0 top-0 z-50 flex h-[72px] items-center justify-between px-5 lg:hidden"
         style={{
           background: "rgba(11,14,26,0.9)",
           backdropFilter: "blur(20px)",
@@ -119,10 +116,7 @@ export default function DashboardSidebar() {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <Link to="/" className="flex items-center gap-2 text-sm font-black tracking-tight text-white">
-          <img src={BRAND_ASSETS.cMarkVoltio} alt="" width={20} height={20} className="h-5 w-5" draggable={false} />
-          CAMBRA
-        </Link>
+        <HeaderBrand to="/" tone="dark" ariaLabel="CAMBRA home" />
         <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
         </Button>
@@ -140,7 +134,7 @@ export default function DashboardSidebar() {
               transition={{ duration: 0.2 }}
             />
             <motion.div
-              className="fixed inset-0 z-40 pt-14 overflow-y-auto"
+              className="fixed inset-0 z-40 overflow-y-auto pt-[72px]"
               style={{ background: "#0B0E1A" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -62,11 +62,11 @@ describe("landing truth and release controls", () => {
     expect(landing).toContain("max-w-[1560px]");
     expect(landing).toContain("md:grid-cols-3");
     expect(landing).toContain("BRAND_ASSETS.landingHero");
-    expect(security).toContain("BRAND_ASSETS.securityVisual");
+    expect(security).toContain("BRAND_ASSETS.securityShield");
     expect(assets).toContain("/images/cambra-hero-5m-sleek-transparent-final.png");
     expect(assets).toContain("/images/cambra-intelligence-stack-transparent-v3.png");
-    expect(assets).toContain("/images/cambra-security-vault-transparent-v2.png");
-    expect(fs.existsSync(path.join(root, "public/images/cambra-security-vault-transparent-v2.png"))).toBe(true);
+    expect(assets).toContain("/images/cambra-security-shield-transparent-v3.png");
+    expect(fs.existsSync(path.join(root, "public/images/cambra-security-shield-transparent-v3.png"))).toBe(true);
     expect(landing).not.toContain("cambra-fee-audit-24m-v3.png");
     expect(stack).not.toContain("cambra-intelligence-stack-v2.png");
     expect(landing).not.toContain('t("ri_illustrative")');
@@ -87,7 +87,10 @@ describe("landing truth and release controls", () => {
     expect(headings).toContain("clamp(32px, 5vw, 64px)");
     expect(navbar).toContain('className="hidden xl:flex items-center gap-1"');
     expect(navbar).toContain('className="xl:hidden flex items-center gap-1"');
-    expect(mobileNav).toContain('className="xl:hidden absolute inset-x-0 top-14');
+    expect(mobileNav).toContain('className="absolute inset-x-0 top-[72px]');
+    expect(mobileNav).toContain('max-h-[calc(100vh-72px)]');
+    expect(mobileNav).toContain('overflow-y-auto overflow-x-hidden');
+    expect(mobileNav).toContain('xl:hidden');
   });
 
   it("keeps the homepage narrative in the founder-approved order", () => {

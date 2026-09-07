@@ -11,10 +11,8 @@ import { useMarket } from "@/lib/publicExperience.jsx";
 // Every href here MUST resolve to a PUBLIC route in src/App.jsx. Member-only
 // routes (Insights, ConnectTools, Dashboard, …) live in the member sidebar,
 // not the public mobile menu — including them here would bounce anonymous
-// visitors to /LoginGate on tap. The Referrals route is under ProtectedRoute
-// (the user explicitly requested it in the public nav); signed-out visitors
-// will be prompted to sign in, which is the expected pattern for a referral
-// program.
+// visitors to /LoginGate on tap. The public referral explainer lives at
+// /ReferralProgramme; account-specific codes remain protected at /Referrals.
 
 const itemMotion = {
   hidden: { opacity: 0, y: 6 },
@@ -80,7 +78,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
     {
       label: t("nav_group_company"),
       items: [
-        { label: t("nav_item_referral"), sub: t("nav_item_referral_sub"), href: "/Referrals", Icon: UserPlus },
+        { label: t("nav_item_referral"), sub: t("nav_item_referral_sub"), href: "/ReferralProgramme", Icon: UserPlus },
         { label: t("nav_item_partners"), sub: t("nav_item_partners_sub"), href: "/Partners", Icon: Handshake },
         { label: t("nav_item_providers"), sub: t("nav_item_providers_sub"), href: "/ForProviders", Icon: Handshake },
         { label: t("nav_item_contact"), sub: t("nav_item_contact_sub"), href: "/Contact", Icon: MessagesSquare },
@@ -120,7 +118,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="xl:hidden absolute inset-x-0 top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto overflow-x-hidden border-b border-white/[0.08]"
+          className="absolute inset-x-0 top-[72px] max-h-[calc(100vh-72px)] overflow-y-auto overflow-x-hidden border-b border-white/[0.08] xl:hidden"
           style={{
             background:
               "radial-gradient(120% 90% at 8% 0%, rgba(74,58,209,0.30) 0%, transparent 55%), radial-gradient(110% 100% at 100% 100%, rgba(57,198,240,0.16) 0%, transparent 60%), linear-gradient(180deg, #14112e 0%, #0e0b22 55%, #0a0818 100%)",

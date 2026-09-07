@@ -84,17 +84,22 @@ function ResultsShell({ children, withSidebar = false }) {
   if (withSidebar) {
     return (
       <div
-        className="dark relative min-h-screen flex font-inter overflow-x-hidden"
+        className="relative flex min-h-screen overflow-x-hidden font-inter"
         style={{
-          color: "#ffffff",
-          background:
-            "linear-gradient(180deg, #0a0a0a 0%, #0b0e1a 25%, #0a0d18 55%, #0b1020 80%, #0E0E1A 100%)",
+          color: "#091126",
+          background: "#F7F8FC",
         }}
       >
-        {backdrop}
         <DashboardSidebar />
-        <main className="relative z-10 flex-1 min-w-0 pt-14 lg:pt-0">
-          <div className="relative max-w-6xl mx-auto w-full px-5 lg:px-8 pt-8 pb-40 lg:pb-16">
+        <main
+          className="relative z-10 min-w-0 flex-1 pt-[72px] lg:pt-0"
+          style={{
+            backgroundColor: "#F7F8FC",
+            backgroundImage: "radial-gradient(circle at 78% 4%, rgba(91,76,245,.10), transparent 28%), radial-gradient(circle at 14% 34%, rgba(57,198,240,.07), transparent 24%), radial-gradient(rgba(91,76,245,.13) .8px, transparent .8px)",
+            backgroundSize: "auto, auto, 24px 24px",
+          }}
+        >
+          <div className="relative mx-auto w-full max-w-[1480px] px-5 pb-40 pt-8 lg:px-8 lg:pb-16">
             {children}
           </div>
         </main>
@@ -126,28 +131,29 @@ function ResultsShell({ children, withSidebar = false }) {
   );
 }
 
-function LoadingSkeleton() {
+function LoadingSkeleton({ light = false }) {
+  const surface = light ? "bg-white/80 border-[#E1E4ED]" : "bg-white/[0.03] border-white/5";
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="h-6 w-32 rounded-full bg-white/5" />
-      <div className="h-64 rounded-3xl bg-white/[0.03] border border-white/5" />
-      <div className="h-48 rounded-2xl bg-white/[0.03] border border-white/5" />
-      <div className="h-32 rounded-2xl bg-white/[0.02] border border-white/5" />
+      <div className={`h-6 w-32 rounded-full ${light ? "bg-[#E8E9EF]" : "bg-white/5"}`} />
+      <div className={`h-64 rounded-3xl border ${surface}`} />
+      <div className={`h-48 rounded-2xl border ${surface}`} />
+      <div className={`h-32 rounded-2xl border ${surface}`} />
     </div>
   );
 }
 
-function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
+function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search, light = false }) {
   return (
     <div className="pt-8 text-center">
       <div
         className="inline-flex items-center justify-center h-14 w-14 rounded-2xl mb-5"
-        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)" }}
+        style={{ background: light ? "#EFEDFF" : "rgba(255,255,255,0.04)", border: light ? "1px solid #D9D5FF" : "1px solid rgba(255,255,255,0.10)" }}
       >
-        <Icon size={22} className="text-white/60" />
+        <Icon size={22} className={light ? "text-[#5B4CF5]" : "text-white/60"} />
       </div>
       <h1
-        className="text-white mb-2"
+        className={`mb-2 ${light ? "text-[#091126]" : "text-white"}`}
         style={{
           fontFamily: "'Space Grotesk', 'Inter', sans-serif",
           fontSize: "clamp(24px, 4vw, 32px)",
@@ -157,7 +163,7 @@ function EmptyState({ title, message, ctaLabel, onCta, icon: Icon = Search }) {
       >
         {title}
       </h1>
-      <p className="text-[14px] text-white/55 max-w-md mx-auto mb-6">{message}</p>
+      <p className={`mx-auto mb-6 max-w-md text-[14px] ${light ? "text-[#68718A]" : "text-white/55"}`}>{message}</p>
       {ctaLabel && (
         <Button
           onClick={onCta}
@@ -456,12 +462,15 @@ export default function PaymentsResults() {
     return (
       <ResultsShell withSidebar={isAuthenticated}>
         <div className="mb-6 inline-flex items-center gap-2 rounded-full px-3 py-1"
-          style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+          style={{
+            border: isAuthenticated ? "1px solid #D9D5FF" : "1px solid rgba(255,255,255,0.12)",
+            background: isAuthenticated ? "#F0EEFF" : "rgba(255,255,255,0.03)",
+          }}
         >
-          <Loader2 size={11} className="animate-spin text-cyan-300" />
-          <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">{t("res_loading")}</span>
+          <Loader2 size={11} className={`animate-spin ${isAuthenticated ? "text-[#5B4CF5]" : "text-cyan-300"}`} />
+          <span className={`text-[10px] font-bold uppercase tracking-[0.22em] ${isAuthenticated ? "text-[#5347CC]" : "text-white/60"}`}>{t("res_loading")}</span>
         </div>
-        <LoadingSkeleton />
+        <LoadingSkeleton light={isAuthenticated} />
       </ResultsShell>
     );
   }
@@ -482,6 +491,7 @@ export default function PaymentsResults() {
             message={t("res_run_msg")}
             ctaLabel={t("res_run_cta")}
             onCta={() => navigate("/Analyzer")}
+            light={isAuthenticated}
           />
         )}
       </ResultsShell>
@@ -497,6 +507,7 @@ export default function PaymentsResults() {
           message={t("res_stale_msg")}
           ctaLabel={t("res_rerun_cta")}
           onCta={() => navigate("/Analyzer")}
+          light={isAuthenticated}
         />
       </ResultsShell>
     );
@@ -513,6 +524,7 @@ export default function PaymentsResults() {
           message={t("res_rate_msg", { mins })}
           ctaLabel={t("res_retry_now")}
           onCta={() => setAttempt((n) => n + 1)}
+          light={isAuthenticated}
         />
       </ResultsShell>
     );
@@ -528,6 +540,7 @@ export default function PaymentsResults() {
           message={t("res_err_msg")}
           ctaLabel={t("res_retry")}
           onCta={() => setAttempt((n) => n + 1)}
+          light={isAuthenticated}
         />
       </ResultsShell>
     );

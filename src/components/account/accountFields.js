@@ -12,9 +12,9 @@
 
 /** Brand section — writes to the Brand entity. */
 export const BRAND_FIELDS = [
-  { field: "name",    labelKey: "acc_brand_name", placeholderKey: "acc_brand_name_ph" },
-  { field: "website", labelKey: "acc_website",    placeholder: "https://" },
-  { field: "country", labelKey: "acc_country",    placeholderKey: "acc_country_ph" },
+  { field: "name",    labelKey: "acc_brand_name", placeholderKey: "acc_brand_name_ph", required: true },
+  { field: "website", labelKey: "acc_website",    placeholder: "https://", inputMode: "url", required: true },
+  { field: "country", labelKey: "acc_country",    placeholderKey: "acc_country_ph", required: true },
 ];
 
 /** In-store payments section — writes to the PaymentsProfile entity. */

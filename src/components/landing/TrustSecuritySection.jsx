@@ -78,12 +78,12 @@ export default function TrustSecuritySection() {
           >
             <div aria-hidden className="absolute h-[72%] w-[78%] rounded-full" style={{ background: "radial-gradient(circle,rgba(91,76,245,.13),rgba(57,198,240,.045) 42%,transparent 72%)", filter: "blur(38px)" }} />
             <img
-              src={BRAND_ASSETS.securityVisual}
+              src={BRAND_ASSETS.securityShield}
               alt={t("trust_sec_vault_alt")}
-              width={1536}
-              height={1152}
+              width={1448}
+              height={1086}
               loading="lazy"
-              className="relative h-auto w-full max-w-[700px] select-none"
+              className="relative h-auto w-full max-w-[660px] select-none"
               draggable={false}
               style={{ filter: "saturate(.9) contrast(1.015) drop-shadow(0 28px 36px rgba(52,56,156,.12))" }}
             />

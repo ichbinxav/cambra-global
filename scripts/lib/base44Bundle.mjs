@@ -25,7 +25,9 @@ export const BASE44_PHYSICAL_FUNCTION_TARGET = 276;
 // AGENTTASK-OUTBOX (2026-08-21): 38 -> 39 for agentTaskTerminalEventReconciler. Physical stays 276.
 // PAYMENT-REPORT (2026-09-06): 39 -> 40 for versioned report access hosted
 // by claimAnonPaymentsResult. Physical stays 276.
-export const BASE44_LOGICAL_ROUTE_TARGET = 40;
+// REFERRAL-ACCOUNT (2026-09-07): 40 -> 41 for public opaque-code validation
+// hosted by getMyReferralStatus. Physical stays 276.
+export const BASE44_LOGICAL_ROUTE_TARGET = 41;
 export const BASE44_FUNCTIONS_DIR = "./.deploy/functions";
 
 const lexical = (left, right) => left < right ? -1 : left > right ? 1 : 0;

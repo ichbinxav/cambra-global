@@ -29,14 +29,15 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
   const inputRef = useRef(null);
   const [status, setStatus] = useState("idle"); // idle | uploading | done | error
   const [message, setMessage] = useState("");
+  const [fileName, setFileName] = useState("");
 
   // Loading — capability probe still in flight.
   if (extractionLive === null) {
     return (
-      <div className="rounded-2xl p-4 animate-pulse border border-border/60 bg-card">
-        <div className="h-9 w-9 rounded-lg bg-secondary mb-3" />
-        <div className="h-3 w-40 bg-secondary rounded mb-2" />
-        <div className="h-2.5 w-56 bg-secondary/60 rounded" />
+      <div className="cambra-paper-card min-h-[430px] animate-pulse p-7 sm:p-8">
+        <div className="mb-5 h-14 w-14 rounded-2xl bg-[#EFEDFF]" />
+        <div className="mb-3 h-5 w-56 rounded bg-[#E8EAF0]" />
+        <div className="h-3 w-72 max-w-full rounded bg-[#F0F1F5]" />
       </div>
     );
   }
@@ -44,21 +45,21 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
   // ── COMING SOON — extractor gate closed. No upload input (it'd be a no-op).
   if (!extractionLive) {
     return (
-      <div className="rounded-2xl p-4 border border-border/60 bg-card">
-        <div className="flex items-start gap-3">
-          <div className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0 bg-secondary border border-border/60 text-muted-foreground">
-            <Clock size={16} strokeWidth={1.8} />
+      <div className="cambra-paper-card min-h-[430px] p-7 sm:p-8">
+        <div className="flex items-start gap-4">
+          <div className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#DEDFF0] bg-[#F1EFFF] text-[#5B4CF5]">
+            <Clock size={21} strokeWidth={1.8} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="text-[14px] font-bold leading-tight text-foreground" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <h4 className="text-[20px] font-bold leading-tight tracking-[-.035em] text-[#11182D]">
                 {t("su_title_soon", { provider: providerLabel })}
               </h4>
-              <span className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full inline-flex items-center gap-1 bg-secondary text-muted-foreground border border-border/60">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#D9DCE7] bg-[#F7F7FA] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#727A90]">
                 <Lock size={8} /> {t("su_badge_soon")}
               </span>
             </div>
-            <p className="text-[12px] leading-relaxed text-muted-foreground">
+            <p className="text-[12px] leading-relaxed text-[#6E778E]">
               {t("su_body_soon", { provider: providerLabel })}
             </p>
           </div>
@@ -69,9 +70,16 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
 
   // ── Upload live — extractor is on. Offer a real file input feeding the
   //    existing processUploadedFile as a first step.
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
+  const processFile = async (file) => {
     if (!file) return;
+    const extension = String(file.name.split(".").pop() || "").toLowerCase();
+    const accepted = ["pdf", "csv", "json", "png", "jpg", "jpeg", "webp", "gif"];
+    if (!accepted.includes(extension) || file.size > 15 * 1024 * 1024) {
+      setStatus("error");
+      setMessage(t("su_err_unreadable"));
+      return;
+    }
+    setFileName(file.name);
     setStatus("uploading");
     setMessage("");
     try {
@@ -102,59 +110,67 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
     }
   };
 
-  return (
-    <div className="rounded-2xl p-4 border border-border/60 bg-card">
-      <div className="flex items-start gap-3">
-        <div
-          className="inline-flex items-center justify-center h-9 w-9 rounded-lg shrink-0 border"
-          style={{ background: "rgba(91,76,245,0.10)", borderColor: "rgba(139,123,255,0.35)", color: "#8B7BFF" }}
-        >
-          <FileUp size={16} strokeWidth={1.8} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-[14px] font-bold leading-tight text-foreground" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-              {t("su_title_beta", { provider: providerLabel })}
-            </h4>
-          </div>
-          <p className="text-[12px] leading-relaxed mb-3 text-muted-foreground">
-            {t("su_body_beta", { provider: providerLabel })}
-          </p>
+  const handleFile = (event) => {
+    processFile(event.target.files?.[0]);
+    event.target.value = "";
+  };
 
-          {status === "done" ? (
-            <div className="flex items-start gap-2 text-[12px] text-emerald-500">
-              <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
-              <span>{message}</span>
-            </div>
-          ) : (
-            <>
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"
-                className="hidden"
-                onChange={handleFile}
-              />
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                disabled={status === "uploading"}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[12px] font-bold text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
-                style={{ background: "var(--g-voltio)", border: "1px solid rgba(91,76,245,0.4)" }}
-              >
-                {status === "uploading" ? (
-                  <><Loader2 size={12} className="animate-spin" /> {t("su_reading")}</>
-                ) : (
-                  <>{t("su_cta")} <ArrowRight size={12} /></>
-                )}
-              </button>
-              {status === "error" && (
-                <p className="mt-2 text-[11.5px] text-red-500">{message}</p>
-              )}
-            </>
-          )}
+  const handleDrop = (event) => {
+    event.preventDefault();
+    if (status !== "uploading") processFile(event.dataTransfer.files?.[0]);
+  };
+
+  return (
+    <div className="cambra-paper-card min-h-[430px] p-7 sm:p-8">
+      <div className="flex items-start gap-4">
+        <div className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#D8D4FF] bg-[#F0EEFF] text-[#5B4CF5]">
+          <FileUp size={21} strokeWidth={1.8} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6253F3]">{t("az_entry_upload_badge")}</p>
+          <h4 className="mt-1 text-[22px] font-bold leading-tight tracking-[-.035em] text-[#11182D]">{t("su_title_beta", { provider: providerLabel })}</h4>
+          <p className="mt-2 text-[12px] leading-relaxed text-[#6E778E]">{t("su_body_beta", { provider: providerLabel })}</p>
         </div>
       </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"
+        className="hidden"
+        onChange={handleFile}
+        aria-required="true"
+      />
+
+      <div
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={handleDrop}
+        className="mt-7 flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#AAA4DC] bg-gradient-to-br from-[#FCFCFF] to-[#F5F3FF] px-5 py-7 text-center"
+      >
+        {status === "done" ? (
+          <>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#E4F7ED] text-[#168552]"><CheckCircle2 size={22} /></span>
+            <p className="mt-4 max-w-lg text-[12px] font-semibold leading-relaxed text-[#2E7655]">{message}</p>
+            <p className="mt-2 max-w-full truncate font-mono text-[10px] text-[#737B91]">{fileName}</p>
+          </>
+        ) : (
+          <>
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#5B4CF5] shadow-[0_12px_30px_-20px_rgba(91,76,245,.7)]"><FileUp size={21} /></span>
+            <label className="mt-4 text-[14px] font-bold text-[#19223B]">{t("az_entry_upload_title")} <span className="text-[#5B4CF5]">*</span></label>
+            <p className="mt-1 text-[10.5px] text-[#7A8296]">PDF · PNG · JPG · CSV · JSON · 15 MB</p>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={status === "uploading"}
+          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--g-voltio)] px-6 text-[12px] font-bold text-white shadow-[0_18px_34px_-22px_rgba(91,76,245,.9)] disabled:opacity-50"
+        >
+          {status === "uploading" ? <><Loader2 size={13} className="animate-spin" /> {t("su_reading")}</> : <>{t("su_cta")} <ArrowRight size={13} /></>}
+        </button>
+      </div>
+
+      {status === "error" && <p role="alert" className="mt-3 text-[11.5px] font-semibold text-red-600">{message}</p>}
     </div>
   );
 }

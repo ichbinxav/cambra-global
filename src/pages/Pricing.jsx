@@ -124,7 +124,7 @@ function SplitVisual() {
               referred business that starts saving, down to a 5% floor. */}
           <p className="mt-4 text-[12.5px] leading-relaxed text-center" style={{ color: "var(--gris-1)" }}>
             {t("prc_referral_note")}{" "}
-            <Link to="/Referrals" className="underline font-semibold" style={{ color: "var(--voltio)" }}>
+            <Link to="/ReferralProgramme" className="underline font-semibold" style={{ color: "var(--voltio)" }}>
               {t("prc_referral_link")}
             </Link>
           </p>

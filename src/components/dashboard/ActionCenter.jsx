@@ -56,7 +56,9 @@ export default function ActionCenter({
   switch (action.intent) {
     case NEXT_ACTION_INTENT.VERIFY_CONNECT:
       title = t("ac_verify_title");
-      why = t("ac_verify_why", { amount });
+      why = action.recoverable_eur > 0
+        ? t("ac_verify_why", { amount })
+        : t("dash_verify_no_estimate");
       ctaLabel = t("ac_verify_cta");
       onCta = onVerify;
       Icon = ShieldCheck;
@@ -104,12 +106,13 @@ export default function ActionCenter({
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden"
+      className="relative overflow-hidden rounded-[24px]"
       style={{
         background: isPositive
-          ? "radial-gradient(120% 100% at 100% 0%, rgba(52,211,153,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)"
-          : "radial-gradient(120% 100% at 100% 0%, rgba(34,211,238,0.12) 0%, transparent 60%), rgba(255,255,255,0.03)",
+          ? "radial-gradient(120% 100% at 100% 0%,rgba(52,211,153,.18),transparent 60%),linear-gradient(145deg,#12152A,#071322)"
+          : "radial-gradient(120% 100% at 100% 0%,rgba(34,211,238,.17),transparent 60%),linear-gradient(145deg,#14112E,#071322)",
         border: `1px solid ${isPositive ? "rgba(52,211,153,0.22)" : "rgba(34,211,238,0.22)"}`,
+        boxShadow: "0 26px 68px -50px rgba(7,9,27,.9)",
       }}
     >
       <div className={`relative z-10 ${compact ? "p-5" : "p-5 md:p-6"} flex flex-col md:flex-row md:items-center gap-4`}>
@@ -155,6 +158,7 @@ export default function ActionCenter({
         {ctaLabel && (
           <div className="shrink-0 flex flex-col items-stretch md:items-end gap-2">
             <button
+              type="button"
               onClick={onCta}
               className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 inline-flex items-center justify-center transition-opacity"
               style={{

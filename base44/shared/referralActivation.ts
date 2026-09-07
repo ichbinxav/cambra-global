@@ -38,15 +38,19 @@ async function resolveBrand(svc: any, brand_id?: string): Promise<any | null> {
   return rows[0] || null;
 }
 
-// The attribution evidence lives on the referred business's analysis session
-// (referred_by_code, written by submitPaymentsAnalysis).
-async function findReferralSession(svc: any, emails: string[]): Promise<any | null> {
+// New registrations persist the attribution on the account before an analysis
+// exists. Legacy registrations still resolve from PaymentsAnalysisSession;
+// resolveReferralEntryAttribution owns that precedence and validation.
+async function findReferralAttribution(svc: any, emails: string[]): Promise<any | null> {
+  let rejected: any | null = null;
   for (const email of emails) {
-    const rows=requireRuntimeSource(await readRuntimeRows({source:'referral_analysis_sessions',limit:25,read:()=>svc.entities.PaymentsAnalysisSession.filter({ contact_email: email }, '-created_date', 25)}));
-    const hit = rows.find((r: any) => r?.referred_by_code);
-    if (hit) return hit;
+    const hit = await resolveReferralEntryAttribution(svc, email);
+    if (hit?.eligible) return { ...hit, recipient_email: email };
+    if (hit?.reason && hit.reason !== 'no_referral' && !rejected) {
+      rejected = { ...hit, recipient_email: email };
+    }
   }
-  return null;
+  return rejected;
 }
 
 export async function applyReferralActivation(
@@ -57,14 +61,14 @@ export async function applyReferralActivation(
   const emails = [...new Set([referred_email, brand?.contact_email, brand?.created_by].map(lower).filter(Boolean))];
   if (!emails.length) return { ok: true, applied: false, reason: 'no_referred_identity' };
 
-  const session = await findReferralSession(svc, emails);
-  if (!session) return { ok: true, applied: false, reason: 'no_referral' };
+  const attribution = await findReferralAttribution(svc, emails);
+  if (!attribution) return { ok: true, applied: false, reason: 'no_referral' };
+  if (!attribution.eligible) {
+    return { ok: true, applied: false, reason: attribution.reason || 'no_referral' };
+  }
 
-  const code = session.referred_by_code;
-  const linkRows=requireRuntimeSource(await readRuntimeRows({source:'referral_link_authority',read:()=>svc.entities.ReferralLink.filter({ code }, 'created_date', 2)}));
-  if(linkRows.length>1)throw Object.assign(new Error('referral_link_authority_ambiguous'),{status:503});
-  const link = linkRows[0] || null;
-  if (!link) return { ok: true, applied: false, reason: 'unknown_code' };
+  const code = attribution.code;
+  const link = attribution.link;
   if (emails.includes(lower(link.owner_email))) {
     return { ok: true, applied: false, reason: 'self_referral' };
   }
@@ -95,7 +99,7 @@ export async function applyReferralActivation(
     referrer_email: link.owner_email,
     referred_key,
     referred_brand_id: brand?.id || '',
-    source_session: session.anon_session_id || '',
+    source_session: attribution.session?.anon_session_id || '',
     activated_at: new Date(now).toISOString(),
     activated_count_after: activated_count,
     applied_fee_pct: fee_pct,

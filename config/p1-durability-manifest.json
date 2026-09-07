@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T15:06:22.618Z",
+  "generatedAt": "2026-09-07T18:12:17.828Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -39,8 +39,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "5792416dcf7fbd819d13cc4dc97cd41c8344e4322bc2753625f1c0007f258148",
-      "bytes": 10908
+      "sha256": "8e8da58dd8956d4041d6e21b8ce660564b0466cd29f228a7fcac10dfeadcb62e",
+      "bytes": 11179
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -1664,8 +1664,8 @@
     },
     {
       "path": "base44/shared/generated/disasterRecoveryEntityCatalog.ts",
-      "sha256": "73ca4537095a9860e8ea86dad4b4771396af1fc0c42d02dc907c0f2341094621",
-      "bytes": 6546
+      "sha256": "059bea214a310fed330b8a7eac8ba3540f0a3e4f7d76e63af1ddfb5413b8209a",
+      "bytes": 6578
     },
     {
       "path": "base44/shared/generated/eclDomain.ts",
@@ -1904,8 +1904,8 @@
     },
     {
       "path": "base44/shared/referralActivation.ts",
-      "sha256": "47f8c5bb3e5077f024bcbdd7cb77bfe54113f8694b4516a6da0c67904788b189",
-      "bytes": 6029
+      "sha256": "b5db0e56fccc26661a37502174fdfb4839c986981eb18c805c42dd8c92e2e414",
+      "bytes": 5917
     },
     {
       "path": "base44/shared/referralBilling.ts",
@@ -1939,7 +1939,7 @@
     },
     {
       "path": "base44/shared/runtimeEvidence.ts",
-      "sha256": "b4644b4de63df4bbcddc19303492a158ce9799a6b03e6daf36b696c3d102fec4",
+      "sha256": "0fc065acb5f34d39e4f054041601a03aa25431734ba70ff3c535d3318f88242f",
       "bytes": 27046
     },
     {
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "dced60e37a96c767074d30d27239e9c320755b55b190a0d161b29f6469cefc21",
+      "sha256": "72117402e688eb29ded8c2dcc6155c30077b2d6d3a06dd21b94d4641ecaf5d8c",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "2db9df2c76509a516cc51108162a8230f22fbb59fc831daddc0924a81c8fbacb",
+      "sha256": "621488ea8ab55346ab0107b5c1a998797b80659107010a642b93d8e66976304a",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "8f47faf03e49ffd19a5f5673f7a4deaade869c30ba9b7eaebb45bb8c027116cb",
+      "sha256": "540541cc0a9f2ac3458692408874924a455edb69095e0af00eeab110efc5f5be",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "dd7792a9bed6da144b2fb86ee454d270c0b08d30b219501787018d50d9b575dc",
+      "sha256": "e9ca764c6d1eace94445dcb978e8de7e6b105eefd32340642e06a93fcc7ac606",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "f3b8f6ea1bffd7a0d8bc5281471a7e04613d736e0f657598368093e2b68fd83e",
+      "sha256": "cc1b1a0257c5a5916122941c5671af8ae65d6d2ac7a134f7c864202c498a977b",
       "bytes": 97899
     },
     {
@@ -2499,8 +2499,8 @@
     },
     {
       "path": "scripts/lib/base44Bundle.mjs",
-      "sha256": "f7374cf3619c811cb3101901838a60652843cd1bcb70d047cb42a264e9fd8021",
-      "bytes": 13169
+      "sha256": "3efff08d9eb3c7163d462f2a546bd99a0d090ba09d5eba490240a17ed9224ee1",
+      "bytes": 13300
     },
     {
       "path": "scripts/lib/evidence.mjs",
@@ -2559,8 +2559,8 @@
     },
     {
       "path": "src/App.jsx",
-      "sha256": "f8a48808e058c3183dadb22a8beba748fac5810f9d433b1f3fc0b6ddf5f8fab5",
-      "bytes": 29338
+      "sha256": "e4b62e6307f87a83466289ac22a0df83ff90d49f00221128678e77a0299d18ec",
+      "bytes": 29887
     },
     {
       "path": "src/README.md",
@@ -2599,13 +2599,13 @@
     },
     {
       "path": "src/components/landing/MobileNavMenu.jsx",
-      "sha256": "95bf04a6385f9a8b67081b62fb64ed7f26a49cac6a7bca2448873572f51a97c4",
-      "bytes": 14199
+      "sha256": "df76e5d2ad3c5a13d75b9775dede20e0ad0e42015959039400fa6b17fdab8329",
+      "bytes": 14116
     },
     {
       "path": "src/components/landing/Navbar.jsx",
-      "sha256": "a27130b2c92558861776a4278dc663db1fc69dc4aca85f3811d1fd9e9675d963",
-      "bytes": 8073
+      "sha256": "ee0492b3afe8188915f91ab44af317b8f89df50157e94ebdae6c6b191cc1c36b",
+      "bytes": 7827
     },
     {
       "path": "src/components/landing/PricingDual.jsx",
@@ -2634,8 +2634,8 @@
     },
     {
       "path": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
-      "sha256": "8a36e4820f25ac38b0928b2daccd62f2202f026b1a517f73b7966582aabae8fd",
-      "bytes": 7320
+      "sha256": "18a5a53d56006304a84f5ddbf8f18616620879478d9cb393073c7fbef258b86f",
+      "bytes": 8455
     },
     {
       "path": "src/components/paymentsResults/OptimizedHero.jsx",
@@ -2954,13 +2954,13 @@
     },
     {
       "path": "src/lib/base44DeploymentTopology.test.js",
-      "sha256": "9325fb54667d5df090d36e63847cad7e1709b708d74064352d881c9dc03ec51d",
-      "bytes": 7418
+      "sha256": "2d899135a3da8357c2872c3efffe30896d2c6fee25fefe77a5aef280a89ec9b6",
+      "bytes": 7553
     },
     {
       "path": "src/lib/base44ReproduciblePipeline.test.js",
-      "sha256": "c368a1d5c5ed332ec9d92c3f2b986fcd1872003ca7f5e72f63e5df1226438a66",
-      "bytes": 11857
+      "sha256": "09b235aeeee00d6aee8c1b479fcdc980a82052a9f5085fa0713aed361cf2afae",
+      "bytes": 11933
     },
     {
       "path": "src/lib/cambraDeveloper.test.js",
@@ -3389,18 +3389,18 @@
     },
     {
       "path": "src/lib/locales/en.js",
-      "sha256": "4abd86e90e7602730241da96625a4ffc9c55e55f9bfed2c0841f357524fca095",
-      "bytes": 104023
+      "sha256": "955ae7bd84c502cc2bfa8cc0f7102fb26e1dac50bc8bf57bc3b956e2d851be04",
+      "bytes": 106277
     },
     {
       "path": "src/lib/locales/es.js",
-      "sha256": "04c5d0ac877d67e3a6711889377368cc56f5b65ae17a535c9c37b2872fd5b100",
-      "bytes": 105696
+      "sha256": "55264669b4437344e21a1bfe3fa988cfef58cd3c53eb9b8ab30823951554b847",
+      "bytes": 108131
     },
     {
       "path": "src/lib/locales/fr.js",
-      "sha256": "105ff4b97e35daaf139954619e703e26ca54353d543321170b9223dd06c08361",
-      "bytes": 111376
+      "sha256": "c36dc900a02fb3efebd0e8d601ffaef8045c4ddbfcc7ad8f6eac7dfad5aa676f",
+      "bytes": 113910
     },
     {
       "path": "src/lib/marketLaunchScope.test.js",
@@ -3819,8 +3819,8 @@
     },
     {
       "path": "src/pages/Dashboard.jsx",
-      "sha256": "a6c8115640c108ddf08caeb914e834fb476737be86a890c5bbd942e74ba4ed3c",
-      "bytes": 23975
+      "sha256": "4fc187ea998cd0ef194304220cc8d3ec6f13d36410ceb243d3cdce50b1b18fb4",
+      "bytes": 21245
     },
     {
       "path": "src/pages/HowItWorks.jsx",
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "28396ae37caf8a0a5055027ecad753332b9cb83359308e046830ed494302e78c",
-      "bytes": 20159
+      "sha256": "effc9a45796f87dca4939f56f19ae526c43799cf4dc3aa068c30a402776369fd",
+      "bytes": 20855
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",

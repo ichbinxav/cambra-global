@@ -33,7 +33,8 @@ describe("owned payments history detail contract", () => {
     expect(reader).toContain("detail_available: Boolean(r?.details?.engine_result)");
     expect(reader).toContain("legacy_summary: !r?.details?.engine_result");
     expect(history).toContain("item.detail_available === true");
-    expect(history).toContain("legacyUnavailable");
+    expect(history).toContain('const Card = hasDetail ? "button" : "div"');
+    expect(history).toContain('...(hasDetail ? { type: "button", onClick: () => onOpen(item) } : {})');
   });
 
   it("returns each history amount with its own currency", () => {
@@ -59,8 +60,11 @@ describe("key customer surfaces are localized", () => {
   });
 
   it("has Spanish history and action copy", () => {
-    expect(history).toContain('title: "Historial de auditorías de pagos"');
-    expect(history).toContain('openReport: "Abrir informe"');
+    const es = read("src/lib/locales/es.js");
+    expect(history).toContain('title: t("rpt_hist_title")');
+    expect(history).toContain('openReport: t("results_cta_title")');
+    expect(es).toContain('rpt_hist_title:     "Cronología de análisis"');
+    expect(es).toContain('results_cta_title:          "Consulta tu informe de margen completo"');
   });
 });
 

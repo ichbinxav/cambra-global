@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { CheckCircle2, RefreshCw, LogOut, Clock, Sparkles, Loader2 } from "lucide-react";
+import { CheckCircle2, RefreshCw, LogOut, Clock, Sparkles, Loader2, LockKeyhole, ShieldCheck, Power } from "lucide-react";
 import { useToast } from "@/components/shared/Toast.jsx";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { trackProductEvent } from "@/lib/productAnalytics";
@@ -235,149 +235,95 @@ export default function StripeConnectCard({ redirectAfter = undefined, brandId =
     }
   };
 
-  const stripeColor = "#635BFF";
-
   const Header = ({ children }) => (
-    <div className="flex items-center gap-3 mb-3">
-      <div
-        className="w-11 h-11 rounded-xl flex items-center justify-center font-black shrink-0"
-        style={{ background: stripeColor + "18", border: `1px solid ${stripeColor}30` }}
-      >
-        <span style={{ color: stripeColor }} className="text-[11px]">ST</span>
+    <div className="flex items-center gap-4">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#635BFF]/20 bg-[#635BFF]/10">
+        <span className="text-[19px] font-black text-[#635BFF]">ST</span>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-foreground">Stripe</p>
-        <p className="text-[11px] text-muted-foreground">{children}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#6253F3]">{t("az_entry_connect_badge")}</p>
+        <p className="mt-1 text-[22px] font-bold tracking-[-.035em] text-[#11182D]">Stripe</p>
+        <p className="mt-1 text-[11px] text-[#727B92]">{children}</p>
       </div>
     </div>
   );
 
   if (loading) {
-    return (
-      <div className="rounded-2xl border border-border/60 bg-card p-4">
-        <Header>{t("sc_loading")}</Header>
-      </div>
-    );
+    return <div className="cambra-paper-card h-full min-h-[430px] p-7 sm:p-8"><Header>{t("sc_loading")}</Header></div>;
   }
 
   if (setupRequired) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card p-4">
+      <div className="cambra-paper-card h-full min-h-[430px] p-7 sm:p-8">
         <Header>{t("sc_desc")}</Header>
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary text-[10px] font-semibold text-muted-foreground border border-border/60">
-            <Clock size={10} /> {t("sc_coming_soon")}
-          </span>
-          <span className="text-[11px] text-muted-foreground">{t("sc_coming_soon_sub")}</span>
+        <div className="mt-8 flex items-center justify-between gap-3 rounded-2xl border border-[#E0E3EC] bg-[#F7F7FB] p-5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8DCE8] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#66708A]"><Clock size={10} /> {t("sc_coming_soon")}</span>
+          <span className="text-right text-[11px] text-[#737B91]">{t("sc_coming_soon_sub")}</span>
         </div>
       </div>
     );
   }
 
   if (connection) {
-    // Verified analysis is only reachable through the Integration-backed
-    // path (P10 uses the safe getIntegrationStatus server projection;
-    // a legacy-only StripeConnection still cannot reach the verified bridge
-    // no_stripe_integration). We surface the button only when it will work.
     const canRunVerified = !!connection?.provider;
     return (
-      <div className="rounded-2xl border border-emerald-500/30 bg-card p-4">
+      <div className="cambra-paper-card h-full min-h-[430px] p-7 sm:p-8">
         <Header>
-          {t("sc_connected_last_sync")}{" "}
-          {connection.last_sync_at
-            ? new Date(connection.last_sync_at).toLocaleString()
-            : "—"}
+          {t("sc_connected_last_sync")} {connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleString() : "—"}
         </Header>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 border border-emerald-500/20">
-            <CheckCircle2 size={10} /> {t("sc_connected")}
-          </span>
-          <button
-            onClick={handleSync}
-            disabled={busy || computing}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-border/60 text-[11px] font-medium text-foreground hover:border-foreground/40 disabled:opacity-50"
-          >
-            <RefreshCw size={12} className={busy ? "animate-spin" : ""} />
-            {t("sc_sync_now")}
+        <div className="mt-7 grid gap-3 border-y border-[#E7E9EF] py-5 sm:grid-cols-3">
+          <div className="flex items-center gap-3 text-[11px] font-semibold text-[#3B4661]"><span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EFEDFF] text-[#5B4CF5]"><LockKeyhole size={15} /></span>{t("sc_readonly")}</div>
+          <div className="flex items-center gap-3 text-[11px] font-semibold text-[#3B4661]"><span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECF8F2] text-[#188555]"><Clock size={15} /></span>{t("sc_connected_last_sync")}</div>
+          <div className="flex items-center gap-3 text-[11px] font-semibold text-[#3B4661]"><span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECF8F2] text-[#188555]"><CheckCircle2 size={15} /></span>{t("sc_connected")}</div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-700"><CheckCircle2 size={10} /> {t("sc_connected")}</span>
+          <button onClick={handleSync} disabled={busy || computing} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[#DDE0E9] bg-white px-3 text-[11px] font-bold text-[#303A55] hover:border-[#AAA3F7] disabled:opacity-50">
+            <RefreshCw size={12} className={busy ? "animate-spin" : ""} /> {t("sc_sync_now")}
           </button>
-          <button
-            onClick={handleDisconnect}
-            disabled={busy || computing}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-50"
-          >
-            <LogOut size={12} />
-            {t("sc_disconnect")}
+          <button onClick={handleDisconnect} disabled={busy || computing} className="inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-[11px] font-semibold text-[#737B90] hover:text-[#222C47] disabled:opacity-50">
+            <LogOut size={12} /> {t("sc_disconnect")}
           </button>
         </div>
 
-        {/* Verified analysis — primary post-sync action.
-            Full-width block so it doesn't get lost among the utility buttons
-            above. The "Run" call is where CAMBRA's real product value lands:
-            it measures the merchant's actual effective rate from real Stripe
-            data (canonical fees ÷ net volume over the last 90d) and shows
-            the VERIFIED badge over that number on /Results. */}
         {canRunVerified && (
-          <div
-            className="mt-3 rounded-xl p-3 flex items-center justify-between gap-3"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(31,78,216,0.06) 100%)",
-              border: "1px solid rgba(34,211,238,0.30)",
-            }}
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles size={11} className="text-cyan-500" />
-                {t("sc_run_title")}
-              </p>
-              <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                {computing ? t("sc_run_computing") : t("sc_run_sub")}
-              </p>
+          <div className="mt-6 flex flex-col items-start justify-between gap-5 rounded-2xl border border-[#5B4CF5]/20 bg-gradient-to-br from-[#F1EFFF] to-[#EEF9FC] p-5 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-2 text-[13px] font-bold text-[#172039]"><Sparkles size={14} className="text-[#5B4CF5]" /> {t("sc_run_title")}</p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-[#69728A]">{computing ? t("sc_run_computing") : t("sc_run_sub")}</p>
             </div>
-            <button
-              onClick={handleRunVerifiedAnalysis}
-              disabled={computing || busy}
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[11px] font-bold text-white disabled:opacity-60 shrink-0"
-              style={{
-                background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
-                boxShadow: "0 6px 20px -8px rgba(34,211,238,0.55)",
-              }}
-            >
-              {computing ? (
-                <>
-                  <Loader2 size={12} className="animate-spin" /> {t("sc_running")}
-                </>
-              ) : (
-                <>{t("sc_run")}</>
-              )}
+            <button onClick={handleRunVerifiedAnalysis} disabled={computing || busy} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[var(--g-voltio)] px-5 text-[11px] font-bold text-white disabled:opacity-60">
+              {computing ? <><Loader2 size={12} className="animate-spin" /> {t("sc_running")}</> : t("sc_run")}
             </button>
           </div>
         )}
-
-        {error && <p className="mt-2 text-[11px] text-red-600">{error}</p>}
+        {error && <p role="alert" className="mt-3 text-[11px] text-red-600">{error}</p>}
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
+    <div className="cambra-paper-card h-full min-h-[430px] p-7 sm:p-8">
       <Header>{t("sc_subtitle_connect")}</Header>
-      <div className="flex items-center justify-between gap-3">
-        {/* Timing guard: brandId resolves asynchronously in the parent
-            (ConnectTools does auth.me() → Brand.filter). Disabling until it's
-            present prevents the "Missing brand context — please refresh"
-            error from a click that lands before the brand is resolved. */}
-        <button
-          onClick={handleConnect}
-          disabled={busy || !brandId}
-          className="h-9 px-4 rounded-full text-xs font-bold text-white disabled:opacity-50"
-          style={{ background: stripeColor }}
-        >
+      <div className="mt-7 border-t border-[#E6E8EF] pt-6">
+        <h3 className="text-[17px] font-bold tracking-[-.025em] text-[#121A31]">{t("az_entry_connect_title")}</h3>
+        <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-[#6B748B]">{t("az_entry_connect_body")}</p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {[
+            { icon: LockKeyhole, text: t("trust_sec_b1_t") },
+            { icon: ShieldCheck, text: t("sec_chip_2") },
+            { icon: Power, text: t("trust_sec_b4_t") },
+          ].map(({ icon: Icon, text }) => (
+            <div key={text} className="flex items-center gap-3 rounded-xl border border-[#E5E7EE] bg-[#FAFAFC] px-3 py-3 text-[10.5px] font-semibold text-[#45506A]"><Icon size={14} className="shrink-0 text-[#5B4CF5]" /> {text}</div>
+          ))}
+        </div>
+        <button onClick={handleConnect} disabled={busy || !brandId} className="mt-6 inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-[var(--g-voltio)] px-5 text-[13px] font-bold text-white shadow-[0_18px_36px_-22px_rgba(91,76,245,.9)] disabled:opacity-50">
           {busy ? t("sc_connecting") : !brandId ? t("sc_setting_up") : t("sc_connect")}
         </button>
-        <span className="text-[10px] text-muted-foreground">🔒 {t("sc_readonly")}</span>
+        <span className="mt-3 flex items-center justify-center gap-1.5 text-[10px] font-semibold text-[#7A8296]"><LockKeyhole size={11} /> {t("sc_readonly")}</span>
       </div>
-      {error && <p className="mt-2 text-[11px] text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-[11px] text-red-600">{error}</p>}
     </div>
   );
 }

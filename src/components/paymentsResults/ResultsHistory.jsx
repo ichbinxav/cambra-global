@@ -9,59 +9,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Loader2, History, Plus } from "lucide-react";
+import { ArrowRight, CalendarDays, Loader2, History, Plus, Sparkles } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
-
-const HISTORY_COPY = {
-  en: {
-    estimate: "Estimate",
-    annualGap: "Annual gap",
-    openReport: "Open report",
-    otherProvider: "Other provider",
-    eyebrow: "Your analyses",
-    title: "Payments audit history",
-    newAnalysis: "New analysis",
-    loading: "Loading your history...",
-    error: "We couldn't load your history right now. Please try again in a moment.",
-    emptyTitle: "No analyses yet",
-    emptyMessage: "Run your first payments audit. It takes about two minutes.",
-    runAnalysis: "Run your analysis",
-    legacy: "Historical",
-    legacyUnavailable: "Historical summary · detailed payments report unavailable",
-  },
-  fr: {
-    estimate: "Estimation",
-    annualGap: "Écart annuel",
-    openReport: "Ouvrir le rapport",
-    otherProvider: "Autre prestataire",
-    eyebrow: "Vos analyses",
-    title: "Historique des audits de paiement",
-    newAnalysis: "Nouvelle analyse",
-    loading: "Chargement de votre historique...",
-    error: "Impossible de charger votre historique pour le moment. Réessayez dans un instant.",
-    emptyTitle: "Aucune analyse pour le moment",
-    emptyMessage: "Lancez votre premier audit de paiement. Cela prend environ deux minutes.",
-    runAnalysis: "Lancer votre analyse",
-    legacy: "Historique",
-    legacyUnavailable: "Résumé historique · rapport de paiement détaillé indisponible",
-  },
-  es: {
-    estimate: "Estimación",
-    annualGap: "Brecha anual",
-    openReport: "Abrir informe",
-    otherProvider: "Otro proveedor",
-    eyebrow: "Tus análisis",
-    title: "Historial de auditorías de pagos",
-    newAnalysis: "Nuevo análisis",
-    loading: "Cargando tu historial...",
-    error: "No hemos podido cargar tu historial ahora. Inténtalo de nuevo en unos instantes.",
-    emptyTitle: "Aún no hay análisis",
-    emptyMessage: "Ejecuta tu primera auditoría de pagos. Tarda unos dos minutos.",
-    runAnalysis: "Ejecutar tu análisis",
-    legacy: "Histórico",
-    legacyUnavailable: "Resumen histórico · informe detallado de pagos no disponible",
-  },
-};
 
 function fmtDate(iso, locale) {
   if (!iso) return "";
@@ -100,53 +49,118 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
   return (
     <Card
       {...(hasDetail ? { type: "button", onClick: () => onOpen(item) } : {})}
-      className={`w-full text-left rounded-2xl p-5 transition-all ${hasDetail ? "hover:border-cyan-400/40 hover:bg-white/[0.05] group" : "cursor-default"}`}
-      style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
+      className={`cambra-paper-card w-full p-5 text-left transition-all ${hasDetail ? "group hover:-translate-y-0.5 hover:border-[#BDB7FB]" : "cursor-default"}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[15px] font-bold text-white truncate">{providerLabel(item.provider_slug, copy.otherProvider)}</span>
+            <span className="truncate text-[15px] font-bold text-[#11182D]">{providerLabel(item.provider_slug, copy.otherProvider)}</span>
             <span
               className="text-[9px] uppercase tracking-[0.14em] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-              style={{ background: "rgba(34,211,238,0.12)", color: "rgba(34,211,238,0.95)", border: "1px solid rgba(34,211,238,0.25)" }}
+              style={{ background: "#F0EEFF", color: "#4D3DF1", border: "1px solid #D9D5FF" }}
             >
               {hasDetail ? copy.estimate : copy.legacy}
             </span>
           </div>
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-[#7A8296]">
             {fmtDate(item.created_date, locale)}{item.country ? ` · ${item.country}` : ""}
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className="text-[10px] uppercase tracking-[0.14em] font-bold text-white/40 mb-0.5">{copy.annualGap}</p>
+          <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#7A8296]">{copy.annualGap}</p>
           <p
             className="text-[20px] font-black tabular-nums leading-none"
             style={{
-              background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 45%, #39C6F0 100%)",
+              background: "linear-gradient(135deg, #2719DB 0%, #6454F5 48%, #2DAFDF 100%)",
               WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
             }}
           >
             {money(point)}
           </p>
           {range && (range.lo !== range.hi) && (
-            <p className="text-[10px] text-white/35 tabular-nums mt-0.5">
+            <p className="mt-0.5 tabular-nums text-[10px] text-[#8A91A4]">
               {money(range.lo)}–{money(range.hi)}
             </p>
           )}
         </div>
       </div>
-      <div className={`mt-3 flex items-center gap-1 text-[11px] transition-colors ${hasDetail ? "text-cyan-300/70 group-hover:text-cyan-300" : "text-white/40"}`}>
-        {hasDetail ? <>{copy.openReport} <ArrowRight size={11} /></> : copy.legacyUnavailable}
-      </div>
+      {hasDetail && (
+        <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-[#5B4CF5] transition-colors group-hover:text-[#2DAFDF]">
+          {copy.openReport} <ArrowRight size={11} />
+        </div>
+      )}
     </Card>
+  );
+}
+
+function FeaturedAnalysis({ item, onOpen, onNew, copy, locale, formatCurrency }) {
+  const range = item.savings_range;
+  const point = range?.point ?? item.total_savings;
+  const currency = item.currency || "EUR";
+  const amount = typeof point === "number" && isFinite(point)
+    ? formatCurrency(Math.round(point), currency)
+    : "—";
+  const hasDetail = item.detail_available === true;
+  const date = fmtDate(item.created_date, locale);
+
+  return (
+    <section className="cambra-paper-card mt-9 grid overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(420px,.86fr)]">
+      <div className="p-7 sm:p-9">
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#5B4CF5]">{copy.latest} · {hasDetail ? copy.estimate : copy.legacy}</p>
+        <p className="mt-7 text-[11px] font-bold uppercase tracking-[.13em] text-[#717A91]">{copy.annualGap}</p>
+        <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1">
+          <strong className="text-[clamp(50px,7vw,82px)] font-bold leading-none tracking-[-.065em] text-[#091126]">{amount}</strong>
+          <span className="pb-2 text-[15px] font-semibold text-[#6A738A]">{copy.perYear}</span>
+        </div>
+        <p className="mt-5 max-w-xl text-[13px] leading-relaxed text-[#68718A]">{providerLabel(item.provider_slug, copy.otherProvider)} · {date}{item.country ? ` · ${item.country}` : ""}</p>
+        <div className="mt-7 flex flex-wrap items-center gap-4">
+          {hasDetail && (
+            <button type="button" onClick={() => onOpen(item)} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[var(--g-voltio)] px-6 text-[12px] font-bold text-white">
+              {copy.openReport} <ArrowRight size={14} />
+            </button>
+          )}
+          <button type="button" onClick={onNew} className="inline-flex min-h-12 items-center gap-2 px-2 text-[12px] font-bold text-[#4D3DF1]">{copy.newAnalysis} <Plus size={13} /></button>
+        </div>
+      </div>
+
+      <div className="cambra-dark-panel m-3 flex min-h-[330px] flex-col justify-between p-7 sm:p-9">
+        <div>
+          <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.15em] text-[#B7ACFF]"><Sparkles size={13} /> {copy.timelineTitle}</p>
+          <div className="mt-12 flex items-center">
+            <span className="h-7 w-7 shrink-0 rounded-full border-[6px] border-[#6B5AF6] bg-white shadow-[0_0_0_7px_rgba(107,90,246,.18),0_0_28px_rgba(107,90,246,.8)]" />
+            <span className="h-px flex-1 border-t border-dashed border-white/35" />
+            <span className="h-7 w-7 shrink-0 rounded-full border-2 border-dashed border-white/55" />
+          </div>
+          <p className="mt-4 flex items-center gap-2 text-[11px] font-semibold text-white/62"><CalendarDays size={13} /> {date}</p>
+        </div>
+        <p className="mt-8 text-[13px] leading-relaxed text-white/66">{copy.timelineBody}</p>
+      </div>
+    </section>
   );
 }
 
 export default function ResultsHistory() {
   const navigate = useNavigate();
-  const { lang, locale, formatCurrency } = useTranslation();
-  const copy = HISTORY_COPY[lang] || HISTORY_COPY.en;
+  const { t, locale, formatCurrency } = useTranslation();
+  const copy = {
+    estimate: t("rpt_vs_estimated"),
+    annualGap: t("rpt_recovery_potential"),
+    openReport: t("results_cta_title"),
+    otherProvider: t("cat_other"),
+    eyebrow: t("rpt_eyebrow"),
+    title: t("rpt_hist_title"),
+    newAnalysis: t("rpt_new_scan"),
+    loading: t("res_loading"),
+    error: t("res_err_msg"),
+    emptyTitle: t("rpt_empty_title"),
+    emptyMessage: t("rpt_empty_sub"),
+    runAnalysis: t("rpt_empty_cta"),
+    legacy: t("rpt_hist_eyebrow"),
+    latest: t("from_latest_analysis"),
+    timelineTitle: t("rpt_hist_title"),
+    timelineBody: t("tracking_will_appear"),
+    perYear: t("rpt_per_year"),
+  };
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [items, setItems] = useState([]);
 
@@ -178,13 +192,13 @@ export default function ResultsHistory() {
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
+            style={{ border: "1px solid #D9D5FF", background: "#F0EEFF" }}
           >
-            <History size={11} className="text-cyan-300" />
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/60">{copy.eyebrow}</span>
+            <History size={11} className="text-[#5B4CF5]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#5144C9]">{copy.eyebrow}</span>
           </div>
           <h1
-            className="text-white"
+            className="text-[#091126]"
             style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 900, letterSpacing: "-0.03em" }}
           >
             {copy.title}
@@ -200,25 +214,21 @@ export default function ResultsHistory() {
       </div>
 
       {status === "loading" && (
-        <div className="flex items-center gap-2 text-white/50 text-sm py-10 justify-center">
-          <Loader2 size={16} className="animate-spin text-cyan-300" /> {copy.loading}
+        <div className="flex items-center justify-center gap-2 py-10 text-sm text-[#707A91]">
+          <Loader2 size={16} className="animate-spin text-[#5B4CF5]" /> {copy.loading}
         </div>
       )}
 
       {status === "error" && (
-        <div className="rounded-2xl p-6 text-center text-[13px] text-white/55"
-          style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
-        >
+        <div className="cambra-paper-card p-6 text-center text-[13px] text-[#68718A]">
           {copy.error}
         </div>
       )}
 
       {status === "ready" && items.length === 0 && (
-        <div className="rounded-2xl p-8 text-center"
-          style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
-        >
-          <p className="text-white font-bold text-[16px] mb-1.5">{copy.emptyTitle}</p>
-          <p className="text-[13px] text-white/55 mb-5">{copy.emptyMessage}</p>
+        <div className="cambra-paper-card p-8 text-center">
+          <p className="mb-1.5 text-[16px] font-bold text-[#11182D]">{copy.emptyTitle}</p>
+          <p className="mb-5 text-[13px] text-[#68718A]">{copy.emptyMessage}</p>
           <Button
             onClick={() => navigate("/Analyzer")}
             className="h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90"
@@ -230,18 +240,19 @@ export default function ResultsHistory() {
       )}
 
       {status === "ready" && items.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {items.map((item) => (
-            <HistoryCard
-              key={item.id}
-              item={item}
-              onOpen={openReport}
-              copy={copy}
-              locale={locale}
-              formatCurrency={formatCurrency}
-            />
-          ))}
-        </div>
+        <>
+          <FeaturedAnalysis item={items[0]} onOpen={openReport} onNew={() => navigate("/Analyzer")} copy={copy} locale={locale} formatCurrency={formatCurrency} />
+          {items.length > 1 && (
+            <section className="mt-10">
+              <h2 className="text-[22px] font-bold tracking-[-.035em] text-[#11182D]">{copy.title}</h2>
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {items.slice(1).map((item) => (
+                  <HistoryCard key={item.id} item={item} onOpen={openReport} copy={copy} locale={locale} formatCurrency={formatCurrency} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

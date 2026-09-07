@@ -9,8 +9,8 @@ export default function ReferralTeaser() {
   return (
     <Link to="/Referrals" className="block">
       <div
-        className="rounded-2xl p-5 flex items-center gap-4 transition-colors hover:border-white/20"
-        style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="flex items-center gap-4 rounded-[22px] p-5 transition-transform hover:-translate-y-0.5"
+        style={{ background: "linear-gradient(135deg,#15122F,#091629)", border: "1px solid rgba(139,123,255,.24)", boxShadow: "0 24px 60px -46px rgba(10,12,34,.92)" }}
       >
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"

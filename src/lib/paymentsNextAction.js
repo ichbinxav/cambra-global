@@ -119,16 +119,17 @@ export function computePaymentsNextAction(account, latest, opts = {}) {
 
   const base = { available: true, recoverable_eur: Math.max(0, recoverable), channels, missingChannel };
 
-  // ── 4 — ALREADY OPTIMIZED (positive dead-end). Recoverable below the noise
-  //        floor → nothing meaningful to recover. Top-tier, monitor drift. ──
-  if (recoverable < RECOVERABLE_FLOOR_EUR) {
-    return { ...base, intent: NEXT_ACTION_INTENT.MONITOR_DRIFT, tone: "positive", effort: "low", impact: "protect" };
-  }
-
-  // ── 1 — NOT VERIFIED (estimate) with a recoverable gap → verify first. ──
-  //        Converts the estimate into a verified number before recovery.
+  // ── 1 — NOT VERIFIED → verify first, including provisional zeroes. ──
+  //        An estimated €0 is not evidence of optimization; verification must
+  //        happen before the dashboard can make that positive claim.
   if (!isVerified) {
     return { ...base, intent: NEXT_ACTION_INTENT.VERIFY_CONNECT, tone: "opportunity", effort: "low", impact: "verify" };
+  }
+
+  // ── 4 — VERIFIED + ALREADY OPTIMIZED (positive dead-end). Recoverable
+  //        below the noise floor → nothing meaningful to recover. ──
+  if (recoverable < RECOVERABLE_FLOOR_EUR) {
+    return { ...base, intent: NEXT_ACTION_INTENT.MONITOR_DRIFT, tone: "positive", effort: "low", impact: "protect" };
   }
 
   // From here: VERIFIED + recoverable ≥ floor.

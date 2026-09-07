@@ -40,8 +40,10 @@ describe('Base44 quota-safe backend deployment topology', () => {
   // reconciler hosted by processWebhookDeadLetters. Physical stays 276.
   // PAYMENT-REPORT (2026-09-06): 39 -> 40 for versioned report access hosted
   // by claimAnonPaymentsResult. Physical stays 276.
-  it('consolidates exactly 40 logical routes into the 276 grandfathered physical functions', () => {
-    expect(logicalNames).toHaveLength(40);
+  // REFERRAL-ACCOUNT (2026-09-07): 40 -> 41 for public opaque-code
+  // validation hosted by getMyReferralStatus. Physical stays 276.
+  it('consolidates exactly 41 logical routes into the 276 grandfathered physical functions', () => {
+    expect(logicalNames).toHaveLength(41);
     expect(physicalNames).toHaveLength(topology.physical_function_target);
     expect(new Set(physicalNames).size).toBe(physicalNames.length);
     for (const [logicalName, route] of Object.entries(logicalRoutes)) {

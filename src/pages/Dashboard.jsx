@@ -4,7 +4,6 @@ import {
   ArrowRight, Sparkles,
   CreditCard, Plug, Store, Layers,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { getMyActiveBrand } from "@/lib/getMyActiveBrand";
 import { formatEur as formatEurLocal } from "@/lib/currencyFormats";
@@ -14,6 +13,7 @@ import AIInsightsPanel from "@/components/dashboard/AIInsightsPanel";
 import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import SavingsTrendPanel from "@/components/dashboard/SavingsTrendPanel";
 import DashboardHeroV2 from "@/components/dashboard/DashboardHeroV2";
+import DashboardWelcome from "@/components/dashboard/DashboardWelcome";
 import AccountSummaryPanel from "@/components/dashboard/AccountSummaryPanel";
 import ActionCenter from "@/components/dashboard/ActionCenter";
 import ReferralTeaser from "@/components/dashboard/ReferralTeaser";
@@ -143,66 +143,78 @@ export default function Dashboard() {
     return (
       <div className="pb-10 space-y-6">
         <MerchantInformationTasks lang={lang} />
-        <div className="min-h-[60vh] flex items-center justify-center px-4 py-12">
+        <DashboardWelcome
+          firstName={firstName}
+          hasAnalysis={false}
+          statusLabel={t("state_b_badge")}
+        />
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,.92fr)]">
           <div
-            className="w-full max-w-xl rounded-3xl p-8 sm:p-10 text-center"
+            className="relative overflow-hidden rounded-[28px] p-6 sm:p-8 lg:p-10"
             style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              boxShadow: "0 30px 80px -30px rgba(0,0,0,0.6), 0 0 60px -20px rgba(96,165,250,0.15)",
+              background: "rgba(255,255,255,.92)",
+              border: "1px solid rgba(20,18,50,.09)",
+              boxShadow: "0 24px 70px -52px rgba(20,18,50,.5)",
             }}
           >
             <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
+              className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl"
               style={{
-                background: "rgba(34,211,238,0.08)",
-                border: "1px solid rgba(34,211,238,0.25)",
-                boxShadow: "0 0 24px rgba(34,211,238,0.18)",
+                background: "linear-gradient(135deg,#EEEBFF,#E5F8FD)",
+                border: "1px solid rgba(91,76,245,.14)",
               }}
             >
-              <Sparkles size={20} className="text-cyan-300" />
+              <Sparkles size={19} style={{ color: "#5B4CF5" }} />
             </div>
             <h1
-              className="text-white mb-3"
+              className="mb-3 max-w-xl"
               style={{
                 fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-                fontSize: "clamp(28px, 4vw, 36px)",
+                fontSize: "clamp(26px, 4vw, 38px)",
                 fontWeight: 900,
                 letterSpacing: "-0.04em",
                 lineHeight: 1.02,
+                color: "#0C0C16",
               }}
             >
               {t("state_a_title")}
             </h1>
-            <p className="text-sm text-white/55 mb-7 max-w-md mx-auto leading-relaxed">
+            <p className="mb-7 max-w-xl text-sm leading-relaxed" style={{ color: "#666478" }}>
               {t("state_a_sub")}
             </p>
             <Link to="/Analyzer">
-              <Button
-                size="lg"
-                className="h-12 rounded-full px-7 text-sm font-bold gap-2 min-h-[44px] bg-white text-black hover:bg-white/90"
+              <span
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
                 style={{
-                  boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 12px 32px -12px rgba(59,130,246,0.55), 0 0 28px rgba(59,130,246,0.22)",
+                  background: "linear-gradient(135deg,#5B4CF5,#318FE8)",
+                  boxShadow: "0 16px 34px -18px rgba(55,62,216,.72)",
                 }}
               >
                 {t("state_a_cta")} <ArrowRight className="h-4 w-4" />
-              </Button>
+              </span>
             </Link>
-            <div className="flex flex-wrap justify-center gap-2 mt-7">
-              {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map(p => (
-                <span
-                  key={p}
-                  className="text-[11px] px-3 py-1.5 rounded-full text-white/55 font-medium"
-                  style={{ border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)" }}
-                >
-                  {p}
-                </span>
+          </div>
+          <div
+            className="relative overflow-hidden rounded-[28px] p-6 sm:p-8"
+            style={{
+              background: "radial-gradient(90% 120% at 100% 0%,rgba(91,76,245,.27),transparent 58%),linear-gradient(145deg,#13112C,#071426)",
+              border: "1px solid rgba(255,255,255,.10)",
+              boxShadow: "0 28px 72px -46px rgba(8,9,30,.9)",
+            }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#8B7BFF]">{t("dash_journey_title")}</p>
+            <div className="mt-5 space-y-3">
+              {[t("auto_detection"), t("bench_comparison"), t("savings_calc")].map((item, index) => (
+                <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.045] p-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[.08] text-[11px] font-black text-[#7BD9F0]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-sm font-semibold text-white/85">{item}</span>
+                </div>
               ))}
             </div>
           </div>
-        </div>
+        </section>
       </div>
     );
   }
@@ -271,47 +283,14 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 pb-10">
       <MerchantInformationTasks lang={lang} />
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-2">
-        <div>
-          <div
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-4"
-            style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.03)" }}
-          >
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-white/65">
-              {heroBadge.label}
-            </span>
-          </div>
-          <h1
-            className="text-white"
-            style={{
-              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
-              fontSize: "clamp(32px, 5vw, 48px)",
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              lineHeight: 0.98,
-            }}
-          >
-            {firstName}.
-          </h1>
-          <p className="text-[14px] text-white/55 mt-2">{t("your_infrastructure")}</p>
-        </div>
-        <Link to="/Analyzer">
-          <Button
-            size="sm"
-            className="h-10 rounded-full px-5 text-sm font-bold gap-1.5 bg-white text-black hover:bg-white/90"
-            style={{
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px -10px rgba(59,130,246,0.55), 0 0 20px rgba(59,130,246,0.2)",
-            }}
-          >
-            {t("nav_analyzer")} <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
-      </div>
+      <DashboardWelcome
+        firstName={firstName}
+        hasAnalysis
+        verificationStatus={verificationStatus}
+        hasLiveDeal={hasLiveDeal}
+        statusLabel={heroBadge.label}
+        onStartRecovery={handleStartRecovery}
+      />
 
       {/* ── ACTION CENTER — your next best step (one primary action, same
           aggregated state as the Hero; routes to existing flows) ── */}
@@ -325,17 +304,22 @@ export default function Dashboard() {
         onAddChannel={() => navigate("/Analyzer")}
       />
 
-      {/* Recover is a first-class merchant journey: authorize once, then see
-          exactly what CAMBRA is handling and whether anything needs attention. */}
-      <RecoverMandatePanel />
-      <PaymentsMigrationCard />
-
       {/* ── SAVINGS HERO v2 — single source of truth (engine_result), gauge, CTAs ── */}
       <DashboardHeroV2
         latest={latest}
         stripeConnected={stripeConnected}
         onStartRecovery={handleStartRecovery}
       />
+
+      {/* Recover is a first-class merchant journey: authorize once, then see
+          exactly what CAMBRA is handling and whether anything needs attention. */}
+      <RecoverMandatePanel />
+      <PaymentsMigrationCard />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <LastScanBar />
+        <AIInsightsPanel />
+      </div>
 
       {/* ── PHASE 2 — account aggregate (self-hides with <2 coherent analyses) ── */}
       <AccountSummaryPanel rows={allResults} />
@@ -344,53 +328,30 @@ export default function Dashboard() {
           Re-runs ARE the point here — the series shows how rate/savings moved. ── */}
       <AnalysisTrendPanel rows={allResults} />
 
-      {/* Quick stats — payments only (FASE 1.1) */}
-      <div className="grid grid-cols-1 gap-3">
-        {[
-          { label: t("payments_title"), value: latest.payment_savings, icon: CreditCard },
-        ].map(s => (
-          <div
-            key={s.label}
-            className="rounded-2xl p-5 transition-all hover:border-white/20"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-            }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{
-                  background: "rgba(59,130,246,0.08)",
-                  border: "1px solid rgba(96,165,250,0.20)",
-                }}
-              >
-                <s.icon size={13} className="text-blue-300" />
-              </div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-white/45 font-bold">{s.label}</p>
-            </div>
-            <p className="text-2xl font-black tabular-nums text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-              {formatEur(s.value)}<span className="text-xs text-white/40 font-normal ml-1">/{t("per_yr_short")}</span>
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── PHASE 1 — data insights (single source of truth: engine_result) ── */}
       {engineResult && (
-        <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
-      )}
-
-      {/* ── PHASE 3 — in-store (TPE) tiles. Self-hides for online analyses. ── */}
-      {engineResult && (
-        <PaymentsInStoreInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+        <section
+          className="space-y-7 overflow-hidden rounded-[28px] p-5 sm:p-7"
+          style={{
+            background: "radial-gradient(100% 100% at 100% 0%,rgba(91,76,245,.18),transparent 54%),linear-gradient(145deg,#111126,#071322)",
+            border: "1px solid rgba(255,255,255,.09)",
+            boxShadow: "0 28px 76px -52px rgba(7,9,27,.9)",
+          }}
+        >
+          <PaymentsDataInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+          <PaymentsInStoreInsights engineResult={engineResult} inputSnapshot={inputSnapshot} />
+        </section>
       )}
 
       {/* ── INFRASTRUCTURE NODES — grouped ── */}
       {graphNodes.length > 0 && (
-        <div className="space-y-3">
+        <section
+          className="space-y-4 overflow-hidden rounded-[28px] p-5 sm:p-7"
+          style={{
+            background: "radial-gradient(90% 110% at 100% 0%,rgba(57,198,240,.13),transparent 55%),linear-gradient(145deg,#111126,#071322)",
+            border: "1px solid rgba(255,255,255,.09)",
+            boxShadow: "0 28px 76px -52px rgba(7,9,27,.9)",
+          }}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-base font-black tracking-tight text-white" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>{t("your_infrastructure")}</h2>
             <Link to="/ConnectTools" className="text-[11px] font-semibold text-white/55 hover:text-white transition-colors inline-flex items-center gap-1">
@@ -445,7 +406,7 @@ export default function Dashboard() {
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* FIX 3C — Savings trend wrapped with horizontal scroll on mobile */}
@@ -467,41 +428,8 @@ export default function Dashboard() {
           infrastructure" node list below. Kept the KPI + node list which
           together carry the same signal with less redundancy. */}
 
-      {/* ── M7 — Last scan + re-scan (unchanged) ── */}
-      <LastScanBar />
-
-      {/* ── M8 — AI Insights (unchanged) ── */}
-      <AIInsightsPanel />
-
       {/* REFERRAL-1 T4 — discreet entry point to the referral program */}
       <ReferralTeaser />
-
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Link to="/Analyzer">
-          <div
-            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_analyzer")}</p>
-          </div>
-        </Link>
-        <Link to="/ConnectTools">
-          <div
-            className="p-5 rounded-2xl transition-all min-h-[44px] hover:border-white/20"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
-            <p className="text-sm font-bold mb-0.5 text-white">{t("nav_connect")}</p>
-            <p className="text-xs text-white/55">{t("ct_page_sub")}</p>
-          </div>
-        </Link>
-      </div>
 
       {/* Recovery destinations — collective (primary) / call (high value). */}
       <CollectiveModal

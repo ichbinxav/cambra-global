@@ -53,6 +53,7 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
   const point = isFinite(annual.point)
     ? annual.point
     : (isFinite(annual.lo) && isFinite(annual.hi) ? (annual.lo + annual.hi) / 2 : Number(latest?.total_savings));
+  const canShowOpportunity = isFinite(point) && (point > 0 || isVerified);
   const rangeLo = isFinite(annual.lo) ? annual.lo : latest?.details?.savings_range?.lo;
   const rangeHi = isFinite(annual.hi) ? annual.hi : latest?.details?.savings_range?.hi;
 
@@ -113,43 +114,56 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
             {badge.label}
           </div>
 
-          <p className="uppercase font-bold mb-2.5" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#585868" }}>
-            {t("dh_identified")}
-          </p>
-
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <EuroCountUp
-              value={point}
-              className="font-black tabular-nums"
-              style={{
-                fontFamily: MONO,
-                fontSize: "clamp(44px, 9vw, 78px)",
-                letterSpacing: "-0.03em",
-                lineHeight: 1,
-                color: "#39C6F0",
-                textShadow: "0 0 14px rgba(34,211,238,0.20)",
-              }}
-            />
-            <span className="text-[13px]" style={{ color: "#585868" }}>{t("dh_per_year")}</span>
-          </div>
-
-          {isFinite(rangeLo) && isFinite(rangeHi) && (
-            <p className="text-[12px] mt-2.5" style={{ color: "#585868" }}>
-              {t("dh_confidence_band")}{" "}
-              <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#9A9AAB" }}>
-                {eur(rangeLo)}–{eur(rangeHi)}
-              </span>{" "}{t("dh_per_year")}
-            </p>
-          )}
-
-          {!isVerified && (
-            <p className="text-[12px] mt-1.5" style={{ color: "#6b7a92" }}>
-              {t("dh_sharpen")}
-            </p>
+          {canShowOpportunity ? (
+            <>
+              <p className="uppercase font-bold mb-2.5" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#7B8293" }}>
+                {t("dh_identified")}
+              </p>
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <EuroCountUp
+                  value={point}
+                  className="font-black tabular-nums"
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "clamp(44px, 9vw, 78px)",
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1,
+                    color: "#39C6F0",
+                    textShadow: "0 0 14px rgba(34,211,238,0.20)",
+                  }}
+                />
+                <span className="text-[13px]" style={{ color: "#7B8293" }}>{t("dh_per_year")}</span>
+              </div>
+              {isFinite(rangeLo) && isFinite(rangeHi) && (
+                <p className="text-[12px] mt-2.5" style={{ color: "#7B8293" }}>
+                  {t("dh_confidence_band")}{" "}
+                  <span className="font-semibold tabular-nums" style={{ fontFamily: MONO, color: "#B7BDCA" }}>
+                    {eur(rangeLo)}–{eur(rangeHi)}
+                  </span>{" "}{t("dh_per_year")}
+                </p>
+              )}
+              {!isVerified && (
+                <p className="text-[12px] mt-1.5" style={{ color: "#8B93A7" }}>
+                  {t("dh_sharpen")}
+                </p>
+              )}
+            </>
+          ) : (
+            <div className="max-w-xl">
+              <p className="uppercase font-bold mb-3" style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.22em", color: "#7BD9F0" }}>
+                {t("ac_eyebrow")}
+              </p>
+              <h2 className="text-[clamp(28px,5vw,48px)] font-black leading-[1.02] tracking-[-.04em] text-white">
+                {t("ac_verify_title")}
+              </h2>
+              <p className="mt-3 max-w-lg text-[13px] leading-relaxed text-white/60">
+                {t("dash_verify_no_estimate")}
+              </p>
+            </div>
           )}
 
           {/* Rate chip — only when engine_result carries bps (never fabricated). */}
-          {gapPct && (
+          {canShowOpportunity && gapPct && (
             <div
               className="mt-5 inline-flex items-center gap-2.5 flex-wrap rounded-xl px-4 py-2.5"
               style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
@@ -167,26 +181,30 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
 
           {/* CTAs */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={onStartRecovery}
-              className="inline-flex items-center justify-center h-11 rounded-full px-6 text-sm font-bold gap-2 text-white hover:opacity-90 transition-opacity"
-              style={{
-                background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
-                boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
-              }}
-            >
-              {t("dh_start_recovery")} <ArrowRight className="h-4 w-4" />
-            </button>
-            {!isVerified && (
+            {!isVerified ? (
               <Link
                 to="/ConnectTools"
-                className="inline-flex items-center justify-center h-11 rounded-full px-5 text-sm font-bold gap-2 text-white/85 hover:text-white transition-colors"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)" }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
+                  boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+                }}
               >
                 <Plug size={14} /> {stripeConnected ? t("dh_verify_stripe") : t("dh_connect_stripe")}
               </Link>
-            )}
+            ) : point > 0 ? (
+              <button
+                type="button"
+                onClick={onStartRecovery}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
+                  boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+                }}
+              >
+                {t("dh_start_recovery")} <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
         </div>
 

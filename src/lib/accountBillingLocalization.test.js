@@ -185,14 +185,16 @@ describe("logic untouched by the presentation fix", () => {
 
   it("/Account keeps its ownership-scoped queries and update calls", () => {
     const src = read("src/pages/Account.jsx");
-    expect(src).toContain('Brand.filter({ created_by: u.email }, "-created_date", 1)');
-    expect(src).toContain('PaymentsProfile.filter({ created_by: u.email }, "-created_date", 1)');
+    expect(src).toContain('Brand.filter({ created_by: currentUser.email }, "-created_date", 1)');
+    expect(src).toContain('PaymentsProfile.filter({ created_by: currentUser.email }, "-created_date", 1)');
     expect(src).toContain("PaymentsProfile.update(paymentsProfile.id, { [field]: value })");
     expect(src).toContain("Brand.update(brand.id, { [field]: value })");
   });
 
-  it("the field inputs still save on blur", () => {
-    expect(read("src/components/account/AccountFieldSection.jsx"))
-      .toContain("onBlur={(e) => onSave(f.field, e.target.value)}");
+  it("the field inputs still validate and save on blur", () => {
+    const src = read("src/components/account/AccountFieldSection.jsx");
+    expect(src).toContain("onBlur={(event) => saveField(f, event.target.value)}");
+    expect(src).toContain("await onSave(field.field, normalized)");
+    expect(src).toContain("if (field.required && !normalized)");
   });
 });

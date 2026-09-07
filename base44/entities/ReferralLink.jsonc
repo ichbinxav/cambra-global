@@ -20,6 +20,17 @@
       "type": "number",
       "default": 0,
       "description": "REFERRAL-1 (2026-08-03) \u2014 number of referred businesses that reached VERIFIED AND ACTIVATED savings (the same 'verified savings' standard as Terms \u00a77). This is the only counter that moves the referrer's success fee (\u22125 points each, floor 5%). Set by CAMBRA once the referred merchant's savings are reconciled against real provider statements; never incremented by an anonymous funnel event."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "revoked"],
+      "default": "active",
+      "description": "Optional lifecycle state. Legacy rows without a value remain active."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional expiry. Empty means the link does not expire."
     }
   },
   "required": [

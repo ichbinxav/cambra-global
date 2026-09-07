@@ -20,7 +20,7 @@ import { applyReferralActivation } from "../../base44/shared/referralActivation.
 function makeSvc(seed = {}) {
   const store = {
     Brand: [], PaymentsAnalysisSession: [], ReferralLink: [],
-    ReferralActivation: [], DealActivation: [], BillingRule: [],
+    ReferralAccountAttribution: [], ReferralActivation: [], DealActivation: [], BillingRule: [],
     ...seed,
   };
   let n = 0;

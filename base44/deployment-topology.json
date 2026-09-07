@@ -242,6 +242,14 @@
       },
       "boundary": "authenticated_claim_owner_single_click_versioned"
     },
+    "validateReferralCode": {
+      "host": "getMyReferralStatus",
+      "source_module": "base44/shared/referralAccountAttribution.ts",
+      "route": {
+        "action": "validate_code"
+      },
+      "boundary": "public_read_only_opaque_code_no_owner_identity"
+    },
     "conversationAdmin": {
       "host": "adminSummaries",
       "source_module": "base44/shared/conversationAdminCore.ts",

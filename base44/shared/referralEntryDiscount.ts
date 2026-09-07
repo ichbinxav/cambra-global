@@ -1,6 +1,7 @@
 import { ENTRY_FEE_PCT, STEP_POINTS } from './referralProgram.ts';
 import { PRODUCT_POLICY } from './generated/productPolicy.ts';
 import { readRuntimeRows, requireRuntimeSource } from './runtimeSourceRead.ts';
+import { getReferralAccountAttribution } from './referralAccountAttribution.ts';
 
 function lower(value: any): string {
   return String(value || '').trim().toLowerCase();
@@ -23,6 +24,36 @@ export async function resolveReferralEntryAttribution(
 ): Promise<any> {
   const email = lower(recipientEmail);
   if (!email) return { eligible: false, reason: 'recipient_identity_missing' };
+
+  // A post-auth account claim is the durable source. It is written only after
+  // the opaque link has been validated server-side and cannot be replaced by
+  // another code. Older funnels without an account claim still fall back to
+  // PaymentsAnalysisSession below.
+  const accountAttribution = await getReferralAccountAttribution(svc, email);
+  if (accountAttribution?.referral_code) {
+    const code = String(accountAttribution.referral_code);
+    const links = requireRuntimeSource(await readRuntimeRows({
+      source: 'referral_entry_account_link_authority',
+      limit: 2,
+      read: () => svc.entities.ReferralLink.filter({ code }, 'created_date', 2),
+    }));
+    if (links.length > 1) {
+      throw Object.assign(new Error('referral_entry_link_authority_ambiguous'), { status: 503 });
+    }
+    const link = links[0] || null;
+    if (!link) return { eligible: false, reason: 'unknown_code' };
+    if (lower(link.owner_email) === email) return { eligible: false, reason: 'self_referral' };
+
+    return {
+      eligible: true,
+      code,
+      link,
+      session: sessionHint,
+      account_attribution: accountAttribution,
+      entry_discount_points: Number(accountAttribution.entry_discount_points) || STEP_POINTS,
+      entry_fee_pct: Number(accountAttribution.entry_fee_pct) || ENTRY_FEE_PCT,
+    };
+  }
 
   let session = sessionHint;
   if (!session?.referred_by_code) {
@@ -114,7 +145,9 @@ export async function ensureReferralEntryDiscount(
     effective_start_date: startDate,
     status: 'active',
     policy_version: PRODUCT_POLICY.policyVersion,
-    notes: `referral entry discount, source_session=${String(session?.anon_session_id || attribution.session?.anon_session_id || '')}`,
+    notes: attribution.account_attribution?.id
+      ? `referral entry discount, source_account_attribution=${String(attribution.account_attribution.id)}`
+      : `referral entry discount, source_session=${String(session?.anon_session_id || attribution.session?.anon_session_id || '')}`,
   });
 
   return {

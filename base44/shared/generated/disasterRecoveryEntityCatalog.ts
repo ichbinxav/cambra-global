@@ -232,6 +232,7 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "RateSourceSnapshot",
   "RealWorldGapReport",
   "Recommendation",
+  "ReferralAccountAttribution",
   "ReferralActivation",
   "ReferralLink",
   "RegulatoryChangeCandidate",
@@ -270,4 +271,4 @@ export const DISASTER_RECOVERY_ENTITY_CATALOG = Object.freeze([
   "WebhookDelivery",
   "WebhookEndpoint"
 ] as const);
-export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:269';
+export const DISASTER_RECOVERY_ENTITY_CATALOG_VERSION = 'dr-entity-catalog-v1:270';

@@ -134,15 +134,28 @@ function Hero({ onBookDemo }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
         >
-          <img
-            src={BRAND_ASSETS.landingHero}
-            alt={t("hero_image_alt")}
-            width={1536}
-            height={1024}
-            className="relative h-auto w-full max-w-[720px] select-none"
-            style={{ filter: "contrast(.995) saturate(1.01) drop-shadow(0 26px 42px rgba(91,76,245,.13))" }}
-            draggable={false}
-          />
+          <div className="relative w-full max-w-[720px]">
+            <img
+              src={BRAND_ASSETS.landingHero}
+              alt={t("hero_image_alt")}
+              width={1536}
+              height={1024}
+              className="relative h-auto w-full select-none"
+              style={{ filter: "contrast(.995) saturate(1.01) drop-shadow(0 26px 42px rgba(91,76,245,.13))" }}
+              draggable={false}
+            />
+            {/* The approved render has a tiny baked-in example badge. This
+                frosted patch removes only that badge while preserving the
+                real alpha canvas and every approved figure in the artwork. */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-[57.8%] top-[15.8%] h-[6.6%] w-[16.2%] rounded-[3px]"
+              style={{
+                background: "linear-gradient(145deg,rgba(255,255,255,.985),rgba(249,250,255,.975))",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,.98)",
+              }}
+            />
+          </div>
           <p className="mt-2 w-full max-w-[560px] text-center text-[10.5px] leading-relaxed min-[1180px]:self-center" style={{ color: "var(--gris-2)" }}>
             {t("hero_visual_footer")}
           </p>

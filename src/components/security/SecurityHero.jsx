@@ -1,8 +1,9 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { ShieldCheck, Lock, Scale } from "lucide-react";
+import { ArrowRight, Lock, Scale, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
+import SectionLabel from "@/components/shared/SectionLabel";
 
 /**
  * SecurityHero — hero for /Security, styled like the landing hero.
@@ -14,39 +15,56 @@ import { BRAND_ASSETS } from "@/lib/brandAssets";
 export default function SecurityHero() {
   const { t } = useTranslation();
   return (
-    <section className="relative px-5 sm:px-8 pt-28 sm:pt-32 pb-4 overflow-hidden">
+    <section className="cambra-public-hero pb-8">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: .8, ease: [0.22, 1, 0.36, 1] }}
-        className="section-ink relative max-w-[1400px] mx-auto overflow-hidden px-6 sm:px-12 lg:px-14 py-14 sm:py-20"
+        transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+        className="cambra-public-container grid items-center gap-12 lg:grid-cols-[1fr_1.03fr]"
       >
-        <div className="relative grid grid-cols-1 lg:grid-cols-[1.15fr_.85fr] gap-10 lg:gap-6 items-center">
-          <div>
-            <p className="text-[10px] font-bold tracking-[.24em] uppercase" style={{ color: "#AFA2FF" }}>{t("sec_eyebrow")}</p>
-            <h1 className="mt-6 text-white" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: "clamp(42px,5.2vw,72px)", fontWeight: 900, letterSpacing: "-.05em", lineHeight: .98 }}>
-              {t("sec_h1_pre")} <span className="kw">{t("sec_h1_kw")}</span> {t("sec_h1_post")}
-            </h1>
-            <p className="mt-7 max-w-2xl text-[15px] sm:text-[17px] leading-relaxed text-white/62">{t("sec_sub")}</p>
+        <div className="max-w-[680px]">
+          <SectionLabel>{t("sec_eyebrow")}</SectionLabel>
+          <h1 className="cambra-public-title mt-7">
+            {t("trust_sec_h2_pre")}<br />
+            <span className="kw">{t("trust_sec_h2_kw")}</span>
+          </h1>
+          <p className="cambra-public-lead mt-7 max-w-[650px]">{t("sec_sub")}</p>
 
-            <div className="mt-9 flex flex-wrap gap-2.5">
-              {[
-                { icon: Lock, k: "sec_chip_1" },
-                { icon: ShieldCheck, k: "sec_chip_2" },
-                { icon: Scale, k: "sec_chip_3" },
-              ].map(({ icon: Icon, k }) => (
-                <span key={k} className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] font-semibold text-white/78" style={{ background: "rgba(255,255,255,.045)", border: "1px solid rgba(255,255,255,.10)" }}>
-                  <Icon size={12} style={{ color: "#AFA2FF" }} aria-hidden="true" />
-                  {t(k)}
-                </span>
-              ))}
-            </div>
+          <div className="mt-8 flex flex-wrap gap-2.5">
+            {[
+              { icon: Lock, k: "sec_chip_1" },
+              { icon: ShieldCheck, k: "sec_chip_2" },
+              { icon: Scale, k: "sec_chip_3" },
+            ].map(({ icon: Icon, k }) => (
+              <span key={k} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#DDE0EA] bg-white/80 px-3.5 text-[11px] font-bold text-[#39435F] shadow-[0_12px_28px_-24px_rgba(26,35,65,.7)]">
+                <Icon size={14} className="text-[#5B4CF5]" aria-hidden="true" />
+                {t(k)}
+              </span>
+            ))}
           </div>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link to="/ConnectTools" className="btn-primary inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl px-6 text-[13px] font-bold text-white">
+              {t("sec_cta_analyze")} <ArrowRight size={15} />
+            </Link>
+            <Link to="/Privacy" className="inline-flex min-h-[52px] items-center justify-center px-3 text-[13px] font-bold text-[#4433E8]">
+              {t("trust_sec_link")} <ArrowRight className="ml-2" size={14} />
+            </Link>
+          </div>
+        </div>
 
-          <div className="relative flex justify-center">
-            <div aria-hidden="true" className="absolute inset-[20%] rounded-full" style={{ background: "rgba(91,76,245,.28)", filter: "blur(80px)" }} />
-            <img src={BRAND_ASSETS.vaultGlow} alt="" width={520} height={520} className="relative w-full max-w-[500px] h-auto select-none" style={{ maskImage: "radial-gradient(ellipse 74% 74% at 50% 42%,#000 48%,transparent 83%)", WebkitMaskImage: "radial-gradient(ellipse 74% 74% at 50% 42%,#000 48%,transparent 83%)" }} draggable={false} />
-          </div>
+        <div className="cambra-security-visual-panel cambra-dark-panel" aria-label={t("trust_sec_vault_alt")}>
+          <div aria-hidden="true" className="absolute inset-[16%] rounded-full bg-[#5B4CF5]/20 blur-[80px]" />
+          <img
+            src={BRAND_ASSETS.securityShield}
+            alt=""
+            width={1448}
+            height={1086}
+            className="relative z-10 h-auto w-full select-none object-contain"
+            draggable={false}
+          />
+          <p className="relative z-10 mt-2 text-center text-[13px] font-semibold tracking-[.01em] text-white/74">
+            {t("trust_sec_b1_t")} · {t("trust_sec_b2_t")}
+          </p>
         </div>
       </motion.div>
     </section>

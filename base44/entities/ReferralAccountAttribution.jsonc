@@ -1,0 +1,69 @@
+{
+  "name": "ReferralAccountAttribution",
+  "type": "object",
+  "description": "One immutable referral attribution per CAMBRA account. Created server-side after authentication when a valid invite code survives the sign-up redirect. This record links the recipient to the referral before an analysis exists; it never activates the referrer's discount by itself. The recipient starts on the referral entry fee, while the referrer's fee moves only after verified activated savings.",
+  "properties": {
+    "recipient_email": {
+      "type": "string",
+      "description": "Normalized email of the authenticated recipient. Application-level uniqueness is enforced by claimReferralAccountAttribution."
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Opaque ReferralLink code validated by the server at claim time."
+    },
+    "referrer_email": {
+      "type": "string",
+      "description": "ReferralLink owner captured for an auditable attribution. Never exposed publicly."
+    },
+    "entry_discount_points": {
+      "type": "number",
+      "description": "Frozen entry discount in percentage points at claim time."
+    },
+    "entry_fee_pct": {
+      "type": "number",
+      "description": "Frozen recipient success-fee percentage at claim time."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "revoked"],
+      "default": "active"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["invite", "registration", "analyzer"],
+      "default": "registration"
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "recipient_email",
+    "referral_code",
+    "referrer_email",
+    "entry_discount_points",
+    "entry_fee_pct",
+    "status",
+    "claimed_at"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "data.recipient_email": "{{user.email}}"
+        }
+      ]
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
