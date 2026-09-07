@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-07T18:12:17.828Z",
+  "generatedAt": "2026-09-07T18:34:27.230Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "72117402e688eb29ded8c2dcc6155c30077b2d6d3a06dd21b94d4641ecaf5d8c",
+      "sha256": "2cbf9b8cdb3dc7513371d2cc941b6dabde33b616cee6913fce659ee278d61f96",
       "bytes": 43449
     },
     {
@@ -3829,8 +3829,8 @@
     },
     {
       "path": "src/pages/Landing.jsx",
-      "sha256": "effc9a45796f87dca4939f56f19ae526c43799cf4dc3aa068c30a402776369fd",
-      "bytes": 20855
+      "sha256": "f126680cbea7641cf767476d59c5a70cc26ad410cfab2c4731abf4e3823eca89",
+      "bytes": 21149
     },
     {
       "path": "src/pages/PaymentsAnalyzer.jsx",

@@ -149,10 +149,14 @@ function Hero({ onBookDemo }) {
                 real alpha canvas and every approved figure in the artwork. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-[57.8%] top-[15.8%] h-[6.6%] w-[16.2%] rounded-[3px]"
+              className="pointer-events-none absolute left-[58.1%] top-[16.4%] h-[5.9%] w-[13.5%]"
               style={{
-                background: "linear-gradient(145deg,rgba(255,255,255,.985),rgba(249,250,255,.975))",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,.98)",
+                background: "transparent",
+                backdropFilter: "blur(20px) brightness(1.025) saturate(.65)",
+                WebkitBackdropFilter: "blur(20px) brightness(1.025) saturate(.65)",
+                WebkitMaskImage: "radial-gradient(ellipse at center,#000 48%,rgba(0,0,0,.92) 66%,transparent 100%)",
+                maskImage: "radial-gradient(ellipse at center,#000 48%,rgba(0,0,0,.92) 66%,transparent 100%)",
+                transform: "scale(1.12)",
               }}
             />
           </div>
