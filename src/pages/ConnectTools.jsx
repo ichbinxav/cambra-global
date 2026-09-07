@@ -49,6 +49,7 @@ export default function ConnectTools() {
   // null = capability probe in flight (StatementUploadCard renders a skeleton).
   const [extractionLive, setExtractionLive] = useState(null);
   const uploadMode = requestedMode === "upload";
+  const genericProviderLabel = String(t("az_provider_label")).toLocaleLowerCase(lang);
 
   useEffect(() => {
     (async () => {
@@ -120,7 +121,7 @@ export default function ConnectTools() {
                 tabIndex={-1}
                 className="h-full scroll-mt-28 rounded-[28px] outline-none"
               >
-                <StatementUploadCard providerLabel="provider" extractionLive={extractionLive} />
+                <StatementUploadCard providerLabel={genericProviderLabel} extractionLive={extractionLive} />
               </div>
             ) : (
               <div
@@ -190,7 +191,7 @@ export default function ConnectTools() {
               tabIndex={-1}
               className="scroll-mt-28 rounded-[24px] outline-none"
             >
-              <StatementUploadCard providerLabel="provider" extractionLive={extractionLive} />
+              <StatementUploadCard providerLabel={genericProviderLabel} extractionLive={extractionLive} />
             </div>
           ))}
           <Link to="/Analyzer" className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#D8DCE8] bg-white text-[12px] font-bold text-[#27314D] sm:hidden">{t("az_entry_manual_title")} <ArrowRight size={13} /></Link>

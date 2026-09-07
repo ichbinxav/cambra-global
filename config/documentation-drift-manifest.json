@@ -2,7 +2,7 @@
   "registryVersion": "p18-docs-1.19.0",
   "systemVersion": "0.98.0",
   "packageVersion": "0.98.0",
-  "generatedAt": "2026-09-07T18:40:34.074Z",
+  "generatedAt": "2026-09-07T18:52:18.401Z",
   "sourcePaths": {
     "base44/entities/AgentTask.jsonc": "67ba3334dd2dfc1d2c17883ed49cdb7369bf4faff7acdf570279ec1ac321c505",
     "base44/entities/ApiActivityLog.jsonc": "d130a4b26cd2c670994f1cfb4aa9dbf22b718054006fb7676cba2acd1822e423",
@@ -254,7 +254,7 @@
     "scripts/lib/base44Bundle.mjs": "3efff08d9eb3c7163d462f2a546bd99a0d090ba09d5eba490240a17ed9224ee1",
     "scripts/package-release.mjs": "0e6771bcae846e737ad7f8577c659d931d3f38a5a975ca3d2ee0382642738bf9",
     "src/App.jsx": "e4b62e6307f87a83466289ac22a0df83ff90d49f00221128678e77a0299d18ec",
-    "src/components/paymentsAnalyzer/StatementUploadCard.jsx": "18a5a53d56006304a84f5ddbf8f18616620879478d9cb393073c7fbef258b86f",
+    "src/components/paymentsAnalyzer/StatementUploadCard.jsx": "7f5714226ddb581ddc2ef324a768591dc5c64610411040e0b1ec2e37aaf4e7d6",
     "src/components/shared/LanguageSwitcher.jsx": "560af378671db6110419f242fffeace603a84afe274a58394579815d9f389f19",
     "src/docs/CAMBRA_ADAPTIVE_LEAD_PHASE_3_CORE.md": "90c0252a5c8c5ac5e6cc74f164c450be670fd1f1ada6f608d4092a1ff65adc2e",
     "src/docs/CAMBRA_AGENT_OPERATING_CATALOG.md": "2cca268f67cfdfc494c57fb4fc30b0ac6411de8d40cf1e89c79f23e6c41363b8",

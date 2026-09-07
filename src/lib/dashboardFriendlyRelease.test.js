@@ -104,4 +104,14 @@ describe("friendly dashboard release surface", () => {
     expect(source).toContain('window.location.pathname.toLowerCase() === "/invite"');
     expect(source).toContain('toast.error(t("ref_code_rejected"), t("ref_code_rejected_body"))');
   });
+
+  it("routes statement upload to a localized, high-contrast upload surface", () => {
+    const connectTools = read("src/pages/ConnectTools.jsx");
+    const upload = read("src/components/paymentsAnalyzer/StatementUploadCard.jsx");
+    expect(connectTools).toContain('searchParams.get("mode")');
+    expect(connectTools).toContain('toLocaleLowerCase(lang)');
+    expect(connectTools).not.toContain('providerLabel="provider"');
+    expect(upload).toContain('style={{ background: "var(--g-voltio)" }}');
+    expect(upload).toContain('accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"');
+  });
 });

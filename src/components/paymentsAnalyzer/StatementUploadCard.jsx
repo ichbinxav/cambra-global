@@ -164,7 +164,8 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={status === "uploading"}
-          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[var(--g-voltio)] px-6 text-[12px] font-bold text-white shadow-[0_18px_34px_-22px_rgba(91,76,245,.9)] disabled:opacity-50"
+          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-6 text-[12px] font-bold text-white shadow-[0_18px_34px_-22px_rgba(91,76,245,.9)] transition-[filter,transform] hover:brightness-105 active:translate-y-px disabled:opacity-50"
+          style={{ background: "var(--g-voltio)" }}
         >
           {status === "uploading" ? <><Loader2 size={13} className="animate-spin" /> {t("su_reading")}</> : <>{t("su_cta")} <ArrowRight size={13} /></>}
         </button>
