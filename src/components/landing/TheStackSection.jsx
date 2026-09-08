@@ -31,7 +31,7 @@ export default function TheStackSection() {
           <div>
             <SectionLabel as="p" tone="dark">{t("stack_eyebrow")}</SectionLabel>
             <h2 className="mt-5 max-w-[780px] text-white" style={{ fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: "clamp(38px,3.6vw,58px)", fontWeight: 900, letterSpacing: "-.05em", lineHeight: 1.01, textWrap: "balance" }}>
-              {t("stack_h2_pre")} <span className="kw">{t("stack_h2_kw")}</span>
+              {t("stack_h2_pre")}<br /><span className="kw">{t("stack_h2_kw")}</span>
             </h2>
           </div>
           <p className="max-w-[440px] text-[13.5px] sm:text-[14.5px] leading-relaxed lg:justify-self-end" style={{ color: "rgba(255,255,255,.67)" }}>

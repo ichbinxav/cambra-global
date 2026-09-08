@@ -18,6 +18,8 @@
 //     at the floor (their number vs. the achievable — same order as the
 //     savings_opportunity hero, just without the delta).
 
+import HeadlineText from "@/components/shared/HeadlineText";
+
 function pctFromBps(bps) {
   if (!isFinite(bps)) return "—";
   return (bps / 100).toFixed(2) + "%";
@@ -75,13 +77,9 @@ export default function OptimizedHero({ engineResult, inputSnapshot, t, onRerun 
           fontWeight: 900,
           letterSpacing: "-0.035em",
           lineHeight: 1.05,
-          background: "linear-gradient(135deg, #ffffff 0%, #2FE0A8 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
         }}
       >
-        {t("opt_hero_title")}
+        <HeadlineText>{t("opt_hero_title")}</HeadlineText>
       </h1>
       <p className="text-[14px] text-white/60 max-w-xl mb-6">{t("opt_hero_body")}</p>
 

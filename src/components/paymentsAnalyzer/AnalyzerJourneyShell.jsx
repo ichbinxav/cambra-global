@@ -1,29 +1,16 @@
 import { Link } from "react-router-dom";
-import { Check, LockKeyhole } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { ArrowLeft, Check, LockKeyhole } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
-import LanguageSwitcher from "@/components/shared/LanguageSwitcher";
-import MarketSwitcher from "@/components/shared/MarketSwitcher";
 import { getPaymentsJourneyCopy } from "@/lib/paymentsJourneyCopy";
-import HeaderBrand from "@/components/shared/HeaderBrand";
+import Navbar from "@/components/landing/Navbar";
 
 export default function AnalyzerJourneyShell({ activeStep, onStepChange, children }) {
-  const { isAuthenticated } = useAuth();
   const { lang, t } = useTranslation();
   const copy = getPaymentsJourneyCopy(lang);
 
   return (
     <div className="payment-journey min-h-screen">
-      <header className="payment-journey__header">
-        <HeaderBrand to={isAuthenticated ? "/Dashboard" : "/"} tone="dark" ariaLabel="CAMBRA" />
-        <div className="payment-journey__tools">
-          <MarketSwitcher variant="dark" />
-          <LanguageSwitcher variant="dark" />
-          <Link className="payment-journey__account" to={isAuthenticated ? "/Dashboard" : "/LoginGate?next=%2FAnalyzer"}>
-            {t(isAuthenticated ? "nav_dashboard" : "nav_sign_in")}
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <nav className="payment-journey__stepper" aria-label={t("az_progress", { done: Math.min(activeStep, 6), total: 6 })}>
         <ol>
@@ -48,6 +35,16 @@ export default function AnalyzerJourneyShell({ activeStep, onStepChange, childre
           })}
         </ol>
       </nav>
+
+      <div className="payment-journey__backbar">
+        {activeStep > 1 ? (
+          <button type="button" onClick={() => onStepChange?.(activeStep - 1)}>
+            <ArrowLeft size={14} /> {t("az_back")}
+          </button>
+        ) : (
+          <Link to="/"><ArrowLeft size={14} /> {t("az_back")}</Link>
+        )}
+      </div>
 
       <main className="payment-journey__main">{children}</main>
       <footer className="payment-journey__footer">

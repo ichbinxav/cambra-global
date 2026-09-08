@@ -110,8 +110,7 @@ export default function StopLeavingMarginCTA({ onBookDemo }) {
               textShadow: "0 0 80px rgba(91,76,245,0.25)",
             }}
           >
-            {t("cta_final_h2_pre")}{" "}
-            {/* Keyword highlight → violet→cyan gradient (reference style). */}
+            {t("cta_final_h2_pre")}<br />
             <span className="kw">{t("cta_final_h2_kw")}</span>
           </motion.h2>
 

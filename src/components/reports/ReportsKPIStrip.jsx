@@ -166,15 +166,7 @@ export default function ReportsKPIStrip({ results }) {
           </div>
 
           <div className="relative">
-            <div
-              className="text-3xl font-black tabular-nums tracking-[-0.03em] leading-none"
-              style={{
-                background: "linear-gradient(135deg, #ffffff 0%, #B8D8E0 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <div className="text-3xl font-black tabular-nums tracking-[-0.03em] leading-none text-white">
               {item.value}
             </div>
             <p className="mt-2 text-[11px] text-white/45 font-mono">{item.hint}</p>

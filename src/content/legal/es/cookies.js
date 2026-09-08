@@ -4,7 +4,7 @@
 export default {
   badge: "Legal · Política de cookies",
   title: "Política de cookies.",
-  lastUpdated: "Última actualización: 12 de agosto de 2026",
+  lastUpdated: "Última actualización: 8 de septiembre de 2026",
   back: "Volver",
   columns: { name: "Nombre", purpose: "Finalidad", duration: "Duración", category: "Categoría" },
   intro: [
@@ -42,6 +42,8 @@ export default {
       note: "Se borra automáticamente al cerrar la pestaña del navegador.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Recuerda la página a la que intentabas llegar para devolverte a ella tras iniciar sesión", duration: "Hasta cerrar la pestaña", category: "Estrictamente necesario" },
+        { name: "cambra_analyzer_draft", purpose: "Conserva temporalmente los datos del negocio y del análisis que has introducido para que el registro no borre tu progreso", duration: "Hasta cerrar la pestaña", category: "Estrictamente necesario" },
+        { name: "cambra_registration_profile", purpose: "Transporta temporalmente tu nombre y los datos del negocio durante el registro seguro para crear el perfil de cuenta correcto", duration: "Se elimina tras aplicarse o al cerrar la pestaña", category: "Estrictamente necesario" },
         { name: "cambra_ref_code", purpose: "Recuerda el código de referido del comercio cuyo enlace de invitación abriste, para que el referido pueda registrarse cuando ejecutas tu análisis unas pantallas después. Código aleatorio opaco, no derivado de datos personales", duration: "Hasta que se cierra la pestaña", category: "Estrictamente necesario" },
         { name: "cambra_chat_conv", purpose: "Recuerda la conversación activa en el chat de administración (solo cuentas de administrador)", duration: "Hasta cerrar la pestaña", category: "Funcional" },
       ],

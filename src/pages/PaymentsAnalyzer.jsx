@@ -21,6 +21,12 @@ import { base44 } from "@/api/base44Client";
 import { ArrowRight, ArrowLeft, Loader2, AlertTriangle, Lock, ChevronDown, ChevronUp, Building2, CreditCard, ShieldCheck, CheckCircle2, BarChart3 } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { trackProductEvent } from "@/lib/productAnalytics";
+import { useAuth } from "@/lib/AuthContext";
+import {
+  isAnalyzerBusinessDraftComplete,
+  readAnalyzerDraft,
+  writeAnalyzerDraft,
+} from "@/lib/registrationProfile";
 
 import GmvSlider       from "@/components/paymentsAnalyzer/GmvSlider";
 import AvgTicketInput  from "@/components/paymentsAnalyzer/AvgTicketInput";
@@ -36,6 +42,7 @@ import FieldCard from "@/components/paymentsAnalyzer/FieldCard";
 import CountryField from "@/components/paymentsAnalyzer/CountryField";
 import CurrencyField from "@/components/paymentsAnalyzer/CurrencyField";
 import AnalyzerJourneyShell from "@/components/paymentsAnalyzer/AnalyzerJourneyShell";
+import HeadlineText from "@/components/shared/HeadlineText";
 import { getPaymentsJourneyCopy } from "@/lib/paymentsJourneyCopy";
 import {
   ACTIVE_LAUNCH_MARKETS,
@@ -338,9 +345,11 @@ function AnalyzerLivePreview({
 
 export default function PaymentsAnalyzer() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { t, lang, locale, formatCurrency } = useTranslation();
   const journeyCopy = getPaymentsJourneyCopy(lang);
   const { marketCode, setMarket } = useMarket();
+  const initialDraft = useMemo(() => readAnalyzerDraft(), []);
   const countryOptions = useMemo(() => EUROPE_MARKETS
     .filter((market) => ACTIVE_LAUNCH_MARKETS.includes(market.iso2))
     .map((market) => ({
@@ -371,6 +380,7 @@ export default function PaymentsAnalyzer() {
   const [intlPct, setIntlPct]           = useState("0");
   const [providerSlug, setProviderSlug] = useState("");
   const [country, setCountry]           = useState(() => {
+    if (ACTIVE_LAUNCH_MARKETS.includes(initialDraft.country)) return initialDraft.country;
     try {
       const requested = new URLSearchParams(window.location.search).get("market")?.toUpperCase();
       if (ACTIVE_LAUNCH_MARKETS.includes(requested)) return requested;
@@ -381,7 +391,7 @@ export default function PaymentsAnalyzer() {
   // currency (market registry); freely changeable. "" = follow the country
   // proposal; a non-empty value means the merchant explicitly picked one and
   // country changes stop overriding it (they chose their working currency).
-  const [currencyChoice, setCurrencyChoice] = useState("");
+  const [currencyChoice, setCurrencyChoice] = useState(initialDraft.currencyChoice || "");
   const marketCurrency = useMemo(
     () => EUROPE_MARKETS.find((m) => m.iso2 === country)?.primary_currency || "EUR",
     [country],
@@ -407,18 +417,36 @@ export default function PaymentsAnalyzer() {
     monthly_gmv_eur: "", avg_ticket_eur: "", provider_slug: "",
   });
   // ── About your brand (required: name; optional: website, sector) ──────
-  const [brandName, setBrandName]       = useState("");
-  const [website, setWebsite]           = useState("");
-  const [sector, setSector]             = useState("");
+  const [brandName, setBrandName]       = useState(initialDraft.brandName || "");
+  const [website, setWebsite]           = useState(initialDraft.website || "");
+  const [sector, setSector]             = useState(initialDraft.sector || "");
   // UX-1 T1 — email is REQUIRED before any report is generated (deliberate
   // funnel change: no report without a valid email). Validated here AND in
   // submitPaymentsAnalysis — the backend is authoritative.
-  const [email, setEmail]               = useState("");
-  const [activeStep, setActiveStep]     = useState(1);
-  const [entryMode, setEntryMode]       = useState("manual");
+  const [email, setEmail]               = useState(initialDraft.email || "");
+  const [activeStep, setActiveStep]     = useState(() => {
+    try {
+      const requested = Number(new URLSearchParams(window.location.search).get("step"));
+      if (requested >= 2 && requested <= 4 && isAnalyzerBusinessDraftComplete(initialDraft)) return requested;
+    } catch {}
+    return 1;
+  });
+  const [entryMode, setEntryMode]       = useState(initialDraft.entryMode || "manual");
 
   const [submitting, setSubmitting]   = useState(false);
   const [errorBanner, setErrorBanner] = useState("");
+
+  useEffect(() => {
+    writeAnalyzerDraft({
+      country,
+      currencyChoice,
+      brandName,
+      website,
+      sector,
+      email,
+      entryMode,
+    });
+  }, [brandName, country, currencyChoice, email, entryMode, sector, website]);
 
   const changeStep = (next) => {
     setErrorBanner("");
@@ -776,9 +804,9 @@ export default function PaymentsAnalyzer() {
       {submitting && <AnalyzingOverlay />}
       <div className="payment-journey__content">
         <section className="payment-journey__workspace">
-          <div className="payment-journey__eyebrow">{t("az_pill")}</div>
+          <div className="payment-journey__eyebrow">{t("nav_analyzer")}</div>
           <h1 className="payment-journey__title">
-            {activeStep === 1 ? t("bp_h2") : activeStep === 2 ? t("az_title") : activeStep === 3 ? journeyCopy.paymentsTitle : journeyCopy.reviewTitle}
+            <HeadlineText>{activeStep === 1 ? t("bp_h2") : activeStep === 2 ? t("az_title") : activeStep === 3 ? journeyCopy.paymentsTitle : journeyCopy.reviewTitle}</HeadlineText>
           </h1>
           <p className="payment-journey__intro">
             {activeStep === 1 ? t("bp_sub") : activeStep === 2 ? t("az_sub") : activeStep === 3 ? journeyCopy.paymentsBody : journeyCopy.reviewBody}
@@ -822,7 +850,18 @@ export default function PaymentsAnalyzer() {
               </FieldCard>
               <div className="payment-journey__actions">
                 <Link to="/" className="journey-button journey-button--ghost"><ArrowLeft size={16} />{t("az_back")}</Link>
-                <button type="button" className="journey-button journey-button--primary" disabled={!businessReady} onClick={() => changeStep(2)}>{journeyCopy.continue}<ArrowRight size={16} /></button>
+                <button
+                  type="button"
+                  className="journey-button journey-button--primary"
+                  disabled={!businessReady}
+                  onClick={() => {
+                    writeAnalyzerDraft({ country, currencyChoice, brandName, website, sector, email, entryMode });
+                    if (isAuthenticated) changeStep(2);
+                    else navigate(`/LoginGate?next=${encodeURIComponent("/Analyzer?step=2")}`);
+                  }}
+                >
+                  {journeyCopy.continue}<ArrowRight size={16} />
+                </button>
               </div>
               {!businessReady && <p className="payment-journey__needed">{journeyCopy.incomplete} · {t("acc_brand_name")} · {t("acc_website")} · {t("cb_category")} · {t("az_country_label")} · {t("analyzer_email_label")}</p>}
             </div>
@@ -849,7 +888,7 @@ export default function PaymentsAnalyzer() {
                 <ShieldCheck size={18} />
                 <div>
                   <strong>{journeyCopy.evidenceTitle}</strong>
-                  <p>{t("coll_sub")}</p>
+                  <p>{t("hiw_s1_detail")}</p>
                 </div>
               </div>
               <div className="payment-journey__actions">

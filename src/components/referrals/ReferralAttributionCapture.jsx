@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useToast } from "@/components/shared/Toast.jsx";
+import { syncRegistrationProfile } from "@/lib/registrationProfile";
 
 export const REFERRAL_CODE_PATTERN = /^[A-Za-z0-9_-]{4,24}$/;
 export const REFERRAL_STORAGE_KEY = "cambra_ref_code";
@@ -37,34 +38,39 @@ function removeReferralQuery() {
  */
 export default function ReferralAttributionCapture() {
   const { isAuthenticated, isLoadingAuth, user } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { toast } = useToast();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const code = readReferralCode();
-    if (!code) return;
 
-    if (!REFERRAL_CODE_PATTERN.test(code)) {
+    if (code && !REFERRAL_CODE_PATTERN.test(code)) {
       try { sessionStorage.removeItem(REFERRAL_STORAGE_KEY); } catch {}
       removeReferralQuery();
-      return;
     }
 
-    try { sessionStorage.setItem(REFERRAL_STORAGE_KEY, code); } catch {}
+    if (code && REFERRAL_CODE_PATTERN.test(code)) {
+      try { sessionStorage.setItem(REFERRAL_STORAGE_KEY, code); } catch {}
+    }
     if (isLoadingAuth || !isAuthenticated || !user?.email) return;
+
+    // The registration profile is applied before referral attribution so the
+    // server always finds the same owned Brand and never races a second create.
+    const profileReady = syncRegistrationProfile(user, lang).catch(() => null);
+    if (!code || !REFERRAL_CODE_PATTERN.test(code)) return;
 
     const attemptKey = `${String(user.email).toLowerCase()}:${code}`;
     if (claimAttempts.has(attemptKey)) return;
     claimAttempts.add(attemptKey);
 
     let cancelled = false;
-    base44.functions.invoke("getMyReferralStatus", {
+    profileReady.then(() => base44.functions.invoke("getMyReferralStatus", {
       action: "claim_code",
       code,
       source: window.location.pathname.toLowerCase() === "/invite" ? "invite" : "registration",
-    }).then((response) => {
+    })).then((response) => {
       if (cancelled) return;
       const body = response?.data || response;
       if (!body?.ok) {
@@ -94,7 +100,7 @@ export default function ReferralAttributionCapture() {
     });
 
     return () => { cancelled = true; };
-  }, [isAuthenticated, isLoadingAuth, t, toast, user?.email]);
+  }, [isAuthenticated, isLoadingAuth, lang, t, toast, user]);
 
   return null;
 }

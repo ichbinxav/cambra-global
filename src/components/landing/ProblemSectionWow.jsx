@@ -20,7 +20,7 @@ export default function ProblemSectionWow() {
         <AnimatedSection className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
           <div className="lg:col-span-7">
             <SectionHeading eyebrow={t("prob_eyebrow")} align="left">
-              {t("prob_h2_pre")} <span className="kw">{t("prob_h2_kw")}</span>
+              {t("prob_h2_pre")}<br /><span className="kw">{t("prob_h2_kw")}</span>
             </SectionHeading>
           </div>
           <p className="lg:col-span-5 text-center lg:text-justify text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>

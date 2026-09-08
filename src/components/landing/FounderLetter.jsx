@@ -33,7 +33,7 @@ export default function FounderLetter() {
           <div>
             <SectionLabel as="p">{t("fl_eyebrow")}</SectionLabel>
             <h2 className="mt-5 max-w-[570px]" style={{ color: "var(--ink)", fontFamily: "'Space Grotesk','Inter',sans-serif", fontSize: "clamp(40px,4.5vw,64px)", fontWeight: 900, letterSpacing: "-.05em", lineHeight: 1.01, textWrap: "balance" }}>
-              {t("fl_h2_pre")} <span className="kw">{t("fl_h2_kw")}</span>
+              {t("fl_h2_pre")}<br /><span className="kw">{t("fl_h2_kw")}</span>
             </h2>
             <p className="mt-5 max-w-lg text-[14px] sm:text-[15px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t("fl_intro")}</p>
 
@@ -49,7 +49,7 @@ export default function FounderLetter() {
               <div className="relative">
                 <Quote size={42} className="mb-7" style={{ color: "var(--voltio-2)" }} strokeWidth={2.4} />
                 <p className="text-white/95" style={{ fontSize: "clamp(20px,2.2vw,30px)", lineHeight: 1.42, fontWeight: 600, letterSpacing: "-.03em" }}>{t("fl_p1")}</p>
-                <p className="kw mt-3" style={{ fontSize: "clamp(20px,2.2vw,30px)", lineHeight: 1.42, fontWeight: 800, letterSpacing: "-.03em" }}>{t("fl_p2")}</p>
+                <p className="mt-3 text-white" style={{ fontSize: "clamp(20px,2.2vw,30px)", lineHeight: 1.42, fontWeight: 800, letterSpacing: "-.03em" }}>{t("fl_p2")}</p>
               </div>
               <div className="relative mt-9 flex items-end justify-between gap-4 border-t border-white/10 pt-6">
                 <div>

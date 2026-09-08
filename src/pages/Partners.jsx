@@ -138,7 +138,7 @@ export default function Partners() {
       {/* ── HERO ── */}
       <PublicPageHero
         eyebrow={t("pt_eyebrow")}
-        title={<>{t("pt_hero_title")}</>}
+        title={t("pt_hero_title")}
         subtitle={t("pt_hero_sub")}
         tone="dark"
       >

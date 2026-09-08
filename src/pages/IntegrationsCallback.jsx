@@ -20,6 +20,15 @@ export default function IntegrationsCallback() {
     (async () => {
       try {
         const params = new URLSearchParams(window.location.search);
+        const providerError = params.get("error");
+        if (providerError === "access_denied") {
+          navigate("/ConnectStripe", { replace: true });
+          return;
+        }
+        if (providerError) {
+          setError(t("cb_error_title"));
+          return;
+        }
         const state = params.get("state");
         const code = params.get("code");
         if (!state || !code) {
@@ -42,7 +51,7 @@ export default function IntegrationsCallback() {
         setError(err?.message || "Callback failed.");
       }
     })();
-  }, [navigate]);
+  }, [navigate, t]);
 
   if (error) {
     return (
@@ -51,7 +60,7 @@ export default function IntegrationsCallback() {
           <h1 className="text-xl font-black mb-2">{t("cb_error_title")}</h1>
           <p className="text-sm text-muted-foreground mb-6">{error}</p>
           <button
-            onClick={() => navigate("/ConnectIntegrations")}
+            onClick={() => navigate("/ConnectStripe")}
             className="inline-flex items-center justify-center h-10 px-5 rounded-full bg-foreground text-background text-sm font-bold"
           >
             {t("cb_back")}

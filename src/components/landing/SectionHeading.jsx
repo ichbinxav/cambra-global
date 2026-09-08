@@ -1,5 +1,6 @@
 import React from "react";
 import SectionLabel from "@/components/shared/SectionLabel";
+import HeadlineText from "@/components/shared/HeadlineText";
 
 /**
  * SectionHeading — the single, unified title style for every landing section.
@@ -37,7 +38,7 @@ export default function SectionHeading({ eyebrow = null, children, className = "
           textWrap: "balance",
         }}
       >
-        {children}
+        <HeadlineText>{children}</HeadlineText>
       </h2>
     </div>
   );

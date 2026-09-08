@@ -46,7 +46,7 @@ export default function TrustSecuritySection() {
                 lineHeight: 1.02,
               }}
             >
-              {t("trust_sec_h2_pre")}{" "}
+              {t("trust_sec_h2_pre")}<br />
               <span className="kw">{t("trust_sec_h2_kw")}</span>
             </h2>
           </div>

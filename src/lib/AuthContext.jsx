@@ -317,6 +317,10 @@ export const AuthProvider = ({ children }) => {
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
+      // The hosted login has already returned to its approved destination.
+      // Consuming the intent here prevents an old /Referrals or /Dashboard
+      // target from hijacking a later Stripe or Analyzer sign-in.
+      try { sessionStorage.removeItem("cambra_redirect_after_login"); } catch {}
 
       // Anonymous-session rescue is orchestrated by checkAppState AFTER this
       // resolves (auth-first ordering). Returning true lets the caller DISARM

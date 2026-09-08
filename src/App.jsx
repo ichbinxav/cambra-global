@@ -304,6 +304,7 @@ const AuthenticatedApp = () => {
         <Route path="/connectstripe" element={<Navigate to="/ConnectStripe" replace />} />
         <Route path="/UploadStatement" element={<ProtectedRoute>{withBoundary(<UploadStatement />)}</ProtectedRoute>} />
         <Route path="/uploadstatement" element={<Navigate to="/UploadStatement" replace />} />
+        <Route path="/IntegrationsCallback" element={<ProtectedRoute>{withBoundary(<IntegrationsCallback />)}</ProtectedRoute>} />
         <Route caseSensitive path="/Privacy" element={withBoundary(<Privacy />)} />
         <Route caseSensitive path="/privacy" element={<Navigate to="/Privacy" replace />} />
         <Route caseSensitive path="/Terms" element={withBoundary(<Terms />)} />
@@ -379,7 +380,6 @@ const AuthenticatedApp = () => {
           <Route path="/Referrals" element={withBoundary(<Referrals />)} />
           <Route path="/referrals" element={<Navigate to="/Referrals" replace />} />
           <Route path="/ConnectIntegrations" element={<Navigate to="/ConnectStripe" replace />} />
-          <Route path="/IntegrationsCallback" element={withBoundary(<IntegrationsCallback />)} />
         </Route>
 
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>

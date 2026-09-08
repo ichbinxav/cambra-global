@@ -71,7 +71,7 @@ function Hero({ onBookDemo }) {
               textWrap: "pretty",
             }}
           >
-            {t("hero_h1_line1")} <span className="kw">{t("hero_h1_line2")}</span>
+            {t("hero_h1_line1")}<br /><span className="kw">{t("hero_h1_line2")}</span>
           </motion.h1>
 
           <motion.p
@@ -226,7 +226,7 @@ function HowItWorksSection() {
       <div className="cambra-public-container relative">
         <AnimatedSection>
           <SectionHeading eyebrow={t("how_label")} align="left" className="mb-10">
-            {t("how_h2_pre")}{" "}
+            {t("how_h2_pre")}<br />
             <span className="kw">{t("how_h2_hl")}.</span>
           </SectionHeading>
         </AnimatedSection>
@@ -263,7 +263,7 @@ function HowItWorksSection() {
                       "radial-gradient(circle at 20% 50%, rgba(91,76,245,0.06), transparent 60%)",
                   }}
                 />
-                {/* Giant number — gradient */}
+                {/* Giant number */}
                 <span
                   aria-hidden
                   className="absolute top-3 right-5 text-mono select-none"
@@ -272,11 +272,7 @@ function HowItWorksSection() {
                     fontWeight: 900,
                     letterSpacing: "-0.05em",
                     lineHeight: 1,
-                    background:
-                      "linear-gradient(180deg, rgba(91,76,245,0.55) 0%, rgba(139,123,255,0.3) 55%, rgba(12,12,22,0.03) 95%)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "rgba(91,76,245,0.22)",
                   }}
                 >
                   {s.n}

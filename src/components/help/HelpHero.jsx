@@ -39,7 +39,7 @@ export default function HelpHero({ onSearchOpen }) {
           className="text-[clamp(2.5rem,6.5vw,5.5rem)] font-black tracking-[-0.045em] leading-[0.9] mb-5"
           style={{ color: "var(--ink)" }}
         >
-          {helpUi(lang, "heroTitleA")}{" "}
+          {helpUi(lang, "heroTitleA")}<br />
           <span className="kw">{helpUi(lang, "heroTitleB")}</span>
         </motion.h1>
 

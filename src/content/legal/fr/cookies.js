@@ -4,7 +4,7 @@
 export default {
   badge: "Légal · Politique de cookies",
   title: "Politique de cookies.",
-  lastUpdated: "Dernière mise à jour : 12 août 2026",
+  lastUpdated: "Dernière mise à jour : 8 septembre 2026",
   back: "Retour",
   columns: { name: "Nom", purpose: "Finalité", duration: "Durée", category: "Catégorie" },
   intro: [
@@ -42,6 +42,8 @@ export default {
       note: "Effacé automatiquement à la fermeture de l'onglet du navigateur.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Mémorise la page que vous cherchiez à atteindre afin de vous y ramener après connexion", duration: "Jusqu'à la fermeture de l'onglet", category: "Strictement nécessaire" },
+        { name: "cambra_analyzer_draft", purpose: "Conserve temporairement les informations d'entreprise et d'analyse saisies afin que l'inscription n'efface pas votre progression", duration: "Jusqu'à la fermeture de l'onglet", category: "Strictement nécessaire" },
+        { name: "cambra_registration_profile", purpose: "Transporte temporairement votre nom et les informations de l'entreprise pendant l'inscription sécurisée afin de créer le bon profil de compte", duration: "Supprimé après application ou à la fermeture de l'onglet", category: "Strictement nécessaire" },
         { name: "cambra_ref_code", purpose: "Mémorise le code de recommandation du commerce dont vous avez ouvert le lien d'invitation, afin que la recommandation puisse être enregistrée lorsque vous lancez votre analyse quelques écrans plus loin. Code aléatoire opaque, non dérivé de données personnelles", duration: "Jusqu'à la fermeture de l'onglet", category: "Strictement nécessaire" },
         { name: "cambra_chat_conv", purpose: "Mémorise la conversation active dans le chat d'administration (comptes administrateurs uniquement)", duration: "Jusqu'à la fermeture de l'onglet", category: "Fonctionnel" },
       ],

@@ -137,12 +137,11 @@ function SplitVisual() {
 export default function Pricing() {
   const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
-  const titleParts = String(t("prc_hero_h1")).split(/(?<=\.)\s+/);
   return (
     <PublicPageShell>
       <PublicPageHero
         eyebrow={t("prc_hero_badge")}
-        title={<>{titleParts.map((part) => <span key={part} className="block">{part}</span>)}</>}
+        title={t("prc_hero_h1")}
         subtitle={t("prc_hero_sub")}
       >
         {/* CTA */}

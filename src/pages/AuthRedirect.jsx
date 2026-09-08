@@ -25,6 +25,10 @@ export default function AuthRedirect() {
         if (safe) target = safe;
       }
     } catch {}
+    try {
+      const parsed = new URL(target);
+      sessionStorage.setItem("cambra_redirect_after_login", `${parsed.pathname}${parsed.search}${parsed.hash}`);
+    } catch {}
     base44.auth.redirectToLogin(target);
   }, []);
 

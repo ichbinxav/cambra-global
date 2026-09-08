@@ -95,11 +95,7 @@ function Tier({
                 lineHeight: 0.9,
                 ...(priceGradient
                   ? {
-                      background: "var(--g-voltio)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      filter: "drop-shadow(0 0 18px rgba(91,76,245,0.28))",
+                      color: "var(--voltio)",
                     }
                   : { color: "var(--ink)" }),
               }}

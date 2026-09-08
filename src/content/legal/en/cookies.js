@@ -7,7 +7,7 @@
 export default {
   badge: "Legal · Cookie policy",
   title: "Cookie Policy.",
-  lastUpdated: "Last updated: 12 August 2026",
+  lastUpdated: "Last updated: 8 September 2026",
   back: "Back",
   columns: { name: "Name", purpose: "Purpose", duration: "Duration", category: "Category" },
   intro: [
@@ -45,6 +45,8 @@ export default {
       note: "Cleared automatically when the browser tab closes.",
       rows: [
         { name: "cambra_redirect_after_login", purpose: "Remembers the page you were trying to reach so you land back on it after signing in", duration: "Until the tab closes", category: "Strictly necessary" },
+        { name: "cambra_analyzer_draft", purpose: "Temporarily keeps the business and analysis details you entered so sign-up does not erase your progress", duration: "Until the tab closes", category: "Strictly necessary" },
+        { name: "cambra_registration_profile", purpose: "Temporarily carries your name and business details through secure sign-up so CAMBRA can create the correct account profile", duration: "Deleted after it is applied, or when the tab closes", category: "Strictly necessary" },
         { name: "cambra_ref_code", purpose: "Remembers the referral code of the business whose invite link you opened, so the referral can still be recorded when you run your analysis a few screens later. An opaque random code, not derived from personal data", duration: "Until the tab closes", category: "Strictly necessary" },
         { name: "cambra_chat_conv", purpose: "Remembers the active conversation in the administration chat (admin accounts only)", duration: "Until the tab closes", category: "Functional" },
       ],

@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CalendarDays, Loader2, History, Plus, Sparkles } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
+import HeadlineText from "@/components/shared/HeadlineText";
 
 function fmtDate(iso, locale) {
   if (!iso) return "";
@@ -69,13 +70,7 @@ function HistoryCard({ item, onOpen, copy, locale, formatCurrency }) {
         </div>
         <div className="text-right shrink-0">
           <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#7A8296]">{copy.annualGap}</p>
-          <p
-            className="text-[20px] font-black tabular-nums leading-none"
-            style={{
-              background: "linear-gradient(135deg, #2719DB 0%, #6454F5 48%, #2DAFDF 100%)",
-              WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}
-          >
+          <p className="text-[20px] font-black tabular-nums leading-none text-[#4D3DF1]">
             {money(point)}
           </p>
           {range && (range.lo !== range.hi) && (
@@ -206,7 +201,7 @@ export default function ResultsHistory() {
             className="text-[#091126]"
             style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 900, letterSpacing: "-0.03em" }}
           >
-            {copy.title}
+            <HeadlineText>{copy.title}</HeadlineText>
           </h1>
         </div>
         <Button

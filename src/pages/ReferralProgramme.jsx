@@ -91,7 +91,7 @@ export default function ReferralProgramme() {
           <div className="mx-auto max-w-2xl text-center">
             <SectionLabel>{t("ref_how_title")}</SectionLabel>
             <h2 className="mt-5 text-[clamp(34px,4.4vw,58px)] font-bold leading-[1.02] tracking-[-.05em] text-[#0B1228]">
-              {t("ref_land_h2_l1")} {t("ref_land_h2_kw")}
+              {t("ref_land_h2_l1")}<br />{t("ref_land_h2_kw")}
             </h2>
           </div>
           <ol className="mt-12 grid gap-5 md:grid-cols-3">

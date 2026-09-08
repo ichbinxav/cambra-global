@@ -16,13 +16,14 @@
 
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, BarChart3, CheckCircle2, FileSearch, LockKeyhole, Percent } from "lucide-react";
+import { ArrowLeft, ArrowRight, BarChart3, CheckCircle2, FileSearch, LockKeyhole, Percent } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/landing/Navbar";
 import StripeConnectCard from "@/components/connect/StripeConnectCard.jsx";
 import StatementUploadCard from "@/components/paymentsAnalyzer/StatementUploadCard.jsx";
 import SectionLabel from "@/components/shared/SectionLabel";
 import { useTranslation } from "@/lib/i18n.jsx";
+import { readAnalyzerDraft, readRegistrationProfile } from "@/lib/registrationProfile";
 
 function CardSkeleton() {
   return (
@@ -54,6 +55,8 @@ export default function ConnectTools({ mode = undefined }) {
       try {
         const me = await base44.auth.me().catch(() => null);
         if (me) {
+          const registrationProfile = readRegistrationProfile();
+          const analyzerDraft = readAnalyzerDraft();
           const brands = await base44.entities.Brand
             .filter({ created_by: me.email }, "-created_date", 1)
             .catch(() => []);
@@ -65,10 +68,12 @@ export default function ConnectTools({ mode = undefined }) {
           // The user renames it later in /BrandProfile.
           if (!id) {
             const created = await base44.entities.Brand.create({
-              name: me.full_name || (me.email ? me.email.split("@")[0] : "My brand"),
+              name: registrationProfile.businessName || analyzerDraft.brandName || me.full_name || (me.email ? me.email.split("@")[0] : "My brand"),
               contact_email: me.email,
-              contact_name: me.full_name,
-              locale: lang, // EMAIL-1 T2 — welcome + monthly emails follow the UI language
+              contact_name: registrationProfile.fullName || me.full_name,
+              ...(analyzerDraft.website ? { website: analyzerDraft.website } : {}),
+              ...(analyzerDraft.country ? { country: analyzerDraft.country } : {}),
+              locale: ["en", "fr", "es"].includes(lang) ? lang : "en",
             }).catch(() => null);
             id = created?.id || null;
           }
@@ -88,10 +93,13 @@ export default function ConnectTools({ mode = undefined }) {
       <Navbar />
 
       <main className="cambra-public-container relative flex-1 pb-16 pt-28 sm:pt-32">
+        <Link to="/Analyzer?step=2" className="mb-7 inline-flex min-h-10 items-center gap-2 rounded-full border border-[#DDE0E9] bg-white/80 px-4 text-[12px] font-bold text-[#27314D] transition hover:border-[#8B7BFF] hover:text-[#4D3DF1]">
+          <ArrowLeft size={14} /> {t("az_back")}
+        </Link>
         <header className="max-w-[930px]">
           <SectionLabel>{uploadMode ? t("az_entry_upload_title") : t("az_entry_connect_title")}</SectionLabel>
           <h1 className="mt-6 text-[clamp(40px,5.2vw,70px)] font-bold leading-[.98] tracking-[-.058em] text-[#081126]">
-            {uploadMode ? t("az_entry_upload_title") : t("ct_page_title")}<span className="text-[#6657F7]">.</span>
+            {uploadMode ? t("az_entry_upload_title") : t("ct_page_title")}.
           </h1>
           <p className="mt-5 max-w-[760px] text-[clamp(15px,1.35vw,18px)] leading-[1.65] text-[#626B86]">
             {uploadMode ? t("az_entry_upload_body") : t("ct_page_sub")}
@@ -149,7 +157,7 @@ export default function ConnectTools({ mode = undefined }) {
         <nav className="mt-6 grid gap-3 sm:grid-cols-3" aria-label={t("az_entry_label")}>
           <Link to="/ConnectStripe" className={`cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold ${!uploadMode ? "border-[#7C6CF8] text-[#4D3DF1]" : "text-[#27314D]"}`}>{t("az_entry_connect_title")} <ArrowRight size={14} /></Link>
           <Link to="/UploadStatement" className={`cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold ${uploadMode ? "border-[#7C6CF8] text-[#4D3DF1]" : "text-[#27314D]"}`}>{t("az_entry_upload_title")} <ArrowRight size={14} /></Link>
-          <Link to="/Analyzer" className="cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold text-[#27314D]">{t("az_entry_manual_title")} <ArrowRight size={14} /></Link>
+          <Link to="/Analyzer?step=3" className="cambra-paper-card flex min-h-20 items-center justify-between gap-4 px-5 py-4 text-[12px] font-bold text-[#27314D]">{t("az_entry_manual_title")} <ArrowRight size={14} /></Link>
         </nav>
       </main>
     </div>

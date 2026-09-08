@@ -1,24 +1,11 @@
 import React from "react";
 
-const ACCENT_GRADIENTS = [
-  "linear-gradient(135deg, #ffffff 0%, #B8D8E0 50%, #39C6F0 100%)",
-  "linear-gradient(135deg, #ffffff 0%, #FFD9B0 50%, #FB923C 100%)",
-  "linear-gradient(135deg, #ffffff 0%, #BBE5C6 50%, #2FE0A8 100%)",
-];
-
-function MetricBlock({ label, value, helper, accent, gradient }) {
+function MetricBlock({ label, value, helper, accent }) {
   return (
     <div className="min-w-[180px] flex-1">
       <p className="text-[10px] uppercase tracking-[0.25em] opacity-60 mb-2 font-semibold">{label}</p>
       <div className="flex items-end gap-2">
-        <p className="text-4xl sm:text-5xl font-black tracking-[-0.035em] tabular-nums leading-none"
-           style={gradient ? {
-             background: gradient,
-             WebkitBackgroundClip: "text",
-             WebkitTextFillColor: "transparent",
-             backgroundClip: "text",
-             filter: "drop-shadow(0 0 18px rgba(44,167,193,0.25))",
-           } : undefined}>
+        <p className={`text-4xl sm:text-5xl font-black tracking-[-0.035em] tabular-nums leading-none ${accent || "text-white"}`}>
           {value}
         </p>
         {helper ? <span className={`text-xs font-semibold mb-1 ${accent || 'opacity-60'}`}>{helper}</span> : null}
@@ -66,7 +53,6 @@ export default function CommandHero({ title = "Command Center", subtitle = "CAMB
                   value={m.value}
                   helper={m.helper}
                   accent={m.accent}
-                  gradient={ACCENT_GRADIENTS[i % ACCENT_GRADIENTS.length]}
                 />
               </div>
             </div>

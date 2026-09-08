@@ -129,7 +129,7 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 to={item.href}
-                className={`relative px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                className={`relative whitespace-nowrap px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                   active
                     ? "text-white"
                     : "text-white/60 hover:text-white"

@@ -79,11 +79,7 @@ export default function PageNotFound() {
             letterSpacing: "-0.07em",
             lineHeight: 0.9,
             fontSize: "clamp(7rem, 22vw, 14rem)",
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(34,211,238,0.55) 80%, rgba(34,211,238,0.25) 100%)",
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "rgba(255,255,255,0.95)",
             filter: "drop-shadow(0 0 22px rgba(34,211,238,0.25))",
           }}
         >

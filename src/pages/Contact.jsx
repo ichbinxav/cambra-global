@@ -70,7 +70,7 @@ export default function Contact() {
     <PublicPageShell>
       <PublicPageHero
         eyebrow={t("ct_eyebrow")}
-        title={<>{t("ct_title_pre")}<span className="kw">{t("ct_title_kw")}</span></>}
+        title={<>{t("ct_title_pre")}<br /><span className="kw">{t("ct_title_kw")}</span></>}
         subtitle={t("ct_subtitle")}
       />
 

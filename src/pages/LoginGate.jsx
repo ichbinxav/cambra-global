@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, LockKeyhole, Search, ShieldCheck } from "
 import { base44 } from "@/api/base44Client";
 import HeaderBrand from "@/components/shared/HeaderBrand";
 import SectionLabel from "@/components/shared/SectionLabel";
+import HeadlineText from "@/components/shared/HeadlineText";
 import {
   REFERRAL_CODE_PATTERN,
   REFERRAL_STORAGE_KEY,
@@ -12,6 +13,15 @@ import { useTranslation } from "@/lib/i18n.jsx";
 import { safeReturnUrl } from "@/lib/safeRedirect";
 import { SEO_ORIGIN } from "@/lib/seoConfig";
 import { BASE_FEE_PCT, ENTRY_FEE_PCT, STEP_POINTS } from "@/lib/referralProgram";
+import {
+  isAnalyzerBusinessDraftComplete,
+  readAnalyzerDraft,
+  readRegistrationProfile,
+  writeAnalyzerDraft,
+  writeRegistrationProfile,
+} from "@/lib/registrationProfile";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function readStoredCode() {
   try { return sessionStorage.getItem(REFERRAL_STORAGE_KEY)?.trim() || ""; }
@@ -20,6 +30,9 @@ function readStoredCode() {
 
 export default function LoginGate() {
   const { t } = useTranslation();
+
+  const savedProfile = useMemo(() => readRegistrationProfile(), []);
+  const analyzerDraft = useMemo(() => readAnalyzerDraft(), []);
 
   const baseReturnUrl = useMemo(() => {
     try {
@@ -44,6 +57,10 @@ export default function LoginGate() {
   }, [baseReturnUrl]);
 
   const [referralCode, setReferralCode] = useState(initialCode);
+  const [fullName, setFullName] = useState(savedProfile.fullName || "");
+  const [businessName, setBusinessName] = useState(savedProfile.businessName || analyzerDraft.brandName || "");
+  const [workEmail, setWorkEmail] = useState(savedProfile.workEmail || analyzerDraft.email || "");
+  const [showProfileErrors, setShowProfileErrors] = useState(false);
   const [showCodeError, setShowCodeError] = useState(false);
   const [codeStatus, setCodeStatus] = useState(() => {
     if (!initialCode) return "empty";
@@ -53,6 +70,10 @@ export default function LoginGate() {
   const normalizedCode = referralCode.trim();
   const codeFormatValid = !normalizedCode || REFERRAL_CODE_PATTERN.test(normalizedCode);
   const hasReferral = Boolean(normalizedCode && codeStatus === "valid");
+  const profileValid = fullName.trim().length >= 2
+    && businessName.trim().length >= 2
+    && businessName.trim().length <= 80
+    && EMAIL_RE.test(workEmail.trim());
 
   const verifyCode = useCallback(async (code) => {
     if (!REFERRAL_CODE_PATTERN.test(code)) return false;
@@ -119,6 +140,10 @@ export default function LoginGate() {
 
   const handleContinue = useCallback(async () => {
     if (continuing) return;
+    if (!profileValid) {
+      setShowProfileErrors(true);
+      return;
+    }
     if (!codeFormatValid) {
       setShowCodeError(true);
       return;
@@ -136,12 +161,32 @@ export default function LoginGate() {
       approvedCode = normalizedCode;
     }
     try {
-      const destination = new URL(baseReturnUrl);
+      const mergedAnalyzerDraft = {
+        ...readAnalyzerDraft(),
+        brandName: businessName.trim(),
+        email: workEmail.trim().toLowerCase(),
+      };
+      writeAnalyzerDraft(mergedAnalyzerDraft);
+      writeRegistrationProfile({
+        fullName: fullName.trim(),
+        businessName: businessName.trim(),
+        workEmail: workEmail.trim().toLowerCase(),
+        website: mergedAnalyzerDraft.website || "",
+        country: mergedAnalyzerDraft.country || "",
+        sector: mergedAnalyzerDraft.sector || "",
+      });
+
+      const requestedDestination = new URL(baseReturnUrl);
+      const isAnalysisDataIntent = /^\/(Analyzer|ConnectTools|ConnectIntegrations|ConnectStripe|UploadStatement)\/?$/i.test(requestedDestination.pathname);
+      const destination = isAnalysisDataIntent
+        ? new URL(isAnalyzerBusinessDraftComplete(mergedAnalyzerDraft) ? "/Analyzer?step=2" : "/Analyzer", window.location.origin)
+        : requestedDestination;
       if (approvedCode) {
         destination.searchParams.set("ref", approvedCode);
         sessionStorage.setItem(REFERRAL_STORAGE_KEY, approvedCode);
       }
       const approvedReturnUrl = safeReturnUrl(destination.toString(), window.location.origin);
+      sessionStorage.setItem("cambra_redirect_after_login", `${destination.pathname}${destination.search}${destination.hash}`);
       if (/^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname)) {
         const parsed = new URL(approvedReturnUrl);
         const productionReturnUrl = `${SEO_ORIGIN}${parsed.pathname}${parsed.search}${parsed.hash}`;
@@ -154,7 +199,7 @@ export default function LoginGate() {
       return;
     }
     setContinuing(false);
-  }, [baseReturnUrl, codeFormatValid, codeStatus, continuing, normalizedCode, verifyCode]);
+  }, [baseReturnUrl, businessName, codeFormatValid, codeStatus, continuing, fullName, normalizedCode, profileValid, verifyCode, workEmail]);
 
   useEffect(() => {
     const onKey = (event) => {
@@ -182,13 +227,56 @@ export default function LoginGate() {
           )}
           <SectionLabel>{isReferralManagementIntent ? t("ref_land_eyebrow") : t("login_gate_eyebrow")}</SectionLabel>
           <h1 className="mt-6 max-w-[680px] text-[clamp(42px,5.2vw,70px)] font-bold leading-[.99] tracking-[-.058em] text-[#091126]">
-            {hasReferral ? `${BASE_FEE_PCT}% → ${ENTRY_FEE_PCT}%` : headline}
+            <HeadlineText>{hasReferral ? `${BASE_FEE_PCT}% → ${ENTRY_FEE_PCT}%` : headline}</HeadlineText>
           </h1>
           <p className="mt-6 max-w-[620px] text-[clamp(15px,1.35vw,18px)] leading-[1.65] text-[#626B86]">
             {hasReferral ? t("ref_land_t3_note", { base: `${BASE_FEE_PCT}%` }) : sub}
           </p>
 
           <div className="cambra-paper-card mt-9 max-w-[610px] p-5 sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block text-[12px] font-bold text-[#1A2340]">
+                {t("acc_full_name")}
+                <input
+                  value={fullName}
+                  onChange={(event) => { setFullName(event.target.value); setShowProfileErrors(false); }}
+                  autoComplete="name"
+                  maxLength={100}
+                  className="mt-2 h-12 w-full rounded-xl border border-[#D8DCE8] bg-white px-4 text-[13px] font-semibold text-[#11182D] outline-none transition focus:border-[#7567F8] focus:ring-4 focus:ring-[#7567F8]/10"
+                />
+              </label>
+              <label className="block text-[12px] font-bold text-[#1A2340]">
+                {t("acc_brand_name")}
+                <input
+                  value={businessName}
+                  onChange={(event) => { setBusinessName(event.target.value); setShowProfileErrors(false); }}
+                  autoComplete="organization"
+                  maxLength={80}
+                  placeholder={t("acc_brand_name_ph")}
+                  className="mt-2 h-12 w-full rounded-xl border border-[#D8DCE8] bg-white px-4 text-[13px] font-semibold text-[#11182D] outline-none transition focus:border-[#7567F8] focus:ring-4 focus:ring-[#7567F8]/10"
+                />
+              </label>
+            </div>
+            <label className="mt-4 block text-[12px] font-bold text-[#1A2340]">
+              {t("acc_email")}
+              <input
+                type="email"
+                value={workEmail}
+                onChange={(event) => { setWorkEmail(event.target.value); setShowProfileErrors(false); }}
+                autoComplete="email"
+                inputMode="email"
+                maxLength={254}
+                placeholder={t("analyzer_email_placeholder")}
+                className="mt-2 h-12 w-full rounded-xl border border-[#D8DCE8] bg-white px-4 text-[13px] font-semibold text-[#11182D] outline-none transition focus:border-[#7567F8] focus:ring-4 focus:ring-[#7567F8]/10"
+              />
+            </label>
+            {showProfileErrors && !profileValid && (
+              <p className="mt-3 text-[11px] font-semibold text-[#B62D48]" role="alert">
+                {t("az_still_needed")} {t("acc_full_name")} · {t("acc_brand_name")} · {t("acc_email")}
+              </p>
+            )}
+
+            <div className="my-5 h-px bg-[#E6E8EF]" />
             <label htmlFor="registration-referral-code" className="text-[12px] font-bold text-[#1A2340]">
               {t("ref_code_label")}
             </label>
@@ -243,7 +331,7 @@ export default function LoginGate() {
               <div className="mt-9 flex items-end justify-between gap-5 border-b border-white/12 pb-8">
                 <div><span className="text-[12px] text-white/55">{BASE_FEE_PCT}%</span><strong className="block text-[58px] font-bold leading-none tracking-[-.06em] text-white">{BASE_FEE_PCT}%</strong></div>
                 <div className="pb-2 text-center"><span className="text-[12px] font-semibold text-white/70">−{STEP_POINTS} pts</span><ArrowRight className="mt-2 text-white/40" size={34} /></div>
-                <div className="text-right"><span className="text-[12px] text-[#B8AEFF]">{ENTRY_FEE_PCT}%</span><strong className="block bg-gradient-to-br from-[#C2B7FF] to-[#6C5CF5] bg-clip-text text-[58px] font-bold leading-none tracking-[-.06em] text-transparent">{ENTRY_FEE_PCT}%</strong></div>
+                <div className="text-right"><span className="text-[12px] text-[#B8AEFF]">{ENTRY_FEE_PCT}%</span><strong className="block text-[58px] font-bold leading-none tracking-[-.06em] text-[#B8AEFF]">{ENTRY_FEE_PCT}%</strong></div>
               </div>
             )}
             <ul className="mt-8 space-y-5">

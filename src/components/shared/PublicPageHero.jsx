@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import HeadlineText from "@/components/shared/HeadlineText";
 
 /**
  * Shared editorial hero for public pages. Light is the default so secondary
@@ -53,7 +54,7 @@ export default function PublicPageHero({ eyebrow, title, subtitle, children = nu
             lineHeight: 0.98,
           }}
         >
-          {title}
+          <HeadlineText>{title}</HeadlineText>
         </motion.h1>
 
         {subtitle && (

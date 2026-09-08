@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, BadgeCheck, Gift, LockKeyhole, ShieldCheck, User
 import { base44 } from "@/api/base44Client";
 import HeaderBrand from "@/components/shared/HeaderBrand";
 import SectionLabel from "@/components/shared/SectionLabel";
+import HeadlineText from "@/components/shared/HeadlineText";
 import {
   REFERRAL_CODE_PATTERN,
   REFERRAL_STORAGE_KEY,
@@ -52,7 +53,7 @@ export default function ReferralInvite() {
         <main className="relative mx-auto flex min-h-[calc(100vh-72px)] w-[min(720px,calc(100%-36px))] flex-col items-center justify-center py-16 text-center">
           <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EFEDFF] text-[#4D3DF1]"><Gift size={24} /></span>
           <SectionLabel className="mt-8">{t("ref_land_eyebrow")}</SectionLabel>
-          <h1 className="mt-5 text-[clamp(38px,6vw,60px)] font-bold leading-[1] tracking-[-.055em] text-[#091126]">{t("res_invalid_title")}</h1>
+          <h1 className="mt-5 text-[clamp(38px,6vw,60px)] font-bold leading-[1] tracking-[-.055em] text-[#091126]"><HeadlineText>{t("res_invalid_title")}</HeadlineText></h1>
           <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-[#626B86]">{status === "error" ? t("res_err_msg") : t("ref_code_rejected_body")}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/Analyzer" className="btn-primary inline-flex min-h-[50px] items-center gap-2 rounded-xl px-6 text-[13px] font-bold text-white">{t("res_rerun_cta")} <ArrowRight size={15} /></Link>
@@ -105,7 +106,7 @@ export default function ReferralInvite() {
             <div className="mt-10 grid grid-cols-[1fr_auto_1fr] items-end gap-4 border-b border-white/12 pb-9">
               <div><span className="text-[12px] text-white/55">{t("ref_fee_label")}</span><strong className="mt-2 block text-[64px] font-bold leading-none tracking-[-.065em] text-white">{BASE_FEE_PCT}%</strong></div>
               <div className="pb-2 text-center"><span className="text-[12px] font-semibold text-white/74">−{STEP_POINTS} pts</span><ArrowRight className="mt-3 text-white/40" size={35} /></div>
-              <div className="text-right"><span className="text-[12px] text-[#B8AEFF]">{t("ref_land_t3_label")}</span><strong className="mt-2 block bg-gradient-to-br from-[#C2B7FF] to-[#6C5CF5] bg-clip-text text-[64px] font-bold leading-none tracking-[-.065em] text-transparent">{ENTRY_FEE_PCT}%</strong></div>
+              <div className="text-right"><span className="text-[12px] text-[#B8AEFF]">{t("ref_land_t3_label")}</span><strong className="mt-2 block text-[64px] font-bold leading-none tracking-[-.065em] text-[#B8AEFF]">{ENTRY_FEE_PCT}%</strong></div>
             </div>
             <ul className="mt-8 space-y-5">
               {[

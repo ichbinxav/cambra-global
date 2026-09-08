@@ -1,4 +1,5 @@
 import { Activity } from "lucide-react";
+import HeadlineText from "@/components/shared/HeadlineText";
 
 /**
  * Premium navy hero header for inner pages.
@@ -105,21 +106,10 @@ function HeaderInner({ eyebrow, title, subtitle, actions, Icon, dark }) {
         )}
         <h1
           className={`font-display text-[clamp(2rem,5vw,3.6rem)] font-black tracking-[-0.045em] leading-[0.92] ${
-            dark ? "" : "text-foreground"
+            dark ? "text-white" : "text-foreground"
           }`}
-          style={
-            dark
-              ? {
-                  background:
-                    "linear-gradient(135deg, #ffffff 0%, #E8F4F6 55%, #B8D8E0 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }
-              : {}
-          }
         >
-          {title}
+          <HeadlineText>{title}</HeadlineText>
         </h1>
         {subtitle && (
           <p className={`text-sm mt-3 max-w-xl leading-relaxed ${dark ? "text-white/60" : "text-muted-foreground"}`}>
