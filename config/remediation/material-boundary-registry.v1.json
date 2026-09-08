@@ -11,7 +11,7 @@
   "input_fingerprint_sha256": "cd8f09dca39c5e267f2f737e2046d3284ffe3f28f117660fd8621e2c742fc727",
   "input_file_count": 124,
   "surface_snapshot": {
-    "source_function_directories": 301,
+    "source_function_directories": 300,
     "source_entry_files": 300,
     "physical_function_target": 276,
     "logical_route_count": 41,

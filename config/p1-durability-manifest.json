@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-08T08:39:35.775Z",
+  "generatedAt": "2026-09-08T08:55:38.842Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -2029,7 +2029,7 @@
     },
     {
       "path": "config/documentation-drift-manifest.json",
-      "sha256": "2752fdd2f8813327dd850fdfd6b6295d4c3d3c5c19fb5b13e6c5b02cab4219b6",
+      "sha256": "ea8dd3feddbf469d462e92109f7fd52d166256cb4851945f200bffc816b37f06",
       "bytes": 43449
     },
     {
@@ -2189,22 +2189,22 @@
     },
     {
       "path": "config/remediation/authority-trace-operational-inventory.v1.json",
-      "sha256": "621488ea8ab55346ab0107b5c1a998797b80659107010a642b93d8e66976304a",
+      "sha256": "8c375bfd0418ce7520ee871fb1f6c74481510b50685c3545f79b94f8cfd4a1f5",
       "bytes": 13672
     },
     {
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "540541cc0a9f2ac3458692408874924a455edb69095e0af00eeab110efc5f5be",
+      "sha256": "9dc57bada07546a9badfd5a4a7efb78df0b1a6ae1a53dd32f8d34dfa597ddd02",
       "bytes": 73570
     },
     {
       "path": "config/remediation/material-boundary-registry.v1.json",
-      "sha256": "e9ca764c6d1eace94445dcb978e8de7e6b105eefd32340642e06a93fcc7ac606",
+      "sha256": "af008cbb46817705f4badb4663b0ef8bf1912777cee5b821ef56cb2ec4c9f588",
       "bytes": 144726
     },
     {
       "path": "config/remediation/material-tenant-authorization-inventory.v1.json",
-      "sha256": "cc1b1a0257c5a5916122941c5671af8ae65d6d2ac7a134f7c864202c498a977b",
+      "sha256": "0db1c33564e06779b768c50bba7507293ea9cad0a65a3a9e59c2668776a95bb1",
       "bytes": 97899
     },
     {
