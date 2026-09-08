@@ -344,7 +344,7 @@ function LandingFooter() {
           bottom of the paper page (no rounded pill). Soft purple/cyan ambient
           glow + subtle dot-grid so the page fades naturally into the end. */}
       <div
-        className="relative w-full overflow-hidden px-6 sm:px-10 pt-20 pb-14"
+        className="relative w-full overflow-hidden pt-20 pb-14"
         style={{
           background: "#0A0818",
           borderTop: "1px solid rgba(255,255,255,0.08)",
