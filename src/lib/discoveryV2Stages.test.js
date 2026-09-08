@@ -5,7 +5,7 @@
 // shipped unnoticed. Every test here INVOKES the exported stage functions (or
 // the shared company-enrichment operation) against an in-memory entity store
 // and asserts what actually got written.
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import {
   resolveDiscoveryLeadProvider,
@@ -36,6 +36,7 @@ beforeEach(() => {
   globalThis.Deno = { env: { get: (key) => envMap[key] || "" } };
 });
 afterEach(() => {
+  vi.useRealTimers();
   globalThis.Deno = realDeno;
 });
 
@@ -250,6 +251,8 @@ describe("stageDiscovery — provider selection is consulted, not assumed", () =
   });
 
   it("fails over Apollo → Instantly on a pre-expiry auth failure and logs it for the founder", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(BEFORE_CUTOVER);
     envMap = { APOLLO_API_KEY: "ak", INSTANTLY_API_KEY: "ik", INTERNAL_CALL_SECRET: "s" };
     const run = runRow();
     let call = 0;
@@ -287,6 +290,8 @@ describe("stageDiscovery — provider selection is consulted, not assumed", () =
   });
 
   it("preserves a governed child-function error instead of reporting a generic HTTP 500", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(BEFORE_CUTOVER);
     envMap = { APOLLO_API_KEY: "ak" };
     const run = runRow();
     const svc = makeSvc(
