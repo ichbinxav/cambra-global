@@ -1,0 +1,48 @@
+{
+  "name": "CAMBRA Command runs \u2014 5 min",
+  "description": "COMMAND-C7: advances durable CommandRun slices. Adds no authority of its own \u2014 CAS, cancellation, emergency epoch and budgets are all enforced inside advanceCommandRun. Terminal and human-held runs are never touched.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-08-23T20:38:08.240000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cambra_command_runs_5_min",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "maintenanceEngine",
+            "args": {
+              "host_action": "command_run_sweep",
+              "hosted_worker": "commandRunWorker",
+              "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "maintenanceEngine"
+  }
+}

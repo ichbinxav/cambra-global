@@ -1,0 +1,48 @@
+{
+  "name": "P10 Regulatory freshness monitor \u2014 daily (consolidated)",
+  "description": "Runs the original regulatoryMonitoringWorker handler within the market-policy trust boundary.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "days",
+      "interval_anchor": "2026-08-12T12:19:28.709000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "p10_regulatory_freshness_monitor_daily_consolidated",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "marketPolicyAdmin",
+            "args": {
+              "action": "regulatory_monitoring",
+              "hosted_worker": "regulatoryMonitoringWorker",
+              "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "marketPolicyAdmin"
+  }
+}

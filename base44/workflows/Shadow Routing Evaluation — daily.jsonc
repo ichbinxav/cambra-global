@@ -1,0 +1,46 @@
+{
+  "name": "Shadow Routing Evaluation \u2014 daily",
+  "description": "Evaluates historical/minimized routing observations against current Provider Intelligence. Counterfactual only; no payment execution capability.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "days",
+      "interval_anchor": "2026-08-12T12:53:45.477000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "shadow_routing_evaluation_daily",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "shadowRoutingEngine",
+            "args": {
+              "limit": 500
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "shadowRoutingEngine"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "Privacy-safe Intelligence \u2014 daily",
+  "description": "Builds irreversible k>=10 coarsened aggregates for retained cross-tenant intelligence. Never copies merchant identifiers or pseudonyms.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "days",
+      "interval_anchor": "2026-08-12T12:49:39.538000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "privacy_safe_intelligence_daily",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "privacySafeIntelligenceWorker",
+            "args": {
+              "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "privacySafeIntelligenceWorker"
+  }
+}

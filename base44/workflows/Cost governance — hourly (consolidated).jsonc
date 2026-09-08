@@ -1,0 +1,48 @@
+{
+  "name": "Cost governance \u2014 hourly (consolidated)",
+  "description": "Runs the original costGovernanceWorker handler through the existing maintenanceEngine trust boundary.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 1,
+      "interval_unit": "hours",
+      "interval_anchor": "2026-08-12T12:19:20.787000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cost_governance_hourly_consolidated",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "maintenanceEngine",
+            "args": {
+              "host_action": "cost_governance",
+              "hosted_worker": "costGovernanceWorker",
+              "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "maintenanceEngine"
+  }
+}

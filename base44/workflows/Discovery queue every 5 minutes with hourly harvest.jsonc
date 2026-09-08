@@ -1,0 +1,46 @@
+{
+  "name": "Discovery queue every 5 minutes with hourly harvest",
+  "description": "Resumes accepted Discovery V2 runs every 5 minutes and performs company-first autonomous harvest once per hour. Never sends outreach.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 5,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-09-06T16:29:06.894000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "discovery_queue_every_5_minutes_with_hourly_harvest",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "alwaysOnLeadDiscoveryWorker",
+            "args": {
+              "internal_secret": "{{INTERNAL_CALL_SECRET}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "alwaysOnLeadDiscoveryWorker"
+  }
+}

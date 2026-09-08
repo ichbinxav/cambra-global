@@ -1,0 +1,44 @@
+{
+  "name": "ECL Production Health \u2014 10 min",
+  "description": "P7 authoritative health sweep every 10 minutes. Detects critical worker liveness, overdue evidence/DLQ backlogs, reconciliation drift and stuck reviews; materializes incidents but never executes recovery or economic effects.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 10,
+      "interval_unit": "minutes",
+      "interval_anchor": "2026-08-12T12:09:30.586000",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "ecl_production_health_10_min",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "eclProductionHealth",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "eclProductionHealth"
+  }
+}
