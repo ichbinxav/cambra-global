@@ -41,7 +41,7 @@ export default function DashboardSidebar() {
           borderRight: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div className="relative flex h-[72px] items-center px-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="hidden">
           <HeaderBrand to="/" tone="dark" externalCue ariaLabel="CAMBRA home" />
         </div>
 
@@ -111,7 +111,7 @@ export default function DashboardSidebar() {
 
       {/* Mobile header */}
       <div
-        className="fixed left-0 right-0 top-0 z-50 flex h-[72px] items-center justify-between px-5 lg:hidden"
+        className="hidden"
         style={{
           background: "rgba(11,14,26,0.9)",
           backdropFilter: "blur(20px)",
