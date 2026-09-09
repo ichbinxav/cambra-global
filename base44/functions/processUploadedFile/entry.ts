@@ -396,12 +396,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Office packages and additional image formats are safely retained and
-    // routed to review until the merchant authorises a raw-file preprocessor.
-    // Markdown, TSV and RTF remain local text and use the normal redaction path.
+    // Text documents are locally redacted. Binary and Office documents use the
+    // raw-file path explicitly authorised by the product owner on 2026-09-10.
+    // Both paths still require two readers to agree before any amount is used.
     const preparationKind = envelope.kind === 'universal' ? 'pdf' : envelope.kind;
     const prepared = prepareDocumentForExternalExtraction({ kind: preparationKind, bytes });
-    if (prepared.ok === false) {
+    let primaryRaw: any;
+    let secondaryRaw: any;
+    let privacyBoundary: any;
+
+    if (prepared.ok === false && prepared.reason !== 'local_redaction_required_for_binary_document') {
       const stored = await base44.entities.StatementImport.create({
         brand_id: brand.id,
         file_url: trusted.url,
@@ -428,11 +432,31 @@ Deno.serve(async (req) => {
       );
     }
 
-    const [primaryRaw, secondaryRaw] = await Promise.all([
-      callAnthropic(svc, checksum, envelope.kind, prepared.text),
-      callOpenAI(svc, checksum, envelope.kind, prepared.text),
-    ]);
+    if (prepared.ok === false) {
+      [primaryRaw, secondaryRaw] = await Promise.all([
+        callBase44FileReader(svc, checksum, trusted.url, 'extractor'),
+        callBase44FileReader(svc, checksum, trusted.url, 'reviewer'),
+      ]);
+      privacyBoundary = {
+        blocked: false,
+        raw_file_processing_authorized: true,
+        authorization_version: 'product-owner-2026-09-10',
+      };
+    } else {
+      [primaryRaw, secondaryRaw] = await Promise.all([
+        callAnthropic(svc, checksum, envelope.kind, prepared.text),
+        callOpenAI(svc, checksum, envelope.kind, prepared.text),
+      ]);
+      privacyBoundary = {
+        blocked: false,
+        raw_file_processing_authorized: false,
+        sanitization_version: prepared.sanitizationVersion,
+        redaction_counts: prepared.redactionCounts,
+        redacted_categories: prepared.redactedCategories,
+      };
+    }
     const providerCallCount = Number(primaryRaw.providerCalled === true) + Number(secondaryRaw.providerCalled === true);
+    privacyBoundary.provider_calls = providerCallCount;
     const primary = primaryRaw.ok ? normalizeExtractionCandidate(primaryRaw.parsed, { checksum, model: primaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: primaryRaw.reason }], candidate: null };
     const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed, { checksum, model: secondaryRaw.model }) : { ok: false as const, problems: [{ field: '$', reason: secondaryRaw.reason }], candidate: null };
     const comparison = crossValidateCandidates(primary, secondary);
