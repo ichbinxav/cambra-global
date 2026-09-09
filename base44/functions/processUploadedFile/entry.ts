@@ -17,11 +17,11 @@ import {
 // processUploadedFile v2 — authenticated, tenant-scoped and fail-closed.
 //
 // A file is fetched once from Base44 storage, signature-checked and hashed.
-// Binary files stop at a needs_review/422 privacy boundary until local OCR and
-// redaction exist. Text files are locally sanitized before two model families
-// receive the same redacted text. Only exact normalized agreement can update
-// AnalyzerInput/profile projections; every other outcome has no financial side
-// effect.
+// Text files are locally sanitized before Anthropic and OpenAI review them.
+// With the product owner's explicit authorization, binary and Office files are
+// sent from the trusted Base44 storage URL to two integrated file readers.
+// Only exact normalized agreement can update AnalyzerInput/profile projections;
+// every other outcome has no financial side effect.
 
 const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
 const MAX_TEXT_DOCUMENT_BYTES = 1024 * 1024;
@@ -173,6 +173,56 @@ Rules:
 function parseJson(text: string): unknown {
   const cleaned = String(text || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
   try { return JSON.parse(cleaned); } catch { return null; }
+}
+
+async function callBase44FileReader(
+  svc: any,
+  checksum: string,
+  fileUrl: string,
+  reader: 'extractor' | 'reviewer',
+) {
+  const provider = reader === 'extractor' ? 'base44_extract' : 'base44_invoke_llm';
+  const reservation = await reservePaidOperation(svc, {
+    event_key: `ai:document-extraction:${provider}:${checksum}`,
+    category: 'ai',
+    provider,
+    source: 'processUploadedFile',
+    related_entity_type: 'StatementImport',
+    related_entity_id: checksum,
+  });
+  if (reservation?.duplicate) {
+    return { ok: false, providerCalled: false, duplicate: true, reason: `${provider}_reservation_duplicate` };
+  }
+
+  try {
+    const response = reader === 'extractor'
+      ? await svc.integrations.Core.ExtractDataFromUploadedFile({
+          file_url: fileUrl,
+          json_schema: EXTRACTION_SCHEMA,
+        })
+      : await svc.integrations.Core.InvokeLLM({
+          prompt: `${EXTRACTION_PROMPT}\nExtract the attached untrusted document. Return only the requested JSON.`,
+          file_urls: [fileUrl],
+          response_json_schema: EXTRACTION_SCHEMA,
+        });
+    const parsed = response?.data && typeof response.data === 'object' ? response.data : response;
+    const ok = !!parsed && typeof parsed === 'object' && !Array.isArray(parsed);
+    await settlePaidOperation(svc, reservation, {
+      ok,
+      usage_json: { integration: reader },
+      amount_quality: 'CONSERVATIVE_RESERVATION',
+    });
+    return ok
+      ? { ok: true, providerCalled: true, model: `base44-${reader}`, parsed }
+      : { ok: false, providerCalled: true, reason: `${provider}_invalid_json` };
+  } catch {
+    await settlePaidOperation(svc, reservation, {
+      ok: false,
+      usage_json: { integration: reader },
+      amount_quality: 'CONSERVATIVE_RESERVATION',
+    }).catch(() => null);
+    return { ok: false, providerCalled: true, reason: `${provider}_unavailable` };
+  }
 }
 
 function anthropicContent(kind: string, text: string) {
