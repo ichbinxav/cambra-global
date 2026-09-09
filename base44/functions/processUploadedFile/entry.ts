@@ -26,6 +26,62 @@ import {
 const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
 const MAX_TEXT_DOCUMENT_BYTES = 1024 * 1024;
 const MODEL_TIMEOUT_MS = 45_000;
+const UNIVERSAL_FILE_EXTENSIONS = new Set([
+  'pdf', 'csv', 'tsv', 'txt', 'md', 'markdown', 'json',
+  'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'numbers',
+  'doc', 'docx', 'rtf', 'odt', 'pages', 'ppt', 'pptx', 'key',
+  'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'tif', 'tiff', 'bmp',
+]);
+const ZIP_EXTENSIONS = new Set(['xlsx', 'xlsm', 'xlsb', 'ods', 'numbers', 'docx', 'odt', 'pages', 'pptx', 'key']);
+const OLE_EXTENSIONS = new Set(['xls', 'doc', 'ppt']);
+const TEXT_EXTENSIONS = new Set(['csv', 'tsv', 'txt', 'md', 'markdown', 'json', 'rtf']);
+
+function fileExtension(fileName: string): string {
+  const clean = String(fileName || '').split('?')[0].toLowerCase();
+  return clean.includes('.') ? clean.slice(clean.lastIndexOf('.') + 1) : '';
+}
+
+function startsWithBytes(bytes: Uint8Array, signature: number[]): boolean {
+  return signature.every((byte, index) => bytes[index] === byte);
+}
+
+function isMostlyText(bytes: Uint8Array): boolean {
+  const sample = bytes.subarray(0, Math.min(bytes.length, 4096));
+  if (!sample.length) return false;
+  let printable = 0;
+  for (const byte of sample) {
+    if (byte === 9 || byte === 10 || byte === 13 || (byte >= 32 && byte <= 126) || byte >= 128) printable++;
+  }
+  return printable / sample.length >= 0.95;
+}
+
+function validateUniversalEnvelope(fileName: string, bytes: Uint8Array) {
+  const extension = fileExtension(fileName);
+  if (!UNIVERSAL_FILE_EXTENSIONS.has(extension)) return { ok: false as const, reason: 'unsupported_file_type' };
+  if (!bytes.length) return { ok: false as const, reason: 'stored_file_empty' };
+
+  const zip = startsWithBytes(bytes, [0x50, 0x4b, 0x03, 0x04]) || startsWithBytes(bytes, [0x50, 0x4b, 0x05, 0x06]);
+  const ole = startsWithBytes(bytes, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
+  let signatureOk = true;
+  if (ZIP_EXTENSIONS.has(extension)) signatureOk = zip;
+  else if (OLE_EXTENSIONS.has(extension)) signatureOk = ole;
+  else if (TEXT_EXTENSIONS.has(extension)) signatureOk = isMostlyText(bytes);
+  else if (extension === 'bmp') signatureOk = startsWithBytes(bytes, [0x42, 0x4d]);
+  else if (extension === 'tif' || extension === 'tiff') {
+    signatureOk = startsWithBytes(bytes, [0x49, 0x49, 0x2a, 0x00]) || startsWithBytes(bytes, [0x4d, 0x4d, 0x00, 0x2a]);
+  } else if (extension === 'heic' || extension === 'heif') {
+    const brand = bytes.length >= 12 ? new TextDecoder('ascii').decode(bytes.subarray(4, 12)) : '';
+    signatureOk = brand.startsWith('ftyp');
+  }
+  if (!signatureOk) return { ok: false as const, reason: 'extension_signature_mismatch' };
+  return {
+    ok: true as const,
+    kind: 'universal',
+    extension,
+    mime: 'application/octet-stream',
+    size: bytes.byteLength,
+  };
+}
 
 function validateTrustedUploadUrl(raw: unknown): { ok: true; url: string } | { ok: false; reason: string } {
   try {
