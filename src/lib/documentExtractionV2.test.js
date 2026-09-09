@@ -312,7 +312,8 @@ describe('processUploadedFile v2 · production wiring', () => {
   });
 
   it('constructs both effective provider payloads only from the locally sanitized text', () => {
-    expect(source).toContain('const prepared = prepareDocumentForExternalExtraction({ kind: envelope.kind, bytes })');
+    expect(source).toContain("const preparationKind = envelope.kind === 'universal' ? 'pdf' : envelope.kind");
+    expect(source).toContain('const prepared = prepareDocumentForExternalExtraction({ kind: preparationKind, bytes })');
     expect(source).toContain('callAnthropic(svc, checksum, envelope.kind, prepared.text)');
     expect(source).toContain('callOpenAI(svc, checksum, envelope.kind, prepared.text)');
     expect(source).not.toContain('bytesToBase64(bytes)');
@@ -331,6 +332,7 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(source).toContain("const replayBlockReason = replay.metadata_json.privacy_boundary.reason || 'local_redaction_required_for_binary_document'");
     expect(source).toContain('error: replayBlockReason');
     expect(source).not.toContain("console.error('processUploadedFile failed', error)");
+    expect(source).not.toContain('ExtractDataFromUploadedFile');
   });
 
   it('records the actual number of external provider attempts instead of claiming two calls', () => {
@@ -356,6 +358,14 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(vault).toContain("base44.functions.invoke('processUploadedFile'");
     expect(vault).toContain("target_type: 'statement_import'");
     expect(vault).toContain('EXTRACTABLE_CATEGORIES');
+    expect(vault).toContain("'numbers'");
+    expect(vault).toContain("'docx'");
+    const uploadCard = fs.readFileSync('src/components/paymentsAnalyzer/StatementUploadCard.jsx', 'utf8');
+    expect(uploadCard).toContain('SUPPORTED_EXTENSIONS');
+    expect(uploadCard).toContain('createDocument');
+    expect(uploadCard).toContain("target_type: \"statement_import\"");
+    const createDocument = fs.readFileSync('base44/functions/createDocument/entry.ts', 'utf8');
+    for (const extension of ['numbers', 'xlsx', 'docx', 'md', 'heic']) expect(createDocument).toContain(`'${extension}'`);
   });
 
   it('advertises live extraction only when both model providers are configured', () => {
