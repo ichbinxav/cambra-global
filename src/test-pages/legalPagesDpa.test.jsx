@@ -136,19 +136,7 @@ describe('the acceptance gate', () => {
     ]);
     renderIn(<LegalAcceptanceGate>{child}</LegalAcceptanceGate>, 'en');
     await waitFor(() => expect(screen.getByTestId('app')).toBeTruthy());
-    expect(functionsInvoke).toHaveBeenCalledWith('claimAnonPaymentsResult', {
-      action: 'get_legal_acceptance_status',
-    });
-  });
-
-  it('uses the server-side status when entity row permissions hide the receipt', async () => {
-    authMe.mockResolvedValue({ email: 'a@b.com' });
-    acceptanceFilter.mockRejectedValue(new Error('row access unavailable'));
-    functionsInvoke.mockResolvedValue({ data: { ok: true, accepted: true, acceptance_id: 'acc_1' } });
-    renderIn(<LegalAcceptanceGate>{child}</LegalAcceptanceGate>, 'en');
-    await waitFor(() => expect(screen.getByTestId('app')).toBeTruthy());
-    expect(screen.queryByRole('checkbox')).toBeNull();
-    expect(acceptanceFilter).not.toHaveBeenCalled();
+    expect(functionsInvoke).not.toHaveBeenCalled();
   });
 
   it('blocks a user who never accepted, and does not pre-tick the box', async () => {

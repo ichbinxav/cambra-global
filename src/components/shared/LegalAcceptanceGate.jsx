@@ -30,86 +30,26 @@ import {
   coversCurrentVersions,
 } from "@/lib/legalVersions";
 
-const receiptKey = (email) => [
-  "cambra:legal-acceptance",
-  String(email || "").trim().toLowerCase(),
-  CURRENT_TERMS_VERSION,
-  CURRENT_DPA_VERSION,
-].join(":");
-
-function hasLocalReceipt(email) {
-  try { return Boolean(window.localStorage.getItem(receiptKey(email))); }
-  catch { return false; }
-}
-
-function saveLocalReceipt(email, acceptanceId) {
-  try {
-    window.localStorage.setItem(receiptKey(email), JSON.stringify({
-      acceptance_id: acceptanceId || null,
-      confirmed_at: new Date().toISOString(),
-    }));
-  } catch { /* The server record remains authoritative. */ }
-}
-
-function clearLocalReceipt(email) {
-  try { window.localStorage.removeItem(receiptKey(email)); }
-  catch { /* Storage may be disabled; the server check still works. */ }
-}
-
 export default function LegalAcceptanceGate({ children }) {
   const { t, lang } = useTranslation();
   const [state, setState] = useState("checking"); // checking | accepted | required | submitting
   const [checked, setChecked] = useState(false);
   const [error, setError] = useState("");
-  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const me = await base44.auth.me().catch(() => null);
       if (!me) { if (!cancelled) setState("accepted"); return; } // not our gate to close
-      const email = String(me.email || "").trim().toLowerCase();
-      setUserEmail(email);
-
-      // A server-confirmed receipt prevents a transient read outage from
-      // showing the same legal modal again. A definitive server response still
-      // wins, so a new legal version correctly requires a fresh acceptance.
-      const cached = hasLocalReceipt(email);
-      if (cached && !cancelled) setState("accepted");
-
-      let status = null;
-      try {
-        const response = await base44.functions.invoke("claimAnonPaymentsResult", {
-          action: "get_legal_acceptance_status",
-        });
-        status = response?.data || response;
-      } catch { /* Fall back to the legacy self-read below. */ }
-      if (cancelled) return;
-      if (status?.ok) {
-        if (status.accepted) {
-          saveLocalReceipt(email, status.acceptance_id);
-          setState("accepted");
-        } else {
-          clearLocalReceipt(email);
-          setState("required");
-        }
-        return;
-      }
-
       const rows = await base44.entities.LegalAcceptance
-        .filter({ user_email: email }, "-accepted_at", 10)
+        .filter({ user_email: String(me.email || "").toLowerCase() }, "-accepted_at", 10)
         .catch(() => null);
       if (cancelled) return;
-      if (Array.isArray(rows)) {
-        const already = rows.some(coversCurrentVersions);
-        if (already) saveLocalReceipt(email, rows.find(coversCurrentVersions)?.id);
-        else clearLocalReceipt(email);
-        setState(already ? "accepted" : "required");
-        return;
-      }
-      // If both reads are temporarily unavailable, only a receipt previously
-      // written after a successful server acceptance can keep the user moving.
-      setState(cached ? "accepted" : "required");
+      // A read failure must not lock a paying customer out of the product:
+      // the WRITE is what fails closed, not the read. An unreadable history
+      // simply means we ask again — re-accepting is idempotent server-side.
+      const already = Array.isArray(rows) && rows.some(coversCurrentVersions);
+      setState(already ? "accepted" : "required");
     })();
     return () => { cancelled = true; };
   }, []);
@@ -133,18 +73,14 @@ export default function LegalAcceptanceGate({ children }) {
         interface_locale: lang,
       });
       const body = resp?.data || resp;
-      if (body?.ok) {
-        saveLocalReceipt(userEmail, body.acceptance_id);
-        setState("accepted");
-        return;
-      }
+      if (body?.ok) { setState("accepted"); return; }
       setError(t("legal_accept_error"));
       setState("required");
     } catch {
       setError(t("legal_accept_error"));
       setState("required");
     }
-  }, [lang, t, userEmail]);
+  }, [lang, t]);
 
   if (state === "checking") return null;
   if (state === "accepted") return children;

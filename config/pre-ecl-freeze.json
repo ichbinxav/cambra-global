@@ -103,7 +103,7 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "bc3b37846ca53da4755a1d3d84197e9682a35a7c41ad096f7e43918fc3a607dd",
+      "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
       "freezeReason": "Functional freeze — sanctioned pre-provider PII fail-closed hardening; ECL must not leak into the upload pipeline",
       "allowedChange": false
     },

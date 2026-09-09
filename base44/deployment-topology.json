@@ -230,7 +230,7 @@
       "host": "claimAnonPaymentsResult",
       "source_module": "base44/shared/legalAcceptance.ts",
       "route": {
-        "actions": ["record_legal_acceptance", "get_legal_acceptance_status"]
+        "action": "record_legal_acceptance"
       },
       "boundary": "authenticated_merchant_self"
     },

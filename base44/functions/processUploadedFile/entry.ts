@@ -26,62 +26,6 @@ import {
 const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
 const MAX_TEXT_DOCUMENT_BYTES = 1024 * 1024;
 const MODEL_TIMEOUT_MS = 45_000;
-const UNIVERSAL_FILE_EXTENSIONS = new Set([
-  'pdf', 'csv', 'tsv', 'txt', 'md', 'markdown', 'json',
-  'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'numbers',
-  'doc', 'docx', 'rtf', 'odt', 'pages', 'ppt', 'pptx', 'key',
-  'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'tif', 'tiff', 'bmp',
-]);
-const ZIP_EXTENSIONS = new Set(['xlsx', 'xlsm', 'xlsb', 'ods', 'numbers', 'docx', 'odt', 'pages', 'pptx', 'key']);
-const OLE_EXTENSIONS = new Set(['xls', 'doc', 'ppt']);
-const TEXT_EXTENSIONS = new Set(['csv', 'tsv', 'txt', 'md', 'markdown', 'json', 'rtf']);
-
-function fileExtension(fileName: string): string {
-  const clean = String(fileName || '').split('?')[0].toLowerCase();
-  return clean.includes('.') ? clean.slice(clean.lastIndexOf('.') + 1) : '';
-}
-
-function startsWithBytes(bytes: Uint8Array, signature: number[]): boolean {
-  return signature.every((byte, index) => bytes[index] === byte);
-}
-
-function isMostlyText(bytes: Uint8Array): boolean {
-  const sample = bytes.subarray(0, Math.min(bytes.length, 4096));
-  if (!sample.length) return false;
-  let printable = 0;
-  for (const byte of sample) {
-    if (byte === 9 || byte === 10 || byte === 13 || (byte >= 32 && byte <= 126) || byte >= 128) printable++;
-  }
-  return printable / sample.length >= 0.95;
-}
-
-function validateUniversalEnvelope(fileName: string, bytes: Uint8Array) {
-  const extension = fileExtension(fileName);
-  if (!UNIVERSAL_FILE_EXTENSIONS.has(extension)) return { ok: false as const, reason: 'unsupported_file_type' };
-  if (!bytes.length) return { ok: false as const, reason: 'stored_file_empty' };
-
-  const zip = startsWithBytes(bytes, [0x50, 0x4b, 0x03, 0x04]) || startsWithBytes(bytes, [0x50, 0x4b, 0x05, 0x06]);
-  const ole = startsWithBytes(bytes, [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
-  let signatureOk = true;
-  if (ZIP_EXTENSIONS.has(extension)) signatureOk = zip;
-  else if (OLE_EXTENSIONS.has(extension)) signatureOk = ole;
-  else if (TEXT_EXTENSIONS.has(extension)) signatureOk = isMostlyText(bytes);
-  else if (extension === 'bmp') signatureOk = startsWithBytes(bytes, [0x42, 0x4d]);
-  else if (extension === 'tif' || extension === 'tiff') {
-    signatureOk = startsWithBytes(bytes, [0x49, 0x49, 0x2a, 0x00]) || startsWithBytes(bytes, [0x4d, 0x4d, 0x00, 0x2a]);
-  } else if (extension === 'heic' || extension === 'heif') {
-    const brand = bytes.length >= 12 ? new TextDecoder('ascii').decode(bytes.subarray(4, 12)) : '';
-    signatureOk = brand.startsWith('ftyp');
-  }
-  if (!signatureOk) return { ok: false as const, reason: 'extension_signature_mismatch' };
-  return {
-    ok: true as const,
-    kind: TEXT_EXTENSIONS.has(extension) ? 'text' : 'universal',
-    extension,
-    mime: TEXT_EXTENSIONS.has(extension) ? 'text/plain' : 'application/octet-stream',
-    size: bytes.byteLength,
-  };
-}
 
 function validateTrustedUploadUrl(raw: unknown): { ok: true; url: string } | { ok: false; reason: string } {
   try {
@@ -248,9 +192,8 @@ async function callOpenAI(svc:any, checksum:string, kind: string, sanitizedText:
   }
 }
 
-function parserFor(kind: string, extension = '') {
-  if (['png', 'jpeg', 'webp', 'gif'].includes(kind)) return 'image';
-  return kind === 'universal' ? (extension || 'other') : kind;
+function parserFor(kind: string) {
+  return ['png', 'jpeg', 'webp', 'gif'].includes(kind) ? 'image' : kind;
 }
 
 async function projectAccepted(base44: any, brandId: string, projection: any, canonical: any) {
@@ -313,16 +256,8 @@ Deno.serve(async (req) => {
       const response=Response.json({ error: tooLarge ? 'file_too_large' : 'stored_file_unavailable' }, { status: tooLarge ? 413 : 422 });
       return tooLarge ? excludedServiceLevelResult(response,'file_too_large') : serviceLevelResult(response,{outcome:'FAILED',reason:'stored_file_unavailable'});
     }
-    const nativeEnvelope = validateDocumentEnvelope({ fileName, bytes });
-    const fallbackEnvelope = nativeEnvelope.ok === false ? validateUniversalEnvelope(fileName, bytes) : null;
-    if (nativeEnvelope.ok === false && fallbackEnvelope?.ok !== true) {
-      const reason = fallbackEnvelope?.reason || nativeEnvelope.reason;
-      return Response.json({ error: reason }, { status: reason === 'file_too_large' ? 413 : 400 });
-    }
-    const extension = fileExtension(fileName);
-    const envelope: any = nativeEnvelope.ok === true
-      ? { ...nativeEnvelope, extension }
-      : fallbackEnvelope;
+    const envelope = validateDocumentEnvelope({ fileName, bytes });
+    if (envelope.ok === false) return Response.json({ error: envelope.reason }, { status: envelope.reason === 'file_too_large' ? 413 : 400 });
     if (['csv', 'json', 'text'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {
       return Response.json({ error: 'text_document_too_large_for_independent_review' }, { status: 413 });
     }
@@ -346,16 +281,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Office packages and additional image formats are safely retained and
-    // routed to review until the merchant authorises a raw-file preprocessor.
-    // Markdown, TSV and RTF remain local text and use the normal redaction path.
-    const preparationKind = envelope.kind === 'universal' ? 'pdf' : envelope.kind;
-    const prepared = prepareDocumentForExternalExtraction({ kind: preparationKind, bytes });
+    const prepared = prepareDocumentForExternalExtraction({ kind: envelope.kind, bytes });
     if (prepared.ok === false) {
       const stored = await base44.entities.StatementImport.create({
         brand_id: brand.id,
         file_url: trusted.url,
-        parser: parserFor(envelope.kind, envelope.extension),
+        parser: parserFor(envelope.kind),
         parsed_status: 'needs_review',
         checksum,
         extraction_confidence: 'unverified',

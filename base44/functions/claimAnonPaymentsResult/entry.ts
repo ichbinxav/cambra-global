@@ -314,29 +314,6 @@ Deno.serve(async (req) => {
       }));
       return blocked();
     }
-    // Read through the service role so row-level permissions cannot make an
-    // already accepted customer see the legal gate again on every visit.
-    if (body?.action === 'get_legal_acceptance_status') {
-      const existing = await service.entities.LegalAcceptance.filter(
-        { user_email: userEmail },
-        '-accepted_at',
-        10,
-      ).catch((error: any) => safeBestEffort(error, {
-        operation: 'claimAnonPaymentsResult:get_legal_acceptance_status',
-        fallback: null,
-        severity: 'critical',
-      }));
-      if (!Array.isArray(existing)) {
-        return Response.json({ ok: false, error: 'legal_acceptance_unavailable' }, { status: 503 });
-      }
-      const already = existing.find((row: any) => coversCurrentVersions(row));
-      return Response.json({
-        ok: true,
-        accepted: Boolean(already),
-        acceptance_id: already?.id || null,
-      });
-    }
-
     // ── DPA-1 — logical route `recordLegalAcceptance` ────────────────────
     // Distinct action, distinct contract: it never touches an anonymous
     // session. Errors are explicit (not the claim's deliberately opaque 404)

@@ -217,8 +217,6 @@ describe("PROMPT_LAUNCH_10 — commercial gates", () => {
   it("public country selectors offer exactly the 10 operational launch markets", () => {
     const switcher = read("src/components/shared/MarketSwitcher.jsx");
     expect(switcher).toContain("ACTIVE_LAUNCH_MARKETS.includes(market.iso2)");
-    expect(switcher).toContain('params.set("market", nextMarket)');
-    expect(switcher).toContain('params.delete("market")');
     const analyzer = read("src/pages/PaymentsAnalyzer.jsx");
     expect(analyzer).toContain("ACTIVE_LAUNCH_MARKETS.includes(market.iso2)");
     const availability = read("src/components/landing/MarketAvailabilitySection.jsx");

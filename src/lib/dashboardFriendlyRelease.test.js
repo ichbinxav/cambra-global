@@ -124,10 +124,7 @@ describe("friendly dashboard release surface", () => {
     expect(connectTools).toContain('toLocaleLowerCase(lang)');
     expect(connectTools).not.toContain('providerLabel="provider"');
     expect(upload).toContain('style={{ background: "var(--g-voltio)" }}');
-    expect(upload).toContain('accept={FILE_ACCEPT}');
-    for (const extension of ['numbers', 'xlsx', 'docx', 'md', 'png', 'heic']) {
-      expect(upload).toContain(`"${extension}"`);
-    }
+    expect(upload).toContain('accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"');
   });
 
   it("keeps every Analyzer step visible on narrow screens", () => {
