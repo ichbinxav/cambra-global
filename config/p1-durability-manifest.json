@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-08T10:02:19.693Z",
+  "generatedAt": "2026-09-09T23:13:38.188Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -39,8 +39,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "8e8da58dd8956d4041d6e21b8ce660564b0466cd29f228a7fcac10dfeadcb62e",
-      "bytes": 11179
+      "sha256": "f420f1d79d7273880a61bf6a207daec07d80d52e8a425bc30199b3edcfdc8dca",
+      "bytes": 11213
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -564,8 +564,8 @@
     },
     {
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
-      "sha256": "ef087502547a098ecfb4e8d6f9ba52f3013e29552d5147b57fca0932dad2b427",
-      "bytes": 28405
+      "sha256": "22eaca9f41ab89e64e0ca5ae35310c32c0e18c64d7fd8216c87edd859380235c",
+      "bytes": 29318
     },
     {
       "path": "base44/functions/codeReviewAgent/entry.ts",
@@ -829,8 +829,8 @@
     },
     {
       "path": "base44/functions/getUploadCapability/entry.ts",
-      "sha256": "803693108b925d8deebbcab9150465bfb7a1b8136b03999a34986dd14fce201f",
-      "bytes": 3193
+      "sha256": "acb3337ec52b88df92401c4e2d3c716e9d370add66aa50d0152fc66166253a55",
+      "bytes": 3559
     },
     {
       "path": "base44/functions/getWaitlistAggregate/entry.ts",
@@ -1089,8 +1089,8 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
-      "bytes": 23798
+      "sha256": "d8d2b5e1e1a7b04e1b4411fa4b2fd0c35c109b61af29808832677d6c2d3e443a",
+      "bytes": 30085
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -1599,7 +1599,7 @@
     },
     {
       "path": "base44/shared/documentExtraction.ts",
-      "sha256": "4f2e2cce3cd44fcbc71cc7c225f5a77a1559854067c2fb1b4f06666baf0c6b36",
+      "sha256": "5e351038afa215bd31831e47b93fbd081f48e9cfcc8adb6f7a52fefbfe286174",
       "bytes": 28104
     },
     {
@@ -2019,7 +2019,7 @@
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "b8538b43835d18d00fdb10d8e2f82b0b9f647b24d3895429839d8bd24d1cef7b",
+      "sha256": "9e052b2e4858989a7fa3ba627a38f9c55ad2d071b550b33d34d1c94a0da1ee8c",
       "bytes": 141334
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "f9ccb85538338b1ad5ca9c810806fcbd9f4dc6186d6489caf6928899c39345bb",
-      "bytes": 46490
+      "sha256": "177ee5e6ea4efcd40ec0b0c1afcf48db42d1af553aa84feff040dd3ad92a7016",
+      "bytes": 47052
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2179,7 +2179,7 @@
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "f7afff370c3c9652801160997126f4fa47518703936830072e8fcc69ffa2f2b2",
+      "sha256": "e9214870224d833c1fd50408ddd0d4fafa8945d3ec14bef2e18a54b5083280df",
       "bytes": 8207
     },
     {
@@ -2634,8 +2634,8 @@
     },
     {
       "path": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
-      "sha256": "7f5714226ddb581ddc2ef324a768591dc5c64610411040e0b1ec2e37aaf4e7d6",
-      "bytes": 8559
+      "sha256": "82935d18e96e50eb43c77ec80c760527933be21daf6335afdc44dedd43a9c6fc",
+      "bytes": 9994
     },
     {
       "path": "src/components/paymentsResults/OptimizedHero.jsx",
@@ -3104,8 +3104,8 @@
     },
     {
       "path": "src/lib/documentExtractionV2.test.js",
-      "sha256": "6ea307b98e540c49d970e6bda0fa08214647e01189ed0d16ab82ffce958cc607",
-      "bytes": 21028
+      "sha256": "aad143e600a050f3ed7c7cc73377f5279ad8dcbad52bf1ba7f28d0f031f4a2af",
+      "bytes": 22112
     },
     {
       "path": "src/lib/eclEngine.js",
@@ -3844,8 +3844,8 @@
     },
     {
       "path": "src/pages/Vault.jsx",
-      "sha256": "b03d455c4acb82e6dabfead182036ef2316bb2dd84092ac45aa3643e9104e786",
-      "bytes": 14252
+      "sha256": "cb971d002c5153e65c29ec263da669573133512e236a97ae80577fb52001c14e",
+      "bytes": 14608
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
