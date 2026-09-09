@@ -38,6 +38,12 @@ const EXTRACTABLE_CATEGORIES = new Set([
   'tax_docs',
   'pricing_docs',
 ]);
+const DOCUMENT_FILE_ACCEPT = [
+  'pdf', 'csv', 'tsv', 'txt', 'md', 'markdown', 'json',
+  'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'numbers',
+  'doc', 'docx', 'rtf', 'odt', 'pages', 'ppt', 'pptx', 'key',
+  'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'tif', 'tiff', 'bmp',
+].map((extension) => `.${extension}`).join(',');
 
 function statusTone(value) {
   if (['approved', 'verified'].includes(value)) return 'border-[#BDEBD7] bg-[#EAF9F2] text-[#147651]';
@@ -188,7 +194,7 @@ export default function Vault() {
             <SelectTrigger className="h-11 w-full border-[#DDE1EB] bg-white text-[#28324A] sm:w-48"><SelectValue placeholder={t('vlt_category_ph')} /></SelectTrigger>
             <SelectContent>{DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}</SelectContent>
           </Select>
-          <input ref={fileRef} type="file" onChange={onUpload} className="hidden" />
+          <input ref={fileRef} type="file" accept={DOCUMENT_FILE_ACCEPT} onChange={onUpload} className="hidden" />
           <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-11 rounded-xl bg-[var(--g-voltio)] px-5 font-bold text-white hover:opacity-90"><UploadCloud size={14} /> {uploading ? t('vlt_uploading') : t('vlt_upload')}</Button>
         </div>
       </section>
