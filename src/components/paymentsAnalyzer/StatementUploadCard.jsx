@@ -24,6 +24,14 @@ import { base44 } from "@/api/base44Client";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { trackProductEvent } from "@/lib/productAnalytics";
 
+const SUPPORTED_EXTENSIONS = [
+  "pdf", "csv", "tsv", "txt", "md", "markdown", "json",
+  "xls", "xlsx", "xlsm", "xlsb", "ods", "numbers",
+  "doc", "docx", "rtf", "odt", "pages", "ppt", "pptx", "key",
+  "png", "jpg", "jpeg", "webp", "gif", "heic", "heif", "tif", "tiff", "bmp",
+];
+const FILE_ACCEPT = SUPPORTED_EXTENSIONS.map((extension) => `.${extension}`).join(",");
+
 export default function StatementUploadCard({ providerLabel, extractionLive }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
@@ -73,8 +81,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
   const processFile = async (file) => {
     if (!file) return;
     const extension = String(file.name.split(".").pop() || "").toLowerCase();
-    const accepted = ["pdf", "csv", "json", "png", "jpg", "jpeg", "webp", "gif"];
-    if (!accepted.includes(extension) || file.size > 15 * 1024 * 1024) {
+    if (!SUPPORTED_EXTENSIONS.includes(extension) || file.size > 15 * 1024 * 1024) {
       setStatus("error");
       setMessage(t("su_err_unreadable"));
       return;
@@ -86,11 +93,30 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const documentType=String(file.name.split('.').pop()||'unknown').toLowerCase().slice(0,12);
       trackProductEvent('document_uploaded',{source:'statement_upload',document_type:documentType});
+      const createdResponse = await base44.functions.invoke("createDocument", {
+        file_url,
+        file_name: file.name,
+        file_size: file.size,
+        category: "statements",
+        visibility: "brand_and_admin",
+      });
+      const createdBody = createdResponse?.data || createdResponse;
+      const document = createdBody?.document;
+      if (!document?.id) throw new Error("document_not_persisted");
+
       const resp = await base44.functions.invoke("processUploadedFile", {
         file_url,
         file_name: file.name,
       });
       const body = resp?.data || resp;
+      if (body?.statement_import_id) {
+        await base44.functions.invoke("linkDocument", {
+          document_id: document.id,
+          target_type: "statement_import",
+          target_id: body.statement_import_id,
+          is_primary: true,
+        }).catch(() => null);
+      }
       // The extractor answers 200 EVEN WHEN it understood nothing: an
       // unreadable/unsupported layout comes back as status "format_unknown"
       // with no `error` field. Treat a non-recognized document as an honest
@@ -136,7 +162,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.csv,.json,.png,.jpg,.jpeg,.webp,.gif"
+        accept={FILE_ACCEPT}
         className="hidden"
         onChange={handleFile}
         aria-required="true"
@@ -157,7 +183,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
           <>
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#5B4CF5] shadow-[0_12px_30px_-20px_rgba(91,76,245,.7)]"><FileUp size={21} /></span>
             <label className="mt-4 text-[14px] font-bold text-[#19223B]">{t("az_entry_upload_title")} <span className="text-[#5B4CF5]">*</span></label>
-            <p className="mt-1 text-[10.5px] text-[#7A8296]">PDF · PNG · JPG · CSV · JSON · 15 MB</p>
+            <p className="mt-1 max-w-xl text-[10.5px] leading-relaxed text-[#7A8296]">PDF · Excel · Numbers · Word · CSV · Markdown · imágenes · 15 MB</p>
           </>
         )}
         <button
