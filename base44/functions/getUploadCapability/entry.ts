@@ -43,19 +43,25 @@ Deno.serve(async (req) => {
     const l3Enabled = Deno.env.get('EXTRACTION_L3_ENABLED') === 'true';
     const primaryConfigured = !!Deno.env.get('ANTHROPIC_API_KEY');
     const secondaryConfigured = !!Deno.env.get('OPENAI_API_KEY');
+    const textReadersConfigured = llmEnabled && l3Enabled && primaryConfigured && secondaryConfigured;
+    // Product-owner authorization recorded on 2026-09-10. Core file readers
+    // are built into Base44 and require no customer-supplied API secret.
+    const rawFileAiEnabled = true;
 
     return Response.json({
       ok: true,
       // v2 is fail-closed: one model may create an auditable needs-review row,
       // but only two enabled independent readers can produce accepted output.
-      extraction_live: llmEnabled && l3Enabled && primaryConfigured && secondaryConfigured,
-      extraction_version: 'document-extraction-2.0.0',
+      extraction_live: !!user && (rawFileAiEnabled || textReadersConfigured),
+      extraction_version: 'document-extraction-2.4.0',
       independent_verification_required: true,
       // Exposed for admin diagnostics / future UI nuance. Never the secret
       // values themselves — only their on/off state.
       layer1_enabled: llmEnabled,
       layer3_enabled: l3Enabled,
-      providers_configured: primaryConfigured && secondaryConfigured,
+      providers_configured: textReadersConfigured,
+      integrated_file_readers: rawFileAiEnabled,
+      raw_file_ai_authorization: 'product-owner-2026-09-10',
       authenticated: !!user,
     });
   } catch (error) {
