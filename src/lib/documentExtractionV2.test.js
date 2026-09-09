@@ -300,14 +300,15 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(source).toContain('crossValidateCandidates(primary, secondary)');
   });
 
-  it('consumes Anthropic and OpenAI as the two independent readers and routes disagreement to review', () => {
-    expect(source).toMatch(/const \[primaryRaw, secondaryRaw\] = await Promise\.all\(\[\s*callAnthropic\([\s\S]*?callOpenAI\(/u);
+  it('uses two readers for every path and routes disagreement to review', () => {
+    expect(source).toContain('callAnthropic(svc, checksum, envelope.kind, prepared.text)');
+    expect(source).toContain('callOpenAI(svc, checksum, envelope.kind, prepared.text)');
+    expect(source).toContain("callBase44FileReader(svc, checksum, trusted.url, 'extractor')");
+    expect(source).toContain("callBase44FileReader(svc, checksum, trusted.url, 'reviewer')");
     expect(source).toContain('const secondary = secondaryRaw.ok ? normalizeExtractionCandidate(secondaryRaw.parsed');
     expect(source).toContain('const comparison = crossValidateCandidates(primary, secondary)');
     expect(source).toContain("const status = comparison.accepted ? 'success' : (primaryRaw.ok || secondaryRaw.ok ? 'needs_review' : 'format_unknown')");
     expect(source).toContain('if (comparison.accepted && projection.eligible) projected = await projectAccepted');
-    expect(source.match(/callAnthropic\(svc, checksum/g)).toHaveLength(1);
-    expect(source.match(/callOpenAI\(svc, checksum/g)).toHaveLength(1);
     expect(source).toContain("outcome: status === 'format_unknown' ? 'FAILED' : 'SUCCEEDED'");
   });
 
@@ -321,25 +322,24 @@ describe('processUploadedFile v2 · production wiring', () => {
     expect(source).not.toMatch(/call(?:Anthropic|OpenAI)\([^\n]+\bfileName\b/u);
   });
 
-  it('records binary uploads as needs_review/422 without provider calls and never logs exception objects', () => {
-    const privacyGate = source.indexOf('if (prepared.ok === false)');
-    const providerCalls = source.indexOf('const [primaryRaw, secondaryRaw] = await Promise.all');
-    expect(privacyGate).toBeGreaterThan(-1);
-    expect(privacyGate).toBeLessThan(providerCalls);
+  it('sends authorised binary and Office files to two integrated readers without weakening the agreement gate', () => {
+    expect(source).toContain('ExtractDataFromUploadedFile');
+    expect(source).toContain('InvokeLLM');
+    expect(source).toContain('file_urls: [fileUrl]');
+    expect(source).toContain("raw_file_processing_authorized: true");
+    expect(source).toContain("authorization_version: 'product-owner-2026-09-10'");
+    expect(source).toContain("prepared.reason !== 'local_redaction_required_for_binary_document'");
     expect(source).toContain("parsed_status: 'needs_review'");
     expect(source).toContain('status: prepared.httpStatus');
-    expect(source).toContain('provider_calls: 0');
-    expect(source).toContain("const replayBlockReason = replay.metadata_json.privacy_boundary.reason || 'local_redaction_required_for_binary_document'");
-    expect(source).toContain('error: replayBlockReason');
+    expect(source).toContain('privacy_boundary: privacyBoundary');
     expect(source).not.toContain("console.error('processUploadedFile failed', error)");
-    expect(source).not.toContain('ExtractDataFromUploadedFile');
   });
 
   it('records the actual number of external provider attempts instead of claiming two calls', () => {
     expect(source).toContain('providerCalled: false');
     expect(source).toContain('providerCalled: true');
     expect(source).toContain('const providerCallCount = Number(primaryRaw.providerCalled === true) + Number(secondaryRaw.providerCalled === true)');
-    expect(source).toContain('provider_calls: providerCallCount');
+    expect(source).toContain('privacyBoundary.provider_calls = providerCallCount');
     expect(source).not.toContain('blocked: false, provider_calls: 2');
   });
 
@@ -371,9 +371,11 @@ describe('processUploadedFile v2 · production wiring', () => {
     for (const extension of ['numbers', 'xlsx', 'docx', 'md', 'heic']) expect(createDocument).toContain(`'${extension}'`);
   });
 
-  it('advertises live extraction only when both model providers are configured', () => {
+  it('advertises the authorised integrated file readers while retaining the text-provider diagnostic', () => {
     const capability = fs.readFileSync('base44/functions/getUploadCapability/entry.ts', 'utf8');
-    expect(capability).toContain('primaryConfigured && secondaryConfigured');
     expect(capability).toContain('llmEnabled && l3Enabled && primaryConfigured && secondaryConfigured');
+    expect(capability).toContain('rawFileAiEnabled = true');
+    expect(capability).toContain('integrated_file_readers: rawFileAiEnabled');
+    expect(capability).toContain("extraction_version: 'document-extraction-2.4.0'");
   });
 });
