@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, MapPin } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { ACTIVE_LAUNCH_MARKETS, EUROPE_MARKETS, marketDisplayName, useMarket } from "@/lib/publicExperience.jsx";
@@ -6,6 +7,8 @@ import { ACTIVE_LAUNCH_MARKETS, EUROPE_MARKETS, marketDisplayName, useMarket } f
 export default function MarketSwitcher({ className = "", variant = "dark" }) {
   const { locale, t } = useTranslation();
   const { marketCode, detectedMarket, isAutomatic, setMarket, setAutoMarket } = useMarket();
+  const location = useLocation();
+  const navigate = useNavigate();
   const dark = variant === "dark";
   const options = useMemo(() => EUROPE_MARKETS.filter((market) => ACTIVE_LAUNCH_MARKETS.includes(market.iso2)).map((market) => ({
     code: market.iso2,
@@ -15,13 +18,26 @@ export default function MarketSwitcher({ className = "", variant = "dark" }) {
   const active = options.find((option) => option.code === marketCode);
   const detected = options.find((option) => option.code === detectedMarket);
 
+  const updateMarket = (value) => {
+    const params = new URLSearchParams(location.search);
+    if (value === "auto") {
+      setAutoMarket();
+      params.delete("market");
+    } else {
+      const nextMarket = String(value || "").toUpperCase();
+      setMarket(nextMarket);
+      params.set("market", nextMarket);
+    }
+    navigate({ pathname: location.pathname, search: params.toString(), hash: location.hash }, { replace: true });
+  };
+
   return (
     <label className={`relative inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full border pl-2.5 pr-1.5 ${dark ? "border-white/15 bg-white/[.06] text-white" : "border-border/60 bg-secondary/40 text-foreground"} ${className}`}>
       <MapPin aria-hidden="true" size={13} className={dark ? "text-white/65" : "text-muted-foreground"} />
       <span className="sr-only">{t("market_switcher_label")}</span>
       <select
         value={isAutomatic ? "auto" : marketCode}
-        onChange={(event) => event.target.value === "auto" ? setAutoMarket() : setMarket(event.target.value)}
+        onChange={(event) => updateMarket(event.target.value)}
         aria-label={t("market_switcher_label")}
         className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full opacity-0"
       >

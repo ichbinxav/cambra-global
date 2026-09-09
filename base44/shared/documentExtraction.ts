@@ -9,7 +9,7 @@
 import { normalizeCurrencyCode, normalizeMoney, resolveFX } from './marketMoney.ts';
 import { analyzerReliableFxSnapshots } from './analyzerFx.ts';
 
-export const DOCUMENT_EXTRACTION_VERSION = 'document-extraction-2.2.0';
+export const DOCUMENT_EXTRACTION_VERSION = 'document-extraction-2.3.0';
 export const DOCUMENT_SANITIZATION_VERSION = 'local-pii-redaction-1.1.0';
 export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
