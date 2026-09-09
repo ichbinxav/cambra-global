@@ -2,18 +2,18 @@
   "schema_version": "cambra-remediation-r5-inventory-v1",
   "catalog_version": "remediation-r5.1",
   "truth_boundary": "Local source-derived authority, trace and operational-plane evidence only. It proves no deployed behavior, live provider receipt, production incident parity, binary OTR closure or root seal.",
-  "input_fingerprint_sha256": "e274995a77347ba6048a4d632a421ece9ef50b19ff1e10e6700a4f0a195cf8c9",
+  "input_fingerprint_sha256": "a7c8cb6fd92c12e79d7dccc5398b8bf85cb19ea6827fc8e8021f1cfc92081423",
   "components": [
     {
       "key": "effect_authority",
       "path": "config/remediation/effect-authority-registry.v1.json",
-      "sha256": "9dc57bada07546a9badfd5a4a7efb78df0b1a6ae1a53dd32f8d34dfa597ddd02",
+      "sha256": "87bcc9664c2c9145bc71596bda4519414b4816bddd37db6f9e410b1d4db205b4",
       "schema_version": "cambra-effect-authority-registry-v1"
     },
     {
       "key": "agent_task_trace",
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "b8538b43835d18d00fdb10d8e2f82b0b9f647b24d3895429839d8bd24d1cef7b",
+      "sha256": "9e052b2e4858989a7fa3ba627a38f9c55ad2d071b550b33d34d1c94a0da1ee8c",
       "schema_version": "agenttask-creator-inventory-v2.0.0"
     },
     {
@@ -263,12 +263,12 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "f9ccb85538338b1ad5ca9c810806fcbd9f4dc6186d6489caf6928899c39345bb",
-      "bytes": 46490
+      "sha256": "177ee5e6ea4efcd40ec0b0c1afcf48db42d1af553aa84feff040dd3ad92a7016",
+      "bytes": 47052
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "f7afff370c3c9652801160997126f4fa47518703936830072e8fcc69ffa2f2b2",
+      "sha256": "e9214870224d833c1fd50408ddd0d4fafa8945d3ec14bef2e18a54b5083280df",
       "bytes": 8207
     },
     {
