@@ -35,7 +35,7 @@ const FILE_ACCEPT = SUPPORTED_EXTENSIONS.map((extension) => `.${extension}`).joi
 export default function StatementUploadCard({ providerLabel, extractionLive }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
-  const [status, setStatus] = useState("idle"); // idle | uploading | done | error
+  const [status, setStatus] = useState("idle"); // idle | uploading | done | review | error
   const [message, setMessage] = useState("");
   const [fileName, setFileName] = useState("");
 
@@ -89,9 +89,10 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
     setFileName(file.name);
     setStatus("uploading");
     setMessage("");
+    const documentType = String(file.name.split(".").pop() || "unknown").toLowerCase().slice(0, 12);
+    let documentPersisted = false;
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const documentType=String(file.name.split('.').pop()||'unknown').toLowerCase().slice(0,12);
       trackProductEvent('document_uploaded',{source:'statement_upload',document_type:documentType});
       const createdResponse = await base44.functions.invoke("createDocument", {
         file_url,
@@ -103,6 +104,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       const createdBody = createdResponse?.data || createdResponse;
       const document = createdBody?.document;
       if (!document?.id) throw new Error("document_not_persisted");
+      documentPersisted = true;
 
       const resp = await base44.functions.invoke("processUploadedFile", {
         file_url,
@@ -123,14 +125,19 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
       // failure the merchant can act on.
       if (body?.error || body?.status !== "success" || body?.detected === "unknown" || body?.projection_eligible !== true) {
         trackProductEvent('document_processing_failed',{source:'statement_upload',document_type:documentType,reason_code:'review_or_unknown'});
-        setStatus("error");
-        setMessage(t("su_err_unreadable"));
+        setStatus("review");
+        setMessage(t("vlt_upload_review"));
         return;
       }
       setStatus("done");
       setMessage(t("su_received"));
     } catch {
       trackProductEvent('document_processing_failed',{source:'statement_upload',reason_code:'upload_or_network'});
+      if (documentPersisted) {
+        setStatus("review");
+        setMessage(t("vlt_upload_review"));
+        return;
+      }
       setStatus("error");
       setMessage(t("su_err_upload"));
     }
@@ -173,10 +180,12 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
         onDrop={handleDrop}
         className="mt-7 flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#AAA4DC] bg-gradient-to-br from-[#FCFCFF] to-[#F5F3FF] px-5 py-7 text-center"
       >
-        {status === "done" ? (
+        {["done", "review"].includes(status) ? (
           <>
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#E4F7ED] text-[#168552]"><CheckCircle2 size={22} /></span>
-            <p className="mt-4 max-w-lg text-[12px] font-semibold leading-relaxed text-[#2E7655]">{message}</p>
+            <span className={`inline-flex h-12 w-12 items-center justify-center rounded-full ${status === "done" ? "bg-[#E4F7ED] text-[#168552]" : "bg-[#FFF4D9] text-[#A66700]"}`}>
+              {status === "done" ? <CheckCircle2 size={22} /> : <Clock size={22} />}
+            </span>
+            <p className={`mt-4 max-w-lg text-[12px] font-semibold leading-relaxed ${status === "done" ? "text-[#2E7655]" : "text-[#8A5B08]"}`}>{message}</p>
             <p className="mt-2 max-w-full truncate font-mono text-[10px] text-[#737B91]">{fileName}</p>
           </>
         ) : (
