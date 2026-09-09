@@ -884,6 +884,15 @@
       "oldHash": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "newHash": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
       "reason": "2026-08-31_production_health_scheduler_proof_direct_claim_and_fail_closed_finalization_no_economic_or_recovery_authority"
+    },
+    {
+      "date": "2026-09-09T21:52:56.753Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
+      "newHash": "bc3b37846ca53da4755a1d3d84197e9682a35a7c41ad096f7e43918fc3a607dd",
+      "reason": "User-authorised document-ingestion hardening: preserve originals, validate broad statement formats safely, parse redacted text locally, and route binary extraction to review without widening ECL authority."
     }
   ]
 }

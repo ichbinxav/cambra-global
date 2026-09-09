@@ -1,6 +1,6 @@
 {
   "release": "CAMBRA v0.98.0 — 30/33 Verified Repository Package (No Production Seal) (durability manifest)",
-  "generatedAt": "2026-09-08T10:02:19.693Z",
+  "generatedAt": "2026-09-09T21:52:58.381Z",
   "packageVersion": "0.98.0",
   "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
   "freezeStage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
@@ -39,8 +39,8 @@
     },
     {
       "path": "base44/deployment-topology.json",
-      "sha256": "8e8da58dd8956d4041d6e21b8ce660564b0466cd29f228a7fcac10dfeadcb62e",
-      "bytes": 11179
+      "sha256": "f420f1d79d7273880a61bf6a207daec07d80d52e8a425bc30199b3edcfdc8dca",
+      "bytes": 11213
     },
     {
       "path": "base44/entities/AcquisitionAttribution.jsonc",
@@ -564,8 +564,8 @@
     },
     {
       "path": "base44/functions/claimAnonPaymentsResult/entry.ts",
-      "sha256": "ef087502547a098ecfb4e8d6f9ba52f3013e29552d5147b57fca0932dad2b427",
-      "bytes": 28405
+      "sha256": "22eaca9f41ab89e64e0ca5ae35310c32c0e18c64d7fd8216c87edd859380235c",
+      "bytes": 29318
     },
     {
       "path": "base44/functions/codeReviewAgent/entry.ts",
@@ -1089,8 +1089,8 @@
     },
     {
       "path": "base44/functions/processUploadedFile/entry.ts",
-      "sha256": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
-      "bytes": 23798
+      "sha256": "bc3b37846ca53da4755a1d3d84197e9682a35a7c41ad096f7e43918fc3a607dd",
+      "bytes": 27405
     },
     {
       "path": "base44/functions/processWebhookDeadLetters/entry.ts",
@@ -1599,7 +1599,7 @@
     },
     {
       "path": "base44/shared/documentExtraction.ts",
-      "sha256": "4f2e2cce3cd44fcbc71cc7c225f5a77a1559854067c2fb1b4f06666baf0c6b36",
+      "sha256": "5e28df3565d73fc3256381cb0f6b4838c10b5e72b286980e38d1f26ef7c8fc0c",
       "bytes": 28104
     },
     {
@@ -2014,12 +2014,12 @@
     },
     {
       "path": "config/agent-workforce-catalog.v1.json",
-      "sha256": "827f0294b5d732f27d8953ea0efd8aeecf3d2ad7b99181de3afbcdbc6b95ad17",
+      "sha256": "f2a3cfdbdc566847ad46a673b3a31541abf366c2b62fcf965ce147f0671f2764",
       "bytes": 30619
     },
     {
       "path": "config/agenttask-creator-inventory.json",
-      "sha256": "b8538b43835d18d00fdb10d8e2f82b0b9f647b24d3895429839d8bd24d1cef7b",
+      "sha256": "1322476415edee62f4848d8165195d71160f7f9deef88a59387484e6022d860e",
       "bytes": 141334
     },
     {
@@ -2044,8 +2044,8 @@
     },
     {
       "path": "config/freeze-change-log.json",
-      "sha256": "f9ccb85538338b1ad5ca9c810806fcbd9f4dc6186d6489caf6928899c39345bb",
-      "bytes": 46490
+      "sha256": "2d9e109e0dbe0143363bb80fc637b5db2cb749ff7f892a7f74f13816ad9777ce",
+      "bytes": 47100
     },
     {
       "path": "config/intelligence/acceptance-test-catalog.v2.json",
@@ -2179,7 +2179,7 @@
     },
     {
       "path": "config/pre-ecl-freeze.json",
-      "sha256": "f7afff370c3c9652801160997126f4fa47518703936830072e8fcc69ffa2f2b2",
+      "sha256": "45474d4a16aaffa687a5bf4c5da839261329e4c0ea05c2eaebcd2804bf1961ff",
       "bytes": 8207
     },
     {
@@ -2264,12 +2264,12 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "112937f6226cd2d540c6c2f698f95719cb04850fa7bd458722c832336bcd486e",
+      "sha256": "d41045699cffbe7f991a4e274f09b8b0a5a34bb92ecb5ed795382161e0369db9",
       "bytes": 422043
     },
     {
       "path": "package.json",
-      "sha256": "1cb9cca56f2ed5a28ee4a5f545a204b2dcec76b15de0bdb1f32134f7201ed284",
+      "sha256": "326a7d6d166887c93758cc6e5e085c06db74bf825b4d98fb8f864e03feaadf8f",
       "bytes": 13538
     },
     {
@@ -2634,8 +2634,8 @@
     },
     {
       "path": "src/components/paymentsAnalyzer/StatementUploadCard.jsx",
-      "sha256": "7f5714226ddb581ddc2ef324a768591dc5c64610411040e0b1ec2e37aaf4e7d6",
-      "bytes": 8559
+      "sha256": "82935d18e96e50eb43c77ec80c760527933be21daf6335afdc44dedd43a9c6fc",
+      "bytes": 9994
     },
     {
       "path": "src/components/paymentsResults/OptimizedHero.jsx",
@@ -3104,8 +3104,8 @@
     },
     {
       "path": "src/lib/documentExtractionV2.test.js",
-      "sha256": "6ea307b98e540c49d970e6bda0fa08214647e01189ed0d16ab82ffce958cc607",
-      "bytes": 21028
+      "sha256": "519c1e2b9b690f7592779ce214a3adce9ab30be2056343f929858650040dd5d0",
+      "bytes": 21973
     },
     {
       "path": "src/lib/eclEngine.js",
@@ -3844,8 +3844,8 @@
     },
     {
       "path": "src/pages/Vault.jsx",
-      "sha256": "b03d455c4acb82e6dabfead182036ef2316bb2dd84092ac45aa3643e9104e786",
-      "bytes": 14252
+      "sha256": "cb971d002c5153e65c29ec263da669573133512e236a97ae80577fb52001c14e",
+      "bytes": 14608
     },
     {
       "path": "src/pages/admin/AdminAgents.jsx",
