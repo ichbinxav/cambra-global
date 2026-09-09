@@ -130,6 +130,25 @@ describe("friendly dashboard release surface", () => {
     }
   });
 
+  it("keeps a persistent top navigation and Panel access across member pages", () => {
+    const layout = read("src/components/dashboard/DashboardLayout.jsx");
+    const results = read("src/pages/PaymentsResults.jsx");
+    const navbar = read("src/components/landing/Navbar.jsx");
+    const mobileMenu = read("src/components/landing/MobileNavMenu.jsx");
+    expect(layout).toContain('import Navbar from "@/components/landing/Navbar"');
+    expect(layout).toContain("<Navbar />");
+    expect(results).toContain("<Navbar />");
+    expect(navbar).toContain('to="/Dashboard"');
+    expect(mobileMenu).toContain("isAuthenticated ? MEMBER_GROUPS : PUBLIC_GROUPS");
+  });
+
+  it("offers statement upload next to the connection verification action", () => {
+    const hero = read("src/components/dashboard/DashboardHeroV2.jsx");
+    expect(hero).toContain('to="/ConnectStripe"');
+    expect(hero).toContain('to="/UploadStatement"');
+    expect(hero).toContain('t("su_cta")');
+  });
+
   it("keeps every Analyzer step visible on narrow screens", () => {
     const styles = read("src/index.css");
     expect(styles).toContain(".payment-journey__stepper { overflow-x: hidden; }");
