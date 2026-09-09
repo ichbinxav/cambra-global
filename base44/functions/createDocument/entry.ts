@@ -3,7 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { MAX_DOCUMENT_BYTES } from '../../shared/documentExtraction.ts';
 
 const CATEGORIES = new Set(['invoices','statements','provider_proposals','contracts','signed_mandates','tax_docs','screenshots','benchmark_evidence','migration_docs','pricing_docs','internal_files']);
-const EXTENSIONS = new Set(['pdf','png','jpg','jpeg','webp','gif','csv','json']);
+const EXTENSIONS = new Set([
+  'pdf', 'csv', 'tsv', 'txt', 'md', 'markdown', 'json',
+  'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'numbers',
+  'doc', 'docx', 'rtf', 'odt', 'pages', 'ppt', 'pptx', 'key',
+  'png', 'jpg', 'jpeg', 'webp', 'gif', 'heic', 'heif', 'tif', 'tiff', 'bmp',
+]);
 const VISIBILITIES = new Set(['admin_only','brand_and_admin','provider_and_admin','public']);
 const TRUSTED_UPLOAD_HOSTS = new Set(['media.base44.com']);
 const clean = (value:any, max=500) => String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max);
