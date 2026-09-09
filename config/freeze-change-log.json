@@ -884,6 +884,15 @@
       "oldHash": "76fc62a359c1ab0bc156b22345a340aa21cedd29a04379984d06c9124757ecd6",
       "newHash": "a52bf8b20caf5e310c8374834a82277d26eb6c5126c55cf32c904b6e8bc5ec08",
       "reason": "2026-08-31_production_health_scheduler_proof_direct_claim_and_fail_closed_finalization_no_economic_or_recovery_authority"
+    },
+    {
+      "date": "2026-09-09T23:13:11.993Z",
+      "type": "freeze_update",
+      "stage": "ECL_P8_PRODUCTION_ADMIN_AUTOMATION_AI_OPERATIONS",
+      "path": "base44/functions/processUploadedFile/entry.ts",
+      "oldHash": "327bd62f901c712c5cded3e280ea74b76690511d795816aa7bde3055f5882a5d",
+      "newHash": "d8d2b5e1e1a7b04e1b4411fa4b2fd0c35c109b61af29808832677d6c2d3e443a",
+      "reason": "Product-owner-authorized universal document extraction using two Base44 integrated reader passes; financial values remain fail-closed until both passes agree"
     }
   ]
 }
