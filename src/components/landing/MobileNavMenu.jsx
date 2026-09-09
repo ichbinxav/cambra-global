@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, Handshake, UserPlus } from "lucide-react";
+import { ArrowRight, Sparkles, ScanSearch, Workflow, Receipt, LifeBuoy, MessagesSquare, Home, LayoutDashboard, BarChart3, Settings, Shield, Activity, Handshake, UserPlus, FolderOpen, Gift } from "lucide-react";
 import { useTranslation } from "@/lib/i18n.jsx";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
@@ -87,7 +87,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
     },
   ];
 
-  // MEMBER_GROUPS declared for future reuse but always render the public grouping here.
+  // Signed-in users get their workspace destinations in the same persistent top navigation.
   const MEMBER_GROUPS = [
     {
       label: t("nav_group_home"),
@@ -95,6 +95,8 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
         { label: t("nav_dashboard"), sub: "Command center", href: "/Dashboard", Icon: LayoutDashboard },
         { label: t("nav_reports"), sub: "Savings intelligence", href: "/Reports", Icon: BarChart3 },
         { label: t("nav_item_audit"), sub: t("nav_item_audit_sub"), href: "/Analyzer", Icon: ScanSearch },
+        { label: t("sidebar_documents"), sub: t("az_entry_upload_title"), href: "/Vault", Icon: FolderOpen },
+        { label: t("nav_referrals"), sub: t("ref_program_label"), href: "/Referrals", Icon: Gift },
       ],
     },
     {
@@ -104,9 +106,7 @@ export default function MobileNavMenu({ open, isAuthenticated, isAdmin }) {
       ],
     },
   ];
-  void MEMBER_GROUPS;
-
-  const groups = PUBLIC_GROUPS;
+  const groups = isAuthenticated ? MEMBER_GROUPS : PUBLIC_GROUPS;
 
   return (
     <AnimatePresence>
