@@ -363,6 +363,9 @@ describe('processUploadedFile v2 · production wiring', () => {
     const uploadCard = fs.readFileSync('src/components/paymentsAnalyzer/StatementUploadCard.jsx', 'utf8');
     expect(uploadCard).toContain('SUPPORTED_EXTENSIONS');
     expect(uploadCard).toContain('createDocument');
+    expect(uploadCard).toContain('documentPersisted = true');
+    expect(uploadCard).toContain('setStatus("review")');
+    expect(uploadCard).toContain('t("vlt_upload_review")');
     expect(uploadCard).toContain("target_type: \"statement_import\"");
     const createDocument = fs.readFileSync('base44/functions/createDocument/entry.ts', 'utf8');
     for (const extension of ['numbers', 'xlsx', 'docx', 'md', 'heic']) expect(createDocument).toContain(`'${extension}'`);
