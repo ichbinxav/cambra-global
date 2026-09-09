@@ -23,7 +23,7 @@
 // Payments only. No external PSP names. No over-promised rates.
 
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Plug, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShieldCheck, Plug, CheckCircle2, Upload } from "lucide-react";
 import { computePaymentsScore } from "@/lib/paymentsScore.js";
 import { formatEurOrDash } from "@/lib/currencyFormats";
 import { useTranslation } from "@/lib/i18n.jsx";
@@ -182,16 +182,24 @@ export default function DashboardHeroV2({ latest, stripeConnected = false, onSta
           {/* CTAs */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {!isVerified ? (
-              <Link
-                to="/ConnectStripe"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
-                style={{
-                  background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
-                  boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
-                }}
-              >
-                <Plug size={14} /> {stripeConnected ? t("dh_verify_stripe") : t("dh_connect_stripe")}
-              </Link>
+              <>
+                <Link
+                  to="/ConnectStripe"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, var(--voltio) 0%, #39C6F0 100%)",
+                    boxShadow: "0 0 32px rgba(34,211,238,0.35), 0 12px 32px -12px rgba(34,211,238,0.5)",
+                  }}
+                >
+                  <Plug size={14} /> {stripeConnected ? t("dh_verify_stripe") : t("dh_connect_stripe")}
+                </Link>
+                <Link
+                  to="/UploadStatement"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[.06] px-6 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[.10]"
+                >
+                  <Upload size={14} /> {t("su_cta")}
+                </Link>
+              </>
             ) : point > 0 ? (
               <button
                 type="button"
