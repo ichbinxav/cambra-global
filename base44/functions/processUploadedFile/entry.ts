@@ -76,9 +76,9 @@ function validateUniversalEnvelope(fileName: string, bytes: Uint8Array) {
   if (!signatureOk) return { ok: false as const, reason: 'extension_signature_mismatch' };
   return {
     ok: true as const,
-    kind: 'universal',
+    kind: TEXT_EXTENSIONS.has(extension) ? 'text' : 'universal',
     extension,
-    mime: 'application/octet-stream',
+    mime: TEXT_EXTENSIONS.has(extension) ? 'text/plain' : 'application/octet-stream',
     size: bytes.byteLength,
   };
 }
@@ -248,8 +248,9 @@ async function callOpenAI(svc:any, checksum:string, kind: string, sanitizedText:
   }
 }
 
-function parserFor(kind: string) {
-  return ['png', 'jpeg', 'webp', 'gif'].includes(kind) ? 'image' : kind;
+function parserFor(kind: string, extension = '') {
+  if (['png', 'jpeg', 'webp', 'gif'].includes(kind)) return 'image';
+  return kind === 'universal' ? (extension || 'other') : kind;
 }
 
 async function projectAccepted(base44: any, brandId: string, projection: any, canonical: any) {
@@ -312,8 +313,16 @@ Deno.serve(async (req) => {
       const response=Response.json({ error: tooLarge ? 'file_too_large' : 'stored_file_unavailable' }, { status: tooLarge ? 413 : 422 });
       return tooLarge ? excludedServiceLevelResult(response,'file_too_large') : serviceLevelResult(response,{outcome:'FAILED',reason:'stored_file_unavailable'});
     }
-    const envelope = validateDocumentEnvelope({ fileName, bytes });
-    if (envelope.ok === false) return Response.json({ error: envelope.reason }, { status: envelope.reason === 'file_too_large' ? 413 : 400 });
+    const nativeEnvelope = validateDocumentEnvelope({ fileName, bytes });
+    const fallbackEnvelope = nativeEnvelope.ok === false ? validateUniversalEnvelope(fileName, bytes) : null;
+    if (nativeEnvelope.ok === false && fallbackEnvelope?.ok !== true) {
+      const reason = fallbackEnvelope?.reason || nativeEnvelope.reason;
+      return Response.json({ error: reason }, { status: reason === 'file_too_large' ? 413 : 400 });
+    }
+    const extension = fileExtension(fileName);
+    const envelope: any = nativeEnvelope.ok === true
+      ? { ...nativeEnvelope, extension }
+      : fallbackEnvelope;
     if (['csv', 'json', 'text'].includes(envelope.kind) && envelope.size > MAX_TEXT_DOCUMENT_BYTES) {
       return Response.json({ error: 'text_document_too_large_for_independent_review' }, { status: 413 });
     }
@@ -337,12 +346,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    const prepared = prepareDocumentForExternalExtraction({ kind: envelope.kind, bytes });
+    // Office packages and additional image formats are safely retained and
+    // routed to review until the merchant authorises a raw-file preprocessor.
+    // Markdown, TSV and RTF remain local text and use the normal redaction path.
+    const preparationKind = envelope.kind === 'universal' ? 'pdf' : envelope.kind;
+    const prepared = prepareDocumentForExternalExtraction({ kind: preparationKind, bytes });
     if (prepared.ok === false) {
       const stored = await base44.entities.StatementImport.create({
         brand_id: brand.id,
         file_url: trusted.url,
-        parser: parserFor(envelope.kind),
+        parser: parserFor(envelope.kind, envelope.extension),
         parsed_status: 'needs_review',
         checksum,
         extraction_confidence: 'unverified',
