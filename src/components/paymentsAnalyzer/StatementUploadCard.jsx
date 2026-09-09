@@ -183,7 +183,7 @@ export default function StatementUploadCard({ providerLabel, extractionLive }) {
           <>
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#5B4CF5] shadow-[0_12px_30px_-20px_rgba(91,76,245,.7)]"><FileUp size={21} /></span>
             <label className="mt-4 text-[14px] font-bold text-[#19223B]">{t("az_entry_upload_title")} <span className="text-[#5B4CF5]">*</span></label>
-            <p className="mt-1 max-w-xl text-[10.5px] leading-relaxed text-[#7A8296]">PDF · Excel · Numbers · Word · CSV · Markdown · imágenes · 15 MB</p>
+            <p className="mt-1 max-w-xl text-[10.5px] leading-relaxed text-[#7A8296]">PDF · XLS/XLSX · NUMBERS · DOC/DOCX · CSV · MD · PNG/JPG · 15 MB</p>
           </>
         )}
         <button
