@@ -478,7 +478,7 @@ Deno.serve(async (req) => {
       brand_id: brand.id,
       ...(vertical ? { vertical } : {}),
       file_url: trusted.url,
-      parser: parserFor(envelope.kind),
+      parser: parserFor(envelope.kind, envelope.extension),
       parsed_status: status,
       checksum,
       extraction_confidence: comparison.accepted ? 'high' : (primaryRaw.ok || secondaryRaw.ok ? 'low' : 'unverified'),
@@ -487,7 +487,7 @@ Deno.serve(async (req) => {
       metadata_json: {
         extraction_version: DOCUMENT_EXTRACTION_VERSION,
         file: { kind: envelope.kind, mime: envelope.mime, size: envelope.size, checksum },
-        privacy_boundary: { blocked: false, provider_calls: providerCallCount, sanitization_version: prepared.sanitizationVersion, redaction_counts: prepared.redactionCounts, redacted_categories: prepared.redactedCategories },
+        privacy_boundary: privacyBoundary,
         model_verdicts: { primary: { ok: primaryRaw.ok, model: primaryRaw.ok ? primaryRaw.model : null, reason: primaryRaw.ok ? null : primaryRaw.reason }, secondary: { ok: secondaryRaw.ok, model: secondaryRaw.ok ? secondaryRaw.model : null, reason: secondaryRaw.ok ? null : secondaryRaw.reason } },
         comparison: { accepted: comparison.accepted, disagreements: comparison.disagreements, problems: comparison.problems },
         canonical: comparison.canonical,
