@@ -84,25 +84,28 @@ function ResultsShell({ children, withSidebar = false }) {
   if (withSidebar) {
     return (
       <div
-        className="relative flex min-h-screen overflow-x-hidden font-inter"
+        className="relative min-h-screen overflow-x-hidden font-inter"
         style={{
           color: "#091126",
           background: "#F7F8FC",
         }}
       >
-        <DashboardSidebar />
-        <main
-          className="relative z-10 min-w-0 flex-1 pt-[72px] lg:pt-0"
-          style={{
-            backgroundColor: "#F7F8FC",
-            backgroundImage: "radial-gradient(circle at 78% 4%, rgba(91,76,245,.10), transparent 28%), radial-gradient(circle at 14% 34%, rgba(57,198,240,.07), transparent 24%), radial-gradient(rgba(91,76,245,.13) .8px, transparent .8px)",
-            backgroundSize: "auto, auto, 24px 24px",
-          }}
-        >
-          <div className="relative mx-auto w-full max-w-[1480px] px-5 pb-40 pt-8 lg:px-8 lg:pb-16">
-            {children}
-          </div>
-        </main>
+        <Navbar />
+        <div className="relative flex min-h-screen pt-[72px]">
+          <DashboardSidebar />
+          <main
+            className="relative z-10 min-w-0 flex-1"
+            style={{
+              backgroundColor: "#F7F8FC",
+              backgroundImage: "radial-gradient(circle at 78% 4%, rgba(91,76,245,.10), transparent 28%), radial-gradient(circle at 14% 34%, rgba(57,198,240,.07), transparent 24%), radial-gradient(rgba(91,76,245,.13) .8px, transparent .8px)",
+              backgroundSize: "auto, auto, 24px 24px",
+            }}
+          >
+            <div className="relative mx-auto w-full max-w-[1480px] px-5 pb-40 pt-8 lg:px-8 lg:pb-16">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
