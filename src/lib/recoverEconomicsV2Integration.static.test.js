@@ -53,3 +53,43 @@ describe('V2 legal launch gate',()=>{
   expect(draft).toContain('LEGAL REVIEW REQUIRED');
  });
 });
+
+describe('Unified 25% Recover fee integration',()=>{
+ it('has no second-year rate in canonical configuration or billing math',()=>{
+  const policy=JSON.parse(read('config/product-policy.json'));
+  const economics=read('base44/shared/recoveryEconomicsV2.ts');
+  expect(policy.economicTerms.successFeeRate).toBe(0.25);
+  expect(policy.economicTerms.feeDurationMonths).toBe(24);
+  expect(policy.economicTerms).not.toHaveProperty('year1SuccessFeeRate');
+  expect(policy.economicTerms).not.toHaveProperty('year2SuccessFeeRate');
+  expect(economics).toContain('export const STANDARD_FEE_PCT = 25');
+  expect(economics).not.toContain('YEAR2_FEE_PCT');
+  expect(economics).not.toContain('year2Start');
+ });
+ it('uses the shared fee engine in report generation and approval',()=>{
+  const generate=read('base44/functions/generateMonthlySavingsReport/entry.ts');
+  const approve=read('base44/functions/approveRecoverReportForInvoicing/entry.ts');
+  expect(generate).toContain('periodEconomicsV2({');
+  expect(generate).toContain('referralCountFromEffectiveFee(feeRes.pct)');
+  expect(approve).toContain('periodEconomicsV2({');
+  expect(approve).toContain('referralCountFromEffectiveFee(monthFee.pct)');
+ });
+ it('does not expose or render a second-year fee in contracts, APIs or panels',()=>{
+  const copy=read('base44/shared/recoveryEconomicsCopy.ts');
+  const pdf=read('base44/shared/recoverContractPdf.ts');
+  const modal=read('src/components/recover/RecoverMandateModal.jsx');
+  const commitments=read('base44/functions/getMyRecoveryCommitments/entry.ts');
+  const admin=read('src/components/admin/RecoverEconomicsV2Card.jsx');
+  expect(copy).toContain("term: 'Months 1–24'");
+  expect(copy).not.toMatch(/15% of positive Verified Savings in months 13/);
+  expect(pdf).not.toContain('ec.y2');
+  expect(modal).not.toContain('recovery_economics_copy.y2');
+  expect(commitments).not.toContain('recovery_term_year2_start_date');
+  expect(admin).not.toContain('recovery_term_year2_start_date');
+ });
+ it('preserves the referral ladder including 15% after two activated referrals',()=>{
+  const referral=read('src/lib/referralProgram.js');
+  expect(referral).toContain('BASE_FEE_PCT - entry - n * STEP_POINTS');
+  expect(referral).toContain('Math.max(FLOOR_FEE_PCT');
+ });
+});
