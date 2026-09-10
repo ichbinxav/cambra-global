@@ -101,10 +101,9 @@ export default function RecoverMandateModal({ context, onClose, onAccepted }) {
               {(startedSnapshot || context.snapshot)?.recovery_economics?.version === 'recover-economics-v2' && context.recovery_economics_copy && (
                 <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
                   <p className="text-xs font-bold text-white mb-3">{context.recovery_economics_copy.title}</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-2 gap-2 text-center">
                     {[
-                      [context.recovery_economics_copy.y1, '25%', '75%'],
-                      [context.recovery_economics_copy.y2, '15%', '85%'],
+                      [context.recovery_economics_copy.term, '25%', '75%'],
                       [context.recovery_economics_copy.after, '0%', '100%'],
                     ].map(([label,fee,keep]) => <div key={label} className="rounded-lg border border-white/10 p-2"><p className="text-[10px] text-white/45">{label}</p><p className="text-sm font-black text-white mt-1">{fee}</p><p className="text-[9px] text-white/45">{context.recovery_economics_copy.cambra}</p><p className="text-[10px] text-white/70 mt-1">{context.recovery_economics_copy.keep}: {keep}</p></div>)}
                   </div>
