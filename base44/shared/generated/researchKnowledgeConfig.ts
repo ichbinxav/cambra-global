@@ -24,7 +24,7 @@ export const RESEARCH_KNOWLEDGE_CATALOG = Object.freeze({
       "doc_id": "GTM-FINAL",
       "filename": "CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
       "stored_locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
-      "sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+      "sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
       "duplicate_of": null,
       "provenance_status": "LOCAL_BYTE_PINNED"
     },
@@ -2026,7 +2026,7 @@ export const RESEARCH_KNOWLEDGE_CATALOG = Object.freeze({
         "GTM-FINAL"
       ],
       "source_sha256": [
-        "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9"
+        "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21"
       ],
       "section_locator": {
         "heading": "Domain & Mailbox Readiness",
@@ -2091,7 +2091,7 @@ export const RESEARCH_KNOWLEDGE_CATALOG = Object.freeze({
         "R1"
       ],
       "source_sha256": [
-        "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+        "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
         "bf75fe0b6767e9729b16b189d1d0d157e3540b7ccb0a56460f733d9e53af9853"
       ],
       "section_locator": {
@@ -2252,7 +2252,7 @@ export const RESEARCH_KNOWLEDGE_CATALOG = Object.freeze({
         "GTM-FINAL"
       ],
       "source_sha256": [
-        "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9"
+        "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21"
       ],
       "section_locator": {
         "heading": "Configuración base España",
