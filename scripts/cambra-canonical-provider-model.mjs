@@ -170,6 +170,7 @@ for (const locale of ["en", "es", "fr"]) {
 {
   const rel = "src/lib/recoveryEconomicsV2.test.js";
   let source = read(rel);
+  if (!source.includes("without a second-year pricing boundary")) {
   source = replaceUnique(
     source,
     "expect(recoveryTermFromActivation('2026-10-01T12:00:00Z')).toEqual({start:'2026-10-01',year2Start:'2027-10-01',endExclusive:'2028-10-01',months:24});",
@@ -193,6 +194,7 @@ for (const locale of ["en", "es", "fr"]) {
   source = replaceUnique(source, ").effective_fee_pct).toBe(15);\n    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-02-01'", ").effective_fee_pct).toBe(25);\n    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-02-01'", `${rel}:referral base`);
   source = replaceUnique(source, ").effective_fee_pct).toBe(10);\n    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-03-01'", ").effective_fee_pct).toBe(20);\n    expect(periodEconomicsV2({activationIso:'2026-10-01',periodStart:'2028-03-01'", `${rel}:referral one`);
   source = replaceUnique(source, ").effective_fee_pct).toBe(5);\n  });\n  it('scopes an activation-month", ").effective_fee_pct).toBe(15);\n  });\n  it('scopes an activation-month", `${rel}:referral two`);
+  }
   write(rel, source);
 }
 
