@@ -1,8 +1,7 @@
 // Recover Economics V2 — deterministic, contract-snapshot driven pricing.
 // New acceptances only. Legacy mandates without recovery_economics.version keep V1 behavior.
 export const RECOVERY_ECONOMICS_V2 = 'recover-economics-v2';
-export const YEAR1_FEE_PCT = 25;
-export const YEAR2_FEE_PCT = 15;
+export const STANDARD_FEE_PCT = 25;
 export const REFERRAL_STEP_PCT = 5;
 export const ABSOLUTE_FLOOR_PCT = 5;
 export const TERM_MONTHS = 24;
@@ -27,14 +26,13 @@ function addMonthsClamped(date: string, months: number): string {
 
 export function recoveryTermFromActivation(activationIso: string) {
   const start = parisRecoveryDate(activationIso);
-  const year2Start = addMonthsClamped(start, 12);
   const endExclusive = addMonthsClamped(start, TERM_MONTHS);
-  return { start, year2Start, endExclusive, months: TERM_MONTHS };
+  return { start, endExclusive, months: TERM_MONTHS };
 }
 
-export function standardFeeForDate(day: string, term: { start:string; year2Start:string; endExclusive:string }) {
+export function standardFeeForDate(day: string, term: { start:string; endExclusive:string }) {
   if (day < term.start || day >= term.endExclusive) return 0;
-  return day < term.year2Start ? YEAR1_FEE_PCT : YEAR2_FEE_PCT;
+  return STANDARD_FEE_PCT;
 }
 
 export function effectiveFee(standardPct: number, activatedReferrals: number) {
@@ -95,8 +93,7 @@ export function recoveryEconomicsSnapshot() {
     version: RECOVERY_ECONOMICS_V2,
     term_months: TERM_MONTHS,
     fee_base: 'positive_verified_savings',
-    year_1: { months: '1-12', standard_fee_pct: YEAR1_FEE_PCT, merchant_share_pct: 75 },
-    year_2: { months: '13-24', standard_fee_pct: YEAR2_FEE_PCT, merchant_share_pct: 85 },
+    recovery_term: { months: '1-24', standard_fee_pct: STANDARD_FEE_PCT, merchant_share_pct: 75 },
     after_term: { standard_fee_pct: 0, merchant_share_pct: 100 },
     referrals: { discount_points_each: REFERRAL_STEP_PCT, floor_pct: ABSOLUTE_FLOOR_PCT, permanent_once_earned: true, non_retroactive: true },
     cancellation_survival: 'service_termination_does_not_by_itself_terminate_activated_recovery_term',
@@ -122,10 +119,10 @@ export function reportPeriodBounds(month: string, effectiveStart?: string | null
   return { start, endExclusive };
 }
 
-export function referralCountFromYear1EquivalentFee(monthRulePct: number | null | undefined) {
+export function referralCountFromEffectiveFee(monthRulePct: number | null | undefined) {
   const pct=Number(monthRulePct);
   if (!Number.isFinite(pct)) return 0;
-  const discount=Math.max(0, YEAR1_FEE_PCT-pct);
+  const discount=Math.max(0, STANDARD_FEE_PCT-pct);
   return Math.max(0, Math.round(discount/REFERRAL_STEP_PCT));
 }
 
