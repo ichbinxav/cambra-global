@@ -238,8 +238,7 @@ export async function buildRecoverContractPdf(input: ContractPdfInput): Promise<
   }
   if (snapshot?.recovery_economics?.version === RECOVERY_ECONOMICS_V2) {
     const ec = recoveryEconomicsCopy(locale);
-    body(`${ec.title}: ${ec.y1} — ${ec.cambra} 25%, ${ec.keep} 75%.`);
-    body(`${ec.y2} — ${ec.cambra} 15%, ${ec.keep} 85%.`);
+    body(`${ec.title}: ${ec.term} — ${ec.cambra} 25%, ${ec.keep} 75%.`);
     body(`${ec.after} — ${ec.cambra} 0%, ${ec.keep} 100%.`);
     body(ec.referrals);
     body(ec.verified);
