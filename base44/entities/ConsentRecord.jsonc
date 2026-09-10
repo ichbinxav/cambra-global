@@ -14,6 +14,33 @@
       "type": "string",
       "description": "Human-readable description of what access was granted (e.g. 'read_only')."
     },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "data_connection",
+        "provider_introduction",
+        "provider_negotiation",
+        "marketing",
+        "other"
+      ],
+      "description": "Specific purpose. Provider introduction/negotiation consent must be counterparty-specific."
+    },
+    "counterparty_provider_id": {
+      "type": "string",
+      "description": "Provider ID covered by a provider introduction or negotiation consent."
+    },
+    "consent_text_version": {
+      "type": "string",
+      "description": "Immutable version identifier of the text accepted by the merchant."
+    },
+    "evidence_reference": {
+      "type": "string",
+      "description": "Reference to the signed mandate, clickwrap receipt, or other consent evidence."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "granted_at": {
       "type": "string",
       "format": "date-time"
