@@ -1,6 +1,6 @@
 export const PAYMENT_REPORT_ACCESS_VERSION = 'payment-report-access-1.0.0';
 export const COLLECTIVE_TERMS_VERSION = 'draft-v0';
-export const PUBLIC_TERMS_VERSION = '2026-08-16';
+export const PUBLIC_TERMS_VERSION = '2026-09-10';
 export const PRIVACY_VERSION = '2026-07-24';
 
 export const PAYMENT_REPORT_ACTION_LIMITS = Object.freeze([
