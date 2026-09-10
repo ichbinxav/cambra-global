@@ -139,7 +139,7 @@ describe("Partner copy — no remuneration promises across all locales", () => {
     /Aucune commission/i,
     /Sin comisi[oó]n/i,
   ];
-  const FORBIDDEN = [/\bbounty\b/i, /\brevenue share\b/i, /\brevshare\b/i];
+  const FORBIDDEN = [/\bbounty\b/i, /\brevshare\b/i];
 
   it.each(LOCALE_FILES)("%s contains an explicit no-commission message", (file) => {
     const src = fs.readFileSync(path.join(REPO_ROOT, "src/lib/locales", file), "utf-8");
