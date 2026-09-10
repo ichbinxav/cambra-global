@@ -23,7 +23,7 @@ export default function TheStackSection() {
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
         className="cambra-public-container relative overflow-hidden rounded-[32px] px-6 sm:px-10 lg:px-14 xl:px-16 py-12 sm:py-16"
-        style={{ background: "#060711", border: "1px solid rgba(139,123,255,.16)" }}
+        style={{ background: "linear-gradient(145deg,#121126 0%,#090B18 58%,#071522 100%)", border: "1px solid rgba(139,123,255,.18)" }}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-40" style={{ backgroundImage: "radial-gradient(rgba(139,123,255,.16) 1px,transparent 1px)", backgroundSize: "30px 30px", maskImage: "radial-gradient(ellipse 55% 75% at 88% 20%,#000,transparent 78%)" }} />
 
@@ -53,7 +53,12 @@ export default function TheStackSection() {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-full w-full select-none object-contain"
-              style={{ filter: "saturate(.74) brightness(.88) contrast(.98)" }}
+              style={{
+                filter: "saturate(.94) brightness(.94) contrast(1.04) drop-shadow(0 34px 50px rgba(91,76,245,.24))",
+                mixBlendMode: "screen",
+                maskImage: "radial-gradient(ellipse 70% 78% at 50% 48%,#000 54%,transparent 88%)",
+                WebkitMaskImage: "radial-gradient(ellipse 70% 78% at 50% 48%,#000 54%,transparent 88%)",
+              }}
               draggable={false}
             />
           </div>
