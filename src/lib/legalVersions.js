@@ -9,7 +9,7 @@
 //   3. the acceptance record produced from them is accepted by the validator.
 // Change a version in one place and that test fails.
 
-export const CURRENT_TERMS_VERSION = "2026-08-16";
+export const CURRENT_TERMS_VERSION = "2026-09-10";
 export const CURRENT_DPA_VERSION = "1.0";
 
 /** Mirrors coversCurrentVersions() in base44/shared/legalAcceptance.ts. */
