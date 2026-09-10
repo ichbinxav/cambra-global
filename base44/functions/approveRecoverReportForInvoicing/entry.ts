@@ -32,7 +32,7 @@ import {
   periodOverlapsTerm,
   RECOVERY_ECONOMICS_V2,
   recoveryTermFromActivation,
-  referralCountFromYear1EquivalentFee,
+  referralCountFromEffectiveFee,
   reportPeriodBounds,
 } from "../../shared/recoveryEconomicsV2.ts";
 import { internalErrorResponse } from "../../shared/publicErrors.ts";
@@ -357,7 +357,7 @@ export default async function (req: Request): Promise<Response> {
 
     // Contractual calendar. V1 keeps its original full-month calendar.
     // V2 is an exact 24-month term from verified conditions activation and can
-    // segment a verified partial period at activation / month 12 / month 24.
+    // segment a verified partial period at activation / month 24.
     const isEconomicsV2 =
       mandate?.acceptance_snapshot_json?.recovery_economics?.version ===
         RECOVERY_ECONOMICS_V2;
@@ -508,7 +508,7 @@ export default async function (req: Request): Promise<Response> {
           activationIso: activation.conditions_activated_at,
           periodStart: reportPeriod.start,
           periodEndExclusive: reportPeriod.endExclusive,
-          activatedReferrals: referralCountFromYear1EquivalentFee(monthFee.pct),
+          activatedReferrals: referralCountFromEffectiveFee(monthFee.pct),
         })
         : null;
     const effectivePct = contractResolved.resolvable
