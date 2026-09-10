@@ -134,6 +134,11 @@ function TierCard({ tier, accent, t }) {
           {t("fp_commercial")}
         </p>
         <p className="text-[13px]" style={{ color: "var(--gris-1)" }}>{tier.cost}</p>
+        {isPartner && (
+          <p className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--gris-1)" }}>
+            {t("fp_merchant_model")}
+          </p>
+        )}
       </div>
     </motion.article>
   );
