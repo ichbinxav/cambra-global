@@ -22,7 +22,7 @@ export const LEGAL_ACCEPTANCE_POLICY_VERSION = 'legal-acceptance-1.0.0';
 
 // Terms are versioned by the date of their last substantive edit — they had no
 // version number before, and inventing a semantic one would be arbitrary.
-export const CURRENT_TERMS_VERSION = '2026-08-16';
+export const CURRENT_TERMS_VERSION = '2026-09-10';
 // The DPA declares "Version 1.0" in its own visible text.
 export const CURRENT_DPA_VERSION = '1.0';
 
