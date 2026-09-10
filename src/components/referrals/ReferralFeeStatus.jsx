@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { FLOOR_FEE_PCT, feeForActivated, nextFeePct } from "@/lib/referralProgram";
-import { effectiveRecoverFeeForPhase } from "@/lib/recoveryEconomicsV2";
+import { recoverV2TermFee } from "@/lib/recoveryEconomicsV2";
 import { useTranslation } from "@/lib/i18n.jsx";
 
 const LADDER = [25, 20, 15, 10, 5];
@@ -17,18 +17,15 @@ export default function ReferralFeeStatus({
   const entryPoints = Math.max(0, Number(entryDiscountPoints) || 0);
   const legacyFee = feeForActivated(activatedCount, entryPoints);
   const legacyNext = nextFeePct(activatedCount, entryPoints);
-  const year1Fee = effectiveRecoverFeeForPhase(25 - entryPoints, activatedCount);
-  const year2Fee = effectiveRecoverFeeForPhase(15 - entryPoints, activatedCount);
-  const nextYear1 = year1Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(25 - entryPoints, activatedCount + 1) : null;
-  const nextYear2 = year2Fee > FLOOR_FEE_PCT ? effectiveRecoverFeeForPhase(15 - entryPoints, activatedCount + 1) : null;
-  const currentFee = isV2 ? year1Fee : legacyFee;
-  const nextCopy = isV2
-    ? (nextYear1 !== null || nextYear2 !== null
-        ? t("ref_next_step_v2", { y1: `${nextYear1 ?? FLOOR_FEE_PCT}%`, y2: `${nextYear2 ?? FLOOR_FEE_PCT}%` })
-        : t("ref_floor_note", { floor: `${FLOOR_FEE_PCT}%` }))
-    : (legacyNext !== null
-        ? t("ref_next_step", { next: `${legacyNext}%` })
-        : t("ref_floor_note", { floor: `${FLOOR_FEE_PCT}%` }));
+  const termFee = recoverV2TermFee(activatedCount, entryPoints);
+  const nextTermFee = termFee > FLOOR_FEE_PCT
+    ? recoverV2TermFee(activatedCount + 1, entryPoints)
+    : null;
+  const currentFee = isV2 ? termFee : legacyFee;
+  const nextFee = isV2 ? nextTermFee : legacyNext;
+  const nextCopy = nextFee !== null
+    ? t("ref_next_step", { next: `${nextFee}%` })
+    : t("ref_floor_note", { floor: `${FLOOR_FEE_PCT}%` });
 
   return (
     <div className="cambra-dark-panel min-h-[430px] p-7 sm:p-9">
@@ -59,8 +56,7 @@ export default function ReferralFeeStatus({
 
       <p className="mt-9 border-t border-white/10 pt-6 text-[13px] leading-relaxed text-white/70">{nextCopy}</p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        {isV2 && <div className="rounded-xl border border-white/10 bg-white/[.045] p-3"><span className="block text-[9px] font-bold uppercase tracking-[.12em] text-white/42">{t("ref_fee_y2_label")}</span><strong className="mt-2 block text-[21px] font-bold text-white">{year2Fee}%</strong></div>}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl border border-white/10 bg-white/[.045] p-3"><span className="block text-[9px] font-bold uppercase tracking-[.12em] text-white/42">{t("ref_registered_label")}</span><strong className="mt-2 block text-[21px] font-bold text-white">{registeredCount}</strong></div>
         <div className="rounded-xl border border-white/10 bg-white/[.045] p-3"><span className="block text-[9px] font-bold uppercase tracking-[.12em] text-white/42">{t("ref_used_label")}</span><strong className="mt-2 block text-[21px] font-bold text-white">{timesUsed}</strong></div>
       </div>
