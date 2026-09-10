@@ -720,14 +720,13 @@ Esto debe presentarse como diferenciación de producto observada, no como prueba
 
 Con la estructura actual:
 
-- 25% del ahorro verificado durante el primer año.
-- 15% durante el segundo.
+- 25% del ahorro positivo verificado durante todos los meses 1–24.
 - 0% posteriormente.
 
 Sobre dos años de ahorro constante:
 
-- CAMBRA recibe el equivalente al 20% del ahorro total de los primeros 24 meses.
-- El merchant conserva el 80%.
+- CAMBRA recibe el 25% del ahorro positivo verificado de los primeros 24 meses.
+- El merchant conserva el 75%.
 - Desde el mes 25 conserva el 100%.
 
 Esta explicación es mucho más defendible que limitarse a decir “25% de success fee”.
@@ -741,7 +740,7 @@ Esta explicación es mucho más defendible que limitarse a decir “25% de succe
 | “Mi PSP ya me da buenas condiciones.” | Un PSP puede explicar su precio, pero no es un benchmark independiente de su propio margen. CAMBRA muestra línea por línea qué es regulado, pass-through, margen o fee negociable. |
 | “No quiero cambiar de proveedor.” | CAMBRA empieza por renegociar con el actual. La migración solo se plantea cuando la evidencia muestra que el incumbent no puede cerrar la diferencia. |
 | “Podemos negociarlo nosotros.” | Perfecto: CAMBRA puede entregar el benchmark y evidence pack para que el equipo negocie, o actuar bajo mandato. |
-| “El porcentaje es caro.” | Solo se aplica a ahorro realizado y verificable. En 24 meses, CAMBRA recibe el 20% del ahorro acumulado y el merchant retiene el 80%; después conserva todo. |
+| “El porcentaje es caro.” | Solo se aplica a ahorro positivo realizado y verificable. Durante los primeros 24 meses, CAMBRA recibe el 25% y el merchant retiene el 75%; después conserva todo. |
 | “Stripe/Shopify Payments es simple.” | El precio visible no siempre refleja el coste efectivo por mix de tarjetas, países, FX, métodos alternativos, refunds, disputes y fees periféricos. |
 | “No quiero compartir datos sensibles.” | El análisis inicial debe funcionar con statements y contratos minimizados, sin PAN ni cardholder data, con retención limitada y evidencias auditables. |
 | “Un broker me lo hace gratis.” | Hay que preguntar quién remunera al broker y si las recomendaciones están condicionadas por acuerdos comerciales. |
