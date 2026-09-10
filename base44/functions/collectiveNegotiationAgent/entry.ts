@@ -313,61 +313,6 @@ Deno.serve(async (req) => {
       && Number.isFinite(Number(bid.merchant_outcome_score)) && bid.cost_unknown !== true;
     const merchantSuitable = scoreKnown && Number(bid.merchant_outcome_score) >= 70;
     await s.entities.NegotiationCase.update(c.id, {
-        round: Number(c.round || 0) + 1,
-        best_offer_json: {
-          offer_id: offer.id,
-          aggregate_bid_id: bid.id,
-          variable_fee_bps: pricing.variable_rate_bps,
-          normalized_annual_cost_minor: normalized.normalized_annual_cost_minor,
-          tier_count: Array.isArray(ex.tiers) ? ex.tiers.length : 0,
-        },
-        aggregate_bid_id: bid.id,
-        status: 'awaiting_provider',
-        next_action: 'await_provider_monetization_response',
-        strategy_json: {
-          ...(c.strategy_json || {}),
-          provider_monetization_requested: true,
-          merchant_terms_established: true,
-        },
-      });
-      await s.entities.AggregateRFP.update(rfp.id, { status: 'negotiating' });
-      await s.entities.AggregatePool.update(pool.id, { status: 'negotiating' });
-      await assertEmergencyEpochUnchanged(
-        s,
-        negotiationEpoch,
-        'before_provider_monetization_agent',
-      );
-      const mr = await s.functions.invoke('providerMonetizationAgent', {
-        action: 'request_provider_economics',
-        case_id: c.id,
-        bid_id: bid.id,
-        emergency_epoch_claim: negotiationEpoch,
-        internal_secret: internal,
-      }).catch((error: any) =>
-        safeBestEffort(error, {
-          operation: 'collectiveNegotiationAgent',
-          fallback: null,
-          severity: 'secondary',
-        })
-      );
-      await s.entities.AgentTask.update(task.id, {
-        status: 'completed',
-        output_summary: 'Merchant terms established; separate CAMBRA provider economics phase opened',
-        output_payload_json: {
-          bid_id: bid.id,
-          merchant_outcome_score: bid.merchant_outcome_score,
-          provider_monetization: mr?.data || mr,
-        },
-        completed_at: new Date().toISOString(),
-      });
-      return Response.json({
-        ok: true,
-        bid_id: bid.id,
-        merchant_terms_established: true,
-        provider_monetization_requested: true,
-      });
-    }
-    await s.entities.NegotiationCase.update(c.id, {
       round: Number(c.round || 0) + 1,
       best_offer_json: {
         offer_id: offer.id,
