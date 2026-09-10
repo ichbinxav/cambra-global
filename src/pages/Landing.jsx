@@ -1,6 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Building2, CalendarDays, MonitorSmartphone, PanelsTopLeft } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  ChartNoAxesCombined,
+  Eye,
+  MonitorSmartphone,
+  PanelsTopLeft,
+  Scale,
+  ShieldCheck,
+  Target,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/shared/SectionLabel";
 import SectionHeading from "@/components/landing/SectionHeading";
@@ -10,10 +21,10 @@ import AnimatedSection from "@/components/landing/AnimatedSection";
 import { BRAND_ASSETS } from "@/lib/brandAssets";
 import PricingDual from "@/components/landing/PricingDual";
 import StopLeavingMarginCTA from "@/components/landing/StopLeavingMarginCTA";
-import ProblemSectionWow from "@/components/landing/ProblemSectionWow";
 import TheStackSection from "@/components/landing/TheStackSection";
 import TrustSecuritySection from "@/components/landing/TrustSecuritySection";
 import AudienceSection from "@/components/landing/AudienceSection";
+import RealImpactSection from "@/components/landing/RealImpactSection";
 import BookCallModal from "@/components/paymentsResults/BookCallModal";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
@@ -199,21 +210,22 @@ function HeroTrustStrip() {
   );
 }
 
-// Note: legacy ProblemSection removed — landing now renders ProblemSectionWow.
-
 function HowItWorksSection() {
   const { t } = useTranslation();
   const { experience } = useMarket();
-  // Three plain-language steps: show us → understand → recover.
+  const benefits = [
+    { icon: Eye, title: "prob_c1_cat", desc: "prob_c1_body", status: "prob_c1_status", color: "#A678FF" },
+    { icon: Scale, title: "prob_c2_cat", desc: "prob_c2_body", status: "prob_c2_status", color: "#5E82FF" },
+    { icon: Target, title: "prob_c3_cat", desc: "prob_c3_body", status: "prob_c3_status", color: "#39C6F0" },
+  ];
   const steps = [
-    { n: "01", title: t("how_step1_title"), desc: t("how_step1_desc"), connect: true },
-    { n: "02", title: t("how_step2_title"), desc: t("how_step2_desc") },
-    { n: "03", title: t("how_step3_title"), desc: t("how_step3_desc"), cta: true },
+    { n: "01", icon: MonitorSmartphone, title: t("how_step1_title"), desc: t("how_step1_desc"), connect: true },
+    { n: "02", icon: ChartNoAxesCombined, title: t("how_step2_title"), desc: t("how_step2_desc") },
+    { n: "03", icon: Target, title: t("how_step3_title"), desc: t("how_step3_desc"), cta: true },
   ];
 
   return (
     <section id="how" className="relative py-12 sm:py-16 overflow-hidden">
-      {/* ambient blue wash */}
       <div
         aria-hidden
         className="absolute pointer-events-none"
@@ -224,87 +236,76 @@ function HowItWorksSection() {
         }}
       />
       <div className="cambra-public-container relative">
-        <AnimatedSection>
-          <SectionHeading eyebrow={t("how_label")} align="left" className="mb-10">
-            {t("how_h2_pre")}<br />
-            <span className="kw">{t("how_h2_hl")}.</span>
-          </SectionHeading>
+        <AnimatedSection className="grid grid-cols-1 items-end gap-6 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-7">
+            <SectionHeading eyebrow={`${t("prob_eyebrow")} · ${t("how_label")}`} align="left">
+              {t("how_h2_pre")}<br />
+              <span className="kw">{t("how_h2_hl")}.</span>
+            </SectionHeading>
+          </div>
+          <div className="lg:col-span-5 lg:pb-1">
+            <p className="text-[15px] font-bold leading-relaxed" style={{ color: "var(--ink)" }}>{t("prob_h2_post")}</p>
+            <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t("prob_intro")}</p>
+          </div>
         </AnimatedSection>
 
-        <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {/* Animated connector line behind the steps */}
-          <motion.div
-            aria-hidden
-            className="absolute left-8 top-0 bottom-0 w-px hidden sm:block lg:hidden"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, rgba(139,123,255,0.45), rgba(91,76,245,0.3), transparent)",
-              boxShadow: "0 0 16px rgba(139,123,255,0.3)",
-            }}
-            initial={{ scaleY: 0, originY: 0 }}
-            whileInView={{ scaleY: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          />
+        <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-3">
+          {benefits.map(({ icon: Icon, title, desc, status, color }, index) => (
+            <AnimatedSection key={title} delay={index * 0.08}>
+              <article className="group relative h-full overflow-hidden rounded-[22px] border bg-white p-6" style={{ borderColor: `${color}32`, boxShadow: "0 22px 52px -44px rgba(14,14,26,.55)" }}>
+                <div aria-hidden className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `linear-gradient(90deg,${color},transparent 84%)` }} />
+                <div className="flex items-start justify-between gap-4">
+                  <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px]" style={{ color, border: `1px solid ${color}40`, background: `${color}10` }}>
+                    <Icon size={19} strokeWidth={1.85} aria-hidden="true" />
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[.16em]" style={{ color }}>
+                    <ShieldCheck size={11} aria-hidden="true" /> {t(status)}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-[18px] font-bold tracking-[-.025em]" style={{ color: "var(--ink)" }}>{t(title)}</h3>
+                <p className="mt-2.5 text-[12.5px] leading-relaxed" style={{ color: "var(--gris-1)" }}>{t(desc)}</p>
+              </article>
+            </AnimatedSection>
+          ))}
+        </div>
 
-          {steps.map((s, i) => (
+        <div className="relative mt-5 overflow-hidden rounded-[30px] px-5 py-6 sm:px-7 sm:py-8 lg:px-9" style={{ background: "linear-gradient(135deg,#17143A 0%,#0A0C19 62%,#071625 100%)", border: "1px solid rgba(139,123,255,.22)", boxShadow: "0 34px 80px -58px rgba(34,30,105,.8)" }}>
+          <div aria-hidden className="absolute inset-0 opacity-35" style={{ backgroundImage: "radial-gradient(rgba(139,123,255,.26) 1px,transparent 1px)", backgroundSize: "26px 26px", maskImage: "radial-gradient(circle at 76% 0%,#000,transparent 62%)" }} />
+          <div className="relative grid grid-cols-1 gap-3 lg:grid-cols-3">
+            {steps.map((s, i) => {
+              const StepIcon = s.icon;
+              return (
             <AnimatedSection key={s.n} delay={i * 0.15}>
               <motion.div
                 transition={{ duration: 0.3 }}
-                className="relative h-full overflow-hidden p-7 sm:p-9 lg:p-7 group"
-                style={{ background: "#ffffff", border: "1px solid rgba(91,76,245,.28)", borderRadius: 26 }}
+                className="group relative h-full overflow-hidden rounded-[22px] border border-white/[.1] p-6 sm:p-7"
+                style={{ background: "rgba(255,255,255,.055)" }}
               >
-                {/* hover glow halo */}
-                <div
-                  aria-hidden
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                  style={{
-                    background:
-                      "radial-gradient(circle at 20% 50%, rgba(91,76,245,0.06), transparent 60%)",
-                  }}
-                />
-                {/* Giant number */}
-                <span
-                  aria-hidden
-                  className="absolute top-3 right-5 text-mono select-none"
-                  style={{
-                    fontSize: "clamp(78px, 8vw, 118px)",
-                    fontWeight: 900,
-                    letterSpacing: "-0.05em",
-                    lineHeight: 1,
-                    color: "rgba(91,76,245,0.22)",
-                  }}
-                >
-                  {s.n}
-                </span>
-
-                <div className="relative z-10 flex h-full max-w-xl flex-col pt-14 lg:max-w-none">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span
-                      className="relative inline-flex w-2 h-2 rounded-full"
-                      style={{ background: "var(--voltio-2)", boxShadow: "0 0 12px rgba(139,123,255,0.8)" }}
-                      aria-hidden
-                    />
-                    <SectionLabel>{t("how_step_label")} {s.n}</SectionLabel>
+                <div aria-hidden className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: "radial-gradient(circle at 10% 0%,rgba(139,123,255,.14),transparent 58%)" }} />
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="mb-5 flex items-center justify-between gap-4">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] text-[#B9AEFF]" style={{ background: "rgba(139,123,255,.12)", border: "1px solid rgba(139,123,255,.26)" }}>
+                      <StepIcon size={19} strokeWidth={1.85} aria-hidden="true" />
+                    </span>
+                    <span className="font-mono text-[10px] font-bold tracking-[.2em] text-white/45">{t("how_step_label")} {s.n}</span>
                   </div>
-                  <h3 className="text-title mb-3" style={{ color: "var(--ink)" }}>{s.title}</h3>
-                  <p className="text-[14px]" style={{ color: "var(--gris-1)" }}>{s.desc}</p>
+                  <h3 className="mb-2.5 text-[20px] font-bold tracking-[-.025em] text-white">{s.title}</h3>
+                  <p className="text-[13px] leading-relaxed text-white/60">{s.desc}</p>
                   {s.connect && (
-                    <div className="mt-auto flex justify-center pt-6">
+                    <div className="mt-auto pt-6">
                       <Link
                         to="/Analyzer"
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 text-[12.5px] font-bold text-white"
-                        style={{ background: "var(--ink)", boxShadow: "0 12px 28px -18px rgba(12,12,22,.65)" }}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#65DDF7]"
                       >
                         {t("ci_title")} <ArrowRight size={14} />
                       </Link>
                     </div>
                   )}
                   {s.cta && (
-                    <div className="mt-auto flex justify-center pt-6">
+                    <div className="mt-auto pt-6">
                       <Link
                         to={experience.analyzer.href}
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-6 text-[12.5px] font-bold text-white"
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-5 text-[12px] font-bold text-white"
                         style={{ background: "var(--g-voltio)", boxShadow: "0 14px 30px -18px rgba(91,76,245,.72)" }}
                       >
                         {t(experience.analyzer.status === "ENABLED" ? "hero_cta_primary" : "market_cta_access")} <ArrowRight size={14} />
@@ -314,8 +315,12 @@ function HowItWorksSection() {
                 </div>
               </motion.div>
             </AnimatedSection>
-          ))}
+              );
+            })}
+          </div>
         </div>
+
+        <RealImpactSection embedded />
       </div>
     </section>
   );
@@ -430,7 +435,6 @@ export default function Landing() {
         <div className="dot-grid" aria-hidden />
         <Hero onBookDemo={() => setDemoOpen(true)} />
         <HeroTrustStrip />
-        <ProblemSectionWow />
         <HowItWorksSection />
         <TheStackSection />
         <TrustSecuritySection />
