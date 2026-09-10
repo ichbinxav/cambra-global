@@ -4,7 +4,7 @@ import { ArrowUpRight, BadgeEuro, Check, LockKeyhole, ShieldCheck, Sparkles, Arr
 import { motion } from "framer-motion";
 import SectionHeading from "@/components/landing/SectionHeading";
 import { useTranslation } from "@/lib/i18n.jsx";
-import { getSuccessFeePct, PRODUCT_POLICY } from "@/lib/productPolicy";
+import { getSuccessFeePct } from "@/lib/productPolicy";
 import { useMarket } from "@/lib/publicExperience.jsx";
 
 /**
@@ -12,9 +12,8 @@ import { useMarket } from "@/lib/publicExperience.jsx";
  *
  * Two visually distinct cards on one row:
  *   1. Analyze      — free, always. Anonymous 60s + verified analysis via Stripe.
- *   2. Recovery     — the currently approved policy terms, only on positive
- *                     verified savings. Tiered V2 copy is shown only after its
- *                     legal-approval flag is true.
+ *   2. Recovery     — 25% of positive verified savings for 24 months.
+ *                     No positive verified savings means no fee.
  */
 // i18n keys — resolved with t() inside the component so the cards follow
 // the active language on both the Landing and the /Pricing page.
@@ -167,7 +166,6 @@ function Tier({
 }
 
 export default function PricingDual() {
-  const recoveryV2Available = PRODUCT_POLICY.economicTerms.recoverEconomicsV2LegalApproved === true;
   const { t } = useTranslation();
   const { experience } = useMarket();
   const reassurance = [
@@ -335,8 +333,8 @@ export default function PricingDual() {
               <Tier
                 eyebrow={t("pd_t2_eyebrow")}
                 eyebrowAccent="voltio"
-                price={recoveryV2Available ? `${getSuccessFeePct()}→15→0%` : getSuccessFeePct() + "%"}
-                priceSuffix={t(recoveryV2Available ? "pd_t2_suffix_v2" : "pd_t2_suffix")}
+                price={`${getSuccessFeePct()}%`}
+                priceSuffix={`${t("pd_t2_caption")} · ${t("prc_duration_val")}`}
                 priceGradient
                 caption={t("pd_t2_caption")}
                 features={RECOVERY_FEATURE_KEYS.map((k) => t(k))}
