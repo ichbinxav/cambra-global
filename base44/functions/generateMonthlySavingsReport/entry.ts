@@ -10,7 +10,7 @@ import { resolveFeePctForMonth } from "../../shared/billingFee.ts";
 import {
   periodEconomicsV2,
   RECOVERY_ECONOMICS_V2,
-  referralCountFromYear1EquivalentFee,
+  referralCountFromEffectiveFee,
   reportPeriodBounds,
 } from "../../shared/recoveryEconomicsV2.ts";
 import { resolveContractPolicy } from "../../shared/contractPolicySnapshot.ts";
@@ -366,7 +366,7 @@ Deno.serve(async (req) => {
             activationIso: deal.conditions_activated_at,
             periodStart: period.start,
             periodEndExclusive: period.endExclusive,
-            activatedReferrals: referralCountFromYear1EquivalentFee(feeRes.pct),
+            activatedReferrals: referralCountFromEffectiveFee(feeRes.pct),
           });
           nodeSharePct = recoveryEconomics.effective_fee_pct;
         }
