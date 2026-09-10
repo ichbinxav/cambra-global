@@ -1,17 +1,17 @@
 // GENERATED FILE — DO NOT EDIT DIRECTLY.
 // Source: config/product-policy.json
-// policyVersion: 2026.08.09-recover-v2
-// effectiveDate: 2026-08-09
+// policyVersion: 2026.09.10-recover-unified-25
+// effectiveDate: 2026-09-10
 // Regenerate: npm run policy:generate  ·  Drift check: npm run policy:check
-export const POLICY_VERSION = "2026.08.09-recover-v2";
-export const EFFECTIVE_DATE = "2026-08-09";
+export const POLICY_VERSION = "2026.09.10-recover-unified-25";
+export const EFFECTIVE_DATE = "2026-09-10";
 
 // Deep-frozen so no consumer can mutate the canonical values at runtime.
 export const PRODUCT_POLICY = (function () {
   const o = {
   "schemaVersion": 1,
-  "policyVersion": "2026.08.09-recover-v2",
-  "effectiveDate": "2026-08-09",
+  "policyVersion": "2026.09.10-recover-unified-25",
+  "effectiveDate": "2026-09-10",
   "currency": "EUR",
   "economicTerms": {
     "analyzerPriceEur": 0,
@@ -19,7 +19,12 @@ export const PRODUCT_POLICY = (function () {
     "merchantShareRate": 0.75,
     "feeDurationMonths": 24,
     "feeBase": "positive_verified_savings",
-    "recoveryOptional": true
+    "recoveryOptional": true,
+    "recoveryEconomicsVersion": "recover-economics-v2",
+    "postTermSuccessFeeRate": 0,
+    "successFeeFloorRate": 0.05,
+    "referralDiscountStepRate": 0.05,
+    "recoverEconomicsV2LegalApproved": false
   },
   "referralTerms": {
     "startRate": 0.25,
