@@ -369,9 +369,9 @@ export const FAQ_CONTENT = [
           es: "¿Qué es CAMBRA?",
         },
         a: {
-          en: "CAMBRA analyzes your card-payment costs — online (PSP) and in-store (TPV / physical terminal) — measures your effective rate against verifiable public benchmarks, and helps you recover what you're overpaying. Independent commerce brands typically overpay up to 40% on card processing without knowing it.",
-          fr: "CAMBRA analyse vos coûts d'acceptation — en ligne (PSP) et en point de vente (TPE / terminal physique) — mesure votre taux effectif face à des benchmarks publics vérifiables, et vous aide à récupérer ce que vous surpayez. Les marques de commerce indépendantes surpaient généralement jusqu'à 40 % sur les paiements par carte sans le savoir.",
-          es: "CAMBRA analiza tus costes de aceptación — online (PSP) y en tienda (TPV / terminal físico) — mide tu tasa efectiva frente a benchmarks públicos verificables y te ayuda a recuperar lo que pagas de más. Las marcas de comercio independiente suelen pagar de más hasta un 40 % en pagos con tarjeta sin saberlo.",
+          en: "CAMBRA analyzes your card-payment costs — online (PSP) and in-store (TPV / physical terminal) — measures your effective rate against verifiable public benchmarks, and helps negotiate better payment terms where the evidence supports them. Any opportunity shown remains an estimate until it is verified from the merchant's own data.",
+          fr: "CAMBRA analyse vos coûts d'acceptation — en ligne (PSP) et en point de vente (TPE / terminal physique) — mesure votre taux effectif face à des benchmarks publics vérifiables et aide à négocier de meilleures conditions lorsque les preuves le justifient. Toute opportunité affichée reste une estimation jusqu'à sa vérification à partir des propres données du commerçant.",
+          es: "CAMBRA analiza tus costes de aceptación — online (PSP) y en tienda (TPV / terminal físico) — mide tu tasa efectiva frente a benchmarks públicos verificables y ayuda a negociar mejores condiciones cuando los datos lo justifican. Toda oportunidad mostrada sigue siendo una estimación hasta que se verifica con los propios datos del comercio.",
         },
       },
       {
@@ -1008,9 +1008,21 @@ export const FAQ_CONTENT = [
           es: "¿Cómo gana dinero CAMBRA?",
         },
         a: {
-          en: "Only on results. When CAMBRA helps activate an optimization that produces verified savings, we charge a success fee — 25% of the verified savings over a 24-month agreement. No savings, no fee. There is no joining fee and no monthly subscription today.",
-          fr: "Uniquement sur les résultats. Quand CAMBRA aide à activer une optimisation qui produit des économies vérifiées, nous facturons une commission au succès — 25 % des économies vérifiées sur un accord de 24 mois. Pas d'économies, pas de commission. Il n'y a aujourd'hui ni frais d'adhésion ni abonnement mensuel.",
-          es: "Solo con resultados. Cuando CAMBRA ayuda a activar una optimización que produce ahorro verificado, cobramos una comisión de éxito — el 25 % del ahorro verificado durante un acuerdo de 24 meses. Sin ahorro, no hay comisión. Hoy no hay cuota de alta ni suscripción mensual.",
+          en: "CAMBRA charges the merchant 25% of actual positive savings verified during the first 24 months after Recover is activated. No positive verified savings, no fee. The payment provider pays CAMBRA no commission, referral fee, revenue share or other compensation.",
+          fr: "CAMBRA facture au commerçant 25 % des économies réelles positives vérifiées pendant les 24 premiers mois suivant l'activation de Recover. Sans économie positive vérifiée, aucune commission. Le prestataire de paiement ne verse à CAMBRA aucune commission, rémunération d'apporteur, part de revenus ni autre contrepartie.",
+          es: "CAMBRA cobra al comercio el 25 % del ahorro real positivo verificado durante los primeros 24 meses desde la activación de Recover. Sin ahorro positivo verificado, no hay comisión. El proveedor de pago no paga a CAMBRA ninguna comisión, referral fee, participación en ingresos ni otra compensación.",
+        },
+      },
+      {
+        q: {
+          en: "Who contracts with and invoices the merchant?",
+          fr: "Qui contracte avec le commerçant et le facture ?",
+          es: "¿Quién contrata y factura al comercio?",
+        },
+        a: {
+          en: "The payment provider quotes, contracts with and invoices the merchant directly. CAMBRA is not a party to that PSP contract. CAMBRA separately helps the merchant negotiate better conditions and charges only the merchant under the verified-savings model described above.",
+          fr: "Le prestataire de paiement établit son offre, contracte avec le commerçant et le facture directement. CAMBRA n'est pas partie à ce contrat PSP. Séparément, CAMBRA aide le commerçant à négocier de meilleures conditions et facture uniquement le commerçant selon le modèle d'économies vérifiées décrit ci-dessus.",
+          es: "El proveedor de pago presenta su oferta, contrata con el comercio y le factura directamente. CAMBRA no es parte de ese contrato con el PSP. Por separado, CAMBRA ayuda al comercio a negociar mejores condiciones y solo cobra al comercio según el modelo de ahorro verificado descrito arriba.",
         },
       },
       {
@@ -1032,9 +1044,9 @@ export const FAQ_CONTENT = [
           es: "¿Puedo cancelar en cualquier momento?",
         },
         a: {
-          en: "Yes. CAMBRA has no lock-in. You can pause, downgrade, or close your account at any time without penalty.",
-          fr: "Oui. CAMBRA n'a pas de durée d'engagement. Vous pouvez suspendre, rétrograder ou fermer votre compte à tout moment sans pénalité.",
-          es: "Sí. CAMBRA no tiene permanencia. Puedes pausar, bajar de plan o cerrar tu cuenta en cualquier momento sin penalización.",
+          en: "You can close your CAMBRA account without a cancellation penalty. An already activated Recover agreement continues under its signed 24-month term, and the fee still applies only to actual positive savings CAMBRA can verify.",
+          fr: "Vous pouvez fermer votre compte CAMBRA sans pénalité de résiliation. Un accord Recover déjà activé se poursuit selon sa durée signée de 24 mois, et la commission ne s'applique toujours qu'aux économies réelles positives que CAMBRA peut vérifier.",
+          es: "Puedes cerrar tu cuenta CAMBRA sin penalización por cancelación. Un acuerdo Recover ya activado continúa según su plazo firmado de 24 meses, y la comisión sigue aplicándose solo al ahorro real positivo que CAMBRA pueda verificar.",
         },
       },
     ],
