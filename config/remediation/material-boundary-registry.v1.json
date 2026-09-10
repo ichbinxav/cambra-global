@@ -8,11 +8,11 @@
     "config/scheduler-inventory.json",
     "shared claim/emergency/cost primitives"
   ],
-  "input_fingerprint_sha256": "9578306875a8cddbd889d42b6f6e21351ffbd8009d07d05aba4bf9f35f0b7cd9",
+  "input_fingerprint_sha256": "7396fafa931a550ab0073bbf6ba62847ebff3484dbfb8bac5ea16e7f8af1394c",
   "input_file_count": 124,
   "surface_snapshot": {
-    "source_function_directories": 300,
-    "source_entry_files": 300,
+    "source_function_directories": 301,
+    "source_entry_files": 301,
     "physical_function_target": 276,
     "logical_route_count": 41,
     "stale_production_surface_inventory_declared_functions": 162,
@@ -1695,13 +1695,13 @@
         },
         {
           "path": "base44/functions/providerNegotiationAgent/entry.ts",
-          "sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
-          "bytes": 23968
+          "sha256": "edcd5f0ef2d24085461cadb9b7452562b0c88708fe47035a4e178230942f19db",
+          "bytes": 24553
         },
         {
           "path": "base44/functions/startProviderNegotiation/entry.ts",
-          "sha256": "dad15483fe08f29d798ce019ad5d61bec10b9214f7a1cc7700c9c94a732856a8",
-          "bytes": 11921
+          "sha256": "f3c8d0d8759af7a8c9900e233ba10168b320185309958fdbb19095a88bb552b5",
+          "bytes": 13163
         }
       ]
     },
@@ -1759,8 +1759,8 @@
         },
         {
           "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
-          "sha256": "9b1e0c86fb72ce91eb5ba19bc6fc4600fde8dec82cf3494ef37f407e22d1fe46",
-          "bytes": 22654
+          "sha256": "a7affb82e4496e038047e50187944df1471e81680754713cd26b5d4f129c3a7a",
+          "bytes": 20446
         },
         {
           "path": "base44/shared/schedulerRun.ts",
@@ -1814,8 +1814,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/resolveCommercialApproval/entry.ts",
-          "sha256": "90be2ff852ea0b7b5379452ecf51fc416cce68847920ad59a6a59a5e608bc9ee",
-          "bytes": 57861
+          "sha256": "58ed42c3d60d8a9084bb0c9a6ae33417a80271ae8f33f38eae11550bcdf7eb86",
+          "bytes": 57609
         },
         {
           "path": "base44/shared/approvalResolutionSaga.ts",
@@ -2003,8 +2003,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/recordConditionsActivation/entry.ts",
-          "sha256": "ab9be731f44d8f4e6baffcf7caca3ba412a8523744f98fff8f4291de512ba81c",
-          "bytes": 8165
+          "sha256": "de4220a5ac7e164b02f119cc996dce1cc0785359b503f22ea50df3ed0cdf46b7",
+          "bytes": 8012
         }
       ]
     },
@@ -2049,8 +2049,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/approveProviderMonetizationLegalReview/entry.ts",
-          "sha256": "1abff038c343668a0d90259cadce661689148e47d2586c1885ad7bdd9f1a89f4",
-          "bytes": 3284
+          "sha256": "c49e0848e404fbb3528c4fa7c309c6c65465c39993039a99fe366893f2c01223",
+          "bytes": 3640
         }
       ]
     },
@@ -2302,8 +2302,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/approveRecoverReportForInvoicing/entry.ts",
-          "sha256": "8275d887222a3a1afb9fec917fdc3fa3e9714025f460ac0edc18b2994437c4cd",
-          "bytes": 28366
+          "sha256": "fe52c3d9483bb94bee8d5117943c8dfbcb8264415d293194b2d912a9265105db",
+          "bytes": 28343
         }
       ]
     },
@@ -2348,8 +2348,8 @@
       "source_evidence": [
         {
           "path": "base44/functions/generateMonthlySavingsReport/entry.ts",
-          "sha256": "4bb6a0ea371ed843a2bb76e00b9e698c71f77627f885cf69f88baa320b7c6802",
-          "bytes": 23220
+          "sha256": "6100cb4e83a38a7be66111a6dbe7c33ea641b8da67d6f086f2adc6b112bf1d0e",
+          "bytes": 23208
         },
         {
           "path": "base44/shared/recoverReportAuthority.ts",
@@ -2645,18 +2645,18 @@
       "source_evidence": [
         {
           "path": "base44/functions/providerRevenueBillingWorker/entry.ts",
-          "sha256": "4569623ec8588643cce0a302e25b2ffc99f0fa439073edad57de0d93931db424",
-          "bytes": 7747
+          "sha256": "3c412018de06936ca246da32d8eca1befa221b47c7c84f5cbb6f36d2d9e320aa",
+          "bytes": 8103
         },
         {
           "path": "base44/functions/recordProviderRevenueInvoiceIssued/entry.ts",
-          "sha256": "beac1046f30ef440f64fce0934aaf6dd7635df49cad7fd88fd0228f5d65890e1",
-          "bytes": 4755
+          "sha256": "31a164642cdf65fe6598b66a8d2c6d9362a3b933addd9b56a0a6c826815adcb4",
+          "bytes": 5111
         },
         {
           "path": "base44/functions/recordProviderRevenuePayment/entry.ts",
-          "sha256": "a1d13d8c31443e8eed219b6190a360cc0042c61cb5a4b68973de807a1cf39c90",
-          "bytes": 6462
+          "sha256": "0cac2cc40f8c749c861e1d75e872c1787539771e0e4ff8ae9aaf143c0c77f733",
+          "bytes": 6818
         }
       ]
     },
@@ -2869,8 +2869,8 @@
         },
         {
           "path": "base44/functions/copilotChat/entry.ts",
-          "sha256": "15049214b2a8c08c2141deae0b25b60ef2ca1307590004a3ba819aa72bb7f006",
-          "bytes": 19013
+          "sha256": "27b92de605d24b8a79ee944ceee9579ee9d062bddfb1a100c3b59f804951f2fd",
+          "bytes": 18960
         },
         {
           "path": "base44/functions/crmAgent/entry.ts",
@@ -3078,8 +3078,8 @@
         },
         {
           "path": "base44/functions/collectiveNegotiationAgent/entry.ts",
-          "sha256": "9b1e0c86fb72ce91eb5ba19bc6fc4600fde8dec82cf3494ef37f407e22d1fe46",
-          "bytes": 22654
+          "sha256": "a7affb82e4496e038047e50187944df1471e81680754713cd26b5d4f129c3a7a",
+          "bytes": 20446
         },
         {
           "path": "base44/functions/commercialFollowUpWorker/entry.ts",
@@ -3188,8 +3188,8 @@
         },
         {
           "path": "base44/functions/providerMonetizationAgent/entry.ts",
-          "sha256": "40245b0c322cdbb65744c7c480221f1fda1b0e175ffac20c9cd4add6d867905f",
-          "bytes": 16387
+          "sha256": "0598ade0eb0e8dabc2ae20a19c388c3861852c6065e602e0639f487de7bb6296",
+          "bytes": 16743
         },
         {
           "path": "base44/functions/providerMonitorAgent/entry.ts",
@@ -3198,8 +3198,8 @@
         },
         {
           "path": "base44/functions/providerNegotiationAgent/entry.ts",
-          "sha256": "8e337f421b8a4a29ca32209b98751030ac3ffbb4cc12d7d8adf85a92a30e1d61",
-          "bytes": 23968
+          "sha256": "edcd5f0ef2d24085461cadb9b7452562b0c88708fe47035a4e178230942f19db",
+          "bytes": 24553
         },
         {
           "path": "base44/functions/providerResearchAgent/entry.ts",
@@ -3223,8 +3223,8 @@
         },
         {
           "path": "base44/functions/reviewProviderContract/entry.ts",
-          "sha256": "b9d2696fe4bf61fa7d62a40b41ef7f5bb84ee81ba116519cc86c736c1f72f9b1",
-          "bytes": 7396
+          "sha256": "6267581ba059d9093655f5f3719d7e83cde012814ccde67731029155f2a0a96c",
+          "bytes": 7671
         },
         {
           "path": "base44/functions/securityAgent/entry.ts",
