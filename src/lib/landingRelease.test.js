@@ -64,12 +64,15 @@ describe("landing truth and release controls", () => {
     expect(landing).toContain("BRAND_ASSETS.landingHero");
     expect(security).toContain("BRAND_ASSETS.securityDataPrism");
     expect(assets).toContain("/images/cambra-hero-5m-sleek-transparent-final.png");
-    expect(assets).toContain("/images/cambra-intelligence-stack-transparent-v3.png");
-    expect(assets).toContain("/images/cambra-security-data-prism-transparent-v4.png");
-    expect(fs.existsSync(path.join(root, "public/images/cambra-security-data-prism-transparent-v4.png"))).toBe(true);
+    expect(assets).toContain("/images/cambra-intelligence-layers-approved.webp");
+    expect(assets).toContain("/images/cambra-security-keyhole-approved.webp");
+    expect(assets).toContain("/images/cambra-impact-5m-approved.webp");
+    expect(fs.existsSync(path.join(root, "public/images/cambra-intelligence-layers-approved.webp"))).toBe(true);
+    expect(fs.existsSync(path.join(root, "public/images/cambra-security-keyhole-approved.webp"))).toBe(true);
+    expect(fs.existsSync(path.join(root, "public/images/cambra-impact-5m-approved.webp"))).toBe(true);
     expect(landing).not.toContain("cambra-fee-audit-24m-v3.png");
     expect(stack).not.toContain("cambra-intelligence-stack-v2.png");
-    expect(landing).not.toContain('t("ri_illustrative")');
+    expect(read("src/components/landing/RealImpactSection.jsx")).toContain('t("ri_illustrative")');
     expect(landing).toContain("clamp(44px, 3.85vw, 68px)");
     expect(landing).toContain("max-w-[760px]");
     expect(landing).not.toContain("min-[1180px]:w-[120%]");
@@ -81,7 +84,8 @@ describe("landing truth and release controls", () => {
     expect(landing).toContain("<TheStackSection />");
     expect(landing).toContain("<AudienceSection />");
     expect(landing).toContain("<BookCallModal");
-    expect(landing).not.toContain("<RealImpactSection />");
+    expect(landing).toContain("<RealImpactSection embedded />");
+    expect(landing).not.toContain("<ProblemSectionWow />");
     expect(landing).not.toContain("hero_visual_title");
     expect(headings).toContain('align = "center"');
     expect(headings).toContain("clamp(32px, 5vw, 64px)");
@@ -98,7 +102,6 @@ describe("landing truth and release controls", () => {
     const sections = [
       "<Hero onBookDemo=",
       "<HeroTrustStrip />",
-      "<ProblemSectionWow />",
       "<HowItWorksSection />",
       "<TheStackSection />",
       "<TrustSecuritySection />",
