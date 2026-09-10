@@ -16,6 +16,35 @@ describe('human-first and SEO-first public copy seal',()=>{
       expect(source).not.toMatch(/guaranteed savings|économies garanties|ahorro garantizado/i);
     }
   });
+  it('seals the PSP and merchant commercial model across all 23 locales',()=>{
+    const localeFiles=fs.readdirSync('src/lib/locales').filter((name)=>name.endsWith('.js'));
+    expect(localeFiles).toHaveLength(23);
+    for(const file of localeFiles){
+      const source=fs.readFileSync(`src/lib/locales/${file}`,'utf8');
+      const merchantModel=source.match(/^\s*fp_merchant_model:\s*"([^"]+)"/m)?.[1] || '';
+      const pricingV2=source.match(/^\s*prc_faq_a2_v2:\s*"([^"]+)"/m)?.[1] || '';
+      const pricingSuffix=source.match(/^\s*pd_t2_suffix:\s*"([^"]+)"/m)?.[1] || '';
+      expect(merchantModel, file).toMatch(/25/);
+      expect(merchantModel, file).toMatch(/24/);
+      expect(pricingV2, file).toMatch(/25/);
+      expect(pricingV2, file).toMatch(/24/);
+      expect(pricingV2, file).not.toMatch(/1[–-]12|13[–-]24|tiered/i);
+      expect(pricingSuffix, file).toMatch(/24/);
+      expect(pricingSuffix, file).not.toMatch(/→|1[–-]12|13[–-]24/);
+      expect(source).not.toMatch(/^\s*ref_fee_y[12]_label:|^\s*ref_next_step_v2:/m);
+    }
+
+    const pricingDual=fs.readFileSync('src/components/landing/PricingDual.jsx','utf8');
+    const providerPage=fs.readFileSync('src/pages/ForProviders.jsx','utf8');
+    const help=fs.readFileSync('src/lib/helpCenterContent.js','utf8');
+    const seo=fs.readFileSync('src/lib/seoConfig.js','utf8');
+    expect(pricingDual).not.toMatch(/25→15|pd_t2_suffix_v2|recoveryV2Available/);
+    expect(providerPage).toContain('t("fp_merchant_model")');
+    expect(help).toContain('Who contracts with and invoices the merchant?');
+    expect(help).toContain('pays CAMBRA no commission, referral fee, revenue share or other compensation');
+    expect(seo).toContain('proposed terms remain indicative until written approval');
+  });
+
   it('keeps technical governance language out of the main customer journey',()=>{
     for(const lang of ['en','fr','es']){
       const source=copy(lang);
