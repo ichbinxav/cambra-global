@@ -23,7 +23,7 @@ This release is a closure/hardening release, not a feature expansion. It preserv
 
 ## Money and jurisdiction invariants
 
-- Recover V2: 25% months 1–12; 15% months 13–24; 0% after month 24; referrals reduce the applicable fee by 5 percentage points with a 5% floor during the Recovery Term only.
+- Recover V2: 25% throughout months 1–24; 0% after month 24; referrals reduce the applicable fee by 5 percentage points with a 5% floor during the Recovery Term only.
 - Positive Verified Savings only. Estimates do not create debt.
 - Existing accepted Recoveries preserve their original contractual snapshot.
 - Invoicing is EUR-only. A non-EUR report blocks with currency mismatch rather than being converted or guessed.
