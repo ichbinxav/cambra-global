@@ -212,7 +212,15 @@ for (const [rel, replacements] of Object.entries({
   ],
 })) {
   let source = read(rel);
-  for (const [from, to] of replacements) source = replaceUnique(source, from, to, `${rel}:${from.slice(0, 24)}`);
+  for (const [from, to] of replacements) {
+    if (rel === "src/pages/admin/AdminProviderEconomics.jsx" && from === "Provider Economics") {
+      const count = source.split(from).length - 1;
+      if (count !== 2) throw new Error(`${rel}:${from}: expected two matches, found ${count}`);
+      source = source.replaceAll(from, to);
+    } else {
+      source = replaceUnique(source, from, to, `${rel}:${from.slice(0, 24)}`);
+    }
+  }
   stage(rel, source);
 }
 
