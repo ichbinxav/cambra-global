@@ -60,7 +60,7 @@ export const productPolicySchema = z
       successFeeFloorRate: z.literal(0.05),
       referralDiscountStepRate: z.literal(0.05),
       recoverEconomicsV2LegalApproved: z.boolean(),
-    }),
+    }).strict(),
     referralTerms: z.object({
       startRate: z.literal(0.25),
       stepRate: z.literal(0.05),
