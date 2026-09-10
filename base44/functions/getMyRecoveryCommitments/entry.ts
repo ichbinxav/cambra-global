@@ -1,12 +1,12 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
-import { recoveryTermFromActivation, standardFeeForDate, effectiveFee, referralCountFromYear1EquivalentFee, RECOVERY_ECONOMICS_V2, parisRecoveryDate } from '../../shared/recoveryEconomicsV2.ts';
+import { recoveryTermFromActivation, standardFeeForDate, effectiveFee, referralCountFromEffectiveFee, RECOVERY_ECONOMICS_V2, parisRecoveryDate } from '../../shared/recoveryEconomicsV2.ts';
 import { resolveFeePctForMonth } from '../../shared/billingFee.ts';
 
 function mask(a:any, currentFee:number|null){
   return { id:a.id, name:a.deal_name||'Payments Optimization', vertical:a.vertical, status:a.status,
     recovery_economics_version:a.recovery_economics_version||null, recovery_term_start_date:a.recovery_term_start_date||null,
-    recovery_term_year2_start_date:a.recovery_term_year2_start_date||null, recovery_term_end_date:a.recovery_term_end_date||null,
+    recovery_term_end_date:a.recovery_term_end_date||null,
     economic_right_status:a.economic_right_status||null, current_fee_pct:currentFee,
     projected_savings_annual:a.projected_savings_annual??a.estimated_savings_yearly??null,
     service_cancelled_at:a.service_cancelled_at||null, verification_access_status:a.verification_access_status||null };
@@ -24,7 +24,7 @@ export default async function(req:Request):Promise<Response>{
       const term=recoveryTermFromActivation(a.conditions_activated_at); const standard=standardFeeForDate(today,term);
       const activationFee=Number(a.node_share_percent);
       const rule=await resolveFeePctForMonth(svc,{deal_activation_id:a.id,brand_id:a.brand_id,provider_id:a.provider_id,fallbackPct:Number.isFinite(activationFee)?activationFee:Number.NaN},month);
-      if(Number.isFinite(Number(rule.pct))) currentFee=effectiveFee(standard,referralCountFromYear1EquivalentFee(rule.pct));
+      if(Number.isFinite(Number(rule.pct))) currentFee=effectiveFee(standard,referralCountFromEffectiveFee(rule.pct));
     }
     if(a.economic_right_status==='active' || ['authorized','migrating','live','monetizing','paused'].includes(a.status)) out.push(mask(a,currentFee));
   }
