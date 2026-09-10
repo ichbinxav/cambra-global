@@ -1,0 +1,138 @@
+{
+  "name": "ProviderOpportunityRegistration",
+  "type": "object",
+  "description": "Admin-only ledger for provider opportunity registration. Merchant identity is never stored here as free text. A signed provider agreement and merchant-specific consent are required before the registration notice; identified negotiation remains blocked until provider acknowledgement.",
+  "properties": {
+    "registration_key": {
+      "type": "string"
+    },
+    "external_reference": {
+      "type": "string"
+    },
+    "brand_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": "string"
+    },
+    "agreement_id": {
+      "type": "string"
+    },
+    "consent_record_id": {
+      "type": "string"
+    },
+    "market": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PREPARED",
+        "SUBMITTED_PENDING_RESPONSE",
+        "PROTECTED",
+        "PREEXISTING_CLAIMED",
+        "DISPUTED",
+        "REJECTED",
+        "EXPIRED"
+      ]
+    },
+    "merchant_identity_disclosure": {
+      "type": "string",
+      "enum": [
+        "WITHHELD",
+        "REGISTRATION_NOTICE_ONLY",
+        "NEGOTIATION_ALLOWED"
+      ]
+    },
+    "protection_months": {
+      "type": "number"
+    },
+    "claim_window_days": {
+      "type": "number"
+    },
+    "affiliates_scope": {
+      "type": "string"
+    },
+    "prepared_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_response_due_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provider_acknowledged_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "protection_starts_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "protection_ends_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "submission_evidence_reference": {
+      "type": "string"
+    },
+    "provider_response_evidence_reference": {
+      "type": "string"
+    },
+    "preexisting_relationship_evidence_reference": {
+      "type": "string"
+    },
+    "preexisting_relationship_notes": {
+      "type": "string"
+    },
+    "terms_hash": {
+      "type": "string"
+    },
+    "protection_version": {
+      "type": "string"
+    },
+    "prepared_by": {
+      "type": "string"
+    },
+    "updated_by": {
+      "type": "string"
+    },
+    "audit_json": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "registration_key",
+    "external_reference",
+    "brand_id",
+    "provider_id",
+    "agreement_id",
+    "consent_record_id",
+    "status",
+    "merchant_identity_disclosure",
+    "protection_months",
+    "claim_window_days",
+    "prepared_at",
+    "terms_hash",
+    "protection_version"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
