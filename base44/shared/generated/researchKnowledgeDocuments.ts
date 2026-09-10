@@ -2,23 +2,23 @@
 // External research is untrusted retrieval context, never an operational fact or ML-training label.
 export const RESEARCH_KNOWLEDGE_DOCUMENTS = Object.freeze([
   {
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "canonical_sha256": "ff32cc33a47e69d629458a295def520bcaecec2c9ff07feb05aecffb6be4b3fc",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "canonical_sha256": "a2b4dc01bb39a97e22a7d8994605333c918ebe61edb18bc61facd8124f64ed31",
     "title": "Bloque 5 — GTM y deliverability",
     "capture_date": "2026-08-13",
     "primary_path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
     "aliases": [
       {
-        "alias_id": "research-alias:2026-08-13:cambra-bloque-5-gtm-deliverability-2026-md:f3d5a9e72cc8",
+        "alias_id": "research-alias:2026-08-13:cambra-bloque-5-gtm-deliverability-2026-md:4bd52d3352b6",
         "original_filename": "CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
         "stored_path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
         "capture_date": "2026-08-13"
       }
     ],
-    "byte_count": 42185,
-    "line_count": 887,
+    "byte_count": 42181,
+    "line_count": 886,
     "topics": [
       "deliverability",
       "go_to_market",
@@ -847,10 +847,10 @@ export const RESEARCH_KNOWLEDGE_DOCUMENTS = Object.freeze([
 ]);
 export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
   {
-    "chunk_id": "research-chunk:033f969773b34d22be56c97f",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:a88015aa3a3b6c9385cc0620",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Bloque 5 — GTM y deliverability",
     "heading_path": [
@@ -884,10 +884,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:aa08c6fcb7c5ea6b27bd4f9a",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:d8e2964f3aded76fd201cd98",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Niveles usados",
     "heading_path": [
@@ -922,10 +922,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:f5a1804dc9ba47881ca8e820",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:b377d366c1b335077319e285",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "1. Conclusión ejecutiva",
     "heading_path": [
@@ -960,10 +960,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:4191ceae83265d8e74def6b9",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:1c5a5c49df3c44bd048996d8",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "2. Requisitos vigentes de bulk senders en 2026",
     "heading_path": [
@@ -998,10 +998,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:24f1513f862077daf2bbe86a",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:d7f518638b5b57d928607b53",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Comparativa operativa",
     "heading_path": [
@@ -1037,10 +1037,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:f023fae827dfdc7adc0fba0d",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:a8341f95f4d6dc91986cf25e",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Headers mínimos de one-click",
     "heading_path": [
@@ -1076,10 +1076,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:69d38aabb529f0659c495261",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:2660b926600032d9a62c2d04",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Implicaciones directas para Instantly",
     "heading_path": [
@@ -1115,10 +1115,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:c9dd8404e5bd957f9c946c94",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:1aef84af62e80388af29c057",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "2.1 Los dominios separados sirven para aislar riesgo, no para evadir reglas",
     "heading_path": [
@@ -1155,10 +1155,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:9653205ce157b95ccd312021",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:da90212c1505ae6d28151b25",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "2.2 El objetivo interno debe ser muy inferior al máximo de los proveedores",
     "heading_path": [
@@ -1195,10 +1195,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:c28896235d002fbe46bc6545",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:05d667d8ff570c7afe4e9e8e",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "2.3 Todo outbound debe tratarse técnicamente como promocional",
     "heading_path": [
@@ -1235,10 +1235,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:edb3e31b60897961734a849d",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:bd87b8475de4db07586d34d5",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "3. Requisito manual 4 — Domain & Mailbox Readiness",
     "heading_path": [
@@ -1273,10 +1273,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:dd6a946515d05b83b775f569",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:cf5c969ecd8df24525721a44",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Contrato funcional recomendado",
     "heading_path": [
@@ -1312,10 +1312,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:41fa5147d151cd5bc03f7899",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:0950a47cdbcd3362e41533da",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Datos que deben guardarse",
     "heading_path": [
@@ -1351,10 +1351,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:37d40c6116bce1947eca3854",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:85fe079c7f3a13b2b32a9e1c",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Por dominio",
     "heading_path": [
@@ -1391,10 +1391,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:ea1c6b2e037717478ad09b54",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:bc19d42ffcaa73a8959794d5",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Por mailbox",
     "heading_path": [
@@ -1431,10 +1431,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:8283bdfc18a162b4f3249849",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:432578f79f892e2989f918d9",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Acceptance gates",
     "heading_path": [
@@ -1470,10 +1470,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:e615d4334a2f9ece0a2d2bb0",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:9db3439acac6283401a0a7ce",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Estados automáticos",
     "heading_path": [
@@ -1509,10 +1509,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:03b8aeb7a1357118f2a08ad9",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:8ac03227ecf99b4137c3cbdd",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Pasar a `PAUSED` inmediatamente",
     "heading_path": [
@@ -1549,10 +1549,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:638cc2965cd9e13432923ad5",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:490e2c67c62803c8634beee4",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Pasar a `QUARANTINED`",
     "heading_path": [
@@ -1589,10 +1589,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:21398054a22e16be849a5b5f",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:05672e0835ce72a76c431f53",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Progresión DMARC recomendada",
     "heading_path": [
@@ -1628,10 +1628,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:add722d2a0ceb2157ed523fd",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:0447549c57612a0028f07651",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "4. Requisito manual 5 — Commercial Campaign Launch",
     "heading_path": [
@@ -1666,10 +1666,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:da8e8c9066c630625530ec68",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:580a9e1ea125effddf87a0c7",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Regla central",
     "heading_path": [
@@ -1705,10 +1705,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:d501663eb42e368fb2513fc3",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:1234ee3d701b3d091c63fc39",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Gates de campaña",
     "heading_path": [
@@ -1744,10 +1744,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:b73617b1cd3fe115cd7ad457",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:87126cfa17531bd35d1a96d9",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Límites recomendados",
     "heading_path": [
@@ -1783,10 +1783,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:5bf8831956707b123b2617d1",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:501831b5e3617bfcfd4a9dfb",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Métricas que sí importan",
     "heading_path": [
@@ -1822,10 +1822,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:9014847e7b085e3ecca9a143",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:aa13bb9cbdee4564a992b960",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Priors de aprendizaje",
     "heading_path": [
@@ -1861,10 +1861,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:544a71f8ee80d9e261d025a8",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:35488c9f8ad80581deaed8ac",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "5. Ferias y eventos septiembre–diciembre de 2026",
     "heading_path": [
@@ -1899,10 +1899,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:4fe3bd0ac9aeb893bfd7e9f8",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:d46565c8480561d2ec8efa07",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Clasificación",
     "heading_path": [
@@ -1938,10 +1938,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:0a1a1df26e190a93f3f22870",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:c64e2ea6a5ab9c7401d21247",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Calendario verificado",
     "heading_path": [
@@ -1977,10 +1977,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:89f62b75b514a8ce243fdb07",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:9ddb3d7d901822187643b4ba",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "E‑SHOW Barcelona",
     "heading_path": [
@@ -2016,10 +2016,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:e1d7093fc11479dffe7f6894",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:e61e7a3129eb66b354048065",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Regla de viaje",
     "heading_path": [
@@ -2055,10 +2055,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:90e5eb78f0c3b96950c8525e",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:302b3a5537c09dca4a8d9c6b",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "6. Plan de proof-of-demand: agosto–diciembre",
     "heading_path": [
@@ -2093,10 +2093,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:d69de40eab07c995ec2755fe",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:44d0073824722d20b4ee829e",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "13 de agosto–7 de septiembre: Apollo harvest y preparación",
     "heading_path": [
@@ -2132,10 +2132,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:44bf5c9343deb63f6d9579c7",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:402b1ca1de8e09bba5dfb3ae",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Objetivo",
     "heading_path": [
@@ -2172,10 +2172,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:e3b3818ed6f3385d95a7737a",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:5393fa838a663c8136ae488c",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Septiembre: microcohorts españolas",
     "heading_path": [
@@ -2211,10 +2211,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:2c46201e4fc441357d931625",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:b9bc6b5937e60a872c3ad745",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Gate de septiembre",
     "heading_path": [
@@ -2251,10 +2251,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:0248fb0583564aaf5af2b3be",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:715401d4a9b7376b272fde0d",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Octubre: validar valor real",
     "heading_path": [
@@ -2290,10 +2290,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:f2f23427aa2a9bf0f6f6b073",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:7cceaaef333813f9c079755b",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Gate acumulado de octubre",
     "heading_path": [
@@ -2330,10 +2330,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:ac3e9b336ddc27d5806f12ef",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:2aace473f59ed8c70bd7ef94",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Noviembre: convertir intención",
     "heading_path": [
@@ -2369,10 +2369,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:308adbd653367edbd53b172e",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:a19192a7534713833e344095",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Gate de noviembre",
     "heading_path": [
@@ -2409,10 +2409,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:f67b526d6be7d45e2a37d415",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:4393d69536f4a46ddd92cdba",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Diciembre: consolidación",
     "heading_path": [
@@ -2448,10 +2448,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:f386109077fb6a85c2fd6787",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:10efaaebf03122671185fc8f",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "7. Directorios y fuentes de empresas",
     "heading_path": [
@@ -2486,10 +2486,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:3b1b82107304810b4b028356",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:0291b2257255ee77d5379e83",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "España",
     "heading_path": [
@@ -2525,10 +2525,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:8d17969c0900f5c8c9ec8579",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:ef86aa02ccc172cd11271144",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Francia",
     "heading_path": [
@@ -2564,10 +2564,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:af59fdc7d3327ed3a474781c",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:384ff0190c8973d12e05b217",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Marketplaces B2B y plataformas de nicho",
     "heading_path": [
@@ -2603,10 +2603,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:cfd9d4556f51b1ed12a07cd7",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:39f59fc4ddc55c1d41547b11",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Validación obligatoria posterior",
     "heading_path": [
@@ -2642,10 +2642,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:045be9a54e62167a149623dd",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:11da792bfbfaa55f69262577",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "8. Apollo e Instantly: filtros mapeados al ICP real",
     "heading_path": [
@@ -2680,10 +2680,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:cb5730be2374a4cdb975bdcd",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:5bc1ed406d0f84a14fe9f272",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Flujo correcto",
     "heading_path": [
@@ -2719,10 +2719,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:3e1bf51239cf848a93befbd9",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:9e5f86959af6ad4fbfda8921",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Configuración base España",
     "heading_path": [
@@ -2758,10 +2758,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:fd05b5de0cba8837e31b6c87",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:edd311871e53bfd0fdaf7222",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Company filters",
     "heading_path": [
@@ -2798,10 +2798,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:14172daeb0e8bc90d5d597ba",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:82604a35752138f9f32b28f6",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Vertical keywords",
     "heading_path": [
@@ -2838,10 +2838,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:1d59a40c33bed3dcae762dd8",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:02d9b3522ccdb2cb1f6e88a6",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Personas por tamaño",
     "heading_path": [
@@ -2877,10 +2877,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:87e0ef57d6ad7d288d43e6d2",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:b9cdfbe4fd0776d996b1ce18",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Empresas de 2–10 empleados",
     "heading_path": [
@@ -2917,10 +2917,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:456482b7ae0e38564430dd0c",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:499060a2cd5086245d6330f2",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Empresas de 11–50",
     "heading_path": [
@@ -2957,10 +2957,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:1cdac0e5e4de6c7e2c9cc47b",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:7c467450c3c5eeb6dd4409ab",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Empresas de 51–200",
     "heading_path": [
@@ -2997,10 +2997,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:63cca23c95503347163d80f6",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:a64da7d199b1a59665f0863d",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Instantly SuperSearch",
     "heading_path": [
@@ -3036,10 +3036,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:3a4a089013c61e5216d41b1d",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:29a76a700af36280f67cca8d",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Campos de AI research",
     "heading_path": [
@@ -3075,10 +3075,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:62b6578459526799e709c9f6",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:c9bb4fe95a507447dd26c295",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Scoring propuesto",
     "heading_path": [
@@ -3114,10 +3114,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:8c1c47132d7c001c36a073b9",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:13a0c3290d8b75ca34fd5104",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "9. Competidores europeos: quién hace qué y cómo cobra",
     "heading_path": [
@@ -3152,10 +3152,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:5c539349c1be19200f4c18e4",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:c6109665447c585263fb1223",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Mapa competitivo",
     "heading_path": [
@@ -3191,10 +3191,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:d960b27fcc32edd2b961dbff",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:6dfd11b7da87c82d4338cf61",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Conclusión competitiva correcta",
     "heading_path": [
@@ -3230,10 +3230,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:876ef11823bc2c690dc5bb44",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:944cb1ce16d1dec41a0bf411",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "10. Posicionamiento recomendado",
     "heading_path": [
@@ -3268,10 +3268,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:178668748e5718c97547a2d1",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:d092c250b3a9bb3e28db9a4f",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Categoría",
     "heading_path": [
@@ -3307,10 +3307,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:49ffc87ef25f4b61f6cb44e0",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:be4012c6cfac59b603956ea0",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Frase central",
     "heading_path": [
@@ -3346,10 +3346,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:0fbbc5391d0d8e644d05d0da",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:189c06c39aa4d1deaff08658",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Versión comercial sencilla",
     "heading_path": [
@@ -3385,10 +3385,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:bec46127a2a7c1552cc34266",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:e5600063787b375b724143a0",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Diferenciadores",
     "heading_path": [
@@ -3424,10 +3424,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:029314c2ebde57bb56ba60ba",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:4ef3259e47388a5b7b3e5001",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Lectura del pricing de CAMBRA",
     "heading_path": [
@@ -3435,10 +3435,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "10. Posicionamiento recomendado",
       "Lectura del pricing de CAMBRA"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L719-L735",
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L719-L734",
     "line_start": 719,
-    "line_end": 735,
-    "text": "### Lectura del pricing de CAMBRA\n\nCon la estructura actual:\n\n- 25% del ahorro verificado durante el primer año.\n- 15% durante el segundo.\n- 0% posteriormente.\n\nSobre dos años de ahorro constante:\n\n- CAMBRA recibe el equivalente al 20% del ahorro total de los primeros 24 meses.\n- El merchant conserva el 80%.\n- Desde el mes 25 conserva el 100%.\n\nEsta explicación es mucho más defendible que limitarse a decir “25% de success fee”.\n\n---",
+    "line_end": 734,
+    "text": "### Lectura del pricing de CAMBRA\n\nCon la estructura actual:\n\n- 25% del ahorro positivo verificado durante todos los meses 1–24.\n- 0% posteriormente.\n\nSobre dos años de ahorro constante:\n\n- CAMBRA recibe el 25% del ahorro positivo verificado de los primeros 24 meses.\n- El merchant conserva el 75%.\n- Desde el mes 25 conserva el 100%.\n\nEsta explicación es mucho más defendible que limitarse a decir “25% de success fee”.\n\n---",
     "source_urls": [],
     "opaque_citations": [],
     "citation_status": "NO_MACHINE_RESOLVABLE_CITATION",
@@ -3463,20 +3463,20 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:69bc68e8fceffaf120e73af2",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:3f7bd832ae995eaeaf4848b0",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "11. Objeciones comerciales",
     "heading_path": [
       "Bloque 5 — GTM y deliverability",
       "11. Objeciones comerciales"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L737-L751",
-    "line_start": 737,
-    "line_end": 751,
-    "text": "## 11. Objeciones comerciales\n\n| Objeción | Respuesta CAMBRA |\n|---|---|\n| “Mi PSP ya me da buenas condiciones.” | Un PSP puede explicar su precio, pero no es un benchmark independiente de su propio margen. CAMBRA muestra línea por línea qué es regulado, pass-through, margen o fee negociable. |\n| “No quiero cambiar de proveedor.” | CAMBRA empieza por renegociar con el actual. La migración solo se plantea cuando la evidencia muestra que el incumbent no puede cerrar la diferencia. |\n| “Podemos negociarlo nosotros.” | Perfecto: CAMBRA puede entregar el benchmark y evidence pack para que el equipo negocie, o actuar bajo mandato. |\n| “El porcentaje es caro.” | Solo se aplica a ahorro realizado y verificable. En 24 meses, CAMBRA recibe el 20% del ahorro acumulado y el merchant retiene el 80%; después conserva todo. |\n| “Stripe/Shopify Payments es simple.” | El precio visible no siempre refleja el coste efectivo por mix de tarjetas, países, FX, métodos alternativos, refunds, disputes y fees periféricos. |\n| “No quiero compartir datos sensibles.” | El análisis inicial debe funcionar con statements y contratos minimizados, sin PAN ni cardholder data, con retención limitada y evidencias auditables. |\n| “Un broker me lo hace gratis.” | Hay que preguntar quién remunera al broker y si las recomendaciones están condicionadas por acuerdos comerciales. |\n| “Un orquestador ya optimiza esto.” | Un orquestador puede mejorar routing y resiliencia, pero implica integración y complejidad. CAMBRA determina primero si esa inversión está justificada. |\n| “No sé si el ahorro será material.” | Si no se encuentra ahorro material verificable, no se activa el success fee. |\n\n---",
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L736-L750",
+    "line_start": 736,
+    "line_end": 750,
+    "text": "## 11. Objeciones comerciales\n\n| Objeción | Respuesta CAMBRA |\n|---|---|\n| “Mi PSP ya me da buenas condiciones.” | Un PSP puede explicar su precio, pero no es un benchmark independiente de su propio margen. CAMBRA muestra línea por línea qué es regulado, pass-through, margen o fee negociable. |\n| “No quiero cambiar de proveedor.” | CAMBRA empieza por renegociar con el actual. La migración solo se plantea cuando la evidencia muestra que el incumbent no puede cerrar la diferencia. |\n| “Podemos negociarlo nosotros.” | Perfecto: CAMBRA puede entregar el benchmark y evidence pack para que el equipo negocie, o actuar bajo mandato. |\n| “El porcentaje es caro.” | Solo se aplica a ahorro positivo realizado y verificable. Durante los primeros 24 meses, CAMBRA recibe el 25% y el merchant retiene el 75%; después conserva todo. |\n| “Stripe/Shopify Payments es simple.” | El precio visible no siempre refleja el coste efectivo por mix de tarjetas, países, FX, métodos alternativos, refunds, disputes y fees periféricos. |\n| “No quiero compartir datos sensibles.” | El análisis inicial debe funcionar con statements y contratos minimizados, sin PAN ni cardholder data, con retención limitada y evidencias auditables. |\n| “Un broker me lo hace gratis.” | Hay que preguntar quién remunera al broker y si las recomendaciones están condicionadas por acuerdos comerciales. |\n| “Un orquestador ya optimiza esto.” | Un orquestador puede mejorar routing y resiliencia, pero implica integración y complejidad. CAMBRA determina primero si esa inversión está justificada. |\n| “No sé si el ahorro será material.” | Si no se encuentra ahorro material verificable, no se activa el success fee. |\n\n---",
     "source_urls": [],
     "opaque_citations": [],
     "citation_status": "NO_MACHINE_RESOLVABLE_CITATION",
@@ -3501,19 +3501,19 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:9f7ae6b95229b892e47f99d1",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:84c4c8528e22ca1367375bb2",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "12. Independencia y revenue share de proveedores",
     "heading_path": [
       "Bloque 5 — GTM y deliverability",
       "12. Independencia y revenue share de proveedores"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L753-L757",
-    "line_start": 753,
-    "line_end": 757,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L752-L756",
+    "line_start": 752,
+    "line_end": 756,
     "text": "## 12. Independencia y revenue share de proveedores\n\nEsta es la decisión estratégica más delicada del bloque.\n\nEcomStream afirma de forma explícita que no trabaja para PSP, no recibe referral revenue y no mantiene relaciones comerciales que creen conflictos. Por tanto, CAMBRA no puede utilizar la misma promesa mientras incorpora revenue share de proveedores sin disclosure.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3539,10 +3539,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:c711358038710e50273fa594",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:0fa80bdb58586f94b54e4c3b",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Modelo recomendado",
     "heading_path": [
@@ -3550,9 +3550,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "12. Independencia y revenue share de proveedores",
       "Modelo recomendado"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L759-L759",
-    "line_start": 759,
-    "line_end": 759,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L758-L758",
+    "line_start": 758,
+    "line_end": 758,
     "text": "### Modelo recomendado",
     "source_urls": [],
     "opaque_citations": [],
@@ -3578,10 +3578,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:fd0d8caebd77ce0c3b1211ca",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:01e09eeed8d83eac24d944b5",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Opción A — `MERCHANT_ONLY`",
     "heading_path": [
@@ -3590,9 +3590,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "Modelo recomendado",
       "Opción A — `MERCHANT_ONLY`"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L761-L766",
-    "line_start": 761,
-    "line_end": 766,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L760-L765",
+    "line_start": 760,
+    "line_end": 765,
     "text": "#### Opción A — `MERCHANT_ONLY`\n\n- CAMBRA cobra únicamente al merchant.\n- No recibe comisión del PSP seleccionado.\n- Ranking y recomendación completamente independientes.\n- Posicionamiento más fuerte.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3618,10 +3618,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:9c7579401b7b8299dbbe2a87",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:d5c1f8e1ea2d36bee8397ac6",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Opción B — `DISCLOSED_REBATE`",
     "heading_path": [
@@ -3630,9 +3630,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "Modelo recomendado",
       "Opción B — `DISCLOSED_REBATE`"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L768-L776",
-    "line_start": 768,
-    "line_end": 776,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L767-L775",
+    "line_start": 767,
+    "line_end": 775,
     "text": "#### Opción B — `DISCLOSED_REBATE`\n\nCuando exista pago del provider:\n\n- debe declararse antes de la decisión;\n- no puede modificar score, ranking ni recomendación;\n- debe registrarse en `ProviderEconomicRelationship`;\n- debe descontarse de la factura CAMBRA o trasladarse al merchant;\n- el merchant debe poder solicitar una comparación sin proveedores remuneradores.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3658,10 +3658,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:675f51b2dfc83d4eeeb1cf5d",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:24b181e46179183354fb1d2a",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Prohibido",
     "heading_path": [
@@ -3669,9 +3669,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "12. Independencia y revenue share de proveedores",
       "Prohibido"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L778-L786",
-    "line_start": 778,
-    "line_end": 786,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L777-L785",
+    "line_start": 777,
+    "line_end": 785,
     "text": "### Prohibido\n\n- Comisión no declarada.\n- Posicionar más alto al proveedor que paga.\n- Usar “independiente” sin explicar las relaciones económicas.\n- Cobrar simultáneamente success fee al merchant y referral fee al provider sin compensación o disclosure.\n- Permitir que el Commercial Agent conozca el payout antes de generar el ranking técnico.\n\n---",
     "source_urls": [],
     "opaque_citations": [],
@@ -3697,19 +3697,19 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:21a65dd0ed3bf2e3abc302d5",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:8e2b64496435eed2a7cface6",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "13. “Por qué ahora”",
     "heading_path": [
       "Bloque 5 — GTM y deliverability",
       "13. “Por qué ahora”"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L788-L788",
-    "line_start": 788,
-    "line_end": 788,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L787-L787",
+    "line_start": 787,
+    "line_end": 787,
     "text": "## 13. “Por qué ahora”",
     "source_urls": [],
     "opaque_citations": [],
@@ -3735,10 +3735,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:a2481f5cf978cf9bf1ee3586",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:68203c70004716f61a5ccde5",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Hechos",
     "heading_path": [
@@ -3746,9 +3746,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "13. “Por qué ahora”",
       "Hechos"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L790-L796",
-    "line_start": 790,
-    "line_end": 796,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L789-L795",
+    "line_start": 789,
+    "line_end": 795,
     "text": "### Hechos\n\nLa regulación europea limita el interchange de muchas tarjetas de consumo a aproximadamente 0,20% para débito y 0,30% para crédito, pero no limita todo el coste de aceptación: siguen existiendo scheme fees, margen del adquirente/PSP, cross-border, FX, servicios y costes periféricos.\n\nCMSPI estima que las actualizaciones de scheme fees de abril de 2026 tendrán un impacto relevante sobre merchants europeos. Es una estimación de un actor comercial, no una cifra regulatoria independiente, pero confirma que el fee stack sigue cambiando en 2026.\n\nGoogle y Microsoft están aplicando requisitos de autenticación con rechazos reales, reduciendo la viabilidad del outbound masivo de baja calidad. Esto favorece el enfoque company-first y evidence-first de CAMBRA.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3774,10 +3774,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:dc3ad1bfed48b71c56bbe719",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:35696861d331b57c03e9f75f",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Inferencia estratégica",
     "heading_path": [
@@ -3785,9 +3785,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "13. “Por qué ahora”",
       "Inferencia estratégica"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L798-L809",
-    "line_start": 798,
-    "line_end": 809,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L797-L808",
+    "line_start": 797,
+    "line_end": 808,
     "text": "### Inferencia estratégica\n\n- Las grandes consultoras se concentran en enterprise.\n- Pagos cuesta al menos $1.500 mensuales si se combina Growth y benchmarking.\n- ERA declara un target de €30–300 millones.\n- EcomStream demuestra que el no-cure-no-pay funciona, pero su servicio sigue siendo altamente personal y consultivo.\n\nPor tanto, existe un espacio defendible para marcas europeas de aproximadamente €250.000–€20 millones, atendidas mediante software, automatización, datos explicables y success fee.\n\nQ4 también es un momento especialmente útil para conseguir statements con mayor volumen, observar mix real y abrir conversaciones de presupuesto o renovación. Esto es una inferencia GTM y debe probarse con los cohorts de septiembre–diciembre, no almacenarse como verdad permanente.\n\n---",
     "source_urls": [],
     "opaque_citations": [],
@@ -3813,19 +3813,19 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:c52749109146ef5092a0b096",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:babc4d0d1b8bb059d9dfc835",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "14. Política de actualización de la inteligencia",
     "heading_path": [
       "Bloque 5 — GTM y deliverability",
       "14. Política de actualización de la inteligencia"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L811-L843",
-    "line_start": 811,
-    "line_end": 843,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L810-L842",
+    "line_start": 810,
+    "line_end": 842,
     "text": "## 14. Política de actualización de la inteligencia\n\nEste bloque no debe congelarse como documentación estática.\n\n| Dataset | Revisión |\n|---|---|\n| Google/Yahoo/Microsoft sender rules | Cada 7 días y ante cambios de error codes. |\n| DNS y readiness de cada dominio | Diario y antes de cada campaign launch. |\n| Fechas de eventos | Mensual; después T‑60, T‑30, T‑14 y T‑7. |\n| Apollo/Instantly filters | Mensual y al cambiar plan/API. |\n| Directorios y exhibitor lists | En cuanto se publique una nueva edición. |\n| Pricing de competidores | Mensual durante prelaunch; trimestral posteriormente. |\n| Claims de competidores | Mantener como `VERIFIED_VENDOR`, nunca como verdad independiente. |\n\nCada registro debería contener:\n\n```text\nsource_url\nsource_type\nretrieved_at\neffective_from\neffective_to\ncountry\nprovider_or_competitor\nclaim\ntruth_level\nconfidence\nevidence_excerpt\nnext_review_at\nsupersedes_record_id\n```\n\n---",
     "source_urls": [],
     "opaque_citations": [],
@@ -3851,19 +3851,19 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:c7d9b438ef05fbcbeda89c3f",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:739563b9249b3f3045d69457",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "15. Seal final del bloque",
     "heading_path": [
       "Bloque 5 — GTM y deliverability",
       "15. Seal final del bloque"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L845-L845",
-    "line_start": 845,
-    "line_end": 845,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L844-L844",
+    "line_start": 844,
+    "line_end": 844,
     "text": "## 15. Seal final del bloque",
     "source_urls": [],
     "opaque_citations": [],
@@ -3889,10 +3889,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:93eb6247f57196f8cf3a5366",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:beba383c3664859c8d697cbf",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Puede cerrarse ahora",
     "heading_path": [
@@ -3900,9 +3900,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "15. Seal final del bloque",
       "Puede cerrarse ahora"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L847-L857",
-    "line_start": 847,
-    "line_end": 857,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L846-L856",
+    "line_start": 846,
+    "line_end": 856,
     "text": "### Puede cerrarse ahora\n\n- Requisitos actuales de Google, Yahoo y Microsoft identificados.\n- Estándar universal CAMBRA definido.\n- Acceptance gates de los requisitos 4 y 5 definidos.\n- Calendario septiembre–diciembre verificado.\n- Ausencia de confirmación de E‑SHOW Barcelona registrada.\n- Fuentes y filtros ICP definidos.\n- Competidores, pricing público y posicionamiento documentados.\n- Plan de proof-of-demand definido.\n- Conflicto de independencia/revenue share identificado.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3928,10 +3928,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:6ce4f03919a8e82e34441e2e",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:b7c3ec02fe475e3c3f158f2b",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "No puede marcarse todavía como producción sellada",
     "heading_path": [
@@ -3939,9 +3939,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "15. Seal final del bloque",
       "No puede marcarse todavía como producción sellada"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L859-L868",
-    "line_start": 859,
-    "line_end": 868,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L858-L867",
+    "line_start": 858,
+    "line_end": 867,
     "text": "### No puede marcarse todavía como producción sellada\n\n- SPF, DKIM y DMARC no comprobados sobre cada dominio real.\n- Endpoint RFC 8058 no probado end-to-end.\n- Suppression global no probada entre CAMBRA e Instantly.\n- Seed delivery Gmail/Yahoo/Microsoft no ejecutada.\n- Complaint telemetry no verificada.\n- Mailbox caps y circuit breakers no probados.\n- Digital 1to1 debe reconfirmarse oficialmente por la inconsistencia de su página.\n- `send_capacity` debe continuar en `0` hasta que el Req 4 obtenga `READY`.",
     "source_urls": [],
     "opaque_citations": [],
@@ -3967,10 +3967,10 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
     "training_eligible": false
   },
   {
-    "chunk_id": "research-chunk:7ae110044be70c6826702089",
-    "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-    "document_sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+    "chunk_id": "research-chunk:b50f17d5ee317b132e42972f",
+    "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+    "document_sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
     "title": "Bloque 5 — GTM y deliverability",
     "heading": "Orden de implementación bloqueado",
     "heading_path": [
@@ -3978,9 +3978,9 @@ export const RESEARCH_KNOWLEDGE_CHUNKS = Object.freeze([
       "15. Seal final del bloque",
       "Orden de implementación bloqueado"
     ],
-    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L870-L886",
-    "line_start": 870,
-    "line_end": 886,
+    "locator": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md:L869-L885",
+    "line_start": 869,
+    "line_end": 885,
     "text": "### Orden de implementación bloqueado\n\n```text\nReq 4 Domain Readiness\n        ↓\nLive DNS/Header/Unsubscribe Tests\n        ↓\nReq 5 Campaign Readiness\n        ↓\nSpain Microcohorts\n        ↓\nEvidence Uploads\n        ↓\nVerified Opportunity\n        ↓\nScale\n```",
     "source_urls": [],
     "opaque_citations": [],

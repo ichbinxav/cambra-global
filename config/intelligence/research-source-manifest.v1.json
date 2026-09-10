@@ -32,23 +32,23 @@
     "unique_documents": 9,
     "exact_duplicates": 2,
     "chunks": 260,
-    "bytes_physical": 516994,
-    "bytes_unique": 419567,
+    "bytes_physical": 516990,
+    "bytes_unique": 419563,
     "valid_source_urls": 36,
     "opaque_citations": 323
   },
   "sources": [
     {
-      "alias_id": "research-alias:2026-08-13:cambra-bloque-5-gtm-deliverability-2026-md:f3d5a9e72cc8",
-      "source_id": "research:f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
+      "alias_id": "research-alias:2026-08-13:cambra-bloque-5-gtm-deliverability-2026-md:4bd52d3352b6",
+      "source_id": "research:4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
       "original_filename": "CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
       "stored_path": "research/external/2026-08-13/originals/CAMBRA_Bloque_5_GTM_Deliverability_2026.md",
       "capture_date": "2026-08-13",
       "mime_type": "text/markdown; charset=utf-8",
-      "sha256": "f3d5a9e72cc8b02fbba59fda8b2b67f9a0a0a4ac6a4488a0090d3477433371e9",
-      "canonical_sha256": "ff32cc33a47e69d629458a295def520bcaecec2c9ff07feb05aecffb6be4b3fc",
-      "byte_count": 42185,
-      "line_count": 887,
+      "sha256": "4bd52d3352b6abde29f181680c9fa1ff29dd97e82b7f0b2dded7d55b6014ef21",
+      "canonical_sha256": "a2b4dc01bb39a97e22a7d8994605333c918ebe61edb18bc61facd8124f64ed31",
+      "byte_count": 42181,
+      "line_count": 886,
       "title": "Bloque 5 — GTM y deliverability",
       "headings": [
         {
@@ -389,72 +389,72 @@
         {
           "level": 2,
           "text": "11. Objeciones comerciales",
-          "line": 737
+          "line": 736
         },
         {
           "level": 2,
           "text": "12. Independencia y revenue share de proveedores",
-          "line": 753
+          "line": 752
         },
         {
           "level": 3,
           "text": "Modelo recomendado",
-          "line": 759
+          "line": 758
         },
         {
           "level": 4,
           "text": "Opción A — `MERCHANT_ONLY`",
-          "line": 761
+          "line": 760
         },
         {
           "level": 4,
           "text": "Opción B — `DISCLOSED_REBATE`",
-          "line": 768
+          "line": 767
         },
         {
           "level": 3,
           "text": "Prohibido",
-          "line": 778
+          "line": 777
         },
         {
           "level": 2,
           "text": "13. “Por qué ahora”",
-          "line": 788
+          "line": 787
         },
         {
           "level": 3,
           "text": "Hechos",
-          "line": 790
+          "line": 789
         },
         {
           "level": 3,
           "text": "Inferencia estratégica",
-          "line": 798
+          "line": 797
         },
         {
           "level": 2,
           "text": "14. Política de actualización de la inteligencia",
-          "line": 811
+          "line": 810
         },
         {
           "level": 2,
           "text": "15. Seal final del bloque",
-          "line": 845
+          "line": 844
         },
         {
           "level": 3,
           "text": "Puede cerrarse ahora",
-          "line": 847
+          "line": 846
         },
         {
           "level": 3,
           "text": "No puede marcarse todavía como producción sellada",
-          "line": 859
+          "line": 858
         },
         {
           "level": 3,
           "text": "Orden de implementación bloqueado",
-          "line": 870
+          "line": 869
         }
       ],
       "source_urls": [],
