@@ -127,9 +127,9 @@ export const SEO_STATIC = {
       es: "Precios — análisis gratuito, honorario de éxito sobre ahorro verificado | CAMBRA",
     },
     description: {
-      en: "Free card payment cost analysis. CAMBRA charges a success fee only on verified savings recovered over 24 months — no joining fee, no monthly subscription.",
-      fr: "Analyse gratuite des coûts de paiement par carte. CAMBRA facture un honoraire au succès uniquement sur les économies vérifiées récupérées sur 24 mois — sans frais d'adhésion, sans abonnement mensuel.",
-      es: "Análisis gratuito de costes de pago con tarjeta. CAMBRA cobra un honorario de éxito solo sobre el ahorro verificado recuperado durante 24 meses — sin cuota de alta, sin suscripción mensual.",
+      en: "Free card-payment cost analysis. CAMBRA charges merchants 25% of actual positive savings verified during the first 24 months. No positive verified savings, no fee.",
+      fr: "Analyse gratuite des coûts de paiement par carte. CAMBRA facture aux commerçants 25 % des économies réelles positives vérifiées pendant les 24 premiers mois. Sans économie positive vérifiée, aucune commission.",
+      es: "Análisis gratuito de costes de pago con tarjeta. CAMBRA cobra al comercio el 25 % del ahorro real positivo verificado durante los primeros 24 meses. Sin ahorro positivo verificado, no hay comisión.",
     },
   },
   "/Partners": {
@@ -157,9 +157,9 @@ export const SEO_STATIC = {
       es: "Para proveedores de pago — CAMBRA",
     },
     description: {
-      en: "How payment providers join CAMBRA's benchmark and partner programme. Equal access, merchant-first recommendations, benchmark integrity.",
-      fr: "Comment les fournisseurs de paiement rejoignent le benchmark et le programme partenaires CAMBRA. Accès égal, recommandations centrées marchand, intégrité du benchmark.",
-      es: "Cómo los proveedores de pago se unen al benchmark y al programa de partners de CAMBRA. Acceso igual, recomendaciones centradas en el comerciante, integridad del benchmark.",
+      en: "How PSPs can participate without paying CAMBRA. The PSP contracts and invoices the merchant directly; proposed terms remain indicative until written approval.",
+      fr: "Comment les PSP peuvent participer sans rémunérer CAMBRA. Le PSP contracte et facture directement le commerçant ; toute condition proposée reste indicative jusqu'à son approbation écrite.",
+      es: "Cómo pueden participar los PSP sin pagar a CAMBRA. El PSP contrata y factura directamente al comercio; cualquier condición propuesta sigue siendo indicativa hasta su aprobación escrita.",
     },
   },
   "/Contact": {
