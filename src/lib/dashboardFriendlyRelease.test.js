@@ -87,6 +87,8 @@ describe("friendly dashboard release surface", () => {
     expect(source).toContain("isLightWorkspace");
     expect(source).toContain('"/account"');
     expect(source).toContain('"/referrals"');
+    expect(source).toContain('"/vault"');
+    expect(source).toContain('"/reports"');
     expect(source).toContain("#F7F8FC");
     expect(source).toContain("#0B0E1A");
   });
