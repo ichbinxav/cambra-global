@@ -2,12 +2,12 @@
 
 **Status: LEGAL REVIEW REQUIRED — NOT EFFECTIVE / NOT FOR ACCEPTANCE**
 
-Policy version: `2026.08.09-recover-v2`. This draft is not wired into the live Terms surface and `recoverEconomicsV2LegalApproved=false` blocks new V2 acceptance server-side.
+Policy version: `2026.09.10-recover-unified-25`. This draft is not wired into the live Terms surface and `recoverEconomicsV2LegalApproved=false` blocks new V2 acceptance server-side.
 
 ## Core economics
-Each Recover that is expressly accepted and subsequently reaches evidenced conditions activation carries an independent Recovery Term of exactly 24 months from that activation date. CAMBRA's variable fee applies only to positive Verified Savings attributable to that Recover: 25% during months 1–12; 15% during months 13–24; 0% on and after expiry. Estimates do not create debt. If Verified Savings are zero or negative, CAMBRA's fee is zero.
+Each Recover that is expressly accepted and subsequently reaches evidenced conditions activation carries an independent Recovery Term of exactly 24 months from that activation date. CAMBRA's variable fee applies only to positive Verified Savings attributable to that Recover: 25% throughout months 1–24; 0% on and after expiry. Estimates do not create debt. If Verified Savings are zero or negative, CAMBRA's fee is zero.
 
-Activated referrals reduce the fee applicable to the current phase by 5 percentage points each, effective prospectively under the existing referral rules, with an absolute floor of 5% while the Recovery Term is active. The floor does not apply after expiry, when the fee is 0%.
+Activated referrals reduce the fee applicable during the Recovery Term by 5 percentage points each, effective prospectively under the existing referral rules, with an absolute floor of 5% while the Recovery Term is active. The floor does not apply after expiry, when the fee is 0%.
 
 ## Service termination / survival
 Proposed clause: termination of the general CAMBRA platform or managed-service relationship does not, by itself, terminate an already activated Recovery Term. The surviving right is not a cancellation charge or fixed debt: it is only a right to the applicable percentage of positive Verified Savings that arise, are attributable to the Recover, and can be verified during the remaining Recovery Term.
