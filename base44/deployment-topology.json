@@ -50,6 +50,14 @@
       },
       "boundary": "strict_admin"
     },
+    "recordProviderOpportunityRegistration": {
+      "host": "adminSummaries",
+      "source_module": "base44/shared/providerOpportunityRegistrationAdmin.ts",
+      "route": {
+        "action_prefix": "provider_opportunity_"
+      },
+      "boundary": "strict_admin_signed_agreement_provider_specific_consent_written_acknowledgement_fail_closed"
+    },
     "discoveryV2Admin": {
       "host": "adminSummaries",
       "source_module": "base44/shared/discoveryV2Admin.ts",
