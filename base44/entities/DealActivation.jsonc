@@ -196,11 +196,6 @@
       "format": "date",
       "description": "V2 load-bearing Paris calendar date when verified new conditions became effective."
     },
-    "recovery_term_year2_start_date": {
-      "type": "string",
-      "format": "date",
-      "description": "V2 exact 12-month anniversary; Year 2 starts on this date."
-    },
     "recovery_term_end_date": {
       "type": "string",
       "format": "date",
