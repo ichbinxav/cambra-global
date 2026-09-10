@@ -195,7 +195,14 @@ export default function Vault() {
             <SelectContent>{DOC_CATEGORIES.map(c => (<SelectItem key={c} value={c}>{categoryLabel(t, c)}</SelectItem>))}</SelectContent>
           </Select>
           <input ref={fileRef} type="file" accept={DOCUMENT_FILE_ACCEPT} onChange={onUpload} className="hidden" />
-          <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-11 rounded-xl bg-[var(--g-voltio)] px-5 font-bold text-white hover:opacity-90"><UploadCloud size={14} /> {uploading ? t('vlt_uploading') : t('vlt_upload')}</Button>
+          <Button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="h-11 rounded-xl px-5 font-bold text-white hover:opacity-90 disabled:opacity-60"
+            style={{ background: "var(--g-voltio)" }}
+          >
+            <UploadCloud size={14} /> {uploading ? t('vlt_uploading') : t('vlt_upload')}
+          </Button>
         </div>
       </section>
 
