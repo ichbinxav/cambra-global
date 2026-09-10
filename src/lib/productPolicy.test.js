@@ -53,6 +53,18 @@ describe("Product Policy — canonical JSON", () => {
   it("validates against the Zod schema", () => {
     expect(() => validateProductPolicy(POLICY_JSON)).not.toThrow();
   });
+  it("rejects any reintroduced second-year fee", () => {
+    const invalidPolicy = structuredClone(POLICY_JSON);
+    invalidPolicy.economicTerms.year2SuccessFeeRate = 0.15;
+    expect(() => validateProductPolicy(invalidPolicy)).toThrow();
+  });
+  it("has one 25% term for months 1-24 and 0% after it", () => {
+    expect(POLICY_JSON.economicTerms).not.toHaveProperty("year1SuccessFeeRate");
+    expect(POLICY_JSON.economicTerms).not.toHaveProperty("year2SuccessFeeRate");
+    expect(POLICY_JSON.economicTerms.successFeeRate).toBe(0.25);
+    expect(POLICY_JSON.economicTerms.feeDurationMonths).toBe(24);
+    expect(POLICY_JSON.economicTerms.postTermSuccessFeeRate).toBe(0);
+  });
   it("policyVersion is non-empty", () => {
     expect(POLICY_JSON.policyVersion).toBeTruthy();
   });
