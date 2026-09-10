@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "policyVersion": "2026.09.10-recover-unified-25",
+  "policyVersion": "2026.09.10-provider-no-compensation",
   "effectiveDate": "2026-09-10",
   "currency": "EUR",
   "economicTerms": {
@@ -63,5 +63,18 @@
     "stripe": "implemented_live_verification_pending",
     "statementUpload": "available",
     "otherConnectors": "code_level_or_roadmap"
+  },
+  "providerProgram": {
+    "pspCompensationAccepted": false,
+    "pspContractsMerchantDirectly": true,
+    "pspInvoicesMerchantDirectly": true,
+    "pricingModes": [
+      "preferred_rate",
+      "cohort_or_tier_matrix"
+    ],
+    "indicativeUntilWrittenPspApproval": true,
+    "merchantConsentBeforeIdentityDisclosure": true,
+    "writtenOpportunityAcknowledgementRequired": true,
+    "proposedProtectionMonths": 18
   }
 }

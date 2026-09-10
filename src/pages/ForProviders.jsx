@@ -1,13 +1,14 @@
-// ForProviders v2 — provider program page. PAPER-FIRST (Chunk 1d).
+// ForProviders v3 — provider cooperation page. PAPER-FIRST.
 //
-// Two-tier model:
-//   Nivel 1 · Listed → provider publishes public pricing → enters CAMBRA's
-//     achievable benchmark (PaymentsRateTable, verified=true, source_url +
-//     source_quote citable). Auditability rule non-negotiable.
-//   Nivel 2 · Partner → provider offers an EXCLUSIVE rate for merchants
-//     arriving via CAMBRA (better than public) + referral agreement. Shown
-//     on /Results as a labeled "CAMBRA exclusive offer" — NEVER folded into
-//     the public benchmark. Benchmark stays 100% public and auditable.
+// Two opt-in routes:
+//   Nivel 1 · Listed → source-linked public pricing enters the achievable benchmark.
+//   Nivel 2 · Partner → the PSP submits one preferred indicative rate or a
+//     cohort/tier matrix. Every rate remains subject to underwriting, merchant
+//     eligibility and the PSP's final written approval.
+// The PSP contracts with and invoices the merchant directly. CAMBRA receives no
+// PSP commission, referral fee, revenue share or other compensation. Merchant
+// identity is disclosed only after specific consent and written acknowledgement
+// of the Opportunity ID. Any 18-month protection exists only in a signed agreement.
 //
 // This page has ZERO fabricated network figures (no "X merchants
 // connected"). If we need social proof we say "founding cohort in progress".
