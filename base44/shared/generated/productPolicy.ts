@@ -1,16 +1,16 @@
 // GENERATED FILE — DO NOT EDIT DIRECTLY.
 // Source: config/product-policy.json
-// policyVersion: 2026.09.10-recover-unified-25
+// policyVersion: 2026.09.10-provider-no-compensation
 // effectiveDate: 2026-09-10
 // Regenerate: npm run policy:generate  ·  Drift check: npm run policy:check
-export const POLICY_VERSION = "2026.09.10-recover-unified-25";
+export const POLICY_VERSION = "2026.09.10-provider-no-compensation";
 export const EFFECTIVE_DATE = "2026-09-10";
 
 // Deep-frozen so no consumer can mutate the canonical values at runtime.
 export const PRODUCT_POLICY = (function () {
   const o = {
   "schemaVersion": 1,
-  "policyVersion": "2026.09.10-recover-unified-25",
+  "policyVersion": "2026.09.10-provider-no-compensation",
   "effectiveDate": "2026-09-10",
   "currency": "EUR",
   "economicTerms": {
@@ -69,6 +69,19 @@ export const PRODUCT_POLICY = (function () {
     "onlinePsp": true,
     "inStoreTpv": true
   },
+  "providerProgram": {
+    "pspCompensationAccepted": false,
+    "pspContractsMerchantDirectly": true,
+    "pspInvoicesMerchantDirectly": true,
+    "pricingModes": [
+      "preferred_rate",
+      "cohort_or_tier_matrix"
+    ],
+    "indicativeUntilWrittenPspApproval": true,
+    "merchantConsentBeforeIdentityDisclosure": true,
+    "writtenOpportunityAcknowledgementRequired": true,
+    "proposedProtectionMonths": 18
+  },
   "integrationStatus": {
     "stripe": "implemented_live_verification_pending",
     "statementUpload": "available",
@@ -83,6 +96,7 @@ export const ECONOMIC_TERMS_POLICY = PRODUCT_POLICY.economicTerms;
 export const REFERRAL_POLICY = PRODUCT_POLICY.referralTerms;
 export const PRODUCT_SCOPE_POLICY = PRODUCT_POLICY.productScope;
 export const SUPPORTED_CHANNELS = PRODUCT_POLICY.supportedChannels;
+export const PROVIDER_PROGRAM_POLICY = PRODUCT_POLICY.providerProgram;
 export const INTEGRATION_STATUS = PRODUCT_POLICY.integrationStatus;
 
 // ── Derived helpers (integer-percent + booleans) ─────────────────────
@@ -90,6 +104,8 @@ export function getSuccessFeePct() { return Math.round(ECONOMIC_TERMS_POLICY.suc
 export function getMerchantSharePct() { return Math.round(ECONOMIC_TERMS_POLICY.merchantShareRate * 100); }
 export function getFeeDurationMonths() { return ECONOMIC_TERMS_POLICY.feeDurationMonths; }
 export function getAnalyzerPriceEur() { return ECONOMIC_TERMS_POLICY.analyzerPriceEur; }
+export function isPspCompensationAccepted() { return PROVIDER_PROGRAM_POLICY.pspCompensationAccepted; }
+export function getProviderPricingModes() { return [...PROVIDER_PROGRAM_POLICY.pricingModes]; }
 export function getReferralStartPct() { return Math.round(REFERRAL_POLICY.startRate * 100); }
 export function getReferralStepPct() { return Math.round(REFERRAL_POLICY.stepRate * 100); }
 export function getReferralFloorPct() { return Math.round(REFERRAL_POLICY.floorRate * 100); }
