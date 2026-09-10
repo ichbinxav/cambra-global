@@ -24,11 +24,9 @@ export default function TrustSecuritySection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="cambra-public-container relative overflow-hidden rounded-[32px] px-6 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-16"
+        className="cambra-public-container relative px-6 py-12 sm:px-10 sm:py-14 lg:px-14 lg:py-16"
         style={{
-          background: "linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,248,255,.92))",
-          border: "1px solid rgba(91,76,245,.12)",
-          boxShadow: "0 34px 90px -68px rgba(30,26,76,.46), inset 0 1px 0 rgba(255,255,255,.98)",
+          background: "radial-gradient(circle at 20% 65%,rgba(139,123,255,.08),transparent 38%)",
         }}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(rgba(91,76,245,.10) .8px,transparent .8px)", backgroundSize: "26px 26px", maskImage: "radial-gradient(circle at 86% 22%,#000,transparent 62%)" }} />
@@ -85,7 +83,12 @@ export default function TrustSecuritySection() {
               loading="lazy"
               className="relative h-auto w-full max-w-[760px] select-none"
               draggable={false}
-              style={{ filter: "saturate(.9) contrast(1.015) drop-shadow(0 26px 32px rgba(52,56,156,.10))" }}
+              style={{
+                filter: "saturate(.92) contrast(1.02) drop-shadow(0 30px 36px rgba(52,56,156,.12))",
+                mixBlendMode: "multiply",
+                maskImage: "radial-gradient(ellipse 67% 72% at 50% 50%,#000 58%,transparent 100%)",
+                WebkitMaskImage: "radial-gradient(ellipse 67% 72% at 50% 50%,#000 58%,transparent 100%)",
+              }}
             />
           </motion.div>
 
