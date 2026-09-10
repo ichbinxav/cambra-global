@@ -41,8 +41,8 @@ promise.
 Public pricing follows `config/product-policy.json`. While Recover Economics V2
 is not legally approved, the website shows the approved standard model: CAMBRA
 receives 25% of positive verified savings during the 24-month Recovery Term and
-the merchant keeps 75%. The tiered 25%/15% wording is displayed only if its
-legal-approval flag becomes true. The analysis does not commit a merchant to
+the merchant keeps 75%. The same 25% rate applies throughout months 1–24; no second-year rate exists.
+The unified wording is displayed only if its legal-approval flag becomes true. The analysis does not commit a merchant to
 Recover, and the site no longer promises cancellation terms that contradict the
 Recovery Term.
 
