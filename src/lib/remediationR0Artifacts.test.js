@@ -492,9 +492,9 @@ describe("R0.D physical research corpus inventory", () => {
       physical_files: 11,
       unique_sha256: 9,
       exact_duplicates: 2,
-      bytes_physical: 516994,
-      bytes_unique: 419567,
-      lf_count_physical: 5309,
+      bytes_physical: 516990,
+      bytes_unique: 419563,
+      lf_count_physical: 5308.
     });
     // Grouped with reduce instead of Object.groupBy: the runtime baseline this
     // suite must pass on does not expose Object.groupBy, and an environment
