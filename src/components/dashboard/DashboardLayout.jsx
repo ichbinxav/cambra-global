@@ -4,7 +4,7 @@ import Navbar from "@/components/landing/Navbar";
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const isLightWorkspace = ["/dashboard", "/account", "/referrals"].includes(location.pathname.toLowerCase());
+  const isLightWorkspace = ["/dashboard", "/reports", "/account", "/invoices", "/vault", "/referrals"].includes(location.pathname.toLowerCase());
 
   return (
     <div
