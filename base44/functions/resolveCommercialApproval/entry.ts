@@ -866,8 +866,7 @@ Deno.serve(async (req) => {
           "offer_expired_reapproval_required",
           ownedApproval,
         );
-      const providerEconomics =
-        bid.provider_economics_json || p.provider_economics || {};
+      const providerEconomics = {}; // PSP compensation is prohibited by CAMBRA policy.
       const terms = {
         pricing: bid.pricing_json || {},
         tiers: bid.tier_schedule_json || [],
@@ -1027,9 +1026,7 @@ Deno.serve(async (req) => {
           updated_at: now,
         });
       }
-      const compensationTiers = Array.isArray(providerEconomics?.tiers)
-        ? providerEconomics.tiers
-        : [];
+      const compensationTiers: any[] = [];
       let ci = 0;
       for (const t of compensationTiers) {
         ci++;
@@ -1081,7 +1078,7 @@ Deno.serve(async (req) => {
           action: "contract_request",
           classification: "clarification",
           subject: `Re: ${c.provider_name} CAMBRA Aggregate terms`,
-          text: "We have internal approval to proceed on the commercial basis discussed. Please send the final written agreement or rate-card confirmation reflecting the exact merchant pricing, merchant tiers, CAMBRA partnership economics (if any), provider-compensation tiers, activation criteria, rebates, payment terms, clawbacks, term, notice, settlement, implementation and any minimum or exclusivity conditions. Merchant terms and CAMBRA compensation must remain separately stated. This approval does not itself activate provider compensation, create a volume guarantee or execute a contract.",
+          text: "We have internal approval to proceed with the merchant pricing discussed. Please send the final written agreement or rate-card confirmation covering the preferred rate or cohort/tier matrix, underwriting and eligibility criteria, rebates, term, notice, settlement, implementation, support and any minimum or exclusivity conditions. The PSP must contract with and invoice each merchant directly. CAMBRA accepts no PSP commission, referral fee, revenue share or other compensation. This approval does not create a volume guarantee or execute a contract.",
           approval_id: ap.id,
           agent_name: "collective_negotiation",
           idempotency_key: `aggregate-contract-request:${ap.id}`,
@@ -1198,12 +1195,7 @@ Deno.serve(async (req) => {
             provider_validation_status: "confirmed",
           });
       }
-      const compensationTiers =
-        await svc.entities.ProviderCompensationTier.filter(
-          { agreement_id: a.id },
-          "tier_number",
-          100,
-        );
+      const compensationTiers: any[] = [];
       for (const t of compensationTiers) {
         if (t.activation_mode === "automatic_contractual")
           await svc.entities.ProviderCompensationTier.update(t.id, {

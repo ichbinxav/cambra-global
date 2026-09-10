@@ -1,4 +1,5 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { PROVIDER_MONETIZATION_PRODUCTION_ALLOWED as CAMBRA_PSP_COMPENSATION_ALLOWED, providerCompensationDisabledResponse } from '../../shared/providerEconomicsCore.ts';
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.41';
 import { requireAdminOrInternal } from '../../shared/internalGate.ts';
 import { callCambraClaude } from '../../shared/commercialModelRouter.ts';
@@ -35,6 +36,8 @@ const parse = (t: string) => {
 Deno.serve(async (req) => {
   let task: any = null;
   try {
+    // PSP_COMPENSATION_DISABLED_BY_POLICY — fail closed even for legacy approved agreements.
+    if (!CAMBRA_PSP_COMPENSATION_ALLOWED) return providerCompensationDisabledResponse();
     const b = createClientFromRequest(req),
       body = await req.json().catch(() => ({})),
       g = await requireAdminOrInternal(req, b, body);

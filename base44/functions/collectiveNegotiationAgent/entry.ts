@@ -312,9 +312,7 @@ Deno.serve(async (req) => {
     const scoreKnown = bid.merchant_outcome_score !== null && bid.merchant_outcome_score !== undefined
       && Number.isFinite(Number(bid.merchant_outcome_score)) && bid.cost_unknown !== true;
     const merchantSuitable = scoreKnown && Number(bid.merchant_outcome_score) >= 70;
-    const monetizationAlreadyRequested = c.strategy_json?.provider_monetization_requested === true;
-    if (merchantSuitable && !monetizationAlreadyRequested) {
-      await s.entities.NegotiationCase.update(c.id, {
+    await s.entities.NegotiationCase.update(c.id, {
         round: Number(c.round || 0) + 1,
         best_offer_json: {
           offer_id: offer.id,

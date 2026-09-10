@@ -54,14 +54,12 @@ Deno.serve(async (req) => {
     const open = invRows.filter((i: any) => ['issued', 'sent', 'due', 'overdue', 'partially_paid'].includes(i.status));
 
     const merchantCollected = nn([invoices], () => sum(invRows, 'amount_paid'));
-    const providerExpected = nn([providerLedger], () => sum(ledgerRows, 'expected_amount_minor') / 100);
-    const providerAccrued = nn([providerLedger], () => sum(ledgerRows, 'accrued_amount_minor') / 100);
-    const providerPaid = nn([providerLedger], () => sum(ledgerRows.filter((x: any) => x.state === 'paid'), 'paid_amount_minor') / 100);
+    const providerExpected = 0;
+    const providerAccrued = 0;
+    const providerPaid = 0;
     const outstandingCash = nn([invoices], () =>
       open.reduce((a: number, i: any) => a + Math.max(0, Number(i.total_amount || 0) - Number(i.amount_paid || 0)), 0));
-    const providerOutstanding = nn([providerInvoices], () =>
-      provInvRows.filter((x: any) => ['issued', 'payment_pending', 'partially_paid', 'disputed'].includes(x.status))
-        .reduce((a: number, x: any) => a + Math.max(0, Number(x.amount_minor || 0) - Number(x.paid_amount_minor || 0)), 0) / 100);
+    const providerOutstanding = 0;
 
     return Response.json({
       ok: true,
@@ -78,7 +76,7 @@ Deno.serve(async (req) => {
         provider_side_expected_revenue: providerExpected,
         provider_side_accrued_revenue: providerAccrued,
         provider_side_collected_revenue: providerPaid,
-        total_cambra_collected_revenue: (merchantCollected == null || providerPaid == null) ? null : merchantCollected + providerPaid,
+        total_cambra_collected_revenue: merchantCollected,
         invoiced_revenue: nn([invoices], () => sum(invRows, 'total_amount')),
         collected_cash: merchantCollected,
         outstanding_cash: outstandingCash,
@@ -92,7 +90,7 @@ Deno.serve(async (req) => {
         pilot_merchants: isComplete(pilots) ? pilots.value.filter((p: any) => p.mode === 'pilot' && p.status !== 'excluded').length : null,
       },
       forecast: {
-        methodology: 'evidence_bounded_dual_sided',
+        methodology: 'merchant_success_fee_only',
         days_30: {
           merchant_expected_cash: outstandingCash,
           provider_expected_cash: providerOutstanding,
@@ -119,12 +117,12 @@ Deno.serve(async (req) => {
       approvals: approvals.value.slice(0, 100),
       truth_boundary: {
         merchant_revenue: 'merchant-side Invoice/PaymentEvent only',
-        provider_revenue: 'ProviderRevenueLedger + ProviderRevenueInvoice only',
+        provider_revenue: 'disabled by policy — CAMBRA accepts no PSP compensation',
         estimated: 'not billable',
         verified: 'fully verified realized savings',
         billable: 'explicitly approved billing eligibility',
         collected: 'evidenced and reconciled payment only',
-        double_counting: 'merchant-side and provider-side ledgers never share revenue events',
+        double_counting: 'CAMBRA revenue contains merchant success fees only',
         completeness: 'a metric is null when any source it depends on failed or was truncated — a null is a read that did not happen, never a zero',
       },
     });

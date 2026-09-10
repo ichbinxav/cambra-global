@@ -71,7 +71,7 @@ export default function AdminFinanceWorkspace() {
             <Landmark size={20} /> Finance
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Savings, CAMBRA revenue, provider revenue and costs — kept as separate figures.
+            Savings, CAMBRA merchant success-fee revenue and costs — with PSP compensation disabled.
           </p>
         </div>
         <button type="button" onClick={load} className="h-8 px-3 rounded-lg border border-border text-xs font-bold inline-flex items-center gap-1.5">

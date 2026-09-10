@@ -1,4 +1,5 @@
 // AUDIT F1-F10 sweep (2026-08-17, founder-authorised): same defect shape as F1 —
+import { PROVIDER_MONETIZATION_PRODUCTION_ALLOWED as CAMBRA_PSP_COMPENSATION_ALLOWED, providerCompensationDisabledResponse } from '../../shared/providerEconomicsCore.ts';
 // seven safeBestEffort→[] reads turned a failed ProviderRevenueLedger read into
 // `provider_revenue_paid_minor:0` while the response kept its truth_boundary claim.
 // Rewritten with readRuntimeRows; metrics demote to null when their source isn't COMPLETE.
@@ -10,6 +11,8 @@ const sum = (rows: any[], f: string) => rows.reduce((a: number, x: any) => a + N
 
 Deno.serve(async (req) => {
   try {
+    // PSP_COMPENSATION_DISABLED_BY_POLICY — fail closed even for legacy approved agreements.
+    if (!CAMBRA_PSP_COMPENSATION_ALLOWED) return providerCompensationDisabledResponse();
     const b = createClientFromRequest(req);
     const u = await b.auth.me().catch((error: any) =>
       safeBestEffort(error, { operation: 'getProviderEconomicsCommandCenter', fallback: null, severity: 'secondary' }));

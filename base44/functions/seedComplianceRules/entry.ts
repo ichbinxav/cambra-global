@@ -49,14 +49,14 @@ const HARD_RULES = [
       "A provider deal may only be shown as 'live' if provider_agreement_signed is true. Without a signed agreement, the deal must remain soon/planned/waitlist.",
   },
   {
-    rule_id: "deal_must_disclose_revenue_share",
-    title: "Provider deals must disclose CAMBRA revenue share",
+    rule_id: "provider_deal_forbids_psp_compensation",
+    title: "Provider deals must not compensate CAMBRA",
     category: "provider_deal",
     severity: "high",
     blocking: true,
     active: true,
     description:
-      "Every active provider deal must declare CAMBRA's success-fee / revenue-share model to the brand before authorization. Hidden remuneration is forbidden.",
+      "Every provider agreement must state that CAMBRA receives no PSP commission, referral fee, revenue share or other compensation. The PSP contracts with and invoices the merchant directly.",
   },
 
   // ── benchmark ──────────────────────────────────────────────────────────────

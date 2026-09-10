@@ -1,4 +1,5 @@
 import { safeBestEffort } from '../../shared/bestEffort.ts';
+import { PROVIDER_MONETIZATION_PRODUCTION_ALLOWED as CAMBRA_PSP_COMPENSATION_ALLOWED, providerCompensationDisabledResponse } from '../../shared/providerEconomicsCore.ts';
 import{createClientFromRequest}from'npm:@base44/sdk@0.8.41';import{requireAdminOrInternal}from'../../shared/internalGate.ts';
 import { guardedScheduledServe } from '../../shared/schedulerRun.ts';
 async function incident(s:any,key:string,summary:string,details:any){const old=await s.entities.AutonomyIncident.filter({dedupe_key:key,status:'open'},'-last_seen_at',1).catch((error:any)=>safeBestEffort(error,{operation:'providerRevenueReconciliationWorker',fallback:[],severity:'critical'})),row={dedupe_key:key,domain:'provider_revenue',severity:'warning',status:'open',workflow_state:'investigating',owner_type:'finance',automation_eligibility:'bounded_auto',summary,details_json:details,financial_impact_minor:Math.abs(Number(details.delta_minor||0)),customer_impact:'none',legal_risk:'low',first_seen_at:old[0]?.first_seen_at||new Date().toISOString(),last_seen_at:new Date().toISOString()};if(old[0])await s.entities.AutonomyIncident.update(old[0].id,row);else await s.entities.AutonomyIncident.create(row)}
@@ -16,6 +17,8 @@ async function incident(s:any,key:string,summary:string,details:any){const old=a
 // Fixed: scope by agreement_id and currency; refuse to reconcile a statement with no
 // agreement_id or no currency; expected uses accrued_amount_minor ONLY; demo rows excluded.
 guardedScheduledServe({"worker_key":"providerRevenueReconciliationWorker","cadence_seconds":86400},createClientFromRequest,async req=>{try{
+    // PSP_COMPENSATION_DISABLED_BY_POLICY — fail closed even for legacy approved agreements.
+    if (!CAMBRA_PSP_COMPENSATION_ALLOWED) return providerCompensationDisabledResponse();
   const b=createClientFromRequest(req),body=await req.json().catch(()=>({})),g=await requireAdminOrInternal(req,b,body);
   if(!g.ok)return g.response;
   const s=b.asServiceRole,stmts=await s.entities.ProviderRevenueStatement.filter({status:{$in:['received','parsed','mismatch']}},'-received_at',1000).catch((error:any)=>safeBestEffort(error,{operation:'providerRevenueReconciliationWorker',fallback:[],severity:'critical'}));

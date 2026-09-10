@@ -26,8 +26,8 @@ export async function buildFounderSnapshot(s:any){
  for(const x of life)if(['savings_accepted','implementation_pending','implemented','verification_pending','savings_verified','billable','invoiced','payment_pending','paid','partially_paid'].includes(String(x.state)))activeBrandIds.add(String(x.brand_id));
  for(const i of integrations)if(i.status==='connected'&&i.brand_id)activeBrandIds.add(String(i.brand_id));
  const verified=reports.filter((r:any)=>r.measurement_mode==='fully_verified'&&r.verification_status==='realized');
- const merchantCollected=sum(invoices,'amount_paid'),providerPaid=sum(providerLedger.filter((x:any)=>x.state==='paid'),'paid_amount_minor')/100,providerAccrued=sum(providerLedger,'accrued_amount_minor')/100;
- const totalCollected=merchantCollected+providerPaid;
+ const merchantCollected=sum(invoices,'amount_paid'),providerPaid=0,providerAccrued=0;
+ const totalCollected=merchantCollected;
  const addressable=sum(pools.filter((p:any)=>!['archived','terminated'].includes(String(p.status))),'addressable_annual_volume_minor')/100;
  const committed=sum(pools.filter((p:any)=>!['archived','terminated'].includes(String(p.status))),'committed_annual_volume_minor')/100;
  const pendingL4=approvals.filter((a:any)=>safeNumber(a.risk_level)>=4),criticalInc=incidents.filter((i:any)=>String(i.severity).toLowerCase()==='critical');
@@ -44,7 +44,7 @@ export async function buildFounderSnapshot(s:any){
  const recentLeads=leads.filter((x:any)=>String(x.created_date||'')>=since24),newBrands=productionBrands.filter((x:any)=>String(x.created_date||'')>=since24),recentPaid=invoices.filter((x:any)=>String(x.updated_date||x.issued_at||'')>=since24&&safeNumber(x.amount_paid)>0),recentVerified=verified.filter((x:any)=>String(x.updated_date||x.created_date||x.month||'')>=since24);
  const conversions={lead_to_engaged:{numerator:leads.filter((x:any)=>['engaged','discovery','analysis_pending','analyzed','proposal','recover','won','meeting'].includes(String(x.revenue_stage||x.stage))).length,denominator:leads.length},lead_to_won:{numerator:leads.filter((x:any)=>String(x.revenue_stage||x.stage)==='won').length,denominator:leads.length}};
  const blockedMigrations=migrations.filter((m:any)=>['blocked','failed'].includes(String(m.status))||['blocked','failed'].includes(String(m.step_status))),delayedMigrations=migrations.filter((m:any)=>{const t=Date.parse(m.next_action_at||m.updated_at||'');return ['pending','in_progress','waiting_external','waiting_merchant'].includes(String(m.status))&&Number.isFinite(t)&&t<Date.now()-5*86400000});
- const providerOutstanding=providerLedger.filter((x:any)=>['accrued','validation_pending','invoiced','payment_pending','partially_paid','disputed'].includes(String(x.state))).reduce((a:number,x:any)=>a+Math.max(0,safeNumber(x.accrued_amount_minor)-safeNumber(x.paid_amount_minor)),0)/100;
+ const providerOutstanding=0;
  const hasObserved=(value:any)=>value!==null&&value!==undefined&&value!=='';const hasForecastInputs=(lead:any)=>{const value=Number(lead.expected_revenue_value),probability=Number(lead.close_probability);return hasObserved(lead.expected_revenue_value)&&hasObserved(lead.close_probability)&&Number.isFinite(value)&&value>=0&&Number.isFinite(probability)&&probability>=0&&probability<=1};const weightedPipeline=leads.reduce((total:number,lead:any)=>total+(hasForecastInputs(lead)?Number(lead.expected_revenue_value)*Number(lead.close_probability):0),0),weightedPipelineKnown=leads.filter(hasForecastInputs).length;
  // COMMAND-C3 (2026-08-17) — a metric may only carry a confidence label if the
  // canonical sources it was computed from actually loaded. If any did not, the
@@ -65,7 +65,7 @@ export async function buildFounderSnapshot(s:any){
    ? {value:null,unit:'score_0_100',as_of:latestHealth?.calculated_at||null,confidence:'unknown',incomplete_sources:['OperatingHealthAssessment'],reason_code:latestHealth?'ASSESSMENT_INCOMPLETE':'ASSESSMENT_ABSENT',blockers:Array.isArray(latestHealth?.blockers)?latestHealth.blockers:[]}
    : {...metric(latestHealth.score??null,'score_0_100',['OperatingHealthAssessment'],'observed'),as_of:latestHealth.calculated_at||null};
  const metrics:any={
-  collected_revenue:metric(totalCollected,'EUR',['Invoice','ProviderRevenueLedger'],'verified',{merchant:merchantCollected,provider:providerPaid}),
+  collected_revenue:metric(totalCollected,'EUR',['Invoice'],'verified',{merchant:merchantCollected,provider:0}),
   provider_accrued:metric(providerAccrued,'EUR',['ProviderRevenueLedger'],'contractual'),verified_savings:metric(sum(verified,'savings'),'EUR',['MonthlySavingsReport'],'verified'),
   merchants:metric(productionBrands.length,'count',['Brand'],'observed'),active_merchants:metric(activeBrandIds.size,'count',['Brand','RevenueLifecycle','Integration'],'observed'),new_merchants_24h:metric(newBrands.length,'count',['Brand'],'observed'),
   leads_24h:metric(recentLeads.length,'count',['OutboundLead'],'observed'),weighted_pipeline:metric(weightedPipeline,'EUR',['OutboundLead'],weightedPipelineKnown?'estimated':'unknown',{known_value_count:weightedPipelineKnown,unknown_value_count:leads.length-weightedPipelineKnown}),aggregate_addressable:metric(addressable,'EUR_annual_volume',['AggregatePool'],'estimated'),aggregate_committed:metric(committed,'EUR_annual_volume',['AggregatePool'],'contractual'),

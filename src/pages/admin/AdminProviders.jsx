@@ -266,7 +266,7 @@ export default function AdminProviders() {
                     <p className="text-[11px] text-muted-foreground">Loading commercial terms…</p>
                   )}
                   <p className="text-[10px] text-muted-foreground/60 leading-snug">
-                    Provider compensation is set through the revenue ledger against a hashed agreement, never from this form.
+                    PSP compensation is disabled by policy and cannot be activated from this form or any backend workflow.
                   </p>
                 </div>
               )}

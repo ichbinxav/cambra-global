@@ -44,7 +44,7 @@ const TAB_BODIES = {
 const COPY = {
   en: {
     title: "Intelligence",
-    subtitle: "Pricing truth, markets, routing and benchmarks. Provider compensation never reaches a merchant recommendation.",
+    subtitle: "Pricing truth, markets, routing and benchmarks. PSP compensation is disabled; recommendations serve the merchant.",
     reload: "Reload",
     loading: "Loading Intelligence…",
     error: "Intelligence navigation could not be loaded. No partial workspace is being presented.",
