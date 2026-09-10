@@ -10,11 +10,7 @@ export function effectiveRecoverFeeForPhase(standardPct, activatedReferrals) {
   return Math.max(floor, Number(standardPct) - count * step);
 }
 
-export function recoverV2PhaseFees(activatedReferrals) {
-  const y1 = Math.round(Number(PRODUCT_POLICY.economicTerms.year1SuccessFeeRate || 0.25) * 100);
-  const y2 = Math.round(Number(PRODUCT_POLICY.economicTerms.year2SuccessFeeRate || 0.15) * 100);
-  return {
-    year1: effectiveRecoverFeeForPhase(y1, activatedReferrals),
-    year2: effectiveRecoverFeeForPhase(y2, activatedReferrals),
-  };
+export function recoverV2TermFee(activatedReferrals) {
+  const standard = Math.round(Number(PRODUCT_POLICY.economicTerms.successFeeRate) * 100);
+  return effectiveRecoverFeeForPhase(standard, activatedReferrals);
 }
