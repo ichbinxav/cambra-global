@@ -65,25 +65,6 @@ export async function handler(req: Request): Promise<Response> {
     // All live operations use CAMBRA's own pinned account, never merchant OAuth.
     await assertBillingAccount("live");
     const pk = getPublishableKey("live");
-    if (action === "status") {
-      const domain = await domainState(host);
-      // Public entry: each browser gets its own signed capability, never a shared result.
-      let sessionTicket = body.ticket;
-      if (sessionTicket) await verifyTicket(sessionTicket);
-      else sessionTicket = await issueTicket();
-      return json({ ok: true, mode: "live", admin, public_access: true, ticket: sessionTicket,
-        domain: domainSummary(domain), host, publishable_key: pk, build: PURPOSE + "_public" });
-    }
-    if (["register_domain", "recent"].includes(action) && !admin) return json({ error: "admin_required" }, 403);
-    if (action === "invite" || action === "new_session") return json({ ticket: await issueTicket(), expires_in: TTL });
-    if (action === "recent") {
-      const list = await stripeGet("setup_intents", { limit: "100", "expand[]": "data.payment_method" });
-      return json({ trials: (list.data || []).filter((s: any) => s.metadata?.purpose === PURPOSE).slice(0,20).map((s: any) => ({
-        id: s.id, created: s.created, status: s.status, profile: s.metadata.profile,
-        wallet: s.payment_method?.card?.wallet?.type || null, fields: flags(s.payment_method),
-        attached: !!s.payment_method?.customer,
-      })), scope: "latest_100_setup_intents" });
-    }
     const svc = base44.asServiceRole;
     const write = async (path: string, params: Record<string,string>, key: string) => {
       const claim = await captureEmergencyEpoch(svc, "billing_issuance");
@@ -92,12 +73,34 @@ export async function handler(req: Request): Promise<Response> {
       if (!r.ok) fail("stripe_write_failed");
       return r.data;
     };
-    if (action === "register_domain") {
+
+    // Fixed CAMBRA domains are provisioned by the service for this public demo.
+    const ensureDomain = async () => {
       let d = await domainState(host);
       if (!d) d = await write("payment_method_domains", { domain_name: host }, "domain:"+host);
       else if (!d.enabled) d = await write("payment_method_domains/"+d.id, { enabled: "true" }, "enable:"+d.id);
       if (d.apple_pay?.status !== "active") d = await write("payment_method_domains/"+d.id+"/validate", {}, "validate:"+d.id+":"+Math.floor(Date.now()/300000));
-      return json({ domain: domainSummary(d) });
+      return d;
+    };
+    if (action === "status") {
+      const domain = await ensureDomain();
+      // Public entry: each browser gets its own signed capability, never a shared result.
+      let sessionTicket = body.ticket;
+      if (sessionTicket) await verifyTicket(sessionTicket);
+      else sessionTicket = await issueTicket();
+      return json({ ok: true, mode: "live", admin, public_access: true, ticket: sessionTicket,
+        domain: domainSummary(domain), host, publishable_key: pk, build: PURPOSE + "_public" });
+    }
+    if (["register_domain", "recent"].includes(action) && !admin) return json({ error: "admin_required" }, 403);
+    if (action === "register_domain") return json({ domain: domainSummary(await ensureDomain()) });
+    if (action === "invite" || action === "new_session") return json({ ticket: await issueTicket(), expires_in: TTL });
+    if (action === "recent") {
+      const list = await stripeGet("setup_intents", { limit: "100", "expand[]": "data.payment_method" });
+      return json({ trials: (list.data || []).filter((s: any) => s.metadata?.purpose === PURPOSE).slice(0,20).map((s: any) => ({
+        id: s.id, created: s.created, status: s.status, profile: s.metadata.profile,
+        wallet: s.payment_method?.card?.wallet?.type || null, fields: flags(s.payment_method),
+        attached: !!s.payment_method?.customer,
+      })), scope: "latest_100_setup_intents" });
     }
     const ticket = await verifyTicket(body.ticket);
     if (!PROFILES.includes(body.profile)) return json({ error: "profile_invalid" }, 400);
