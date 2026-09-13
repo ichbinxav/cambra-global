@@ -116,7 +116,15 @@ export default function CheckInDemo() {
       setLoading(true);setError('');
       try {
         let current=ticket;
-        const d=await call('status', current ? { ticket: current } : {});
+        let d;
+        try { d=await call('status', current ? { ticket: current } : {}); }
+        catch (e) {
+          const code=e?.response?.data?.error || e?.code || '';
+          if (!current || !code.startsWith('invitation_')) throw e;
+          current='';putStored(TICKET_KEY,null);putStored(TRIAL_KEY,null);
+          if(active)setTicket('');
+          d=await call('status');
+        }
         if (!active) return;
         if (d.admin && !current) {
           const issued=await call('invite');current=issued.ticket;putStored(TICKET_KEY,current);
