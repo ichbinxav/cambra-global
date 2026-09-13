@@ -34,29 +34,34 @@ beforeEach(()=>{
  });
 });
 describe('Public wallet initialization',()=>{
- it('prepares an actual SetupIntent on CHECK-IN before mounting the wallet',async()=>{
+ it('opens only embedded wallets and creates setup after wallet confirmation',async()=>{
   render(<CheckInDemo/>);
-  const start=await screen.findByRole('button',{name:'CHECK-IN™ · Abrir mi wallet'});
+  const wallet=await screen.findByRole('button',{name:'Native wallet'});
   expect(state.invoke.mock.calls.some(([,b])=>b.action==='setup')).toBe(false);
-  expect(screen.queryByRole('button',{name:'Native wallet'})).toBeNull();
-  fireEvent.click(start);
-  await screen.findByRole('button',{name:'Native wallet'});
-  expect(state.options.clientSecret).toBe('seti_trial_secret_fake');
-  expect(state.options.mode).toBeUndefined();
-  expect(state.invoke).toHaveBeenCalledWith('checkin-wallet-demo',expect.objectContaining({action:'setup',ticket:'private-session',consent:'wallet-demo-v1'}));
-  fireEvent.click(screen.getByRole('button',{name:'Native wallet'}));
+  expect(screen.queryByRole('button',{name:/Abrir prueba en Stripe/})).toBeNull();
+  expect(state.options).toMatchObject({mode:'setup',currency:'eur',paymentMethodTypes:['card']});
+  expect(state.options.clientSecret).toBeUndefined();
+  fireEvent.click(wallet);
   await screen.findByText('Esto ha llegado de verdad');
-  expect(state.confirm).toHaveBeenCalledWith(expect.objectContaining({clientSecret:'seti_trial_secret_fake'}));
+  expect(state.invoke).toHaveBeenCalledWith('checkin-wallet-demo',expect.objectContaining({action:'setup',ticket:'private-session',consent:'wallet-demo-v1'}));
+  expect(state.confirm).toHaveBeenCalledWith(expect.objectContaining({clientSecret:'seti_trial_secret_fake',redirect:'if_required'}));
   expect(state.invoke.mock.calls.filter(([,b])=>b.action==='setup')).toHaveLength(1);
  });
- it('discards the prepared wallet when the requested contact profile changes',async()=>{
+ it('confirms the selected contact profile after remounting the wallet',async()=>{
   render(<CheckInDemo/>);
-  fireEvent.click(await screen.findByRole('button',{name:'CHECK-IN™ · Abrir mi wallet'}));
   await screen.findByRole('button',{name:'Native wallet'});
   fireEvent.click(screen.getByRole('radio',{name:'Todos los datos'}));
-  expect(screen.queryByRole('button',{name:'Native wallet'})).toBeNull();
-  fireEvent.click(screen.getByRole('button',{name:'CHECK-IN™ · Abrir mi wallet'}));
+  fireEvent.click(await screen.findByRole('button',{name:'Native wallet'}));
   await waitFor(()=>expect(state.invoke).toHaveBeenCalledWith('checkin-wallet-demo',expect.objectContaining({action:'setup',profile:'all'})));
+ });
+ it('does not confirm a method when the server refuses setup',async()=>{
+  const normal=state.invoke.getMockImplementation();
+  state.invoke.mockImplementation((name,b)=>b.action==='setup'?Promise.reject(new Error('Operación detenida')):normal(name,b));
+  render(<CheckInDemo/>);
+  fireEvent.click(await screen.findByRole('button',{name:'Native wallet'}));
+  await screen.findByText('Operación detenida');
+  expect(state.confirm).not.toHaveBeenCalled();
+  expect(screen.queryByText('Esto ha llegado de verdad')).toBeNull();
  });
 });
 
