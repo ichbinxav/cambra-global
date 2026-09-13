@@ -120,7 +120,37 @@ export async function handler(req: Request): Promise<Response> {
       }, "setup:"+trial);
       return json({ client_secret: si.client_secret, setup_intent_id: si.id, mode: "live" });
     }
-    if (!["result", "detach"].includes(action)) return json({ error: "action_invalid" }, 400);
+    if (action === "hosted_setup") {
+      if (body.consent !== "wallet-demo-v1") return json({ error: "consent_required" }, 400);
+      if (body.profile !== "email") return json({ error: "profile_invalid" }, 400);
+      const customer = await write("customers", {
+        description: "CAMBRA CHECK-IN — personal wallet trial",
+        "metadata[purpose]": PURPOSE, "metadata[session]": ticket.id,
+      }, "customer:"+ticket.id);
+      const cs = await write("checkout/sessions", {
+        mode: "setup", currency: "eur", customer: customer.id,
+        "payment_method_types[0]": "card", locale: "es",
+        success_url: "https://cambra.global/checkin-demo?checkout_session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: "https://cambra.global/checkin-demo?checkout_cancelled=1",
+        "custom_text[submit][message]": "Prueba de CAMBRA CHECK-IN: guardas el método solo para esta prueba. No autorizas cobros futuros. Si te pide escribir datos, puedes cancelar.",
+        "metadata[purpose]": PURPOSE, "metadata[session]": ticket.id, "metadata[profile]": "email",
+        "setup_intent_data[metadata][purpose]": PURPOSE,
+        "setup_intent_data[metadata][session]": ticket.id,
+        "setup_intent_data[metadata][profile]": "email",
+        "setup_intent_data[metadata][consent]": "wallet-demo-v1",
+        "setup_intent_data[metadata][consent_scope]": "save_for_trial_only_no_future_charges",
+      }, "hosted-v1:"+trial);
+      if (!cs.url || new URL(cs.url).hostname !== "checkout.stripe.com" || cs.mode !== "setup" || cs.livemode !== true) fail("stripe_write_failed");
+      return json({ url: cs.url, checkout_session_id: cs.id, mode: "live", profile: "email" });
+    }
+    if (action === "hosted_result") {
+      if (!/^cs_live_[A-Za-z0-9]+$/.test(body.checkout_session_id || "")) return json({ error: "checkout_id_invalid" }, 400);
+      const cs = await stripeGet("checkout/sessions/"+body.checkout_session_id);
+      if (cs.metadata?.purpose !== PURPOSE || cs.metadata?.session !== ticket.id || cs.metadata?.profile !== body.profile || cs.livemode !== true || cs.mode !== "setup") return json({ error: "trial_not_owned" }, 403);
+      if (!cs.setup_intent) return json({ status: cs.status === "expired" ? "expired" : "requires_payment_method", saved: false, mode: "live", future_charges_authorized: false });
+      body.setup_intent_id = typeof cs.setup_intent === "string" ? cs.setup_intent : cs.setup_intent.id;
+    }
+    if (!["result", "detach", "hosted_result"].includes(action)) return json({ error: "action_invalid" }, 400);
     if (!/^seti_[A-Za-z0-9]+$/.test(body.setup_intent_id || "")) return json({ error: "setup_id_invalid" }, 400);
     const si = await stripeGet("setup_intents/"+body.setup_intent_id, { "expand[]": "payment_method" });
     if (si.metadata?.purpose !== PURPOSE || si.metadata?.session !== ticket.id || si.metadata?.profile !== body.profile || si.livemode !== true) return json({ error: "trial_not_owned" }, 403);
