@@ -67,13 +67,15 @@ export async function handler(req: Request): Promise<Response> {
     const pk = getPublishableKey("live");
     if (action === "status") {
       const domain = await domainState(host);
-      let invited = false;
-      if (body.ticket) { await verifyTicket(body.ticket); invited = true; }
-      return json({ ok: true, mode: "live", admin, invited, domain: domainSummary(domain), host,
-        publishable_key: admin || invited ? pk : null, build: PURPOSE });
+      // Public entry: each browser gets its own signed capability, never a shared result.
+      let sessionTicket = body.ticket;
+      if (sessionTicket) await verifyTicket(sessionTicket);
+      else sessionTicket = await issueTicket();
+      return json({ ok: true, mode: "live", admin, public_access: true, ticket: sessionTicket,
+        domain: domainSummary(domain), host, publishable_key: pk, build: PURPOSE + "_public" });
     }
-    if (["invite", "register_domain", "recent"].includes(action) && !admin) return json({ error: "admin_required" }, 403);
-    if (action === "invite") return json({ ticket: await issueTicket(), expires_in: TTL });
+    if (["register_domain", "recent"].includes(action) && !admin) return json({ error: "admin_required" }, 403);
+    if (action === "invite" || action === "new_session") return json({ ticket: await issueTicket(), expires_in: TTL });
     if (action === "recent") {
       const list = await stripeGet("setup_intents", { limit: "100", "expand[]": "data.payment_method" });
       return json({ trials: (list.data || []).filter((s: any) => s.metadata?.purpose === PURPOSE).slice(0,20).map((s: any) => ({
