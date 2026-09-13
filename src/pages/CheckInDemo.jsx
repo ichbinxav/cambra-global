@@ -33,7 +33,7 @@ async function call(action, args = {}) {
 }
 function formatAddress(a) { return a ? [a.line1,a.line2,a.postal_code,a.city,a.state,a.country].filter(Boolean).join(', ') : ''; }
 
-function Wallet({ ticket, profile, onResult, onBusy, onError }) {
+function Wallet({ ticket, profile, setup, onResult, onBusy, onError }) {
   const stripe = useStripe();
   const elements = useElements();
   const [ready, setReady] = useState(false);
@@ -66,8 +66,7 @@ function Wallet({ ticket, profile, onResult, onBusy, onError }) {
     try {
       const submitted = await elements.submit();
       if (submitted.error) throw new Error(submitted.error.message);
-      const setup = await call('setup', { ticket, profile, consent: 'wallet-demo-v1' });
-      putStored(TRIAL_KEY, JSON.stringify({ profile, setup_intent_id: setup.setup_intent_id }));
+      if (!setup?.client_secret) throw new Error('La sesión de Stripe no está preparada.');
       const billing = event.billingDetails;
       const details = billing ? Object.fromEntries(Object.entries({
         name: billing.name, email: billing.email, phone: billing.phone, address: billing.address,
@@ -109,6 +108,7 @@ export default function CheckInDemo() {
   const [config, setConfig] = useState(null);
   const [profile, setProfile] = useState('email');
   const [result, setResult] = useState(null);
+  const [setup, setSetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -165,9 +165,19 @@ export default function CheckInDemo() {
     return null;
   }) : null,[config?.publishable_key,retry]);
   const elementOptions=useMemo(()=>({
-    mode:'setup',currency:'eur',paymentMethodTypes:['card'],locale:'es',
+    clientSecret:setup?.client_secret,locale:'es',
     appearance:{theme:'night',variables:{colorPrimary:'#dcff85',colorBackground:'#1b1b1e',colorText:'#ffffff',borderRadius:'12px'}},
-  }),[]);
+  }),[setup?.client_secret]);
+  async function prepare() {
+    if(busy)return;
+    setBusy(true);setError('');
+    try {
+      const d=await call('setup',{ticket,profile,consent:'wallet-demo-v1'});
+      putStored(TRIAL_KEY,JSON.stringify({profile,setup_intent_id:d.setup_intent_id}));
+      setSetup(d);
+    }catch(e){setError(message(e));}
+    finally{setBusy(false);}
+  }
   async function share() {
     setError('');
     try {
@@ -193,7 +203,7 @@ export default function CheckInDemo() {
     try{setResult(await call('result',{ticket,profile,setup_intent_id:result.setup_intent_id}));}catch(e){setError(message(e));}finally{setBusy(false);}
   }
   async function reset() {
-    setError('');setObservation('');setResult(null);putStored(TRIAL_KEY,null);
+    setError('');setObservation('');setResult(null);setSetup(null);putStored(TRIAL_KEY,null);
     setBusy(true);
     try {const d=await call('new_session');putStored(TICKET_KEY,d.ticket);setTicket(d.ticket);}
     catch(e){setError(message(e));}
@@ -210,11 +220,13 @@ export default function CheckInDemo() {
       {error && <div className="ci-error" role="alert"><p>{error}</p><button disabled={busy||loading} onClick={()=>setRetry(x=>x+1)}>Volver a comprobar</button></div>}
       {!loading && config && !ticket && <p className="ci-notice">No se ha podido iniciar la prueba. Pulsa Volver a comprobar.</p>}
       {!loading && config && ticket && !result && <>
-        <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
+        <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setSetup(null);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
         <p className="ci-hint">{profile==='all'?'Solicitamos email, nombre, teléfono y dirección de facturación. Si te pide completar algo, puedes cancelar.':profile==='email'?'Solicitamos el email. Si ya está preparado, puede compartirse sin escribirlo.':'No solicitamos datos de contacto. Los campos vacíos no significan que no estén guardados.'}</p>
         <div className="ci-consent">Al confirmar en tu wallet, aceptas compartir los datos solicitados y guardar el método en Stripe para esta prueba de CAMBRA GLOBAL SASU. <strong>No autorizas cobros futuros.</strong></div>
         {config.domain?.enabled && stripePromise
-          ? <Elements key={profile+ticket+retry} stripe={stripePromise} options={elementOptions}><Wallet ticket={ticket} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError}/></Elements>
+          ? setup
+            ? <Elements key={profile+ticket+retry+setup.setup_intent_id} stripe={stripePromise} options={elementOptions}><Wallet ticket={ticket} profile={profile} setup={setup} onResult={setResult} onBusy={setBusy} onError={setError}/></Elements>
+            : <button className="ci-action" disabled={busy} onClick={prepare}>{busy?'Preparando Stripe…':'CHECK-IN™ · Abrir mi wallet'}</button>
           : <p className="ci-notice">Las wallets aún no están habilitadas para este dominio.</p>}
         <p className="ci-small">Esta página no crea pagos ni solicita una retención de importe. Stripe o tu banco pueden pedir una verificación adicional. Estamos probando el guardado; no se garantiza ningún cobro posterior.</p>
       </>}
