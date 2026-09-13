@@ -6,7 +6,7 @@ const { transformSync } = require('esbuild');
 const source = fs.readFileSync('base44/functions/checkin-wallet-demo/entry.ts','utf8').replace(/^import .*;$/gm,'');
 const writes = [], sessions = new Map(), intents = new Map(), idempotency = new Map();
 let serial = 0;
-const sandbox = { exports:{}, TextEncoder, TextDecoder, Response, URL, btoa, atob, crypto:webcrypto, Deno:{serve(){}},
+const sandbox = { module:{exports:{}}, TextEncoder, TextDecoder, Response, URL, btoa, atob, crypto:webcrypto, Deno:{serve(){}},
   createClientFromRequest:()=>({auth:{me:async()=>null},asServiceRole:{}}),
   assertBillingAccount:async()=>{},getPublishableKey:()=>'pk_live_mock',getSecretKey:()=>'mock_secret_for_tests',
   captureEmergencyEpoch:async()=>({}),guardedEmergencyEffect:async(_svc,x)=>x.effect(),
@@ -32,7 +32,7 @@ const sandbox = { exports:{}, TextEncoder, TextDecoder, Response, URL, btoa, ato
     idempotency.set(key,d);return {ok:true,data:d};
   }};
 vm.runInNewContext(transformSync(source,{loader:'ts',format:'cjs'}).code,sandbox);
-async function call(body){const r=await sandbox.exports.handler(new Request('https://cambra.global/test',{method:'POST',body:JSON.stringify(body)}));return {status:r.status,data:await r.json()};}
+async function call(body){const r=await sandbox.module.exports.handler(new Request('https://cambra.global/test',{method:'POST',body:JSON.stringify(body)}));return {status:r.status,data:await r.json()};}
 (async()=>{
   const a=(await call({action:'status'})).data,b=(await call({action:'status'})).data;
   const common={action:'hosted_setup',ticket:a.ticket,profile:'email'};
