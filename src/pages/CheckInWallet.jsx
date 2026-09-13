@@ -26,10 +26,10 @@ export function loadWalletStripe() {
   return scriptPromise;
 }
 
-export default function CheckInWallet({publishableKey, setup, profile, onResult, onBusy, onError, readResult}) {
+export default function CheckInWallet({publishableKey, profile, onResult, onBusy, onError, prepareSetup, readResult}) {
   const mount = useRef(null);
   const callbacks = useRef({});
-  callbacks.current = {onResult,onBusy,onError,readResult};
+  callbacks.current = {onResult,onBusy,onError,prepareSetup,readResult};
   const [stage,setStage] = useState('Cargando Stripe…');
   const [available,setAvailable] = useState(null);
   const [loadError,setLoadError] = useState('');
@@ -46,7 +46,7 @@ export default function CheckInWallet({publishableKey, setup, profile, onResult,
         const Stripe=await loadWalletStripe();
         if(!active)return;
         const stripe=Stripe(publishableKey);
-        const elements=stripe.elements({clientSecret:setup.client_secret,locale:'es',
+        const elements=stripe.elements({mode:'setup',currency:'eur',paymentMethodTypes:['card'],locale:'es',
           appearance:{theme:'night',variables:{colorPrimary:'#dcff85',colorBackground:'#1b1b1e',colorText:'#ffffff',borderRadius:'12px'}}});
         element=elements.create('expressCheckout',{
           business:{name:'CAMBRA CHECK-IN™'},
@@ -70,13 +70,15 @@ export default function CheckInWallet({publishableKey, setup, profile, onResult,
           try{
             const submitted=await elements.submit();
             if(submitted.error)throw submitted.error;
+            const setup=await callbacks.current.prepareSetup();
+            if(!active)return;
             const b=event.billingDetails;
             const details=b?Object.fromEntries(Object.entries({name:b.name,email:b.email,phone:b.phone,address:b.address}).filter(([,v])=>v!=null)):null;
             const confirmed=await stripe.confirmSetup({elements,clientSecret:setup.client_secret,
               confirmParams:{return_url:window.location.origin+'/checkin-demo',
                 ...(details?{payment_method_data:{billing_details:details}}:{})},redirect:'if_required'});
             if(confirmed.error)throw confirmed.error;
-            const result=await callbacks.current.readResult();
+            const result=await callbacks.current.readResult(setup.setup_intent_id);
             if(active)callbacks.current.onResult(result);
           }catch(e){if(active)callbacks.current.onError(e?.message || 'No se ha podido completar la prueba.');event.paymentFailed?.({reason:'fail'});}
           finally{confirming=false;if(active)callbacks.current.onBusy(false);}
@@ -88,7 +90,7 @@ export default function CheckInWallet({publishableKey, setup, profile, onResult,
     }
     start();
     return ()=>{active=false;window.clearTimeout(timer);element?.destroy();};
-  },[publishableKey,setup.client_secret,profile]);
+  },[publishableKey,profile]);
   return <div className="ci-wallet">
     {stage && <p role="status">{stage}</p>}
     <div ref={mount}/>
