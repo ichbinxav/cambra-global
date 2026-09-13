@@ -16,8 +16,8 @@ const errors = {
   stripe_write_failed: 'Stripe no ha podido preparar la prueba. No se ha ejecutado ningún cobro.',
   domain_not_registered: 'Hay que habilitar este dominio para las wallets.',
   operational_control_paused: 'El control operativo de CAMBRA tiene pausada esta operación.',
-  invitation_invalid_or_expired: 'El enlace de prueba ha caducado. Pide un enlace nuevo.',
-  invitation_required: 'Abre un enlace de prueba o entra como administrador de CAMBRA.',
+  invitation_invalid_or_expired: 'La sesión de prueba ha caducado. Pulsa Volver a comprobar.',
+  invitation_required: 'No se ha podido iniciar la sesión de prueba. Pulsa Volver a comprobar.',
   admin_required: 'Esta acción requiere tu sesión de administrador de CAMBRA.',
   wallet_demo_unavailable: 'La conexión de la prueba todavía no está disponible.',
   trial_not_owned: 'Este resultado pertenece a otro enlace de prueba.',
@@ -126,8 +126,9 @@ export default function CheckInDemo() {
           d=await call('status');
         }
         if (!active) return;
-        if (d.admin && !current) {
-          const issued=await call('invite');current=issued.ticket;putStored(TICKET_KEY,current);
+        if (!current) {
+          current=d.ticket || (await call('new_session')).ticket;
+          putStored(TICKET_KEY,current);
           if(active)setTicket(current);
         }
         if(!active)return;
@@ -146,7 +147,7 @@ export default function CheckInDemo() {
     }
     init();
     return ()=>{active=false;document.title=oldTitle;robots.remove();referrer.remove();};
-    // Ticket is initialized once per invitation, and explicit retry refreshes readiness.
+    // Each visitor receives a private session automatically; retry refreshes readiness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[retry]);
   const stripePromise=useMemo(()=>config?.publishable_key ? loadStripe(config.publishable_key) : null,[config?.publishable_key]);
@@ -157,9 +158,9 @@ export default function CheckInDemo() {
   async function share() {
     setError('');
     try {
-      const d=await call('invite');const url='https://cambra.global/checkin-demo#trial='+encodeURIComponent(d.ticket);setInvite(url);
-      try {await navigator.clipboard.writeText(url);setCopyMessage('Enlace copiado. Caduca en 6 horas.');}
-      catch {setCopyMessage('Selecciona y copia el enlace. Caduca en 6 horas.');}
+      const url='https://cambra.global/checkin-demo';setInvite(url);
+      try {await navigator.clipboard.writeText(url);setCopyMessage('Enlace público copiado.');}
+      catch {setCopyMessage('Selecciona y copia el enlace público.');}
     }catch(e){setError(message(e));}
   }
   async function activate() {
@@ -180,10 +181,10 @@ export default function CheckInDemo() {
   }
   async function reset() {
     setError('');setObservation('');setResult(null);putStored(TRIAL_KEY,null);
-    if(config?.admin){
-      try {const d=await call('invite');putStored(TICKET_KEY,d.ticket);setTicket(d.ticket);}
-      catch(e){setError(message(e));}
-    }
+    setBusy(true);
+    try {const d=await call('new_session');putStored(TICKET_KEY,d.ticket);setTicket(d.ticket);}
+    catch(e){setError(message(e));}
+    finally{setBusy(false);}
   }
   const contact=result?.contact;
   return <main className="ci-demo">
@@ -194,7 +195,7 @@ export default function CheckInDemo() {
       <p className="ci-lead">Comprueba qué datos comparte y prueba a guardar tu método de pago con Stripe.</p>
       {loading && <p className="ci-notice" role="status">Comprobando la conexión real…</p>}
       {error && <div className="ci-error" role="alert"><p>{error}</p><button disabled={busy||loading} onClick={()=>setRetry(x=>x+1)}>Volver a comprobar</button></div>}
-      {!loading && config && !ticket && <div className="ci-notice"><p>Esta prueba funciona con una invitación de CAMBRA. Abre el enlace que te han compartido.</p><a href="/LoginGate?next=%2Fcheckin-demo">Entrar como administrador</a></div>}
+      {!loading && config && !ticket && <p className="ci-notice">No se ha podido iniciar la prueba. Pulsa Volver a comprobar.</p>}
       {!loading && config && ticket && !result && <>
         <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
         <p className="ci-hint">{profile==='all'?'Solicitamos email, nombre, teléfono y dirección de facturación. Si te pide completar algo, puedes cancelar.':profile==='email'?'Solicitamos el email. Si ya está preparado, puede compartirse sin escribirlo.':'No solicitamos datos de contacto. Los campos vacíos no significan que no estén guardados.'}</p>
@@ -214,12 +215,12 @@ export default function CheckInDemo() {
         {observation && <p className="ci-hint">{observation}. Esta observación queda solo en tu pantalla.</p>}
         {result.status!=='succeeded' && <button className="ci-action" disabled={busy} onClick={refreshResult}>Consultar estado</button>}
         {result.saved && <button className="ci-action" disabled={busy} onClick={detach}>Desvincular el método de esta prueba</button>}
-        <button className="ci-link" disabled={busy} onClick={reset}>{config?.admin?'Nueva prueba':'Comparar otra opción'}</button>
+        <button className="ci-link" disabled={busy} onClick={reset}>Nueva prueba</button>
       </section>}
       {config?.admin && <details className="ci-admin"><summary>Controles de la prueba</summary>
         <p className="ci-small">Conexión real verificada. Apple Pay: {config.domain?.apple_pay}. Google Pay: {config.domain?.google_pay}.</p>
         {(config.domain?.apple_pay!=='active'||config.domain?.google_pay!=='active'||!config.domain?.enabled) && <button className="ci-action" disabled={busy} onClick={activate}>Habilitar wallets en este dominio</button>}
-        <button className="ci-action" disabled={busy} onClick={share}>Crear enlace para otra persona</button>
+        <button className="ci-action" disabled={busy} onClick={share}>Copiar enlace público</button>
         {invite && <><p className="ci-hint" role="status">{copyMessage}</p><input className="ci-share" readOnly value={invite} aria-label="Enlace de invitación" onFocus={e=>e.target.select()}/></>}
         <button className="ci-link" onClick={async()=>{try{setRecent((await call('recent')).trials);}catch(e){setError(message(e));}}}>Ver resultados recientes</button>
         {recent && <div className="ci-recent">{!recent.length?<p>No hay pruebas entre las últimas 100 preparaciones de Stripe.</p>:recent.map(t=><article key={t.id}><strong>{t.wallet||'Wallet sin confirmar'} · {profiles[t.profile]||t.profile}</strong><p>{new Date(t.created*1000).toLocaleString('es-ES')} · {t.status}</p><p>{Object.entries(t.fields).map(([k,v])=>k+': '+(v?'sí':'no')).join(' · ')}</p></article>)}</div>}
