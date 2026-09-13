@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 const state=vi.hoisted(()=>({invoke:vi.fn(),options:null,confirm:vi.fn()}));
 vi.mock('@/api/base44Client',()=>({base44:{functions:{invoke:state.invoke}}}));
-import CheckInDemo from './CheckInDemo';
+import CheckInDemoGate, { CheckInDemoContent as CheckInDemo } from './CheckInDemo';
 beforeEach(()=>{
  cleanup();sessionStorage.clear();state.options=null;state.confirm.mockReset().mockResolvedValue({});
  window.Stripe=()=>({
@@ -58,4 +58,10 @@ describe('Public wallet initialization',()=>{
   fireEvent.click(screen.getByRole('button',{name:'CHECK-IN™ · Abrir mi wallet'}));
   await waitFor(()=>expect(state.invoke).toHaveBeenCalledWith('checkin-wallet-demo',expect.objectContaining({action:'setup',profile:'all'})));
  });
+});
+
+it('keeps the editor preview out of the live wallet flow',()=>{
+  render(<CheckInDemoGate/>);
+  expect(screen.getByRole('link',{name:'Abrir la prueba en cambra.global ↗'}).getAttribute('href')).toBe('https://cambra.global/checkin-demo');
+  expect(state.invoke).not.toHaveBeenCalled();
 });

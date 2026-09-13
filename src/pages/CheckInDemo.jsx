@@ -33,6 +33,20 @@ async function call(action, args = {}) {
 function formatAddress(a) { return a ? [a.line1,a.line2,a.postal_code,a.city,a.state,a.country].filter(Boolean).join(', ') : ''; }
 
 export default function CheckInDemo() {
+  const supportedHost=['cambra.global','www.cambra.global'].includes(window.location.hostname);
+  if (!supportedHost || window.self !== window.top) return <main className="ci-demo">
+    <header className="ci-header"><a href="https://cambra.global">CAMBRA<span>CHECK-IN™</span></a></header>
+    <section className="ci-card">
+      <p className="ci-eyebrow">PRUEBA DE WALLET</p>
+      <h1>Abre la prueba<br/>fuera del editor.</h1>
+      <p className="ci-lead">La prueba de Apple Pay y Google Pay está configurada en cambra.global. Ábrela directamente en tu navegador para continuar.</p>
+      <a className="ci-action" style={{textAlign:'center',textDecoration:'none'}} href="https://cambra.global/checkin-demo" target="_blank" rel="noopener noreferrer">Abrir la prueba en cambra.global ↗</a>
+    </section>
+  </main>;
+  return <CheckInDemoContent/>;
+}
+
+export function CheckInDemoContent() {
   const [ticket, setTicket] = useState(() => {
     const t = new URLSearchParams(window.location.hash.slice(1)).get('trial');
     if (t) { putStored(TICKET_KEY,t); putStored(TRIAL_KEY,null); return t; }
