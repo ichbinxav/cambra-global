@@ -56,6 +56,7 @@ export function CheckInDemoContent() {
   const [profile, setProfile] = useState('email');
   const [result, setResult] = useState(null);
   const [setup, setSetup] = useState(null);
+  const [hostedUrl, setHostedUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -93,12 +94,17 @@ export function CheckInDemoContent() {
         if(window.location.hash.startsWith('#trial=')) history.replaceState(null,'',window.location.pathname+window.location.search);
         const params=new URLSearchParams(window.location.search);
         const returned=params.get('setup_intent');
+        const checkoutReturned=params.get('checkout_session_id');
         let saved=null;try { saved=JSON.parse(getStored(TRIAL_KEY)||'null'); } catch {}
-        if(current && saved?.setup_intent_id && (!returned || returned===saved.setup_intent_id)) {
+        if(current && saved?.checkout_session_id && checkoutReturned===saved.checkout_session_id) {
+          const latest=await call('hosted_result',{ticket:current,profile:saved.profile,checkout_session_id:checkoutReturned});
+          if(active){setProfile(saved.profile);if(latest.status==='succeeded'||latest.status==='processing')setResult(latest);}
+          if(latest.setup_intent_id)putStored(TRIAL_KEY,JSON.stringify({profile:saved.profile,setup_intent_id:latest.setup_intent_id}));
+        } else if(current && saved?.setup_intent_id && (!returned || returned===saved.setup_intent_id)) {
           const latest=await call('result',{ticket:current,...saved});
           if(active){setProfile(saved.profile);if(latest.status==='succeeded'||latest.status==='processing')setResult(latest);}
         }
-        if(returned) history.replaceState(null,'',window.location.pathname);
+        if(returned || checkoutReturned || params.has('checkout_cancelled')) history.replaceState(null,'',window.location.pathname);
       } catch(e) {if(active)setError(message(e));}
       finally {if(active)setLoading(false);}
     }
@@ -114,6 +120,19 @@ export function CheckInDemoContent() {
       const d=await call('setup',{ticket,profile,consent:'wallet-demo-v1'});
       putStored(TRIAL_KEY,JSON.stringify({profile,setup_intent_id:d.setup_intent_id}));
       setSetup(d);
+    }catch(e){setError(message(e));}
+    finally{setBusy(false);}
+  }
+  async function prepareHosted() {
+    if(busy)return;
+    setBusy(true);setError('');setSetup(null);
+    try {
+      const d=await call('hosted_setup',{ticket,profile:'email',consent:'wallet-demo-v1'});
+      const url=new URL(d.url);
+      if(url.protocol!=='https:'||url.hostname!=='checkout.stripe.com')throw new Error('Stripe no ha devuelto un enlace válido.');
+      putStored(TRIAL_KEY,JSON.stringify({profile:'email',checkout_session_id:d.checkout_session_id}));
+      setProfile('email');setHostedUrl(d.url);
+      window.location.assign(d.url);
     }catch(e){setError(message(e));}
     finally{setBusy(false);}
   }
@@ -142,7 +161,7 @@ export function CheckInDemoContent() {
     try{setResult(await call('result',{ticket,profile,setup_intent_id:result.setup_intent_id}));}catch(e){setError(message(e));}finally{setBusy(false);}
   }
   async function reset() {
-    setError('');setObservation('');setResult(null);setSetup(null);putStored(TRIAL_KEY,null);
+    setError('');setObservation('');setResult(null);setSetup(null);setHostedUrl('');putStored(TRIAL_KEY,null);
     setBusy(true);
     try {const d=await call('new_session');putStored(TICKET_KEY,d.ticket);setTicket(d.ticket);}
     catch(e){setError(message(e));}
@@ -153,8 +172,8 @@ export function CheckInDemoContent() {
     <header className="ci-header"><a href="/">CAMBRA<span>CHECK-IN™</span></a><span className="ci-badge">PRUEBA REAL</span></header>
     <section className="ci-card">
       <p className="ci-eyebrow">APPLE PAY · GOOGLE PAY</p>
-      <h1>Tu wallet.<br/>Sin rellenar formularios.</h1>
-      <p className="ci-lead">Comprueba qué datos comparte y prueba a guardar tu método de pago con Stripe.</p>
+      <h1>Probemos tu wallet.</h1>
+      <p className="ci-lead">Comprueba qué datos comparte sin escribirlos. Si te pide completar algo, cancela la prueba.</p>
       {loading && <p className="ci-notice" role="status">Comprobando la conexión real…</p>}
       {error && <div className="ci-error" role="alert"><p>{error}</p><button disabled={busy||loading} onClick={()=>setRetry(x=>x+1)}>Volver a comprobar</button></div>}
       {!loading && config && !ticket && <p className="ci-notice">No se ha podido iniciar la prueba. Pulsa Volver a comprobar.</p>}
@@ -167,6 +186,11 @@ export function CheckInDemoContent() {
             ? <CheckInWallet key={profile+ticket+retry+setup.setup_intent_id} publishableKey={config.publishable_key} setup={setup} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError} readResult={()=>call('result',{ticket,profile,setup_intent_id:setup.setup_intent_id})}/>
             : <button className="ci-action" disabled={busy} onClick={prepare}>{busy?'Preparando Stripe…':'CHECK-IN™ · Abrir mi wallet'}</button>
           : <p className="ci-notice">Las wallets aún no están habilitadas para este dominio.</p>}
+        <section className="ci-hosted">
+          <p className="ci-hint">Si los botones no cargan, abre la alternativa oficial de Stripe. Esta prueba solicita email; su pantalla puede pedir otros datos o pasos.</p>
+          <button className="ci-action" disabled={busy} onClick={prepareHosted}>{busy?'Preparando la prueba…':'Abrir prueba en Stripe ↗'}</button>
+          {hostedUrl && <a className="ci-link" href={hostedUrl}>Continuar en Stripe</a>}
+        </section>
         <p className="ci-small">Esta página no crea pagos ni solicita una retención de importe. Stripe o tu banco pueden pedir una verificación adicional. Estamos probando el guardado; no se garantiza ningún cobro posterior.</p>
       </>}
       {result && <section className="ci-result" aria-live="polite">
