@@ -55,8 +55,6 @@ export function CheckInDemoContent() {
   const [config, setConfig] = useState(null);
   const [profile, setProfile] = useState('email');
   const [result, setResult] = useState(null);
-  const [setup, setSetup] = useState(null);
-  const [hostedUrl, setHostedUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -113,28 +111,10 @@ export function CheckInDemoContent() {
     // Each visitor receives a private session automatically; retry refreshes readiness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[retry]);
-  async function prepare() {
-    if(busy)return;
-    setBusy(true);setError('');
-    try {
-      const d=await call('setup',{ticket,profile,consent:'wallet-demo-v1'});
-      putStored(TRIAL_KEY,JSON.stringify({profile,setup_intent_id:d.setup_intent_id}));
-      setSetup(d);
-    }catch(e){setError(message(e));}
-    finally{setBusy(false);}
-  }
-  async function prepareHosted() {
-    if(busy)return;
-    setBusy(true);setError('');setSetup(null);
-    try {
-      const d=await call('hosted_setup',{ticket,profile:'email',consent:'wallet-demo-v1'});
-      const url=new URL(d.url);
-      if(url.protocol!=='https:'||url.hostname!=='checkout.stripe.com')throw new Error('Stripe no ha devuelto un enlace válido.');
-      putStored(TRIAL_KEY,JSON.stringify({profile:'email',checkout_session_id:d.checkout_session_id}));
-      setProfile('email');setHostedUrl(d.url);
-      window.location.assign(d.url);
-    }catch(e){setError(message(e));}
-    finally{setBusy(false);}
+  async function prepareSetup() {
+    const d=await call('setup',{ticket,profile,consent:'wallet-demo-v1'});
+    putStored(TRIAL_KEY,JSON.stringify({profile,setup_intent_id:d.setup_intent_id}));
+    return d;
   }
   async function share() {
     setError('');
@@ -161,7 +141,7 @@ export function CheckInDemoContent() {
     try{setResult(await call('result',{ticket,profile,setup_intent_id:result.setup_intent_id}));}catch(e){setError(message(e));}finally{setBusy(false);}
   }
   async function reset() {
-    setError('');setObservation('');setResult(null);setSetup(null);setHostedUrl('');putStored(TRIAL_KEY,null);
+    setError('');setObservation('');setResult(null);putStored(TRIAL_KEY,null);
     setBusy(true);
     try {const d=await call('new_session');putStored(TICKET_KEY,d.ticket);setTicket(d.ticket);}
     catch(e){setError(message(e));}
@@ -178,19 +158,13 @@ export function CheckInDemoContent() {
       {error && <div className="ci-error" role="alert"><p>{error}</p><button disabled={busy||loading} onClick={()=>setRetry(x=>x+1)}>Volver a comprobar</button></div>}
       {!loading && config && !ticket && <p className="ci-notice">No se ha podido iniciar la prueba. Pulsa Volver a comprobar.</p>}
       {!loading && config && ticket && !result && <>
-        <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setSetup(null);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
+        <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
         <p className="ci-hint">{profile==='all'?'Solicitamos email, nombre, teléfono y dirección de facturación. Si te pide completar algo, puedes cancelar.':profile==='email'?'Solicitamos el email. Si ya está preparado, puede compartirse sin escribirlo.':'No solicitamos datos de contacto. Los campos vacíos no significan que no estén guardados.'}</p>
         <div className="ci-consent">Al confirmar en tu wallet, aceptas compartir los datos solicitados y guardar el método en Stripe para esta prueba de CAMBRA GLOBAL SASU. <strong>No autorizas cobros futuros.</strong></div>
+        <p className="ci-hint">Pulsa tu wallet para confirmar aquí mismo.</p>
         {config.domain?.enabled && config.publishable_key
-          ? setup
-            ? <CheckInWallet key={profile+ticket+retry+setup.setup_intent_id} publishableKey={config.publishable_key} setup={setup} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError} readResult={()=>call('result',{ticket,profile,setup_intent_id:setup.setup_intent_id})}/>
-            : <button className="ci-action" disabled={busy} onClick={prepare}>{busy?'Preparando Stripe…':'CHECK-IN™ · Abrir mi wallet'}</button>
+          ? <CheckInWallet key={profile+ticket+retry} publishableKey={config.publishable_key} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError} prepareSetup={prepareSetup} readResult={id=>call('result',{ticket,profile,setup_intent_id:id})}/>
           : <p className="ci-notice">Las wallets aún no están habilitadas para este dominio.</p>}
-        <section className="ci-hosted">
-          <p className="ci-hint">Si los botones no cargan, abre la alternativa oficial de Stripe. Esta prueba solicita email; su pantalla puede pedir otros datos o pasos.</p>
-          <button className="ci-action" disabled={busy} onClick={prepareHosted}>{busy?'Preparando la prueba…':'Abrir prueba en Stripe ↗'}</button>
-          {hostedUrl && <a className="ci-link" href={hostedUrl}>Continuar en Stripe</a>}
-        </section>
         <p className="ci-small">Esta página no crea pagos ni solicita una retención de importe. Stripe o tu banco pueden pedir una verificación adicional. Estamos probando el guardado; no se garantiza ningún cobro posterior.</p>
       </>}
       {result && <section className="ci-result" aria-live="polite">
