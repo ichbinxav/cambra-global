@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Elements, ExpressCheckoutElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { useEffect, useState } from 'react';
+import CheckInWallet from './CheckInWallet';
 import { base44 } from '@/api/base44Client';
 import './CheckInDemo.css';
 
@@ -32,72 +31,6 @@ async function call(action, args = {}) {
   return d;
 }
 function formatAddress(a) { return a ? [a.line1,a.line2,a.postal_code,a.city,a.state,a.country].filter(Boolean).join(', ') : ''; }
-
-function Wallet({ ticket, profile, setup, onResult, onBusy, onError }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [ready, setReady] = useState(false);
-  const [available, setAvailable] = useState(null);
-  const processing = useRef(false);
-  const reportedTimeout = useRef(false);
-  useEffect(() => {
-    if (ready) return;
-    const timer = window.setTimeout(() => {
-      if (reportedTimeout.current) return;
-      reportedTimeout.current = true;
-      onError('Stripe no ha terminado de cargar la wallet. Pulsa Volver a comprobar para reiniciarla.');
-    }, 15000);
-    return () => window.clearTimeout(timer);
-  }, [ready, onError]);
-  const options = useMemo(() => ({
-    business: { name: 'CAMBRA CHECK-IN™' },
-    emailRequired: profile !== 'none',
-    phoneNumberRequired: profile === 'all',
-    billingAddressRequired: profile === 'all',
-    shippingAddressRequired: false,
-    paymentMethods: { applePay: 'auto', googlePay: 'auto', link: 'never', paypal: 'never', amazonPay: 'never', klarna: 'never' },
-    buttonTheme: { applePay: 'white', googlePay: 'white' },
-    buttonHeight: 52,
-    layout: { maxColumns: 1, maxRows: 2, overflow: 'never' },
-  }), [profile]);
-  async function confirm(event) {
-    if (!stripe || !elements || processing.current) return;
-    processing.current = true; onBusy(true); onError('');
-    try {
-      const submitted = await elements.submit();
-      if (submitted.error) throw new Error(submitted.error.message);
-      if (!setup?.client_secret) throw new Error('La sesión de Stripe no está preparada.');
-      const billing = event.billingDetails;
-      const details = billing ? Object.fromEntries(Object.entries({
-        name: billing.name, email: billing.email, phone: billing.phone, address: billing.address,
-      }).filter(([,v]) => v !== undefined && v !== null)) : null;
-      const { error } = await stripe.confirmSetup({
-        elements, clientSecret: setup.client_secret,
-        confirmParams: {
-          return_url: window.location.origin + '/checkin-demo',
-          ...(details && Object.keys(details).length ? { payment_method_data: { billing_details: details } } : {}),
-        },
-        redirect: 'if_required',
-      });
-      if (error) throw new Error(error.message);
-      const result = await call('result', { ticket, profile, setup_intent_id: setup.setup_intent_id });
-      onResult(result);
-    } catch (e) {
-      onError(message(e));
-      event.paymentFailed?.({ reason: 'fail' });
-    } finally { processing.current = false; onBusy(false); }
-  }
-  return <div className="ci-wallet">
-    {!ready && <p role="status">Buscando wallets disponibles…</p>}
-    <ExpressCheckoutElement options={options}
-      onReady={e => { setAvailable(e.availablePaymentMethods); setReady(true); if(reportedTimeout.current)onError(''); }}
-      onLoadError={e => { setReady(true); onError(e.error?.message || 'No se ha podido cargar la wallet.'); }}
-      onConfirm={confirm}
-      onCancel={() => onError('Has cancelado la prueba. Si te pidió escribir o iniciar sesión, ese paso cuenta como fricción.')}
-    />
-    {ready && !available?.applePay && !available?.googlePay && <p className="ci-notice">No aparece una wallet compatible. Prueba Safari en iPhone o Chrome en Android con tu wallet configurada. Si tienes que cambiar de navegador o iniciar sesión, anótalo como un paso adicional.</p>}
-  </div>;
-}
 
 export default function CheckInDemo() {
   const [ticket, setTicket] = useState(() => {
@@ -160,14 +93,6 @@ export default function CheckInDemo() {
     // Each visitor receives a private session automatically; retry refreshes readiness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[retry]);
-  const stripePromise=useMemo(()=>config?.publishable_key ? loadStripe(config.publishable_key).catch(() => {
-    setError('No se ha podido cargar Stripe. Pulsa Volver a comprobar.');
-    return null;
-  }) : null,[config?.publishable_key,retry]);
-  const elementOptions=useMemo(()=>({
-    clientSecret:setup?.client_secret,locale:'es',
-    appearance:{theme:'night',variables:{colorPrimary:'#dcff85',colorBackground:'#1b1b1e',colorText:'#ffffff',borderRadius:'12px'}},
-  }),[setup?.client_secret]);
   async function prepare() {
     if(busy)return;
     setBusy(true);setError('');
@@ -223,9 +148,9 @@ export default function CheckInDemo() {
         <fieldset disabled={busy}><legend>Datos que quieres solicitar</legend><div className="ci-choices">{Object.entries(profiles).map(([value,label])=><label key={value}><input type="radio" name="contact-profile" value={value} checked={profile===value} onChange={()=>{setProfile(value);setSetup(null);setError('');}}/><span>{label}</span></label>)}</div></fieldset>
         <p className="ci-hint">{profile==='all'?'Solicitamos email, nombre, teléfono y dirección de facturación. Si te pide completar algo, puedes cancelar.':profile==='email'?'Solicitamos el email. Si ya está preparado, puede compartirse sin escribirlo.':'No solicitamos datos de contacto. Los campos vacíos no significan que no estén guardados.'}</p>
         <div className="ci-consent">Al confirmar en tu wallet, aceptas compartir los datos solicitados y guardar el método en Stripe para esta prueba de CAMBRA GLOBAL SASU. <strong>No autorizas cobros futuros.</strong></div>
-        {config.domain?.enabled && stripePromise
+        {config.domain?.enabled && config.publishable_key
           ? setup
-            ? <Elements key={profile+ticket+retry+setup.setup_intent_id} stripe={stripePromise} options={elementOptions}><Wallet ticket={ticket} profile={profile} setup={setup} onResult={setResult} onBusy={setBusy} onError={setError}/></Elements>
+            ? <CheckInWallet key={profile+ticket+retry+setup.setup_intent_id} publishableKey={config.publishable_key} setup={setup} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError} readResult={()=>call('result',{ticket,profile,setup_intent_id:setup.setup_intent_id})}/>
             : <button className="ci-action" disabled={busy} onClick={prepare}>{busy?'Preparando Stripe…':'CHECK-IN™ · Abrir mi wallet'}</button>
           : <p className="ci-notice">Las wallets aún no están habilitadas para este dominio.</p>}
         <p className="ci-small">Esta página no crea pagos ni solicita una retención de importe. Stripe o tu banco pueden pedir una verificación adicional. Estamos probando el guardado; no se garantiza ningún cobro posterior.</p>
