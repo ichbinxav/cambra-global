@@ -17,6 +17,7 @@ import { base44 } from '@/api/base44Client';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import LegalAcceptanceGate from '@/components/shared/LegalAcceptanceGate';
 const Landing = lazy(() => import('@/pages/Landing'));
+const CheckInDemo = lazy(() => import('@/pages/CheckInDemo'));
 const Onboarding = lazy(() => import('@/pages/Onboarding.jsx'));
 // Chunk 6 CUTOVER — /Analyzer and /Results now serve the Payments-only
 // components. The legacy multi-vertical Analyzer / Results / AnalyzerTeaser
@@ -272,6 +273,8 @@ const AuthenticatedApp = () => {
       <Routes>
         {/* Public */}
         <Route path="/" element={withBoundary(<Landing />)} />
+        <Route path="/checkin-demo" element={withBoundary(<CheckInDemo />)} />
+        <Route path="/CheckInDemo" element={<Navigate to="/checkin-demo" replace />} />
         <Route path="/Landing" element={<Navigate to="/" replace />} />
         <Route path="/landing" element={<Navigate to="/" replace />} />
         <Route path="/Onboarding" element={withBoundary(<Onboarding />)} />
