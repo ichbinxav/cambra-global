@@ -4,16 +4,28 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 const state=vi.hoisted(()=>({invoke:vi.fn(),options:null,confirm:vi.fn()}));
 vi.mock('@/api/base44Client',()=>({base44:{functions:{invoke:state.invoke}}}));
-vi.mock('@stripe/stripe-js',()=>({loadStripe:()=>Promise.resolve({})}));
-vi.mock('@stripe/react-stripe-js',()=>({
- Elements:({options,children})=>{state.options=options;return children},
- ExpressCheckoutElement:({onConfirm})=><button onClick={()=>onConfirm({billingDetails:{email:'trial@example.invalid'}})}>Native wallet</button>,
- useStripe:()=>({confirmSetup:state.confirm}),
- useElements:()=>({submit:async()=>({})})
-}));
 import CheckInDemo from './CheckInDemo';
 beforeEach(()=>{
  cleanup();sessionStorage.clear();state.options=null;state.confirm.mockReset().mockResolvedValue({});
+ window.Stripe=()=>({
+   confirmSetup:state.confirm,
+   elements:options=>{
+     state.options=options;
+     return {submit:async()=>({}),create:()=>{
+       const handlers={};let button;
+       return {
+         on:(name,handler)=>{handlers[name]=handler;},
+         mount:node=>{
+           if(!handlers.ready)throw Error('Ready listener must be registered before mount');
+           button=document.createElement('button');button.textContent='Native wallet';
+           button.onclick=()=>handlers.confirm({billingDetails:{email:'trial@example.invalid'}});
+           node.append(button);handlers.ready({availablePaymentMethods:{applePay:true}});
+         },
+         destroy:()=>button?.remove()
+       };
+     }};
+   }
+ });
  state.invoke.mockReset().mockImplementation(async(name,b)=>{
   if(b.action==='status')return {data:{public_access:true,ticket:'private-session',publishable_key:'pk_test_fake',domain:{enabled:true}}};
   if(b.action==='setup')return {data:{setup_intent_id:'seti_trial',client_secret:'seti_trial_secret_fake'}};
