@@ -39,6 +39,16 @@ function Wallet({ ticket, profile, onResult, onBusy, onError }) {
   const [ready, setReady] = useState(false);
   const [available, setAvailable] = useState(null);
   const processing = useRef(false);
+  const reportedTimeout = useRef(false);
+  useEffect(() => {
+    if (ready) return;
+    const timer = window.setTimeout(() => {
+      if (reportedTimeout.current) return;
+      reportedTimeout.current = true;
+      onError('Stripe no ha terminado de cargar la wallet. Pulsa Volver a comprobar para reiniciarla.');
+    }, 15000);
+    return () => window.clearTimeout(timer);
+  }, [ready, onError]);
   const options = useMemo(() => ({
     business: { name: 'CAMBRA CHECK-IN™' },
     emailRequired: profile !== 'none',
@@ -81,7 +91,7 @@ function Wallet({ ticket, profile, onResult, onBusy, onError }) {
   return <div className="ci-wallet">
     {!ready && <p role="status">Buscando wallets disponibles…</p>}
     <ExpressCheckoutElement options={options}
-      onReady={e => { setAvailable(e.availablePaymentMethods); setReady(true); }}
+      onReady={e => { setAvailable(e.availablePaymentMethods); setReady(true); if(reportedTimeout.current)onError(''); }}
       onLoadError={e => { setReady(true); onError(e.error?.message || 'No se ha podido cargar la wallet.'); }}
       onConfirm={confirm}
       onCancel={() => onError('Has cancelado la prueba. Si te pidió escribir o iniciar sesión, ese paso cuenta como fricción.')}
@@ -110,7 +120,7 @@ export default function CheckInDemo() {
   useEffect(() => {
     const oldTitle=document.title; document.title='Prueba real · CAMBRA CHECK-IN™';
     const robots=document.createElement('meta');robots.name='robots';robots.content='noindex,nofollow';document.head.append(robots);
-    const referrer=document.createElement('meta');referrer.name='referrer';referrer.content='no-referrer';document.head.append(referrer);
+    const referrer=document.createElement('meta');referrer.name='referrer';referrer.content='strict-origin-when-cross-origin';document.head.append(referrer);
     let active=true;
     async function init() {
       setLoading(true);setError('');
@@ -150,7 +160,10 @@ export default function CheckInDemo() {
     // Each visitor receives a private session automatically; retry refreshes readiness.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[retry]);
-  const stripePromise=useMemo(()=>config?.publishable_key ? loadStripe(config.publishable_key) : null,[config?.publishable_key]);
+  const stripePromise=useMemo(()=>config?.publishable_key ? loadStripe(config.publishable_key).catch(() => {
+    setError('No se ha podido cargar Stripe. Pulsa Volver a comprobar.');
+    return null;
+  }) : null,[config?.publishable_key,retry]);
   const elementOptions=useMemo(()=>({
     mode:'setup',currency:'eur',paymentMethodTypes:['card'],locale:'es',
     appearance:{theme:'night',variables:{colorPrimary:'#dcff85',colorBackground:'#1b1b1e',colorText:'#ffffff',borderRadius:'12px'}},
@@ -201,7 +214,7 @@ export default function CheckInDemo() {
         <p className="ci-hint">{profile==='all'?'Solicitamos email, nombre, teléfono y dirección de facturación. Si te pide completar algo, puedes cancelar.':profile==='email'?'Solicitamos el email. Si ya está preparado, puede compartirse sin escribirlo.':'No solicitamos datos de contacto. Los campos vacíos no significan que no estén guardados.'}</p>
         <div className="ci-consent">Al confirmar en tu wallet, aceptas compartir los datos solicitados y guardar el método en Stripe para esta prueba de CAMBRA GLOBAL SASU. <strong>No autorizas cobros futuros.</strong></div>
         {config.domain?.enabled && stripePromise
-          ? <Elements key={profile+ticket} stripe={stripePromise} options={elementOptions}><Wallet ticket={ticket} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError}/></Elements>
+          ? <Elements key={profile+ticket+retry} stripe={stripePromise} options={elementOptions}><Wallet ticket={ticket} profile={profile} onResult={setResult} onBusy={setBusy} onError={setError}/></Elements>
           : <p className="ci-notice">Las wallets aún no están habilitadas para este dominio.</p>}
         <p className="ci-small">Esta página no crea pagos ni solicita una retención de importe. Stripe o tu banco pueden pedir una verificación adicional. Estamos probando el guardado; no se garantiza ningún cobro posterior.</p>
       </>}
